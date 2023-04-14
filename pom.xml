@@ -91,9 +91,9 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>${maven-failsafe-plugin.version}</version>
-<!--                    <configuration>-->
-<!--                        <argLine>&#45;&#45;enable-preview</argLine>-->
-<!--                    </configuration>-->
+                    <configuration>
+                        <argLine>--enable-preview</argLine>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -103,9 +103,10 @@
                         <source>${maven.compiler.source}</source>
                         <target>${maven.compiler.target}</target>
                         <fork>true</fork>
-<!--                        <compilerArgs>-->
-<!--                            &#45;&#45;enable-preview-->
-<!--                        </compilerArgs>-->
+                        <compilerArgs>
+                            <arg>--enable-preview</arg>
+                            <arg>--add-exports javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</arg>
+                        </compilerArgs>
                         <annotationProcessorPaths>
                             <annotationProcessorPath>
                                 <groupId>io.soabase.record-builder</groupId>
