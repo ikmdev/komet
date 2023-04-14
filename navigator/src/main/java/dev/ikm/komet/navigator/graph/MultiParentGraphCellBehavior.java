@@ -36,7 +36,7 @@ public class MultiParentGraphCellBehavior extends TreeCellBehavior<ConceptFacade
 
     //@Override
     protected boolean handleDisclosureNode(double x, double y) {
-        MultiParentGraphCell treeCell = null;// (MultiParentGraphCell) getNode();
+        MultiParentGraphCell treeCell = (MultiParentGraphCell) getNode();
         Node disclosureNode = treeCell.getDisclosureNode();
         if (disclosureNode != null) {
             if (disclosureNode.getBoundsInParent().contains(x, y)) {
