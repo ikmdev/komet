@@ -1,0 +1,69 @@
+/**
+ * Copyright CSIRO Australian e-Health Research Centre (http://aehrc.com).
+ * All rights reserved. Use is subject to license terms and conditions.
+ */
+package au.csiro.snorocket.core.util;
+
+import java.util.Map;
+
+import au.csiro.ontology.Node;
+
+/**
+ * @author Alejandro Metke
+ *
+ */
+public class Utils {
+    
+    public static void printTaxonomy(Node top, Node bottom, Map<String, String> idNameMap) {
+    	if(top.equals(bottom)) return;
+        System.out.println(nodeToString(top, idNameMap));
+    	for(Node child : top.getChildren()) {
+            printTaxonomyLevel(child, bottom, 1, idNameMap);
+        }
+    }
+    
+    private static void printTaxonomyLevel(Node root, 
+            Node bottom, int level, Map<String, String> idNameMap) {
+        if(root.equals(bottom)) return;
+        System.out.println(spaces(level)+nodeToString(root, idNameMap));
+        for(Node child : root.getChildren()) {
+            printTaxonomyLevel(child, bottom, level+1, idNameMap);
+        }
+    }
+    
+    private static String nodeToString(Node node, Map<String, String> idNameMap) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        for(String concept : node.getEquivalentConcepts()) {
+            sb.append(" ");
+            String desc = idNameMap.get(concept);
+            if(desc == null) desc = "NA";
+            sb.append(desc);
+        }
+        sb.append(" }");
+        return sb.toString();
+    }
+    
+    public static void printTaxonomy(Node top, Node bottom) {
+        for(Node child : top.getChildren()) {
+            printTaxonomyLevel(child, bottom, 0);
+        }
+    }
+    
+    private static void printTaxonomyLevel(Node root, Node bottom, int level) {
+        if(root.equals(bottom)) return;
+        System.out.println(spaces(level)+root.toString());
+        for(Node child : root.getChildren()) {
+            printTaxonomyLevel(child, bottom, level+1);
+        }
+    }
+    
+    private static String spaces(int num) {
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < num; i++) {
+            sb.append("  ");
+        }
+        return sb.toString();
+    }
+
+}

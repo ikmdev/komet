@@ -1,0 +1,14 @@
+#!/bin/sh
+# Sample data zip file will only be available in the data installer.
+if [ -f /Applications/Komet.app/Contents/App/sample_data.zip ]
+then
+  # Install sample data if not already present.
+	if [ -d ~/Solor/sample_data ]
+	then
+	  osascript -e 'display notification "Initialized data found, skipping data initialization." with title "Komet Installer"'
+	else
+	  osascript -e 'display notification "Initializing data..." with title "Komet Installer"'
+	  sudo -u $USER mkdir -p ~/Solor/
+	  sudo -u $USER tar -xf /Applications/Komet.app/Contents/App/sample_data.zip -C ~/Solor/
+	fi
+fi

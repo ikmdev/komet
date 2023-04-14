@@ -1,0 +1,53 @@
+Prefix(: = <http://example.org/>)
+Prefix(rdf: = <http://www.w3.org/1999/02/22-rdf-syntax-ns#>)
+Prefix(rdfs: = <http://www.w3.org/2000/01/rdf-schema#>)
+Prefix(xsd: = <http://www.w3.org/2001/XMLSchema#>)
+Prefix(owl: = <http://www.w3.org/2002/07/owl#>)
+Ontology(
+Declaration(Class(:A))
+
+Declaration(Class(:B))
+Declaration(Class(:C))
+Declaration(Class(:D))
+
+Declaration(Class(:BB))
+Declaration(Class(:CC))
+Declaration(Class(:DD))
+
+Declaration(Class(:BC))
+Declaration(Class(:BD))
+Declaration(Class(:CB))
+Declaration(Class(:CD))
+Declaration(Class(:DC))
+Declaration(Class(:DB))
+
+Declaration(Class(:BCD))
+Declaration(Class(:BDC))
+Declaration(Class(:CBD))
+Declaration(Class(:CDB))
+Declaration(Class(:DBC))
+Declaration(Class(:DCB))
+
+SubClassOf(:A :B)
+SubClassOf(:A :C)
+SubClassOf(:A :D)
+
+SubClassOf(:B :BB)
+SubClassOf(:C :CC)
+SubClassOf(:D :DD)
+
+SubClassOf(:A :BC)
+SubClassOf(:A :BD)
+SubClassOf(:A :CB)
+SubClassOf(:A :CD)
+SubClassOf(:A :DC)
+SubClassOf(:A :DB)
+
+SubClassOf(:A :BCD)
+SubClassOf(:A :BDC)
+SubClassOf(:A :CBD)
+SubClassOf(:A :CDB)
+SubClassOf(:A :DBC)
+SubClassOf(:A :DCB)
+
+)

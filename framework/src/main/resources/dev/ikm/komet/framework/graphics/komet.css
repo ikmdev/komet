@@ -1,0 +1,1464 @@
+/*
+Copyright 2017 Organizations participating in ISAAC, ISAAC's KOMET, and SOLOR development include the
+         US Veterans Health Administration, OSHERA, and the Health Services Platform Consortium..
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/*
+modena.css is the default css.
+ */
+.root {
+    -komet-blue-color: #406AD1;
+    -komet-faint-blue-color: #406AD122;
+    -komet-tab-background-color: #52646d;
+    -komet-panel-background-color: #c3cdd3;
+    -komet-concept-box-background-color: #eef1f3;
+    -komet-concept-color: #5ec200;
+    -komet-definition-color: #009bff;
+    -komet-inactive-color: #b3b3b3;
+    -komet-box-border: #d1d1d1;
+    -fx-font-family: "Open Sans";
+    -komet-uncommitted-fill: #f5f6cb;
+    -komet-uncommitted-border: #ffef00;
+    -komet-error-background: #ff5000;
+    -komet-warning-background: #ffef00;
+    -komet-confirm-background: #009414;
+    -komet-navigator-primitive-color: #FF4E08;
+    -komet-navigator-defined-color: #5ec200;
+    -komet-inactive-background: linear-gradient(
+            from 0em 0.75em to 0.75em 0px,
+            repeat,
+            derive(-komet-inactive-color, 70%) 0%,
+            derive(-komet-inactive-color, 70%) 49%,
+            derive(-komet-inactive-color, 95%) 50%,
+            derive(-komet-inactive-color, 95%) 99%
+    );
+    -komet-inactive-background-selected: linear-gradient(
+            from 0em 0.75em to 0.75em 0px,
+            repeat,
+            -komet-blue-color 0%,
+            -komet-blue-color 49%,
+            derive(-komet-blue-color, 30%) 50%,
+            derive(-komet-blue-color, 30%) 99%
+    );
+
+    /* For example: selected
+     * text; selected items in menus, lists, trees, and tables; progress bars */
+
+    -fx-accent: -komet-blue-color;
+
+    /* Typically used as the
+     * first color in -fx-background-color for the "focused" pseudo-class. Also
+     * typically used with insets of -1.4 to provide a glowing effect.
+     */
+    -fx-focus-color: -komet-blue-color;
+    -fx-faint-focus-color: -komet-faint-blue-color;
+
+
+}
+
+.root {
+    -komet-description-color: #ff9100;
+}
+
+.top-grid-pane {
+    -fx-background-color: white;
+}
+
+.vanityBox {
+    -fx-background-color: transparent;
+    -fx-padding: 3 3 3 5;
+    -fx-border-width: 1 1 1 1;
+    -fx-border-color: white;
+    -fx-border-insets: 3 3 3 3;
+    -fx-graphic-text-gap: 0;
+}
+
+#view {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+
+#view .ikonli-font-icon {
+    -fx-icon-code: "ri-viewpoint";
+    -fx-icon-color: -komet-tab-background-color;
+    -fx-icon-size: 20;
+}
+
+#view .ikonli-font-icon {
+    /*-fx-icon-code: "map-icon-viewing";*/
+    /* -fx-icon-code: "fi-target-two";*/
+    /* -fx-icon-code: "icm-target";*/
+    /* -fx-icon-code: "mdi2c-crosshairs-gps"; */
+    -fx-icon-code: "ri-viewpoint";
+    /* -fx-icon-code: "unil-crosshair-alt";*/
+    -fx-icon-color: -komet-tab-background-color;
+    -fx-icon-size: 20;
+}
+
+#view .arrow-button {
+    -fx-padding: 1 0 0 0;
+}
+
+#view {
+    -fx-padding: 2 0 0 0;
+}
+
+#add-tab .ikonli-font-icon {
+    -fx-icon-code: "unil-plus";
+    -fx-icon-color: white;
+    -fx-icon-size: 14;
+}
+
+/* #search-node pair */
+#search-node .ikonli-font-icon {
+    -fx-icon-code: "icm-search";
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 18;
+}
+
+.add-tab-menu-item:focused #search-node .ikonli-font-icon {
+    -fx-icon-color: white;
+    -fx-icon-size: 18;
+}
+
+.tab #search-node .ikonli-font-icon {
+    -fx-icon-color: white;
+    -fx-icon-size: 14;
+}
+
+
+/* #navigator-node pair */
+#navigator-node .ikonli-font-icon {
+    /* -fx-icon-code: "mdi2g-graph"; */
+    -fx-icon-code: "mdi2f-file-tree";
+    /*-fx-icon-code: "fas-sitemap";*/
+    /*-fx-icon-code: "fa-sitemap";*/
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item:focused #navigator-node .ikonli-font-icon,
+.tab #navigator-node .ikonli-font-icon {
+    -fx-icon-color: white;
+    -fx-icon-size: 20;
+}
+
+/* #navigator-node pair */
+#pattern-navigator-node .ikonli-font-icon {
+    /*-fx-icon-code: "mdi2m-math-compass";*/
+    -fx-icon-code: "mdi2r-ruler-square";
+    /*-fx-icon-code: "mdi2r-ruler-square-compass";*/
+    /*-fx-icon-code: "fas-pencil-ruler"; */
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item:focused #pattern-navigator-node .ikonli-font-icon,
+.tab #pattern-navigator-node .ikonli-font-icon {
+    -fx-icon-color: white;
+    -fx-icon-size: 20;
+}
+
+
+/* #list-node pair */
+#list-node .ikonli-font-icon {
+    -fx-icon-code: "mdi2v-view-headline";
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item:focused #list-node .ikonli-font-icon,
+.tab #list-node .ikonli-font-icon {
+    -fx-icon-color: white;
+    -fx-icon-size: 20;
+}
+
+#semantic-table .ikonli-font-icon {
+    /*-fx-icon-code: "mdi2t-table-large";*/
+    -fx-icon-code: "mdi2t-table";
+    -fx-icon-size: 20;
+}
+
+
+/* #table-node pair */
+#table-node .ikonli-font-icon {
+    -fx-icon-code: "mdi2t-table";
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item:focused #table-node .ikonli-font-icon,
+.tab #table-node .ikonli-font-icon {
+    -fx-icon-color: white;
+    -fx-icon-size: 20;
+}
+
+/* #classification-results-node pair */
+#concept-details-node .ikonli-font-icon {
+    -fx-icon-code: "mdi2f-focus-field";
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item:focused #concept-details-node .ikonli-font-icon,
+.tab #concept-details-node .ikonli-font-icon {
+    -fx-icon-color: white;
+    -fx-icon-size: 20;
+}
+
+/* #classification-results-node pair */
+#classification-results-node .ikonli-font-icon {
+    -fx-icon-code: "fa-cogs";
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 16;
+}
+
+.add-tab-menu-item:focused #classification-results-node .ikonli-font-icon,
+.tab #classification-results-node .ikonli-font-icon {
+    -fx-icon-color: white;
+    -fx-icon-size: 16;
+}
+
+/* #create-concept-node pair */
+#concept-builder-node .ikonli-font-icon {
+    -fx-icon-code: "mdi2s-shape-circle-plus";
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item:focused #concept-builder-node .ikonli-font-icon,
+.tab #concept-builder-node .ikonli-font-icon {
+    -fx-icon-color: white;
+    -fx-icon-size: 20;
+}
+
+/* #completion-node pair */
+#completion-node .ikonli-font-icon {
+    -fx-icon-code: "mdi2f-flag-checkered";
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item:focused #completion-node .ikonli-font-icon,
+.tab #completion-node .ikonli-font-icon {
+    -fx-icon-color: white;
+    -fx-icon-size: 20;
+}
+
+/* #activity-node */
+.tab #activity-node .ikonli-font-icon {
+    -fx-icon-color: white;
+    -fx-icon-size: 16;
+}
+
+/* #export-node pair */
+#export-node .ikonli-font-icon {
+    -fx-icon-code: "mdi2d-database-export";
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item:focused #export-node .ikonli-font-icon,
+.tab #export-node .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+/* #import-node pair */
+#import-node .ikonli-font-icon {
+    -fx-icon-code: "mdi2d-database-import";
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item:focused #import-node .ikonli-font-icon,
+.tab #import-node .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+/* #activity-node pair */
+#activity-node .ikonli-font-icon {
+    /*-fx-icon-code: "icm-spinner";*/
+    -fx-icon-code: "icm-spinner9";
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 16;
+}
+
+.add-tab-menu-item:focused #activity-node .ikonli-font-icon,
+.tab #activity-node .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+/* #remove-tab-area pair */
+#remove-tab-area .ikonli-font-icon {
+    /*-fx-icon-code: "mdi2a-alert-remove-outline";*/
+    /*-fx-icon-code: "mdi2a-alert-remove-outline";*/
+    /*-fx-icon-code: "mdi2c-card-remove-outline";*/
+    -fx-icon-code: "mdi2t-tab-remove";
+    /*-fx-icon-code: "mdi2a-alert-remove-outline";*/
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item:focused #remove-tab-area .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+/* ---------------- */
+
+
+.add-tab-menu-item {
+    -fx-background-color: white;
+    -fx-border-color: white;
+    -fx-text-fill: -komet-blue-color;
+}
+
+.add-tab-menu-item:focused {
+    -fx-background-color: -komet-blue-color;
+    -fx-border-color: -komet-blue-color;
+    -fx-text-fill: white;
+}
+
+.add-tab-menu .menu-item .label {
+    -fx-background-color: white;
+    -fx-border-color: white;
+    -fx-text-fill: -komet-blue-color;
+    -fx-font-size: 16;
+}
+
+.add-tab-menu .menu-item:focused .label {
+    -fx-background-color: -komet-blue-color;
+    -fx-border-color: -komet-blue-color;
+    -fx-text-fill: white;
+}
+
+.add-tab-menu {
+    -fx-background-color: #c3cdd3;
+    -fx-border-color: -komet-blue-color;
+    -fx-border-radius: 0;
+    -fx-border-width: 0 0 0 0;
+    -fx-background-radius: 0;
+    -fx-graphic-text-gap: -5;
+    -fx-label-padding: 0;
+    -fx-content-display: graphic-only;
+}
+
+.add-tab-menu * .arrow {
+    -fx-mark-color: white;
+}
+
+
+.add-tab-menu-item * .arrow {
+    -fx-mark-color: -komet-blue-color;
+    -fx-icon-color: white;
+}
+
+
+.add-tab-menu-item:focused {
+    -fx-background-color: -komet-blue-color;
+}
+
+.add-tab-menu .label {
+    -fx-background-color: -komet-blue-color;
+    -fx-border-color: -komet-blue-color;
+    -fx-padding: 4 0 5 2;
+}
+
+.add-tab-menu .arrow-button {
+    -fx-background-color: -komet-blue-color;
+    -fx-border-color: -komet-blue-color;
+    -fx-padding: 4 4 5 1;
+}
+
+/*.add-tab-menu .menu-item:focused .glyph-icon {*/
+/*    -fx-icon-color: white;*/
+/*}*/
+/*.add-tab-menu .menu-item .glyph-icon {*/
+/*    -fx-icon-color: -komet-blue-color;*/
+/*}*/
+
+.tab-pane .tab-header-area {
+    -fx-padding: 0 0 0 35;
+}
+
+/* top refers to tabs that are layed out on the top of the pane, as opposed to side or bottom...*/
+.tab:top {
+    -fx-background-color: -komet-tab-background-color;
+    -fx-border-color: -komet-blue-color;
+    -fx-border-width: 0 0 3 0;
+}
+
+/* only one tab in a tab group is selected at a time. */
+.tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: -komet-blue-color;
+    -fx-border-color: -komet-blue-color;
+    -fx-border-radius: 5 5 0 0, 4 4 0 0;
+}
+
+/* since the selection is so different, the focus indicator is a distration, will make it same color */
+.tab-header-area * .tab:selected * .focus-indicator {
+    -fx-border-color: transparent;
+}
+
+
+.tab-pane > .tab-header-area > .headers-region > .tab:selected > labeled {
+    -fx-text-fill: white;
+    -fx-icon-color: white;
+}
+
+.tab-label {
+    -fx-text-fill: white;
+}
+
+/* glphy-icon inside of tabs will be white... */
+.tab * .glyph-icon {
+    -fx-icon-color: white;
+}
+
+.tab .concept-label {
+    -fx-text-fill: white;
+}
+
+.tab .label {
+    -fx-text-fill: white;
+}
+
+
+.tab:drop-possible {
+    -fx-border-color: white;
+    -fx-border-style: dashed;
+    -fx-border-radius: 5 5 0 0, 4 4 0 0;
+    -fx-border-width: 2;
+}
+
+.tab:drop-ready {
+    -fx-border-color: white;
+    -fx-border-style: dashed;
+    -fx-border-radius: 5 5 0 0, 4 4 0 0;
+    -fx-border-width: 2;
+}
+
+.tab {
+    -fx-text-fill: white;
+    -fx-border-width: 0;
+}
+
+/* only one tab in a tab group is selected at a time. */
+.tab-pane > .tab-header-area > .headers-region > .tab:selected:drop-ready {
+    -fx-background-color: -komet-blue-color;
+    -fx-border-color: white;
+    -fx-border-radius: 5 5 0 0, 4 4 0 0;
+}
+
+
+.drop-right, .drop-left, .drop-top, .drop-bottom {
+    -fx-background-color: -fx-body-color;
+    -fx-background-insets: 0;
+    -fx-background-radius: 15;
+    -fx-padding: 5;
+}
+
+.drop-path {
+    -fx-stroke: -komet-blue-color;
+    -fx-stroke-width: 2;
+    /*-fx-stroke-type:inside;*/
+    -fx-stroke-line-join: bevel;
+}
+
+#drop-top-button .ikonli-font-icon {
+    -fx-icon-code: "mdi2t-table-row-plus-before";
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 32;
+}
+
+#drop-right-button .ikonli-font-icon {
+    -fx-icon-code: "mdi2t-table-column-plus-after";
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 32;
+}
+
+#drop-bottom-button .ikonli-font-icon {
+    -fx-icon-code: "mdi2t-table-row-plus-after";
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 32;
+}
+
+#drop-left-button .ikonli-font-icon {
+    -fx-icon-code: "mdi2t-table-column-plus-before";
+    -fx-icon-color: -komet-blue-color;
+    -fx-icon-size: 32;
+}
+
+#remove-completion-node {
+    -fx-icon-color: -komet-tab-background-color;
+}
+
+.multi-parent-tree-cell {
+    -fx-font-size: 16;
+    -fx-font-family: "OpenSans";
+    /*-fx-font-family: "serif";*/
+    /*-fx-font-family: "sans-serif";*/
+    /*-fx-font-family: "monospace";*/
+}
+
+#cancel-task-icon .ikonli-font-icon {
+    -fx-icon-color: red;
+}
+
+.menu-item:focused {
+    -fx-background-color: -komet-blue-color;
+}
+
+#taxonomy-closed-icon .ikonli-font-icon {
+    -fx-icon-code: "fas-caret-down";
+    -fx-icon-size: 14pt;
+    -fx-icon-color: grey;
+    -fx-padding: 4 4 4 4;
+    -fx-background-color: transparent;
+}
+
+#taxonomy-closed-icon:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 1.0), 10, 0, 0, 0);
+}
+
+#taxonomy-open-icon .ikonli-font-icon {
+    -fx-icon-code: "fas-caret-right";
+    -fx-icon-size: 14pt;
+    -fx-icon-color: grey;
+    -fx-padding: 4 4 4 4;
+    -fx-background-color: transparent;
+}
+
+#taxonomy-open-icon:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 1.0), 10, 0, 0, 0);
+}
+
+#stated-form .ikonli-font-icon {
+    -fx-icon-code: "ri-chat";
+}
+
+#inferred-form .ikonli-font-icon {
+    -fx-icon-code: "fa-gears";
+}
+
+#link-external .ikonli-font-icon {
+    -fx-icon-code: "oct-link-external-16";
+    -fx-icon-size: 9pt;
+}
+
+#taxonomy-root-icon .ikonli-font-icon {
+    -fx-icon-code: "mdi2h-hexagon-outline";
+    -fx-icon-size: 14pt;
+    -fx-icon-color: -komet-navigator-primitive-color;
+}
+
+#alert-confirm {
+    -fx-graphic: url("/org/controlsfx/dialog/dialog-confirm.png");
+    -my-height: 20;
+    -my-width: 20;
+}
+
+#taxonomy-defined-multiparent-open-icon .ikonli-font-icon {
+    -fx-icon-code: "mdi2a-arrow-up-bold-circle-outline";
+    -fx-rotate: 45;
+    -fx-icon-size: 14pt;
+    -fx-icon-color: -komet-navigator-defined-color;
+}
+
+#taxonomy-defined-multiparent-closed-icon .ikonli-font-icon {
+    -fx-icon-code: "mdi2a-arrow-up-bold-circle-outline";
+    -fx-icon-size: 14pt;
+    -fx-icon-color: -komet-navigator-defined-color;
+}
+
+#taxonomy-primitive-multiparent-open-icon .ikonli-font-icon {
+    -fx-icon-code: "mdi2a-arrow-up-bold-hexagon-outline";
+    -fx-rotate: 45;
+    -fx-icon-size: 14pt;
+    -fx-icon-color: -komet-navigator-primitive-color;
+}
+
+#taxonomy-primitive-multiparent-closed-icon .ikonli-font-icon {
+    -fx-icon-code: "mdi2a-arrow-up-bold-hexagon-outline";
+    -fx-icon-size: 14pt;
+    -fx-icon-color: -komet-navigator-primitive-color;
+}
+
+#taxonomy-defined-singleparent-icon .ikonli-font-icon {
+    -fx-icon-code: "mdi2c-checkbox-blank-circle-outline";
+    -fx-icon-size: 14pt;
+    -fx-icon-color: -komet-navigator-defined-color;
+}
+
+#taxonomy-primitive-singleparent-icon .ikonli-font-icon {
+    -fx-icon-code: "mdi2h-hexagon";
+    -fx-icon-size: 14pt;
+    -fx-icon-color: -komet-navigator-primitive-color;
+}
+
+#alert-confirm-2 .ikonli-font-icon {
+    -fx-icon-code: "far-question-circle";
+}
+
+#alert-info-2 .ikonli-font-icon {
+    -fx-icon-code: "mdi2i-information-outline";
+}
+
+#alert-error-2 .ikonli-font-icon {
+    -fx-icon-code: "mdi2a-alert-octagon";
+}
+
+#alert-warn-2 .ikonli-font-icon {
+    -fx-icon-code: "mdi2a-alert-circle-outline";
+}
+
+#check .ikonli-font-icon {
+    -fx-icon-code: "far-check-circle";
+}
+
+#temporary-fix .ikonli-font-icon {
+    -fx-icon-code: "mdi2b-bandage";
+}
+
+#any-activityStream .ikonli-font-icon {
+    -fx-icon-code: "mdi2l-link-variant";
+    -fx-icon-size: 20;
+}
+
+#unlinked-activityStream .ikonli-font-icon {
+    -fx-icon-code: "mdi2l-link-variant-off";
+    -fx-icon-size: 20;
+}
+
+#literal-string .ikonli-font-icon {
+    -fx-icon-code: "mdi2f-format-quote-close";
+    -fx-icon-size: 20;
+}
+
+#literal-number .ikonli-font-icon {
+    -fx-icon-code: "fas-hashtag";
+    -fx-icon-size: 20;
+}
+
+#lambda .ikonli-font-icon {
+    -fx-icon-code: "mdi2l-lambda";
+    -fx-icon-size: 20;
+}
+
+#role-group .ikonli-font-icon {
+    -fx-icon-code: "mdi2f-format-list-bulleted-type";
+    -fx-icon-size: 20;
+}
+
+#close-disclosure .ikonli-font-icon {
+    -fx-icon-code: "mdi2m-menu-right";
+    -fx-icon-size: 20;
+}
+
+#open-disclosure .ikonli-font-icon {
+    -fx-icon-code: "mdi2m-menu-down";
+    -fx-icon-size: 20;
+}
+
+#edit-pencil .ikonli-font-icon {
+    -fx-icon-code: "mdi2l-lead-pencil";
+    -fx-icon-size: 20;
+}
+
+.menu-item:focused .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+.menu-item .ikonli-font-icon {
+    -fx-icon-color: -komet-tab-background-color;
+}
+
+.tab .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+#focus .ikonli-font-icon {
+    -fx-icon-code: "far-eye";
+    -fx-icon-size: 20;
+}
+
+#focus-no .ikonli-font-icon {
+    -fx-icon-code: "far-eye-slash";
+    -fx-icon-size: 20;
+}
+
+#search-activityStream .ikonli-font-icon {
+    -fx-icon-code: "mdi2m-magnify";
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item #search-activityStream .ikonli-font-icon {
+    -fx-icon-color: -komet-blue-color;
+}
+
+.add-tab-menu-item:focused #search-activityStream .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+#navigation-activityStream .ikonli-font-icon {
+    -fx-icon-code: "mdi2f-file-tree";
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item #navigation-activityStream .ikonli-font-icon {
+    -fx-icon-color: -komet-blue-color;
+}
+
+.add-tab-menu-item:focused #navigation-activityStream .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+#classification-activityStream .ikonli-font-icon {
+    -fx-icon-code: "fa-gears";
+    -fx-icon-size: 18;
+}
+
+.add-tab-menu-item #classification-activityStream .ikonli-font-icon {
+    -fx-icon-color: -komet-blue-color;
+}
+
+.add-tab-menu-item:focused #classification-activityStream .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+#correlation-activityStream .ikonli-font-icon {
+    -fx-icon-code: "mdi2c-compare-horizontal";
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item #correlation-activityStream .ikonli-font-icon {
+    -fx-icon-color: -komet-blue-color;
+}
+
+.add-tab-menu-item:focused #correlation-activityStream .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+#list-activityStream .ikonli-font-icon {
+    -fx-icon-code: "mdi2s-script-text-outline";
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item #list-activityStream .ikonli-font-icon {
+    -fx-icon-color: -komet-blue-color;
+}
+
+.add-tab-menu-item:focused #list-activityStream .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+#builder-activityStream .ikonli-font-icon {
+    -fx-icon-code: "mdi2s-shape-circle-plus";
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item #builder-activityStream .ikonli-font-icon {
+    -fx-icon-color: -komet-blue-color;
+}
+
+.add-tab-menu-item:focused #builder-activityStream .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+#flwor-activityStream .ikonli-font-icon {
+    -fx-icon-code: "mdi2f-flower";
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item #flwor-activityStream .ikonli-font-icon {
+    -fx-icon-color: -komet-blue-color;
+}
+
+.add-tab-menu-item:focused #flwor-activityStream .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+#preferences-activityStream .ikonli-font-icon {
+    -fx-icon-code: "unil-sliders-v-alt";
+    -fx-rotate: 90;
+    -fx-icon-size: 16;
+}
+
+.add-tab-menu-item #preferences-activityStream .ikonli-font-icon {
+    -fx-icon-color: -komet-blue-color;
+}
+
+.add-tab-menu-item:focused #preferences-activityStream .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+.menu-item #preferences-activityStream {
+    -fx-padding: 0 0 0 3;
+}
+
+.tab #preferences-activityStream .ikonli-font-icon {
+    -fx-icon-color: white;
+
+}
+
+#activityStream .ikonli-font-icon {
+    -fx-icon-code: "oct-pulse-16";
+    -fx-icon-size: 20;
+}
+
+#coordinate-crosshairs .ikonli-font-icon {
+    -fx-icon-code: "mdi2c-crosshairs-gps";
+    -fx-icon-size: 20;
+}
+
+#publish-to-activityStream .ikonli-font-icon {
+    -fx-icon-code: "mdi2l-location-exit";
+    -fx-icon-size: 20;
+}
+
+#paper-clip .ikonli-font-icon {
+    -fx-icon-code: "mdi2p-paperclip";
+    -fx-icon-size: 20;
+}
+
+#pattern .ikonli-font-icon {
+    -fx-icon-code: "mdi2m-math-compass";
+    -fx-icon-size: 20;
+}
+
+#semantic-table .ikonli-font-icon {
+    -fx-icon-code: "mdi2t-table";
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item #publish-to-activityStream .ikonli-font-icon {
+    -fx-icon-color: -komet-blue-color;
+}
+
+.add-tab-menu-item:focused #publish-to-activityStream .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+#subscribe-to-activityStream .ikonli-font-icon {
+    -fx-icon-code: "mdi2l-location-enter";
+    -fx-icon-size: 20;
+}
+
+#cancel .ikonli-font-icon {
+    -fx-icon-code: "mdi2c-cancel";
+    -fx-icon-size: 20;
+}
+
+#duplicate .ikonli-font-icon {
+    -fx-icon-code: "mdi2c-content-duplicate";
+    -fx-icon-size: 20;
+}
+
+#plus .ikonli-font-icon {
+    -fx-icon-code: "mdi2p-plus";
+    -fx-icon-size: 20;
+}
+
+#indent-increase .ikonli-font-icon {
+    -fx-icon-code: "mdi2f-format-indent-increase";
+    -fx-icon-size: 20;
+}
+
+#indent-decrease .ikonli-font-icon {
+    -fx-icon-code: "mdi2f-format-indent-decrease";
+    -fx-icon-size: 20;
+}
+
+
+#by-name .ikonli-font-icon {
+    -fx-icon-code: "mdi2f-format-list-text";
+    -fx-icon-size: 20;
+}
+
+
+.add-tab-menu-item #subscribe-to-activityStream .ikonli-font-icon {
+    -fx-icon-color: -komet-blue-color;
+}
+
+.add-tab-menu-item:focused #subscribe-to-activityStream .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+#synchronize-activityStream .ikonli-font-icon {
+    -fx-icon-code: "mdi2c-cached";
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item #synchronize-activityStream .ikonli-font-icon {
+    -fx-icon-color: -komet-blue-color;
+}
+
+.add-tab-menu-item:focused #synchronize-activityStream .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+.top-panel {
+    -fx-background-color: -komet-blue-color;
+    -fx-border-color: -komet-blue-color;
+
+}
+
+.concept-label {
+    -fx-background-color: -komet-blue-color;
+    -fx-text-fill: white;
+    -fx-font-size: 18;
+    -fx-font-weight: bold;
+    -fx-border-color: -komet-blue-color;
+    -fx-padding: 2;
+}
+
+
+.concept-label-toolbar {
+    -fx-background-color: -komet-blue-color;
+    -fx-border-color: -komet-panel-background-color;
+    -fx-border-width: 1 0 0 1;
+    -fx-padding: 1 0 5 4;
+}
+
+.concept-label-toolbar .menu-button {
+    -fx-background-color: -komet-blue-color;
+    -fx-border-color: -komet-blue-color;
+    -fx-border-insets: 0;
+    -fx-border-width: 0;
+    -fx-padding: 3 0 -5 -8;
+}
+
+.concept-label-toolbar .arrow-button {
+    -fx-padding: -5 10 0 0;
+}
+
+.concept-label-toolbar .arrow {
+    -fx-mark-color: white;
+    /*    -fx-padding:25 -5 -5 45; */
+}
+
+.concept-label-toolbar .menu-button .glyph-icon {
+    -icons-color: white;
+    -fx-background-color: red;
+}
+
+.concept-label-toolbar .menu-button .menu-item .glyph-icon {
+    -icons-color: -komet-blue-color;
+}
+
+.concept-label-toolbar .menu-button .menu-item .label {
+    -fx-text-fill: -komet-blue-color;
+    -fx-font-size: 15;
+}
+
+.concept-label-toolbar .menu-button .menu-item:focused .glyph-icon {
+    -icons-color: white;
+}
+
+.concept-label-toolbar .menu-button .menu-item:focused .label {
+    -fx-text-fill: white;
+}
+
+.concept-label-toolbar .menu-button .menu-item:focused {
+    -fx-background-color: -komet-blue-color;
+}
+
+.component-panel:inactive .text-area,
+.component-panel:inactive .viewport,
+.component-panel:inactive .scroll-pane,
+.component-panel:inactive .text-area .content {
+    /*-fx-border-color: white;*/
+    /*-fx-border-width: 1 0 1 0; */
+    -fx-background-color: transparent;
+    -fx-highlight-text-fill: white;
+    -fx-text-fill: black;
+    -fx-border-color: transparent;
+}
+
+.component-panel:inactive {
+    /*-fx-border-color: white;*/
+    /*-fx-border-width: 1 0 1 0; */
+    -fx-border-width: 1 0 1 0;
+    -fx-background-color: -komet-inactive-background;
+}
+
+.component-version-panel:inactive .content {
+    -fx-background-color: -komet-inactive-background;
+    -fx-border-color: -komet-inactive-background;
+}
+
+.version-panel:inactive .text-area,
+.version-panel:inactive .viewport,
+.version-panel:inactive .scroll-pane,
+.version-panel:inactive .text-area .content {
+    /*-fx-border-color: white;*/
+    /*-fx-border-width: 1 0 1 0; */
+    -fx-background-color: transparent;
+    -fx-highlight-text-fill: white;
+    -fx-text-fill: black;
+    -fx-border-color: transparent;
+}
+
+.component-panel:inactive .component-text,
+.component-panel:inactive .component-text .text-area {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.version-panel:inactive .component-text,
+.version-panel:inactive .component-text .text-area {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.content {
+    -fx-background-color: white;
+}
+
+.component-collapsible-panel {
+    -fx-border-width: 1 1 1 5;
+    -fx-border-insets: 0 -10 0 0;
+}
+
+.component-collapsible-panel * .arrow {
+    -fx-focus-color: derive(-fx-mark-color, 25%);
+    -fx-faint-focus-color: derive(-fx-mark-color, 50%);
+    -fx-border-color: derive(-fx-mark-color, -10%);
+}
+
+.component-collapsible-panel:concept * .arrow {
+    -fx-mark-color: -komet-concept-color;
+    -fx-border-color: -fx-mark-color;
+}
+
+.component-collapsible-panel:concept {
+    -fx-text-fill: -komet-concept-color;
+}
+
+.component-collapsible-panel:concept > .title > .text {
+    -fx-font-weight: bold;
+}
+
+.component-collapsible-panel:pattern {
+    -fx-text-fill: royalblue;
+}
+
+.component-collapsible-panel:pattern > .title > .text {
+    -fx-font-weight: bold;
+}
+
+.component-collapsible-panel:pattern * .arrow {
+    -fx-mark-color: royalblue;
+}
+
+.component-collapsible-panel:description {
+    -fx-text-fill: -komet-description-color;
+}
+
+.component-collapsible-panel:description > .title > .text {
+    -fx-font-weight: bold;
+}
+
+.component-collapsible-panel:description * .arrow {
+    -fx-mark-color: -komet-description-color;
+}
+
+.component-collapsible-panel:logical-definition {
+    -fx-text-fill: -komet-definition-color;
+}
+
+.component-collapsible-panel:logical-definition > .title > .text {
+    -fx-font-weight: bold;
+}
+
+.component-collapsible-panel:logical-definition * .arrow {
+    -fx-mark-color: -komet-definition-color;
+}
+
+.component-collapsible-panel:semantic {
+    -fx-text-fill: -komet-tab-background-color;
+}
+
+.component-collapsible-panel:semantic > .title > .text {
+    -fx-font-weight: bold;
+}
+
+.component-collapsible-panel:semantic * .arrow {
+    -fx-mark-color: -komet-tab-background-color;
+}
+
+.component-collapsible-panel > *.content {
+    -fx-border-width: 0;
+    -fx-padding: -10 0 0 -15;
+}
+
+.component-collapsible-panel > *.content {
+    -fx-border-width: 0;
+    -fx-padding: -10 0 0 -15;
+}
+
+.component-collapsible-panel .component-collapsible-panel {
+    -fx-border-width: 0;
+    -fx-padding: 0 0 0 5;
+}
+
+.property-sheet:uncommitted {
+    -fx-background-color: -komet-uncommitted-fill;
+    -fx-border-color: -komet-uncommitted-fill;
+}
+
+.component-version-border-panel:uncommitted {
+    -fx-background-color: -komet-uncommitted-fill;
+    -fx-border-color: -komet-uncommitted-fill;
+    /*-fx-padding: 0 0 0 0;*/
+    /*-fx-border-width: 0 10 0 0;*/
+    /*-fx-border-insets: 0 -10 0 0;*/
+}
+
+.component-version-panel {
+    -fx-padding: 0 -8 0 0;
+    -fx-border-insets: 0 0 -1 0;
+    -fx-border-width: 0 0 1 0;
+}
+
+.component-collapsible-panel:semantic .component-version-panel {
+    -fx-border-color: -komet-tab-background-color;
+    -fx-background-color: -komet-uncommitted-fill;
+    -fx-padding: 0 -8 0 0;
+}
+
+.component-collapsible-panel:definition .component-version-panel {
+    -fx-border-color: -komet-definition-color;
+}
+
+.component-collapsible-panel:description .component-version-panel {
+    -fx-border-color: -komet-description-color;
+}
+
+.component-version-panel > *.content {
+    -fx-border-insets: 0 0 0 0;
+    -fx-padding: 0 -5 0 0;
+}
+
+.component-version-panel:uncommitted {
+    -fx-background-color: -komet-uncommitted-fill;
+}
+
+.component-panel {
+    -fx-border-color: transparent;
+    -fx-text-fill: black;
+    -fx-border-width: 0 2 1.5 7;
+    -fx-border-insets: 0 -10 5 3;
+    -fx-background-color: white;
+    -fx-padding: 0 0 0 0;
+}
+
+.component-panel:concept {
+    -fx-border-color: -komet-concept-color -komet-concept-color -komet-concept-color -komet-concept-color;
+    -fx-text-fill: -komet-concept-color;
+}
+
+.component-panel:description {
+    -fx-border-color: -komet-description-color -komet-description-color -komet-description-color -komet-description-color;
+    -fx-text-fill: -komet-description-color;
+}
+
+.component-panel:logical-definition {
+    -fx-border-color: -komet-definition-color -komet-definition-color -komet-definition-color -komet-definition-color;
+    -fx-text-fill: -komet-definition-color;
+}
+
+.component-panel:semantic {
+    -fx-border-color: -komet-tab-background-color -komet-tab-background-color -komet-tab-background-color -komet-tab-background-color;
+    -fx-text-fill: -komet-tab-background-color;
+}
+
+.component-panel:pattern {
+    -fx-border-color: royalblue royalblue royalblue royalblue;
+    -fx-text-fill: royalblue;
+}
+
+
+.component-panel:inactive {
+    -fx-text-fill: -komet-inactive-color;
+}
+
+.text-input {
+    -fx-border-color: -fx-box-border;
+}
+
+.property-pane .text-input .content {
+    -fx-background-color: white;
+}
+
+.prop-sheet-entity-label {
+    -fx-border-color: -komet-box-border;
+    -fx-background-color: white;
+    -fx-padding: 3 5 3 5;
+}
+
+.prop-sheet-entity-label:concept {
+    -fx-text-fill: -komet-concept-color;
+}
+
+
+.prop-sheet-entity-label:semantic {
+    -fx-text-fill: -komet-description-color;
+}
+
+
+.prop-sheet-entity-label:pattern {
+    -fx-text-fill: royalblue;
+}
+
+.def-concept {
+    -fx-background-color: white;
+    -fx-padding: 0;
+    -fx-border-insets: 2 0 2 0;
+    -fx-border-width: 2 1 2 2;
+    -fx-border-color: -komet-panel-background-color;
+    -fx-border-style: solid;
+    -fx-background-insets: 4 0 2 0;
+}
+
+.def-necessary-set {
+    -fx-background-color: white;
+    -fx-padding: 0;
+    -fx-border-insets: 2 0 2 0;
+    -fx-border-width: 1 0 1 5;
+    -fx-border-color: -komet-panel-background-color -komet-panel-background-color -komet-panel-background-color #FF4E08;
+    -fx-border-style: solid;
+    -fx-background-insets: 4 0 2 0;
+}
+
+.def-sufficient-set {
+    -fx-background-color: white;
+    -fx-padding: 0;
+    -fx-border-color: -komet-panel-background-color -komet-panel-background-color -komet-panel-background-color -komet-concept-color;
+    -fx-border-insets: 2 0 2 0;
+    -fx-border-width: 1 0 1 5;
+    -fx-background-insets: 4 0 2 0;
+}
+
+.def-role-group {
+    -fx-background-color: white;
+    -fx-padding: 0;
+    -fx-border-insets: 2 0 2 0;
+    -fx-border-width: 1 0 1 5;
+    -fx-border-color: -komet-panel-background-color -komet-panel-background-color -komet-panel-background-color #009bff;
+    -fx-border-style: solid;
+    -fx-background-insets: 4 0 2 0;
+}
+
+.def-role {
+    -fx-background-color: white;
+    -fx-padding: 0;
+    -fx-border-insets: 2 0 2 0;
+    -fx-border-width: 1 0 1 5;
+    -fx-border-color: -komet-panel-background-color -komet-panel-background-color -komet-panel-background-color -komet-description-color;
+    -fx-border-style: solid;
+    -fx-background-insets: 4 0 2 0;
+}
+
+.def-feature {
+    -fx-background-color: white;
+    -fx-padding: 0;
+    -fx-border-insets: 2 0 2 0;
+    -fx-border-width: 1 0 1 5;
+    -fx-border-color: -komet-panel-background-color -komet-panel-background-color -komet-panel-background-color #005ca2;
+    -fx-border-style: solid;
+    -fx-background-insets: 4 0 2 0;
+}
+
+.def-literal {
+    -fx-background-color: white;
+    -fx-padding: 0;
+    -fx-border-insets: 2 0 2 0;
+    -fx-border-width: 1 0 1 5;
+    -fx-border-color: -komet-panel-background-color -komet-panel-background-color -komet-panel-background-color -komet-concept-color;
+    -fx-border-style: solid;
+    -fx-background-insets: 4 0 2 0;
+}
+
+.def-feature .open-concept-button {
+    -fx-padding: 0 3 0 0;
+}
+
+.def-role .open-concept-button {
+    -fx-padding: 0 3 0 0;
+}
+
+.def-concept .open-concept-button {
+    -fx-padding: 0 3 0 0;
+}
+
+.def-feature .toggle-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.def-root .toggle-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.def-root {
+    -fx-background-color: white;
+}
+
+.def-necessary-set .toggle-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.def-necessary-set .toggle-button:selected {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.def-concept:inferred {
+
+}
+
+.def-concept:stated {
+
+}
+
+.stamp-panel {
+    -fx-padding: 0 0 0 5;
+}
+
+.header-text {
+    -fx-padding: 0 0 0 5;
+}
+
+.prop-sheet-property-name {
+    -fx-text-fill: -komet-tab-background-color;
+    -fx-font-size: 12;
+}
+
+.stamp-label {
+    -fx-text-fill: -komet-tab-background-color;
+    -fx-font-size: 10;
+}
+
+.component-collapsible-panel:collapsed {
+    -fx-border-color: white;
+    -fx-border-insets: 0 0 6 0;
+}
+
+.tree-cell:focused .search-not-matched {
+    -fx-fill: white;
+}
+
+.search-match {
+    -fx-fill: -komet-concept-color;
+    -fx-font-weight: bold;
+}
+
+.search-top-component {
+    -fx-font-weight: bold;
+}
+
+.tree-cell:focused .search-top-component {
+    -fx-fill: white;
+}
+
+.tree-cell:filled:inactive {
+    -fx-background-color: -komet-inactive-background;
+}
+
+.tree-table-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-table-row-cell:filled:selected:inactive,
+.tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-cell:filled:selected:inactive {
+    -fx-background-color: -komet-inactive-background-selected;
+}
+
+.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell:filled:focused:selected .description-cell:referenced-component-inactive,
+.tree-table-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-table-row-cell:filled:focused:selected .description-cell:referenced-component-inactive {
+    -fx-background-color: -komet-inactive-background-selected;
+}
+
+.komet-version-general-cell:inactive {
+    /*-fx-border-color: white;*/
+    /*-fx-border-width: 1 0 1 0; */
+    -fx-border-width: 1 0 1 0;
+    -fx-background-color: -komet-inactive-background;
+}
+
+.multi-parent-tree-cell:inactive {
+    -fx-border-color: white;
+    /*-fx-border-width: 1 0 1 0; */
+    -fx-border-width: 1 0 1 0;
+    -fx-background-color: -komet-inactive-background;
+}
+
+.component-panel:inactive {
+    /*-fx-border-color: white;*/
+    /*-fx-border-width: 1 0 1 0; */
+    -fx-border-width: 1 0 1 0;
+    -fx-background-color: -komet-inactive-background;
+}
+
+.def-root:inactive {
+    -fx-background-color: -komet-inactive-background;
+}
+
+.def-concept:inactive {
+    -fx-background-color: -komet-inactive-background;
+}
+
+.prop-sheet-entity-label:inactive {
+    -fx-background-color: -komet-inactive-background;
+}
+
+.prop-sheet-entity-label:inactive,
+.concept-lable:inactive {
+    -fx-background-color: -komet-inactive-background;
+}
+
+.edit-component-button {
+    -fx-content-display: graphic-only;
+    -fx-icon-size: 12;
+    -fx-border-width: 0;
+    -fx-border-insets: 0;
+}
+
+.edit-component-button #edit-pencil .ikonli-font-icon {
+    -fx-icon-code: "mdi2l-lead-pencil";
+    -fx-icon-size: 16;
+    -fx-icon-color: -komet-tab-background-color;
+}
+
+.edit-component-button .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.edit-component-button .arrow-button .arrow {
+    -fx-background-color: transparent;
+    -fx-mark-color: transparent;
+    -fx-padding: 0;
+}
+
+#panel-preference-sliders .ikonli-font-icon {
+    -fx-icon-code: "fa-sliders";
+    -fx-icon-size: 20;
+}
+
+#concept-details .ikonli-font-icon {
+    -fx-icon-code: "mdi2v-view-week";
+    -fx-icon-size: 20;
+    -fx-rotate: 90;
+
+}

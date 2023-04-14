@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+    <job id="CodeSign">
+    <script language = "VBScript">
+        <![CDATA[
+            'Main Function'
+            Function main()
+                Dim main_wxs_path, xmlDoc, namespace
+                Dim node_Product, node_InstallExecuteSequence
+                Dim node_DefinePostInstallPrep, node_DefinePostInstall
+                Dim node_ExecutePostInstallPrep, node_ExecutePostInstall
+
+                'Load main.wxs XML document
+                main_wxs_path = "../../config/main.wxs"
+                Set xmlDoc = CreateObject("Msxml2.DOMDocument")
+                Call xmlDoc.Load(main_wxs_path)
+                namespace = xmlDoc.DocumentElement.NamespaceURI
+
+                'Locate Nodes to reference when adding nodes'
+                Set node_Product = xmlDoc.SelectSingleNode("/Wix/Product")
+                Set node_InstallExecuteSequence = xmlDoc.SelectSingleNode("/Wix/Product/InstallExecuteSequence")
+                
+                'Add CustomAction for PostInstallPrep'
+                Set node_DefinePostInstallPrep = xmlDoc.CreateNode(1, "CustomAction", namespace)
+                  node_DefinePostInstallPrep.SetAttribute "Id", "PostInstallPrep"
+                  node_DefinePostInstallPrep.SetAttribute "Directory", "INSTALLDIR"
+                  node_DefinePostInstallPrep.SetAttribute "Execute", "commit"
+                  node_DefinePostInstallPrep.SetAttribute "Impersonate", "no"
+                  node_DefinePostInstallPrep.SetAttribute "ExeCommand", "cmd.exe /C ""IF NOT EXIST %userprofile%\Solor\ ( mkdir %userprofile%\Solor )"""
+                  node_DefinePostInstallPrep.SetAttribute "Return", "check"
+                Call node_Product.InsertBefore(node_DefinePostInstallPrep, node_InstallExecuteSequence)
+                
+                'Add CustomAction for PostInstall'
+                Set node_DefinePostInstall = xmlDoc.CreateNode(1, "CustomAction", namespace)
+                  node_DefinePostInstall.SetAttribute "Id", "PostInstall"
+                  node_DefinePostInstall.SetAttribute "Directory", "INSTALLDIR"
+                  node_DefinePostInstall.SetAttribute "Execute", "commit"
+                  node_DefinePostInstall.SetAttribute "Impersonate", "no"
+                  node_DefinePostInstall.SetAttribute "ExeCommand", "cmd.exe /C ""IF NOT EXIST %userprofile%\Solor\sample_data\ ( tar -xf app\sample_data.zip -C %userprofile%\Solor )"""
+                  node_DefinePostInstall.SetAttribute "Return", "check"
+                Call node_Product.InsertBefore(node_DefinePostInstall, node_InstallExecuteSequence)
+                
+                'Add Action Definition to Execution Sequence for PostInstallPrep'
+                Set node_ExecutePostInstallPrep = xmlDoc.CreateNode(1, "Custom", namespace)
+                  node_ExecutePostInstallPrep.SetAttribute "Action", "PostInstallPrep"
+                  node_ExecutePostInstallPrep.SetAttribute "After", "PublishFeatures"
+                  node_ExecutePostInstallPrep.Text = "Not Installed"
+                Call node_InstallExecuteSequence.AppendChild(node_ExecutePostInstallPrep)
+
+                'Add Action Definition to Execution Sequence for PostInstall'
+                Set node_ExecutePostInstall = xmlDoc.CreateNode(1, "Custom", namespace)
+                  node_ExecutePostInstall.SetAttribute "Action", "PostInstall"
+                  node_ExecutePostInstall.SetAttribute "Before", "InstallFinalize"
+                  node_ExecutePostInstall.Text = "Not Installed"
+                Call node_InstallExecuteSequence.AppendChild(node_ExecutePostInstall)
+                
+                'Format output for readability'
+                Call formatXML(xmlDoc)
+                
+                'Save output as main.wxs'
+                Call xmlDoc.Save(main_wxs_path)
+            End Function
+            
+            'Function to format XML for Readability'
+            Function formatXML(ByRef xmlDoc)
+                'Put each Node on a separate line'
+                Dim xmlText
+                xmlText = Replace(xmlDoc.xml,"><",">" & vbCrLf & "<")
+                Call xmlDoc.loadXML(xmlText)
+
+                'Create an XSL stylesheet for transformation'
+                Dim strStylesheet : strStylesheet = _
+                    "<xsl:stylesheet version=""1.0"" xmlns:xsl=""http://www.w3.org/1999/XSL/Transform"">" & _
+                    "<xsl:output method=""xml"" indent=""yes""/>" & _
+                    "<xsl:template match=""/"">" & _
+                    "<xsl:copy-of select="".""/>" & _
+                    "</xsl:template>" & _
+                    "</xsl:stylesheet>"
+
+                'Transform the XML with XSL stylesheet'
+                Dim objXSL : Set objXSL = CreateObject("Msxml2.DOMDocument")
+                Call objXSL.loadXML(strStylesheet)
+                xmlDoc.transformNode(objXSL)
+            End Function
+
+            Call main()
+        ]]>
+    </script>
+    </job>
+</package>

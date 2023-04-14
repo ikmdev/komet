@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.control.PropertySheet?>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:id="rootBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+            minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16"
+            fx:controller="dev.ikm.komet.app.SelectDataSourceController">
+    <top>
+        <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <items>
+                <ImageView fitHeight="26.0" fitWidth="103.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@../images/mark.png"/>
+                    </image>
+                </ImageView>
+                <Label text="    data source:"/>
+                <ChoiceBox fx:id="dataSourceChoiceBox" minWidth="-Infinity" prefHeight="27.0" prefWidth="236.0"/>
+            </items>
+        </ToolBar>
+    </top>
+    <bottom>
+        <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <items>
+                <Button defaultButton="true" mnemonicParsing="false" onAction="#okButtonPressed" prefHeight="26.0"
+                        prefWidth="62.0" text="OK"/>
+                <Button fx:id="cancelButton" cancelButton="true" mnemonicParsing="false" onAction="#cancelButtonPressed"
+                        prefHeight="26.0" prefWidth="62.0" text="Cancel"/>
+            </items>
+        </ToolBar>
+    </bottom>
+    <center>
+        <GridPane fx:id="inputGrid" BorderPane.alignment="CENTER_LEFT">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints maxHeight="220.0" minHeight="10.0" prefHeight="159.0" vgrow="SOMETIMES"/>
+                <RowConstraints maxHeight="161.0" minHeight="10.0" prefHeight="161.0" vgrow="SOMETIMES"/>
+            </rowConstraints>
+            <children>
+                <ListView fx:id="fileListView" prefHeight="200.0" GridPane.hgrow="ALWAYS"/>
+                <PropertySheet fx:id="propertySheet" modeSwitcherVisible="false" prefHeight="200.0"
+                               searchBoxVisible="false" GridPane.rowIndex="1"/>
+            </children>
+        </GridPane>
+    </center>
+</BorderPane>

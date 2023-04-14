@@ -1,0 +1,62 @@
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-16.jdk/Contents/Home/
+
+mvn javafx:run
+
+// Run javafx:jlink goal first...
+
+mvn javafx:jlink
+
+https://jfrog.com/blog/java-artifacts-just-got-better-jpackage-is-production-ready-in-java-16-2/
+
+https://docs.oracle.com/en/java/javase/16/jpackage/packaging-tool-user-guide.pdf
+
+// Creates a double clickable application, not a .dmg
+
+ jpackage --type app-image -n hl7-komet \
+          --icon "src/main/resources/icons/KOMET.icns" \
+          --dest target \
+          --copyright "©2021, HL7, Inc." \
+          --description "Knowledge Management Environment" \
+          --verbose \
+          --win-console \
+          --vendor "HL7, Inc." \
+          --app-version "1.0.0" \
+          -m komet/org.hl7.komet.App --runtime-image target/kometImage
+
+ // Creates a .dmg
+
+jpackage --type dmg -n hl7-komet \
+          --icon "src/main/resources/icons/KOMET.icns" \
+          --dest target \
+          --copyright "©2021, HL7, Inc." \
+          --description "Knowledge Management Environment" \
+          --verbose \
+          --vendor "HL7, Inc." \
+          --app-version "1.0.0" \
+          -m komet/org.hl7.komet.App --runtime-image target/kometImage
+
+
+// Sign the output...
+For apple:
+
+Team Name: Informatics, Inc. Bend, Oregon
+Team ID: 6U57ZCR6T5
+
+https://stackoverflow.com/questions/60953329/code-signing-notarization-using-jpackage-utility-isnt-working-on-macos
+https://bugs.openjdk.java.net/browse/JDK-8237607
+https://agilhard-oss.github.io/jlink-jpackager-maven-plugin/site/apidocs/net/agilhard/maven/plugins/jpacktool/base/mojo/jpackager/JPackagerMacOptions.html
+
+jpackage --type dmg -n hl7-komet \
+          --icon "src/main/resources/icons/KOMET.icns" \
+          --dest target \
+          --copyright "©2021, HL7, Inc." \
+          --description "HL7 Knowledge Management Environment" \
+          --verbose \
+          --vendor "HL7, Inc." \
+          --app-version "1.0.0" \
+          --mac-sign \
+          --mac-bundle-signing-prefix "" \
+          --mac-signing-keychain "" \
+          --mac-signing-key-user-name "" \
+          -m org.openjfx/App --runtime-image target/sample
+
