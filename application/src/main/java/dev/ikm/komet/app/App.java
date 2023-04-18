@@ -201,7 +201,7 @@ public class App extends Application {
 
         try {
             App.primaryStage = stage;
-            Thread.currentThread().setUncaughtExceptionHandler((t, e) -> AlertStreams.getRoot().dispatch(AlertObject.makeError(e)));
+            //Thread.currentThread().setUncaughtExceptionHandler((t, e) -> AlertStreams.getRoot().dispatch(AlertObject.makeError(e)));
             // Get the toolkit
             MenuToolkit tk = MenuToolkit.toolkit();
             Menu kometAppMenu = tk.createDefaultApplicationMenu("Komet");

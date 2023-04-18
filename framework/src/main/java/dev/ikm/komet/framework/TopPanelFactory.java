@@ -294,8 +294,15 @@ public class TopPanelFactory {
 
         while (parentNode != null && !(parentNode instanceof TabPane)) {
             parentNode = parentNode.getParent();
-            if (parentNode.getStyleClass().contains("tab-content-area")) {
-                tabContentRegion = parentNode;
+
+            try {
+                if (parentNode !=null && parentNode.getStyleClass().contains("tab-content-area")) {
+                    tabContentRegion = parentNode;
+                }else if(parentNode == null) {
+                    LOG.error("ALERT! - Parent Node is null, a subscription in details view window has been closed.");
+                }
+            }catch(Throwable e) {
+                LOG.error("Parent Node should never be null...", e);
             }
         }
         if (parentNode != null && parentNode instanceof TabPane tabPane) {
