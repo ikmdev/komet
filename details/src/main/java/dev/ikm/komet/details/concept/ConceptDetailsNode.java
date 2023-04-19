@@ -46,6 +46,11 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
+import dev.ikm.tinkar.common.alert.AlertCategory;
+import dev.ikm.tinkar.common.alert.AlertObject;
+import dev.ikm.tinkar.common.alert.AlertReportingService;
+import dev.ikm.tinkar.common.alert.AlertType;
+
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.*;
 import org.slf4j.Logger;
@@ -54,6 +59,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.StreamSupport;
 
 public class ConceptDetailsNode extends ExplorationNodeAbstract {
     private static final Logger LOG = LoggerFactory.getLogger(ConceptDetailsNode.class);
@@ -317,7 +323,13 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
     }
 
     public static void addDefaultNodePreferences(KometPreferences nodePreferences) {
-        throw new UnsupportedOperationException();
+
+        AlertObject alertObject = new AlertObject("Unsupported Operation", "The current operation is not supported.",
+                AlertType.INFORMATION, AlertCategory.TAXONOMY);
+
+        ServiceLoader<AlertReportingService> loader = ServiceLoader.load(AlertReportingService.class);
+        StreamSupport.stream(loader.spliterator(), false).forEach(alertReportingService -> alertReportingService.onNext(alertObject));
+
     }
 
     @Override

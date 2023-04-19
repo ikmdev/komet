@@ -239,9 +239,13 @@ public class App extends Application {
             tk.setAppearanceMode(AppearanceMode.AUTO);
             tk.setDockIconMenu(createDockMenu());
             tk.autoAddWindowMenuItems(windowMenu);
-            tk.setGlobalMenuBar(bar);
-            tk.setTrayMenu(createSampleMenu());
 
+            final String OS_NAME_MAC = "mac";
+            if(System.getProperty("os.name")!=null && System.getProperty("os.name").toLowerCase().indexOf(OS_NAME_MAC) > 0) {
+                tk.setGlobalMenuBar(bar);
+            }
+
+            tk.setTrayMenu(createSampleMenu());
 
             FXMLLoader sourceLoader = new FXMLLoader(getClass().getResource("SelectDataSource.fxml"));
             BorderPane sourceRoot = sourceLoader.load();
