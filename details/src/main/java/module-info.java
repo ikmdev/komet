@@ -9,6 +9,7 @@ module dev.ikm.komet.details {
     opens dev.ikm.komet.details;
     exports dev.ikm.komet.details;
     exports dev.ikm.komet.details.concept;
+    uses dev.ikm.tinkar.common.alert.AlertReportingService;
 
     provides KometNodeFactory
             with DetailsNodeFactory, ConceptDetaisNodeFactory;
