@@ -105,10 +105,12 @@ public class TabGroup extends StackPane implements WindowComponent {
                 newTabMenuItem.setOnAction(event -> {
                     KometNode kometNode = factory.create(windowView,
                             null, null, AlertStreams.ROOT_ALERT_STREAM_KEY);
+                  if(kometNode != null){
                     DetachableTab newTab = new DetachableTab(kometNode);
                     newTab.setGraphic(kometNode.getTitleNode());
                     tabPane.getTabs().add(newTab);
                     tabPane.getSelectionModel().select(newTab);
+                  }
                 });
                 menuButton.getItems().add(newTabMenuItem);
             } else {
@@ -122,10 +124,12 @@ public class TabGroup extends StackPane implements WindowComponent {
                         newTabMenuItem.setOnAction(event -> {
                             KometNode kometNode = factory.create(windowView,
                                     activityStreamKey, activityStreamOptionKey, AlertStreams.ROOT_ALERT_STREAM_KEY);
-                            DetachableTab newTab = new DetachableTab(kometNode);
-                            newTab.setGraphic(kometNode.getTitleNode());
-                            tabPane.getTabs().add(newTab);
-                            tabPane.getSelectionModel().select(newTab);
+                            if(kometNode !=null){
+                                DetachableTab newTab = new DetachableTab(kometNode);
+                                newTab.setGraphic(kometNode.getTitleNode());
+                                tabPane.getTabs().add(newTab);
+                                tabPane.getSelectionModel().select(newTab);
+                            }
                         });
                         newTabGroupMenu.getItems().add(newTabMenuItem);
                         if (activityStreamOptionKey.equals(ActivityStreamOption.PUBLISH.keyForOption())) {

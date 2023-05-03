@@ -66,4 +66,6 @@ open module dev.ikm.komet.framework {
     uses TaskListsService;
     uses PreferencesService;
     uses KometNodeFactory;
+    uses dev.ikm.tinkar.common.alert.AlertReportingService;
+
 }
