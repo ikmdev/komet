@@ -58,6 +58,10 @@ pipeline {
         }
 
         stage('SonarQube Scan') {
+            when{
+                branch 'master'
+            }
+
             agent {
                 docker {
                     image "maven:3.8.7-eclipse-temurin-19-alpine"
