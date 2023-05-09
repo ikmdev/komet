@@ -72,7 +72,6 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
         assert treeBorderPane != null : "fx:id=\"treeBorderPane\" was not injected: check your FXML file 'SearchPanel.fxml'.";
 
         treeBorderPane.setCenter(searchTreeView);
-
         searchTreeView.getSelectionModel().getSelectedItems().addListener(this);
         searchTreeView.setRoot(resultsRoot);
         resultsRoot.setExpanded(true);
@@ -91,6 +90,7 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
 
     @FXML
     void doSearch(ActionEvent event) {
+        searchTreeView.getSelectionModel().clearSelection();
         resultsRoot.getChildren().clear();
         if (queryString.getText() == null || queryString.getText().isEmpty()) {
             return;
@@ -272,11 +272,11 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
         } else {
             MutableList<EntityFacade> selectedItems = Lists.mutable.withInitialCapacity(c.getList().size());
             for (TreeItem<Object> selectedItem : c.getList()) {
-                if (selectedItem.getValue() instanceof LatestVersionSearchResult latestVersionSearchResult) {
-                    selectedItems.add(latestVersionSearchResult.latestVersion().get().chronology());
-                } else if (selectedItem.getValue() instanceof NidTextRecord nidTextRecord) {
-                    selectedItems.add(EntityProxy.make(nidTextRecord.nid));
-                }
+                    if (selectedItem.getValue() instanceof LatestVersionSearchResult latestVersionSearchResult) {
+                        selectedItems.add(latestVersionSearchResult.latestVersion().get().chronology());
+                    } else if (selectedItem.getValue() instanceof NidTextRecord nidTextRecord) {
+                        selectedItems.add(EntityProxy.make(nidTextRecord.nid));
+                    }
             }
             dispatch(selectedItems.toImmutable());
         }
