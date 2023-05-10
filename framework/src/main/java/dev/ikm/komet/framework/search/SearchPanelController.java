@@ -1,5 +1,22 @@
 package dev.ikm.komet.framework.search;
 
+import dev.ikm.komet.framework.activity.ActivityStream;
+import dev.ikm.komet.framework.activity.ActivityStreams;
+import dev.ikm.komet.framework.graphics.Icon;
+import dev.ikm.komet.framework.view.ViewMenuModel;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.id.PublicIdStringKey;
+import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.common.util.text.NaturalOrder;
+import dev.ikm.tinkar.common.util.uuid.UuidUtil;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -14,23 +31,6 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
-import dev.ikm.komet.framework.activity.ActivityStream;
-import dev.ikm.komet.framework.activity.ActivityStreams;
-import dev.ikm.komet.framework.graphics.Icon;
-import dev.ikm.komet.framework.view.ViewMenuModel;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.common.id.PublicIdStringKey;
-import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.common.service.PrimitiveData;
-import dev.ikm.tinkar.common.util.text.NaturalOrder;
-import dev.ikm.tinkar.common.util.uuid.UuidUtil;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -272,11 +272,13 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
         } else {
             MutableList<EntityFacade> selectedItems = Lists.mutable.withInitialCapacity(c.getList().size());
             for (TreeItem<Object> selectedItem : c.getList()) {
+                if(selectedItem !=null){
                     if (selectedItem.getValue() instanceof LatestVersionSearchResult latestVersionSearchResult) {
                         selectedItems.add(latestVersionSearchResult.latestVersion().get().chronology());
                     } else if (selectedItem.getValue() instanceof NidTextRecord nidTextRecord) {
                         selectedItems.add(EntityProxy.make(nidTextRecord.nid));
                     }
+                }
             }
             dispatch(selectedItems.toImmutable());
         }
