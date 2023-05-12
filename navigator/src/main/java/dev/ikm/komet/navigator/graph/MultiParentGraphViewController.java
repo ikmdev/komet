@@ -122,7 +122,6 @@ public class MultiParentGraphViewController implements RefreshListener {
 
     private void sceneChanged(ObservableValue<? extends Scene> observableValue, Scene oldScene, Scene newScene) {
         if (newScene == null) {
-            shutdownInstance();
             this.topBorderPane.sceneProperty().removeListener(this.sceneChangedListener);
             this.getObservableView().removeListener(this.viewChangedListener);
         }
