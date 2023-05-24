@@ -64,31 +64,27 @@ public class TabGroup extends StackPane implements WindowComponent {
 
     @Reconstructor
     public static TabGroup create(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
-        if (nodePreferences.hasKey(WindowComponentKeys.INITIALIZED)) {
-            // Restore from preferences...
-            REMOVAL allowRemoval = REMOVAL.valueOf(nodePreferences.get(TabGroupKeys.ALLOW_REMOVAL, "ALLOW"));
-            int selectedIndex = nodePreferences.getInt(TabGroupKeys.SELECTED_INDEX, 0);
-
-            DetachableTabPane detachableTabPane = new DetachableTabPane();
-            for (String preferencesNode : nodePreferences.getList(WindowComponentKeys.CHILDREN)) {
-                KometPreferences childPreferences = nodePreferences.node(KOMET_NODES + preferencesNode);
-                childPreferences.get(WindowComponentKeys.FACTORY_CLASS).ifPresent(factoryClassName -> {
-                    try {
-                        Class<?> objectClass = Class.forName(factoryClassName);
-                        Class<? extends Annotation> annotationClass = Reconstructor.class;
-                        Object[] parameters = new Object[]{windowView, childPreferences};
-                        KometNode kometNode = (KometNode) Encodable.decode(objectClass, annotationClass, parameters);
-                        DetachableTab componentTab = new DetachableTab(kometNode);
-                        detachableTabPane.getTabs().add(componentTab);
-                    } catch (Exception e) {
-                        AlertStreams.getRoot().dispatch(AlertObject.makeError(e));
-                    }
-                });
-            }
-            detachableTabPane.getSelectionModel().select(selectedIndex);
-            return make(detachableTabPane, allowRemoval, windowView, nodePreferences);
+        // Restore from preferences...
+        REMOVAL allowRemoval = REMOVAL.valueOf(nodePreferences.get(TabGroupKeys.ALLOW_REMOVAL, "ALLOW"));
+        int selectedIndex = nodePreferences.getInt(TabGroupKeys.SELECTED_INDEX, 0);
+        DetachableTabPane detachableTabPane = new DetachableTabPane();
+        for (String preferencesNode : nodePreferences.getList(WindowComponentKeys.CHILDREN)) {
+            KometPreferences childPreferences = nodePreferences.node(KOMET_NODES + preferencesNode);
+            childPreferences.get(WindowComponentKeys.FACTORY_CLASS).ifPresent(factoryClassName -> {
+                try {
+                    Class<?> objectClass = Class.forName(factoryClassName);
+                    Class<? extends Annotation> annotationClass = Reconstructor.class;
+                    Object[] parameters = new Object[]{windowView, childPreferences};
+                    KometNode kometNode = (KometNode) Encodable.decode(objectClass, annotationClass, parameters);
+                    DetachableTab componentTab = new DetachableTab(kometNode);
+                    detachableTabPane.getTabs().add(componentTab);
+                } catch (Exception e) {
+                    AlertStreams.getRoot().dispatch(AlertObject.makeError(e));
+                }
+            });
         }
-        throw new UnsupportedOperationException("Should only be called on restore. ");
+        detachableTabPane.getSelectionModel().select(selectedIndex);
+        return make(detachableTabPane, allowRemoval, windowView, nodePreferences);
     }
 
     private static TabGroup make(DetachableTabPane tabPane, REMOVAL allowRemoval, ObservableViewNoOverride windowView,

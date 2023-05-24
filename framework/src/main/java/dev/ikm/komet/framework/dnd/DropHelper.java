@@ -21,7 +21,6 @@ import java.util.function.Predicate;
 public class DropHelper {
 
     protected static final Logger LOG = LoggerFactory.getLogger(DropHelper.class);
-
     private final Region region;
     private final Consumer<Dragboard> draggedObjectAcceptor;
     private final Predicate<DragEvent> acceptDrop;
@@ -68,7 +67,6 @@ public class DropHelper {
             return;
         }
         this.originalBackground = region.getBackground();
-
         Color backgroundColor;
         Set<DataFormat> contentTypes = event.getDragboard().getContentTypes();
 
@@ -85,10 +83,9 @@ public class DropHelper {
             backgroundColor = Color.RED;
             this.transferMode = null;
         }
-
         BackgroundFill fill = new BackgroundFill(backgroundColor, CornerRadii.EMPTY, Insets.EMPTY);
-
         region.setBackground(new Background(fill));
+
         event.consume();
     }
 
@@ -110,11 +107,12 @@ public class DropHelper {
         if (!this.acceptDrop.test(event)) {
             return;
         }
-        Dragboard db = event.getDragboard();
-        this.draggedObjectAcceptor.accept(db);
-
+        if(this.transferMode != null){
+            Dragboard db = event.getDragboard();
+            this.draggedObjectAcceptor.accept(db);
+            event.setDropCompleted(true);
+        }
         region.setBackground(originalBackground);
-        event.setDropCompleted(true);
         event.consume();
     }
 }

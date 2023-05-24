@@ -5,6 +5,9 @@
 package dev.ikm.komet.framework.tabs;
 
 
+import dev.ikm.komet.framework.ScreenInfo;
+import dev.ikm.tinkar.common.alert.AlertObject;
+import dev.ikm.tinkar.common.alert.AlertStreams;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -32,9 +35,6 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
-import dev.ikm.komet.framework.ScreenInfo;
-import dev.ikm.tinkar.common.alert.AlertObject;
-import dev.ikm.tinkar.common.alert.AlertStreams;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -293,7 +293,6 @@ class DetachableTabPane extends TabPane {
                             TabStage stage = (TabStage) getScene().getWindow();
                             closeStageIfNeeded(stage);
                         }
-
                         if (getTabs().isEmpty()) {
                             removeFromParent(DetachableTabPane.this);
                         }
@@ -546,7 +545,6 @@ class DetachableTabPane extends TabPane {
             e.consume();
         });
 
-
         node.setOnDragDone((DragEvent event) -> {
             if (event.isAccepted()) {
                 if (DRAGGED_TAB != null && DRAGGED_TAB.getTabPane() == null) {
@@ -565,6 +563,7 @@ class DetachableTabPane extends TabPane {
             } else {
                 // put back...
                 DetachableTabPane.DRAG_SOURCE.getTabs().add(DRAG_SOURCE_INDEX, DRAGGED_TAB);
+                DetachableTabPane.DRAG_SOURCE.getSelectionModel().select(DRAG_SOURCE_INDEX);
             }
             event.consume();
         });
@@ -626,7 +625,6 @@ class DetachableTabPane extends TabPane {
                 tabPaneToRemove.getTabs().setAll(lstTab);
                 tabPaneToRemove = sibling;
             }
-
             if (tabPaneToRemove.getParent() instanceof TabGroup) {
                 sp.getItems().remove(tabPaneToRemove.getParent());
             } else {
