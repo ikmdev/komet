@@ -1,10 +1,5 @@
 package dev.ikm.komet.framework;
 
-import dev.ikm.tinkar.common.alert.AlertCategory;
-import dev.ikm.tinkar.common.alert.AlertReportingService;
-import dev.ikm.tinkar.common.alert.AlertType;
-import javafx.scene.control.Label;
-import org.eclipse.collections.api.list.ImmutableList;
 import dev.ikm.komet.framework.activity.ActivityStream;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.graphics.Icon;
@@ -12,17 +7,24 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.common.alert.AlertObject;
+import dev.ikm.tinkar.common.alert.AlertReportingService;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.util.broadcast.Broadcaster;
+import javafx.scene.control.Label;
+import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.ServiceLoader;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 
+import static dev.ikm.tinkar.common.alert.AlertCategory.TAXONOMY;
+import static dev.ikm.tinkar.common.alert.AlertType.INFORMATION;
+
 public interface KometNodeFactory {
 
     String KOMET_NODES = "/komet-nodes/";
     String UNSUPPORTED_OPERATION = "Unsupported Operation";
+    String THE_CURRENT_OPERATION_IS_NOT_SUPPORTED = "The current operation is not supported. ";
     default KometNode create(ObservableViewNoOverride windowView,
                              PublicIdStringKey<ActivityStream> activityStreamKey,
                              PublicIdStringKey<ActivityStreamOption> activityStreamOption,
@@ -43,8 +45,7 @@ public interface KometNodeFactory {
             return create(windowView, nodePreferences);
         }catch(UnsupportedOperationException e){
             AlertObject alertObject = new AlertObject(UNSUPPORTED_OPERATION, e.getMessage(),
-                    AlertType.INFORMATION, AlertCategory.TAXONOMY);
-
+                    INFORMATION, TAXONOMY);
             ServiceLoader<AlertReportingService> loader = ServiceLoader.load(AlertReportingService.class);
             StreamSupport.stream(loader.spliterator(), false).forEach(alertReportingService -> alertReportingService.onNext(alertObject));
         }

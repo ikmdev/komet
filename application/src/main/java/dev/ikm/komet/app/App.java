@@ -240,8 +240,8 @@ public class App extends Application {
             tk.setDockIconMenu(createDockMenu());
             tk.autoAddWindowMenuItems(windowMenu);
 
-            final String OS_NAME_MAC = "mac";
-            if(System.getProperty("os.name")!=null && System.getProperty("os.name").toLowerCase().indexOf(OS_NAME_MAC) > 0) {
+            String OS_NAME_MAC = "mac";
+            if(System.getProperty("os.name")!=null && System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
                 tk.setGlobalMenuBar(bar);
             }
 

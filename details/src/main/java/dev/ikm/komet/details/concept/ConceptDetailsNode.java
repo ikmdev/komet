@@ -55,6 +55,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static dev.ikm.komet.framework.KometNodeFactory.THE_CURRENT_OPERATION_IS_NOT_SUPPORTED;
+
 public class ConceptDetailsNode extends ExplorationNodeAbstract {
     private static final Logger LOG = LoggerFactory.getLogger(ConceptDetailsNode.class);
     protected static final String STYLE_ID = StyleClasses.CONCEPT_DETAIL_PANE.toString();
@@ -318,7 +320,7 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
 
     public static void addDefaultNodePreferences(KometPreferences nodePreferences) {
 
-        throw new UnsupportedOperationException("The current operation is not supported.");
+        throw new UnsupportedOperationException(THE_CURRENT_OPERATION_IS_NOT_SUPPORTED);
     }
 
     @Override
