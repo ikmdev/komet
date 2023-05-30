@@ -76,7 +76,8 @@ pipeline {
                     //sh 'git describe --abbrev=0 --tags'
 
                     // Tag the branch
-                    sh "git tag -a ${RELEASE_VERSION} -m '${RELEASE_MSG}'"
+                    // 
+                    //sh "git tag -a ${RELEASE_VERSION} -m '${RELEASE_MSG}'"
                 }
             }
         }
@@ -93,7 +94,7 @@ pipeline {
                         //sh "git commit --amend --reset-author -m 'releasing version 1.1.0'"
 
                         // Push the new tag to downstream remote
-                        sh "git push downstream ${RELEASE_VERSION}"
+                        sh "git push --tags downstream"
 
                         // Push the branch to downstream remote
                         sh "git push downstream ${BRANCH}"
