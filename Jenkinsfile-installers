@@ -1,0 +1,306 @@
+@Library("titan-library") _ 
+
+pipeline {
+    agent {
+        label 'master'
+    }
+    environment {
+        SONAR_AUTH_TOKEN    = credentials('gitlab-for-ikmdev-release-token')
+        SONARQUBE_URL       = "${GLOBAL_SONARQUBE_URL}"
+        SONAR_HOST_URL      = "${GLOBAL_SONARQUBE_URL}"
+
+        BRANCH_NAME         = "${GIT_BRANCH.split("/").size() > 1 ? GIT_BRANCH.split("/")[1] : GIT_BRANCH}"
+    }
+    triggers {
+        //cron(cron_string)
+        gitlab(triggerOnPush: true, triggerOnMergeRequest: true, branchFilterType: 'All')
+    }
+    options {
+        // Set this to true if you want to clean workspace during the prep stage
+        skipDefaultCheckout(false)
+
+        // Console debug options
+        timestamps()
+        ansiColor('xterm')
+
+        gitLabConnection('gitlab-installer-connection')
+    }
+
+    stages {
+        stage("Get POM Version") {
+            steps {
+                // Clean before checkout / build
+                cleanWs()
+                checkout scm
+
+                // Get the release information
+                script {
+                    pomModel = readMavenPom(file: 'pom.xml')
+                    pomVersion = pomModel.getVersion()
+                    isSnapshot = pomVersion.contains("-SNAPSHOT")
+                    pomGroupId = pomModel.groupId
+
+                    repositoryId = 'maven-releases'
+                    RELEASE_VERSION=pomVersion
+                    RELEASE_MSG="release ${RELEASE_VERSION}"
+
+                    echo "pomVersion: ${pomVersion}"
+                    echo "isSnapshot: ${isSnapshot}"
+                    echo "pomGroupId: ${pomGroupId}"
+
+                }
+            }
+        }
+
+        // stage('SonarQube Scan') {
+        //     // agent {
+        //     //     label 'linux'
+        //     //     // docker {
+        //     //     //     image "maven:3.8.7-eclipse-temurin-19-alpine"
+        //     //     //     args "-u root:root"
+        //     //     // }
+        //     // }
+        //     steps {
+        //         configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
+        //             withSonarQubeEnv(installationName: 'EKS SonarQube', envOnly: true) {
+        //                 // This expands the environment variables SONAR_CONFIG_NAME, SONAR_HOST_URL, SONAR_AUTH_TOKEN that can be used by any script.
+        //                 //findbugs:findbugs checkstyle:checkstyle
+        //                 sh """
+        //                     export MAVEN_OPTS="--enable-preview"
+        //                     mvn clean install -V -U -e pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:4.7.3.2:spotbugs -s '${MAVEN_SETTINGS}'  --batch-mode
+        //                     mvn sonar:sonar -Dsonar.qualitygate.wait=true -Dsonar.login=${SONAR_AUTH_TOKEN} -s '${MAVEN_SETTINGS}' --batch-mode
+        //                 """
+        //             }
+        //             script{
+        //                 configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
+
+        //                     def pmd = scanForIssues tool: pmdParser(pattern: '**/target/pmd.xml')
+        //                     publishIssues issues: [pmd]
+
+        //                     def cpd = scanForIssues tool: cpd(pattern: '**/target/cpd.xml')
+        //                     publishIssues issues: [cpd]
+
+        //                     def spotbugs = scanForIssues tool: spotBugs(pattern: '**/target/findbugsXml.xml')
+        //                     publishIssues issues: [spotbugs]
+
+        //                     publishIssues id: 'analysis', name: 'All Issues',
+        //                         issues: [pmd, cpd, spotbugs],
+        //                         filters: [includePackage('io.jenkins.plugins.analysis.*')]
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
+        stage("Build Installers for Multiple OS and Publish to Nexus Repository Manager") {
+            when{
+                expression{
+                    !isSnapshot && BRANCH_NAME == 'main'
+                }
+            }
+            parallel {
+                stage("Publish Mac M1 Installer to Nexus Repository Manager") {
+                    agent {
+                        label 'mac_m1'
+                    }
+                    environment {
+                        JAVA_HOME_M1 = "~/.sdkman/candidates/java/current"
+                        M2_HOME_M1 = "~/.sdkman/candidates/maven/current"
+                    }
+                    steps {
+                        configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
+
+                            // Clean before checkout / build
+                            cleanWs()
+                            checkout scm
+
+                            //Pull Sample data for Installer Generation
+                            sh """
+                                rm -rf ${env.WORKSPACE}/application/installer_resources/sample_data
+                                mkdir ${env.WORKSPACE}/application/installer_resources/sample_data
+                                curl -SL \
+                                    "https://nexus.build.tinkarbuild.com/repository/maven-releases/dev/ikm/komet/Sample_Data/2.0/Sample_Data-2.0.zip" \
+                                    --output ${env.WORKSPACE}/application/installer_resources/sample_data/sample_data.zip \
+                            """
+
+                            //Build Komet and create installer
+                            sh """
+                                export JAVA_HOME=${JAVA_HOME_M1}
+                                export PATH=${JAVA_HOME_M1}/bin:${M2_HOME_M1}/bin:$PATH
+                                mvn --version
+                                mvn clean install \
+                                    -s ${MAVEN_SETTINGS} \
+                                    -P create-installer \
+                                    --batch-mode \
+                                    -e \
+                                    -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+                            """
+
+                            //Deploy Komet Installer to Nexus
+                            sh """
+                                export JAVA_HOME=${JAVA_HOME_M1}
+                                export PATH=${JAVA_HOME_M1}/bin:${M2_HOME_M1}/bin:$PATH
+                                mvn deploy:deploy-file \
+                                    --batch-mode \
+                                    -e \
+                                    -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                                    -s ${MAVEN_SETTINGS} \
+                                    -Dfile=application/target/dist/installer/Komet-${pomVersion}.pkg \
+                                    -Durl=https://nexus.build.tinkarbuild.com/repository/maven-releases/ \
+                                    -DgroupId=${pomGroupId} \
+                                    -DartifactId=komet-installer-macm1 \
+                                    -Dversion=${pomVersion} \
+                                    -Dclassifier=unsigned \
+                                    -Dtype=pkg \
+                                    -Dpackaging=pkg \
+                                    -DrepositoryId=titan-maven-releases
+                            """
+                        }
+                    }
+                }
+                stage("Publish Mac Intel Installer to Nexus Repository Manager") {
+                    agent {
+                        label 'mac_intel'
+                    }
+                    environment {
+                        JAVA_HOME_INTEL = "~/.sdkman/candidates/java/current"
+                        M2_HOME_INTEL = "~/.sdkman/candidates/maven/current"
+                    }
+                    steps {
+                        configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
+
+                            // Clean before checkout / build
+                            cleanWs()
+                            checkout scm
+
+                            //Pull Sample data for Installer Generation
+                            sh """
+                                rm -rf ${env.WORKSPACE}/application/installer_resources/sample_data
+                                mkdir ${env.WORKSPACE}/application/installer_resources/sample_data
+                                curl -SL \
+                                    "https://nexus.build.tinkarbuild.com/repository/maven-releases/dev/ikm/komet/Sample_Data/2.0/Sample_Data-2.0.zip" \
+                                    --output ${env.WORKSPACE}/application/installer_resources/sample_data/sample_data.zip \
+                            """
+
+                            //Build Komet and create installer
+                            sh """
+                            export JAVA_HOME=${JAVA_HOME_INTEL}
+                            export PATH=${JAVA_HOME_INTEL}/bin:${M2_HOME_INTEL}/bin:$PATH
+                            mvn --version
+                            mvn clean install \
+                                -s ${MAVEN_SETTINGS} \
+                                -P create-installer \
+                                --batch-mode \
+                                -e \
+                                -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+                            """
+
+                            //Deploy Komet Installer to Nexus
+                            sh """
+                                export JAVA_HOME=${JAVA_HOME_INTEL}
+                                export PATH=${JAVA_HOME_INTEL}/bin:${M2_HOME_INTEL}/bin:$PATH
+                                mvn deploy:deploy-file \
+                                    --batch-mode \
+                                    -e \
+                                    -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                                    -s ${MAVEN_SETTINGS} \
+                                    -Dfile=application/target/dist/installer/Komet-${pomVersion}.pkg \
+                                    -Durl=https://nexus.build.tinkarbuild.com/repository/maven-releases/ \
+                                    -DgroupId=${pomGroupId} \
+                                    -DartifactId=komet-installer-macintel \
+                                    -Dversion=${pomVersion} \
+                                    -Dclassifier=unsigned \
+                                    -Dtype=pkg \
+                                    -Dpackaging=pkg \
+                                    -DrepositoryId=titan-maven-releases
+                            """
+                        }
+                    }
+                }
+                stage("Publish Windows Installer to Nexus Repository Manager") {
+                    agent {
+                        label 'windows'
+                    }
+                    environment {
+                        JAVA_HOME = "C:\\Program Files\\Java\\jdk-19.0.2"
+                        M2_HOME = "C:\\Program Files\\Maven\\apache-maven-3.9.2"
+                        WIX_HOME = "C:\\Program Files (x86)\\Wix"
+                    }
+                    steps {
+                        configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
+
+                            // Clean before checkout / build
+                            cleanWs()
+                            checkout scm
+
+                            //Pull Sample data for Installer Generation
+                            bat """
+                                if exist ${env.WORKSPACE}\\application\\installer_resources\\sample_data rmdir /s /q ${env.WORKSPACE}\\application\\installer_resources\\sample_data
+                                mkdir ${env.WORKSPACE}\\application\\installer_resources\\sample_data
+                                curl -SL \
+                                    "https://nexus.build.tinkarbuild.com/repository/maven-releases/dev/ikm/komet/Sample_Data/2.0/Sample_Data-2.0.zip" \
+                                    --output ${env.WORKSPACE}\\application\\installer_resources\\sample_data\\sample_data.zip
+                            """
+
+                            //Build Komet and create installer
+                            bat """
+                                setx JAVA_HOME "${JAVA_HOME}"
+                                set PATH=${JAVA_HOME}\\bin'${M2_HOME}\\bin;${WIX_HOME}\\bin;%PATH%
+                                mvn --version && \
+                                mvn clean install \
+                                    -s ${MAVEN_SETTINGS} \
+                                    -P create-installer \
+                                    --batch-mode \
+                                    -e \
+                                    -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+                            """
+                            
+                            //Deploy Komet Installer to Nexus
+                            bat """
+                                setx JAVA_HOME "${JAVA_HOME}"
+                                set PATH=${JAVA_HOME}\\bin'${M2_HOME}\\bin;${WIX_HOME}\\bin;%PATH%
+                                mvn deploy:deploy-file \
+                                    --batch-mode \
+                                    -e \
+                                    -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                                    -s ${MAVEN_SETTINGS} \
+                                    -Dfile=application\\target\\dist\\installer\\Komet-${pomVersion}.msi \
+                                    -Durl=https://nexus.build.tinkarbuild.com/repository/maven-releases/ \
+                                    -DgroupId=${pomGroupId} \
+                                    -DartifactId=komet-installer-windows \
+                                    -Dversion=${pomVersion} \
+                                    -Dclassifier=unsigned \
+                                    -Dtype=msi \
+                                    -Dpackaging=msi \
+                                    -DrepositoryId=titan-maven-releases
+                            """
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    post {
+        failure {
+            updateGitlabCommitStatus name: 'build', state: 'failed'
+        }
+        success {
+            updateGitlabCommitStatus name: 'build', state: 'success'
+        }
+        aborted {
+            updateGitlabCommitStatus name: 'build', state: 'canceled'
+        }
+        always {
+            // Clean the workspace after build
+            cleanWs(cleanWhenNotBuilt: false,
+                deleteDirs: true,
+                disableDeferredWipeout: true,
+                notFailBuild: true,
+                patterns: [
+                [pattern: '.gitignore', type: 'INCLUDE']
+            ])
+        }
+    }
+}
