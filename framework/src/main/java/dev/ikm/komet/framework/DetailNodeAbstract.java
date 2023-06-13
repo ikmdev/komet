@@ -1,5 +1,6 @@
 package dev.ikm.komet.framework;
 
+import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
@@ -19,6 +20,10 @@ public abstract class DetailNodeAbstract extends ExplorationNodeAbstract {
             if (newValue != null) {
                 titleProperty.set(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(newValue));
                 toolTipTextProperty.set(viewProperties.calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(newValue));
+                if (ActivityStreamOption.PUBLISH.keyForOption().equals(super.optionForActivityStreamKeyProperty.get()) ||
+                        ActivityStreamOption.SYNCHRONIZE.keyForOption().equals(super.optionForActivityStreamKeyProperty.get())) {
+                    getActivityStream().dispatch(newValue);
+                }
             } else {
                 titleProperty.set(EntityLabelWithDragAndDrop.EMPTY_TEXT);
                 toolTipTextProperty.set(EntityLabelWithDragAndDrop.EMPTY_TEXT);

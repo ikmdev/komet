@@ -6,6 +6,7 @@ import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringPropertyBase;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -41,7 +42,13 @@ import static dev.ikm.komet.framework.KometNode.PreferenceKey.ACTIVITY_STREAM_OP
 
 public abstract class ExplorationNodeAbstract implements KometNode, Subscriber<ImmutableList<EntityFacade>>, ViewCalculatorDelegate {
 
+    /**
+     * The key for the current activity stream that this node is associated with.
+     */
     protected final SimpleObjectProperty<PublicIdStringKey<ActivityStream>> activityStreamKeyProperty = new SimpleObjectProperty<>();
+    /**
+     * The activity stream option (PUBLISH, SUBSCRIBE, SYNCHRONIZE) associated with the current activity stream. .
+     */
     protected final SimpleObjectProperty<PublicIdStringKey<ActivityStreamOption>> optionForActivityStreamKeyProperty = new SimpleObjectProperty<>();
     protected final SimpleStringProperty titleProperty = new SimpleStringProperty(getDefaultTitle());
     protected final SimpleStringProperty toolTipTextProperty = new SimpleStringProperty("");
@@ -80,20 +87,30 @@ public abstract class ExplorationNodeAbstract implements KometNode, Subscriber<I
                 ACTIVITY_STREAM_OPTION_KEY, ActivityStreamOption.PUBLISH.keyForOption());
         this.optionForActivityStreamKeyProperty.setValue(activityStreamOptionKey);
 
-        updateActivityStream();
+        updateActivityStream(null, activityStreamKey);
 
         this.optionForActivityStreamKeyProperty.addListener((observable, oldValue, newValue) -> {
-            updateActivityStream();
+            PublicIdStringKey<ActivityStream> currentActivityStreamKey = activityStreamKeyProperty.get();
+            updateActivityStream(currentActivityStreamKey, currentActivityStreamKey);
         });
         this.activityStreamKeyProperty.addListener((observable, oldValue, newValue) -> {
-            updateActivityStream();
+            updateActivityStream(oldValue, newValue);
         });
 
         // TODO the title label...
         //this.titleLabel = new EntityLabelWithDragAndDrop();
     }
 
-    protected void updateActivityStream() {
+    protected void updateActivityStream(PublicIdStringKey<ActivityStream> oldValue,
+                                        PublicIdStringKey<ActivityStream> newValue) {
+
+        if (oldValue != null) {
+            ActivityStreams.get(oldValue).removeSubscriber(this);
+        }
+        if (newValue != null) {
+            ActivityStreams.get(newValue).removeSubscriber(this);
+        }
+
         if (this.optionForActivityStreamKeyProperty.get().equals(ActivityStreamOption.SUBSCRIBE.keyForOption()) ||
                 this.optionForActivityStreamKeyProperty.get().equals(ActivityStreamOption.SYNCHRONIZE.keyForOption())) {
             this.getActivityStream().addSubscriberWithWeakReference(this);
