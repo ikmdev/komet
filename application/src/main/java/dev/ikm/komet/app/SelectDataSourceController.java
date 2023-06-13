@@ -95,7 +95,7 @@ public class SelectDataSourceController {
         propertySheet.setPropertyEditorFactory(new KometPropertyEditorFactory(null));
 
         Platform.runLater(() ->
-                dataSourceChoiceBox.getSelectionModel().select(controllerOptions.get(4)));
+                dataSourceChoiceBox.getSelectionModel().select(controllerOptions.get(1)));
     }
 
     void dataSourceChanged(ObservableValue<? extends DataServiceController<?>> observable,
