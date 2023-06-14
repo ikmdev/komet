@@ -28,7 +28,7 @@
     <properties>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
-        <tinkar-core.version>1.5.0</tinkar-core.version>
+        <tinkar-core.version>1.7.0</tinkar-core.version>
 
         <tinkar-jpms-deps.groupId>dev.ikm.jpms</tinkar-jpms-deps.groupId>
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
