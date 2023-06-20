@@ -1,0 +1,45 @@
+# The following pre-commit file is set up specifically for python projects
+# which include other related configuration files scans as well.
+# It is set up to automatically correct issues when encountered where
+# possible.
+#
+# In general, it was specifically designed to allow you to save and push
+# your code to a remote repository at any point and to not block this
+# action, as these are meant to help you, not hinder your progress.
+# However, these additional checks, those that have been flagged with stage
+# of "manual", will be executed as part of a pipeline and it will block
+# the fail the pipeline and require fixing before merging features into
+# the main repository.
+#
+# At any point, if you want to check how the build job will execute this command,
+# you should run the following:
+#
+# "pre-commit run --hook-stage manual --all-files"
+#
+
+default_language_version:
+  python: python3
+  
+default_install_hook_types:
+  - pre-commit
+  - prepare-commit-msg      
+  
+repos:
+# Various Built-in Checks
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v3.3.0
+  hooks:
+    - id: no-commit-to-branch
+      description: only commit to allowed branches
+      args: ['--pattern', '^(?!(((feature|hotfix|bugfix))\/IKM-\d+(-[0-9A-Za-z\-]*)*)|main|prod|master|dev).*$']
+      stages: [pre-commit]
+
+# Jira Ticket Link Prepender     
+- repo: https://github.com/jlgrock/prepend-jira-ticket-number
+  rev: v0.2.0
+  hooks:
+    - id: prepend-jira-ticket-number
+      description: Appends ticket number and link below commit message based on the branch name
+      stages: [prepare-commit-msg]
+
+
