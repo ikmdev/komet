@@ -24,10 +24,10 @@ public class InactivateComponentActionGenerated extends AbstractActionSuggested 
     }
 
     public final void doAction(ActionEvent actionEvent, EditCoordinateRecord editCoordinate) {
-        appendNewVersion(entityVersion.nid(), editCoordinate.toEditCoordinateRecord());
+        appendInactiveVersion(entityVersion.nid(), editCoordinate.toEditCoordinateRecord());
     }
 
-    private void appendNewVersion(int entityNid, EditCoordinateRecord editCoordinateRecord) {
+    private void appendInactiveVersion(int entityNid, EditCoordinateRecord editCoordinateRecord) {
         Entity entity = Entity.getFast(entityNid);
 
         Transaction transaction = Transaction.make();
