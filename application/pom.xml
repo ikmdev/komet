@@ -372,8 +372,8 @@
 	            </os>
 	        </activation>
 	        <properties>
-	            <jpackage.type>TAR</jpackage.type>
-                <jpackage.icon>src/main/resources/icons/KOMET.icns</jpackage.icon>
+	            <jpackage.type>RPM</jpackage.type>
+                <jpackage.icon>src/main/resources/icons/Komet.png</jpackage.icon>
                 <jpackage.resourceDir>installer_resources/resourceDir_unix</jpackage.resourceDir>
 	        </properties>
 	    </profile>
