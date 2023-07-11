@@ -47,7 +47,7 @@ pipeline {
         stage("Build Installers for Multiple OS and Publish to Nexus Repository Manager") {
             when{
                 expression{
-                    !isSnapshot && env.BRANCH_NAME == 'main'
+                    !isSnapshot //&& env.BRANCH_NAME == 'main'
                 }
             }
             parallel {
