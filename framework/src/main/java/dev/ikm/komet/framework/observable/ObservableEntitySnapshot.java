@@ -47,6 +47,9 @@ public class ObservableEntitySnapshot<OE extends ObservableEntity<OV, EV>,
             }
         }
         this.uncommittedVersions = uncommittedVersions.toImmutable();
+        // reverse sort, oldest record at the end on seconds granularity...
+        // since some changes (classification then incremental classification)
+        historicVersions.sort((o1, o2) -> Long.compare(o2.time(), o1.time()));
         this.historicVersions = historicVersions.toImmutable();
     }
 
@@ -122,4 +125,3 @@ public class ObservableEntitySnapshot<OE extends ObservableEntity<OV, EV>,
         throw new IllegalStateException();
     }
 }
-

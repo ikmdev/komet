@@ -59,7 +59,7 @@ public abstract class ComponentVersionIsFinalPanel<OV extends ObservableVersion>
         this.versionDetailsPane.setCenter(versionNode);
         //this.versionDetailsPane.setBottom(new StampPanel<V>(version, viewProperties));
         StampEntity stampEntity = observableVersion.stamp();
-        Label stampLabel = new Label(stampEntity.state() + " as of " + DateTimeUtil.format(stampEntity.time()) +
+        Label stampLabel = new Label(stampEntity.state() + " as of " + DateTimeUtil.format(stampEntity.time(), DateTimeUtil.SEC_FORMATTER) +
                 " on " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(stampEntity.pathNid()) +
                 " in " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(stampEntity.moduleNid()) +
                 " by " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(stampEntity.authorNid()));
