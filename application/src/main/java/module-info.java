@@ -23,6 +23,8 @@ module dev.ikm.komet.application {
     requires org.controlsfx.controls;
     requires dev.ikm.komet.classification;
     requires dev.ikm.komet.details;
+    requires dev.ikm.komet.builder;
+    requires dev.ikm.komet.artifact;
     requires dev.ikm.komet.executor;
     requires dev.ikm.komet.framework;
     requires dev.ikm.komet.list;
