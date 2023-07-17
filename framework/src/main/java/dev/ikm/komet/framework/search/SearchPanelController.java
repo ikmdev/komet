@@ -24,6 +24,8 @@ import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import org.eclipse.collections.api.factory.Lists;
@@ -85,7 +87,11 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
 
         resultsLayoutCombo.getItems().addAll(RESULT_LAYOUT_OPTIONS.values());
         resultsLayoutCombo.getSelectionModel().select(RESULT_LAYOUT_OPTIONS.MATCHED_SEMANTIC_SCORE);
-        resultsLayoutCombo.setOnAction(event -> doSearch(event));
+        resultsLayoutCombo.setOnAction(event ->{
+            doSearch(event);
+            clearDropDown();
+        });
+
     }
 
     @FXML
@@ -162,8 +168,20 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
                 }
             });
         }
-
     }
+
+    private void clearDropDown() {
+        MouseEvent mouseEvent = new MouseEvent(
+                MouseEvent.MOUSE_PRESSED,
+                0, 0, 0, 0,
+                MouseButton.PRIMARY, 1,
+                false, false, false, false,
+                true, false, false, false,
+                true, false, null
+        );
+        resultsLayoutCombo.fireEvent(mouseEvent);
+    }
+
 
     private OptionalInt parseInt(String possibleInt) {
         try {
