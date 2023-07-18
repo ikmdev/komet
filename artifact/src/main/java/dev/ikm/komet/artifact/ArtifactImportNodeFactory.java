@@ -1,15 +1,16 @@
 package dev.ikm.komet.artifact;
 
 import com.google.auto.service.AutoService;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
-import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.komet.framework.preferences.Reconstructor;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 
 @AutoService(KometNodeFactory.class)
 public class ArtifactImportNodeFactory implements KometNodeFactory {
@@ -22,19 +23,25 @@ public class ArtifactImportNodeFactory implements KometNodeFactory {
     }
 
     @Override
-    public KometNode create(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
-        return new ArtifactImportNode(windowView.makeOverridableViewProperties(), nodePreferences);
-    }
-
-    @Override
     public ImmutableList<PublicIdStringKey<ActivityStream>> defaultActivityStreamChoices() {
         return Lists.immutable.empty();
     }
-
     @Override
     public ImmutableList<PublicIdStringKey<ActivityStreamOption>> defaultOptionsForActivityStream(PublicIdStringKey<ActivityStream> streamKey) {
         return Lists.immutable.empty();
     }
+    @Reconstructor
+    public static ArtifactImportNode reconstructor(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
+        return new ArtifactImportNode(windowView.makeOverridableViewProperties(), nodePreferences);
+    }
+    @Override
+    public KometNode create(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
+        return reconstructor(windowView, nodePreferences);
+    }
+
+
+
+
 
     @Override
     public String getMenuText() {
