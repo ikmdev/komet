@@ -1,7 +1,6 @@
 package dev.ikm.komet.artifact;
 
 import dev.ikm.komet.framework.ExplorationNodeAbstract;
-import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -67,7 +66,7 @@ public class ArtifactImportNode extends ExplorationNodeAbstract {
     }
 
     @Override
-    public Class<? extends KometNodeFactory> factoryClass() {
+    public Class<ArtifactImportNodeFactory> factoryClass() {
         return ArtifactImportNodeFactory.class;
     }
 }

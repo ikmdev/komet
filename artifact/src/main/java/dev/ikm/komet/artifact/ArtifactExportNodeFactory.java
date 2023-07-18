@@ -1,6 +1,7 @@
 package dev.ikm.komet.artifact;
 
 import com.google.auto.service.AutoService;
+import dev.ikm.komet.framework.preferences.Reconstructor;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import dev.ikm.komet.framework.KometNode;
@@ -31,11 +32,14 @@ public class ArtifactExportNodeFactory implements KometNodeFactory {
         return Lists.immutable.empty();
     }
 
-    @Override
-    public KometNode create(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
+    @Reconstructor
+    public static ArtifactExportNode reconstructor(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
         return new ArtifactExportNode(windowView.makeOverridableViewProperties(), nodePreferences);
     }
-
+    @Override
+    public KometNode create(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
+        return reconstructor(windowView,nodePreferences);
+    }
     @Override
     public String getMenuText() {
         return TITLE;
