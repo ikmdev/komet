@@ -296,6 +296,11 @@
         <!-- Profile to run JPackage to create installer(s), this profile can only be run with release versions-->
         <profile>
             <id>create-installer</id>
+            <properties>
+                <jpackage.app.name>Komet</jpackage.app.name>
+                <jpackage.app.version>${project.version}</jpackage.app.version>
+                <jpackage.app.dest>target/dist/installer</jpackage.app.dest>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -303,14 +308,15 @@
                         <artifactId>jpackage-maven-plugin</artifactId>
                         <version>${jpackage.version}</version>
                         <configuration>
-                            <name>Komet</name>
-                             <appVersion>${project.version}</appVersion> <!-- Requires Semantic Versioning with major version > zero -->
-                            <vendor>HL7</vendor>
-                            <icon>${jpackage.icon}</icon>
+                            <name>${jpackage.app.name}</name>
+                            <appVersion>${jpackage.app.version}</appVersion> <!-- Requires Semantic Versioning with major version > zero -->
+                            <destination>${jpackage.app.dest}</destination>
+                            <resourceDir>${jpackage.resourceDir}</resourceDir>
                             <type>${jpackage.type}</type>
+                            <icon>${jpackage.icon}</icon>
+                            <vendor>IKM</vendor>
                             <runtimeImage>target/kometRuntimeImage</runtimeImage>
                             <module>dev.ikm.komet.application/dev.ikm.komet.app.App</module>
-                            <input>installer_resources/sample_data</input>
                             <javaOptions>
                                 <option>--enable-preview</option>
                                 <option>--add-opens</option>
@@ -325,21 +331,6 @@
                             <execution>
                                 <id>Installer</id>
                                 <phase>install</phase>
-                                <configuration>
-                                    <destination>target/dist/installer</destination>
-                                    <resourceDir>${jpackage.resourceDir}</resourceDir>
-                                </configuration>
-                                <goals>
-                                    <goal>jpackage</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>InstallerWithData</id>
-                                <phase>install</phase>
-                                <configuration>
-                                    <destination>target/dist/installer_with_data</destination>
-                                    <resourceDir>${jpackage.resourceDir}+data</resourceDir>
-                                </configuration>
                                 <goals>
                                     <goal>jpackage</goal>
                                 </goals>
