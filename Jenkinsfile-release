@@ -2,140 +2,125 @@
 
 pipeline {
 
-    agent {label 'master' }
-
-    environment {
-        GITLAB_REPO     = 'https://gitlab.tinkarbuild.com/FDA-Shield/komet.git'
-        GITHUB_OWNER    = "ikmdev"
-        GITHUB_REPO     = "komet"
-        GITHUB_REPO_GIT = "https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}.git"
-        GITHUB_RELEASE  = "https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases"
-
-        WORKING_DIR     = 'sourceRepo'
-        BRANCH          = 'main'
-        RELEASE_NOTE    = ''
-        VERSION         = ''
-        MSG             = ''
-        WEBHOOK_URL     = "${GLOBAL_CHATOPS_URL}"
-        GITHUB_CREDS    = credentials('github_ikmdev-pat')
-    }
+    agent any
 
     options {
-        skipDefaultCheckout(false)
+        buildDiscarder logRotator(
+            numToKeepStr: '10'
+        )
+
+        // Console debug options
         timestamps()
         ansiColor('xterm')
     }
 
     stages {
-        stage('Prep') {
+        stage('Initialize') {
             steps {
+                // Clean before checkout & build
+                cleanWs()
+                checkout scm
 
-                // Clean the working dir
-                sh "if [ -d $WORKING_DIR ]; then rm -Rf $WORKING_DIR; fi"
-
-                // Get the release information
                 script {
+                    trunkBranchName = "main"
+                    BRANCH_NAME = "${GIT_BRANCH.startsWith('origin/') ? GIT_BRANCH['origin/'.length()..-1] : GIT_BRANCH}"
+
                     pomModel = readMavenPom(file: 'pom.xml')
                     pomVersion = pomModel.getVersion()
                     isSnapshot = pomVersion.contains("-SNAPSHOT")
 
-                    repositoryId = 'maven-releases'
-                    RELEASE_VERSION=pomVersion
-                    RELEASE_MSG="release ${RELEASE_VERSION}"
-
                     echo "pomVersion: ${pomVersion}"
-                    echo "isSnapshot: ${isSnapshot}"
-                }
-
-                sh "echo ${RELEASE_VERSION} '${RELEASE_MSG}'"
-            }
-        }
-
-        stage('Tag') {
-            steps {
-                withCredentials([gitUsernamePassword(credentialsId: 'gitlab-for-ikmdev-release-token', gitToolName: '')]) {
-                    sh "git clone ${GITLAB_REPO} $WORKING_DIR"
-                }
-                dir("$WORKING_DIR") {
-
-                    // set no-reply email address
-                    sh 'git config --global user.email "120604367+pmaheshm@users.noreply.github.com"'
-                    sh 'git config --global user.name "pmaheshm"'
-                    // sh 'git config --global http.version HTTP/1.1'
-
-                    // See what remotes are currently present
-                    sh 'git remote -v'
-
-                    // add a remote repository
-                    sh "git remote add downstream ${GITHUB_REPO_GIT}"
-
-                    // See what remotes are now available
-                    sh 'git remote -v'
-
-                    // Get the latest tag
-                    //sh 'git describe --abbrev=0 --tags'
-
-                    // Tag the branch
-                    // 
-                    //sh "git tag -a ${RELEASE_VERSION} -m '${RELEASE_MSG}'"
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                dir("$WORKING_DIR") {
-                    withCredentials([gitUsernamePassword(credentialsId: 'gitlab-for-ikmdev-release-token', gitToolName: '')]) {
-                        // Tag the origin repo
-                        sh "git push origin ${RELEASE_VERSION}"
+                    if(!isSnapshot) {
+                        echo "ERROR: Current version ${pomVersion} is already a release version..."
+                        fail()
                     }
-                    withCredentials([gitUsernamePassword(credentialsId: 'github_ikmdev-pat', gitToolName: '')]) {
-                        // reset the author information on your last commit
-                        //sh "git commit --amend --reset-author -m 'releasing version 1.1.0'"
-
-                        // Push the new tag to downstream remote
-                        sh "git push --tags downstream"
-
-                        // Push the branch to downstream remote
-                        sh "git push downstream ${BRANCH}"
+                    if(BRANCH_NAME != trunkBranchName) {
+                        echo "ERROR: Attempting to release from branch ${BRANCH_NAME}. Release from ${trunkBranchName} branch only..."
+                        fail()
                     }
+                    
+                    releaseVersion = pomVersion.split("-")[0]
+                    nextDevVersion = semanticVersion.getIncrementedVersionString(releaseVersion) + "-SNAPSHOT"
+
+                    echo "releaseVersion: ${releaseVersion}"
+                    echo "nextDevVersion: ${nextDevVersion}"
+                    echo "GIT_BRANCH: ${GIT_BRANCH}"
+                    echo "BRANCH_NAME: ${BRANCH_NAME}"
+                    echo "${currentBuild.buildCauses}"
                 }
             }
         }
-
-        stage('Create Release') {
-
-            environment {
-                GITHUB_OWNER    = "ikmdev"
-                GITHUB_REPO     = "komet"
-                GITHUB_REPO_GIT = "https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}.git"
-                GITHUB_RELEASE  = "https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases"
-
-                WORKING_DIR     = 'sourceRepo'
-                BRANCH          = 'main'
-                RELEASE_NOTE    = ''
-                VERSION         = ''
-                MSG             = ''
-                WEBHOOK_URL     = "${GLOBAL_CHATOPS_URL}"
-                GITHUB_CREDS    = credentials('github_ikmdev-pat')
-            }
-
-
-            when{
-                expression{
-                    branch=='main' && !isSnapshot
-                }
+        stage ('Set Release Version'){
+            tools {
+                jdk 'default'
+                maven 'default'
             }
             steps {
-
                 sh """
-                    set -x
-                    curl -u ${GITHUB_CREDS_USR}:${GITHUB_CREDS_PSW} -X POST -H 'Accept: application/vnd.github.v3+json' ${GITHUB_RELEASE} -d '{"tag_name":"${RELEASE_VERSION}","target_commitish":"main","name":"${RELEASE_MSG}","draft":false,"prerelease":false,"generate_release_notes":false,"body":"${RELEASE_MSG}"}'
-                    echo "pushed to ikm github successfully"
+                    mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${releaseVersion}
                 """
-
             }
         }
-
+        stage ('Test Release Build'){
+            tools {
+                jdk 'default'
+                maven 'default'
+            }
+            steps {
+                configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
+                    sh """
+                        mvn --version
+                        mvn clean install \
+                            -s ${MAVEN_SETTINGS} \
+                            -P create-installer \
+                            --batch-mode \
+                            -e \
+                            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+                    """
+                }
+            }
+        }
+        stage ('Commit & Tag'){
+            tools {
+                git 'git'
+            }
+            steps {
+                withCredentials([gitUsernamePassword(credentialsId: 'gitlab-for-ikmdev-release-token', gitToolName: 'git')]) {
+                    sh """
+                        git add .
+                        git config user.name jenkins
+                        git commit -m 'Release ${releaseVersion}'
+                        git tag -a ${releaseVersion} -m '${releaseVersion}' --force
+                    """
+                }
+            }
+        }
+        stage ('Set next dev version'){
+            tools {
+                jdk 'default'
+                maven 'default'
+            }
+            steps {
+                sh """
+                    mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${nextDevVersion}
+                """
+            }
+        }
+        stage ('Commit & Push'){
+            tools {
+                git 'git'
+            }
+            steps {
+                withCredentials([gitUsernamePassword(credentialsId: 'gitlab-for-ikmdev-release-token', gitToolName: 'git')]) {
+                    sh """
+                        git add .
+                        git config user.name jenkins
+                        git commit -m 'Set next dev version to ${nextDevVersion}'
+                        git push origin HEAD:${BRANCH_NAME}
+                        git push --tags origin
+                    """
+                }
+            }
+        }
     }
 }
