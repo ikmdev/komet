@@ -56,9 +56,11 @@ pipeline {
                 maven 'default'
             }
             steps {
-                sh """
-                    mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${releaseVersion}
-                """
+                configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
+                    sh """
+                        mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${releaseVersion}
+                    """
+                }
             }
         }
         stage ('Test Release Build'){
@@ -101,9 +103,11 @@ pipeline {
                 maven 'default'
             }
             steps {
-                sh """
-                    mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${nextDevVersion}
-                """
+                configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
+                    sh """
+                        mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${nextDevVersion}
+                    """
+                }
             }
         }
         stage ('Commit & Push'){
