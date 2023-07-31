@@ -58,7 +58,10 @@ pipeline {
             steps {
                 configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
                     sh """
-                        mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${releaseVersion}
+                        mvn versions:set \
+                            -s ${MAVEN_SETTINGS} \
+                            -DgenerateBackupPoms=false \
+                            -DnewVersion=${releaseVersion}
                     """
                 }
             }
@@ -105,7 +108,10 @@ pipeline {
             steps {
                 configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
                     sh """
-                        mvn versions:set -DgenerateBackupPoms=false -DnewVersion=${nextDevVersion}
+                        mvn versions:set \
+                            -s ${MAVEN_SETTINGS} \
+                            -DgenerateBackupPoms=false \
+                            -DnewVersion=${nextDevVersion}
                     """
                 }
             }
