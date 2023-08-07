@@ -31,7 +31,7 @@ pipeline {
 
                     echo "pomVersion: ${pomVersion}"
                     if(!isSnapshot) {
-                        echo "ERROR: Current version ${pomVersion} is already a release version..."
+                        echo "ERROR: Version is set to incompatible version '${pomVersion}'. Only SNAPSHOT development versions can be converted to a release version."
                         fail()
                     }
                     if(BRANCH_NAME != trunkBranchName) {
@@ -50,6 +50,7 @@ pipeline {
                 }
             }
         }
+
         stage ('Set Release Version'){
             tools {
                 jdk 'default'
@@ -66,6 +67,7 @@ pipeline {
                 }
             }
         }
+
         stage ('Test Release Build'){
             tools {
                 jdk 'default'
@@ -85,6 +87,7 @@ pipeline {
                 }
             }
         }
+
         stage ('Commit & Tag'){
             tools {
                 git 'git'
@@ -100,6 +103,7 @@ pipeline {
                 }
             }
         }
+
         stage ('Set next dev version'){
             tools {
                 jdk 'default'
@@ -116,6 +120,7 @@ pipeline {
                 }
             }
         }
+        
         stage ('Commit & Push'){
             tools {
                 git 'git'
