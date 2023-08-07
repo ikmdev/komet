@@ -419,6 +419,8 @@ modena.css is the default css.
 
 .tab-label {
     -fx-text-fill: white;
+    -fx-pref-width: 200;
+    -fx-alignment: left;
 }
 
 /* glphy-icon inside of tabs will be white... */
@@ -1460,5 +1462,4 @@ modena.css is the default css.
     -fx-icon-code: "mdi2v-view-week";
     -fx-icon-size: 20;
     -fx-rotate: 90;
-
 }
