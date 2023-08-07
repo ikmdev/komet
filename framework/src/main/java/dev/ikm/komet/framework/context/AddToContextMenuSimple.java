@@ -118,6 +118,7 @@ public class AddToContextMenuSimple implements AddToContextMenu {
                     for (EntityFacade entityFacade : streamHistory) {
                         MenuItem historyItem = new MenuItem(viewProperties.calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade));
                         setFromHistory.getItems().add(historyItem);
+                        historyItem.setStyle("-fx-pref-width: 500");
                         historyItem.setOnAction(event -> {
                             Entity historicalEntity = Entity.getFast(entityFacade);
                             switch (historicalEntity) {
