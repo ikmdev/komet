@@ -454,6 +454,9 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
 
         Menu changeDialectOrder = new Menu("Change dialect preference order");
         menuItems.add(changeDialectOrder);
+        for (MenuItem menuItem : menuItems) {
+            menuItem.getStyleClass().add("menu-item-custom");
+        }
         for (ImmutableList<? extends PatternFacade> dialectPreferenceList : FxGet.allowedDialectTypeOrder()) {
             CheckMenuItem dialectOrderItem = new CheckMenuItem(viewCalculator.toEntityString(dialectPreferenceList.castToList(), viewCalculator::toEntityStringOrPublicIdAndNid));
             changeDialectOrder.getItems().add(dialectOrderItem);
