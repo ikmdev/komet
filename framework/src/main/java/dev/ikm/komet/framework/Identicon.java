@@ -1,6 +1,8 @@
 package dev.ikm.komet.framework;
 
+import dev.ikm.tinkar.common.id.PublicId;
 import javafx.scene.Group;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
@@ -8,9 +10,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
-import javafx.scene.transform.Affine;
-import javafx.scene.transform.Scale;
-import dev.ikm.tinkar.common.id.PublicId;
 
 public class Identicon {
     /*
@@ -37,7 +36,26 @@ public class Identicon {
 
     public static ImageView generateIdenticon(PublicId publicId, int image_width, int image_height) {
 
-        int width = 5, height = 5;
+        Image identicon = generateIdenticonImage(publicId);
+
+        ImageView finalImageView = new ImageView(identicon);
+        //Scale image to the size you want
+        double width = identicon.getWidth();
+        double height = identicon.getHeight();
+
+//        Affine at = new Affine();
+//        Scale scale = at.scale(image_width / width, image_height / height);
+//        finalImageView.getTransforms().add(scale);
+
+        finalImageView.setFitWidth(image_width);
+        finalImageView.setFitHeight(image_height);
+
+        return finalImageView;
+    }
+
+    public static Image generateIdenticonImage(PublicId publicId) {
+        int width = 5;
+        int height = 5;
 
         int publicIdHash = publicId.publicIdHash();
         int redHash = (byte) Math.abs((byte) (publicIdHash >> 24));
@@ -66,18 +84,7 @@ public class Identicon {
                 raster.setColor(x, y, pixelColor);
             }
         }
-
-        Affine at = new Affine();
-        Scale scale = at.scale(image_width / width, image_height / height);
-
-        ImageView finalImageView = new ImageView(identicon);
-        //Scale image to the size you want
-        //finalImageView.getTransforms().add(scale);
-
-        finalImageView.setFitWidth(image_width);
-        finalImageView.setFitHeight(image_height);
-
-        return finalImageView;
+        return identicon;
     }
 
     // use 10 x 10 squares...

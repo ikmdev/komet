@@ -10,6 +10,8 @@ import dev.ikm.tinkar.common.flow.FlowSubscriber;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.EntityFacade;
 
+import static dev.ikm.komet.framework.DetailNodeAbstract.DetailNodeKey.REQUEST_FOCUS_ON_ACTIVITY;
+
 public abstract class DetailNodeAbstract extends ExplorationNodeAbstract {
 
     protected final SimpleObjectProperty<EntityFacade> entityFocusProperty = new SimpleObjectProperty<>();
@@ -60,6 +62,7 @@ public abstract class DetailNodeAbstract extends ExplorationNodeAbstract {
         } else {
             nodePreferences.remove(DetailNodeKey.ENTITY_FOCUS);
         }
+        nodePreferences.putBoolean(REQUEST_FOCUS_ON_ACTIVITY, false);
         saveDetailsPreferences();
     }
 
@@ -68,6 +71,7 @@ public abstract class DetailNodeAbstract extends ExplorationNodeAbstract {
     protected abstract void revertDetailsPreferences();
 
     enum DetailNodeKey {
-        ENTITY_FOCUS
+        ENTITY_FOCUS,
+        REQUEST_FOCUS_ON_ACTIVITY
     }
 }

@@ -218,6 +218,18 @@ modena.css is the default css.
     -fx-icon-size: 20;
 }
 
+#amplify-details-node .ikonli-font-icon {
+    -fx-icon-code: "mdi2f-focus-field";
+    -fx-icon-color: #5dcf16ff; /* Amplify Primary 04 green */
+    -fx-icon-size: 20;
+}
+
+.add-tab-menu-item:focused #amplify-details-node .ikonli-font-icon,
+.tab #amplify-details-node .ikonli-font-icon {
+    -fx-icon-color: white;
+    -fx-icon-size: 20;
+}
+
 /* #classification-results-node pair */
 #classification-results-node .ikonli-font-icon {
     -fx-icon-code: "fa-cogs";
@@ -1468,4 +1480,30 @@ modena.css is the default css.
   -fx-pref-width: 200px;
   -fx-alignment: center-right;
   -fx-padding: 0 20px 0 0;
+}
+.pencil-button.button {
+    -fx-min-width: 15;
+    -fx-min-height: 14;
+    -fx-pref-width: 15;
+    -fx-pref-height: 14;
+    -fx-max-width: 17;
+    -fx-max-height: 16;
+    -fx-background-radius: 2;
+    -fx-background-insets: 0;
+    -fx-background-color: #44495EFF;
+    -fx-shape: "M8.89461 4.75L9.59961 5.455L2.78961 12.25H2.09961V11.56L8.89461 4.75ZM11.5946 0.25C11.4071 0.25 11.2121 0.325 11.0696 0.4675L9.69711 1.84L12.5096 4.6525L13.8821 3.28C14.1746 2.9875 14.1746 2.5 13.8821 2.2225L12.1271 0.4675C11.9771 0.3175 11.7896 0.25 11.5946 0.25ZM8.89461 2.6425L0.599609 10.9375V13.75H3.41211L11.7071 5.455L8.89461 2.6425Z"
+}
+
+.pencil-button.button:hover {
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
+    -fx-scale-z: 1.1;
+}
+
+.pencil-button.button:armed {
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
+    -fx-scale-z: 1.1;
+    -fx-translate-x: 2;
+    -fx-translate-y: 2;
 }

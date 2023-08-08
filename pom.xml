@@ -214,7 +214,8 @@
     </distributionManagement>
     <modules>
         <module>application</module>
-        <module>artifact</module>
+        <module>amplifydetails</module>
+<!--        <module>artifact</module>-->
         <module>builder</module>
         <module>classification</module>
         <module>details</module>
