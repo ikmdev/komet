@@ -10,7 +10,6 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 
 import java.io.File;
 import java.io.IOException;

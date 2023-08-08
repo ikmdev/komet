@@ -22,12 +22,12 @@
             <artifactId>preferences</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>${tinkar-jpms-deps.groupId}</groupId>-->
-<!--            <artifactId>auto-service</artifactId>-->
-<!--            <version>${jpms-auto-service.version}</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>${tinkar-jpms-deps.groupId}</groupId>
+            <artifactId>auto-service</artifactId>
+            <version>${jpms-auto-service.version}</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.controlsfx</groupId>
             <artifactId>controlsfx</artifactId>

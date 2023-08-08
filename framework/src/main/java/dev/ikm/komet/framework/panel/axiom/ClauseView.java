@@ -65,7 +65,7 @@ public class ClauseView {
     protected final Label titleLabel = new Label();
     protected final BorderPane rootBorderPane = new BorderPane();
     protected final GridPane rootGridPane = new GridPane();
-    protected final Button editButton = new Button("", Icon.EDIT_PENCIL.makeIcon());
+    protected final Button editButton = new Button("");
     protected final ToggleButton expandButton = new ToggleButton("", Icon.OPEN.makeIcon());
     protected final List<ClauseView> childClauses = new ArrayList<>();
     protected final SimpleBooleanProperty expanded = new SimpleBooleanProperty(true);
@@ -85,12 +85,12 @@ public class ClauseView {
         rootGridPane.setPadding(new Insets(2));
         rootBorderPane.setBorder(INNER_ROOT_BORDER);
         rootBorderPane.setPadding(new Insets(3));
-        editButton.setPadding(Insets.EMPTY);
         expandButton.setPadding(Insets.EMPTY);
         expandButton.selectedProperty().bindBidirectional(expanded);
         expanded.addListener((observable, oldValue, newValue) -> {
             this.toggleExpansion();
         });
+        editButton.getStyleClass().add("pencil-button");
         editButton.setOnMousePressed(this::handleEditClick);
 
         titleLabel.getStyleClass().add("komet-version-general-cell");
@@ -99,7 +99,6 @@ public class ClauseView {
         titleLabel.setOnDragDetected(this::handleDragDetected);
         titleLabel.setOnDragExited(this::handleDragExited);
         titleLabel.setOnDragDone(this::handleDragDone);
-        //titleLabel.setMaxWidth(425);
         LogicalOperatorsForVertex vertexLogicalOperator = LogicalOperatorsForVertex.get(logicVertex);
         switch (vertexLogicalOperator) {
             case CONCEPT -> setupForConcept();
@@ -167,13 +166,6 @@ public class ClauseView {
         // TODO get style class for property set
         // rootPane.getStyleClass().add(StyleClasses.DEF_SUFFICIENT_SET.toString());
         throw new UnsupportedOperationException();
-//        titleLabel.setText(propertyPatternImplication.toSimpleString());
-//        titleLabel.setGraphic(Icon.LAMBDA.makeIcon());
-//        int column = 0;
-//        this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
-//        if (this.axiomView.premiseType == STATED) {
-//            this.axiomView.addToGridPaneNoGrow(rootGridPane, editButton, column++);
-//        }
     }
 
     private void setupForPropertySet() {
@@ -198,11 +190,6 @@ public class ClauseView {
         titleLabel.setGraphic(Icon.LITERAL_STRING.makeIcon());
         int column = 0;
         this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
-        if (this.axiomView.premiseType == STATED) {
-            Label formLabel = new Label("", Icon.STATED.makeIcon());
-            formLabel.setTooltip(new Tooltip("Stated form"));
-            this.axiomView.addToGridPaneNoGrow(rootGridPane, formLabel, column++);
-        }
     }
 
     private void setupForLiteralInteger(Integer integerLiteral) {
@@ -212,11 +199,6 @@ public class ClauseView {
         titleLabel.setGraphic(Icon.LITERAL_NUMERIC.makeIcon());
         int column = 0;
         this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
-        if (this.axiomView.premiseType == STATED) {
-            Label formLabel = new Label("", Icon.STATED.makeIcon());
-            formLabel.setTooltip(new Tooltip("Stated form"));
-            this.axiomView.addToGridPaneNoGrow(rootGridPane, formLabel, column++);
-        }
     }
 
     private void setupForLiteralInstant(Instant instantLiteral) {
@@ -226,11 +208,6 @@ public class ClauseView {
         titleLabel.setGraphic(Icon.LITERAL_NUMERIC.makeIcon());
         int column = 0;
         this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
-        if (this.axiomView.premiseType == STATED) {
-            Label formLabel = new Label("", Icon.STATED.makeIcon());
-            formLabel.setTooltip(new Tooltip("Stated form"));
-            this.axiomView.addToGridPaneNoGrow(rootGridPane, formLabel, column++);
-        }
     }
 
     private void setupForLiteralBoolean(Boolean booleanLiteral) {
@@ -240,11 +217,6 @@ public class ClauseView {
         titleLabel.setGraphic(Icon.LITERAL_NUMERIC.makeIcon());
         int column = 0;
         this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
-        if (this.axiomView.premiseType == STATED) {
-            Label formLabel = new Label("", Icon.STATED.makeIcon());
-            formLabel.setTooltip(new Tooltip("Stated form"));
-            this.axiomView.addToGridPaneNoGrow(rootGridPane, formLabel, column++);
-        }
     }
 
     private void setupForLiteralFloat(Float floatLiteral) {
@@ -254,11 +226,6 @@ public class ClauseView {
         titleLabel.setGraphic(Icon.LITERAL_NUMERIC.makeIcon());
         int column = 0;
         this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
-        if (this.axiomView.premiseType == STATED) {
-            Label formLabel = new Label("", Icon.STATED.makeIcon());
-            formLabel.setTooltip(new Tooltip("Stated form"));
-            this.axiomView.addToGridPaneNoGrow(rootGridPane, formLabel, column++);
-        }
     }
 
     private void setupForDefinitionRoot() {
@@ -283,14 +250,7 @@ public class ClauseView {
         this.axiomView.addToGridPaneNoGrow(rootGridPane, expandButton, column++);
         this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
         if (this.axiomView.premiseType == STATED) {
-            Label formLabel = new Label("", Icon.STATED.makeIcon());
-            formLabel.setTooltip(new Tooltip("Stated form"));
-            this.axiomView.addToGridPaneNoGrow(rootGridPane, formLabel, column++);
             this.axiomView.addToGridPaneNoGrow(rootGridPane, editButton, column++);
-        } else {
-            Label formLabel = new Label("", Icon.INFERRED.makeIcon());
-            formLabel.setTooltip(new Tooltip("Inferred form"));
-            this.axiomView.addToGridPaneNoGrow(rootGridPane, formLabel, column++);
         }
     }
 

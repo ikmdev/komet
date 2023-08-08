@@ -1,6 +1,14 @@
 package dev.ikm.komet.framework.propsheet;
 
 
+import dev.ikm.komet.framework.graphics.Icon;
+import dev.ikm.komet.framework.panel.axiom.AxiomView;
+import dev.ikm.komet.framework.propsheet.editor.IntIdListEditor;
+import dev.ikm.komet.framework.propsheet.editor.IntIdSetEditor;
+import dev.ikm.komet.framework.propsheet.editor.ListEditor;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.ProxyFactory;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.HPos;
@@ -18,14 +26,6 @@ import org.controlsfx.control.action.ActionUtils;
 import org.controlsfx.control.textfield.TextFields;
 import org.controlsfx.property.editor.AbstractPropertyEditor;
 import org.controlsfx.property.editor.PropertyEditor;
-import dev.ikm.komet.framework.graphics.Icon;
-import dev.ikm.komet.framework.panel.axiom.AxiomView;
-import dev.ikm.komet.framework.propsheet.editor.IntIdListEditor;
-import dev.ikm.komet.framework.propsheet.editor.IntIdSetEditor;
-import dev.ikm.komet.framework.propsheet.editor.ListEditor;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.ProxyFactory;
 
 import java.util.*;
 
@@ -137,7 +137,7 @@ public class KometPropertySheetSkin extends SkinBase<KometPropertySheet> {
                 // WAS: create category-based accordion; KEC want to support more than one pane open.
                 VBox categoryPanes = new VBox(2);
                 for (String category : categoryMap.keySet()) {
-                    KometPropertySheetSkin.PropertyPane props = new KometPropertySheetSkin.PropertyPane(categoryMap.get(category));
+                    KometPropertySheetSkin.PropertyPane props = new KometPropertySheetSkin.PropertyPane(categoryMap.get(category), 0, getSkinnable().isHideLabels());
                     // Only show non-empty categories
                     if (props.getChildrenUnmodifiable().size() > 0) {
                         TitledPane pane = new TitledPane(category, props);
@@ -149,7 +149,7 @@ public class KometPropertySheetSkin extends SkinBase<KometPropertySheet> {
             }
 
             default:
-                return new KometPropertySheetSkin.PropertyPane(getSkinnable().getItems());
+                return new KometPropertySheetSkin.PropertyPane(getSkinnable().getItems(), 0, getSkinnable().isHideLabels());
         }
 
     }
@@ -199,28 +199,50 @@ public class KometPropertySheetSkin extends SkinBase<KometPropertySheet> {
 
 
     private class PropertyPane extends GridPane {
-
+//        private BooleanProperty hideLabels = new SimpleBooleanProperty(false);
         public PropertyPane(List<PropertySheet.Item> properties) {
             this(properties, 0);
         }
 
         public PropertyPane(List<PropertySheet.Item> properties, int nestingLevel) {
+            this(properties, nestingLevel, false);
+        }
+        public PropertyPane(List<PropertySheet.Item> properties, int nestingLevel, boolean hideLabels) {
             setVgap(5);
             setHgap(5);
             setPadding(new Insets(5, 15, 5, 15 + nestingLevel * 10));
             getStyleClass().add("property-pane"); //$NON-NLS-1$
-            setItems(properties);
+            setItems(properties, hideLabels);
+
+            // dynamically show or hide labels
+//            hideLabelsProperty().set(hideLabels);
+//            hideLabelsProperty().addListener(observable ->
+//                setItems(properties, hideLabelsProperty().get()));
+
 //            setGridLinesVisible(true);
         }
 
-        public void setItems(List<PropertySheet.Item> properties) {
+//        public boolean isHideLabels() {
+//            return hideLabels.get();
+//        }
+//
+//        public BooleanProperty hideLabelsProperty() {
+//            return hideLabels;
+//        }
+//
+//        public void setHideLabels(boolean hideLabels) {
+//            this.hideLabels.set(hideLabels);
+//        }
+
+        public void setItems(List<PropertySheet.Item> properties, boolean hideLabels) {
             getChildren().clear();
 
             String filter = getSkinnable().titleFilter().get();
             filter = filter == null ? "" : filter.trim().toLowerCase(); //$NON-NLS-1$
 
             int row = 0;
-
+            final int firstColumn = 0;
+            final int secondColumn = 1;
             for (PropertySheet.Item item : properties) {
                 Node editor = getEditor(item);
 
@@ -237,43 +259,49 @@ public class KometPropertySheetSkin extends SkinBase<KometPropertySheet> {
 
                 }
 
-                // setup property label
-                Label label = new Label(title + ": ");
-                label.setAlignment(Pos.CENTER_RIGHT);
-                label.setTextAlignment(TextAlignment.RIGHT);
-                label.setWrapText(true);
-                label.setMinWidth(MIN_COLUMN_WIDTH);
-                label.getStyleClass().add(PROP_SHEET_PROPERTY_NAME.toString());
+                // Show labels by default
+                if (!hideLabels) {
+                    // setup property label
+                    Label label = new Label(title + ": ");
+                    label.setAlignment(Pos.CENTER_RIGHT);
+                    label.setTextAlignment(TextAlignment.RIGHT);
+                    label.setWrapText(true);
+                    label.setMinWidth(MIN_COLUMN_WIDTH);
+                    label.getStyleClass().add(PROP_SHEET_PROPERTY_NAME.toString());
 
-                // show description as a tooltip
-                String description = item.getDescription();
-                if (description != null && !description.trim().isEmpty()) {
-                    label.setTooltip(new Tooltip(description));
-                } else if (optionalProxy.isPresent()) {
-                    String fullyQualifiedName = viewProperties().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(optionalProxy.get());
-                    label.setTooltip(new Tooltip(fullyQualifiedName));
-                }
-
-                GridPane.setHalignment(label, HPos.RIGHT);
-                item.getPropertyEditorClass().ifPresent((Class aClass) -> {
-                    if (aClass == AxiomView.class ||
-                            aClass == ListEditor.class ||
-                            aClass == IntIdListEditor.class ||
-                            aClass == IntIdSetEditor.class) {
-                        label.setMaxWidth(100);
-                        GridPane.setValignment(label, VPos.TOP);
+                    // show description as a tooltip
+                    String description = item.getDescription();
+                    if (description != null && !description.trim().isEmpty()) {
+                        label.setTooltip(new Tooltip(description));
+                    } else if (optionalProxy.isPresent()) {
+                        String fullyQualifiedName = viewProperties().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(optionalProxy.get());
+                        label.setTooltip(new Tooltip(fullyQualifiedName));
                     }
-                });
-                add(label, 0, row);
 
-                // setup property editor
+                    GridPane.setHalignment(label, HPos.RIGHT);
+                    item.getPropertyEditorClass().ifPresent((Class aClass) -> {
+                        if (aClass == AxiomView.class ||
+                                aClass == ListEditor.class ||
+                                aClass == IntIdListEditor.class ||
+                                aClass == IntIdSetEditor.class) {
+                            label.setMaxWidth(100);
+                            GridPane.setValignment(label, VPos.TOP);
+                        }
+                    });
+                    add(label, firstColumn, row);
 
-                if (editor instanceof Region) {
-                    ((Region) editor).setMinWidth(MIN_COLUMN_WIDTH);
-                    ((Region) editor).setMaxWidth(Double.MAX_VALUE);
-                }
-                label.setLabelFor(editor);
-                add(editor, 1, row);
+                    // setup property editor
+
+                    if (editor instanceof Region) {
+                        ((Region) editor).setMinWidth(MIN_COLUMN_WIDTH);
+                        ((Region) editor).setMaxWidth(Double.MAX_VALUE);
+                    }
+                    label.setLabelFor(editor);
+
+                } // show labels by default.
+
+                int editorColumn = hideLabels ? firstColumn : secondColumn; // make editor first column when labels are hid.
+                add(editor, editorColumn, row);
                 GridPane.setHgrow(editor, Priority.ALWAYS);
 
                 //TODO add support for recursive properties

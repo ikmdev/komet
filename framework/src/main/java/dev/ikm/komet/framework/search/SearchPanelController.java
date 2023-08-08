@@ -252,7 +252,7 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
         });
         this.parentNode.widthProperty().addListener((observable, oldValue, newValue) -> {
             setWidth(newValue.doubleValue());
-            LOG.info("Width: " + newValue);
+            //LOG.info("Width: " + newValue);
         });
         this.setWidth(parentNode.widthProperty().get());
     }
