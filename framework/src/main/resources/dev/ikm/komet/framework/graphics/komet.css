@@ -1464,7 +1464,8 @@ modena.css is the default css.
     -fx-rotate: 90;
 }
 
-.menu-item-custom {-fx-pref-width: 200px;
- fx-alignment: center-right;
- -fx-padding: 0 20px 0 0;
+.menu-item-custom {
+  -fx-pref-width: 200px;
+  -fx-alignment: center-right;
+  -fx-padding: 0 20px 0 0;
 }
