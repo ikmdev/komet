@@ -215,7 +215,7 @@
     <modules>
         <module>application</module>
         <module>amplifydetails</module>
-<!--        <module>artifact</module>-->
+        <module>artifact</module>
         <module>builder</module>
         <module>classification</module>
         <module>details</module>
