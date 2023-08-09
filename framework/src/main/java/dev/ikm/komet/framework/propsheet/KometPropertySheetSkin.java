@@ -199,7 +199,6 @@ public class KometPropertySheetSkin extends SkinBase<KometPropertySheet> {
 
 
     private class PropertyPane extends GridPane {
-//        private BooleanProperty hideLabels = new SimpleBooleanProperty(false);
         public PropertyPane(List<PropertySheet.Item> properties) {
             this(properties, 0);
         }
@@ -214,25 +213,8 @@ public class KometPropertySheetSkin extends SkinBase<KometPropertySheet> {
             getStyleClass().add("property-pane"); //$NON-NLS-1$
             setItems(properties, hideLabels);
 
-            // dynamically show or hide labels
-//            hideLabelsProperty().set(hideLabels);
-//            hideLabelsProperty().addListener(observable ->
-//                setItems(properties, hideLabelsProperty().get()));
-
 //            setGridLinesVisible(true);
         }
-
-//        public boolean isHideLabels() {
-//            return hideLabels.get();
-//        }
-//
-//        public BooleanProperty hideLabelsProperty() {
-//            return hideLabels;
-//        }
-//
-//        public void setHideLabels(boolean hideLabels) {
-//            this.hideLabels.set(hideLabels);
-//        }
 
         public void setItems(List<PropertySheet.Item> properties, boolean hideLabels) {
             getChildren().clear();
