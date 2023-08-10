@@ -25,16 +25,13 @@ pipeline {
         // Console debug options
         timestamps()
         ansiColor('xterm')
+
+        // necessary for communicating status to gitlab
+        gitLabConnection('fda-shield-group')
     }
 
     stages {
         stage('Maven Build') {
-            agent {
-                docker {
-                    image "maven:3.8.7-eclipse-temurin-19-alpine"
-                    args '-u root:root'
-                }
-            }
             steps {
                 updateGitlabCommitStatus name: 'build', state: 'running'
                 script{
@@ -43,42 +40,29 @@ pipeline {
                         mvn clean install -s '${MAVEN_SETTINGS}' \
                             --batch-mode \
                             -e \
-                            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+                            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                            -PcodeQuality
                         """
                     }
                 }
             }
         }
         stage('SonarQube Scan') {
-            when{ //Temporarily Skip Code Quality Scan
-                expression{
-                    false
-                }
-            }
-            agent {
-                docker {
-                    image "maven:3.8.7-eclipse-temurin-19-alpine"
-                    args "-u root:root"
-                }
-            }
             steps{
                 configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
                     withSonarQubeEnv(installationName: 'EKS SonarQube', envOnly: true) {
                         // This expands the environment variables SONAR_CONFIG_NAME, SONAR_HOST_URL, SONAR_AUTH_TOKEN that can be used by any script.
                         sh """
-                            mvn clean install -s '${MAVEN_SETTINGS}'  --batch-mode
-                            mvn pmd:pmd -s '${MAVEN_SETTINGS}'  --batch-mode
-                            mvn com.github.spotbugs:spotbugs-maven-plugin:4.7.3.2:spotbugs -s '${MAVEN_SETTINGS}'  --batch-mode
-                            mvn sonar:sonar -Dsonar.qualitygate.wait=true -X -Dsonar.login=${SONAR_AUTH_TOKEN} -s '${MAVEN_SETTINGS}' --batch-mode
+                            mvn sonar:sonar \
+                                -Dsonar.qualitygate.wait=true \
+                                -Dsonar.login=${SONAR_AUTH_TOKEN} \
+                                -s '${MAVEN_SETTINGS}' \
+                                --batch-mode
                         """
                     }
                 }
                 script{
                     configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
-                        sh """
-                            mvn pmd:pmd -s '${MAVEN_SETTINGS}'  --batch-mode
-                            mvn com.github.spotbugs:spotbugs-maven-plugin:4.7.3.2:spotbugs -s '${MAVEN_SETTINGS}'  --batch-mode
-                        """
 
                         def pmd = scanForIssues tool: [$class: 'Pmd'], pattern: '**/target/pmd.xml'
                         publishIssues issues: [pmd]
@@ -100,12 +84,6 @@ pipeline {
         }
 
         stage("Publish to Nexus Repository Manager") {
-            agent {
-                docker {
-                    image "maven:3.8.7-eclipse-temurin-19-focal"
-                    args '-u root:root'
-                }
-            }
             steps {
                 script {
                     pomModel = readMavenPom(file: 'pom.xml')
@@ -441,17 +419,56 @@ pipeline {
             }
         }
     }
+
     post {
         failure {
             updateGitlabCommitStatus name: 'build', state: 'failed'
-        }
-        success {
-            updateGitlabCommitStatus name: 'build', state: 'success'
+            emailext(
+
+                recipientProviders: [requestor(), culprits()],
+                subject: "Build failed in Jenkins: ${env.JOB_NAME} - #${env.BUILD_NUMBER}",
+                body: """
+                    Build failed in Jenkins: ${env.JOB_NAME} - #${BUILD_NUMBER}
+
+                    See attached log or URL:
+                    ${env.BUILD_URL}
+
+                """,
+                attachLog: true
+            )
         }
         aborted {
             updateGitlabCommitStatus name: 'build', state: 'canceled'
         }
-        always {
+        unstable {
+            updateGitlabCommitStatus name: 'build', state: 'failed'
+            emailext(
+                subject: "Unstable build in Jenkins: ${env.JOB_NAME} - #${env.BUILD_NUMBER}",
+                body: """
+                    See details at URL:
+                    ${env.BUILD_URL}
+
+                """,
+                attachLog: true
+            )
+        }
+        changed {
+            updateGitlabCommitStatus name: 'build', state: 'success'
+            emailext(
+                recipientProviders: [requestor(), culprits()],
+                subject: "Jenkins build is back to normal: ${env.JOB_NAME} - #${env.BUILD_NUMBER}",
+                body: """
+                Jenkins build is back to normal: ${env.JOB_NAME} - #${env.BUILD_NUMBER}
+
+                See URL for more information:
+                ${env.BUILD_URL}
+                """
+            )
+        }
+        success {
+            updateGitlabCommitStatus name: 'build', state: 'success'
+        }
+        cleanup {
             // Clean the workspace after build
             cleanWs(cleanWhenNotBuilt: false,
                 deleteDirs: true,

@@ -3,6 +3,7 @@ import dev.ikm.komet.reasoner.ReasonerResultsNodeFactory;
 
 module dev.ikm.komet.classification {
     requires transitive dev.ikm.komet.framework;
+    requires transitive static com.google.auto.service;
     requires dev.ikm.tinkar.collection;
     requires org.roaringbitmap;
     requires org.jgrapht.core;
