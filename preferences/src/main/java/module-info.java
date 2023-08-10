@@ -7,6 +7,7 @@ module dev.ikm.komet.preferences {
     requires java.prefs;
     requires dev.ikm.tinkar.entity;
     requires java.xml;
+    requires static com.google.auto.service;
 
     provides PreferencesService with PreferencesServiceFactory;
     uses PreferencesService;

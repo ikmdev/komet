@@ -3,7 +3,7 @@
     <parent>
         <groupId>dev.ikm.build</groupId>
         <artifactId>java-parent</artifactId>
-        <version>0.4.0</version>
+        <version>1.7.0</version>
         <relativePath />
     </parent>
 
@@ -21,151 +21,471 @@
             <comments>A business-friendly OSS license</comments>
         </license>
     </licenses>
+
     <organization>
-        <name>Health Level Seven International</name>
-        <url>http://hl7.org</url>
+        <name>Integrated Knowledge Management</name>
+        <url>http://ikm.dev</url>
     </organization>
+
+    <modules>
+        <module>komet-terms</module>
+        <module>preferences</module>
+        <module>framework</module>
+        <module>artifact</module>
+        <module>builder</module>
+        <module>classification</module>
+        <module>details</module>
+        <module>executor</module>
+        <module>list</module>
+        <module>navigator</module>
+        <module>progress</module>
+        <module>search</module>
+        <module>amplifydetails</module>
+        <module>application</module>
+    </modules>
+
     <properties>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-core.version>1.10.0</tinkar-core.version>
 
         <tinkar-jpms-deps.groupId>dev.ikm.jpms</tinkar-jpms-deps.groupId>
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
 
-        <auto-service.version>1.0-rc7</auto-service.version>
         <jpms-auto-service.version>1.0.1-r2</jpms-auto-service.version>
         <jpms-record-builder-core.version>34-r2</jpms-record-builder-core.version>
         <jpms-roaringbitmap.version>0.9.31-r2</jpms-roaringbitmap.version>
 
-        <maven-project-info-reports-plugin.version>3.4.2</maven-project-info-reports-plugin.version>
-        <maven-failsafe-plugin.version>3.0.0</maven-failsafe-plugin.version>
+        <classgraph.version>4.8.115</classgraph.version>
 
         <controlsfx.version>11.1.0</controlsfx.version>
         <ikonli.version>12.2.0</ikonli.version>
-        <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
-        <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
-        <maven.compiler.source>19</maven.compiler.source>
-        <maven.compiler.target>19</maven.compiler.target>
-        <maven-dependency-plugin.version>3.1.2</maven-dependency-plugin.version>
-        <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
-        <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
-        <maven-project-info-reports-plugin.version>3.1.2</maven-project-info-reports-plugin.version>
-        <maven-site-plugin.version>3.9.1</maven-site-plugin.version>
-        <maven-source-plugin.version>3.2.0</maven-source-plugin.version>
-        <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
         <nsmenufx.version>3.1.0</nsmenufx.version>
         <openjfx.version>19</openjfx.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <record-builder-core.version>33</record-builder-core.version>
-        <slf4j.version>2.0.0-alpha6</slf4j.version>
-
         <javafx.version>0.0.8</javafx.version>
         <jpackage.version>1.6.0</jpackage.version>
+        <record-builder-processor.version>34</record-builder-processor.version>
+        <scenic-view.version>11.0.2</scenic-view.version>
+        <slf4j.version>2.0.0-alpha6</slf4j.version>
+        <junit.version>5.6.3</junit.version>
+        <!-- Here to support existing ELK unit tests until we can remove this from the codebase by switching to ikm classifier-->
+        <elk.junit.version>4.13.2</elk.junit.version>
+        <mockito.version>5.2.0</mockito.version>
+        <junit-jupiter-engine.version>5.7.0</junit-jupiter-engine.version>
+        <junit-platform-surefire-provider.version>1.3.0</junit-platform-surefire-provider.version>
+        <junit-platform-commons.version>1.7.0</junit-platform-commons.version>
+        <junit-platform-launcher.version>1.7.0</junit-platform-launcher.version>
+        <junit-jupiter-api.version>5.6.3</junit-jupiter-api.version>
+        <common-java5.version>3.0.0-M9</common-java5.version>
+
+        <maven.assembly-plugin.version>3.6.0</maven.assembly-plugin.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!--Module Dependencies -->
+            <dependency>
+                <groupId>${project.parent.groupId}</groupId>
+                <artifactId>artifact</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.parent.groupId}</groupId>
+                <artifactId>builder</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.parent.groupId}</groupId>
+                <artifactId>classification</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.parent.groupId}</groupId>
+                <artifactId>details</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.parent.groupId}</groupId>
+                <artifactId>list</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.parent.groupId}</groupId>
+                <artifactId>navigator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.parent.groupId}</groupId>
+                <artifactId>search</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.parent.groupId}</groupId>
+                <artifactId>progress</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.parent.groupId}</groupId>
+                <artifactId>executor</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.parent.groupId}</groupId>
+                <artifactId>framework</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.parent.groupId}</groupId>
+                <artifactId>komet-terms</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.parent.groupId}</groupId>
+                <artifactId>preferences</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Tinkar Core Dependencies -->
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>entity</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>coordinate</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>entity-provider</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>data-mvstore-provider</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>data-spinedarray-provider</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>data-websocket-client-provider</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>data-ephemeral-provider</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>terms</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+
+            <!-- Wrapped JPMS Depenendencies -->
+            <dependency>
+                <groupId>${tinkar-jpms-deps.groupId}</groupId>
+                <artifactId>auto-service</artifactId>
+                <version>${jpms-auto-service.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${tinkar-jpms-deps.groupId}</groupId>
+                <artifactId>record-builder-core</artifactId>
+                <version>${jpms-record-builder-core.version}</version>
+            </dependency>
+
+            <!-- External dependencies -->
+            <dependency>
+                <groupId>de.jangassen</groupId>
+                <artifactId>nsmenufx</artifactId>
+                <version>${nsmenufx.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.controlsfx</groupId>
+                <artifactId>controlsfx</artifactId>
+                <version>${controlsfx.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-controls</artifactId>
+                <version>${openjfx.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-fxml -->
+            <dependency>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-fxml</artifactId>
+                <version>${openjfx.version}</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/com.dlsc.gemsfx/gemsfx -->
+
+            <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-web -->
+            <dependency>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-web</artifactId>
+                <version>${openjfx.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-swing -->
+            <dependency>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-swing</artifactId>
+                <version>${openjfx.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.github.classgraph</groupId>
+                <artifactId>classgraph</artifactId>
+                <version>${classgraph.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${tinkar-jpms-deps.groupId}</groupId>
+                <artifactId>roaringbitmap</artifactId>
+                <version>${jpms-roaringbitmap.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-base</artifactId>
+                <version>${openjfx.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-graphics</artifactId>
+                <version>${openjfx.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kordamp.ikonli</groupId>
+                <artifactId>ikonli-javafx</artifactId>
+                <version>${ikonli.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kordamp.ikonli</groupId>
+                <artifactId>ikonli-materialdesign-pack</artifactId>
+                <version>${ikonli.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kordamp.ikonli</groupId>
+                <artifactId>ikonli-foundation-pack</artifactId>
+                <version>${ikonli.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kordamp.ikonli</groupId>
+                <artifactId>ikonli-fontawesome-pack</artifactId>
+                <version>${ikonli.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kordamp.ikonli</groupId>
+                <artifactId>ikonli-fontawesome5-pack</artifactId>
+                <version>${ikonli.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kordamp.ikonli</groupId>
+                <artifactId>ikonli-ionicons4-pack</artifactId>
+                <version>${ikonli.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kordamp.ikonli</groupId>
+                <artifactId>ikonli-icomoon-pack</artifactId>
+                <version>${ikonli.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kordamp.ikonli</groupId>
+                <artifactId>ikonli-mapicons-pack</artifactId>
+                <version>${ikonli.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kordamp.ikonli</groupId>
+                <artifactId>ikonli-material2-pack</artifactId>
+                <version>${ikonli.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kordamp.ikonli</groupId>
+                <artifactId>ikonli-materialdesign2-pack</artifactId>
+                <version>${ikonli.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kordamp.ikonli</groupId>
+                <artifactId>ikonli-octicons-pack</artifactId>
+                <version>${ikonli.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kordamp.ikonli</groupId>
+                <artifactId>ikonli-runestroicons-pack</artifactId>
+                <version>${ikonli.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kordamp.ikonli</groupId>
+                <artifactId>ikonli-unicons-pack</artifactId>
+                <version>${ikonli.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit-jupiter-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-commons</artifactId>
+                <version>${junit-platform-commons.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-launcher</artifactId>
+                <version>${junit-platform-launcher.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.maven.surefire</groupId>
+                <artifactId>common-java5</artifactId>
+                <version>${common-java5.version}</version>
+            </dependency>
+
+            <dependency>
+                <!-- Here to support existing ELK unit tests until we can remove this from the codebase by switching to ikm classifier-->
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${elk.junit.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.raumzeitfalle.fx</groupId>
+                <artifactId>scenic-view</artifactId>
+                <version>${scenic-view.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${tinkar-jpms-deps.groupId}</groupId>
+            <artifactId>auto-service</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-commons</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>common-java5</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
     <build>
         <pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>${maven-assembly-plugin.version}</version>
+                    <version>${maven.assembly-plugin.version}</version>
                 </plugin>
+
                 <plugin>
-                    <groupId>com.mycila</groupId>
-                    <artifactId>license-maven-plugin</artifactId>
-                    <configuration>
-                        <header>${basedir}/../../etc/license.txt</header>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${maven-surefire-plugin.version}</version>
-                    <configuration>
-                        <argLine>--enable-preview</argLine>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>${maven-failsafe-plugin.version}</version>
-                    <configuration>
-                        <argLine>--enable-preview</argLine>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${maven-compiler-plugin.version}</version>
-                    <configuration>
-                        <source>${maven.compiler.source}</source>
-                        <target>${maven.compiler.target}</target>
-                        <fork>true</fork>
-                        <compilerArgs>
-                            <arg>--enable-preview</arg>
-                            <arg>--add-exports javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</arg>
-                        </compilerArgs>
-                        <annotationProcessorPaths>
-                            <annotationProcessorPath>
-                                <groupId>io.soabase.record-builder</groupId>
-                                <artifactId>record-builder-processor</artifactId>
-                                <version>${record-builder-core.version}</version>
-                            </annotationProcessorPath>
-                            <annotationProcessorPath>
-                                <groupId>com.google.auto.service</groupId>
-                                <artifactId>auto-service</artifactId>
-                                <version>${auto-service.version}</version>
-                            </annotationProcessorPath>
-                        </annotationProcessorPaths>
-                        <annotationProcessors>
-                            <annotationProcessor>io.soabase.recordbuilder.processor.RecordBuilderProcessor
-                            </annotationProcessor>
-                            <annotationProcessor>com.google.auto.service.processor.AutoServiceProcessor
-                            </annotationProcessor>
-                        </annotationProcessors>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>${maven-source-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <goals>
-                                <goal>jar</goal>
-                                <goal>test-jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-site-plugin</artifactId>
-                    <version>${maven-site-plugin.version}</version>
+                    <groupId>org.panteleyev</groupId>
+                    <artifactId>jpackage-maven-plugin</artifactId>
+                    <version>${jpackage.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
+                    <fork>true</fork>
                     <compilerArgs>
                         <arg>--enable-preview</arg>
-                        <arg>--add-exports</arg>
-                        <arg>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</arg>
                     </compilerArgs>
-                    <fork>true</fork>
                     <annotationProcessorPaths>
                         <annotationProcessorPath>
                             <groupId>io.soabase.record-builder</groupId>
                             <artifactId>record-builder-processor</artifactId>
-                            <version>${record-builder-core.version}</version>
+                            <version>${record-builder-processor.version}</version>
                         </annotationProcessorPath>
                         <annotationProcessorPath>
                             <groupId>com.google.auto.service</groupId>
@@ -174,58 +494,11 @@
                         </annotationProcessorPath>
                     </annotationProcessorPaths>
                     <annotationProcessors>
-                        <annotationProcessor>io.soabase.recordbuilder.processor.RecordBuilderProcessor
-                        </annotationProcessor>
-                        <annotationProcessor>com.google.auto.service.processor.AutoServiceProcessor
-                        </annotationProcessor>
+                        <annotationProcessor>io.soabase.recordbuilder.processor.RecordBuilderProcessor</annotationProcessor>
+                        <annotationProcessor>com.google.auto.service.processor.AutoServiceProcessor</annotationProcessor>
                     </annotationProcessors>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>${maven-project-info-reports-plugin.version}</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>${maven-failsafe-plugin.version}</version>
-                <configuration>
-                    <reportsDirectories>
-                        <trimStackTrace>false</trimStackTrace>
-                        <reportsDirectory>${basedir}/target/failsafe-reports</reportsDirectory>
-                    </reportsDirectories>
-                </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
-    <distributionManagement>
-        <site>
-            <id>tinkar.hl7.org</id>
-            <url>file:////opt/dev-websites/komet</url>
-            <!-- chflags nohidden /System/Volumes/Data/opt should unhide the /opt folder on macOS
-                The use of /opt for add-on software is a well-established practice in the UNIX community.
-            -->
-        </site>
-    </distributionManagement>
-    <modules>
-        <module>application</module>
-        <module>amplifydetails</module>
-        <module>artifact</module>
-        <module>builder</module>
-        <module>classification</module>
-        <module>details</module>
-        <module>executor</module>
-        <module>framework</module>
-        <module>list</module>
-        <module>navigator</module>
-        <module>preferences</module>
-        <module>progress</module>
-        <module>search</module>
-        <module>komet-terms</module>
-    </modules>
 </project>

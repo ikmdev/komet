@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -11,26 +12,17 @@
 
     <dependencies>
         <dependency>
-            <groupId>${tinkar-jpms-deps.groupId}</groupId>
-            <artifactId>auto-service</artifactId>
-            <version>${jpms-auto-service.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>framework</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>19</source>
-                    <target>19</target>
                     <compilerArgs>
                         <arg>--add-exports</arg>
                         <arg>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</arg>
@@ -56,6 +48,15 @@
                     </annotationProcessors>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <additionalOptions>--add-exports javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</additionalOptions>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 </project>

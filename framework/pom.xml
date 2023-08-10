@@ -11,139 +11,146 @@
     <artifactId>framework</artifactId>
 
     <dependencies>
+        <!-- Module dependencies -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>komet-terms</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>preferences</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>terms</artifactId>
+        </dependency>
+
+        <!-- JPMS wrapped dependencies -->
         <dependency>
             <groupId>${tinkar-jpms-deps.groupId}</groupId>
             <artifactId>record-builder-core</artifactId>
             <scope>provided</scope>
-            <version>${jpms-record-builder-core.version}</version>
         </dependency>
-        <dependency>
-            <groupId>dev.ikm.komet</groupId>
-            <artifactId>preferences</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${tinkar-jpms-deps.groupId}</groupId>
-            <artifactId>auto-service</artifactId>
-            <version>${jpms-auto-service.version}</version>
-            <scope>provided</scope>
-        </dependency>
+
+        <!-- external dependencies -->
         <dependency>
             <groupId>org.controlsfx</groupId>
             <artifactId>controlsfx</artifactId>
-            <version>${controlsfx.version}</version>
         </dependency>
+
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
-            <version>4.8.115</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-fxml -->
+
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>${openjfx.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.dlsc.gemsfx/gemsfx -->
+
         <dependency>
             <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>entity</artifactId>
-            <version>${tinkar-core.version}</version>
         </dependency>
+
         <dependency>
             <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>coordinate</artifactId>
-            <version>${tinkar-core.version}</version>
         </dependency>
-        <dependency>
-            <groupId>dev.ikm.komet</groupId>
-            <artifactId>komet-terms</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-base</artifactId>
-            <version>${openjfx.version}</version>
-            <scope>compile</scope>
         </dependency>
+
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
-            <version>${openjfx.version}</version>
-            <scope>compile</scope>
         </dependency>
+
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-javafx</artifactId>
-            <version>${ikonli.version}</version>
-            <scope>compile</scope>
         </dependency>
+
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-materialdesign-pack</artifactId>
-            <version>${ikonli.version}</version>
-            <scope>compile</scope>
         </dependency>
+
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-foundation-pack</artifactId>
-            <version>${ikonli.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-fontawesome-pack</artifactId>
-            <version>12.2.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-fontawesome5-pack</artifactId>
-            <version>12.2.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-ionicons4-pack</artifactId>
-            <version>${ikonli.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-icomoon-pack</artifactId>
-            <version>${ikonli.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-mapicons-pack</artifactId>
-            <version>${ikonli.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-material2-pack</artifactId>
-            <version>${ikonli.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-materialdesign2-pack</artifactId>
-            <version>${ikonli.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-octicons-pack</artifactId>
-            <version>12.2.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-runestroicons-pack</artifactId>
-            <version>${ikonli.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-unicons-pack</artifactId>
-            <version>${ikonli.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>${openjfx.version}</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <!-- TODO https://ikmdev.atlassian.net/browse/IKM-1286 - Defect in javadoc plugin. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

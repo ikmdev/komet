@@ -13,8 +13,8 @@
         <dependency>
             <groupId>de.jangassen</groupId>
             <artifactId>nsmenufx</artifactId>
-            <version>${nsmenufx.version}</version>
         </dependency>
+
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>amplifydetails</artifactId>
@@ -23,106 +23,101 @@
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>artifact</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
+
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>builder</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
+
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>classification</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
+
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>details</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
+
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>list</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
+
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>navigator</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
+
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>search</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
+
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>progress</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
+
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>executor</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
+
         <dependency>
-            <groupId>${tinkar-jpms-deps.groupId}</groupId>
-            <artifactId>auto-service</artifactId>
-            <version>${jpms-auto-service.version}</version>
-            <scope>provided</scope>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>entity</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>coordinate</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>entity-provider</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>data-mvstore-provider</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>data-spinedarray-provider</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>data-websocket-client-provider</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>data-ephemeral-provider</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.controlsfx</groupId>
             <artifactId>controlsfx</artifactId>
-            <version>${controlsfx.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>${openjfx.version}</version>
         </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-fxml -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>${openjfx.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.dlsc.gemsfx/gemsfx -->
-        <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
-            <artifactId>entity</artifactId>
-            <version>${tinkar-core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
-            <artifactId>coordinate</artifactId>
-            <version>${tinkar-core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
-            <artifactId>entity-provider</artifactId>
-            <version>${tinkar-core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
-            <artifactId>data-mvstore-provider</artifactId>
-            <version>${tinkar-core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
-            <artifactId>data-spinedarray-provider</artifactId>
-            <version>${tinkar-core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
-            <artifactId>data-websocket-client-provider</artifactId>
-            <version>${tinkar-core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
-            <artifactId>data-ephemeral-provider</artifactId>
-            <version>${tinkar-core.version}</version>
-        </dependency>
+
+
     </dependencies>
 
     <build>
@@ -131,7 +126,6 @@
                <plugin>
                    <groupId>org.openjfx</groupId>
                    <artifactId>javafx-maven-plugin</artifactId>
-                   <version>${javafx.version}</version>
                    <configuration>
                        <mainClass>dev.ikm.komet.application/dev.ikm.komet.app.App</mainClass>
                        <stripDebug>false</stripDebug>
@@ -148,20 +142,8 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.20.0</version>
-                <configuration>
-                    <targetJdk>19</targetJdk>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                    <compilerArgs>--enable-preview</compilerArgs>
                     <fork>true</fork>
                     <annotationProcessorPaths>
                         <annotationProcessorPath>
@@ -183,6 +165,7 @@
                     </annotationProcessors>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -271,30 +254,21 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <dependencies>
-<!--                <dependency>-->
-<!--                    <groupId>org.scenicview</groupId>-->
-<!--                    <artifactId>scenicview</artifactId>-->
-<!--                    <version>11.0.2-SNAPSHOT</version>-->
-<!--                </dependency>-->
-
                 <!-- https://mvnrepository.com/artifact/net.raumzeitfalle.fx/scenic-view -->
                 <dependency>
                     <groupId>net.raumzeitfalle.fx</groupId>
                     <artifactId>scenic-view</artifactId>
-                    <version>11.0.2</version>
                 </dependency>
 
                 <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-web -->
                 <dependency>
                     <groupId>org.openjfx</groupId>
                     <artifactId>javafx-web</artifactId>
-                    <version>${openjfx.version}</version>
                 </dependency>
                 <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-swing -->
                 <dependency>
                     <groupId>org.openjfx</groupId>
                     <artifactId>javafx-swing</artifactId>
-                    <version>${openjfx.version}</version>
                 </dependency>
             </dependencies>
         </profile>
@@ -311,7 +285,6 @@
                     <plugin>
                         <groupId>org.panteleyev</groupId>
                         <artifactId>jpackage-maven-plugin</artifactId>
-                        <version>${jpackage.version}</version>
                         <configuration>
                             <name>${jpackage.app.name}</name>
                             <appVersion>${jpackage.app.version}</appVersion> <!-- Requires Semantic Versioning with major version > zero -->
