@@ -105,6 +105,12 @@
 
             <dependency>
                 <groupId>${project.parent.groupId}</groupId>
+                <artifactId>amplifydetails</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.parent.groupId}</groupId>
                 <artifactId>details</artifactId>
                 <version>${project.version}</version>
             </dependency>
