@@ -1,6 +1,7 @@
 package dev.ikm.komet.artifact;
 
 
+import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -77,9 +78,8 @@ public class ArtifactImportController {
 
             @Override
             protected Boolean call() throws Exception {
-                //TODO: uncomment these two lines when fully functioning.
-//                LoadEntitiesFromProtobufFile loadEntities = new LoadEntitiesFromProtobufFile(selectedFile);
-//                loadEntities.compute();
+                LoadEntitiesFromProtobufFile loadEntities = new LoadEntitiesFromProtobufFile(selectedFile);
+                loadEntities.compute();
                 updateProgress(100, 100);
                 importButton.setDisable(false);
                 cancelButton.setDisable(true);

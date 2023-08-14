@@ -39,10 +39,6 @@ public class ArtifactImportNodeFactory implements KometNodeFactory {
         return reconstructor(windowView, nodePreferences);
     }
 
-
-
-
-
     @Override
     public String getMenuText() {
         return TITLE;
