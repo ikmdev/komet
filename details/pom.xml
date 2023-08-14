@@ -11,7 +11,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>${project.parent.groupId}</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>framework</artifactId>
         </dependency>
     </dependencies>

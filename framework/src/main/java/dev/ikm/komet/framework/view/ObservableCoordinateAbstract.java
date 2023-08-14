@@ -1,11 +1,11 @@
 /*
- * Copyright 2018 VetsEZ Inc, Sagebits LLC
+ * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,7 +29,7 @@ import java.util.Objects;
 /**
  * The class that actually makes the ImmutableCoordinate of the "Observable" coordinates Observable.
  * @author <a href="mailto:daniel.armbrust.list@sagebits.net">Dan Armbrust</a>
- * @author kec
+ * 
  */
 public abstract class ObservableCoordinateAbstract<T extends ImmutableCoordinate> implements ObservableCoordinate<T> {
     /**
