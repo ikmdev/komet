@@ -1,12 +1,11 @@
 /*
- * Copyright 2017 Organizations participating in ISAAC, ISAAC's KOMET, and SOLOR development include the
-         US Veterans Health Administration, OSHERA, and the Health Services Platform Consortium..
+ * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,7 +19,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javafx.beans.property.DoubleProperty;
+ import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
+ import dev.ikm.komet.navigator.graph.MultiParentVertexImpl;
+ import javafx.beans.property.DoubleProperty;
 import javafx.beans.value.WritableValue;
 import javafx.css.CssMetaData;
 import javafx.css.Styleable;
@@ -39,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * @author kec
+ *
  */
 public class MultiParentGraphCellSkin extends CellSkinBase<TreeCell<ConceptFacade>> {
     private static final Logger LOG = LoggerFactory.getLogger(MultiParentGraphCellSkin.class);

@@ -12,8 +12,18 @@
 
     <dependencies>
         <dependency>
-            <groupId>${project.parent.groupId}</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>framework</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>terms</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>common</artifactId>
         </dependency>
     </dependencies>
 

@@ -79,7 +79,7 @@ pipeline {
                         mvn --version
                         mvn clean install \
                             -s ${MAVEN_SETTINGS} \
-                            -P codeQuality,release,create-installer \
+                            -P codeQuality,release-enforcement,create-installer \
                             --batch-mode \
                             -e \
                             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
