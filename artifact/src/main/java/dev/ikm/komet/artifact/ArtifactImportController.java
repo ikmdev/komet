@@ -72,7 +72,6 @@ public class ArtifactImportController {
         importProgressBar.setProgress(0);
     }
 
-
     private Task<Boolean> createWorker(File selectedFile) {
         return new Task<Boolean>() {
 
