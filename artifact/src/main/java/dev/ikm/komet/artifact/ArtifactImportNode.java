@@ -46,7 +46,7 @@ public class ArtifactImportNode extends ExplorationNodeAbstract {
 
     @Override
     public void revertAdditionalPreferences() {
-
+        // No additional preferences.
     }
 
     @Override
@@ -72,7 +72,6 @@ public class ArtifactImportNode extends ExplorationNodeAbstract {
 
     @Override
     public void close() {
-
     }
 
     @Override
