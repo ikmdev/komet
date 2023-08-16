@@ -15,6 +15,10 @@
  */
 package dev.ikm.komet.framework.tabs;
 
+import dev.ikm.komet.framework.KometNode;
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.window.WindowComponent;
+import dev.ikm.komet.preferences.KometPreferences;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.Node;
@@ -34,9 +38,19 @@ public class DetachableTab extends Tab implements WindowComponent {
 
     public DetachableTab(KometNode kometNode) {
         super(kometNode.getTitle().getValue(), kometNode.getNode());
+        if (kometNode.getTitle().getValue().length() > 50) {
+            this.getStyleClass().add("long-text");
+        }
         this.kometNode = kometNode;
         setGraphic(kometNode.getTitleNode());
         textProperty().bind(kometNode.getTitle());
+        textProperty().addListener((obs, oldVal, newVal) -> {
+            if (kometNode.getTitle().getValue().length() > 50) {
+                this.getStyleClass().add("long-text");
+            } else {
+                this.getStyleClass().remove("long-text");
+            }
+        });
         tooltipProperty().setValue(kometNode.makeToolTip());
     }
 

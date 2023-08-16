@@ -431,8 +431,23 @@ modena.css is the default css.
 
 .tab-label {
     -fx-text-fill: white;
-    -fx-pref-width: 200;
-    -fx-alignment: left;
+    -fx-pref-width: -1;
+    -fx-alignment: top-left;
+    -fx-text-alignment: left;
+    -fx-max-width: 200px;
+    -fx-text-overrun: ellipsis;
+    -fx-wrap-text: true;
+}
+
+/*Custom style for DetachableTab.java*/
+.tab.long-text {
+    -fx-tab-pref-width: 250px;
+    -fx-tab-max-width: 350px;
+}
+
+.tab.long-text .tab-label {
+    -fx-pref-width: 300px;
+    -fx-max-width: 300px;
 }
 
 /* glphy-icon inside of tabs will be white... */
@@ -1477,10 +1492,11 @@ modena.css is the default css.
 }
 
 .menu-item-custom {
-  -fx-pref-width: 200px;
-  -fx-alignment: center-right;
-  -fx-padding: 0 20px 0 0;
+    -fx-pref-width: 400px;
+    -fx-alignment: center-right;
+    -fx-padding: 0 20px 0 0;
 }
+
 .pencil-button.button {
     -fx-min-width: 15;
     -fx-min-height: 14;
