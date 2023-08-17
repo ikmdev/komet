@@ -15,12 +15,34 @@
  */
 package dev.ikm.komet.artifact;
 
+import dev.ikm.komet.framework.KometNode;
+import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
+import javafx.event.ActionEvent;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mockito;
 
+import java.io.File;
+import java.util.zip.ZipEntry;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+
+
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ArtifactImportControllerTest {
     @Test
-    public void testSimple() {
-        assert true;
+    public void artifactImportControllerToString() {
+        // Given a sample title name
+        String sampleTitle = "sampleTitle";
+        // When we spy on artifact import controller
+        ArtifactImportController artifactImportController = spy(ArtifactImportController.class);
+
+        when(artifactImportController.toString()).thenReturn(sampleTitle);
+
+        // Then check the to string returns what we expect
+        assertEquals(artifactImportController.toString(), sampleTitle);
     }
 }
 
