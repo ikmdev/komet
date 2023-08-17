@@ -174,7 +174,9 @@ pipeline {
                                             ${mvnInstallerArgs} \
                                             --batch-mode \
                                             -e \
-                                            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+                                            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                                            -DskipTests \
+                                            -DskipITs
                                     """
                                 }
                             }
@@ -238,7 +240,9 @@ pipeline {
                                             ${mvnInstallerArgs} \
                                             --batch-mode \
                                             -e \
-                                            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+                                            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                                            -DskipTests \
+                                            -DskipITs
                                     """
                                 }
                             }
@@ -296,13 +300,15 @@ pipeline {
                                 configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
                                     //Build Komet and create installer
                                     sh """
-                                    mvn --version
-                                    mvn clean install \
-                                        -s ${MAVEN_SETTINGS} \
-                                        ${mvnInstallerArgs} \
-                                        --batch-mode \
-                                        -e \
-                                        -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+                                        mvn --version
+                                        mvn clean install \
+                                            -s ${MAVEN_SETTINGS} \
+                                            ${mvnInstallerArgs} \
+                                            --batch-mode \
+                                            -e \
+                                            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                                            -DskipTests \
+                                            -DskipITs
                                     """
                                 }
                             }
@@ -374,7 +380,9 @@ pipeline {
                                             ${mvnInstallerArgs_Windows} \
                                             --batch-mode \
                                             -e \
-                                            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+                                            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                                            -DskipTests \
+                                            -DskipITs
                                     """
                                 }
                             }
