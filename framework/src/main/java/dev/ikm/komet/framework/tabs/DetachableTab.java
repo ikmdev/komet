@@ -34,17 +34,18 @@ public class DetachableTab extends Tab implements WindowComponent {
 
     public DetachableTab(KometNode kometNode) {
         super(kometNode.getTitle().getValue(), kometNode.getNode());
+        final String longText = "long-text";
         if (kometNode.getTitle().getValue().length() > 50) {
-            getStyleClass().add("long-text");
+            this.getStyleClass().add(longText);
         }
         this.kometNode = kometNode;
         setGraphic(kometNode.getTitleNode());
         textProperty().bind(kometNode.getTitle());
         textProperty().addListener((obs, oldVal, newVal) -> {
-            if (kometNode.getTitle().getValue().length() > 50) {
-                getStyleClass().add("long-text");
+            if (newVal.length() > 50) {
+                getStyleClass().add(longText);
             } else {
-                getStyleClass().remove("long-text");
+                getStyleClass().remove(longText);
             }
         });
         tooltipProperty().setValue(kometNode.makeToolTip());
