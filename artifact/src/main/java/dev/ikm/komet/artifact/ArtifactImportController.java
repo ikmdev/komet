@@ -44,7 +44,7 @@ public class ArtifactImportController {
     private Button cancelButton;
 
     @FXML
-    private ProgressBar importProgressBar;
+    ProgressBar importProgressBar;
 
     @FXML
     void handleChooseFile(ActionEvent event) throws IOException {
@@ -87,7 +87,7 @@ public class ArtifactImportController {
         importProgressBar.setProgress(0);
     }
 
-    private Task<Boolean> createWorker(File selectedFile) {
+    protected Task<Boolean> createWorker(File selectedFile) {
         return new Task<Boolean>() {
 
             @Override
