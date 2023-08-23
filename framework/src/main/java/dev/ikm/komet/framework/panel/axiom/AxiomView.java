@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.panel.axiom;
 
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import javafx.event.Event;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -40,7 +41,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ * TODO: work with LogicalExpression rather than DiTree<EntityVertex> when LogicalExpression moves to TinkarCore.
+ * @author kec
  */
 public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
     public static final Border TOOL_BAR_BORDER = new Border(
@@ -58,15 +60,16 @@ public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
     private static final Logger LOG = LoggerFactory.getLogger(AxiomView.class);
     public final PremiseType premiseType;
     final ViewProperties viewProperties;
-    final SemanticEntityVersion axiomTreeSemanticVersion;
+    final ObservableSemanticVersion axiomTreeSemanticVersion;
     private final AnchorPane anchorPane = new AnchorPane();
-    DiTree<EntityVertex> axiomTree;
+    DiTreeEntity axiomTree;
+    // TODO, when we move LogicalExpression to tinkar-core, then also add logical expression, and use the logical expression...
     BorderPane borderPane = new BorderPane();
 
-    private AxiomView(SemanticEntityVersion axiomTreeSemanticVersion, PremiseType premiseType, ViewProperties viewProperties) {
+    private AxiomView(ObservableSemanticVersion axiomTreeSemanticVersion, PremiseType premiseType, ViewProperties viewProperties) {
         this.axiomTreeSemanticVersion = axiomTreeSemanticVersion;
-        viewProperties.calculator().getFieldForSemanticWithPurpose(axiomTreeSemanticVersion.nid(), TinkarTerm.LOGICAL_DEFINITION).ifPresentOrElse(objectField -> {
-            axiomTree = (DiTree<EntityVertex>) objectField.value();
+        viewProperties.calculator().getFieldForSemanticWithPurpose(axiomTreeSemanticVersion, TinkarTerm.LOGICAL_DEFINITION).ifPresentOrElse(objectField -> {
+            axiomTree = (DiTreeEntity) objectField.value();
         }, () -> {
             throw new IllegalStateException("No logical definition found. ");
         });
@@ -118,7 +121,7 @@ public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
         return Icon.TAXONOMY_PRIMITIVE_SINGLE_PARENT.makeIcon();
     }
 
-    public static AxiomView create(SemanticEntityVersion logicGraphVersion, PremiseType premiseType, ViewProperties viewProperties) {
+    public static AxiomView create(ObservableSemanticVersion logicGraphVersion, PremiseType premiseType, ViewProperties viewProperties) {
         AxiomView axiomView = new AxiomView(logicGraphVersion, premiseType, viewProperties);
         BorderPane axiomBorderPane = axiomView.create(axiomView.axiomTree.root());
         AnchorPane.setBottomAnchor(axiomBorderPane, 0.0);
@@ -134,7 +137,7 @@ public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
         return clauseView.rootBorderPane;
     }
 
-    public static AxiomView createWithCommitPanel(SemanticEntityVersion logicGraphVersion, PremiseType premiseType, ViewProperties viewProperties) {
+    public static AxiomView createWithCommitPanel(ObservableSemanticVersion logicGraphVersion, PremiseType premiseType, ViewProperties viewProperties) {
         AxiomView axiomView = new AxiomView(logicGraphVersion, premiseType, viewProperties);
         BorderPane axiomBorderPane = axiomView.create(axiomView.axiomTree.root());
         AnchorPane.setBottomAnchor(axiomBorderPane, 0.0);

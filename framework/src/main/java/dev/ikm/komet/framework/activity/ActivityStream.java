@@ -74,6 +74,15 @@ public class ActivityStream implements Broadcaster<ImmutableList<EntityFacade>>,
         PrimitiveData.getStatesToSave().add(this);
     }
 
+    public PublicIdStringKey<ActivityStream> getActivityStreamKey() {
+        return activityStreamKey;
+    }
+
+    public String getStreamName() {
+        return activityStreamKey.getString();
+    }
+
+
     @Override
     public void save() {
         try {

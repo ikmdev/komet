@@ -15,6 +15,10 @@
  */
 package dev.ikm.komet.framework.controls;
 
+import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -103,23 +107,31 @@ public class EntityLabel extends Label {
     }
 
     private void showPopup(int conceptNid, MouseEvent mouseEvent) {
-        Latest<SemanticEntityVersion> axiomSemanticForEntity = viewProperties.calculator().getAxiomSemanticForEntity(conceptNid, premiseType);
-        if (!axiomSemanticForEntity.isPresent()) {
-            premiseType = PremiseType.STATED;
-            axiomSemanticForEntity = viewProperties.calculator().getAxiomSemanticForEntity(conceptNid, premiseType);
+
+        Optional<ObservableSemanticSnapshot> optionalAxiomSnapshot =
+                ObservableSemantic.getAxiomSnapshot(conceptNid, premiseType, viewProperties.calculator());
+
+        if (optionalAxiomSnapshot.isEmpty()) {
+            // See if better luck with Stated premise type...
+            optionalAxiomSnapshot =
+                    ObservableSemantic.getAxiomSnapshot(conceptNid, PremiseType.STATED, viewProperties.calculator());
         }
-        if (axiomSemanticForEntity.isPresent()) {
-            PopOver popover = new PopOver();
-            AxiomView axiomView = AxiomView.createWithCommitPanel(axiomSemanticForEntity.get(),
-                    premiseType,
-                    viewProperties);
-            popover.setContentNode(axiomView.getEditor());
-            popover.setCloseButtonEnabled(true);
-            popover.setHeaderAlwaysVisible(false);
-            popover.setTitle("");
-            popover.show(openConceptButton, mouseEvent.getScreenX(), mouseEvent.getScreenY());
-            mouseEvent.consume();
-        }
+
+        optionalAxiomSnapshot.ifPresent(observableAxiomSnapshot -> {
+            observableAxiomSnapshot.getLatestVersion().ifPresent(observableSemanticVersion -> {
+                PopOver popover = new PopOver();
+                AxiomView axiomView = AxiomView.createWithCommitPanel(observableSemanticVersion,
+                        premiseType,
+                        viewProperties);
+                popover.setContentNode(axiomView.getEditor());
+                popover.setCloseButtonEnabled(true);
+                popover.setHeaderAlwaysVisible(false);
+                popover.setTitle("");
+                popover.show(openConceptButton, mouseEvent.getScreenX(), mouseEvent.getScreenY());
+                mouseEvent.consume();
+            });
+        });
+
     }
 }
 

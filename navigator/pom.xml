@@ -34,28 +34,10 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <compilerArgs>
+                        <arg>--enable-preview</arg>
                         <arg>--add-exports</arg>
                         <arg>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</arg>
                     </compilerArgs>
-                    <fork>true</fork>
-                    <annotationProcessorPaths>
-                        <annotationProcessorPath>
-                            <groupId>io.soabase.record-builder</groupId>
-                            <artifactId>record-builder-processor</artifactId>
-                            <version>${record-builder-core.version}</version>
-                        </annotationProcessorPath>
-                        <annotationProcessorPath>
-                            <groupId>com.google.auto.service</groupId>
-                            <artifactId>auto-service</artifactId>
-                            <version>${auto-service.version}</version>
-                        </annotationProcessorPath>
-                    </annotationProcessorPaths>
-                    <annotationProcessors>
-                        <annotationProcessor>io.soabase.recordbuilder.processor.RecordBuilderProcessor
-                        </annotationProcessor>
-                        <annotationProcessor>com.google.auto.service.processor.AutoServiceProcessor
-                        </annotationProcessor>
-                    </annotationProcessors>
                 </configuration>
             </plugin>
 
@@ -63,10 +45,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <additionalOptions>--add-exports javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</additionalOptions>
+                    <additionalOptions>--enable-preview --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</additionalOptions>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 </project>

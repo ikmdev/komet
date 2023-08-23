@@ -17,10 +17,10 @@ package dev.ikm.komet.framework.rulebase;
 
 import java.util.UUID;
 
-public interface Consequence<T> {
+public interface Consequence<T> extends Comparable<Consequence> {
     UUID consequenceUUID();
 
-    UUID ruleUUID();
+    String ruleMethod();
 
     T get();
 }

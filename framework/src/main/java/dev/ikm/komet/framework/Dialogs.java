@@ -116,7 +116,6 @@ public class Dialogs {
             ExceptionDialog dlg = new ExceptionDialog(throwable);
             dlg.setTitle(title);
             dlg.setHeaderText(message);
-            dlg.getDialogPane().setHeaderText(throwable.getMessage());
             dlg.initStyle(StageStyle.UTILITY);
             dlg.initOwner(parentWindow);
             dlg.setResizable(true);

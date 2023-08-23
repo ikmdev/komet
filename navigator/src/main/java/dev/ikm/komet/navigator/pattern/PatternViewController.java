@@ -51,9 +51,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.OptionalInt;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PatternViewController {
     private static final Logger LOG = LoggerFactory.getLogger(PatternViewController.class);
@@ -145,6 +147,7 @@ public class PatternViewController {
         refreshTaxonomy();
     }
 
+
     private void refreshTaxonomy() {
         this.rootTreeItem.getChildren().clear();
         TinkExecutor.threadPool().execute(() -> {
@@ -167,13 +170,22 @@ public class PatternViewController {
             for (TreeItem<Object> patternItem : patternItems) {
                 ArrayList<TreeItem<Object>> patternChildren = new ArrayList<>();
                 int patternNid = (Integer) patternItem.getValue();
-                this.viewProperties.calculator().forEachSemanticVersionOfPattern(patternNid, (semanticEntityVersion, patternEntityVersion) -> {
-                    patternChildren.add(new TreeItem<>(semanticEntityVersion.nid()));
+                AtomicInteger childCount = new AtomicInteger();
+                final int maxChildren = 50;
+                PrimitiveData.get().forEachSemanticNidOfPattern(patternNid, semanticNid -> {
+                    if (childCount.incrementAndGet() < maxChildren) {
+                        patternChildren.add(new TreeItem<>(semanticNid));
+                    }
                 });
+                if (childCount.get() >= maxChildren) {
+                    NumberFormat numberFormat = NumberFormat.getInstance();
+                    patternChildren.add(new TreeItem<>(numberFormat.format(childCount.get() - maxChildren) + " additional semantics suppressed..."));
+                }
                 Platform.runLater(() -> patternItem.getChildren().setAll(patternChildren));
             }
         });
     }
+
 
     private void savePreferences() {
         // TODO selected graphConfigurationKey should be saved in preferences.

@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.navigator.graph;
 
+
+import dev.ikm.tinkar.common.alert.AlertStreams;
 import javafx.application.Platform;
 import org.eclipse.collections.api.collection.ImmutableCollection;
 import dev.ikm.komet.framework.view.ObservableView;
@@ -92,7 +94,13 @@ public class FetchChildren extends TrackingCallable<Void> {
                         try {
                             ConceptEntity childChronology = Entity.getFast(childLink.destinationNid());
                             MultiParentVertexImpl childItem = new MultiParentVertexImpl(childChronology, parentGraphItem.getGraphController(), childLink.typeNids(), null);
-                            childItem.setDefined(this.viewCalculator.hasSufficientSet(childChronology));
+                            try {
+                                childItem.setDefined(this.viewCalculator.hasSufficientSet(childChronology));
+                            } catch (Throwable e) {
+                                // TODO remove when better handling for: More than one set of axioms for concept: ConceptRecord{SNOMED CT July 2002 Release: 20020731 [R] <-2142333838>
+                                // dev.ikm.tinkar.coordinate.logic.calculator.LogicCalculatorWithCache.hasSufficientSet(LogicCalculatorWithCache.java:101)
+                                AlertStreams.dispatchToRoot(e);
+                            }
                             childItem.toString();
                             childItem.setMultiParent(navigator.getParentNids(childLink.destinationNid()).length > 1);
                             childItem.isLeaf();

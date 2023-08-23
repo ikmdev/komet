@@ -71,57 +71,22 @@ public class AddToContextMenuSimple implements AddToContextMenu {
                                  ObservableValue<EntityFacade> entityFocusProperty,
                                  SimpleIntegerProperty selectionIndexProperty, Runnable unlink) {
         MenuItem searchForAlternative = new MenuItem("Search for alternative concept");
-        searchForAlternative.setOnAction(event -> {
-            EntityFacade entityFacade = entityFocusProperty.getValue();
-            if (entityFacade != null) {
-                Entity entity = Entity.getFast(entityFacade.nid());
-                String seedText = viewProperties.calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade);
-                seedText = "+" + seedText.replace(" ", " +");
-                seedText = seedText.replace("(", "");
-                seedText = seedText.replace(")", "");
-                PopOver popover = new PopOver(control);
-                try {
-                    SearchControllerAndNode searchControllerAndNode = new SearchControllerAndNode();
-                    ReadOnlyObjectProperty<PublicIdStringKey<ActivityStream>> activityStreamKeyProperty = new SimpleObjectProperty<>(ActivityStreams.UNLINKED);
-                    searchControllerAndNode.controller().setProperties(popover.getRoot(), activityStreamKeyProperty, viewProperties, null);
-                    searchControllerAndNode.controller().setQueryString(seedText);
-                    searchControllerAndNode.controller().getDoubleCLickConsumers().add(o -> {
-                        if (control instanceof EntityLabelWithDragAndDrop entityLabelWithDragAndDrop) {
-                            LOG.info("Double click on: " + o);
-                            switch (o) {
-                                case SemanticEntityVersion semanticVersion -> entityLabelWithDragAndDrop.setEntity(semanticVersion.referencedComponent());
-                                case ConceptEntityVersion conceptVersion -> entityLabelWithDragAndDrop.setEntity(conceptVersion.entity());
-                                default -> AlertStreams.getRoot().dispatch(AlertObject.makeWarning("Can't handle double click on class " + o.getClass(),
-                                        o.toString()));
-                            }
+        searchForAlternative.setOnAction(new SearchForConceptActionEventHandler(control, viewProperties,
+                o -> {
+                    if (control instanceof EntityLabelWithDragAndDrop entityLabelWithDragAndDrop) {
+                        LOG.info("Double click on: " + o);
+                        switch (o) {
+                            case SemanticEntityVersion semanticVersion ->
+                                    entityLabelWithDragAndDrop.setEntity(semanticVersion.referencedComponent());
+                            case ConceptEntityVersion conceptVersion ->
+                                    entityLabelWithDragAndDrop.setEntity(conceptVersion.entity());
+                            default ->
+                                    AlertStreams.getRoot().dispatch(AlertObject.makeWarning("Can't handle double click on class " + o.getClass(),
+                                            o.toString()));
                         }
-                        popover.hide();
-                    });
-                    popover.setContentNode(searchControllerAndNode.searchPanelPane());
-                    searchControllerAndNode.searchPanelPane().setMinSize(450, 400);
-                    searchControllerAndNode.searchPanelPane().setPrefSize(450, 400);
-                    searchControllerAndNode.searchPanelPane().setMaxSize(700, 1024);
-                    //popover.setCloseButtonEnabled(true);
-                    //popover.setHeaderAlwaysVisible(true);
-
-                    Object source = event.getSource();
-                    popover.setArrowLocation(PopOver.ArrowLocation.TOP_LEFT);
-                    popover.setDetachable(false);
-                    if (source instanceof MenuItem menuItem) {
-                        //popover.show(control, 10);
-                        //TODO relocate top or bottom based on location in window...
-                        Bounds controlBounds = control.localToScreen(control.getBoundsInLocal());
-                        popover.show(control, controlBounds.getMinX() + 25, controlBounds.getMaxY() - 5);
-                    } else {
-                        AlertStreams.getRoot().dispatch(AlertObject.makeError(
-                                new IllegalStateException("Event is not associated with a window: " + event)));
                     }
-                } catch (IOException e) {
-                    AlertStreams.getRoot().dispatch(AlertObject.makeError(e));
-                }
-                event.consume();
-            }
-        });
+                 },
+                entityFocusProperty.getValue()));
         contextMenu.getItems().add(searchForAlternative);
 
         for (PublicIdStringKey<ActivityStream> activityStreamKey : ActivityStreams.KEYS) {

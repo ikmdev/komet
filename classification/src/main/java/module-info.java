@@ -17,22 +17,20 @@ import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.reasoner.ReasonerResultsNodeFactory;
 
 module dev.ikm.komet.classification {
-    requires transitive dev.ikm.komet.framework;
-    requires transitive static com.google.auto.service;
-    requires dev.ikm.tinkar.collection;
-    requires org.roaringbitmap;
-    requires org.jgrapht.core;
+	requires transitive dev.ikm.komet.framework;
+	requires transitive static com.google.auto.service;
+	requires dev.ikm.tinkar.collection;
+	requires org.roaringbitmap;
+	requires org.jgrapht.core;
+    requires org.semanticweb.owlapi.parsers;
+    requires org.semanticweb.owlapi.impl;
+    requires org.semanticweb.elk.owlapi;
+    requires org.semanticweb.owlapi.apibinding;
 
     opens dev.ikm.komet.reasoner;
-    exports dev.ikm.komet.reasoner;
-    exports dev.ikm.komet.reasoner.expression;
-    opens dev.ikm.komet.reasoner.expression;
-    exports dev.ikm.komet.reasoner.elk;
-    opens dev.ikm.komet.reasoner.elk;
-    exports dev.ikm.komet.reasoner.sorocket;
-    opens dev.ikm.komet.reasoner.sorocket;
+	exports dev.ikm.komet.reasoner;
 
-    provides KometNodeFactory
-            with ReasonerResultsNodeFactory;
+	provides KometNodeFactory
+			with ReasonerResultsNodeFactory;
 
 }

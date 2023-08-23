@@ -3,7 +3,7 @@
     <parent>
         <groupId>dev.ikm.build</groupId>
         <artifactId>java-parent</artifactId>
-        <version>1.14.0</version>
+        <version>1.17.0</version>
         <relativePath />
     </parent>
 
@@ -52,6 +52,7 @@
         <module>list</module>
         <module>navigator</module>
         <module>progress</module>
+        <module>rules</module>
         <module>search</module>
         <module>amplifydetails</module>
         <module>application</module>
@@ -61,14 +62,20 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
-        <tinkar-core.version>1.10.0</tinkar-core.version>
+        <tinkar-core.version>1.12.0</tinkar-core.version>
+
+        <ikm-classifier.groupId>dev.ikm.elk</ikm-classifier.groupId>
+        <ikm-classifier.version>0.7.1</ikm-classifier.version>
+
+        <ikm-evrete.groupId>dev.ikm.evrete</ikm-evrete.groupId>
+        <ikm-evrete.version>3.0.04-ikm-r2</ikm-evrete.version>
 
         <tinkar-jpms-deps.groupId>dev.ikm.jpms</tinkar-jpms-deps.groupId>
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
 
         <jpms-auto-service.version>1.0.1-r2</jpms-auto-service.version>
         <jpms-record-builder-core.version>34-r2</jpms-record-builder-core.version>
-        <jpms-roaringbitmap.version>0.9.31-r2</jpms-roaringbitmap.version>
+        <jpms-roaringbitmap.version>0.9.31-r3</jpms-roaringbitmap.version>
 
         <classgraph.version>4.8.115</classgraph.version>
 
@@ -91,6 +98,7 @@
         <junit-platform-launcher.version>1.7.0</junit-platform-launcher.version>
         <junit-jupiter-api.version>5.6.3</junit-jupiter-api.version>
         <common-java5.version>3.0.0-M9</common-java5.version>
+        <owlapi.version>4.5.25-ikm-r1</owlapi.version>
 
         <maven.assembly-plugin.version>3.6.0</maven.assembly-plugin.version>
     </properties>
@@ -176,6 +184,12 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>rules</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- Tinkar Core Dependencies -->
             <dependency>
                 <groupId>${tinkar-core.groupId}</groupId>
@@ -229,6 +243,25 @@
                 <groupId>${tinkar-core.groupId}</groupId>
                 <artifactId>terms</artifactId>
                 <version>${tinkar-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>executor-provider</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+
+            <!-- IKM Evrete Dependencies -->
+            <dependency>
+                <groupId>${ikm-evrete.groupId}</groupId>
+                <artifactId>evrete-core</artifactId>
+                <version>${ikm-evrete.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${ikm-evrete.groupId}</groupId>
+                <artifactId>evrete-dsl-java</artifactId>
+                <version>${ikm-evrete.version}</version>
             </dependency>
 
             <!-- Wrapped JPMS Depenendencies -->
@@ -441,6 +474,36 @@
                 <artifactId>scenic-view</artifactId>
                 <version>${scenic-view.version}</version>
             </dependency>
+
+            <dependency>
+				<groupId>net.sourceforge.owlapi</groupId>
+				<artifactId>owlapi-api</artifactId>
+				<version>${owlapi.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>net.sourceforge.owlapi</groupId>
+				<artifactId>owlapi-impl</artifactId>
+				<version>${owlapi.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>net.sourceforge.owlapi</groupId>
+				<artifactId>owlapi-apibinding</artifactId>
+				<version>${owlapi.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>net.sourceforge.owlapi</groupId>
+				<artifactId>owlapi-parsers</artifactId>
+				<version>${owlapi.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${ikm-classifier.groupId}</groupId>
+				<artifactId>elk-owlapi4</artifactId>
+				<version>${ikm-classifier.version}</version>
+			</dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -504,5 +567,35 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <fork>true</fork>
+                    <compilerArgs>
+                        <arg>--enable-preview</arg>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                    <annotationProcessorPaths>
+                        <annotationProcessorPath>
+                            <groupId>io.soabase.record-builder</groupId>
+                            <artifactId>record-builder-processor</artifactId>
+                            <version>${record-builder-processor.version}</version>
+                        </annotationProcessorPath>
+                        <annotationProcessorPath>
+                            <groupId>com.google.auto.service</groupId>
+                            <artifactId>auto-service</artifactId>
+                            <version>${auto-service.version}</version>
+                        </annotationProcessorPath>
+                    </annotationProcessorPaths>
+                    <annotationProcessors>
+                        <annotationProcessor>io.soabase.recordbuilder.processor.RecordBuilderProcessor</annotationProcessor>
+                        <annotationProcessor>com.google.auto.service.processor.AutoServiceProcessor</annotationProcessor>
+                    </annotationProcessors>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 </project>

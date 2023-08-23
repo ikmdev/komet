@@ -37,6 +37,9 @@ public class LoadDataSourceTask extends TrackingCallable<Void> {
             PrimitiveData.start();
             Platform.runLater(() -> state.set(AppState.RUNNING));
             return null;
+        } catch (Throwable ex) {
+            ex.printStackTrace();
+            return null;
         } finally {
             updateTitle(PrimitiveData.getController().controllerName() + " completed");
             updateMessage("In " + durationString());

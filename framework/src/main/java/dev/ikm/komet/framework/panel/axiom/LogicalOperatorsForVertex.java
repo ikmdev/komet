@@ -70,11 +70,6 @@ public enum LogicalOperatorsForVertex {
      */
     FEATURE(TinkarTerm.FEATURE),
 
-    /**
-     * The literal boolean.
-     */
-    LITERAL(TinkarTerm.LITERAL_VALUE),
-
     PROPERTY_SET(TinkarTerm.PROPERTY_SET),
 
     PROPERTY_PATTERN_IMPLICATION(TinkarTerm.PROPERTY_PATTERN_IMPLICATION);

@@ -39,8 +39,8 @@ public class AxiomComparator implements Comparator<ClauseView> {
 
     @Override
     public int compare(ClauseView o1, ClauseView o2) {
-        EntityVertex vertex1 = o1.logicVertex;
-        EntityVertex vertex2 = o2.logicVertex;
+        EntityVertex vertex1 = o1.axiomVertex;
+        EntityVertex vertex2 = o2.axiomVertex;
 
         int x = compare(vertex1, vertex2);
         if (x != 0) return x;

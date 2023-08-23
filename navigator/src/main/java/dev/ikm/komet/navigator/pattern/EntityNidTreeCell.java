@@ -15,6 +15,11 @@
  */
 package dev.ikm.komet.navigator.pattern;
 
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.geometry.HPos;
 import javafx.geometry.Rectangle2D;
 import javafx.geometry.VPos;
@@ -35,10 +40,15 @@ import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.PatternEntity;
+import org.eclipse.collections.api.list.ImmutableList;
+
+import java.util.UUID;
 
 public class EntityNidTreeCell extends TreeCell<Object>
         implements DraggableWithImage {
 
+    static final EntityProxy identifierPatternProxy = EntityProxy.make("Identifier pattern",
+            new UUID[] {UUID.fromString("65dd3f06-71ff-5650-8fb3-ce4019e50642")});
     final ViewProperties viewProperties;
     TilePane graphicTilePane;
     private double dragOffset = 0;
@@ -67,6 +77,15 @@ public class EntityNidTreeCell extends TreeCell<Object>
                     icon = Icon.PATTERN.makeIcon();
                 } else {
                     icon = Icon.PAPER_CLIP.makeIcon();
+                }
+                if (entity instanceof SemanticEntity<?> semanticEntity) {
+                    if (semanticEntity.patternNid() == identifierPatternProxy.nid()) {
+                        //TODO Move better string descriptions to lanague calcualator
+                        Latest<? extends SemanticEntityVersion> latestId = viewProperties.calculator().latest(semanticEntity);
+                        ImmutableList fields = latestId.get().fieldValues();
+                        entityDescriptionText = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
+                                ": " + fields.get(1);
+                    }
                 }
                 setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
                 GridPane.setConstraints(icon, 0, 0, 1, 1, HPos.LEFT, VPos.TOP, Priority.NEVER, Priority.NEVER);

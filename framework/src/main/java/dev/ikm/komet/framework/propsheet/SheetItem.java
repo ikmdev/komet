@@ -52,10 +52,11 @@ public class SheetItem<T> implements PropertySheet.Item {
     private final Class propertyEditorClass;
     private final ValidationSupport validationSupport;
     private final Validator<T> validator;
+    ObservableField<?> observableField;
 
     private SheetItem(Class<?> classType, String category, String name,
                       String description, Property<T> property, Class propertyEditorClass,
-                      ValidationSupport validationSupport, Validator<T> validator) {
+                      ValidationSupport validationSupport, Validator<T> validator, ObservableField<?> observableField) {
         this.classType = classType;
         this.category = category;
         this.name = name;
@@ -64,14 +65,19 @@ public class SheetItem<T> implements PropertySheet.Item {
         this.propertyEditorClass = propertyEditorClass;
         this.validationSupport = validationSupport;
         this.validator = validator;
+        this.observableField = observableField;
     }
 
-    public static <T> SheetItem<T> make(StringProperty property, ValidationSupport validationSupport, Validator<T> validator) {
+    public ObservableField<?> getObservableField() {
+        return observableField;
+    }
+
+    public static <T> SheetItem<T> make(StringProperty property, ValidationSupport validationSupport, Validator<T> validator, ObservableField<?> observableField) {
         if (validationSupport == null || validator == null) {
             throw new IllegalStateException("Validation and validation support cannot be null");
         }
         return new SheetItem(String.class, null, property.getName(),
-                null, property, KometPropertyEditorFactory.TextFieldEditor.class, validationSupport, validator);
+                null, property, KometPropertyEditorFactory.TextFieldEditor.class, validationSupport, validator, observableField);
     }
 
     public static <T> SheetItem<T> make(ObservableField field, SemanticEntityVersion version, ViewProperties viewProperties) {
@@ -118,16 +124,6 @@ public class SheetItem<T> implements PropertySheet.Item {
             case DITREE: {
                 classType = DiTree.class;
                 propertyEditorClass = AxiomView.class;
-                DiTree<EntityVertex> axiomTree = (DiTree<EntityVertex>) field.value();
-                // TODO consider if this is the right model data... PREMISE_TYPE_FOR_MANIFOLD?
-                // TODO update the EL_PLUS_PLUS_STATED_FORM_ASSEMBLAGE to pattern? Need to clean up metadata.
-                if (viewProperties.nodeView().logicCoordinate().inferredAxiomsPatternNid() == version.patternNid()) {
-                    axiomTree.root().putUncommittedProperty(TinkarTerm.PREMISE_TYPE_FOR_MANIFOLD.nid(), TinkarTerm.INFERRED_PREMISE_TYPE);
-                } else if (viewProperties.nodeView().logicCoordinate().statedAxiomsPatternNid() == version.patternNid()) {
-                    axiomTree.root().putUncommittedProperty(TinkarTerm.PREMISE_TYPE_FOR_MANIFOLD.nid(), TinkarTerm.STATED_PREMISE_TYPE);
-                }
-                // TODO restructure AxiomView to work with just the field, and not require the semantic.
-                axiomTree.root().putUncommittedProperty(TinkarTerm.LOGICAL_EXPRESSION_SEMANTIC.nid(), version);
             }
             break;
             default:
@@ -139,7 +135,7 @@ public class SheetItem<T> implements PropertySheet.Item {
 
         return new SheetItem<>(classType, category, name,
                 description, property, propertyEditorClass,
-                validationSupport, validator);
+                validationSupport, validator, field);
     }
 
     public static <T> SheetItem<T> make(ObservableField field, ViewProperties viewProperties) {
@@ -161,32 +157,32 @@ public class SheetItem<T> implements PropertySheet.Item {
 
         return new SheetItem<>(classType, category, name,
                 description, fieldDefinition.valueProperty(), propertyEditorClass,
-                validationSupport, validator);
+                validationSupport, validator,
+                null);
     }
 
     public static <T> SheetItem<T> make(StringProperty property) {
 
         return new SheetItem(String.class, null, property.getName(),
-                null, property, null, null, null);
+                null, property, null, null, null, null);
     }
 
     public static <T> SheetItem<T> makeForPassword(StringProperty property) {
 
         return new SheetItem(String.class, null, property.getName(),
-                null, property, PasswordEditor.class, null, null);
+                null, property, PasswordEditor.class, null, null, null);
     }
 
     public static <T> SheetItem<T> makeForPassword(StringProperty property, ValidationSupport validationSupport, Validator<T> validator) {
 
         return new SheetItem(String.class, null, property.getName(),
-                null, property, PasswordEditor.class, validationSupport, validator);
+                null, property, PasswordEditor.class, validationSupport, validator, null);
     }
 
     public static PropertySheet.Item make(BooleanProperty booleanProperty) {
 
         return new SheetItem(Boolean.class, null, booleanProperty.getName(),
-                null, booleanProperty, null, null, null);
-
+                null, booleanProperty, null, null, null, null);
     }
 
     @Override

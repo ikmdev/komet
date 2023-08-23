@@ -15,36 +15,43 @@
  */
 package dev.ikm.komet.framework.panel.axiom;
 
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.TinkarTerm;
+
 public enum ConcreteDomainOperators {
     /**
      * The equals.
      */
-    EQUALS("="),
+    EQUALS("=", TinkarTerm.EQUAL_TO),
 
     /**
      * The less than.
      */
-    LESS_THAN("<"),
+    LESS_THAN("<", TinkarTerm.LESS_THAN),
 
     /**
      * The less than equals.
      */
-    LESS_THAN_EQUALS("≤"),
+    LESS_THAN_EQUALS("≤", TinkarTerm.LESS_THAN_OR_EQUAL_TO),
 
     /**
      * The greater than.
      */
-    GREATER_THAN(">"),
+    GREATER_THAN(">", TinkarTerm.GREATER_THAN),
 
     /**
      * The greater than equals.
      */
-    GREATER_THAN_EQUALS("≥");
+    GREATER_THAN_EQUALS("≥", TinkarTerm.GREATER_THAN_OR_EQUAL_TO);
 
-    final String symbol;
+    public final ConceptFacade conceptRepresentation;
 
-    private ConcreteDomainOperators(String symbol) {
+    public final String symbol;
+
+    ConcreteDomainOperators(String symbol, ConceptFacade conceptRepresentation) {
         this.symbol = symbol;
+        this.conceptRepresentation = conceptRepresentation;
     }
 
 
@@ -52,4 +59,14 @@ public enum ConcreteDomainOperators {
     public String toString() {
         return symbol;
     }
+
+    public static ConcreteDomainOperators fromConcept(ConceptFacade conceptRepresentation) {
+        for (ConcreteDomainOperators operator: ConcreteDomainOperators.values()) {
+            if (operator.conceptRepresentation.nid() == conceptRepresentation.nid()) {
+                return operator;
+            }
+        }
+        throw new IllegalStateException("No ConcreteDomainOperators for " + PrimitiveData.text(conceptRepresentation.nid()));
+    }
+
 }

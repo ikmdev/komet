@@ -21,6 +21,8 @@ import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.alert.AlertObject;
+import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -135,7 +137,7 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
             TinkExecutor.threadPool().execute(() -> {
                 try {
                     TreeItem<Object> tempRoot = new TreeItem<>("Temp root");
-                    ImmutableList<LatestVersionSearchResult> results = viewProperties.calculator().search(queryString.getText(), 1000);
+                    ImmutableList<LatestVersionSearchResult> results = viewProperties.calculator().search(queryString.getText().strip(), 1000);
                     LOG.info("Finished search. Hits: " + results.size());
                     switch (resultsLayoutCombo.getSelectionModel().getSelectedItem()) {
                         case MATCHED_SEMANTIC_SCORE -> {
@@ -178,8 +180,8 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
                     Platform.runLater(() -> {
                         resultsRoot.getChildren().setAll(tempRoot.getChildren());
                     });
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (Throwable e) {
+                    AlertStreams.getRoot().dispatch(AlertObject.makeError(e.getClass().getSimpleName() + " during search", queryString.getText().strip(), e));
                 }
             });
         }

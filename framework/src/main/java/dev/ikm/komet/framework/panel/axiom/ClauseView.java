@@ -15,6 +15,20 @@
  */
 package dev.ikm.komet.framework.panel.axiom;
 
+import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
+import dev.ikm.komet.framework.performance.Measures;
+import dev.ikm.komet.framework.performance.Topic;
+import dev.ikm.komet.framework.performance.impl.ObservationRecord;
+import dev.ikm.komet.framework.rulebase.Consequence;
+import dev.ikm.komet.framework.rulebase.ConsequenceAction;
+import dev.ikm.komet.framework.rulebase.ConsequenceMenu;
+import dev.ikm.komet.framework.rulebase.RuleService;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.component.Concept;
+import dev.ikm.tinkar.coordinate.Coordinates;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.Event;
 import javafx.geometry.Bounds;
@@ -76,7 +90,7 @@ public class ClauseView {
     private static final Logger LOG = LoggerFactory.getLogger(ClauseView.class);
 
     protected final AxiomView axiomView;
-    protected final EntityVertex logicVertex;
+    protected final EntityVertex axiomVertex;
     protected final Label titleLabel = new Label();
     protected final BorderPane rootBorderPane = new BorderPane();
     protected final GridPane rootGridPane = new GridPane();
@@ -92,8 +106,8 @@ public class ClauseView {
     boolean editable = false;
     boolean addChildren = true;
 
-    public ClauseView(EntityVertex logicVertex, AxiomView axiomView) {
-        this.logicVertex = logicVertex;
+    public ClauseView(EntityVertex axiomVertex, AxiomView axiomView) {
+        this.axiomVertex = axiomVertex;
         this.axiomView = axiomView;
         this.axiomView.setPremiseTypePseudoClasses(rootBorderPane);
         rootGridPane.setBorder(TOOL_BAR_BORDER);
@@ -114,7 +128,8 @@ public class ClauseView {
         titleLabel.setOnDragDetected(this::handleDragDetected);
         titleLabel.setOnDragExited(this::handleDragExited);
         titleLabel.setOnDragDone(this::handleDragDone);
-        LogicalOperatorsForVertex vertexLogicalOperator = LogicalOperatorsForVertex.get(logicVertex);
+        //titleLabel.setMaxWidth(425);
+        LogicalOperatorsForVertex vertexLogicalOperator = LogicalOperatorsForVertex.get(axiomVertex);
         switch (vertexLogicalOperator) {
             case CONCEPT -> setupForConcept();
             case FEATURE -> setupForFeature();
@@ -124,26 +139,6 @@ public class ClauseView {
             case DEFINITION_ROOT -> setupForDefinitionRoot();
             case PROPERTY_SET -> setupForPropertySet();
             case PROPERTY_PATTERN_IMPLICATION -> setupForPropertyPatternImplication();
-            case LITERAL -> {
-                Optional<Object> optionalLiteral = LITERAL.getProperty(logicVertex);
-                optionalLiteral.ifPresentOrElse(literalObject -> {
-                    if (literalObject instanceof Float floatLiteral) {
-                        setupForLiteralFloat(floatLiteral);
-                    } else if (literalObject instanceof Boolean booleanLiteral) {
-                        setupForLiteralBoolean(booleanLiteral);
-                    } else if (literalObject instanceof Integer integerLiteral) {
-                        setupForLiteralInteger(integerLiteral);
-                    } else if (literalObject instanceof String stringLiteral) {
-                        setupForLiteralString(stringLiteral);
-                    } else if (literalObject instanceof Instant instantLiteral) {
-                        setupForLiteralInstant(instantLiteral);
-                    } else {
-                        throw new IllegalStateException("Can't handle literal class. " + logicVertex);
-                    }
-                }, () -> {
-                    throw new IllegalStateException("Literal does not have literal value. " + logicVertex);
-                });
-            }
         }
 
         rootBorderPane.setPadding(new Insets(2, 0, 0, 0));
@@ -152,7 +147,7 @@ public class ClauseView {
         childBox.setBorder(CHILD_BOX_BORDER);
         childBox.setPadding(new Insets(0, 10, 0, 10));
         if (addChildren) {
-            for (EntityVertex childNode : axiomTree().successors(logicVertex)) {
+            for (EntityVertex childNode : axiomTree().successors(axiomVertex)) {
                 switch (LogicalOperatorsForVertex.get(childNode)) {
                     case AND -> {
                         for (EntityVertex andChildNode : axiomTree().successors(childNode)) {
@@ -173,7 +168,7 @@ public class ClauseView {
             childBox.getChildren().add(childClause.rootBorderPane);
         }
         rootBorderPane.setCenter(childBox);
-        rootBorderPane.setUserData(logicVertex);
+        rootBorderPane.setUserData(axiomVertex);
     }
 
     private void setupForPropertyPatternImplication() {
@@ -273,7 +268,7 @@ public class ClauseView {
         rootBorderPane.getStyleClass()
                 .add(StyleClasses.DEF_SUFFICIENT_SET.toString());
         titleLabel.setText(axiomView.getEntityForAxiomsText(
-                calculator().getPreferredDescriptionTextWithFallbackOrNid(logicVertex.getMeaningNid())));
+                calculator().getPreferredDescriptionTextWithFallbackOrNid(axiomVertex.getMeaningNid())));
         titleLabel.setGraphic(Icon.TAXONOMY_DEFINED_SINGLE_PARENT.makeIcon());
         int column = 0;
         this.axiomView.addToGridPaneNoGrow(rootGridPane, expandButton, column++);
@@ -287,7 +282,7 @@ public class ClauseView {
         rootBorderPane.getStyleClass()
                 .add(StyleClasses.DEF_NECESSARY_SET.toString());
         titleLabel.setText(axiomView.getEntityForAxiomsText(
-                calculator().getPreferredDescriptionTextWithFallbackOrNid(logicVertex.getMeaningNid())
+                calculator().getPreferredDescriptionTextWithFallbackOrNid(axiomVertex.getMeaningNid())
         ));
         titleLabel.setGraphic(Icon.TAXONOMY_ROOT_ICON.makeIcon());
         int column = 0;
@@ -300,12 +295,12 @@ public class ClauseView {
 
     private void setupForRoleSome() {
         int column = 0;
-        ConceptFacade roleType = ROLE.getPropertyFast(logicVertex);
+        ConceptFacade roleType = ROLE.getPropertyFast(axiomVertex);
         if (roleType.nid() == TinkarTerm.ROLE_GROUP.nid()) {
             expanded.set(true);
             rootBorderPane.getStyleClass().add(StyleClasses.DEF_ROLE_GROUP.toString());
             titleLabel.setGraphic(Icon.ROLE_GROUP.makeIcon());
-            ImmutableList<EntityVertex> descendents = axiomTree().descendents(logicVertex);
+            ImmutableList<EntityVertex> descendents = axiomTree().descendents(axiomVertex);
             // apply sort here for particular cases...
 
             MutableList<String> descendentConceptDescriptions = Lists.mutable.ofInitialCapacity(descendents.size());
@@ -350,7 +345,7 @@ public class ClauseView {
             typeNode.setPadding(new Insets(1, 3, 1, 3));
             roleBox.getChildren().add(typeNode);
             roleBox.getChildren().add(new Label(")➞["));
-            for (EntityVertex restrictionChild : axiomTree().successors(logicVertex)) {
+            for (EntityVertex restrictionChild : axiomTree().successors(axiomVertex)) {
                 ConceptFacade restrictionConcept = CONCEPT.getPropertyFast(restrictionChild);
                 EntityLabel restrictionNode = new EntityLabel(restrictionConcept, viewProperties());
                 restrictionNode.setPadding(new Insets(1, 3, 1, 3));
@@ -383,75 +378,54 @@ public class ClauseView {
         if (this.axiomView.premiseType == STATED) {
             editable = true;
         }
+        // TODO, when we move LogicalExpression to tinkar-core, then also add logical expression, and use the logical expression...
         rootBorderPane.getStyleClass()
                 .add(StyleClasses.DEF_FEATURE.toString());
         int column = 0;
-        this.axiomView.addToGridPaneNoGrow(rootGridPane, expandButton, column++);
         openConceptButton.getStyleClass().setAll(StyleClasses.OPEN_CONCEPT_BUTTON.toString());
         this.axiomView.addToGridPaneNoGrowTopAlign(rootGridPane, openConceptButton, column++);
         openConceptButton.setOnMouseClicked(this::handleShowFeatureNodeClick);
         StringBuilder builder = new StringBuilder();
         builder.append("⒡ ");
-        throw new UnsupportedOperationException();
-//        builder.append(calculator().getPreferredDescriptionTextWithFallbackOrNid(featureNode.getTypeConceptNid()));
-//        ConcreteDomainOperators operator = featureNode.getOperator();
-//        switch (operator) {
-//            case EQUALS:
-//                builder.append(" = ");
-//                break;
-//            case GREATER_THAN:
-//                builder.append(" > ");
-//                break;
-//            case GREATER_THAN_EQUALS:
-//                builder.append(" ≥ ");
-//                break;
-//            case LESS_THAN:
-//                builder.append(" < ");
-//                break;
-//            case LESS_THAN_EQUALS:
-//                builder.append(" ≤ ");
-//                break;
-//            default:
-//                throw new UnsupportedOperationException("Can't handle: " + featureNode.getOperator());
-//        }
-//
-//        for (EntityVertex featureChildNode : featureNode.getChildren()) {
-//            switch (featureChildNode.getNodeSemantic()) {
-//                case LITERAL_BOOLEAN: {
-//                    LiteralNodeBoolean node = (LiteralNodeBoolean) featureChildNode;
-//                    builder.append(node.getLiteralValue());
-//                    break;
-//                }
-//                case LITERAL_DOUBLE: {
-//                    LiteralNodeDouble node = (LiteralNodeDouble) featureChildNode;
-//                    builder.append(node.getLiteralValue());
-//                    break;
-//                }
-//                case LITERAL_INSTANT: {
-//                    LiteralNodeInstant node = (LiteralNodeInstant) featureChildNode;
-//                    builder.append(node.getLiteralValue());
-//                    break;
-//                }
-//                case LITERAL_INTEGER: {
-//                    LiteralNodeInteger node = (LiteralNodeInteger) featureChildNode;
-//                    builder.append(node.getLiteralValue());
-//                    node.getChildren();
-//                    break;
-//                }
-//                case LITERAL_STRING: {
-//                    LiteralNodeString node = (LiteralNodeString) featureChildNode;
-//                    builder.append(node.getLiteralValue());
-//                    break;
-//                }
-//            }
-//        }
-//        builder.append(" ");
-//        builder.append(calculator().getPreferredDescriptionTextWithFallbackOrNid(featureNode.getMeasureSemanticNid()));
-//        titleLabel.setText(builder.toString());
-//        this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
-//        if (this.axiomView.premiseType == STATED) {
-//            this.axiomView.addToGridPaneNoGrow(rootGridPane, editButton, column++);
-//        }
+        Optional<Concept> optionalTypeConcept = this.axiomVertex.propertyAsConcept(TinkarTerm.FEATURE_TYPE);
+        Optional<Concept> optionalConcreteDomainOperator = this.axiomVertex.propertyAsConcept(TinkarTerm.CONCRETE_DOMAIN_OPERATOR);
+        ConceptFacade typeConcept = (ConceptFacade) optionalTypeConcept.get();
+        ConceptFacade concreteDomainOperatorConcept = (ConceptFacade) optionalConcreteDomainOperator.get();
+        if (optionalTypeConcept.isPresent()  && optionalConcreteDomainOperator.isPresent()) {
+            builder.append(calculator().getPreferredDescriptionTextWithFallbackOrNid(typeConcept));
+            ConcreteDomainOperators operator = ConcreteDomainOperators.fromConcept(concreteDomainOperatorConcept);
+            switch (operator) {
+                case EQUALS:
+                    builder.append(" = ");
+                    break;
+                case GREATER_THAN:
+                    builder.append(" > ");
+                    break;
+                case GREATER_THAN_EQUALS:
+                    builder.append(" ≥ ");
+                    break;
+                case LESS_THAN:
+                    builder.append(" < ");
+                    break;
+                case LESS_THAN_EQUALS:
+                    builder.append(" ≤ ");
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Can't handle: " + PrimitiveData.text(concreteDomainOperatorConcept.nid()));
+            }
+        } else {
+            throw new IllegalStateException("Feature node does not contain type and operator: " + this.axiomVertex);
+        }
+
+        Optional<Object> optionalLiteral = this.axiomVertex.property(TinkarTerm.LITERAL_VALUE);
+        optionalLiteral.ifPresentOrElse(literal -> builder.append(literal.toString()),
+                () -> builder.append("not specified"));
+        titleLabel.setText(builder.toString());
+        this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
+        if (this.axiomView.premiseType == STATED) {
+            this.axiomView.addToGridPaneNoGrow(rootGridPane, editButton, column++);
+        }
+
     }
 
     private void setupForConcept() {
@@ -460,7 +434,7 @@ public class ClauseView {
         }
         rootBorderPane.getStyleClass()
                 .add(StyleClasses.DEF_CONCEPT.toString());
-        ConceptFacade conceptForVertex = CONCEPT.getPropertyFast(logicVertex);
+        ConceptFacade conceptForVertex = CONCEPT.getPropertyFast(axiomVertex);
         titleLabel.setText(calculator().getPreferredDescriptionTextWithFallbackOrNid(conceptForVertex));
 
         Latest<EntityVersion> latest = calculator().latest(conceptForVertex);
@@ -495,20 +469,20 @@ public class ClauseView {
 
         db.setDragView(dragImageMaker.getDragImage());
 
-        int conceptNid = switch (LogicalOperatorsForVertex.get(logicVertex)) {
+        int conceptNid = switch (LogicalOperatorsForVertex.get(axiomVertex)) {
             case CONCEPT -> {
-                ConceptFacade conceptForVertex = CONCEPT.getPropertyFast(logicVertex);
+                ConceptFacade conceptForVertex = CONCEPT.getPropertyFast(axiomVertex);
                 yield conceptForVertex.nid();
             }
-            case SUFFICIENT_SET, NECESSARY_SET -> logicVertex.getMeaningNid();
+            case SUFFICIENT_SET, NECESSARY_SET -> axiomVertex.getMeaningNid();
             case DEFINITION_ROOT -> axiomView.getEntityBeingDefinedNid();
 
             case ROLE -> {
-                ConceptFacade roleTypeForVertex = ROLE.getPropertyFast(logicVertex);
+                ConceptFacade roleTypeForVertex = ROLE.getPropertyFast(axiomVertex);
                 yield roleTypeForVertex.nid();
             }
             case FEATURE -> {
-                ConceptFacade featureTypeForVertex = FEATURE.getPropertyFast(logicVertex);
+                ConceptFacade featureTypeForVertex = FEATURE.getPropertyFast(axiomVertex);
                 yield featureTypeForVertex.nid();
             }
             default -> axiomView.getEntityBeingDefinedNid();
@@ -586,47 +560,68 @@ public class ClauseView {
         MenuItem doNothing = new MenuItemWithText("");
         contextMenu.getItems().addAll(doNothing);
 
-        ImmutableList<Action> actionItems = Lists.immutable.empty();
-        // TODO: add back in when adding in Drools or other rules service.
-//                = FxGet.rulesDrivenKometService().getEditLogicalExpressionNodeMenuItems(
-//                FxGet.windowPreferences(childBox).getViewPropertiesForWindow(),
-//                logicVertex,
-//                axiomTree(), this::updateExpressionForClauseView,
-//                mouseEvent);
+        AxiomSubjectRecord axiomSubjectRecord = new AxiomSubjectRecord(this.axiomVertex.vertexIndex(),
+                this.axiomView.axiomTree,
+                this.axiomView.axiomTreeSemanticVersion,
+                this.axiomView.premiseType,
+                this.rootGridPane);
+        ObservationRecord observation = new ObservationRecord(Topic.AXIOM_FOCUSED,
+                axiomSubjectRecord, Measures.present());
 
-        if (!actionItems.isEmpty()) {
+        ImmutableList<Consequence<?>> consequences =
+                RuleService.get().execute("Knowledge base name",
+                        Lists.immutable.of(observation),
+                        axiomView.viewProperties,
+                        Coordinates.Edit.Default());
+
+
+        if (consequences.notEmpty()) {
+            contextMenu.getItems().clear();
             contextMenu.getItems().add(new SeparatorMenuItem());
-            for (Action action : actionItems) {
-                if (action instanceof ActionGroup) {
-                    ActionGroup actionGroup = (ActionGroup) action;
-                    Menu menu = ActionUtils.createMenu(action);
-                    //menu.setGraphic(actionGroup.getGraphic());
-                    for (Action actionInGroup : actionGroup.getActions()) {
-                        if (actionInGroup == ActionUtils.ACTION_SEPARATOR) {
-                            menu.getItems().add(new SeparatorMenuItem());
+            for (Consequence<?> consequence : consequences) {
+                switch (consequence) {
+                    case ConsequenceAction consequenceAction -> {
+                        if (consequenceAction.generatedAction() instanceof Action action) {
+                            if (action instanceof ActionGroup) {
+                                ActionGroup actionGroup = (ActionGroup) action;
+                                Menu menu = ActionUtils.createMenu(action);
+                                //menu.setGraphic(actionGroup.getGraphic());
+                                for (Action actionInGroup : actionGroup.getActions()) {
+                                    if (actionInGroup == ActionUtils.ACTION_SEPARATOR) {
+                                        menu.getItems().add(new SeparatorMenuItem());
+                                    } else {
+                                        menu.getItems().add(ActionUtils.createMenuItem(actionInGroup));
+                                    }
+                                }
+                                contextMenu.getItems().add(menu);
+                            } else {
+                                if (action == ActionUtils.ACTION_SEPARATOR) {
+                                    contextMenu.getItems().add(new SeparatorMenuItem());
+                                } else {
+                                    contextMenu.getItems().add(ActionUtils.createMenuItem(action));
+                                }
+                            }
                         } else {
-                            menu.getItems().add(ActionUtils.createMenuItem(actionInGroup));
+                            LOG.error("Can't handle action of type: " + consequenceAction.generatedAction().getClass().getName() + "\n\n" + consequenceAction.generatedAction());
                         }
+                    }
 
+                    case ConsequenceMenu consequenceMenu -> {
+                        contextMenu.getItems().add(consequenceMenu.generatedMenu());
                     }
-                    contextMenu.getItems().add(menu);
-                } else {
-                    if (action == ActionUtils.ACTION_SEPARATOR) {
-                        contextMenu.getItems().add(new SeparatorMenuItem());
-                    } else {
-                        contextMenu.getItems().add(ActionUtils.createMenuItem(action));
-                    }
+
+                    default -> LOG.error("Can't handle consequence of type: " + consequence);
                 }
             }
-        }
 
-        mouseEvent.consume();
-        contextMenu.show(editButton, mouseEvent.getScreenX(), mouseEvent.getScreenY());
+            mouseEvent.consume();
+            contextMenu.show(editButton, mouseEvent.getScreenX(), mouseEvent.getScreenY());
+        }
     }
 
     private void handleShowRoleNodeClick(MouseEvent mouseEvent) {
         if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
-            ConceptFacade typeFacade = ROLE.getPropertyFast(logicVertex);
+            ConceptFacade typeFacade = ROLE.getPropertyFast(axiomVertex);
             showPopup(typeFacade, mouseEvent);
         }
     }
@@ -636,20 +631,23 @@ public class ClauseView {
     }
 
     private void showPopup(int conceptNid, MouseEvent mouseEvent) {
-        Latest<SemanticEntityVersion> expression = calculator()
-                .getAxiomSemanticForEntity(conceptNid, this.axiomView.premiseType);
-        if (expression.isPresent()) {
-            popover = new PopOver();
-            AxiomView axiomView = AxiomView.createWithCommitPanel(expression.get(),
-                    this.axiomView.premiseType,
-                    viewProperties());
-            popover.setContentNode(axiomView.getEditor());
-            popover.setCloseButtonEnabled(true);
-            popover.setHeaderAlwaysVisible(false);
-            popover.setTitle("");
-            popover.show(openConceptButton, mouseEvent.getScreenX(), mouseEvent.getScreenY());
-            mouseEvent.consume();
-        }
+        Optional<ObservableSemanticSnapshot> optionalAxiomSnapshot =
+                ObservableSemantic.getAxiomSnapshot(conceptNid, this.axiomView.premiseType, viewProperties().calculator());
+
+        optionalAxiomSnapshot.ifPresent(observableAxiomSnapshot -> {
+            observableAxiomSnapshot.getLatestVersion().ifPresent(observableSemanticVersion -> {
+                PopOver popover = new PopOver();
+                AxiomView axiomView = AxiomView.createWithCommitPanel(observableSemanticVersion,
+                        this.axiomView.premiseType,
+                        viewProperties());
+                popover.setContentNode(axiomView.getEditor());
+                popover.setCloseButtonEnabled(true);
+                popover.setHeaderAlwaysVisible(false);
+                popover.setTitle("");
+                popover.show(openConceptButton, mouseEvent.getScreenX(), mouseEvent.getScreenY());
+                mouseEvent.consume();
+            });
+        });
     }
 
     private ViewCalculator calculator() {
@@ -670,14 +668,14 @@ public class ClauseView {
 
     private void handleShowFeatureNodeClick(MouseEvent mouseEvent) {
         if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
-            ConceptFacade featureType = FEATURE.getPropertyFast(logicVertex);
+            ConceptFacade featureType = axiomVertex.propertyFast(TinkarTerm.FEATURE_TYPE);
             showPopup(featureType.nid(), mouseEvent);
         }
     }
 
     private void handleShowConceptNodeClick(MouseEvent mouseEvent) {
         if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
-            ConceptFacade vertexConcept = CONCEPT.getPropertyFast(logicVertex);
+            ConceptFacade vertexConcept = CONCEPT.getPropertyFast(axiomVertex);
             showPopup(vertexConcept.nid(), mouseEvent);
         }
     }
@@ -693,7 +691,7 @@ public class ClauseView {
             String nodeText = titleLabel.getText();
             double bottomInset = 0;
             double childOffset = 0;
-            LogicalOperatorsForVertex vertexOperator = LogicalOperatorsForVertex.get(logicVertex.getMeaningNid());
+            LogicalOperatorsForVertex vertexOperator = LogicalOperatorsForVertex.get(axiomVertex.getMeaningNid());
             switch (vertexOperator) {
 
                 case DEFINITION_ROOT:
@@ -749,7 +747,7 @@ public class ClauseView {
                     bottomInset = 5;
                     preTextIconWidth = 20;
 
-                    ConceptFacade conceptForVertex = CONCEPT.getPropertyFast(logicVertex);
+                    ConceptFacade conceptForVertex = CONCEPT.getPropertyFast(axiomVertex);
                     boolean defined = isDefined(conceptForVertex);
                     boolean multiParent = isMultiparent(conceptForVertex);
                     if (defined) {
@@ -778,7 +776,7 @@ public class ClauseView {
                     builder.append("\" transform=\"scale(.03) \"/>");
                     break;
                 case ROLE:
-                    ConceptFacade roleTypeForVertex = ROLE.getPropertyFast(logicVertex);
+                    ConceptFacade roleTypeForVertex = ROLE.getPropertyFast(axiomVertex);
                     if (roleTypeForVertex.nid() == TinkarTerm.ROLE_GROUP.nid()) {
                         leftStroke = "stroke: #009bff;";
                         nodeText = "Role group";
@@ -820,7 +818,7 @@ public class ClauseView {
                         roleStrBuilder.append(calculator().getPreferredDescriptionTextWithFallbackOrNid(roleTypeForVertex));
                         roleStrBuilder.append(")➞[");
 
-                        for (EntityVertex descendentNode : axiomTree().successors(logicVertex)) {
+                        for (EntityVertex descendentNode : axiomTree().successors(axiomVertex)) {
 
                             if (CONCEPT.semanticallyEqual(descendentNode.getMeaningNid())) {
                                 ConceptFacade roleRestriction = CONCEPT.getPropertyFast(descendentNode);

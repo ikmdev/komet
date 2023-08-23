@@ -21,5 +21,6 @@ package dev.ikm.komet.framework.performance;
 public enum Topic {
     COMPONENT_FOCUSED,
     PROPOSED_COMPONENT_CHANGE,
-    NEW_CONCEPT_REQUEST
+    NEW_CONCEPT_REQUEST,
+    AXIOM_FOCUSED
 }
