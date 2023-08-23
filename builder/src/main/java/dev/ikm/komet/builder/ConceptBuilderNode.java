@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.builder;
 
+import dev.ikm.komet.framework.rulebase.*;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -23,15 +24,11 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionUtils;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import dev.ikm.komet.framework.ExplorationNodeAbstract;
-import dev.ikm.komet.framework.performance.StatementStore;
 import dev.ikm.komet.framework.performance.Topic;
 import dev.ikm.komet.framework.performance.impl.RequestRecord;
-import dev.ikm.komet.framework.rulebase.Consequence;
-import dev.ikm.komet.framework.rulebase.GeneratedActionImmediate;
-import dev.ikm.komet.framework.rulebase.GeneratedActionSuggested;
-import dev.ikm.komet.framework.rulebase.RuleBase;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.Coordinates;
@@ -56,17 +53,20 @@ public class ConceptBuilderNode extends ExplorationNodeAbstract {
         toolBar.getItems().clear();
         toolBar.getItems().addAll(conceptText, requestNewConcept);
         RequestRecord request = RequestRecord.make(Topic.NEW_CONCEPT_REQUEST, conceptText.getText());
-        StatementStore statementStore = StatementStore.make(request);
-        ImmutableList<Consequence<?>> consequences = RuleBase.execute(statementStore, viewProperties.calculator(), Coordinates.Edit.Default());
+        ImmutableList<Consequence<?>> consequences =
+                RuleService.get().execute("Knowledge Base Name",
+                        Lists.immutable.of(request),
+                        viewProperties,
+                        Coordinates.Edit.Default());
         for (Consequence consequence : consequences) {
             switch (consequence.get()) {
                 case Action action
-                    when    action instanceof GeneratedActionImmediate  -> {
+                        when    action instanceof GeneratedActionImmediate  -> {
                     Button actionButton = ActionUtils.createButton(action);
                     toolBar.getItems().add(actionButton);
                 }
                 case Action action
-                    when    action instanceof GeneratedActionSuggested  -> {
+                        when    action instanceof GeneratedActionSuggested  -> {
                     Button actionButton = ActionUtils.createButton(action);
                     toolBar.getItems().add(actionButton);
                 }

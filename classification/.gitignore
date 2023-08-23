@@ -1,0 +1,5 @@
+/elk backup main/
+/elk backup test/
+/elk backup test resources/
+/snorocket backup/
+/logs/

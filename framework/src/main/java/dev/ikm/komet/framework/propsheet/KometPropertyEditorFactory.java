@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.framework.propsheet;
 
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -72,7 +74,7 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
         } else if (item.getType() == String.class) {
             propertyEditor = createTextAreaEditor(item);
         } else if (item.getPropertyEditorClass().isPresent()) {
-            Optional<PropertyEditor<?>> ed = createCustomEditor(item, viewProperties);
+            Optional<PropertyEditor<?>> ed = createCustomEditor((SheetItem<?>) item, viewProperties);
             if (ed.isPresent()) {
                 propertyEditor = ed.get();
             } else {
@@ -118,7 +120,7 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
         };
     }
 
-    public static final Optional<PropertyEditor<?>> createCustomEditor(final PropertySheet.Item property, final ViewProperties viewProperties) {
+    public static final Optional<PropertyEditor<?>> createCustomEditor(final SheetItem<?> property, final ViewProperties viewProperties) {
         try {
             if (property.getPropertyEditorClass().isPresent()) {
                 Class editorClass = property.getPropertyEditorClass().get();
@@ -137,13 +139,15 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
                 if (editorClass == AxiomView.class) {
                     //TODO add stated/inferred to root property?
                     DiTree<EntityVertex> axiomTree = (DiTree<EntityVertex>) property.getValue();
-                    Optional<EntityProxy.Concept> optionalPremiseType = axiomTree.root().uncommittedProperty(TinkarTerm.PREMISE_TYPE_FOR_MANIFOLD.nid());
-                    Optional<SemanticEntityVersion> optionalSemanticVersion = axiomTree.root().uncommittedProperty(TinkarTerm.LOGICAL_EXPRESSION_SEMANTIC.nid());
                     PremiseType premiseType = PremiseType.STATED;
-                    if (optionalPremiseType.get().nid() == TinkarTerm.INFERRED_PREMISE_TYPE.nid()) {
+                    if (property.getObservableField().meaningNid() == TinkarTerm.EL_PLUS_PLUS_INFERRED_TERMINOLOGICAL_AXIOMS.nid()) {
                         premiseType = PremiseType.INFERRED;
                     }
-                    AxiomView axiomView = AxiomView.create(optionalSemanticVersion.get(), premiseType, viewProperties);
+                    int semanticNid = property.observableField.field().semanticNid();
+                    ObservableSemantic axiomSemantic = ObservableSemantic.get(semanticNid);
+                    ObservableSemanticVersion axiomSemanticVersion = axiomSemantic.getVersionFast(property.observableField.field().semanticVersionStampNid());
+
+                    AxiomView axiomView = AxiomView.create(axiomSemanticVersion, premiseType, viewProperties);
                     return Optional.of(axiomView);
                 }
             }

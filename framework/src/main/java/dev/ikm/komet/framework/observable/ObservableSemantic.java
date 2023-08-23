@@ -15,9 +15,13 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
+
+import java.util.Optional;
 
 public class ObservableSemantic
         extends ObservableEntity<ObservableSemanticVersion, SemanticVersionRecord>
@@ -45,5 +49,44 @@ public class ObservableSemantic
     public int patternNid() {
         return ((SemanticEntity) entity()).patternNid();
     }
+
+    public static ObservableSemanticSnapshot getSemanticSnapshot(int semanticNid, ViewCalculator calculator) {
+        ObservableSemantic observableSemantic = get(semanticNid);
+        return observableSemantic.getSnapshot(calculator);
+    }
+
+    public static Optional<ObservableSemanticSnapshot> getStatedAxiomSnapshot(int conceptNid, ViewCalculator calculator) {
+        return getAxiomSnapshot(conceptNid, calculator.viewCoordinateRecord().logicCoordinate().statedAxiomsPatternNid(),
+                calculator);
+    }
+
+    public static Optional<ObservableSemanticSnapshot> getInferredAxiomSnapshot(int conceptNid, ViewCalculator calculator) {
+        return getAxiomSnapshot(conceptNid, calculator.viewCoordinateRecord().logicCoordinate().inferredAxiomsPatternNid(),
+                calculator);
+    }
+    public static Optional<ObservableSemanticSnapshot> getAxiomSnapshot(int conceptNid, PremiseType premiseType, ViewCalculator calculator) {
+        return switch (premiseType) {
+            case STATED -> getAxiomSnapshot(conceptNid, calculator.viewCoordinateRecord().logicCoordinate().statedAxiomsPatternNid(),
+                    calculator);
+            case INFERRED -> getAxiomSnapshot(conceptNid, calculator.viewCoordinateRecord().logicCoordinate().inferredAxiomsPatternNid(),
+                    calculator);
+        };
+    }
+
+    public static Optional<ObservableSemanticSnapshot> getAxiomSnapshot(int conceptNid, int axiomPatterNid, ViewCalculator calculator) {
+
+
+        int[] axiomSemanticNids = EntityService.get().semanticNidsForComponentOfPattern(conceptNid, axiomPatterNid);
+        if (axiomSemanticNids.length == 0) {
+            return Optional.empty();
+        } else if (axiomSemanticNids.length > 1) {
+            throw new IllegalStateException("To many axiom semantics in " +
+                    calculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(axiomPatterNid) +
+                    " for " + calculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(conceptNid));
+        }
+        ObservableSemanticSnapshot axiomSemanticSnapshot = getSemanticSnapshot(axiomSemanticNids[0], calculator);
+        return Optional.of(axiomSemanticSnapshot);
+    }
+
 
 }

@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
@@ -31,6 +32,7 @@ import dev.ikm.tinkar.component.FieldDataType;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
 
+import java.util.Optional;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -77,11 +79,12 @@ public abstract class ObservableEntity<O extends ObservableVersion<V>, V extends
 
     protected abstract O wrap(V version);
 
-    public static <OE extends ObservableEntity> ObservableEntitySnapshot getSnapshot(int nid, ViewCalculator calculator) {
+    public static <OE extends ObservableEntity<OV, EV>, OV extends ObservableVersion<EV>, EV extends EntityVersion>
+    ObservableEntitySnapshot<OE, OV, EV> getSnapshot(int nid, ViewCalculator calculator) {
         return get(Entity.getFast(nid)).getSnapshot(calculator);
     }
 
-    public abstract ObservableEntitySnapshot getSnapshot(ViewCalculator calculator);
+    public abstract ObservableEntitySnapshot<?,?,?> getSnapshot(ViewCalculator calculator);
 
     public static <OE extends ObservableEntity> OE get(Entity<? extends EntityVersion> entity) {
         if (entity instanceof ObservableEntity) {
@@ -172,8 +175,6 @@ public abstract class ObservableEntity<O extends ObservableVersion<V>, V extends
     }
 
     public static class EntityChangeSubscriber implements Subscriber<Integer> {
-
-
 
         @Override
         public void onNext(Integer nid) {

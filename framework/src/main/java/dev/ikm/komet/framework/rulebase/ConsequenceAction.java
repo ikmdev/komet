@@ -15,13 +15,29 @@
  */
 package dev.ikm.komet.framework.rulebase;
 
+import dev.ikm.tinkar.common.util.text.NaturalOrder;
+import org.controlsfx.control.action.Action;
+
 import java.util.UUID;
 
 public record ConsequenceAction(UUID consequenceUUID,
-                                UUID ruleUUID,
+                                String ruleMethod,
                                 GeneratedAction generatedAction) implements Consequence<GeneratedAction> {
     @Override
     public GeneratedAction get() {
         return generatedAction;
+    }
+
+    @Override
+    public int compareTo(Consequence o) {
+        String thisCompareString = switch (this.get()) {
+            case Action action -> action.getText();
+            default -> this.get().toString();
+        };
+        String thatCompareString = switch (o.get()) {
+            case Action action -> action.getText();
+            default -> o.get().toString();
+        };
+        return NaturalOrder.compareStrings(thisCompareString, thatCompareString);
     }
 }

@@ -159,7 +159,7 @@ public class SelectDataSourceController {
                             propertySheet.getItems().add(SheetItem.makeForPassword(dataServiceProperty, validationSupport, validator));
 
                         } else {
-                            propertySheet.getItems().add(SheetItem.make(dataServiceProperty, validationSupport, validator));
+                            propertySheet.getItems().add(SheetItem.make(dataServiceProperty, validationSupport, validator, null));
                         }
                     } else {
                         if (key.hiddenText()) {

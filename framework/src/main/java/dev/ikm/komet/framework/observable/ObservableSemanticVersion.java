@@ -63,6 +63,4 @@ public final class ObservableSemanticVersion
         }
         return Lists.immutable.of(fieldArray);
     }
-
-
 }

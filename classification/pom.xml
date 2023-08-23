@@ -8,25 +8,68 @@
         <version>1.14.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>classification</artifactId>
+	<artifactId>classification</artifactId>
 
-    <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>framework</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${tinkar-jpms-deps.groupId}</groupId>
-            <artifactId>roaringbitmap</artifactId>
-        </dependency>
+	<dependencies>
+		<dependency>
+			<groupId>${tinkar-core.groupId}</groupId>
+			<artifactId>entity</artifactId>
+		</dependency>
 
-        <dependency>
-            <!-- Here to support existing ELK unit tests until we can remove this from the codebase by switching to ikm classifier-->
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+		<dependency>
+			<groupId>${tinkar-core.groupId}</groupId>
+			<artifactId>coordinate</artifactId>
+		</dependency>
 
+		<dependency>
+			<groupId>${tinkar-core.groupId}</groupId>
+			<artifactId>entity-provider</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>${tinkar-core.groupId}</groupId>
+			<artifactId>data-spinedarray-provider</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>${tinkar-core.groupId}</groupId>
+			<artifactId>executor-provider</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>framework</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>${tinkar-jpms-deps.groupId}</groupId>
+			<artifactId>roaringbitmap</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sourceforge.owlapi</groupId>
+			<artifactId>owlapi-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sourceforge.owlapi</groupId>
+			<artifactId>owlapi-impl</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sourceforge.owlapi</groupId>
+			<artifactId>owlapi-apibinding</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sourceforge.owlapi</groupId>
+			<artifactId>owlapi-parsers</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.ikm.elk</groupId>
+			<artifactId>elk-owlapi4</artifactId>
+		</dependency>
+	</dependencies>
 </project>
-

@@ -15,6 +15,9 @@
  */
 package dev.ikm.komet.navigator.graph;
 
+import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.util.broadcast.Subscriber;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -86,6 +89,11 @@ import static dev.ikm.komet.framework.StyleClasses.MULTI_PARENT_TREE_NODE;
 public class MultiParentGraphViewController implements RefreshListener {
     private static final Logger LOG = LoggerFactory.getLogger(MultiParentGraphViewController.class);
     private static volatile boolean shutdownRequested = false;
+    private final EntityChangeSubscriber ENTITY_CHANGE_SUBSCRIBER = new EntityChangeSubscriber();
+    {
+        Entity.provider().addSubscriberWithWeakReference(ENTITY_CHANGE_SUBSCRIBER);
+    }
+
     private final Label navigationLabel = new Label();
     private final MutableIntList expandedNids = IntLists.mutable.empty();
     private final ObservableList<AlertObject> alertList = FXCollections.observableArrayList();
@@ -724,6 +732,27 @@ public class MultiParentGraphViewController implements RefreshListener {
 
     //~--- get methods ---------------------------------------------------------
 
+    private class EntityChangeSubscriber implements Subscriber<Integer> {
 
+        @Override
+        public void onNext(Integer nid) {
+            Platform.runLater(() -> this.handleChange(nid, MultiParentGraphViewController.this.rootTreeItem));
+        }
+
+        private void handleChange(int nid, MultiParentVertexImpl treeItem) {
+            if (treeItem.getConceptNid() == nid) {
+                // Update description if desc changed
+                treeItem.invalidate();
+                // refresh the children of this changed node...
+                refreshTaxonomy();
+            } else {
+                // see if any of the recursive children of this node match...
+                ObservableList<TreeItem<ConceptFacade>> children = treeItem.getChildren();
+                for (MultiParentVertexImpl childItem: children.toArray(new MultiParentVertexImpl[children.size()])) {
+                    handleChange(nid, childItem);
+                }
+            }
+        }
+    }
 }
 

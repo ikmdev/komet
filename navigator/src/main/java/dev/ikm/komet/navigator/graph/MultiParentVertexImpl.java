@@ -15,6 +15,9 @@
  */
 package dev.ikm.komet.navigator.graph;
 
+//~--- JDK imports ------------------------------------------------------------
+
+import dev.ikm.tinkar.common.alert.AlertStreams;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.TreeItem;
@@ -199,7 +202,13 @@ public class MultiParentVertexImpl
                         MultiParentVertexImpl childItem = new MultiParentVertexImpl(childChronology, graphController, childLink.typeNids(), null);
                         ObservableView observableView = graphController.getObservableView();
 
-                        childItem.setDefined(observableView.calculator().hasSufficientSet(childChronology.nid()));
+                        try {
+                            childItem.setDefined(observableView.calculator().hasSufficientSet(childChronology.nid()));
+                        } catch (Throwable e) {
+                            //TODO remove catch after better handing of: More than one set of axioms for concept: ConceptRecord{Model concept <-2142333842>
+                            AlertStreams.dispatchToRoot(e);
+                            childItem.setDefined(false);
+                        }
                         childItem.toString();
                         childItem.setMultiParent(navigator.getParentNids(childLink.destinationNid()).length > 1);
 

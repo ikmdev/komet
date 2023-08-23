@@ -1,6 +1,0 @@
-Prefix(:=<http://example.org/>) 
-Ontology(
-EquivalentClasses(:A :B)
-EquivalentClasses(:A :C)
-EquivalentClasses(:B :C)
-)

@@ -62,7 +62,8 @@ pipeline {
                         mvn versions:set \
                             -s ${MAVEN_SETTINGS} \
                             -DgenerateBackupPoms=false \
-                            -DnewVersion=${releaseVersion}
+                            -DnewVersion=${releaseVersion} \
+                            -Dmaven.build.cache.enabled=false
                     """
                 }
             }
@@ -79,10 +80,11 @@ pipeline {
                         mvn --version
                         mvn clean install \
                             -s ${MAVEN_SETTINGS} \
-                            -P codeQuality,release-enforcement,create-installer \
                             --batch-mode \
                             -e \
-                            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+                            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                            -Dmaven.build.cache.enabled=false \
+                            -P codeQuality,release-enforcement,create-installer
                     """
                 }
             }
@@ -115,7 +117,8 @@ pipeline {
                         mvn versions:set \
                             -s ${MAVEN_SETTINGS} \
                             -DgenerateBackupPoms=false \
-                            -DnewVersion=${nextDevVersion}
+                            -DnewVersion=${nextDevVersion} \
+                            -Dmaven.build.cache.enabled=false
                     """
                 }
             }

@@ -37,7 +37,7 @@ import java.util.TreeSet;
 
 public class ClassifierResults implements Encodable {
 
-    public static final int marshalVersion = 1;
+    public static final int marshalVersion = 2;
     /**
      * Set of concepts potentially affected by the last classification.
      */
@@ -45,6 +45,7 @@ public class ClassifierResults implements Encodable {
 
     private final ImmutableIntList conceptsWithInferredChanges;
 
+    private final ImmutableIntList conceptsWithNavigationChanges;
     /**
      * The equivalent sets.
      */
@@ -61,6 +62,7 @@ public class ClassifierResults implements Encodable {
     private ClassifierResults(DecoderInput data) {
         this.classificationConceptSet = IntLists.immutable.of(data.readNidArray());
         this.conceptsWithInferredChanges = IntLists.immutable.of(data.readNidArray());
+        this.conceptsWithNavigationChanges = IntLists.immutable.of(data.readNidArray());
         int equivalentSetSize = data.readInt();
         MutableSet<ImmutableIntList> equivalentMutibleSets = Sets.mutable.ofInitialCapacity(equivalentSetSize);
         for (int i = 0; i < equivalentSetSize; i++) {
@@ -96,10 +98,12 @@ public class ClassifierResults implements Encodable {
      */
     public ClassifierResults(ImmutableIntList classificationConceptSet,
                              ImmutableIntList conceptsWithInferredChanges,
+                             ImmutableIntList conceptsWithNavigationChanges,
                              Set<ImmutableIntList> equivalentSets,
                              ViewCoordinateRecord viewCoordinateRecord) {
         this.classificationConceptSet = classificationConceptSet;
         this.conceptsWithInferredChanges = conceptsWithInferredChanges;
+        this.conceptsWithNavigationChanges = conceptsWithNavigationChanges;
         MutableSet<ImmutableIntList> equivalentMutableSets = Sets.mutable.ofInitialCapacity(equivalentSets.size());
         for (ImmutableIntList set : equivalentSets) {
             equivalentMutableSets.add(IntLists.immutable.of(set.toSortedArray()));
@@ -131,6 +135,7 @@ public class ClassifierResults implements Encodable {
                              ViewCoordinateRecord viewCoordinateRecord) {
         this.classificationConceptSet = classificationConceptSet;
         this.conceptsWithInferredChanges = IntLists.immutable.empty();
+        this.conceptsWithNavigationChanges = IntLists.immutable.empty();
         this.equivalentSets = Sets.immutable.empty();
         this.conceptsWithCycles = conceptsWithCycles;
         this.orphanedConcepts = orphans;
@@ -145,8 +150,10 @@ public class ClassifierResults implements Encodable {
 
     @Encoder
     public final void encode(EncoderOutput out) {
+        out.writeInt(marshalVersion);
         out.writeNidArray(this.classificationConceptSet.toArray());
         out.writeNidArray(this.conceptsWithInferredChanges.toArray());
+        out.writeNidArray(this.conceptsWithNavigationChanges.toArray());
         out.writeInt(equivalentSets.size());
         for (ImmutableIntList equivalentSet : equivalentSets) {
             out.writeNidArray(equivalentSet.toArray());
@@ -174,13 +181,20 @@ public class ClassifierResults implements Encodable {
     @Override
     public String toString() {
         return "ClassifierResults{"
-                + " affectedConcepts=" + this.classificationConceptSet.size() + ", equivalentSets="
+                + " classifiedConcepts=" + this.classificationConceptSet.size()
+                + ", inferred changes=" + this.conceptsWithInferredChanges.size()
+                + ", navigation changes=" + this.conceptsWithNavigationChanges.size()
+                + ", equivalentSets="
                 + this.equivalentSets.size() + ", Orphans detected=" + orphanedConcepts.size()
                 + " Concepts with cycles=" + conceptsWithCycles.size() + '}';
     }
 
     public ImmutableIntList getClassificationConceptSet() {
         return this.classificationConceptSet;
+    }
+
+    public ImmutableIntList getConceptsWithNavigationChanges() {
+        return this.conceptsWithNavigationChanges;
     }
 
     public ImmutableSet<ImmutableIntList> getEquivalentSets() {

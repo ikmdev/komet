@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import dev.ikm.tinkar.coordinate.logic.PremiseType;
+import dev.ikm.tinkar.entity.EntityService;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -198,4 +200,5 @@ public class ObservableSemanticSnapshot extends ObservableEntitySnapshot<Observa
                 });
         return matchedFields.toImmutable();
     }
+
 }

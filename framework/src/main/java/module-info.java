@@ -16,12 +16,14 @@
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.concurrent.TaskListsService;
 import dev.ikm.komet.framework.dnd.DragRegistry;
+import dev.ikm.komet.framework.rulebase.RuleService;
 import dev.ikm.komet.preferences.PreferencesService;
 import dev.ikm.tinkar.common.service.CachingService;
 
 open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.activity;
     exports dev.ikm.komet.framework.alerts;
+    exports dev.ikm.komet.framework.builder;
     exports dev.ikm.komet.framework.concurrent;
     exports dev.ikm.komet.framework.context;
     exports dev.ikm.komet.framework.controls;
@@ -33,7 +35,7 @@ open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.performance.impl;
     exports dev.ikm.komet.framework.performance;
     exports dev.ikm.komet.framework.preferences;
-    exports dev.ikm.komet.framework.propsheet.editor to org.controlsfx.controls, dev.ikm.komet.list;
+    exports dev.ikm.komet.framework.propsheet.editor to org.controlsfx.controls, dev.ikm.komet.list, dev.ikm.komet.application;
     exports dev.ikm.komet.framework.propsheet;
     exports dev.ikm.komet.framework.rulebase;
     exports dev.ikm.komet.framework.search;
@@ -43,6 +45,7 @@ open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework;
     exports dev.ikm.komet.framework.window;
     exports dev.ikm.komet.framework.tabs;
+    exports dev.ikm.komet.framework.panel.axiom;
     provides CachingService with DragRegistry.CacheProvider;
     requires io.github.classgraph;
     requires dev.ikm.tinkar.collection;
@@ -82,5 +85,6 @@ open module dev.ikm.komet.framework {
     uses PreferencesService;
     uses KometNodeFactory;
     uses dev.ikm.tinkar.common.alert.AlertReportingService;
+    uses RuleService;
 
 }

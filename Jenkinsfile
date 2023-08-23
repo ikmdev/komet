@@ -39,8 +39,9 @@ pipeline {
                         sh """
                         mvn clean install -s '${MAVEN_SETTINGS}' \
                             --batch-mode \
-                            -e -Dprism.verbose=true -Djavafx.verbose=true \
+                            -e \
                             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                            -Dmaven.build.cache.enabled=false \
                             -PcodeQuality
                         """
                     }
@@ -57,6 +58,7 @@ pipeline {
                                 -Dsonar.qualitygate.wait=true \
                                 -Dsonar.login=${SONAR_AUTH_TOKEN} \
                                 -s '${MAVEN_SETTINGS}' \
+                                -Dmaven.build.cache.enabled=false \
                                 --batch-mode
                         """
                     }
@@ -101,6 +103,7 @@ pipeline {
                             --batch-mode \
                             -e \
                             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                            -Dmaven.build.cache.enabled=false \
                             -DskipTests \
                             -DskipITs \
                             -Dmaven.main.skip \
@@ -175,6 +178,7 @@ pipeline {
                                             --batch-mode \
                                             -e \
                                             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                                            -Dmaven.build.cache.enabled=false \
                                             -DskipTests \
                                             -DskipITs
                                     """
@@ -200,6 +204,7 @@ pipeline {
                                             --batch-mode \
                                             -e \
                                             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                                            -Dmaven.build.cache.enabled=false \
                                             -s ${MAVEN_SETTINGS} \
                                             -Dfile=\$(find application/target/dist/installer/ -name komet-${pomVersion}*.rpm) \
                                             -Durl=https://nexus.build.tinkarbuild.com/repository/maven-releases/ \
@@ -241,6 +246,7 @@ pipeline {
                                             --batch-mode \
                                             -e \
                                             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                                            -Dmaven.build.cache.enabled=false \
                                             -DskipTests \
                                             -DskipITs
                                     """
@@ -266,6 +272,7 @@ pipeline {
                                             --batch-mode \
                                             -e \
                                             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                                            -Dmaven.build.cache.enabled=false \
                                             -s ${MAVEN_SETTINGS} \
                                             -Dfile=\$(find application/target/dist/installer/ -name Komet-${pomVersion}*.pkg) \
                                             -Durl=https://nexus.build.tinkarbuild.com/repository/maven-releases/ \
@@ -307,6 +314,7 @@ pipeline {
                                             --batch-mode \
                                             -e \
                                             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                                            -Dmaven.build.cache.enabled=false \
                                             -DskipTests \
                                             -DskipITs
                                     """
@@ -332,6 +340,7 @@ pipeline {
                                             --batch-mode \
                                             -e \
                                             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                                            -Dmaven.build.cache.enabled=false \
                                             -s ${MAVEN_SETTINGS} \
                                             -Dfile=\$(find application/target/dist/installer/ -name Komet-${pomVersion}*.pkg) \
                                             -Durl=https://nexus.build.tinkarbuild.com/repository/maven-releases/ \
@@ -381,6 +390,7 @@ pipeline {
                                             --batch-mode \
                                             -e \
                                             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                                            -Dmaven.build.cache.enabled=false \
                                             -DskipTests \
                                             -DskipITs
                                     """
@@ -408,6 +418,7 @@ pipeline {
                                             --batch-mode \
                                             -e \
                                             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                                            -Dmaven.build.cache.enabled=false \
                                             -s ${MAVEN_SETTINGS} \
                                             -Dfile=application\\target\\dist\\installer\\Komet-${pomVersion}.msi \
                                             -Durl=https://nexus.build.tinkarbuild.com/repository/maven-releases/ \
