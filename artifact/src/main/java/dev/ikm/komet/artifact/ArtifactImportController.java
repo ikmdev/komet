@@ -23,7 +23,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -31,20 +30,36 @@ import java.io.File;
 import java.io.IOException;
 
 public class ArtifactImportController {
-    @FXML
     private Label choosenFileLabel;
-
-    @FXML
-    private Text fileFormatId;
-
-    @FXML
     private Button importButton;
-
-    @FXML
     private Button cancelButton;
+    private ProgressBar importProgressBar;
+    private FileChooser fileChooser;
 
     @FXML
-    ProgressBar importProgressBar;
+    public void setChoosenFileLabel(Label choosenFileLabel) {
+        this.choosenFileLabel = choosenFileLabel;
+    }
+
+    @FXML
+    public void setImportButton(Button importButton) {
+        this.importButton = importButton;
+    }
+
+    @FXML
+    public void setCancelButton(Button cancelButton) {
+        this.cancelButton = cancelButton;
+    }
+
+    @FXML
+    public void setImportProgressBar(ProgressBar importProgressBar) {
+        this.importProgressBar = importProgressBar;
+    }
+
+    @FXML
+    public void setFileChooser(FileChooser fileChooser) {
+        this.fileChooser = fileChooser;
+    }
 
     @FXML
     void handleChooseFile(ActionEvent event) throws IOException {
@@ -87,7 +102,7 @@ public class ArtifactImportController {
         importProgressBar.setProgress(0);
     }
 
-    protected Task<Boolean> createWorker(File selectedFile) {
+    Task<Boolean> createWorker(File selectedFile) {
         return new Task<Boolean>() {
 
             @Override
@@ -100,5 +115,25 @@ public class ArtifactImportController {
                 return true;
             }
         };
+    }
+
+    protected Label getChoosenFileLabel() {
+        return choosenFileLabel;
+    }
+
+    protected Button getImportButton() {
+        return importButton;
+    }
+
+    protected Button getCancelButton() {
+        return cancelButton;
+    }
+
+    protected ProgressBar getImportProgressBar() {
+        return importProgressBar;
+    }
+
+    protected FileChooser getFileChooser() {
+        return fileChooser;
     }
 }

@@ -39,7 +39,7 @@ pipeline {
                         sh """
                         mvn clean install -s '${MAVEN_SETTINGS}' \
                             --batch-mode \
-                            -e \
+                            -e -Dprism.verbose=true -Djavafx.verbose=true \
                             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
                             -PcodeQuality
                         """

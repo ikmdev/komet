@@ -20,7 +20,7 @@
             <Insets left="5.0" top="5.0" />
          </VBox.margin>
       </Text>
-      <Text fx:id="fileFormatId" strokeType="OUTSIDE" strokeWidth="0.0" text="Must be in the Zip file format">
+      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Must be in the Zip file format">
          <VBox.margin>
             <Insets left="5.0" top="5.0" />
          </VBox.margin>

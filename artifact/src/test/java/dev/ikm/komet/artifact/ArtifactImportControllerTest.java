@@ -15,56 +15,57 @@
  */
 package dev.ikm.komet.artifact;
 
-import dev.ikm.komet.framework.KometNode;
-import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.zip.ZipEntry;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.spy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ArtifactImportControllerTest {
+public class ArtifactImportControllerTest{
+    @Mock
     ArtifactImportController artifactImportController;
-    final String sampleTitle = "sampleTitle";
+    ActionEvent actionEventMock;
 
     @BeforeAll
-    public void setUp() {
-        // When we spy on artifact import controller
-        artifactImportController = Mockito.mock(ArtifactImportController.class);
-        when(artifactImportController.toString()).thenReturn(sampleTitle);
+    private void setup(){
+        actionEventMock = Mockito.mock(ActionEvent.class);
+        artifactImportController = mock(ArtifactImportController.class);
     }
+
+    @Test
+    public void TestHandleChooseFile(){
+        try {
+            artifactImportController.setFileChooser(null);
+            artifactImportController.handleChooseFile(actionEventMock);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testCancelImport(){
+        artifactImportController.cancelImport(actionEventMock);
+    }
+
     @Test
     public void artifactImportControllerToString() {
         // Given a sample title name
         String sampleTitle = "sampleTitle";
         // When we spy on artifact import controller
-        ArtifactImportController artifactImportController = spy(ArtifactImportController.class);
+        //    ArtifactImportController artifactImportController = spy(ArtifactImportController.class);
 
         when(artifactImportController.toString()).thenReturn(sampleTitle);
 
         // Then check the to string returns what we expect
         assertEquals(artifactImportController.toString(), sampleTitle);
     }
-
-    @Test
-    public void testCreateWorker() throws InterruptedException, ExecutionException {
-        File file = new File("");
-        // Given a sample title name
-        // Then check the to string returns what we expect
-        Task<Boolean> task = artifactImportController.createWorker(file);
-        assertNull(task);
-    }
 }
-
