@@ -21,7 +21,9 @@ import javafx.beans.property.Property;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Control;
+import javafx.scene.control.TextArea;
 import org.controlsfx.control.PropertySheet;
+import org.controlsfx.property.editor.AbstractPropertyEditor;
 import org.controlsfx.property.editor.PropertyEditor;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
@@ -53,6 +55,7 @@ public class SheetItem<T> implements PropertySheet.Item {
     private final ValidationSupport validationSupport;
     private final Validator<T> validator;
     ObservableField<?> observableField;
+
 
     private SheetItem(Class<?> classType, String category, String name,
                       String description, Property<T> property, Class propertyEditorClass,

@@ -15,7 +15,9 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -28,16 +30,39 @@ public class ObservableField<T> implements Field<T> {
     SimpleObjectProperty<FieldRecord<T>> fieldProperty = new SimpleObjectProperty<>();
     SimpleObjectProperty<T> valueProperty = new SimpleObjectProperty<>();
 
-    public ObservableField(FieldRecord<T> fieldRecord) {
+    public final BooleanProperty refreshProperties = new SimpleBooleanProperty(false);
+    public final boolean writeOnEveryChange;
+
+    public ObservableField(FieldRecord<T> fieldRecord, boolean writeOnEveryChange) {
+        this.writeOnEveryChange = writeOnEveryChange;
         fieldProperty.set(fieldRecord);
         valueProperty.set(fieldRecord.value());
         valueProperty.addListener((observable, oldValue, newValue) -> {
             handleValueChange(newValue);
             fieldProperty.set(field().withValue(newValue));
         });
+        refreshProperties.addListener((observable, oldValue, newValue) -> {
+            if(!newValue){
+                writeToDataBase();
+            }
+        });
+
+    }
+    public ObservableField(FieldRecord<T> fieldRecord) {
+        this(fieldRecord, true);
     }
 
     private void handleValueChange(Object newValue) {
+        if (writeOnEveryChange && !refreshProperties.get()) {
+            writeToDatabase(newValue);
+        }
+    }
+
+    public void writeToDataBase() {
+        this.writeToDatabase(value());
+    }
+
+    public void writeToDatabase(Object newValue) {
         StampRecord stamp = Entity.getStamp(fieldProperty.get().semanticVersionStampNid());
         // Get current version
         SemanticVersionRecord version = Entity.getVersionFast(field().semanticNid(), field().semanticVersionStampNid());

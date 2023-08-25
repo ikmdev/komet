@@ -116,7 +116,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage("Get POM Version") {
             steps {
                 // Clean before checkout / build
@@ -132,9 +132,9 @@ pipeline {
                     repositoryId = 'maven-releases'
 
                     mvnInstallerArgs = '-P create-installer'
-                    
+
                     if (isSnapshot) {
-                        jpackageAppName = "Komet-SNAPSHOT-\${NODE_NAME}-" + BRANCH_NAME.replaceAll("/", "-")
+                        jpackageAppName = "Komet-SNAPSHOT-\${NODE_NAME}-" //+ BRANCH_NAME.replaceAll("/", "-")
                         jpackageAppVersion = pomVersion.split('\\.')[0] + "." + pomVersion.split('\\.')[1] + "."  + BUILD_NUMBER
                         mvnInstallerArgs +=     """ \
                                                     -D"jpackage.app.name"=${jpackageAppName} \
