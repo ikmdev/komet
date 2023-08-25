@@ -15,24 +15,9 @@
  */
 package dev.ikm.komet.framework.propsheet;
 
+import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
-import javafx.application.Platform;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.StringProperty;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
-import javafx.scene.control.Control;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputControl;
-import javafx.util.Callback;
-import org.controlsfx.control.PropertySheet;
-import org.controlsfx.property.editor.AbstractPropertyEditor;
-import org.controlsfx.property.editor.DefaultPropertyEditorFactory;
-import org.controlsfx.property.editor.PropertyEditor;
-import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
 import dev.ikm.komet.framework.panel.axiom.AxiomView;
 import dev.ikm.komet.framework.propsheet.editor.IntIdListEditor;
 import dev.ikm.komet.framework.propsheet.editor.IntIdSetEditor;
@@ -44,20 +29,35 @@ import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.application.Platform;
+import javafx.beans.property.*;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
+import javafx.scene.control.Control;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputControl;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.util.Callback;
+import org.controlsfx.control.PropertySheet;
+import org.controlsfx.property.editor.AbstractPropertyEditor;
+import org.controlsfx.property.editor.DefaultPropertyEditorFactory;
+import org.controlsfx.property.editor.PropertyEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Optional;
+import java.util.*;
 
 public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, PropertyEditor<?>> {
     private static final Logger LOG = LoggerFactory.getLogger(KometPropertyEditorFactory.class);
+
+    private static Timer timer;
     private final ViewProperties viewProperties;
     DefaultPropertyEditorFactory defaultFactory = new DefaultPropertyEditorFactory();
 
@@ -94,8 +94,8 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
     }
 
     public static final PropertyEditor<?> createTextAreaEditor(PropertySheet.Item property) {
-
-        return new AbstractPropertyEditor<String, TextArea>(property, new TextArea()) {
+        TextArea textArea = initializeTextAreaEditor(property);
+        return new AbstractPropertyEditor<String, TextArea>(property, textArea) {
 
             {
                 getEditor().setWrapText(true);
@@ -118,6 +118,52 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
                 getEditor().setText(value);
             }
         };
+    }
+
+    private static TextArea initializeTextAreaEditor(PropertySheet.Item property) {
+        SheetItem sheetItem = property instanceof SheetItem<?> ? (SheetItem) property: null;
+        BooleanProperty refreshProp = new SimpleBooleanProperty(true);
+        if (sheetItem != null) {
+            sheetItem.observableField.refreshProperties.bind(refreshProp);
+        }
+
+        TextArea textArea= new TextArea();
+        textArea.addEventFilter(KeyEvent.ANY, event -> {
+            if(event.getCode() == KeyCode.TAB){
+                textArea.getParent().requestFocus();
+                event.consume();
+            }
+        });
+
+        List<TimerTask> timerTasks = Collections.synchronizedList(new ArrayList<>()); // create a list to maintain list of timer tasks.
+         //Initialize timer for text Area.
+        //On Every key press:
+        textArea.addEventFilter(KeyEvent.ANY, event -> {
+            if(timer !=null){
+                timer.cancel();
+            }
+            timer = new Timer();
+            timerTasks.forEach(timerTask -> timerTask.cancel()); // on every key press cancel all the timerTasks
+            timerTasks.clear(); // Clear all the tasks from list.
+            TimerTask timerTask = new TimerTask() {
+                @Override
+                public void run() {   // Create a new timer task.
+                    timer.cancel();
+                    refreshProp.set(false);
+                }
+            };
+            timerTasks.add(timerTask); // Add the task to the tasks list.
+            timer.schedule(timerTask, 1000);  // Schedule the task to be run after every 1 second.
+        });
+
+        textArea.focusedProperty().addListener((ObservableValue<? extends Boolean> observableValue, Boolean oldValue, Boolean newValue)  -> {
+          timerTasks.forEach(timerTask -> timerTask.cancel());
+          timerTasks.clear();
+          if(!newValue && timer!=null){
+             timer.cancel();
+          }
+        });
+        return textArea;
     }
 
     public static final Optional<PropertyEditor<?>> createCustomEditor(final SheetItem<?> property, final ViewProperties viewProperties) {
