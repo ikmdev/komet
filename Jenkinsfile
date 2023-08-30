@@ -134,7 +134,11 @@ pipeline {
                     mvnInstallerArgs = '-P create-installer'
 
                     if (isSnapshot) {
-                        jpackageAppName = "Komet-SNAPSHOT-\${NODE_NAME}-" //+ BRANCH_NAME.replaceAll("/", "-")
+                        snapshotBranchName = BRANCH_NAME
+                        if (BRANCH_NAME != "main") {
+                            snapshotBranchName = BRANCH_NAME.split("/")[1].substring(0, Math.min(BRANCH_NAME.length(), 15))
+                        }
+                        jpackageAppName = "Komet-SNAPSHOT-\${NODE_NAME}-" + snapshotBranchName
                         jpackageAppVersion = pomVersion.split('\\.')[0] + "." + pomVersion.split('\\.')[1] + "."  + BUILD_NUMBER
                         mvnInstallerArgs +=     """ \
                                                     -D"jpackage.app.name"=${jpackageAppName} \
