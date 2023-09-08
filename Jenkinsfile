@@ -26,7 +26,12 @@ pipeline {
         timestamps()
         ansiColor('xterm')
 
-        // necessary for communicating status to gitlab
+        // Discard old builds to conserve CI/CD storage
+        buildDiscarder logRotator( 
+            numToKeepStr: '10'
+        )
+
+        // Necessary for communicating status to gitlab
         gitLabConnection('fda-shield-group')
     }
 
