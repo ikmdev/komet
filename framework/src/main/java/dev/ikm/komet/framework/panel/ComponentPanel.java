@@ -72,7 +72,7 @@ public class ComponentPanel
     @Override
     public void changed(ObservableValue<? extends EntityFacade> observable, EntityFacade oldValue, EntityFacade newValue) {
         referencedNids.clear();
-        if (newValue != null) {
+        if (newValue != null && Entity.get(newValue.nid()).isPresent()) {
             referencedNids.add(newValue.nid());
             Platform.runLater(() -> {
                 getComponentPanelBox().getChildren().clear();
