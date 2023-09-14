@@ -29,11 +29,27 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 
+import static dev.ikm.tinkar.common.service.CachingService.LOG;
+
 public class ArtifactImportController {
+    @FXML
+
     private Label choosenFileLabel;
+    @FXML
+
+
     private Button importButton;
+    @FXML
+
+
     private Button cancelButton;
+    @FXML
+
+
     private ProgressBar importProgressBar;
+    @FXML
+
+
     private FileChooser fileChooser;
 
     @FXML
@@ -63,7 +79,7 @@ public class ArtifactImportController {
 
     @FXML
     void handleChooseFile(ActionEvent event) throws IOException {
-        importProgressBar.setVisible(false);
+        getImportProgressBar().setVisible(false);
         Stage stage = (Stage)choosenFileLabel.getScene().getWindow();
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Resource File");
@@ -107,8 +123,13 @@ public class ArtifactImportController {
 
             @Override
             protected Boolean call() throws Exception {
-                LoadEntitiesFromProtobufFile loadEntities = new LoadEntitiesFromProtobufFile(selectedFile);
-                loadEntities.compute();
+                try{
+                    LoadEntitiesFromProtobufFile loadEntities = new LoadEntitiesFromProtobufFile(selectedFile);
+                    loadEntities.compute();
+                }
+                catch(Exception e){
+                    LOG.error("Exception has been thrown, see below:", e);
+                }
                 updateProgress(100, 100);
                 importButton.setDisable(false);
                 cancelButton.setDisable(true);
