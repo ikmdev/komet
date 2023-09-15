@@ -80,7 +80,7 @@ open module dev.ikm.komet.framework {
     requires transitive dev.ikm.tinkar.terms;
     requires transitive org.kordamp.ikonli.javafx;
     requires transitive org.slf4j;
-    requires static com.google.auto.service;
+
     uses TaskListsService;
     uses PreferencesService;
     uses KometNodeFactory;

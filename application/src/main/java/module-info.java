@@ -42,7 +42,6 @@ module dev.ikm.komet.application {
     requires dev.ikm.komet.amplifydetails;
     requires dev.ikm.komet.artifact;
     requires dev.ikm.komet.executor;
-    requires dev.ikm.komet.framework;
     requires dev.ikm.komet.list;
     requires dev.ikm.komet.navigator;
     requires dev.ikm.komet.preferences;
@@ -53,6 +52,9 @@ module dev.ikm.komet.application {
     requires dev.ikm.tinkar.provider.entity;
     requires dev.ikm.tinkar.terms;
     requires org.kordamp.ikonli.javafx;
+    requires jdk.jdwp.agent;
+    requires transitive dev.ikm.komet.rules;
+    requires static com.google.auto.service;
 
     uses DataServiceController;
     uses DefaultDescriptionForNidService;
