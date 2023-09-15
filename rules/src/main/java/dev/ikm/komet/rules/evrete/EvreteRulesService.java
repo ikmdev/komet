@@ -52,7 +52,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.Map;
 
-@AutoService(RuleService.class)
+@AutoService(EvreteRulesService.class)
 public class EvreteRulesService implements RuleService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EvreteRulesService.class);

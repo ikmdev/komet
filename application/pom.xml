@@ -96,11 +96,6 @@
 
         <dependency>
             <groupId>${tinkar-core.groupId}</groupId>
-            <artifactId>data-websocket-client-provider</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>data-ephemeral-provider</artifactId>
         </dependency>
 
@@ -127,22 +122,21 @@
     <build>
         <pluginManagement>
             <plugins>
-               <plugin>
-                   <groupId>org.openjfx</groupId>
-                   <artifactId>javafx-maven-plugin</artifactId>
-                   <configuration>
-                       <mainClass>dev.ikm.komet.application/dev.ikm.komet.app.App</mainClass>
-                       <stripDebug>false</stripDebug>
-                       <compress>2</compress>
-                       <bindServices>true</bindServices>
-                       <noHeaderFiles>true</noHeaderFiles>
-                       <noManPages>true</noManPages>
-                       <ignoreSigningInformation>true</ignoreSigningInformation>
-                   </configuration>
-               </plugin>
+                <plugin>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-maven-plugin</artifactId>
+                    <configuration>
+                        <mainClass>dev.ikm.komet.application/dev.ikm.komet.app.App</mainClass>
+                        <stripDebug>false</stripDebug>
+                        <compress>2</compress>
+                        <bindServices>true</bindServices>
+                        <noHeaderFiles>true</noHeaderFiles>
+                        <noManPages>true</noManPages>
+                        <ignoreSigningInformation>true</ignoreSigningInformation>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
-
         <plugins>
             <plugin>
                 <groupId>org.openjfx</groupId>
@@ -187,8 +181,11 @@
                                 <option>--add-opens</option>
                                 <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
                                 <option>--add-exports</option>
-                                <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</option>
-                                <option>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</option>
+                                <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
+                                </option>
+                                <option>
+                                    -Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer
+                                </option>
                                 <option>
                                     -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000
                                 </option>
@@ -222,9 +219,44 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-to-debug</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/kometDebugRuntimeImage/module-jars</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-to-profile</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/kometProfileRuntimeImage/module-jars</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-to-launcher</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/kometRuntimeImage/module-jars</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-
     <profiles>
         <profile>
             <id>scenic-view</id>
@@ -255,7 +287,8 @@
             <id>create-installer</id>
             <properties>
                 <jpackage.app.name>Komet</jpackage.app.name>
-                <jpackage.app.version>${project.version}</jpackage.app.version>
+                <jpackage.app.version>1.16.0</jpackage.app.version>
+              <!--  <jpackage.app.version>${project.version}</jpackage.app.version>-->
                 <jpackage.app.dest>target/dist/installer</jpackage.app.dest>
             </properties>
             <build>
@@ -297,45 +330,132 @@
             </build>
         </profile>
         <!-- Profiles to configure JPackage flags for Mac, Linux, & Windows Installers -->
-	    <profile>
-	        <id>mac</id>
-	        <activation>
-	            <os>
-	                <family>mac</family>
-	            </os>
-	        </activation>
-	        <properties>
-	            <jpackage.type>PKG</jpackage.type>
+        <profile>
+            <id>mac</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <properties>
+                <jpackage.type>PKG</jpackage.type>
                 <jpackage.icon>src/main/resources/icons/KOMET.icns</jpackage.icon>
                 <jpackage.resourceDir>installer_resources/resourceDir_unix</jpackage.resourceDir>
-	        </properties>
-	    </profile>
-	    <profile>
-	        <id>linux</id>
-	        <activation>
-	            <os>
-	                <family>unix</family>
-	                <name>Linux</name>
-	            </os>
-	        </activation>
-	        <properties>
-	            <jpackage.type>RPM</jpackage.type>
+            </properties>
+        </profile>
+        <profile>
+            <id>linux</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                    <name>Linux</name>
+                </os>
+            </activation>
+            <properties>
+                <jpackage.type>RPM</jpackage.type>
                 <jpackage.icon>src/main/resources/icons/Komet.png</jpackage.icon>
                 <jpackage.resourceDir>installer_resources/resourceDir_unix</jpackage.resourceDir>
-	        </properties>
-	    </profile>
-	    <profile>
-	        <id>windows</id>
-	        <activation>
-	            <os>
-	                <family>windows</family>
-	            </os>
-	        </activation>
-	        <properties>
-	            <jpackage.type>MSI</jpackage.type>
+            </properties>
+        </profile>
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <jpackage.type>MSI</jpackage.type>
                 <jpackage.icon>src/main/resources/icons/Komet.ico</jpackage.icon>
                 <jpackage.resourceDir>installer_resources/resourceDir_win</jpackage.resourceDir>
-	        </properties>
-	    </profile>
+            </properties>
+        </profile>
+        <profile>
+            <id>jlink-profile</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.openjfx</groupId>
+                        <artifactId>javafx-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <!-- Configuration for profiling -->
+                                <id>profile</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jlink</goal>
+                                </goals>
+                                <configuration>
+                                    <launcher>profileKomet</launcher>
+                                    <jlinkImageName>kometProfileRuntimeImage</jlinkImageName>
+                                    <jlinkVerbose>true</jlinkVerbose>
+                                    <jlinkZipName>kometProfileJlink</jlinkZipName>
+                                    <options>
+                                        <option>--enable-preview</option>
+                                        <option>--add-opens</option>
+                                        <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
+                                        <option>--add-exports</option>
+                                        <option>
+                                            javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
+                                        </option>
+                                        <option>
+                                            -Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer
+                                        </option>
+                                        <option>
+                                            -agentpath:/Applications/JProfiler.app/Contents/Resources/app/bin/macos/libjprofilerti.jnilib=port=8849
+                                        </option>
+                                    </options>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>jlink-standard</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.openjfx</groupId>
+                        <artifactId>javafx-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <!-- Default configuration for running -->
+                                <id>default-cli</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jlink</goal>
+                                </goals>
+                                <configuration>
+                                    <launcher>launchKomet</launcher>
+                                    <jlinkImageName>kometRuntimeImage</jlinkImageName>
+                                    <jlinkVerbose>true</jlinkVerbose>
+                                    <jlinkZipName>kometJlink</jlinkZipName>
+                                    <options>
+                                        <option>--enable-preview</option>
+                                        <option>--add-opens</option>
+                                        <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
+                                        <option>--add-exports</option>
+                                        <option>
+                                            javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
+                                        </option>
+                                        <option>
+                                            -Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer
+                                        </option>
+                                    </options>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>

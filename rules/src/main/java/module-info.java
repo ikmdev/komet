@@ -17,7 +17,7 @@ import dev.ikm.komet.rules.evrete.EvreteRulesService;
 import dev.ikm.komet.framework.rulebase.RuleService;
 
 open module dev.ikm.komet.rules {
-    requires dev.ikm.komet.framework;
+    requires transitive dev.ikm.komet.framework;
     requires org.evrete.core;
     requires org.slf4j;
     requires org.evrete.dsl.java;
