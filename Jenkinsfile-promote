@@ -230,7 +230,7 @@ pipeline {
                                         "draft":false,
                                         "prerelease":false,
                                         "generate_release_notes":false,
-                                        "body":"${GITLAB_RELEASE_JSON['description']}"
+                                        "body":"${GITLAB_RELEASE_JSON['description'].replaceAll("\n","\\\\n")}"
                                     }'
                             """,
                             returnStdout: true
