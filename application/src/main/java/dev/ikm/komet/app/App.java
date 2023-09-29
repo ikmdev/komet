@@ -17,8 +17,13 @@ package dev.ikm.komet.app;
 
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
+import dev.ikm.komet.amplify.commons.CssHelper;
+import dev.ikm.komet.amplify.commons.ResourceHelper;
+import dev.ikm.komet.amplify.journal.JournalController;
+import dev.ikm.komet.amplify.journal.JournalViewFactory;
 import dev.ikm.komet.details.DetailsNodeFactory;
 import dev.ikm.komet.framework.KometNode;
+import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.ScreenInfo;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
@@ -31,6 +36,7 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.KometStageController;
 import dev.ikm.komet.framework.window.MainWindowRecord;
 import dev.ikm.komet.framework.window.WindowComponent;
+import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.list.ListNodeFactory;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNodeFactory;
 import dev.ikm.komet.navigator.pattern.PatternNavigatorFactory;
@@ -53,6 +59,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -73,10 +80,13 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
-import static dev.ikm.komet.app.AppState.LOADING_DATA_SOURCE;
-import static dev.ikm.komet.app.AppState.STARTING;
+import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
+import static dev.ikm.komet.amplify.commons.CssHelper.refreshPanes;
+import static dev.ikm.komet.app.AppState.*;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
 
@@ -92,8 +102,18 @@ public class App extends Application {
     private static long windowCount = 1;
     private static KometPreferencesStage kometPreferencesStage;
 
+    /**
+     * An entry point to launch the newer UI panels.
+     */
+    private MenuItem createJournalViewMenuItem;
+
+    /**
+     * This is a list of new windows that have been launched. During shutdown, the application close each stage gracefully.
+     */
+    private List<Stage> journalWindows = new ArrayList<>();
+
     public static void main(String[] args) {
-        System.setProperty("apple.laf.useScreenMenuBar", "true");
+        System.setProperty("apple.laf.useScreenMenuBar", "false");
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Komet");
         // https://stackoverflow.com/questions/42598097/using-javafx-application-stop-method-over-shutdownhook
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -220,12 +240,14 @@ public class App extends Application {
             // Get the toolkit
             MenuToolkit tk = MenuToolkit.toolkit();
             Menu kometAppMenu = tk.createDefaultApplicationMenu("Komet");
+
             MenuItem prefsItem = new MenuItem("Komet preferences...");
             prefsItem.setAccelerator(new KeyCodeCombination(KeyCode.COMMA, KeyCombination.META_DOWN));
             prefsItem.setOnAction(event -> App.kometPreferencesStage.showPreferences());
 
             kometAppMenu.getItems().add(2, prefsItem);
             kometAppMenu.getItems().add(3, new SeparatorMenuItem());
+
             tk.setApplicationMenu(kometAppMenu);
             //tk.setGlobalMenuBar();
             // File Menu
@@ -239,6 +261,13 @@ public class App extends Application {
             editMenu.getItems().addAll(createMenuItem("Undo"), createMenuItem("Redo"), new SeparatorMenuItem(),
                     createMenuItem("Cut"), createMenuItem("Copy"), createMenuItem("Paste"), createMenuItem("Select All"));
 
+            // View
+            Menu viewMenu = new Menu("View");
+            this.createJournalViewMenuItem = new MenuItem("New _Journal");
+            // disable until app state is running
+            this.createJournalViewMenuItem.setDisable(true);
+            viewMenu.getItems().add(this.createJournalViewMenuItem);
+            this.createJournalViewMenuItem.setOnAction(actionEvent -> launchAmplifyDetails("Journal " + (journalWindows.size() + 1)));
 
             // Window Menu
             Menu windowMenu = new Menu("Window");
@@ -250,7 +279,7 @@ public class App extends Application {
             helpMenu.getItems().addAll(new MenuItem("Getting started"));
 
             MenuBar bar = new MenuBar();
-            bar.getMenus().addAll(kometAppMenu, fileMenu, editMenu, windowMenu, helpMenu);
+            bar.getMenus().addAll(kometAppMenu, fileMenu, editMenu, viewMenu, windowMenu, helpMenu);
             tk.setAppearanceMode(AppearanceMode.AUTO);
             tk.setDockIconMenu(createDockMenu());
             tk.autoAddWindowMenuItems(windowMenu);
@@ -287,6 +316,11 @@ public class App extends Application {
                 ScreenInfo.mouseWasDragged(true);
 
             });
+
+            // Ensure app is shutdown gracefully. Once state changes it calls appStateChangeListener.
+            stage.setOnCloseRequest(windowEvent -> {
+                state.set(SHUTDOWN);
+            });
             stage.show();
             state.set(AppState.SELECT_DATA_SOURCE);
             state.addListener(this::appStateChangeListener);
@@ -297,9 +331,121 @@ public class App extends Application {
         }
     }
 
+    /**
+     * When a user selects the menu option View/New Journal a new Stage Window is launched.
+     * This method will load a navigation panel to be a publisher and windows will be connected (subscribed) to the activity stream.
+     * @param journalName abritrary Journal name.
+     */
+    private void launchAmplifyDetails(String journalName) {
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        KometPreferences windowPreferences = appPreferences.node("main-komet-window");
+        WindowSettings windowSettings = new WindowSettings(windowPreferences);
+
+        Stage amplifyStage = new Stage();
+        FXMLLoader amplifyJournalLoader = JournalViewFactory.createFXMLLoader();
+        JournalController journalController;
+        try {
+            BorderPane amplifyJournalBorderPane = amplifyJournalLoader.load();
+            journalController = amplifyJournalLoader.getController();
+            Scene sourceScene = new Scene(amplifyJournalBorderPane, 1200, 800);
+
+            // Add Komet.css and amplify css
+            sourceScene.getStylesheets().addAll(
+                    graphicsModule.getClassLoader().getResource(CSS_LOCATION).toString(), CssHelper.defaultStyleSheet());
+
+            // Attach a listener to provide a CSS refresher ability for each Journal window. Right double click settings button (gear)
+            attachCSSRefresher(journalController.getSettingsToggleButton(), journalController.getJournalBorderPane());
+
+            amplifyStage.setScene(sourceScene);
+            amplifyStage.setTitle(journalName);
+
+            amplifyStage.setMaximized(true);
+            amplifyStage.setOnCloseRequest(windowEvent -> {
+                // call shutdown method on the controller
+                journalController.shutdown();
+                journalWindows.remove(amplifyStage);
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Launch windows window pane inside journal view
+        amplifyStage.setOnShown(windowEvent -> {
+            KometNodeFactory navigatorNodeFactory = new GraphNavigatorNodeFactory();
+            KometNodeFactory searchNodeFactory = new SearchNodeFactory();
+
+            journalController.launchKometFactoryNodes(
+                    journalName, windowSettings.getView(), navigatorNodeFactory, searchNodeFactory);
+        });
+
+        journalWindows.add(amplifyStage);
+        amplifyStage.show();
+
+    }
+
+    /**
+     * This attaches a listener for the right mouse double click to refresh CSS stylesheet files.
+     * @param node The node the user will right mouse button double click
+     * @param root The root Parent node to refresh CSS stylesheets.
+     */
+    private void attachCSSRefresher(Node node, Parent root) {
+        // CSS refresher 'easter egg'. Right Click settings button to refresh Css Styling
+        node.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
+            if (mouseEvent.getClickCount() == 2 && mouseEvent.isSecondaryButtonDown()) {
+                handleRefreshUserCss(root);
+            }
+        });
+    }
+
+    /**
+     * Will refresh a parent root node and all children that have CSS stylesheets.
+     * Komet.css and amplify-opt2.css files are updated dynamically.
+     * @param root Parent node to be traversed to refresh all stylesheets.
+     */
+    private void handleRefreshUserCss(Parent root) {
+
+        try {
+            // "Feature" to make css editing/testing easy in the dev environment. Komet css
+            String currentDir = System.getProperty("user.dir").replace("/application", "/framework/src/main/resources");
+            String kometCssSourcePath = currentDir + ResourceHelper.toAbsolutePath("komet.css", Icon.class);
+            File kometCssSourceFile = new File(kometCssSourcePath);
+
+            // Amplify CSS file
+            String amplifyCssPath = defaultStyleSheet().replace("target/classes", "src/main/resources");
+            File amplifyCssFile = new File(amplifyCssPath.replace("file:", ""));
+
+            LOG.info("File exists? %s komet css path = %s".formatted(kometCssSourceFile.exists(), kometCssSourceFile));
+            LOG.info("File exists? %s amplify css path = %s".formatted(amplifyCssFile.exists(), amplifyCssFile));
+
+            // ensure both exist on the development environment path
+            if (kometCssSourceFile.exists() && amplifyCssFile.exists()) {
+                Scene scene = root.getScene();
+
+                // Apply Komet css
+                scene.getStylesheets().clear();
+                scene.getStylesheets().add(kometCssSourceFile.toURI().toURL().toString());
+
+                // Recursively refresh any children using the Amplify css files.
+                refreshPanes(root, amplifyCssPath);
+
+                LOG.info("       Updated komet.css: " + kometCssSourceFile.getAbsolutePath());
+                LOG.info("Updated amplify css file: " + amplifyCssFile.getAbsolutePath());
+            } else {
+                LOG.info("File not found for komet.css: " + kometCssSourceFile.getAbsolutePath());
+            }
+        } catch (IOException e) {
+            // TODO: Raise an alert
+            e.printStackTrace();
+        }
+
+    }
+
     @Override
     public void stop() {
         LOG.info("Stopping application\n\n###############\n\n");
+
+        // close all journal windows
+        journalWindows.forEach(stage -> stage.close());
     }
 
     private MenuItem createMenuItem(String title) {
@@ -405,6 +551,11 @@ public class App extends Application {
 
                     windowPreferences.sync();
                     appPreferences.sync();
+                    if (createJournalViewMenuItem != null) {
+                        createJournalViewMenuItem.setDisable(false);
+                        KeyCombination newJournalKeyCombo = new KeyCodeCombination(KeyCode.J, KeyCombination.SHORTCUT_DOWN);
+                        createJournalViewMenuItem.setAccelerator(newJournalKeyCombo);
+                    }
 
                 }
                 case SHUTDOWN -> {

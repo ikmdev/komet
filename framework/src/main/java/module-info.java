@@ -23,6 +23,7 @@ import dev.ikm.tinkar.common.service.CachingService;
 open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.activity;
     exports dev.ikm.komet.framework.alerts;
+    exports dev.ikm.komet.framework.annotations;
     exports dev.ikm.komet.framework.builder;
     exports dev.ikm.komet.framework.concurrent;
     exports dev.ikm.komet.framework.context;
@@ -68,7 +69,7 @@ open module dev.ikm.komet.framework {
     requires transitive javafx.fxml;
     requires transitive javafx.graphics;
     requires transitive org.controlsfx.controls;
-    requires transitive org.eclipse.jetty.logging;
+//    requires transitive org.eclipse.jetty.logging;
     requires transitive dev.ikm.komet.preferences;
     requires transitive dev.ikm.komet.terms;
     requires transitive dev.ikm.tinkar.common;

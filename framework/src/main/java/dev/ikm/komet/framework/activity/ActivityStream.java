@@ -59,7 +59,6 @@ public class ActivityStream implements Broadcaster<ImmutableList<EntityFacade>>,
         this.activityStreamKey = activityStreamKey;
 
         this.processor = new SimpleBroadcaster<>();
-        ;
         this.preferences = Preferences.get().getConfigurationPreferences().node("/activity-streams/" + activityStreamKey.getString());
         if (preferences.hasKey(PreferenceKey.HISTORY)) {
             List<EntityFacade> savedHistory = preferences.getEntityList(PreferenceKey.HISTORY);

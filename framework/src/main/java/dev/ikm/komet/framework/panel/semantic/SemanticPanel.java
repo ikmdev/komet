@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.panel.semantic;
 
+import dev.ikm.tinkar.coordinate.stamp.change.ChangeChronology;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableSet;
 import javafx.geometry.Pos;
@@ -59,6 +60,15 @@ public class SemanticPanel extends ComponentIsFinalPanel<
 
             ContextMenu contextMenu = new ContextMenu();
             collapsiblePane.setContextMenu(contextMenu);
+            MenuItem versionChronologyMenuItem = new MenuItem("Version chronology for: " +
+                    viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticSnapshot.nid()));
+            versionChronologyMenuItem.setOnAction(event -> {
+                ChangeChronology changeChronology = this.viewProperties.calculator().changeChronology(semanticSnapshot.nid());
+                System.out.println(changeChronology.toString(viewProperties.calculator(), true));
+                System.out.println(changeChronology.toString(viewProperties.calculator(), false));
+            });
+            contextMenu.getItems().add(versionChronologyMenuItem);
+
             MenuItem patternMenuItem = new MenuItem("Focus on pattern: " +
                     viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(patternEntityVersion.nid()));
             patternMenuItem.setOnAction(event -> {

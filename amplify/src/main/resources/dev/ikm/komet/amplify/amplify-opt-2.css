@@ -1,0 +1,1217 @@
+.root {
+    -fx-amplify-titled-pane-text-color: #4581deff;
+    -fx-amplify-titled-pane-background-color: #dbe9ffff;
+    -komet-description-color: #ff9100;
+    -fx-font-family: "OpenSans";
+}
+
+.rounded-top {
+    -fx-background-color: #E1E8F1FF;
+    -fx-background-radius: 10 10 0 0;
+    -fx-border-radius: 10 10 0 0;
+}
+.rounded-bottom {
+    -fx-background-color: #E1E8F1FF;
+    -fx-background-radius: 0 0 10 10;
+    -fx-border-radius: 0 0 10 10;
+}
+.concept-detail-properties-pane,
+.properties-tab-container,
+.timeline-toolbar-container {
+    -fx-background-color: #E1E8F1ff;
+    -fx-padding: 0 4 4 4;
+}
+
+.concept-detail-pane {
+    -fx-padding: 0 4 4 4;
+    -fx-border-insets: 0;
+    -fx-background-color: #E1E8F1FF;
+    -fx-background-radius: 10 10 10 10;
+    -fx-border-radius: 10 10 10 10;
+}
+
+.concept-detail-banner-background {
+    -fx-background-color: #ffffffff;
+}
+
+.identicon-frame {
+    -fx-border-color: #202020FF;
+
+}
+
+.copyable-label, .copyable-label:focused {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent ;
+    -fx-background-insets: 0px ;
+    -fx-padding: 4 0 4 0;
+
+}
+.concept-title {
+    -fx-text-fill: #4581deff;
+    -fx-fill: #4581deff;
+}
+
+.titled-pane {
+    -fx-text-fill: #4581deff;
+    -fx-border-insets: 1, 0, 1, 0;
+    /*-fx-border-color: #9caabfff;*/
+}
+
+.titled-pane:focused {
+    -fx-color: -fx-base;
+}
+
+.titled-pane > .title {
+    -fx-background-color: #dbe9ffff;
+    -fx-border-width: 1, .5, 1, .5;
+    /*-fx-border-color: #9caabfff;*/
+}
+
+/* focus purely on the arrow */
+.titled-pane:focused > .title > .arrow-button > .arrow {
+    -fx-background-color: -fx-focus-color, -fx-mark-color;
+    -fx-background-insets: -1, 0;
+}
+.titled-pane > .title > .arrow-button {
+    -fx-background-color: null;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0.0em 0.583em 0.0em 0.0em; /* 0 7 0 0 */
+}
+
+.titled-pane > .title > .arrow-button > .arrow {
+    -fx-background-color: #4581deff;
+    -fx-shape: "M1.40988 0.295017L-0.000122333 1.70502L5.99988 7.70502L11.9999 1.70502L10.5899 0.295017L5.99988 4.87502L1.40988 0.295017Z";
+}
+/* alternative content using a border and a grad to transparent background - why should TitledPane content have a colour? */
+.titled-pane > *.content {
+    -fx-border-insets: -1 0 0 0;
+}
+
+.descr-semantic {
+    -fx-wrap-text: true;
+    -fx-text-fill: #585757ff;
+    -fx-fill: #585757ff;
+    -fx-alignment: top-left;
+}
+
+.descr-concept-name{
+    -fx-wrap-text: true;
+    -fx-alignment: top-left;
+}
+
+.pencil-button.button {
+    -fx-pref-width: 15;
+    -fx-pref-height: 14;
+    -fx-background-radius: 2;
+    -fx-background-insets: 0;
+    -fx-background-color: #44495EFF;
+    -fx-shape: "M8.89461 4.75L9.59961 5.455L2.78961 12.25H2.09961V11.56L8.89461 4.75ZM11.5946 0.25C11.4071 0.25 11.2121 0.325 11.0696 0.4675L9.69711 1.84L12.5096 4.6525L13.8821 3.28C14.1746 2.9875 14.1746 2.5 13.8821 2.2225L12.1271 0.4675C11.9771 0.3175 11.7896 0.25 11.5946 0.25ZM8.89461 2.6425L0.599609 10.9375V13.75H3.41211L11.7071 5.455L8.89461 2.6425Z"
+}
+
+.pencil-button.button:hover {
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
+    -fx-scale-z: 1.1;
+}
+
+.pencil-button.button:armed {
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
+    -fx-scale-z: 1.1;
+    -fx-translate-x: 2;
+    -fx-translate-y: 2;
+}
+
+.axiom-count-btn {
+    -fx-background-color: #585757, white;
+    -fx-background-radius: 2, 2;
+    -fx-background-insets: 0, 1;
+    -fx-text-fill: black;
+
+}
+
+.axiom-inferred-gear-btn {
+    -fx-pref-width: 15;
+    -fx-pref-height: 14;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 2;
+}
+.axiom-stated-chat-bubble-btn {
+    -fx-pref-width: 16;
+    -fx-pref-height: 15;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 2;
+
+}
+
+/* Properties Buttons At the Top */
+.properties-tab-outer-container, .properties-tab-container,
+.timeline-outer-container, .timeline-toolbar-container {
+    -fx-background-color: transparent;
+}
+
+.properties-tabs {
+    -fx-border-insets: 0;
+    -fx-background-color: #E1E8F1FF;
+    -fx-background-radius: 10 10 0 0;
+    -fx-border-radius: 10 10 0 0;
+    -fx-border-style: solid;
+    -fx-border-width: 0.083333em;
+    -fx-border-color: #6E7989FF;
+}
+
+.properties-tab.toggle-button {
+    -fx-pref-width: 92;
+    -fx-pref-height: 50;
+    -fx-max-height: 50;
+    -fx-position-shape: true;
+    -fx-scale-shape: false;
+    -fx-background-radius: 0;
+    -fx-background-color: #e0e8f1ff;
+    -fx-alignment: center;
+    -fx-content-display: top;
+    -fx-font-family: "Open Sans";
+    -fx-font-size: 1em;
+    -fx-font-style: normal;
+    /*-fx-content-display: graphic-only;*/
+}
+
+/* SVG inside button setGraphic as SVGPath in FXML*/
+.properties-tab.toggle-button .svg-tab {
+    -fx-fill: #545D72FF;
+}
+
+/* Hover over tab button */
+.properties-tab.toggle-button:hover {
+    -fx-background-color: #67BA3FFF;
+    -fx-text-fill: white;
+}
+
+/* Hover over tab button & SVG descendent */
+.properties-tab.toggle-button:hover .svg-tab {
+    -fx-fill: white;
+}
+
+/* Hover over tab button */
+.properties-tab.toggle-button:selected {
+    -fx-background-color: #67BA3FFF;
+    -fx-text-fill: white;
+}
+
+/* Hover over tab button & SVG descendent */
+.properties-tab.toggle-button:selected .svg-tab {
+    -fx-fill: white;
+}
+
+.properties-tab-container-content {
+    -fx-background-color: #CFD8E4FF;
+    -fx-border-insets: -1 0 0 0;
+    -fx-background-radius: 0 0 10 10;
+    -fx-border-radius: 0 0 10 10;
+    -fx-border-style: solid;
+    -fx-border-width: 0.083333em;
+    -fx-border-color: #6E7989FF;
+}
+
+.toggle-button.left-pill, .toggle-button.center-pill, .toggle-button.right-pill {
+    -fx-background-color: #E1E8F1FF;
+    -fx-border-insets: -1;
+    -fx-border-style: solid;
+    -fx-border-width: 0.083333em;
+    -fx-border-color: #B3BDCDFF;
+    -fx-text-alignment: center;
+    -fx-font-family: "Open Sans SemiBold";
+}
+
+/* Mouse hover on top of pill button */
+.toggle-button.left-pill:hover, .toggle-button.center-pill:hover, .toggle-button.right-pill:hover {
+    -fx-text-fill: #4A7AD2ff;
+}
+
+/* Selected pill button */
+.toggle-button.left-pill:selected, .toggle-button.center-pill:selected, .toggle-button.right-pill:selected {
+    -fx-text-fill: #4A7AD2ff;
+    -fx-background-color: #ffffffff;
+}
+
+.toggle-button.left-pill {
+    -fx-background-radius: 8 0 0 8;
+    -fx-border-radius: 8 0 0 8;
+}
+
+
+.toggle-button.center-pill {
+    -fx-background-radius: 0 0 0 0;
+    -fx-border-radius: 0 0 0 0;
+}
+
+.toggle-button.right-pill {
+    -fx-background-radius: 0 8 8 0;
+    -fx-border-radius: 0 8 8 0;
+}
+
+.history-tab-container {
+    -fx-background-color: #cfd8e4ff;
+}
+
+.descr-row-container {
+    -fx-background-color: #CFD8E4FF, #FFFFFFFF;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 2, 2;
+    -fx-pref-width: 421px;
+    -fx-pref-height: 95px;
+    -fx-padding: 0 5 5 5;
+
+    /*-fx-background-radius: 0 0 0 0;*/
+    /*-fx-border-radius: 0 0 0 0;*/
+    /*-fx-border-style: solid;*/
+    /*-fx-border-width: 0.083333em;*/
+    /*-fx-border-color: #CFD8E4FF;*/
+}
+
+.descr-row-container:hover {
+    -fx-background-color: #67BA3FFF, #FFFFFFFF;
+    -fx-background-insets: 0, 2;
+}
+.descr-row-container .descr-info-container {
+    -fx-padding: 0 0 0 4;
+}
+
+.descr-row-container .extension-vline {
+    -fx-background-color: transparent, #0085FF;
+    -fx-background-insets: 0, 6 3 0 3;
+    -fx-background-radius: 0, 4;
+    -fx-pref-width: 10px;
+    /*-fx-padding: 0 0 0 0;*/
+}
+
+/* First extension vertical blue line */
+.descr-row-container .extension-vline.first {
+    -fx-background-color: transparent, #0085FF;
+}
+
+/* Second extension vertical purple line */
+.descr-row-container .extension-vline.second {
+    -fx-background-color: transparent, #956AFF;
+}
+
+/* Third extension vertical red line */
+.descr-row-container .extension-vline.third {
+    -fx-background-color: transparent, #FF6252;
+}
+
+.descr-semantic-name {
+    -fx-font-family: "Open Sans";
+    -fx-font-weight: bold;
+    -fx-text-fill: #4A7AD2ff;
+    -fx-font-size: 1.166667em;
+}
+.descr-comment {
+    -fx-font-family: "Open Sans";
+    -fx-text-fill: #44495EFF;
+    -fx-font-size: 1em;
+    -fx-font-weight: normal;
+}
+
+.descr-stamp {
+    -fx-font-family: "Open Sans";
+    -fx-text-fill: #6E7989FF;
+    -fx-font-size: 0.916667em;
+}
+
+/* Amplify Journal */
+/* Left Sidebar */
+
+.side-bar {
+    -icon-paint: #44495EFF;
+    -default-height: -1;
+    -default-width: 48px;
+    -default-button-height: 56px;
+    -default-button-width: 48px;
+
+    -fx-alignment: top-center;
+    -fx-background-insets: 0;
+    -fx-background-color: #F3F5F8FF;
+    -fx-border-insets: 0 0 0 0;
+    -fx-border-style: solid;
+    -fx-border-width: 1;
+    -fx-border-color: #44495EFF;
+
+    -fx-min-height: -default-height;
+    -fx-pref-height: -default-height;
+    -fx-max-height: 5000;
+
+    -fx-min-width: -default-width;
+    -fx-pref-width: -default-width;
+    -fx-max-width: -default-width;
+}
+
+.side-bar > .button,
+.side-bar > .toggle-button  {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0px, 0px, 0px, 0px;
+    -fx-min-height: -default-button-height;
+    -fx-pref-height: -default-button-height;
+    -fx-max-height: -default-button-height;
+    -fx-content-display: graphic-only;
+    -fx-min-width: -default-button-width;
+    -fx-pref-width: -default-button-width;
+    -fx-max-width: -default-button-width;
+}
+
+/* all sidebar button regions are transparent */
+.side-bar .button .icon,
+.side-bar .toggle-button .icon
+{
+    -fx-background-color: -icon-paint;
+}
+
+
+
+/* Hover over tab button */
+.side-bar .toggle-button:hover,
+.side-bar .toggle-button:selected,
+.side-bar .button:hover,
+.side-bar .button:selected {
+    -fx-background-color: #67BA3FFF;
+}
+
+/* Hover over tab button & SVG descendent */
+.side-bar .toggle-button:hover .icon,
+.side-bar .toggle-button:selected .icon,
+.side-bar .button:hover .icon,
+.side-bar .button:selected .icon {
+    -fx-background-color: white;
+}
+
+
+/* A home button size */
+.side-bar .button.home-button {
+    -height-size: 39;
+    -fx-min-height: -height-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+}
+
+/* An Home svg (region) */
+.home {
+    -width-size: 20;
+    -height-size: 17;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M10 3.19L15 7.69V15.5H13V9.5H7V15.5H5V7.69L10 3.19ZM10 0.5L0 9.5H3V17.5H9V11.5H11V17.5H17V9.5H20L10 0.5Z";
+}
+
+/* An Search svg (region) */
+.search {
+    -width-size: 18;
+    -height-size: 18;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z";
+}
+
+.side-bar .divider {
+    -fx-fill: #C3CDDCFF;
+    -fx-stroke-width: 0;
+}
+
+/* An navigator svg (region) */
+.navigator {
+    -width-size: 20;
+    -height-size: 20;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M10 11H5V16H10V18H3V8H5V9H10V11ZM6 2V4H2V2H6ZM8 0H0V6H8V0ZM18 9V11H14V9H18ZM20 7H12V13H20V7ZM18 16V18H14V16H18ZM20 14H12V20H20V14Z";
+}
+
+/* An star svg (region) */
+.star {
+    -width-size: 20;
+    -height-size: 19;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M20 7.74L12.81 7.12L10 0.5L7.19 7.13L0 7.74L5.46 12.47L3.82 19.5L10 15.77L16.18 19.5L14.55 12.47L20 7.74ZM10 13.9L6.24 16.17L7.24 11.89L3.92 9.01L8.3 8.63L10 4.6L11.71 8.64L16.09 9.02L12.77 11.9L13.77 16.18L10 13.9Z";
+}
+
+.comment {
+    -width-size: 20;
+    -height-size: 20;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M7 20C6.73478 20 6.48043 19.8946 6.29289 19.7071C6.10536 19.5196 6 19.2652 6 19V16H2C1.46957 16 0.960859 15.7893 0.585786 15.4142C0.210714 15.0391 0 14.5304 0 14V2C0 0.89 0.9 0 2 0H18C18.5304 0 19.0391 0.210714 19.4142 0.585786C19.7893 0.960859 20 1.46957 20 2V14C20 14.5304 19.7893 15.0391 19.4142 15.4142C19.0391 15.7893 18.5304 16 18 16H11.9L8.2 19.71C8 19.9 7.75 20 7.5 20H7ZM8 14V17.08L11.08 14H18V2H2V14H8Z";
+}
+
+.notification {
+    -width-size: 18;
+    -height-size: 21;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M7 19H11C11 20.1 10.1 21 9 21C7.9 21 7 20.1 7 19ZM18 17V18H0V17L2 15V9C2 5.9 4 3.2 7 2.3V2C7 0.9 7.9 0 9 0C10.1 0 11 0.9 11 2V2.3C14 3.2 16 5.9 16 9V15L18 17ZM14 9C14 6.2 11.8 4 9 4C6.2 4 4 6.2 4 9V16H14V9Z";
+}
+
+.flex-space {
+    -fx-min-height: 56;
+    -fx-pref-height: -1;
+    -fx-max-height: 3000;
+}
+.settings {
+    -width-size: 22;
+    -height-size: 22;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M14.31 20.03C14.21 20.71 13.59 21.25 12.85 21.25H9.14999C8.40999 21.25 7.78999 20.71 7.69999 19.98L7.42999 18.09C7.15999 17.95 6.89999 17.8 6.63999 17.63L4.83999 18.35C4.13999 18.61 3.36999 18.32 3.02999 17.7L1.19999 14.53C0.84999 13.87 0.99999 13.09 1.55999 12.65L3.08999 11.46C3.07999 11.31 3.06999 11.16 3.06999 11C3.06999 10.85 3.07999 10.69 3.08999 10.54L1.56999 9.35001C0.97999 8.90001 0.82999 8.09001 1.19999 7.47001L3.04999 4.28001C3.38999 3.66001 4.15999 3.38001 4.83999 3.65001L6.64999 4.38001C6.90999 4.21001 7.16999 4.06001 7.42999 3.92001L7.69999 2.01001C7.78999 1.31001 8.40999 0.76001 9.13999 0.76001H12.84C13.58 0.76001 14.2 1.30001 14.29 2.03001L14.56 3.92001C14.83 4.06001 15.09 4.21001 15.35 4.38001L17.15 3.66001C17.86 3.40001 18.63 3.69001 18.97 4.31001L20.81 7.49001C21.17 8.15001 21.01 8.93001 20.45 9.37001L18.93 10.56C18.94 10.71 18.95 10.86 18.95 11.02C18.95 11.18 18.94 11.33 18.93 11.48L20.45 12.67C21.01 13.12 21.17 13.9 20.82 14.53L18.96 17.75C18.62 18.37 17.85 18.65 17.16 18.38L15.36 17.66C15.1 17.83 14.84 17.98 14.58 18.12L14.31 20.03ZM9.61999 19.25H12.38L12.75 16.7L13.28 16.48C13.72 16.3 14.16 16.04 14.62 15.7L15.07 15.36L17.45 16.32L18.83 13.92L16.8 12.34L16.87 11.78L16.8731 11.7531C16.902 11.5027 16.93 11.2607 16.93 11C16.93 10.73 16.9 10.47 16.87 10.22L16.8 9.66001L18.83 8.08001L17.44 5.68001L15.05 6.64001L14.6 6.29001C14.18 5.97001 13.73 5.71001 13.27 5.52001L12.75 5.30001L12.38 2.75001H9.61999L9.24999 5.30001L8.71999 5.51001C8.27999 5.70001 7.83999 5.95001 7.37999 6.30001L6.92999 6.63001L4.54999 5.68001L3.15999 8.07001L5.18999 9.65001L5.11999 10.21C5.08999 10.47 5.05999 10.74 5.05999 11C5.05999 11.26 5.07999 11.53 5.11999 11.78L5.18999 12.34L3.15999 13.92L4.53999 16.32L6.92999 15.36L7.37999 15.71C7.80999 16.04 8.23999 16.29 8.70999 16.48L9.23999 16.7L9.61999 19.25ZM14.5 11C14.5 12.933 12.933 14.5 11 14.5C9.06699 14.5 7.49999 12.933 7.49999 11C7.49999 9.06701 9.06699 7.50001 11 7.50001C12.933 7.50001 14.5 9.06701 14.5 11Z";
+}
+
+.avatar {
+    -width-size: 20;
+    -height-size: 20;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM16.36 14.83C14.93 13.09 11.46 12.5 10 12.5C8.54 12.5 5.07 13.09 3.64 14.83C2.62 13.49 2 11.82 2 10C2 5.59 5.59 2 10 2C14.41 2 18 5.59 18 10C18 11.82 17.38 13.49 16.36 14.83ZM6.5 7.5C6.5 5.56 8.06 4 10 4C11.94 4 13.5 5.56 13.5 7.5C13.5 9.44 11.94 11 10 11C8.06 11 6.5 9.44 6.5 7.5Z";
+}
+
+/* Top project bar area */
+.project-bar {
+    -icon-paint: #44495EFF;
+
+    -default-width: 48px;
+    -default-height: 40px;
+    -fx-spacing: 4;
+    -fx-alignment: center;
+    -fx-background-insets: 0;
+    /*-fx-background-color: #F3F5F8FF;*/
+    -fx-background-color: #e9ecf0ff;
+    -fx-border-insets: 0 -1 0 -1;
+    -fx-border-style: solid;
+    -fx-border-width: 1;
+    -fx-border-color: #44495EFF;
+
+    -fx-min-height: -default-height;
+    -fx-pref-height: -default-height;
+    -fx-max-height: -default-height;
+
+    -fx-min-width: -default-width;
+    -fx-pref-width: -1;
+    -fx-max-width: 5000;
+}
+
+.project-bar .button  {
+    -fx-background-color: transparent;
+    -fx-min-height: -default-height;
+    -fx-pref-height: -default-height;
+    -fx-max-height: -default-height;
+    -fx-content-display: graphic-only;
+    -fx-min-width: -default-width;
+    -fx-pref-width: -default-width;
+    -fx-max-width: -default-width;
+}
+
+/* all sidebar button regions are transparent */
+.project-bar .button .icon {
+    -fx-background-color: -icon-paint;
+}
+
+.compass {
+    -width-size: 20;
+    -height-size: 20;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M2.19169 9.17431H3.16055C3.61657 9.17431 3.98624 9.54399 3.98624 10C3.98624 10.456 3.61657 10.8257 3.16055 10.8257H2.19169C2.35721 12.5116 3.02422 14.0503 4.04155 15.2908L4.72638 14.6059C5.04883 14.2835 5.57162 14.2835 5.89407 14.6059C6.21653 14.9284 6.21653 15.4512 5.89407 15.7736L5.20925 16.4585C6.44965 17.4758 7.98839 18.1428 9.67431 18.3083V17.3394C9.67431 16.8834 10.044 16.5138 10.5 16.5138C10.956 16.5138 11.3257 16.8834 11.3257 17.3394V18.3083C13.0116 18.1428 14.5503 17.4758 15.7908 16.4585L15.1059 15.7736C14.7835 15.4512 14.7835 14.9284 15.1059 14.6059C15.4284 14.2835 15.9512 14.2835 16.2736 14.6059L16.9585 15.2908C17.9758 14.0503 18.6428 12.5116 18.8083 10.8257H17.8394C17.3834 10.8257 17.0138 10.456 17.0138 10C17.0138 9.54399 17.3834 9.17431 17.8394 9.17431H18.8083C18.6428 7.48839 17.9758 5.94965 16.9585 4.70925L16.2736 5.39407C15.9512 5.71653 15.4284 5.71653 15.1059 5.39407C14.7835 5.07162 14.7835 4.54883 15.1059 4.22638L15.7908 3.54155C14.5503 2.52422 13.0116 1.85721 11.3257 1.69169V2.66055C11.3257 3.11657 10.956 3.48624 10.5 3.48624C10.044 3.48624 9.67431 3.11657 9.67431 2.66055V1.69169C7.98839 1.85721 6.44965 2.52422 5.20925 3.54155L5.89407 4.22638C6.21653 4.54883 6.21653 5.07162 5.89407 5.39407C5.57162 5.71653 5.04883 5.71653 4.72638 5.39407L4.04155 4.70925C3.02422 5.94965 2.35721 7.48839 2.19169 9.17431ZM0.5 10C0.5 4.47715 4.97715 0 10.5 0C16.0228 0 20.5 4.47715 20.5 10C20.5 15.5228 16.0228 20 10.5 20C4.97715 20 0.5 15.5228 0.5 10ZM10.5 5.50459C10.79 5.50459 11.0588 5.65676 11.208 5.90546L12.478 8.02203L14.5945 9.29198C14.8432 9.4412 14.9954 9.70997 14.9954 10C14.9954 10.29 14.8432 10.5588 14.5945 10.708L12.478 11.978L11.208 14.0945C11.0588 14.3432 10.79 14.4954 10.5 14.4954C10.21 14.4954 9.9412 14.3432 9.79198 14.0945L8.52203 11.978L6.40546 10.708C6.15676 10.5588 6.00459 10.29 6.00459 10C6.00459 9.70997 6.15676 9.4412 6.40546 9.29198L8.52203 8.02203L9.79198 5.90546C9.9412 5.65676 10.21 5.50459 10.5 5.50459ZM10.5 7.93512L9.83187 9.04867C9.76215 9.16488 9.66488 9.26215 9.54867 9.33187L8.43512 10L9.54867 10.6681C9.66488 10.7379 9.76215 10.8351 9.83187 10.9513L10.5 12.0649L11.1681 10.9513C11.2379 10.8351 11.3351 10.7379 11.4513 10.6681L12.5649 10L11.4513 9.33187C11.3351 9.26215 11.2379 9.16488 11.1681 9.04867L10.5 7.93512Z";
+}
+.download {
+    -width-size: 16;
+    -height-size: 16;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M14.5 11V14H2.5V11H0.5V14C0.5 15.1 1.4 16 2.5 16H14.5C15.6 16 16.5 15.1 16.5 14V11H14.5ZM13.5 7L12.09 5.59L9.5 8.17V0H7.5V8.17L4.91 5.59L3.5 7L8.5 12L13.5 7Z";
+}
+.plus-symbol {
+    -width-size: 16;
+    -height-size: 16;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M16.5 9H9.5V16H7.5V9H0.5V7H7.5V0H9.5V7H16.5V9Z";
+}
+
+.vertical-divider {
+    -fx-fill: #C3CDDCFF;
+    -fx-stroke-width: 0;
+}
+
+.project-bar .combo-box {
+    -fx-fill: #C3CDDCFF;
+    -fx-stroke-width: 0;
+}
+
+.project-bar .combo-box-base > .arrow-button > .arrow {
+    -fx-background-color: -fx-mark-highlight-color, -fx-mark-color;
+    -fx-background-insets: 0 0 -1 0, 0;
+    -fx-padding: 0.166667em 0.333333em 0.166667em 0.333333em; /* 2 4 2 4 */
+    -fx-shape: "M0.792893 0.292893C1.18342 -0.097631 1.81658 -0.097631 2.20711 0.292893L5.5 3.58579L8.79289 0.292893C9.18342 -0.0976311 9.81658 -0.0976311 10.2071 0.292893C10.5976 0.683417 10.5976 1.31658 10.2071 1.70711L6.20711 5.70711C5.81658 6.09763 5.18342 6.09763 4.79289 5.70711L0.792893 1.70711C0.402369 1.31658 0.402369 0.683418 0.792893 0.292893Z";
+}
+.project-bar .combo-box-base:editable > .arrow-button {
+    -fx-background-color: #d7dce3ff;
+    -fx-background-insets: 0;
+    -fx-background-radius: 3px, 3px, 2px, 1px;
+    -fx-padding: 0.333333em 0.666667em 0.333333em 0.666667em; /* 4 8 4 8 */
+    -fx-text-fill: -fx-text-base-color;
+    -fx-alignment: CENTER;
+    -fx-content-display: LEFT;
+}
+
+.project-bar .combo-box-base:editable > .text-field {
+    -fx-background-color: #d7dce3ff;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+
+.chapter-header-bar {
+    -icon-paint: #44495EFF;
+    -default-width: 48px;
+    -default-height: 32px;
+    -fx-spacing: 4;
+    -fx-alignment: center;
+    -fx-background-insets: 0;
+    /*-fx-background-color: #F3F5F8FF;*/
+    -fx-background-color: #004074ff;
+    -fx-border-insets: 0 0 -1 0;
+    -fx-border-style: solid;
+    -fx-border-width: 1;
+    -fx-border-color: transparent transparent #3e80ddff transparent;
+
+
+    -fx-min-height: -default-height;
+    -fx-pref-height: -default-height;
+    -fx-max-height: -default-height;
+
+    -fx-min-width: -default-width;
+    -fx-pref-width: -1;
+    -fx-max-width: 5000;
+}
+
+.chapter-header-bar .button  {
+    -fx-background-color: transparent;
+    -fx-min-height: -default-height;
+    -fx-pref-height: -default-height;
+    -fx-max-height: -default-height;
+    -fx-content-display: graphic-only;
+    -fx-min-width: -default-width;
+    -fx-pref-width: -default-width;
+    -fx-max-width: -default-width;
+}
+
+/* text color #FBFBFCFF*/
+.left-arrow {
+    -width-size: 16;
+    -height-size: 16;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-background-color: #FBFBFCFF;
+    -fx-shape: "M16 6.99994H3.83L9.42 1.40994L8 -6.10352e-05L0 7.99994L8 15.9999L9.41 14.5899L3.83 8.99994H16V6.99994Z";
+}
+
+.hamburger {
+    -width-size: 4;
+    -height-size: 16;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-background-color: #FBFBFCFF;
+    -fx-shape: "M2 4C3.1 4 4 3.1 4 2C4 0.9 3.1 0 2 0C0.9 0 0 0.9 0 2C0 3.1 0.9 4 2 4ZM2 6C0.9 6 0 6.9 0 8C0 9.1 0.9 10 2 10C3.1 10 4 9.1 4 8C4 6.9 3.1 6 2 6ZM0 14C0 12.9 0.9 12 2 12C3.1 12 4 12.9 4 14C4 15.1 3.1 16 2 16C0.9 16 0 15.1 0 14Z";
+}
+
+.chapter-header-bar .label {
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    -fx-text-overrun: ellipsis;
+    -fx-font-family: "Open Sans SemiBold";
+    -fx-text-fill: white;
+    -fx-min-width: -1;
+    -fx-pref-width: -1;
+    -fx-max-width: 2000;
+}
+
+.desktop-area {
+    /*-fx-background-image: url("journal/grid-2x2-segment.png");*/
+    -fx-background-color: #828d9fff;
+}
+
+.chapter-block-bar-stack {
+    -icon-paint: #44495EFF;
+    -default-height: 48px;
+    -default-width: 26px;
+    -fx-alignment: center;
+    -fx-background-insets: 0;
+    -fx-background-color: #E1E8F1FF;
+    -fx-border-insets: 0 0 0 0;
+    -fx-border-style: solid;
+    -fx-border-width: 1;
+    -fx-border-color: #B3BDCDFF;
+
+    -fx-min-height: -default-height;
+    -fx-pref-height: -1;
+    -fx-max-height: 5000;
+
+    -fx-min-width: -default-width;
+    -fx-pref-width: -default-width;
+    -fx-max-width: -default-width;
+}
+.chapter-block-bar {
+    -icon-paint: #44495EFF;
+    -default-height: 48px;
+    -default-width: 26px;
+    -fx-alignment: center;
+    -fx-background-insets: 0;
+    -fx-background-color: #E1E8F1FF;
+    -fx-border-insets: 0 0 0 0;
+    -fx-border-style: solid;
+    -fx-border-width: 1;
+    -fx-border-color: #B3BDCDFF;
+
+    -fx-min-height: -default-height;
+    -fx-pref-height: -1;
+    -fx-max-height: 5000;
+
+    -fx-min-width: -default-width;
+    -fx-pref-width: -default-width;
+    -fx-max-width: -default-width;
+}
+
+.chapter-block-bar .button {
+    -fx-background-color: transparent;
+    -fx-min-height: -default-height;
+    -fx-pref-height: -default-height;
+    -fx-max-height: -default-height;
+    -fx-content-display: graphic-only;
+    -fx-min-width: -default-width;
+    -fx-pref-width: -default-width;
+    -fx-max-width: -default-width;
+}
+
+/* The expand icon on the Chapters vertical bar */
+.expand {
+    -width-size: 10;
+    -height-size: 16;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-background-color: #000000;
+    -fx-shape: "M7.99973 0.5V16.5H10.0297V0.5H7.99973Z M0 8.5L4.03 12.5L4.03 9.5H7.03V7.5H4.03V4.5L0 8.5Z";
+}
+
+/* The horizontal header control above the concept details view */
+.concept-header-control {
+    -icon-paint: #44495EFF;
+    -fx-spacing: 4;
+    -fx-alignment: center;
+    -fx-background-insets: 0;
+    -fx-background-color: #E1E8F1ff;
+
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-max-height: 40;
+
+    -fx-min-width: 28px;
+    -fx-pref-width: -1;
+    -fx-max-width: 5000;
+}
+
+.concept-header-control .spacer1  {
+    -fx-background-color: transparent;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-max-height: 40;
+
+    -fx-min-width: 28;
+    -fx-pref-width: 56;
+    -fx-max-width: 56;
+}
+
+.concept-header-control .button,
+.concept-header-control .toggle-button {
+    /* defaults for buttons */
+    -default-width: 28px;
+    -default-height: 28px;
+    -fx-background-color: transparent;
+    -fx-min-height: -default-height;
+    -fx-pref-height: -default-height;
+    -fx-max-height: -default-height;
+    -fx-content-display: graphic-only;
+    -fx-min-width: -default-width;
+    -fx-pref-width: -default-width;
+    -fx-max-width: -default-width;
+}
+/*.concept-header-control .button .icon {*/
+/*    -fx-background-color: -icon-paint;*/
+/*}*/
+.coordinate {
+    -width-size: 18;
+    -height-size: 18;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-background-color: #44495EFF;
+    -fx-shape: "M8.16699 0.666687V2.39169C5.15033 2.77502 2.77533 5.15002 2.39199 8.16669H0.666992V9.83335H2.39199C2.77533 12.85 5.15033 15.225 8.16699 15.6084V17.3334H9.83366V15.6084C12.8503 15.225 15.2253 12.85 15.6087 9.83335H17.3337V8.16669H15.6087C15.2253 5.15002 12.8503 2.77502 9.83366 2.39169V0.666687M8.16699 4.06669V5.66669H9.83366V4.07502C11.917 4.41669 13.5837 6.08335 13.9337 8.16669H12.3337V9.83335H13.9253C13.5837 11.9167 11.917 13.5834 9.83366 13.9334V12.3334H8.16699V13.925C6.08366 13.5834 4.41699 11.9167 4.06699 9.83335H5.66699V8.16669H4.07533C4.41699 6.08335 6.08366 4.41669 8.16699 4.06669ZM9.00033 8.16669C8.77931 8.16669 8.56735 8.25448 8.41107 8.41077C8.25479 8.56705 8.16699 8.77901 8.16699 9.00002C8.16699 9.22103 8.25479 9.433 8.41107 9.58928C8.56735 9.74556 8.77931 9.83335 9.00033 9.83335C9.22134 9.83335 9.4333 9.74556 9.58958 9.58928C9.74586 9.433 9.83366 9.22103 9.83366 9.00002C9.83366 8.77901 9.74586 8.56705 9.58958 8.41077C9.4333 8.25448 9.22134 8.16669 9.00033 8.16669Z";
+}
+.amplify-listview {
+    -width-size: 18;
+    -height-size: 18;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-background-color: #44495EFF;
+    -fx-shape: "M5.48405 3.25783C5.48405 4.58102 4.4114 5.65367 3.08822 5.65367C1.76503 5.65367 0.692383 4.58102 0.692383 3.25783C0.692383 1.93465 1.76503 0.862 3.08822 0.862C4.4114 0.862 5.48405 1.93465 5.48405 3.25783ZM3.98405 3.25783C3.98405 3.75259 3.58297 4.15367 3.08822 4.15367C2.59346 4.15367 2.19238 3.75259 2.19238 3.25783C2.19238 2.76308 2.59346 2.362 3.08822 2.362C3.58297 2.362 3.98405 2.76308 3.98405 3.25783Z M7.32433 2.3358C6.81807 2.3358 6.40766 2.7462 6.40766 3.25246C6.40766 3.75872 6.81807 4.16913 7.32433 4.16913L16.3955 4.16913C16.9018 4.16913 17.3122 3.75872 17.3122 3.25246C17.3122 2.7462 16.9018 2.3358 16.3955 2.3358L7.32433 2.3358Z M7.32433 8.08334C6.81807 8.08334 6.40766 8.49375 6.40766 9.00001C6.40766 9.50627 6.81807 9.91668 7.32433 9.91668L16.3955 9.91668C16.9018 9.91668 17.3122 9.50627 17.3122 9.00001C17.3122 8.49375 16.9018 8.08335 16.3955 8.08335L7.32433 8.08334Z M7.32433 13.8309C6.81807 13.8309 6.40766 14.2413 6.40766 14.7476C6.40766 15.2538 6.81807 15.6642 7.32433 15.6642H16.3955C16.9018 15.6642 17.3122 15.2538 17.3122 14.7476C17.3122 14.2413 16.9018 13.8309 16.3955 13.8309L7.32433 13.8309Z M3.08822 11.3959C4.4114 11.3959 5.48405 10.3232 5.48405 9.00002C5.48405 7.67684 4.4114 6.60419 3.08822 6.60419C1.76503 6.60419 0.692383 7.67684 0.692383 9.00002C0.692383 10.3232 1.76503 11.3959 3.08822 11.3959ZM3.08822 9.89585C3.58297 9.89585 3.98405 9.49478 3.98405 9.00002C3.98405 8.50527 3.58297 8.10419 3.08822 8.10419C2.59346 8.10419 2.19238 8.50527 2.19238 9.00002C2.19238 9.49478 2.59346 9.89585 3.08822 9.89585Z M5.48405 14.7425C5.48405 16.0657 4.4114 17.1383 3.08822 17.1383C1.76503 17.1383 0.692383 16.0657 0.692383 14.7425C0.692383 13.4193 1.76503 12.3467 3.08822 12.3467C4.4114 12.3467 5.48405 13.4193 5.48405 14.7425ZM3.98405 14.7425C3.98405 15.2373 3.58297 15.6383 3.08822 15.6383C2.59346 15.6383 2.19238 15.2373 2.19238 14.7425C2.19238 14.2478 2.59346 13.8467 3.08822 13.8467C3.58297 13.8467 3.98405 14.2478 3.98405 14.7425Z";
+}
+
+.concept-header-control .spacer2  {
+    -fx-background-color: transparent;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-max-height: 40;
+
+    -fx-min-width: 16;
+    -fx-pref-width: 16;
+    -fx-max-width: 16;
+}
+.graphic-viewer {
+    -width-size: 21;
+    -height-size: 22;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-background-color: #000000;
+    -fx-shape: "M4.8255 0.599949L14.6483 2.7828C15.0041 2.86186 15.3084 2.92946 15.5572 3.00425C15.8203 3.08334 16.0683 3.18334 16.2986 3.34928C16.6522 3.60404 16.9299 3.9502 17.1019 4.35067C17.2139 4.61151 17.2577 4.87527 17.2779 5.14929C17.2969 5.40841 17.2969 5.72007 17.2969 6.08457V11.9155C17.2969 12.28 17.2969 12.5917 17.2779 12.8508C17.2577 13.1248 17.2139 13.3886 17.1019 13.6494C16.9299 14.0499 16.6522 14.396 16.2986 14.6508C16.0683 14.8167 15.8203 14.9167 15.5572 14.9958C15.3083 15.0706 15.0041 15.1382 14.6482 15.2173L4.8255 17.4001C4.29152 17.5188 3.84519 17.618 3.47838 17.6663C3.09863 17.7163 2.72355 17.7247 2.35424 17.603C1.80384 17.4218 1.33749 17.0477 1.04113 16.5497C0.842275 16.2156 0.769037 15.8476 0.735498 15.466C0.703103 15.0975 0.703113 14.6403 0.703125 14.0933L0.703126 9.00041L0.703126 3.9068C0.703113 3.3598 0.703103 2.90258 0.735498 2.53402C0.769037 2.15245 0.842276 1.7845 1.04113 1.45038C1.33749 0.952402 1.80384 0.578309 2.35424 0.397027C2.72355 0.275392 3.09863 0.283718 3.47838 0.333752C3.84519 0.382079 4.29152 0.481274 4.8255 0.599949ZM2.14063 9.71878V14.0612C2.14063 14.6486 2.14128 15.0421 2.16748 15.3402C2.19316 15.6324 2.23837 15.7506 2.27642 15.8145C2.39548 16.0146 2.58282 16.1649 2.80394 16.2377C2.87459 16.261 2.99979 16.2794 3.29061 16.2411C3.58725 16.202 3.97156 16.1173 4.54491 15.9899L6.59722 15.5338V9.71878H2.14063ZM6.59722 8.28128H2.14063L2.14063 3.93882C2.14063 3.35148 2.14128 2.95795 2.16748 2.65989C2.19316 2.36767 2.23837 2.24947 2.27642 2.18555C2.39548 1.98549 2.58282 1.83521 2.80394 1.76238C2.87459 1.73911 2.99979 1.72062 3.29061 1.75894C3.58726 1.79802 3.97156 1.88275 4.54491 2.01017L6.59722 2.46624V8.28128ZM8.03473 9.71878V15.2144L11.6493 14.4111V9.71878H8.03473ZM11.6493 8.28128H8.03473V2.78568L11.6493 3.58893V8.28128ZM13.0868 9.71878V14.0917L14.3123 13.8194C14.6989 13.7334 14.9512 13.6769 15.1434 13.6192C15.3269 13.564 15.4077 13.5209 15.4583 13.4844C15.6004 13.3821 15.712 13.243 15.781 13.0822C15.8057 13.0248 15.8302 12.9366 15.8442 12.7455C15.8589 12.5453 15.8594 12.2868 15.8594 11.8907V9.71878H13.0868ZM15.8594 8.28128H13.0868V3.90837L14.3123 4.1807C14.6989 4.26661 14.9512 4.32313 15.1434 4.38091C15.3269 4.43608 15.4077 4.47912 15.4583 4.51562C15.6004 4.61797 15.712 4.75703 15.781 4.91791C15.8057 4.97529 15.8302 5.06344 15.8442 5.25459C15.8589 5.45478 15.8594 5.71329 15.8594 6.10935V8.28128Z";
+}
+
+.timeline-icon {
+    -width-size: 23;
+    -height-size: 20;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-background-color: #44495EFF;
+    -fx-shape: "M3 0V6H1V0H3ZM1 20V14H3V20H1ZM4 10C4 11.11 3.11 12 2 12C0.9 12 0 11.11 0 10C0 8.9 0.9 8 2 8C3.11 8 4 8.9 4 10ZM15 2C19.42 2 23 5.58 23 10C23 14.42 19.42 18 15 18C11.4 18 8.36 15.62 7.35 12.35L5 10L7.35 7.65C8.36 4.38 11.4 2 15 2ZM15 4C11.69 4 9 6.69 9 10C9 13.31 11.69 16 15 16C18.31 16 21 13.31 21 10C21 6.69 18.31 4 15 4ZM14 11V6H15.5V10.2L18.5 12L17.68 13.26L14 11Z";
+}
+
+/* SVG inside button setGraphic as SVGPath in FXML*/
+.toggle-button .timeline-icon {
+    -fx-fill: #545D72FF;
+}
+
+/* Hover over tab button */
+.toggle-button.timeline:hover {
+    -fx-background-color: #67BA3FFF;
+}
+
+/* Hover over tab button & SVG descendent */
+.toggle-button timeline-icon:hover {
+    -fx-fill: white;
+}
+
+/* Hover over tab button */
+.toggle-button.timeline:selected {
+    -fx-background-color: #67BA3FFF;
+}
+
+/* Hover over tab button & SVG descendent */
+.toggle-button.timeline:selected .timeline-icon {
+    -fx-fill: white;
+}
+
+.close-window {
+    -width-size: 12;
+    -height-size: 13;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-background-color: #44495EFF;
+    -fx-shape: "M11.8337 1.8415L10.6587 0.666504L6.00033 5.32484L1.34199 0.666504L0.166992 1.8415L4.82533 6.49984L0.166992 11.1582L1.34199 12.3332L6.00033 7.67484L10.6587 12.3332L11.8337 11.1582L7.17533 6.49984L11.8337 1.8415Z";
+}
+
+.concept-header-control .spacer3  {
+    -fx-background-color: transparent;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-max-height: 40;
+
+    -fx-min-width: 16;
+    -fx-pref-width: 56;
+    -fx-max-width: 56;
+}
+
+
+.slideout-tray-pane {
+    -fx-background-color: transparent;
+}
+
+.property-toggle-text {
+    -fx-text-fill: #44495EFF;
+    -fx-fill: #44495EFF;
+}
+
+
+.toggle-button .toggle-switch-body {
+    -fx-arc-height: 20;
+    -fx-arc-width: 20;
+    -fx-stroke-width: 0;
+    -fx-fill: #B3BDCDFF;
+}
+.toggle-button:selected .toggle-switch-body {
+    -fx-arc-height: 20;
+    -fx-arc-width: 20;
+    -fx-stroke-width: 0;
+    -fx-fill: #5DCF16FF;
+}
+
+.toggle-button .property-toggle-switch {
+    -fx-translate-x: 0;
+    -fx-stroke-type: outside;
+    -fx-stroke-width: 1;
+    -fx-stroke: #828d9fff;
+    -fx-fill: #FFFFFFFF;
+}
+
+.toggle-button:selected .property-toggle-switch {
+    -fx-translate-x: 11;
+    -fx-stroke-type: outside;
+    -fx-stroke-width: 1;
+    -fx-stroke: #67BA3FFF;
+    -fx-fill: #FFFFFFFF;
+}
+
+/*
+Timeline (time travel) components
+*/
+.timeline-header-bar {
+    -icon-paint: #44495EFF;
+    -default-width: 300px;
+    -default-height: 100px;
+    -fx-spacing: 4;
+    -fx-alignment: center-left;
+    -fx-background-insets: 0;
+    -fx-background-color: #e0e8f1ff;
+    /*-fx-background-color: red;*/
+    -fx-border-insets: 0 0 -1 0;
+    -fx-border-style: solid;
+    -fx-border-width: 1;
+    -fx-border-color: transparent transparent transparent transparent;
+
+
+    /*-fx-min-height: -default-height;*/
+    /*-fx-pref-height: -default-height;*/
+    /*-fx-max-height: -default-height;*/
+
+    -fx-min-width: 200;
+    -fx-pref-width: -1;
+    -fx-max-width: 5000;
+}
+
+.timeline-header-bar .timeline-text.label {
+    -fx-label-padding: 0 0 0 8;
+    -fx-alignment: center-left;
+    -fx-text-overrun: ellipsis;
+    -fx-font-family: "Open Sans SemiBold";
+    -fx-text-fill: -icon-paint;
+    -fx-min-width: -1;
+    /*-fx-pref-width: 150;*/
+    /*-fx-text-fill: #44495EFF;*/
+    -fx-max-width: 2000;
+}
+
+.timeline-header-bar .spacer1  {
+    -fx-background-color: transparent;
+    -fx-min-height: 28;
+    -fx-pref-height: 28;
+    -fx-max-height: 28;
+
+    -fx-min-width: 28;
+    -fx-pref-width: 28;
+    -fx-max-width: 1000;
+}
+/* The toggle switch mini used for the timeline range toggle */
+.toggle-button .toggle-switch-body-mini {
+    -fx-arc-height: 15;
+    -fx-arc-width: 15;
+    -fx-stroke-width: 0;
+    -fx-fill: #B3BDCDFF;
+}
+
+.toggle-button:selected .toggle-switch-body-mini {
+    -fx-fill: #00CF16FF;
+}
+
+.toggle-button .toggle-switch-mini {
+    -fx-translate-x: 0;
+    -fx-stroke-type: outside;
+    -fx-stroke-width: 1;
+    -fx-stroke: #828d9fff;
+    -fx-fill: #FFFFFFFF;
+}
+
+.toggle-button:selected .toggle-switch-mini {
+    -fx-translate-x: 9;
+    -fx-stroke-type: outside;
+    -fx-stroke-width: 1;
+    -fx-stroke: #67BA3FFF;
+    -fx-fill: #FFFFFFFF;
+}
+
+.toggle-button.timeline-range-button {
+    -fx-pref-width: 80;
+    -fx-pref-height: 35;
+    -fx-max-width: 80;
+    -fx-max-height: 35;
+
+    -fx-position-shape: true;
+    -fx-scale-shape: false;
+    -fx-background-radius: 0;
+    -fx-background-color: #e0e8f1ff;
+    -fx-alignment: center;
+    -fx-content-display: top;
+    -fx-font-family: "Open Sans";
+    -fx-font-size: .75em;
+    -fx-font-style: normal;
+    -fx-font-weight: bold;
+    -fx-text-fill: #44495Eff;
+}
+
+.toggle-button.year-timeline-expand {
+    -fx-pref-width: 58;
+    -fx-pref-height: 16;
+    -fx-max-width: 58;
+    -fx-max-height: 16;
+
+    -fx-position-shape: true;
+    -fx-scale-shape: false;
+    -fx-background-radius: 16;
+    -fx-background-color: #E1E8F1;
+    -fx-alignment: center-left;
+    -fx-content-display: right;
+    -fx-font-family: "Open Sans";
+    -fx-font-size: .75em;
+    -fx-font-style: normal;
+    /*-fx-font-weight: regular;*/
+    -fx-text-fill: #44495E;
+    -fx-border-color: #CFD8E4;
+    -fx-border-style: solid;
+    -fx-border-radius: 16;
+}
+
+.toggle-button.year-timeline-expand > .expand-arrow {
+    -width-size: 8;
+    -height-size: 6;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "m 1.69,5.470209 -0.94,-0.939995 4,-4 4,4 L 7.81,5.47021 4.75,2.416874 Z";
+    -fx-background-color: #5896F6;
+
+}
+
+.toggle-button.year-timeline-expand:selected > .expand-arrow {
+    -fx-shape: "M1.69 0.530215L0.75 1.47021L4.75 5.47021L8.75 1.47021L7.81 0.530214L4.75 3.58355L1.69 0.530215Z";
+}
+/*
+Timeline Year line segment (will overlay change circles)
+ */
+.timeline-year-line {
+    -fx-stroke: #0085FFFF;
+    -fx-stroke-width: 6;
+    -fx-stroke-type: centered;
+    -fx-stroke-line-cap: round;
+}
+
+.timeline-year-end-point {
+    -fx-fill: #44495E;
+    -fx-stroke: #0085FF;
+    -fx-stroke-width: 2;
+    -fx-stroke-type: inside;
+    -fx-stroke-line-cap: round;
+}
+
+.timeline-year-date-point {
+    -fx-fill: #FFFFFF;
+    -fx-stroke: #0085FF;
+    -fx-stroke-width: 2;
+    /*-fx-stroke-type: solid;*/
+    -fx-stroke-line-cap: round;
+}
+
+.timeline-year-date-point.selected {
+    -fx-fill: #5DCF16;
+    -fx-stroke: #000000;
+    -fx-stroke-width: 2;
+    /*-fx-stroke-type: solid;*/
+    -fx-stroke-line-cap: round;
+}
+
+.timeline-date-text {
+    -fx-font-family: "Open Sans";
+    -fx-font-size: 0.916667em;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+
+}
+
+.menu-button  {
+    -fx-pref-width: 28;
+    -fx-pref-height: 28;
+    -fx-max-width: 28;
+    -fx-max-height: 28;
+    -fx-position-shape: true;
+    -fx-scale-shape: false;
+    -fx-background-radius: 0;
+    -fx-background-color: #e0e8f1ff;
+    -fx-alignment: center;
+    -fx-content-display: top;
+    -fx-font-family: "Open Sans";
+    -fx-font-size: 1em;
+    -fx-font-style: normal;
+    -fx-content-display: graphic-only;
+}
+
+.button.menu-button .hamburger {
+    -fx-background-color: #44495Eff;
+}
+
+/* History Search and Change Chronology filter */
+.control-container {
+    -fx-background-color: transparent;
+    -fx-border-insets: 0 0 0 0;
+    -fx-background-radius: 5 5 5 5;
+
+    -fx-border-radius: 5 5 5 5;
+    -fx-border-style: solid;
+    -fx-border-width: 0.083333em;
+    -fx-border-color: #C3CDDCFF;
+}
+
+.control-container .search-container {
+    -fx-background-color: transparent;
+    -fx-border-insets: 0 0 0 0;
+    -fx-background-radius: 5 5 5 5;
+
+    -fx-border-radius: 5 5 5 5;
+    -fx-border-style: solid;
+    -fx-border-width: 0.083333em;
+    -fx-border-color: #C3CDDCFF;
+}
+
+.control-container .text-field {
+    -fx-fill: #FBFBFCFF;
+    -fx-stroke-width: 0;
+    -fx-background-color: #FBFBFCFF;
+    -fx-background-insets: 0;
+    -fx-background-radius: 5 0 0 5;
+    /*-fx-border-radius: 5 5 5 5;*/
+
+}
+
+/*.control-container .search-control-container {*/
+/*    */
+/*} */
+
+.control-container .toggle-button {
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+    -fx-max-width: 20;
+    -fx-max-height: 20;
+    -fx-position-shape: true;
+    -fx-scale-shape: false;
+    -fx-background-radius: 0;
+    -fx-background-color: transparent;
+    -fx-alignment: center;
+    -fx-content-display: graphic-only;
+
+}
+
+.control-container .toggle-button .search-filter-icon {
+    -fx-background-color: black;
+    -width-size: 14;
+    -height-size: 15;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M4.49967 2.16871C4.27866 2.16871 4.0667 2.25651 3.91042 2.41279C3.75414 2.56907 3.66634 2.78103 3.66634 3.00204C3.66634 3.22306 3.75414 3.43502 3.91042 3.5913C4.0667 3.74758 4.27866 3.83538 4.49967 3.83538C4.72069 3.83538 4.93265 3.74758 5.08893 3.5913C5.24521 3.43502 5.33301 3.22306 5.33301 3.00204C5.33301 2.78103 5.24521 2.56907 5.08893 2.41279C4.93265 2.25651 4.72069 2.16871 4.49967 2.16871ZM2.14134 2.16871C2.31351 1.68076 2.63279 1.25824 3.05517 0.959367C3.47756 0.660496 3.98225 0.5 4.49967 0.5C5.0171 0.5 5.52179 0.660496 5.94417 0.959367C6.36656 1.25824 6.68584 1.68076 6.85801 2.16871H12.833C13.054 2.16871 13.266 2.25651 13.4223 2.41279C13.5785 2.56907 13.6663 2.78103 13.6663 3.00204C13.6663 3.22306 13.5785 3.43502 13.4223 3.5913C13.266 3.74758 13.054 3.83538 12.833 3.83538H6.85801C6.68584 4.32332 6.36656 4.74585 5.94417 5.04472C5.52179 5.34359 5.0171 5.50408 4.49967 5.50408C3.98225 5.50408 3.47756 5.34359 3.05517 5.04472C2.63279 4.74585 2.31351 4.32332 2.14134 3.83538H1.16634C0.945327 3.83538 0.733366 3.74758 0.577086 3.5913C0.420805 3.43502 0.333008 3.22306 0.333008 3.00204C0.333008 2.78103 0.420805 2.56907 0.577086 2.41279C0.733366 2.25651 0.945327 2.16871 1.16634 2.16871H2.14134ZM9.49967 7.16871C9.27866 7.16871 9.0667 7.25651 8.91042 7.41279C8.75414 7.56907 8.66634 7.78103 8.66634 8.00204C8.66634 8.22306 8.75414 8.43502 8.91042 8.5913C9.0667 8.74758 9.27866 8.83538 9.49967 8.83538C9.72069 8.83538 9.93265 8.74758 10.0889 8.5913C10.2452 8.43502 10.333 8.22306 10.333 8.00204C10.333 7.78103 10.2452 7.56907 10.0889 7.41279C9.93265 7.25651 9.72069 7.16871 9.49967 7.16871ZM7.14134 7.16871C7.31351 6.68077 7.63279 6.25824 8.05517 5.95937C8.47756 5.6605 8.98225 5.5 9.49967 5.5C10.0171 5.5 10.5218 5.6605 10.9442 5.95937C11.3666 6.25824 11.6858 6.68077 11.858 7.16871H12.833C13.054 7.16871 13.266 7.25651 13.4223 7.41279C13.5785 7.56907 13.6663 7.78103 13.6663 8.00204C13.6663 8.22306 13.5785 8.43502 13.4223 8.5913C13.266 8.74758 13.054 8.83538 12.833 8.83538H11.858C11.6858 9.32332 11.3666 9.74585 10.9442 10.0447C10.5218 10.3436 10.0171 10.5041 9.49967 10.5041C8.98225 10.5041 8.47756 10.3436 8.05517 10.0447C7.63279 9.74585 7.31351 9.32332 7.14134 8.83538H1.16634C0.945327 8.83538 0.733366 8.74758 0.577086 8.5913C0.420805 8.43502 0.333008 8.22306 0.333008 8.00204C0.333008 7.78103 0.420805 7.56907 0.577086 7.41279C0.733366 7.25651 0.945327 7.16871 1.16634 7.16871H7.14134ZM4.49967 12.1687C4.27866 12.1687 4.0667 12.2565 3.91042 12.4128C3.75414 12.5691 3.66634 12.781 3.66634 13.002C3.66634 13.2231 3.75414 13.435 3.91042 13.5913C4.0667 13.7476 4.27866 13.8354 4.49967 13.8354C4.72069 13.8354 4.93265 13.7476 5.08893 13.5913C5.24521 13.435 5.33301 13.2231 5.33301 13.002C5.33301 12.781 5.24521 12.5691 5.08893 12.4128C4.93265 12.2565 4.72069 12.1687 4.49967 12.1687ZM2.14134 12.1687C2.31351 11.6808 2.63279 11.2582 3.05517 10.9594C3.47756 10.6605 3.98225 10.5 4.49967 10.5C5.0171 10.5 5.52179 10.6605 5.94417 10.9594C6.36656 11.2582 6.68584 11.6808 6.85801 12.1687H12.833C13.054 12.1687 13.266 12.2565 13.4223 12.4128C13.5785 12.5691 13.6663 12.781 13.6663 13.002C13.6663 13.2231 13.5785 13.435 13.4223 13.5913C13.266 13.7476 13.054 13.8354 12.833 13.8354H6.85801C6.68584 14.3233 6.36656 14.7458 5.94417 15.0447C5.52179 15.3436 5.0171 15.5041 4.49967 15.5041C3.98225 15.5041 3.47756 15.3436 3.05517 15.0447C2.63279 14.7458 2.31351 14.3233 2.14134 13.8354H1.16634C0.945327 13.8354 0.733366 13.7476 0.577086 13.5913C0.420805 13.435 0.333008 13.2231 0.333008 13.002C0.333008 12.781 0.420805 12.5691 0.577086 12.4128C0.733366 12.2565 0.945327 12.1687 1.16634 12.1687H2.14134Z";
+}
+
+
+.control-container .choice-box {
+    -fx-fill: #FBFBFCFF;
+    -fx-stroke-width: 0;
+    -fx-background-color: #FBFBFCFF;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+
+.control-container .choice-box > .arrow-button > .arrow {
+    -fx-background-color: -fx-mark-highlight-color, -fx-mark-color;
+    -fx-background-insets: 0 0 -1 0, 0;
+    -fx-padding: 0.166667em 0.333333em 0.166667em 0.333333em; /* 2 4 2 4 */
+    -fx-shape: "M0.792893 0.292893C1.18342 -0.097631 1.81658 -0.097631 2.20711 0.292893L5.5 3.58579L8.79289 0.292893C9.18342 -0.0976311 9.81658 -0.0976311 10.2071 0.292893C10.5976 0.683417 10.5976 1.31658 10.2071 1.70711L6.20711 5.70711C5.81658 6.09763 5.18342 6.09763 4.79289 5.70711L0.792893 1.70711C0.402369 1.31658 0.402369 0.683418 0.792893 0.292893Z";
+}
+
+/* History change selection */
+.scroll-pane.history-change-container {
+    -fx-background-color: transparent;
+    -fx-border-insets: 1;
+    -fx-background-radius: 0 0 10 10;
+    /*-fx-border-radius: 0 0 10 10;*/
+    /*-fx-border-style: solid;*/
+    /*-fx-border-width: 0.083333em;*/
+    /*-fx-border-color: #B3BDCDFF;*/
+}
+
+.scroll-pane.history-change-container > .viewport {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0 0 10 10;
+}
+
+.history-change-container .button  {
+    -fx-background-color: transparent;
+    -fx-min-height: -default-height;
+    -fx-pref-height: -default-height;
+    -fx-max-height: -default-height;
+    -fx-content-display: graphic-only;
+    -fx-min-width: -default-width;
+    -fx-pref-width: -default-width;
+    -fx-max-width: -default-width;
+}

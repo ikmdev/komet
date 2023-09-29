@@ -3,7 +3,7 @@
     <parent>
         <groupId>dev.ikm.build</groupId>
         <artifactId>java-parent</artifactId>
-        <version>1.18.0</version>
+        <version>1.20.0</version>
         <relativePath />
     </parent>
 
@@ -54,7 +54,7 @@
         <module>progress</module>
         <module>rules</module>
         <module>search</module>
-        <module>amplifydetails</module>
+        <module>amplify</module>
         <module>application</module>
     </modules>
 
@@ -62,7 +62,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
-        <tinkar-core.version>1.14.0</tinkar-core.version>
+        <tinkar-core.version>1.16.0</tinkar-core.version>
 
         <ikm-classifier.groupId>dev.ikm.elk</ikm-classifier.groupId>
         <ikm-classifier.version>0.7.1</ikm-classifier.version>
@@ -120,13 +120,12 @@
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>details</artifactId>
+                <artifactId>amplify</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>amplifydetails</artifactId>
+                <artifactId>details</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

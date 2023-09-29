@@ -43,7 +43,8 @@ public interface KometNodeFactory {
     default KometNode create(ObservableViewNoOverride windowView,
                              PublicIdStringKey<ActivityStream> activityStreamKey,
                              PublicIdStringKey<ActivityStreamOption> activityStreamOption,
-                             PublicIdStringKey<Broadcaster<AlertObject>> parentAlertStreamKey) {
+                             PublicIdStringKey<Broadcaster<AlertObject>> parentAlertStreamKey,
+                             boolean displayOnJournalView) {
         KometPreferences nodePreferences = KometPreferencesImpl.getConfigurationRootPreferences().node(newPreferenceNodeName());
         // Add activity stream key
         if (activityStreamKey != null) {
@@ -57,7 +58,7 @@ public interface KometNodeFactory {
             addDefaultNodePreferences(nodePreferences);
             // add parent alertStream key
             nodePreferences.putObject(KometNode.PreferenceKey.PARENT_ALERT_STREAM_KEY, parentAlertStreamKey);
-            return create(windowView, nodePreferences);
+            return create(windowView, nodePreferences, displayOnJournalView);
         }catch(UnsupportedOperationException e){
             AlertObject alertObject = new AlertObject(UNSUPPORTED_OPERATION, e.getMessage(),
                     INFORMATION, TAXONOMY);
@@ -65,6 +66,13 @@ public interface KometNodeFactory {
             StreamSupport.stream(loader.spliterator(), false).forEach(alertReportingService -> alertReportingService.onNext(alertObject));
         }
         return null;
+    }
+    default KometNode create(ObservableViewNoOverride windowView,
+                             PublicIdStringKey<ActivityStream> activityStreamKey,
+                             PublicIdStringKey<ActivityStreamOption> activityStreamOption,
+                             PublicIdStringKey<Broadcaster<AlertObject>> parentAlertStreamKey) {
+
+        return create(windowView, activityStreamKey, activityStreamOption, parentAlertStreamKey, false);
     }
 
     default String newPreferenceNodeName() {
@@ -74,6 +82,10 @@ public interface KometNodeFactory {
     void addDefaultNodePreferences(KometPreferences nodePreferences);
 
     KometNode create(ObservableViewNoOverride windowView, KometPreferences nodePreferences);
+
+    default KometNode create(ObservableViewNoOverride windowView, KometPreferences nodePreferences, boolean displayOnJournalView){
+        return create(windowView, nodePreferences);
+    }
 
     Class<? extends KometNode> kometNodeClass();
 
@@ -89,4 +101,11 @@ public interface KometNodeFactory {
 
     String getStyleId();
 
+    /**
+     * Getting available service providers using <code>java.util.ServiceLoader</code> utility class.
+     * @return Iterable list of KometNodeFactory classes
+     */
+    static ServiceLoader<KometNodeFactory> getKometNodeFactories() {
+        return ServiceLoader.load(KometNodeFactory.class);
+    }
 }

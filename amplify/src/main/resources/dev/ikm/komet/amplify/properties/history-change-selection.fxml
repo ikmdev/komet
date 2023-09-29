@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="408.0" prefWidth="484.0" stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.properties.HistoryChangeController">
+   <children>
+      <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="505.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0">
+         <top>
+            <FlowPane alignment="CENTER" columnHalignment="CENTER" prefHeight="5.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+               <children>
+                  <HBox alignment="CENTER" prefHeight="20.0" prefWidth="421.0" spacing="16.0" styleClass="control-container">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" prefWidth="267.0" styleClass="search-container">
+                           <children>
+                              <TextField fx:id="searchTextField" onAction="#searchText" prefHeight="16.0" prefWidth="215.0" promptText="Search" styleClass="search-text-field" HBox.hgrow="ALWAYS" />
+                              <ToggleButton fx:id="searchFilterToggleButton" contentDisplay="GRAPHIC_ONLY" maxWidth="32.0" mnemonicParsing="false" onAction="#popupSearchFilterOptions" prefHeight="8.0" prefWidth="32.0" styleClass="search-filter" text="search filter toggle" textFill="#1b1717">
+                                 <graphic>
+                                    <Region prefHeight="200.0" prefWidth="200.0" styleClass="search-filter-icon" />
+                                 </graphic>
+                              </ToggleButton>
+                           </children>
+                        </HBox>
+                        <ChoiceBox fx:id="changeFilterChoiceBox" onInputMethodTextChanged="#filterVersonRecords" prefWidth="150.0" HBox.hgrow="NEVER" />
+                     </children>
+                  </HBox>
+               </children>
+            </FlowPane>
+         </top>
+         <center>
+            <ScrollPane hbarPolicy="NEVER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="359.0" prefWidth="600.0" styleClass="history-change-container" vbarPolicy="NEVER" BorderPane.alignment="CENTER">
+               <content>
+                  <VBox fx:id="changeChronologyPane" maxWidth="1.7976931348623157E308" prefHeight="68.0" prefWidth="468.0" spacing="8.0" translateX="20.0" translateY="10.0">
+                     <padding>
+                        <Insets bottom="20.0" />
+                     </padding></VBox>
+               </content>
+            </ScrollPane>
+         </center>
+      </BorderPane>
+   </children>
+</AnchorPane>
