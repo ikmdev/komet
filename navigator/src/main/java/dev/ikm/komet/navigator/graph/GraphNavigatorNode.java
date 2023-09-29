@@ -113,6 +113,10 @@ public class GraphNavigatorNode extends ExplorationNodeAbstract {
         return GraphNavigatorNodeFactory.class;
     }
 
+    public MultiParentGraphViewController getController() {
+        return controller;
+    }
+
     enum NavigatorKeys {
         
     }

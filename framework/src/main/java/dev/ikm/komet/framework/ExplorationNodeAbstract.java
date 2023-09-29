@@ -117,10 +117,16 @@ public abstract class ExplorationNodeAbstract implements KometNode, Subscriber<I
                                         PublicIdStringKey<ActivityStream> newValue) {
 
         if (oldValue != null) {
-            ActivityStreams.get(oldValue).removeSubscriber(this);
+            ActivityStream activityStream = ActivityStreams.get(oldValue);
+            if (activityStream != null) {
+                activityStream.removeSubscriber(this);
+            }
         }
         if (newValue != null) {
-            ActivityStreams.get(newValue).removeSubscriber(this);
+            ActivityStream activityStream = ActivityStreams.get(newValue);
+            if (activityStream != null) {
+                activityStream.removeSubscriber(this);
+            }
         }
 
         if (this.optionForActivityStreamKeyProperty.get().equals(ActivityStreamOption.SUBSCRIBE.keyForOption()) ||

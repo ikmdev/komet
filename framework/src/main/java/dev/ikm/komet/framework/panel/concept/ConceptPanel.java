@@ -16,6 +16,8 @@
 package dev.ikm.komet.framework.panel.concept;
 
 
+import dev.ikm.tinkar.coordinate.stamp.change.ChangeChronology;
+import dev.ikm.tinkar.entity.EntityService;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableSet;
 import dev.ikm.komet.framework.PseudoClasses;
@@ -26,6 +28,8 @@ import dev.ikm.komet.framework.panel.ComponentIsFinalPanel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.entity.ConceptVersionRecord;
 import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 
 public class ConceptPanel extends ComponentIsFinalPanel<
         ObservableConceptSnapshot,
@@ -41,5 +45,29 @@ public class ConceptPanel extends ComponentIsFinalPanel<
         this.collapsiblePane.setText("Concept panel");
         this.getComponentPanelBox().pseudoClassStateChanged(PseudoClasses.CONCEPT_PSEUDO_CLASS, true);
         this.getComponentDetailPane().pseudoClassStateChanged(PseudoClasses.CONCEPT_PSEUDO_CLASS, true);
+        ContextMenu contextMenu = new ContextMenu();
+        collapsiblePane.setContextMenu(contextMenu);
+        MenuItem versionChronologyMenuItem = new MenuItem("Version chronology for: " +
+                viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(conceptEntity.nid()));
+        versionChronologyMenuItem.setOnAction(event -> {
+            ChangeChronology changeChronology = this.viewProperties.calculator().changeChronology(conceptEntity.nid());
+            System.out.println(changeChronology.toString(viewProperties.calculator(), true));
+            System.out.println(changeChronology.toString(viewProperties.calculator(), false));
+        });
+        contextMenu.getItems().add(versionChronologyMenuItem);
+        MenuItem versionChronologyRecursiveMenuItem = new MenuItem("Recursive version chronology for: " +
+                viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(conceptEntity.nid()));
+        versionChronologyRecursiveMenuItem.setOnAction(event -> {
+            recursiveVersionChronology(conceptEntity.nid(), viewProperties);
+        });
+        contextMenu.getItems().add(versionChronologyRecursiveMenuItem);
+    }
+
+    private void recursiveVersionChronology(int versionNid, ViewProperties viewProperties) {
+        ChangeChronology changeChronology = this.viewProperties.calculator().changeChronology(versionNid);
+        System.out.println(changeChronology.toString(viewProperties.calculator(), true));
+        for (int semanticNid: EntityService.get().semanticNidsForComponent(versionNid)) {
+            recursiveVersionChronology(semanticNid, viewProperties);
+        }
     }
 }

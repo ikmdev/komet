@@ -15,19 +15,6 @@
  */
 package dev.ikm.komet.framework.tabs;
 
-import javafx.application.Platform;
-import javafx.collections.ObservableList;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
-import javafx.stage.Window;
-import javafx.util.Callback;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -44,20 +31,34 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
+import javafx.application.Platform;
+import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
+import javafx.stage.Window;
+import javafx.util.Callback;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.UUID;
 
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
+import static dev.ikm.komet.framework.KometNodeFactory.getKometNodeFactories;
+import static dev.ikm.komet.framework.annotations.KometNodeFactoryFilter.shouldDisplayOnDockFXView;
 
 public class TabGroup extends StackPane implements WindowComponent {
     private static final Logger LOG = LoggerFactory.getLogger(TabGroup.class);
-    private static ServiceLoader<KometNodeFactory> nodeFactoryLoader = ServiceLoader.load(KometNodeFactory.class);
+
     final DetachableTabPane tabPane;
     final MenuButton newTabMenu;
     final REMOVAL allowRemoval;
@@ -108,7 +109,7 @@ public class TabGroup extends StackPane implements WindowComponent {
         menuButton.getStyleClass().add("add-tab-menu");
         menuButton.setGraphic(new FontIcon());
         menuButton.setId("add-tab");
-        nodeFactoryLoader.stream().forEach(nodeFactoryProvider -> {
+        getKometNodeFactories().stream().filter(factoryProvider -> shouldDisplayOnDockFXView(factoryProvider.type())).forEach(nodeFactoryProvider -> {
             KometNodeFactory factory = nodeFactoryProvider.get();
             if (factory.defaultActivityStreamChoices().isEmpty()) {
                 MenuItem newTabMenuItem = new MenuItem(factory.getMenuText(), factory.getMenuIconGraphic());
@@ -190,6 +191,8 @@ public class TabGroup extends StackPane implements WindowComponent {
         }
         return new TabGroup(tabPane, menuButton, allowRemoval, windowView, nodePreferences);
     }
+
+
 
     public static TabGroup create(ObservableViewNoOverride windowView, REMOVAL allowRemoval) {
         return TabGroup.make(new DetachableTabPane(), allowRemoval, windowView,

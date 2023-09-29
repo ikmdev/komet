@@ -158,5 +158,10 @@ public class ObservableFieldDefinition
         return meaningProperty.get().nid();
     }
 
+    @Override
+    public int indexInPattern() {
+        return fieldDefinitionReference.get().indexInPattern();
+    }
+
     enum FIELD {DATATYPE, PURPOSE, MEANING}
 }

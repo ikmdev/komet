@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+
+<BorderPane fx:id="journalBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="546.0" prefWidth="600.0" stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.journal.JournalController">
+   <center>
+      <BorderPane prefHeight="485.0" prefWidth="544.0" BorderPane.alignment="CENTER">
+         <top>
+            <HBox fx:id="projectBarHBox" prefHeight="100.0" prefWidth="200.0" styleClass="project-bar" BorderPane.alignment="CENTER">
+               <children>
+                  <Button mnemonicParsing="false" text="Button">
+                     <graphic>
+                        <Region prefHeight="200.0" prefWidth="200.0">
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="compass" />
+                           </styleClass>
+                        </Region>
+                     </graphic>
+                  </Button>
+                  <Button mnemonicParsing="false" text="Button">
+                     <graphic>
+                        <Region prefHeight="200.0" prefWidth="200.0">
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="download" />
+                           </styleClass>
+                        </Region>
+                     </graphic>
+                  </Button>
+                  <Rectangle fill="DODGERBLUE" height="32.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
+                  <ComboBox editable="true" prefWidth="150.0" />
+                  <Rectangle fill="DODGERBLUE" height="32.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
+                  <Button mnemonicParsing="false" text="Button">
+                     <graphic>
+                        <Region prefHeight="200.0" prefWidth="200.0">
+                           <styleClass>
+                              <String fx:value="plus-symbol" />
+                              <String fx:value="icon" />
+                           </styleClass>
+                        </Region>
+                     </graphic>
+                  </Button>
+                  <Button mnemonicParsing="false" text="Button">
+                     <graphic>
+                        <Region prefHeight="200.0" prefWidth="200.0">
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="comment" />
+                           </styleClass>
+                        </Region>
+                     </graphic>
+                  </Button>
+               </children>
+            </HBox>
+         </top>
+         <center>
+            <BorderPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+               <top>
+                  <HBox fx:id="chapterHeaderbarHBox" alignment="CENTER" prefHeight="100.0" prefWidth="200.0" styleClass="chapter-header-bar" BorderPane.alignment="CENTER">
+                     <children>
+                        <Button mnemonicParsing="false" text="Button">
+                           <graphic>
+                              <Region prefHeight="200.0" prefWidth="200.0">
+                                 <styleClass>
+                                    <String fx:value="icon" />
+                                    <String fx:value="left-arrow" />
+                                 </styleClass>
+                              </Region>
+                           </graphic>
+                        </Button>
+                        <Label fx:id="journaltitleLabel" alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="Journal Title" HBox.hgrow="ALWAYS" />
+                        <Button mnemonicParsing="false" text="Button">
+                           <graphic>
+                              <Region prefHeight="200.0" prefWidth="200.0" styleClass="hamburger" />
+                           </graphic>
+                        </Button>
+                     </children>
+                  </HBox>
+               </top>
+               <center>
+                  <Pane fx:id="desktopSurfacePane" prefHeight="200.0" prefWidth="200.0" styleClass="desktop-area" />
+               </center>
+               <right>
+                  <HBox prefHeight="100.0" prefWidth="200.0" styleClass="chapter-block-bar-stack" BorderPane.alignment="CENTER">
+                     <children>
+                        <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0" styleClass="chapter-block-bar">
+                           <children>
+                              <Label alignment="BOTTOM_CENTER" minWidth="-Infinity" rotate="-90.0" text="Chapters" VBox.vgrow="ALWAYS" />
+                              <Button mnemonicParsing="false" text="Button">
+                                 <graphic>
+                                    <Region prefHeight="200.0" prefWidth="200.0" styleClass="expand" />
+                                 </graphic>
+                              </Button>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </right>
+            </BorderPane>
+         </center>
+         <left>
+            <StackPane BorderPane.alignment="CENTER">
+               <children>
+                  <Pane fx:id="navSlideoutTrayPane" styleClass="slideout-tray-pane" />
+                  <Pane fx:id="searchSlideoutTrayPane" styleClass="slideout-tray-pane" />
+               </children>
+            </StackPane>
+         </left>
+      </BorderPane>
+   </center>
+   <left>
+      <VBox maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minWidth="-Infinity" styleClass="side-bar" BorderPane.alignment="CENTER">
+         <children>
+            <Button mnemonicParsing="false" styleClass="home-button" text="Button">
+               <graphic>
+                  <Region>
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="home" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </Button>
+            <Rectangle fill="DODGERBLUE" height="1.0" stroke="BLACK" strokeType="INSIDE" styleClass="divider" width="36.0" />
+            <ToggleButton fx:id="searchToggleButton" mnemonicParsing="false" text="ToggleButton">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="search" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+               <toggleGroup>
+                  <ToggleGroup fx:id="sidebarToggleGroup" />
+               </toggleGroup>
+            </ToggleButton>
+            <ToggleButton fx:id="navigatorToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="navigator" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </ToggleButton>
+            <ToggleButton mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="star" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </ToggleButton>
+            <Rectangle fill="DODGERBLUE" height="1.0" stroke="BLACK" strokeType="INSIDE" styleClass="divider" width="36.0" />
+            <ToggleButton mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="comment" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </ToggleButton>
+            <ToggleButton mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="notification" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </ToggleButton>
+            <Region styleClass="flex-space" VBox.vgrow="ALWAYS" />
+            <ToggleButton mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="avatar" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </ToggleButton>
+            <ToggleButton fx:id="settingsToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="settings" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </ToggleButton>
+         </children>
+      </VBox>
+   </left>
+</BorderPane>

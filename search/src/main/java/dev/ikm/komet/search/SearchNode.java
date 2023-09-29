@@ -150,6 +150,10 @@ public class SearchNode extends ExplorationNodeAbstract {
         return SearchNodeFactory.class;
     }
 
+    public SearchPanelController getController() {
+        return controller;
+    }
+
     enum SearchKeys {
         QUERY_TEXT,
         SHOW_RESULTS,
