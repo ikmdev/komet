@@ -28,25 +28,25 @@ import org.slf4j.LoggerFactory;
 
 import dev.ikm.tinkar.common.service.PrimitiveData;
 
-public class SampleClassifierTest extends ClassifierTest {
+public class SolorClassifierTest extends ClassifierTest {
 
-	private static final Logger LOG = LoggerFactory.getLogger(SampleClassifierTest.class);
+	private static final Logger LOG = LoggerFactory.getLogger(SolorClassifierTest.class);
 
 	static {
-		stated_count = 83547;
-		active_count = 83547;
-		inactive_count = 0;
-		test_case = "sample";
+		stated_count = 548180; // 422857;
+		active_count = 488602; // 362667;
+		inactive_count = 59578; // 60190;
+		test_case = "solor";
 	}
 
 	@BeforeAll
 	public static void startPrimitiveData() throws IOException {
-		Path source = Paths.get("target", "db", "sample-data-3-sa");
-		Path target = Paths.get("target", "db", "sample-data-classifier");
+		Path source = Paths.get("target", "db", "solor-08-27-256-sa");
+		Path target = Paths.get("target", "db", "solor-classifier");
 		// Temp until test data artifacts are in maven repo
 		assumeTrue(Files.exists(source));
 		PrimitiveDataTestBase.copyDirectory(source, target);
-		setupPrimitiveData("sample-data-classifier");
+		setupPrimitiveData("solor-classifier");
 		PrimitiveData.start();
 	}
 

@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.navigator.pattern;
 
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -42,6 +43,7 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.PatternEntity;
 import org.eclipse.collections.api.list.ImmutableList;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public class EntityNidTreeCell extends TreeCell<Object>
@@ -49,6 +51,35 @@ public class EntityNidTreeCell extends TreeCell<Object>
 
     static final EntityProxy identifierPatternProxy = EntityProxy.make("Identifier pattern",
             new UUID[] {UUID.fromString("65dd3f06-71ff-5650-8fb3-ce4019e50642")});
+
+    static final EntityProxy inferredDefinitionPatternProxy = EntityProxy.make("Inferred definition pattern",
+            new UUID[] {UUID.fromString("9f011812-15c9-5b1b-85f8-bb262bc1b2a2")});
+
+    static final EntityProxy inferredNavigationPatternProxy = EntityProxy.make("Inferred navigation pattern",
+            new UUID[] {UUID.fromString("a53cc42d-c07e-5934-96b3-2ede3264474e")});
+
+    static final EntityProxy pathMembershipProxy = EntityProxy.make("Path membership",
+            new UUID[] {UUID.fromString("add1db57-72fe-53c8-a528-1614bda20ec6")});
+
+    static final EntityProxy statedDefinitionPatternProxy = EntityProxy.make("Stated definition pattern",
+            new UUID[] {UUID.fromString("e813eb92-7d07-5035-8d43-e81249f5b36e")});
+
+    static final EntityProxy statedNavigationPatternProxy = EntityProxy.make("Stated navigation pattern",
+            new UUID[] {UUID.fromString("d02957d6-132d-5b3c-adba-505f5778d998")});
+
+     static final EntityProxy ukDialectPatternProxy = EntityProxy.make("UK Dialect Pattern",
+            new UUID[] {UUID.fromString("561f817a-130e-5e56-984d-910e9991558c")});
+
+    static final EntityProxy usDialectPatternProxy = EntityProxy.make("US Dialect Pattern",
+            new UUID[] {UUID.fromString("08f9112c-c041-56d3-b89b-63258f070074")});
+
+    static final EntityProxy versionControlPathOriginPatternProxy = EntityProxy.make("Version control path origin pattern",
+            new UUID[] {UUID.fromString("70f89dd5-2cdb-59bb-bbaa-98527513547c")});
+
+
+
+
+
     final ViewProperties viewProperties;
     TilePane graphicTilePane;
     private double dragOffset = 0;
@@ -80,11 +111,45 @@ public class EntityNidTreeCell extends TreeCell<Object>
                 }
                 if (entity instanceof SemanticEntity<?> semanticEntity) {
                     if (semanticEntity.patternNid() == identifierPatternProxy.nid()) {
-                        //TODO Move better string descriptions to lanague calcualator
+                        //TODO Move better string descriptions to language calculator
                         Latest<? extends SemanticEntityVersion> latestId = viewProperties.calculator().latest(semanticEntity);
                         ImmutableList fields = latestId.get().fieldValues();
                         entityDescriptionText = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
                                 ": " + fields.get(1);
+                    } else if (semanticEntity.patternNid() == inferredDefinitionPatternProxy.nid()) {
+                        entityDescriptionText =
+                                "Inferred definition for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
+                    } else if (semanticEntity.patternNid() == inferredNavigationPatternProxy.nid()) {
+                        entityDescriptionText =
+                                "Inferred is-a relationships for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
+                    } else if (semanticEntity.patternNid() == pathMembershipProxy.nid()) {
+                        entityDescriptionText =
+                                viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
+                    } else if (semanticEntity.patternNid() == statedDefinitionPatternProxy.nid()) {
+                        entityDescriptionText =
+                                "Stated definition for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
+                    } else if (semanticEntity.patternNid() == statedNavigationPatternProxy.nid()) {
+                        entityDescriptionText =
+                                "Stated is-a relationships for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
+                    } else if (semanticEntity.patternNid() == ukDialectPatternProxy.nid()) {
+                        Latest<? extends SemanticEntityVersion> latestAcceptability = viewProperties.calculator().latest(semanticEntity);
+                        ImmutableList fields = latestAcceptability.get().fieldValues();
+                        entityDescriptionText =
+                                "UK dialect " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
+                                        ": " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
+                    } else if (semanticEntity.patternNid() == usDialectPatternProxy.nid()) {
+                        Latest<? extends SemanticEntityVersion> latestAcceptability = viewProperties.calculator().latest(semanticEntity);
+                        ImmutableList fields = latestAcceptability.get().fieldValues();
+                        entityDescriptionText =
+                                "US dialect " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
+                                        ": " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
+                    } else if (semanticEntity.patternNid() == versionControlPathOriginPatternProxy.nid()) {
+                        Latest<? extends SemanticEntityVersion> latestPathOrigins = viewProperties.calculator().latest(semanticEntity);
+                        ImmutableList fields = latestPathOrigins.get().fieldValues();
+                        entityDescriptionText =
+                                viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()) +
+                                        " origin: " + DateTimeUtil.format((Instant) fields.get(1))  +
+                                        " on " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0));
                     }
                 }
                 setContentDisplay(ContentDisplay.GRAPHIC_ONLY);

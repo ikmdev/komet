@@ -16,8 +16,10 @@
 package dev.ikm.komet.reasoner.elkowl;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -30,11 +32,12 @@ import org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom;
 import org.semanticweb.owlapi.model.OWLObjectIntersectionOf;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
+import org.semanticweb.owlapi.model.OWLSubPropertyChainOfAxiom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalAxiomSemantic;
 import dev.ikm.tinkar.common.alert.AlertStreams;
+import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.common.sets.ConcurrentHashSet;
@@ -42,6 +45,7 @@ import dev.ikm.tinkar.coordinate.logic.LogicCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
+import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalAxiomSemantic;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -93,7 +97,7 @@ public class ElkOwlAxiomDataBuilder {
 
 		private ImmutableList<OWLAxiom> deletions;
 
-		private IncrementalChanges(ImmutableList<OWLAxiom> additions, ImmutableList<OWLAxiom> deletions) {
+		public IncrementalChanges(ImmutableList<OWLAxiom> additions, ImmutableList<OWLAxiom> deletions) {
 			super();
 			this.additions = additions;
 			this.deletions = deletions;
@@ -311,13 +315,16 @@ public class ElkOwlAxiomDataBuilder {
 			switch (LogicalAxiomSemantic.get(node.getMeaningNid())) {
 			case CONCEPT:
 				final ConceptFacade successorConcept = node.propertyFast(TinkarTerm.CONCEPT_REFERENCE);
-				// TODO is this right? Getting roles for a property set?
-				// emays - this wasn't added to axioms in the snorocket version
 				axioms.add(owlDataFactory.getOWLSubObjectPropertyOfAxiom(axiomData.getRole(conceptNid),
 						axiomData.getRole(successorConcept.nid())));
 				break;
 			case PROPERTY_PATTERN_IMPLICATION:
-				LOG.warn("Can't currently handle: " + node + " in: " + definition);
+				final ConceptFacade pi = node.propertyFast(TinkarTerm.PROPERTY_PATTERN_IMPLICATION);
+				final IntIdList ps = node.propertyFast(TinkarTerm.PROPERTY_SET);
+				List<OWLObjectProperty> chain = ps.intStream().mapToObj(x -> axiomData.getRole(x)).toList();
+				OWLSubPropertyChainOfAxiom axiom = owlDataFactory.getOWLSubPropertyChainOfAxiom(chain,
+						axiomData.getRole(pi.nid()));
+				axioms.add(axiom);
 				break;
 			default:
 				throw new UnsupportedOperationException("Can't handle: " + node + " in: " + definition);

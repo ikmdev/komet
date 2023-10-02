@@ -60,6 +60,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PatternViewController {
     private static final Logger LOG = LoggerFactory.getLogger(PatternViewController.class);
     private static volatile boolean shutdownRequested = false;
+
+    private final int maxChildrenInPatternViewer = 150;
+
     ViewMenuModel viewMenuModel;
     @FXML
     private ResourceBundle resources;
@@ -171,15 +174,14 @@ public class PatternViewController {
                 ArrayList<TreeItem<Object>> patternChildren = new ArrayList<>();
                 int patternNid = (Integer) patternItem.getValue();
                 AtomicInteger childCount = new AtomicInteger();
-                final int maxChildren = 50;
                 PrimitiveData.get().forEachSemanticNidOfPattern(patternNid, semanticNid -> {
-                    if (childCount.incrementAndGet() < maxChildren) {
+                    if (childCount.incrementAndGet() < maxChildrenInPatternViewer) {
                         patternChildren.add(new TreeItem<>(semanticNid));
                     }
                 });
-                if (childCount.get() >= maxChildren) {
+                if (childCount.get() >= maxChildrenInPatternViewer) {
                     NumberFormat numberFormat = NumberFormat.getInstance();
-                    patternChildren.add(new TreeItem<>(numberFormat.format(childCount.get() - maxChildren) + " additional semantics suppressed..."));
+                    patternChildren.add(new TreeItem<>(numberFormat.format(childCount.get() - maxChildrenInPatternViewer) + " additional semantics suppressed..."));
                 }
                 Platform.runLater(() -> patternItem.getChildren().setAll(patternChildren));
             }

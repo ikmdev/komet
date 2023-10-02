@@ -38,6 +38,7 @@ import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
+import dev.ikm.tinkar.terms.TinkarTerm;
 
 public abstract class PrimitiveDataTestBase {
 
@@ -49,8 +50,6 @@ public abstract class PrimitiveDataTestBase {
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
 				Path resolve = target_path.resolve(source_path.relativize(dir)).normalize();
-//				LOG.info("Dir s: " + dir);
-//				LOG.info("    t: " + resolve);
 				Files.createDirectories(resolve);
 				return FileVisitResult.CONTINUE;
 			}
@@ -58,8 +57,6 @@ public abstract class PrimitiveDataTestBase {
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				Path resolve = target_path.resolve(source_path.relativize(file));
-//				LOG.info("File s: " + file);
-//				LOG.info("     t: " + resolve);
 				Files.copy(file, resolve, StandardCopyOption.REPLACE_EXISTING);
 				return FileVisitResult.CONTINUE;
 			}
@@ -91,13 +88,25 @@ public abstract class PrimitiveDataTestBase {
 
 	@AfterAll
 	public static void stopPrimitiveData() {
+		LOG.info("stopPrimitiveData");
 		PrimitiveData.stop();
+		LOG.info("Stopped");
 	}
 
 	public static ViewCalculator getViewCalculator() {
 		ViewCoordinateRecord vcr = Coordinates.View.DefaultView();
 		ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(vcr);
 		return viewCalculator;
+	}
+
+	public ElkOwlAxiomData buildAxiomData() throws Exception {
+		LOG.info("buildAxiomData");
+		ViewCalculator viewCalculator = getViewCalculator();
+		ElkOwlAxiomData axiomData = new ElkOwlAxiomData();
+		ElkOwlAxiomDataBuilder builder = new ElkOwlAxiomDataBuilder(viewCalculator,
+				TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, axiomData);
+		builder.build();
+		return axiomData;
 	}
 
 }

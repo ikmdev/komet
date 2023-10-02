@@ -28,15 +28,17 @@ public class SolorAxiomDataBuilderTest extends AxiomDataBuilderTest {
 	private static final Logger LOG = LoggerFactory.getLogger(SolorAxiomDataBuilderTest.class);
 
 	static {
-		stated_count = 422857;
-		active_count = 362667;
-		inactive_count = 60190;
+		stated_count = 548180; // 422857;
+		active_count = 488602; // 362667;
+		inactive_count = 59578; // 60190;
 		test_case = "solor";
 	}
 
 	@BeforeAll
 	public static void startPrimitiveData() throws IOException {
-		setupPrimitiveData("solor-us-test-sa");
+//		setupPrimitiveData("solor-us-test-sa");
+//		setupPrimitiveData("solor-ids-512-sa");
+		setupPrimitiveData("solor-08-27-256-sa");
 		PrimitiveData.start();
 	}
 

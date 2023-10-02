@@ -47,6 +47,7 @@
         <module>artifact</module>
         <module>builder</module>
         <module>classification</module>
+        <module>reasoner-test-data</module>
         <module>details</module>
         <module>executor</module>
         <module>list</module>
@@ -65,7 +66,7 @@
         <tinkar-core.version>1.16.0</tinkar-core.version>
 
         <ikm-classifier.groupId>dev.ikm.elk</ikm-classifier.groupId>
-        <ikm-classifier.version>0.7.1</ikm-classifier.version>
+        <ikm-classifier.version>0.8.0</ikm-classifier.version>
 
         <ikm-evrete.groupId>dev.ikm.evrete</ikm-evrete.groupId>
         <ikm-evrete.version>3.0.04-ikm-r2</ikm-evrete.version>
@@ -87,7 +88,8 @@
         <jpackage.version>1.6.0</jpackage.version>
         <record-builder-processor.version>34</record-builder-processor.version>
         <scenic-view.version>11.0.2</scenic-view.version>
-        <slf4j.version>2.0.0-alpha6</slf4j.version>
+        <slf4j.version>2.0.7</slf4j.version>
+		<log4j.version>3.0.0-alpha1</log4j.version>
         <!-- Here to support existing ELK unit tests until we can remove this from the codebase by switching to ikm classifier-->
         <elk.junit.version>4.13.2</elk.junit.version>
         <mockito.version>5.2.0</mockito.version>
@@ -419,6 +421,20 @@
                 <version>${slf4j.version}</version>
             </dependency>
 
+<!--            <dependency>-->
+<!--                <groupId>org.eclipse.jetty</groupId>-->
+<!--                <artifactId>jetty-slf4j-impl</artifactId>-->
+<!--                <version>${jetty-slf4j-impl.version}</version>-->
+<!--                <scope>runtime</scope>-->
+<!--            </dependency>-->
+
+            <dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-slf4j2-impl</artifactId>
+				<version>${log4j.version}</version>
+				<scope>test</scope>
+			</dependency>
+
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
@@ -481,7 +497,18 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-        </dependency>
+		</dependency>
+
+<!--		<dependency>-->
+<!--			<groupId>org.eclipse.jetty</groupId>-->
+<!--			<artifactId>jetty-slf4j-impl</artifactId>-->
+<!--		</dependency>-->
+
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j2-impl</artifactId>
+			<scope>test</scope>
+		</dependency>
 
         <dependency>
             <groupId>${tinkar-jpms-deps.groupId}</groupId>

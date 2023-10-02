@@ -221,8 +221,8 @@ public class App extends Application {
 //                fileCount,
 //                append);
 
-        File logDirectory = new File(System.getProperty("user.home"), "Solor/komet/logs");
-        logDirectory.mkdirs();
+//        File logDirectory = new File(System.getProperty("user.home"), "Solor/komet/logs");
+//        logDirectory.mkdirs();
         LOG.info("Starting Komet");
         LoadFonts.load();
         graphicsModule = ModuleLayer.boot()
