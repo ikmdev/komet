@@ -97,20 +97,30 @@ public class AxiomFocusedRules {
                            ViewProperties $viewProperties,
                            EditCoordinate $editCoordinate,
                            RhsContext ctx) {
-        if ($observation.subject() instanceof AxiomSubjectRecord axiomSubjectRecord) {
-            AddIsA addIsA = new AddIsA("Add is-a", axiomSubjectRecord, $viewProperties.calculator(), $editCoordinate);
+        if ($observation.subject() instanceof AxiomSubjectRecord axiomSubject) {
+            if (axiomSubject.axiomMeaning().equals(TinkarTerm.NECESSARY_SET)) {
+                ChangeSetType changeToSufficientSet = new ChangeSetType(TinkarTerm.SUFFICIENT_SET, "Change to sufficient set", axiomSubject, $viewProperties.calculator(), $editCoordinate);
+                $actionList.add(new ConsequenceAction(UUID.randomUUID(),
+                        Thread.currentThread().getStackTrace()[1].toString(), changeToSufficientSet));
+            } else if (axiomSubject.axiomMeaning().equals(TinkarTerm.SUFFICIENT_SET))  {
+                ChangeSetType changeToNecessarySet = new ChangeSetType(TinkarTerm.NECESSARY_SET, "Change to necessary set", axiomSubject, $viewProperties.calculator(), $editCoordinate);
+                $actionList.add(new ConsequenceAction(UUID.randomUUID(),
+                        Thread.currentThread().getStackTrace()[1].toString(), changeToNecessarySet));
+            }
+
+            AddIsA addIsA = new AddIsA("Add is-a", axiomSubject, $viewProperties.calculator(), $editCoordinate);
             $actionList.add(new ConsequenceAction(UUID.randomUUID(),
                     Thread.currentThread().getStackTrace()[1].toString(), addIsA));
 
-            AddSomeRole addSomeRole = new AddSomeRole("Add role", axiomSubjectRecord, $viewProperties.calculator(), $editCoordinate);
+            AddSomeRole addSomeRole = new AddSomeRole("Add role", axiomSubject, $viewProperties.calculator(), $editCoordinate);
             $actionList.add(new ConsequenceAction(UUID.randomUUID(),
                     Thread.currentThread().getStackTrace()[1].toString(), addSomeRole));
 
-            AddRoleGroup addRoleGroup = new AddRoleGroup("Add role group", axiomSubjectRecord, $viewProperties.calculator(), $editCoordinate);
+            AddRoleGroup addRoleGroup = new AddRoleGroup("Add role group", axiomSubject, $viewProperties.calculator(), $editCoordinate);
             $actionList.add(new ConsequenceAction(UUID.randomUUID(),
                     Thread.currentThread().getStackTrace()[1].toString(), addRoleGroup));
 
-            AddFeature addFeature = new AddFeature("Add feature", axiomSubjectRecord, $viewProperties.calculator(), $editCoordinate);
+            AddFeature addFeature = new AddFeature("Add feature", axiomSubject, $viewProperties.calculator(), $editCoordinate);
             $actionList.add(new ConsequenceAction(UUID.randomUUID(),
                     Thread.currentThread().getStackTrace()[1].toString(), addFeature));
         }

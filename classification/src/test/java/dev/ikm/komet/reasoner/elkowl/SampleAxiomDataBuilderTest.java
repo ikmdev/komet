@@ -36,7 +36,7 @@ public class SampleAxiomDataBuilderTest extends AxiomDataBuilderTest {
 
 	@BeforeAll
 	public static void startPrimitiveData() throws IOException {
-		setupPrimitiveData("sample-data");
+		setupPrimitiveData("sample-data-3-sa");
 		PrimitiveData.start();
 	}
 

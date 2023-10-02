@@ -116,6 +116,11 @@
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.dlsc.gemsfx/gemsfx -->
 
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j2-impl</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 
     </dependencies>
 

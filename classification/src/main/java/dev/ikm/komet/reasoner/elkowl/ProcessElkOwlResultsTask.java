@@ -17,14 +17,12 @@ package dev.ikm.komet.reasoner.elkowl;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.common.id.IntIds;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -44,12 +42,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.ikm.komet.reasoner.ClassifierResults;
-import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalAxiom;
-import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalAxiomSemantic;
-import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpression;
-import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionAdaptorFactory;
-import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
 import dev.ikm.tinkar.common.alert.AlertStreams;
+import dev.ikm.tinkar.common.id.IntIdList;
+import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.common.sets.ConcurrentHashSet;
@@ -69,6 +65,11 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.entity.graph.JGraphUtil;
+import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalAxiom;
+import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalAxiomSemantic;
+import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpression;
+import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionAdaptorFactory;
+import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
 import dev.ikm.tinkar.entity.graph.isomorphic.IsomorphicResults;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.PatternFacade;
@@ -93,7 +94,7 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 	AtomicInteger classificationDuplicateCount = new AtomicInteger(-1);
 
 	public ProcessElkOwlResultsTask(OWLReasoner reasoner, ViewCalculator viewCalculator,
-									PatternFacade inferredAxiomPattern, ElkOwlAxiomData axiomData) {
+			PatternFacade inferredAxiomPattern, ElkOwlAxiomData axiomData) {
 		super(false, true);
 		this.reasoner = reasoner;
 		this.viewCalculator = viewCalculator;
@@ -107,8 +108,8 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 		updateMessage("Getting classified results");
 		LOG.info("Getting classified results...");
 		Transaction updateTransaction = Transaction.make("Committing classification");
-		ClassifierResults classifierResults = collectResults(
-				this.axiomData.classificationConceptSet, updateTransaction);
+		ClassifierResults classifierResults = collectResults(this.axiomData.classificationConceptSet,
+				updateTransaction);
 		updateMessage("Processed results in " + durationString());
 		return classifierResults;
 	}
@@ -120,10 +121,9 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 	 * @param classificationConceptSet the concepts processed by the classifier
 	 * @return the classifier results
 	 */
-	private ClassifierResults collectResults(
-			ImmutableIntList classificationConceptSet, Transaction updateTransaction) {
+	private ClassifierResults collectResults(ImmutableIntList classificationConceptSet, Transaction updateTransaction) {
 		updateMessage("Collecting reasoner results. ");
-		LOG.info("Collecting reasoner results...", classificationConceptSet.size());
+		LOG.info("Collecting reasoner results... {}", classificationConceptSet.size());
 		addToTotalWork(classificationConceptSet.size() * 2); // get each node, then write back inferred.
 		final HashSet<ImmutableIntList> equivalentSets = new HashSet<>();
 		LOG.debug("collect results begins for {} concepts", classificationConceptSet.size());
@@ -159,29 +159,31 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 		ViewCoordinateRecord commitView = writeBackInferred(axiomData.classificationConceptSet,
 				conceptsWithInferredChanges, conceptsWithNavigationChanges, updateTransaction);
 
-		int[] conceptsWithNavigationChangesNidArray = conceptsWithNavigationChanges.stream().mapToInt(boxedInt -> (int) boxedInt).toArray();
+		int[] conceptsWithNavigationChangesNidArray = conceptsWithNavigationChanges.stream()
+				.mapToInt(boxedInt -> (int) boxedInt).toArray();
 		Arrays.sort(conceptsWithNavigationChangesNidArray);
-		ImmutableIntList conceptsWithNavigationChangesAsList = IntLists.immutable.of(conceptsWithNavigationChangesNidArray);
+		ImmutableIntList conceptsWithNavigationChangesAsList = IntLists.immutable
+				.of(conceptsWithNavigationChangesNidArray);
 
-		int[] conceptsWithInferredChangesNidArray = conceptsWithInferredChanges.stream().mapToInt(boxedInt -> (int) boxedInt).toArray();
+		int[] conceptsWithInferredChangesNidArray = conceptsWithInferredChanges.stream()
+				.mapToInt(boxedInt -> (int) boxedInt).toArray();
 		Arrays.sort(conceptsWithInferredChangesNidArray);
 		ImmutableIntList conceptsWithInferredChangesAsList = IntLists.immutable.of(conceptsWithInferredChangesNidArray);
 
-		return new ClassifierResults(classificationConceptSet, conceptsWithInferredChangesAsList, conceptsWithNavigationChangesAsList, equivalentSets, commitView);
+		return new ClassifierResults(classificationConceptSet, conceptsWithInferredChangesAsList,
+				conceptsWithNavigationChangesAsList, equivalentSets, commitView);
 	}
 
 	/**
 	 * Write back inferred.
 	 */
 	private ViewCoordinateRecord writeBackInferred(ImmutableIntList classificationConceptSet,
-												   ConcurrentHashSet<Integer> conceptNidsWithInferredChanges,
-												   ConcurrentHashSet<Integer> conceptsWithNavigationChanges,
-												   Transaction updateTransaction) {
+			ConcurrentHashSet<Integer> conceptNidsWithInferredChanges,
+			ConcurrentHashSet<Integer> conceptsWithNavigationChanges, Transaction updateTransaction) {
 		// TODO change type of affectedConcepts to a parallel friendly primitive class.
 		final AtomicInteger sufficientSets = new AtomicInteger();
 		StampEntity updateStamp = updateTransaction.getStamp(State.ACTIVE,
-				getViewCoordinateRecord().getAuthorNidForChanges(),
-				getViewCoordinateRecord().getDefaultModuleNid(),
+				getViewCoordinateRecord().getAuthorNidForChanges(), getViewCoordinateRecord().getDefaultModuleNid(),
 				getViewCoordinateRecord().getDefaultPathNid());
 		int updateStampNid = updateStamp.nid();
 
@@ -200,7 +202,7 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 			throw new IllegalStateException(
 					"Index for "
 							+ this.viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(
-							TinkarTerm.EL_PLUS_PLUS_INFERRED_TERMINOLOGICAL_AXIOMS)
+									TinkarTerm.EL_PLUS_PLUS_INFERRED_TERMINOLOGICAL_AXIOMS)
 							+ " is " + optionalAxiomsIndex);
 		}
 		int axiomsIndex = optionalAxiomsIndex.getAsInt();
@@ -244,10 +246,10 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 					OWLClass inferredNode = axiomData.nidConceptMap.get(conceptNid);
 					if (inferredNode != null) {
 						ImmutableIntSet parentNids = getParentNids(inferredNode);
-						final MutableList<LogicalAxiom.Atom.ConceptAxiom> parentList = Lists.mutable.withInitialCapacity(parentNids.size());
+						final MutableList<LogicalAxiom.Atom.ConceptAxiom> parentList = Lists.mutable
+								.withInitialCapacity(parentNids.size());
 
 						parentNids.forEach(parentNid -> parentList.add(inferredBuilder.ConceptAxiom(parentNid)));
-
 
 						if (!parentList.isEmpty()) {
 							inferredBuilder.NecessarySet(inferredBuilder.And(parentList.toImmutable()));
@@ -256,80 +258,82 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 
 							ImmutableList<Object> fields = Lists.immutable.of(newInferredExpression.sourceGraph());
 
-							int[] inferredSemanticNids = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptNid,
-									inferredPatternNid);
+							int[] inferredSemanticNids = PrimitiveData.get()
+									.semanticNidsForComponentOfPattern(conceptNid, inferredPatternNid);
 							switch (inferredSemanticNids.length) {
-								case 0 -> {
-									// NOTE: we use the single semantic uuid generator in cases of distributed
-									// development
-									// creating inferred results for same referenced component.
-									// TODO: how useful is the singleSemanticUuid? Is a better approach merging of
-									// ids?
-									UUID uuidForSemantic = UuidT5Generator
-											.singleSemanticUuid(Entity.getFast(inferredPatternNid), Entity.getFast(conceptNid));
-									// Create new semantic...
-									RecordListBuilder<SemanticVersionRecord> versionRecords = RecordListBuilder.make();
-									SemanticRecord semanticRecord = SemanticRecordBuilder.builder()
-											.leastSignificantBits(uuidForSemantic.getLeastSignificantBits())
-											.mostSignificantBits(uuidForSemantic.getMostSignificantBits())
-											.nid(PrimitiveData.nid(uuidForSemantic)).referencedComponentNid(conceptNid)
-											.patternNid(inferredPatternNid).versions(versionRecords).build();
-									versionRecords.add(new SemanticVersionRecord(semanticRecord, updateStampNid, fields));
-									processSemantic(semanticRecord, updateTransaction);
-									conceptNidsWithInferredChanges.add(conceptNid);
-								}
-								case 1 -> {
-									// TODO: ensure that equals is implemented for DiTree<EntityVertex> and possibly
-									// DiGraph and similar...
-									// TODO: ensure that VertexIds are preserved across versions of the graph...
+							case 0 -> {
+								// NOTE: we use the single semantic uuid generator in cases of distributed
+								// development
+								// creating inferred results for same referenced component.
+								// TODO: how useful is the singleSemanticUuid? Is a better approach merging of
+								// ids?
+								UUID uuidForSemantic = UuidT5Generator.singleSemanticUuid(
+										Entity.getFast(inferredPatternNid), Entity.getFast(conceptNid));
+								// Create new semantic...
+								RecordListBuilder<SemanticVersionRecord> versionRecords = RecordListBuilder.make();
+								SemanticRecord semanticRecord = SemanticRecordBuilder.builder()
+										.leastSignificantBits(uuidForSemantic.getLeastSignificantBits())
+										.mostSignificantBits(uuidForSemantic.getMostSignificantBits())
+										.nid(PrimitiveData.nid(uuidForSemantic)).referencedComponentNid(conceptNid)
+										.patternNid(inferredPatternNid).versions(versionRecords).build();
+								versionRecords.add(new SemanticVersionRecord(semanticRecord, updateStampNid, fields));
+								processSemantic(semanticRecord, updateTransaction);
+								conceptNidsWithInferredChanges.add(conceptNid);
+							}
+							case 1 -> {
+								// TODO: ensure that equals is implemented for DiTree<EntityVertex> and possibly
+								// DiGraph and similar...
+								// TODO: ensure that VertexIds are preserved across versions of the graph...
 
-									// latest is the existing, potentially the "old" definition if
-									// newInferredExpression contains changes.
-									Latest<SemanticEntityVersion> latestInferredSemantic = this.viewCalculator
-											.latest(inferredSemanticNids[0]);
-									boolean changed = true;
-									if (latestInferredSemantic.isPresent()) {
-										ImmutableList<Object> latestInferredFields = latestInferredSemantic.get().fieldValues();
-										DiTreeEntity latestInferredTree = (DiTreeEntity) latestInferredFields.get(0);
-										DiTreeEntity correlatedTree = latestInferredTree.makeCorrelatedTree(
-												(DiTreeEntity) newInferredExpression.sourceGraph(), conceptNid,
-												multipleEndpointTimer.startNew());
+								// latest is the existing, potentially the "old" definition if
+								// newInferredExpression contains changes.
+								Latest<SemanticEntityVersion> latestInferredSemantic = this.viewCalculator
+										.latest(inferredSemanticNids[0]);
+								boolean changed = true;
+								if (latestInferredSemantic.isPresent()) {
+									ImmutableList<Object> latestInferredFields = latestInferredSemantic.get()
+											.fieldValues();
+									DiTreeEntity latestInferredTree = (DiTreeEntity) latestInferredFields.get(0);
+									DiTreeEntity correlatedTree = latestInferredTree.makeCorrelatedTree(
+											(DiTreeEntity) newInferredExpression.sourceGraph(), conceptNid,
+											multipleEndpointTimer.startNew());
 
-										changed = correlatedTree != latestInferredTree;
-										// TODO performance comparisons of JGraph and internal implementation. Maybe in
-										// integration tests with challenging test data.
-										boolean testJGraph = false;
-										if (testJGraph) {
-											Graph<EntityVertex, DefaultEdge> correlatedTreeJGraph = JGraphUtil
-													.toJGraph(correlatedTree);
-											Graph<EntityVertex, DefaultEdge> latestInferredJGraph = JGraphUtil
-													.toJGraph(latestInferredTree);
-											boolean equals = latestInferredJGraph.equals(correlatedTreeJGraph);
-											AHURootedTreeIsomorphismInspector inspector = new AHURootedTreeIsomorphismInspector(
-													correlatedTreeJGraph, correlatedTree.root(), latestInferredJGraph,
-													latestInferredTree.root());
-											if (inspector.isomorphismExists()) {
-												IsomorphicGraphMapping<EntityVertex, DefaultEdge> mapping = inspector
-														.getMapping();
-												mapping.toString();
-											}
+									changed = correlatedTree != latestInferredTree;
+									// TODO performance comparisons of JGraph and internal implementation. Maybe in
+									// integration tests with challenging test data.
+									boolean testJGraph = false;
+									if (testJGraph) {
+										Graph<EntityVertex, DefaultEdge> correlatedTreeJGraph = JGraphUtil
+												.toJGraph(correlatedTree);
+										Graph<EntityVertex, DefaultEdge> latestInferredJGraph = JGraphUtil
+												.toJGraph(latestInferredTree);
+										boolean equals = latestInferredJGraph.equals(correlatedTreeJGraph);
+										AHURootedTreeIsomorphismInspector inspector = new AHURootedTreeIsomorphismInspector(
+												correlatedTreeJGraph, correlatedTree.root(), latestInferredJGraph,
+												latestInferredTree.root());
+										if (inspector.isomorphismExists()) {
+											IsomorphicGraphMapping<EntityVertex, DefaultEdge> mapping = inspector
+													.getMapping();
+											mapping.toString();
 										}
 									}
-									if (changed) {
-										conceptNidsWithInferredChanges.add(conceptNid);
-										conceptsWithNavigationChanges.add(conceptNid);
-										processSemantic(
-												viewCalculator.updateFields(inferredSemanticNids[0], fields, updateStampNid),
-												updateTransaction);
-									}
 								}
-								default -> throw new IllegalStateException("More than one inferred semantic of pattern "
-										+ PrimitiveData.text(inferredPatternNid) + "for component: "
-										+ PrimitiveData.text(conceptNid));
+								if (changed) {
+									conceptNidsWithInferredChanges.add(conceptNid);
+									conceptsWithNavigationChanges.add(conceptNid);
+									processSemantic(viewCalculator.updateFields(inferredSemanticNids[0], fields,
+											updateStampNid), updateTransaction);
+								}
+							}
+							default -> throw new IllegalStateException("More than one inferred semantic of pattern "
+									+ PrimitiveData.text(inferredPatternNid) + "for component: "
+									+ PrimitiveData.text(conceptNid));
 							}
 						}
-						// TODO this approach for updating navigation changes requires a second scan of the changed
-						// concepts. Consider if this approach meets performance requirements, or if another approach
+						// TODO this approach for updating navigation changes requires a second scan of
+						// the changed
+						// concepts. Consider if this approach meets performance requirements, or if
+						// another approach
 						// should be developed and implemented.
 						updateConceptsWithInferredNavigationChanges(conceptNid, inferredNavigationPatternNid,
 								conceptsWithNavigationChanges, parentNids);
@@ -342,8 +346,8 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 			completedUnitOfWork();
 		});
 
-		updateInferredNavigationSemantics(conceptsWithNavigationChanges, inferredNavigationPatternNid,
-				updateStampNid, updateTransaction);
+		updateInferredNavigationSemantics(conceptsWithNavigationChanges, inferredNavigationPatternNid, updateStampNid,
+				updateTransaction);
 
 		LOG.info("Timing info: " + multipleEndpointTimer.summary());
 		updateMessage("Commiting " + updateTransaction.componentsInTransactionCount() + " components. ");
@@ -365,6 +369,7 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 	}
 
 	private ImmutableIntSet getParentNids(OWLClass inferredNode) {
+		Objects.requireNonNull(inferredNode);
 		boolean directOnly = true;
 		Set<OWLClass> superClasses = reasoner.getSuperClasses(inferredNode, directOnly).getFlattened();
 		MutableIntSet parentNids = IntSets.mutable.withInitialCapacity(superClasses.size());
@@ -374,6 +379,7 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 					int parentNid = Integer.parseInt(parent.getIRI().getShortForm());
 					parentNids.add(parentNid);
 				} catch (final NumberFormatException numberFormatException) {
+					LOG.error("Concept IRI error: " + parent, numberFormatException);
 					// TODO
 					AlertStreams.dispatchToRoot(numberFormatException);
 				}
@@ -382,6 +388,7 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 	}
 
 	private ImmutableIntSet getChildNids(OWLClass inferredNode) {
+		Objects.requireNonNull(inferredNode);
 		boolean directOnly = true;
 		Set<OWLClass> subClasses = reasoner.getSubClasses(inferredNode, directOnly).getFlattened();
 		MutableIntSet childNids = IntSets.mutable.withInitialCapacity(subClasses.size());
@@ -391,6 +398,7 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 					int childNid = Integer.parseInt(child.getIRI().getShortForm());
 					childNids.add(childNid);
 				} catch (final NumberFormatException numberFormatException) {
+					LOG.error("Concept IRI error: " + child, numberFormatException);
 					// TODO
 					AlertStreams.dispatchToRoot(numberFormatException);
 				}
@@ -399,92 +407,101 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 	}
 
 	private void updateConceptsWithInferredNavigationChanges(int conceptNid, int inferredNavigationPatternNid,
-															 ConcurrentHashSet<Integer> conceptsWithNavigationChanges,
-															 ImmutableIntSet parentNids) {
+			ConcurrentHashSet<Integer> conceptsWithNavigationChanges, ImmutableIntSet parentNids) {
 		int[] inferredNavigationNids = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptNid,
 				inferredNavigationPatternNid);
 		switch (inferredNavigationNids.length) {
-			case 0 -> parentNids.forEach(parentNid -> conceptsWithNavigationChanges.add(parentNid));
-			case 1 -> {
-				Latest<SemanticEntityVersion> latestInferredNavigationSemantic = this.viewCalculator
-						.latest(inferredNavigationNids[0]);
-				if (latestInferredNavigationSemantic.isPresent()) {
-					ImmutableList<Object> latestInferredNavigationFields = latestInferredNavigationSemantic.get().fieldValues();
-					// TODO I think the pattern is labeled the opposite of the use. We need to fix that.
-					IntIdSet parentIds = (IntIdSet) latestInferredNavigationFields.get(1);
-					ImmutableIntSet immutableParentIdSet = IntSets.immutable.of(parentIds.toArray());
-					ImmutableIntSet difference = immutableParentIdSet.symmetricDifference(parentNids);
-					difference.forEach(changedParentNid -> conceptsWithNavigationChanges.add(changedParentNid));
-				} else {
-					parentNids.forEach(parentNid -> conceptsWithNavigationChanges.add(parentNid));
-				}
+		case 0 -> parentNids.forEach(parentNid -> conceptsWithNavigationChanges.add(parentNid));
+		case 1 -> {
+			Latest<SemanticEntityVersion> latestInferredNavigationSemantic = this.viewCalculator
+					.latest(inferredNavigationNids[0]);
+			if (latestInferredNavigationSemantic.isPresent()) {
+				ImmutableList<Object> latestInferredNavigationFields = latestInferredNavigationSemantic.get()
+						.fieldValues();
+				// TODO I think the pattern is labeled the opposite of the use. We need to fix
+				// that.
+				IntIdSet parentIds = (IntIdSet) latestInferredNavigationFields.get(1);
+				ImmutableIntSet immutableParentIdSet = IntSets.immutable.of(parentIds.toArray());
+				ImmutableIntSet difference = immutableParentIdSet.symmetricDifference(parentNids);
+				difference.forEach(changedParentNid -> conceptsWithNavigationChanges.add(changedParentNid));
+			} else {
+				parentNids.forEach(parentNid -> conceptsWithNavigationChanges.add(parentNid));
 			}
-			default -> throw new IllegalStateException("More than one semantic of pattern "
-					+ PrimitiveData.text(inferredNavigationPatternNid) + "for component: "
-					+ PrimitiveData.text(conceptNid));
+		}
+		default -> throw new IllegalStateException(
+				"More than one semantic of pattern " + PrimitiveData.text(inferredNavigationPatternNid)
+						+ "for component: " + PrimitiveData.text(conceptNid));
 		}
 	}
 
 	private void updateInferredNavigationSemantics(ConcurrentHashSet<Integer> conceptsWithNavigationChanges,
-												   int inferredNavigationPatternNid,
-												   int updateStampNid, Transaction updateTransaction) {
+			int inferredNavigationPatternNid, int updateStampNid, Transaction updateTransaction) {
+		AtomicInteger axiomDataNotFoundCounter = new AtomicInteger();
 		conceptsWithNavigationChanges.parallelStream().forEach(conceptNid -> {
 			OWLClass inferredNode = axiomData.nidConceptMap.get(conceptNid);
-			ImmutableIntSet parentNids = getParentNids(inferredNode);
-			ImmutableIntSet childNids = getChildNids(inferredNode);
+			ImmutableIntSet parentNids = IntSets.immutable.of();
+			ImmutableIntSet childNids = IntSets.immutable.of();
+			if (inferredNode != null) {
+				parentNids = getParentNids(inferredNode);
+				childNids = getChildNids(inferredNode);
+			} else {
+				axiomDataNotFoundCounter.incrementAndGet();
+			}
 
 			int[] inferredNavigationNids = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptNid,
 					inferredNavigationPatternNid);
 			switch (inferredNavigationNids.length) {
-				case 0 -> {
-					if (parentNids.notEmpty() || childNids.notEmpty()) {
-						// NOTE: we use the single semantic uuid generator in cases of distributed
-						// development creating inferred results for same referenced component.
-						// TODO: how useful is the singleSemanticUuid? Is a better approach merging of ids?
-						UUID uuidForSemantic = UuidT5Generator
-								.singleSemanticUuid(Entity.getFast(inferredNavigationPatternNid), Entity.getFast(conceptNid));
-						// Create new semantic...
-						RecordListBuilder<SemanticVersionRecord> versionRecords = RecordListBuilder.make();
-						SemanticRecord navigationRecord = SemanticRecordBuilder.builder()
-								.leastSignificantBits(uuidForSemantic.getLeastSignificantBits())
-								.mostSignificantBits(uuidForSemantic.getMostSignificantBits())
-								.nid(PrimitiveData.nid(uuidForSemantic)).referencedComponentNid(conceptNid)
-								.patternNid(inferredNavigationPatternNid).versions(versionRecords).build();
+			case 0 -> {
+				if (parentNids.notEmpty() || childNids.notEmpty()) {
+					// NOTE: we use the single semantic uuid generator in cases of distributed
+					// development creating inferred results for same referenced component.
+					// TODO: how useful is the singleSemanticUuid? Is a better approach merging of
+					// ids?
+					UUID uuidForSemantic = UuidT5Generator.singleSemanticUuid(
+							Entity.getFast(inferredNavigationPatternNid), Entity.getFast(conceptNid));
+					// Create new semantic...
+					RecordListBuilder<SemanticVersionRecord> versionRecords = RecordListBuilder.make();
+					SemanticRecord navigationRecord = SemanticRecordBuilder.builder()
+							.leastSignificantBits(uuidForSemantic.getLeastSignificantBits())
+							.mostSignificantBits(uuidForSemantic.getMostSignificantBits())
+							.nid(PrimitiveData.nid(uuidForSemantic)).referencedComponentNid(conceptNid)
+							.patternNid(inferredNavigationPatternNid).versions(versionRecords).build();
 
-						IntIdList parentIds = IntIds.list.of(parentNids.toArray());
-						IntIdList childrenIds = IntIds.list.of(childNids.toArray());
-						versionRecords.add(new SemanticVersionRecord(navigationRecord, updateStampNid, Lists.immutable.of(childrenIds, parentIds)));
-						processSemantic(navigationRecord, updateTransaction);
+					IntIdList parentIds = IntIds.list.of(parentNids.toArray());
+					IntIdList childrenIds = IntIds.list.of(childNids.toArray());
+					versionRecords.add(new SemanticVersionRecord(navigationRecord, updateStampNid,
+							Lists.immutable.of(childrenIds, parentIds)));
+					processSemantic(navigationRecord, updateTransaction);
+				}
+			}
+			case 1 -> {
+				Latest<SemanticEntityVersion> latestInferredNavigationSemantic = this.viewCalculator
+						.latest(inferredNavigationNids[0]);
+				boolean navigationChanged = true;
+				if (latestInferredNavigationSemantic.isPresent()) {
+					ImmutableList<Object> latestInferredNavigationFields = latestInferredNavigationSemantic.get()
+							.fieldValues();
+					IntIdSet parentIds = (IntIdSet) latestInferredNavigationFields.get(0);
+					IntIdSet childIds = (IntIdSet) latestInferredNavigationFields.get(1);
+
+					if (parentNids.equals(IntSets.immutable.of(parentIds.toArray()))
+							&& childNids.equals(IntSets.immutable.of(childIds.toArray()))) {
+						navigationChanged = false;
 					}
 				}
-				case 1 -> {
-					Latest<SemanticEntityVersion> latestInferredNavigationSemantic = this.viewCalculator
-							.latest(inferredNavigationNids[0]);
-					boolean navigationChanged = true;
-					if (latestInferredNavigationSemantic.isPresent()) {
-						ImmutableList<Object> latestInferredNavigationFields = latestInferredNavigationSemantic.get().fieldValues();
-						IntIdSet parentIds = (IntIdSet) latestInferredNavigationFields.get(0);
-						IntIdSet childIds = (IntIdSet) latestInferredNavigationFields.get(1);
-
-						if (parentNids.equals(IntSets.immutable.of(parentIds.toArray())) &&
-								childNids.equals(IntSets.immutable.of(childIds.toArray()))) {
-							navigationChanged = false;
-						}
-					}
-					if (navigationChanged) {
-						IntIdSet newParentIds = IntIds.set.of(parentNids.toArray());
-						IntIdSet newChildIds = IntIds.set.of(childNids.toArray());
-						processSemantic(
-								viewCalculator.updateFields(inferredNavigationNids[0],
-										Lists.immutable.of(newChildIds, newParentIds), updateStampNid),
-								updateTransaction);
-					}
+				if (navigationChanged) {
+					IntIdSet newParentIds = IntIds.set.of(parentNids.toArray());
+					IntIdSet newChildIds = IntIds.set.of(childNids.toArray());
+					processSemantic(viewCalculator.updateFields(inferredNavigationNids[0],
+							Lists.immutable.of(newChildIds, newParentIds), updateStampNid), updateTransaction);
 				}
-				default -> throw new IllegalStateException("More than one semantic of pattern "
-						+ PrimitiveData.text(inferredNavigationPatternNid) + "for component: "
-						+ PrimitiveData.text(conceptNid));
+			}
+			default -> throw new IllegalStateException(
+					"More than one semantic of pattern " + PrimitiveData.text(inferredNavigationPatternNid)
+							+ "for component: " + PrimitiveData.text(conceptNid));
 			}
 		});
+		LOG.info("NavigationSemantics processed not in AxiomData: " + axiomDataNotFoundCounter.get());
 	}
 
 	private ViewCoordinateRecord getViewCoordinateRecord() {

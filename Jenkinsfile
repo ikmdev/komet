@@ -27,7 +27,7 @@ pipeline {
         ansiColor('xterm')
 
         // Discard old builds to conserve CI/CD storage
-        buildDiscarder logRotator( 
+        buildDiscarder logRotator(
             numToKeepStr: '10'
         )
 
@@ -141,7 +141,7 @@ pipeline {
                     if (isSnapshot) {
                         snapshotBranchName = BRANCH_NAME
                         if (BRANCH_NAME != "main") {
-                            snapshotBranchName = BRANCH_NAME.split("/")[1].substring(0, Math.min(BRANCH_NAME.length(), 15))
+                            snapshotBranchName = BRANCH_NAME.split("/")[1].substring(0, Math.min(BRANCH_NAME.split("/")[1].length(), 15))
                         }
                         jpackageAppName = "Komet-SNAPSHOT-\${NODE_NAME}-" + snapshotBranchName
                         jpackageAppVersion = pomVersion.split('\\.')[0] + "." + pomVersion.split('\\.')[1] + "."  + BUILD_NUMBER

@@ -311,7 +311,7 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
     private void menuUpdate() {
         if (!resultsRoot.getChildren().isEmpty()) {
             resultsRoot.getChildren().clear();
-            doSearch(null);
+            Platform.runLater(() -> doSearch(null));
         }
     }
 

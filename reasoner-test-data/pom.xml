@@ -3,23 +3,25 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>dev.ikm.komet</groupId>
-	<artifactId>test-data</artifactId>
-	<version>1.12.0-SNAPSHOT</version>
+	<artifactId>reasoner-test-data</artifactId>
 	<packaging>pom</packaging>
 
-	<name>Test Data Artifacts</name>
+	<parent>
+		<groupId>dev.ikm.komet</groupId>
+		<artifactId>komet-parent</artifactId>
+		<version>1.17.0-SNAPSHOT</version>
+	</parent>
+
+	<name>Reasoner Test Data Artifacts</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-assembly-plugin.version>3.6.0</maven-assembly-plugin.version>
-		<assembly-descriptor.version>1.12.0-SNAPSHOT</assembly-descriptor.version>
+		<assembly-descriptor.version>1.15.0-SNAPSHOT</assembly-descriptor.version>
 	</properties>
 
 	<modules>
-		<module>test-data-assembly-descriptor</module>
-		<module>sample-test-data</module>
-		<module>solor-test-data</module>
+		<module>reasoner-test-data-assembly-descriptor</module>
 	</modules>
 
 	<build>
@@ -32,13 +34,13 @@
 					<dependencies>
 						<dependency>
 							<groupId>${project.groupId}</groupId>
-							<artifactId>test-data-assembly-descriptor</artifactId>
+							<artifactId>reasoner-test-data-assembly-descriptor</artifactId>
 							<version>${assembly-descriptor.version}</version>
 						</dependency>
 					</dependencies>
 					<executions>
 						<execution>
-							<id>assemble</id>
+							<id>reasoner-test-data-assemble</id>
 							<phase>package</phase>
 							<goals>
 								<goal>single</goal>
@@ -56,5 +58,15 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>test-data-build</id>
+			<modules>
+				<module>reasoner-test-data-sample</module>
+				<module>reasoner-test-data-solor</module>
+			</modules>
+		</profile>
+	</profiles>
 
 </project>
