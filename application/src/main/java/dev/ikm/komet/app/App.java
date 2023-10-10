@@ -58,19 +58,17 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -80,6 +78,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -94,6 +93,9 @@ import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
  * JavaFX App
  */
 public class App extends Application {
+
+    private static final String OS_NAME_MAC = "mac";
+
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
     public static final String CSS_LOCATION = "dev/ikm/komet/framework/graphics/komet.css";
     public static final SimpleObjectProperty<AppState> state = new SimpleObjectProperty<>(STARTING);
@@ -284,7 +286,7 @@ public class App extends Application {
             tk.setDockIconMenu(createDockMenu());
             tk.autoAddWindowMenuItems(windowMenu);
 
-            String OS_NAME_MAC = "mac";
+
             if(System.getProperty("os.name")!=null && System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
                 tk.setGlobalMenuBar(bar);
             }
@@ -514,6 +516,12 @@ public class App extends Application {
                     kometScene.getStylesheets()
                             .add(graphicsModule.getClassLoader().getResource(CSS_LOCATION).toString());
 
+                    // if NOT on Mac
+                    if(System.getProperty("os.name")!=null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
+                        generateMsWindowsMenu(kometRoot);
+                    }
+
+
                     primaryStage.setScene(kometScene);
 
                     KometPreferences windowPreferences = appPreferences.node("main-komet-window");
@@ -562,15 +570,75 @@ public class App extends Application {
                     // Fork join pool tasks?
                     // Latch of some sort?
                     // Need to put in background thread.
-                    PrimitiveData.stop();
-                    Preferences.stop();
-                    Platform.exit();
+                    quit();
                 }
             }
         } catch (Throwable e) {
             e.printStackTrace();
             Platform.exit();
         }
+    }
+
+    private void generateMsWindowsMenu(BorderPane kometRoot) {
+        VBox vBox = (VBox) kometRoot.getTop();
+        HBox hBox = (HBox) vBox.getChildren().get(0);
+
+        MenuBar menuBar = new MenuBar();
+        Menu fileMenu = new Menu("File");
+
+        MenuItem about = new MenuItem("About");
+        about.setOnAction(actionEvent -> showWindowsAboutScreen());
+        fileMenu.getItems().add(about);
+
+        MenuItem menuItemQuit = new MenuItem("Quit");
+        KeyCombination quitKeyCombo = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
+        menuItemQuit.setOnAction(actionEvent -> quit());
+        menuItemQuit.setAccelerator(quitKeyCombo);
+        fileMenu.getItems().add(menuItemQuit);
+
+        Menu editMenu = new Menu("Edit");
+
+        MenuItem newJournal = new MenuItem("New Journal");
+        KeyCombination newJournalKeyCombo = new KeyCodeCombination(KeyCode.J, KeyCombination.CONTROL_DOWN);
+        newJournal.setOnAction(actionEvent -> launchAmplifyDetails("Journal " + (journalWindows.size() + 1)));
+        newJournal.setAccelerator(newJournalKeyCombo);
+        editMenu.getItems().add(newJournal);
+
+        Menu windowMenu = new Menu("Window");
+        MenuItem minimizeWindow = new MenuItem("Minimize");
+        KeyCombination minimizeKeyCombo = new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN);
+        minimizeWindow.setOnAction(event -> {
+          Stage obj = (Stage) kometRoot.getScene().getWindow();
+          obj.setIconified(true);
+        });
+        minimizeWindow.setAccelerator(minimizeKeyCombo);
+        windowMenu.getItems().add(minimizeWindow);
+
+        menuBar.getMenus().add(fileMenu);
+        menuBar.getMenus().add(editMenu);
+        menuBar.getMenus().add(windowMenu);
+        hBox.getChildren().add(menuBar);
+    }
+
+    private void showWindowsAboutScreen() {
+        Stage aboutWindow = new Stage();
+        Label kometLabel = new Label("Komet");
+        kometLabel.setFont(new Font("Open Sans", 24));
+        Label copyright = new Label("Copyright \u00a9 " + Year.now().getValue());
+        copyright.setFont(new Font("Open Sans", 10));
+        VBox container = new VBox(kometLabel, copyright);
+        container.setAlignment(Pos.CENTER);
+        Scene aboutScene = new Scene(container, 250, 100);
+        aboutWindow.setScene(aboutScene);
+        aboutWindow.setTitle("About Komet");
+        aboutWindow.show();
+    }
+
+
+    private void quit() {
+        PrimitiveData.stop();
+        Preferences.stop();
+        Platform.exit();
     }
 
     private void restoreTab(KometPreferences windowPreferences, String tabPreferenceNodeName, ObservableViewNoOverride windowView, Consumer<Node> nodeConsumer) {
