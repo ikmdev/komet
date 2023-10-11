@@ -313,6 +313,7 @@
                             <runtimeImage>target/kometRuntimeImage</runtimeImage>
                             <module>dev.ikm.komet.application/dev.ikm.komet.app.App</module>
                             <javaOptions>
+                                <option>-Xmx8g</option>
                                 <option>--enable-preview</option>
                                 <option>--add-opens</option>
                                 <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
