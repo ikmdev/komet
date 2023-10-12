@@ -93,7 +93,8 @@ public class PropertiesNode extends ExplorationNodeAbstract {
 
                 // Populate Detail View
                 if (getPropertiesViewController() != null) {
-                    getPropertiesViewController().updateView(viewProperties, newEntityFacade);
+                    getPropertiesViewController().updateModel(viewProperties, newEntityFacade);
+                    getPropertiesViewController().updateView();
                 }
 
             } else {
@@ -106,7 +107,7 @@ public class PropertiesNode extends ExplorationNodeAbstract {
 
         // If database updates the underlying entity, this will do a force update of the UI.
         this.invalidationSubscriber = new FlowSubscriber<>(nid -> {
-            if (entityFocusProperty.isNotNull().get() && entityFocusProperty.get().nid() == nid) {
+            if (entityFocusProperty.get() != null && entityFocusProperty.get().nid() == nid) {
                 // component has changed, need to update.
                 Platform.runLater(() -> entityFocusProperty.set(null));
                 Platform.runLater(() -> entityFocusProperty.set(Entity.provider().getEntityFast(nid)));

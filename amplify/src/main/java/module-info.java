@@ -38,6 +38,8 @@ module dev.ikm.komet.amplify {
     exports dev.ikm.komet.amplify.commons;
     exports dev.ikm.komet.amplify.window;
     opens dev.ikm.komet.amplify.window to javafx.fxml;
+    exports dev.ikm.komet.amplify.om;
+    opens dev.ikm.komet.amplify.om to javafx.fxml;
     requires static com.google.auto.service;
     provides KometNodeFactory with DetailsNodeFactory, PropertiesNodeFactory;
 

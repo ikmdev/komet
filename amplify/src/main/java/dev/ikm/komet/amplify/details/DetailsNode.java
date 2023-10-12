@@ -110,19 +110,31 @@ public class DetailsNode extends ExplorationNodeAbstract {
             this.propertiesViewBorderPane.getStylesheets().add(styleSheet);
 
             // setup view and controller into details controller
-            detailsViewController.setupPropertiesView(this.propertiesViewBorderPane, this.propertiesViewController);
-
+            detailsViewController.attachPropertiesViewSlideoutTray(this.propertiesViewBorderPane);
 
             // Load Timeline View Panel (FXML & Controller)
             FXMLLoader timelineFXMLLoader = new FXMLLoader(TimelineController.class.getResource(CONCEPT_TIMELINE_VIEW_FXML_FILE));
             this.timelineViewBorderPane = timelineFXMLLoader.load();
             this.timelineViewController = timelineFXMLLoader.getController();
 
+            // This will highlight with green around the pane when the user selects a date point in the timeline.
+            timelineViewController.onDatePointSelected((changeCoordinate) ->{
+                propertiesViewController.getHistoryChangeController().highlightListItemByChangeCoordinate(changeCoordinate);
+            });
+            // When Date points are in range (range slider)
+            timelineViewController.onDatePointInRange((rangeToggleOn, changeCoordinates) -> {
+                if (rangeToggleOn) {
+                    propertiesViewController.getHistoryChangeController().filterByRange(changeCoordinates);
+                } else {
+                    propertiesViewController.getHistoryChangeController().unfilterByRange();
+                }
+            });
+
             // style the same as the details view
             this.timelineViewBorderPane.getStylesheets().add(styleSheet);
 
             // setup view and controller into details controller
-            detailsViewController.setupTimelineView(this.timelineViewBorderPane, this.timelineViewController);
+            detailsViewController.attachTimelineViewSlideoutTray(this.timelineViewBorderPane);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -149,12 +161,21 @@ public class DetailsNode extends ExplorationNodeAbstract {
 
                 // Populate Detail View
                 if (getDetailsViewController() != null) {
-                    getDetailsViewController().updateView(viewProperties, newEntityFacade);
+                    getDetailsViewController().updateModel(viewProperties, newEntityFacade);
+                    getDetailsViewController().updateView();
                 }
 
                 // Populate Properties View
                 if (getPropertiesViewController() != null) {
-                    getPropertiesViewController().updateView(viewProperties, newEntityFacade);
+                    getPropertiesViewController().updateModel(viewProperties, newEntityFacade);
+                    getPropertiesViewController().updateView();
+                }
+
+                // Populate Timeline View
+                if (getTimelineViewController() != null) {
+                    getTimelineViewController().resetConfigPathAndModules();
+                    getTimelineViewController().updateModel(viewProperties, newEntityFacade);
+                    getTimelineViewController().updateView();
                 }
 
             } else {
@@ -168,7 +189,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
 
         // If database updates the underlying entity, this will do a force update of the UI.
         this.invalidationSubscriber = new FlowSubscriber<>(nid -> {
-            if (entityFocusProperty.isNotNull().get() && entityFocusProperty.get().nid() == nid) {
+            if (entityFocusProperty.get() != null && entityFocusProperty.get().nid() == nid) {
                 // component has changed, need to update.
                 Platform.runLater(() -> entityFocusProperty.set(null));
                 Platform.runLater(() -> entityFocusProperty.set(Entity.provider().getEntityFast(nid)));
@@ -194,6 +215,10 @@ public class DetailsNode extends ExplorationNodeAbstract {
 
     public PropertiesController getPropertiesViewController() {
         return propertiesViewController;
+    }
+
+    public TimelineController getTimelineViewController() {
+        return timelineViewController;
     }
 
     @Override

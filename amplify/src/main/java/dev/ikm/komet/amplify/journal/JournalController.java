@@ -16,7 +16,6 @@
 package dev.ikm.komet.amplify.journal;
 
 import dev.ikm.komet.amplify.commons.SlideOutTrayHelper;
-import dev.ikm.komet.amplify.details.DetailsController;
 import dev.ikm.komet.amplify.details.DetailsNode;
 import dev.ikm.komet.amplify.details.DetailsNodeFactory;
 import dev.ikm.komet.amplify.window.WindowSupport;
@@ -43,6 +42,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import org.eclipse.collections.api.factory.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -243,15 +243,14 @@ public class JournalController {
             DetailsNode detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
                     detailsActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY, true);
             Pane kometNodePanel = (Pane) detailsNode.getNode();
-            DetailsController detailsController = detailsNode.getDetailsViewController();
-            detailsController.updateView(windowView.makeOverridableViewProperties(), conceptFacade);
             Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
             Node[] draggables = new Node[draggableToolbar.size()];
 
             WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
-
             desktopSurfacePane.getChildren().add(kometNodePanel);
 
+            // This will refresh the Concept details, history, timeline
+            detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
         };
         controller.getDoubleCLickConsumers().add(displayInDetailsView);
         searchNodePanel = (Pane) searchNode.getNode();
@@ -292,12 +291,13 @@ public class JournalController {
                 DetailsNode detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
                         detailsActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY, true);
                 Pane kometNodePanel = (Pane) detailsNode.getNode();
-                DetailsController detailsController = detailsNode.getDetailsViewController();
-                detailsController.updateView(windowView.makeOverridableViewProperties(), conceptFacade);
                 Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
                 Node[] draggables = new Node[draggableToolbar.size()];
                 WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
                 desktopSurfacePane.getChildren().add(kometNodePanel);
+
+                // This will refresh the Concept details, history, timeline
+                detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
             }
         });
 

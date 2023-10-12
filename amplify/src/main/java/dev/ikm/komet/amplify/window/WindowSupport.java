@@ -28,6 +28,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +43,8 @@ import java.util.function.Consumer;
  * TODO user of the API should call removeSupport() on the WindowSupport instance to avoid possible memory leaks.
  */
 public class WindowSupport {
+    private static final Logger LOG = LoggerFactory.getLogger(WindowSupport.class);
+
     public final static Color TRANSLUCENT_COLOR = Color.color(1, 1,1, .01);
     public final static Color HIGHLIGHT_COLOR = Color.web("#67BA3FFF");
 
@@ -70,7 +74,7 @@ public class WindowSupport {
     //  Below is the mouse dragging a Pane or window
     //  inside a journal pane area.
     /////////////////////////////////////////////////////
-    private final SimpleObjectProperty<Point2D> anchorPtProperty = new SimpleObjectProperty<>(new Point2D(0,0));;
+    private final SimpleObjectProperty<Point2D> anchorPtProperty = new SimpleObjectProperty<>(new Point2D(0,0));
     private final SimpleObjectProperty<Point2D> previousLocationProperty = new SimpleObjectProperty<>(new Point2D(0,0));
 
     /**
@@ -93,10 +97,8 @@ public class WindowSupport {
     private Consumer<MouseEvent> positionWindowPress;
     private Consumer<MouseEvent> positionWindowDrag;
     private Consumer<MouseEvent> positionWindowRelease;
-    private Consumer<MouseEvent> defaultPositionWindowPress = (mouseEvent -> {
-        //anchorPt = new Point2D(mouseEvent.getSceneX(), mouseEvent.getSceneY());
-        anchorPtProperty.set(new Point2D(mouseEvent.getSceneX(), mouseEvent.getSceneY()));
-    });
+    private final Consumer<MouseEvent> defaultPositionWindowPress = (mouseEvent ->
+            anchorPtProperty.set(new Point2D(mouseEvent.getSceneX(), mouseEvent.getSceneY())));
 
     public static WindowSupport apply(final Pane parentNode, Node ... draggableNodes) {
         return new WindowSupport(parentNode, draggableNodes);
@@ -112,11 +114,10 @@ public class WindowSupport {
     public WindowSupport(final Pane parentNode, Node ... draggableNodes) {
         this.pane = parentNode;
         this.draggableNodes = draggableNodes;
-//        this.desktopPane = desktopPane;
-        for (int i = 0; i < draggableNodes.length; i++) {
-            draggableNodes[i].addEventHandler(MouseEvent.MOUSE_PRESSED, this::handlePositionWindowMousePressed);
-            draggableNodes[i].addEventHandler(MouseEvent.MOUSE_DRAGGED, this::handlePositionWindowMouseDragged);
-            draggableNodes[i].addEventHandler(MouseEvent.MOUSE_RELEASED, this::handlePositionWindowMouseReleased);
+        for (Node draggableNode : draggableNodes) {
+            draggableNode.addEventHandler(MouseEvent.MOUSE_PRESSED, this::handlePositionWindowMousePressed);
+            draggableNode.addEventHandler(MouseEvent.MOUSE_DRAGGED, this::handlePositionWindowMouseDragged);
+            draggableNode.addEventHandler(MouseEvent.MOUSE_RELEASED, this::handlePositionWindowMouseReleased);
         }
 
         // Add segments to sides
@@ -127,12 +128,8 @@ public class WindowSupport {
 
         // Style behavior around window when user is hovering over the window pane. Highlight Green
         resizeLineSegments.addAll(List.of(northEdge, eastEdge, southEdge, westEdge));
-        this.pane.addEventHandler(MouseEvent.MOUSE_ENTERED, mouseEvent -> {
-            resizeLineSegments.forEach(line -> line.setStroke(HIGHLIGHT_COLOR));
-        });
-        this.pane.addEventHandler(MouseEvent.MOUSE_EXITED, mouseEvent -> {
-            resizeLineSegments.forEach(line -> line.setStroke(TRANSLUCENT_COLOR));
-        });
+        this.pane.addEventHandler(MouseEvent.MOUSE_ENTERED, mouseEvent -> resizeLineSegments.forEach(line -> line.setStroke(HIGHLIGHT_COLOR)));
+        this.pane.addEventHandler(MouseEvent.MOUSE_EXITED, mouseEvent -> resizeLineSegments.forEach(line -> line.setStroke(TRANSLUCENT_COLOR)));
 
         // Add draggable corners
         Circle upperLeft = createCircle(Cursor.NW_RESIZE);
@@ -201,49 +198,41 @@ public class WindowSupport {
         });
 
         // Change stage's upper left corner's X
-        paneXCoordValue.addListener(obs -> {
-            this.pane.setTranslateX(paneXCoordValue.get());
-        });
+        paneXCoordValue.addListener(obs -> this.pane.setTranslateX(paneXCoordValue.get()));
 
         // Change pane's upper left corner's Y
-        paneYCoordValue.addListener(obs -> {
-            this.pane.setTranslateY(paneYCoordValue.get());
-        });
+        paneYCoordValue.addListener(obs -> this.pane.setTranslateY(paneYCoordValue.get()));
 
         // Listener to drag edges of windows
         Line[] lines = new Line[] { northEdge, eastEdge, southEdge, westEdge};
-        for (int i = 0; i < lines.length; i++) {
-            lines[i].addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent ->
+        for (Line line : lines) {
+            line.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent ->
                     this.mousePressed.pressed(mouseEvent, this)
             );
 
             // Listener to drag window dragged (mouse dragged)
-            lines[i].addEventHandler(MouseEvent.MOUSE_DRAGGED, mouseEvent ->
+            line.addEventHandler(MouseEvent.MOUSE_DRAGGED, mouseEvent ->
                     this.mouseDragged.dragged(mouseEvent, this)
             );
 
             // Listener to drag window stop (mouse release)
-            lines[i].addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent ->{
-                this.mouseReleased.released(mouseEvent, this);
-            });
+            line.addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> this.mouseReleased.released(mouseEvent, this));
         }
 
         // Listener to drag window start (mouse press)
         Circle[] corners = new Circle[] { upperRight, lowerRight, lowerLeft, upperLeft};
-        for (int i = 0; i < corners.length; i++) {
-            corners[i].addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent ->
+        for (Circle corner : corners) {
+            corner.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent ->
                     this.mousePressed.pressed(mouseEvent, this)
             );
 
             // Listener to drag window dragged (mouse dragged)
-            corners[i].addEventHandler(MouseEvent.MOUSE_DRAGGED, mouseEvent ->
+            corner.addEventHandler(MouseEvent.MOUSE_DRAGGED, mouseEvent ->
                     this.mouseDragged.dragged(mouseEvent, this)
             );
 
             // Listener to drag window stop (mouse release)
-            corners[i].addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent ->{
-                this.mouseReleased.released(mouseEvent, this);
-            });
+            corner.addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> this.mouseReleased.released(mouseEvent, this));
         }
 
         // sets up the resizing listeners when user hovers and drags corners and edges.
@@ -265,12 +254,8 @@ public class WindowSupport {
     private Circle createCircle(Cursor cursor) {
         Circle circle = new Circle(5, Color.color(1, 1,1, .01));
         circle.setUserData(cursor);
-        circle.setOnMouseEntered(mouseEvent -> {
-            getPane().getScene().setCursor(cursor);
-        });
-        circle.setOnMouseExited(mouseEvent -> {
-            getPane().getScene().setCursor(Cursor.DEFAULT);
-        });
+        circle.setOnMouseEntered(mouseEvent -> getPane().getScene().setCursor(cursor));
+        circle.setOnMouseExited(mouseEvent -> getPane().getScene().setCursor(Cursor.DEFAULT));
         return circle;
     }
     private Line createLine(Cursor cursor) {
@@ -280,26 +265,22 @@ public class WindowSupport {
         line.setStrokeWidth(3);
         line.setStroke(HIGHLIGHT_COLOR);
         line.setUserData(cursor);
-        line.setOnMouseEntered(mouseEvent -> {
-            getPane().getScene().setCursor(cursor);
-        });
-        line.setOnMouseExited(mouseEvent -> {
-            getPane().getScene().setCursor(Cursor.DEFAULT);
-        });
+        line.setOnMouseEntered(mouseEvent -> getPane().getScene().setCursor(cursor));
+        line.setOnMouseExited(mouseEvent -> getPane().getScene().setCursor(Cursor.DEFAULT));
         return line;
     }
     public void removeSupport() {
-        for (int i = 0; i < draggableNodes.length; i++) {
-            draggableNodes[i].removeEventHandler(MouseEvent.MOUSE_PRESSED, this::handlePositionWindowMousePressed);
-            draggableNodes[i].removeEventHandler(MouseEvent.MOUSE_DRAGGED, this::handlePositionWindowMouseDragged);
-            draggableNodes[i].removeEventHandler(MouseEvent.MOUSE_RELEASED, this::handlePositionWindowMouseReleased);
+        for (Node draggableNode : draggableNodes) {
+            draggableNode.removeEventHandler(MouseEvent.MOUSE_PRESSED, this::handlePositionWindowMousePressed);
+            draggableNode.removeEventHandler(MouseEvent.MOUSE_DRAGGED, this::handlePositionWindowMouseDragged);
+            draggableNode.removeEventHandler(MouseEvent.MOUSE_RELEASED, this::handlePositionWindowMouseReleased);
         }
     }
-    private Consumer<MouseEvent> defaultPositionWindowRelease = (mouseEvent -> {
+    private final Consumer<MouseEvent> defaultPositionWindowRelease = (mouseEvent -> {
         //previousLocation = new Point2D(getTranslateX(),getTranslateY());
         previousLocationProperty.set(new Point2D(getPane().getTranslateX(), getPane().getTranslateY()));
     });
-    private Consumer<MouseEvent> defaultPositionWindowDrag = (mouseEvent -> {
+    private final Consumer<MouseEvent> defaultPositionWindowDrag = (mouseEvent -> {
         if(isEnableDrag()) {
             if (anchorPtProperty.isNotNull().get() && previousLocationProperty.isNotNull().get()) {
                 getPane().setTranslateX(previousLocationProperty.get().getX()
@@ -344,7 +325,7 @@ public class WindowSupport {
      * @param mouseEvent
      */
     public void handlePositionWindowMouseMoved(MouseEvent mouseEvent) {
-        System.out.println(mouseEvent);
+        LOG.info(String.valueOf(mouseEvent));
     }
     public void handlePositionWindowMouseReleased(MouseEvent mouseEvent) {
         if (getPositionWindowRelease() == null) {
@@ -420,7 +401,7 @@ public class WindowSupport {
             wt.anchorHeightSizeValue.set(pane.getHeight());
             //System.out.println("press mouseX = " + mouseEvent.getX() + " translateX = " + getTranslateX());
             // current resize direction
-            String source = mouseEvent.getSource().toString();
+            //String source = mouseEvent.getSource().toString();
             wt.currentResizeDirection.set(getCurrentResizeDirection());
             // current line segment
             Node shapeNode = (Node) mouseEvent.getSource();

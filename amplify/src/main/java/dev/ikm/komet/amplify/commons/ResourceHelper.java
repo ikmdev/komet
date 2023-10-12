@@ -15,13 +15,17 @@
  */
 package dev.ikm.komet.amplify.commons;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Responsible for obtaining resources based on a string path that can be the following path types: absolute, relative, and parent relative.
  * For example: absolute is prefixed with a '/'. Relative is a file or a subdirectory. A parent relative path is using the ../ convention to
  * walk up the directory tree.
  */
 public class ResourceHelper {
-    enum PathType {
+    private static final Logger LOG = LoggerFactory.getLogger(ResourceHelper.class);
+    public enum PathType {
         ABSOLUTE,
         RELATIVE,
         PARENT_RELATIVE,
@@ -58,9 +62,9 @@ public class ResourceHelper {
      *     2. relative path - bar/test.txt becomes /foo/bar/test.txt
      *     3. parent relative path - ../../fiz/test.txt becomes /foo/fiz/test.txt
      * </pre>
-     * @param pathString
-     * @param clazz
-     * @return
+     * @param pathString an absolute path, relative path or a parent relative path.
+     * @param clazz The class the file is located in a namespace.
+     * @return A resolved path string.
      */
     public static String toAbsolutePath(String pathString, Class<?> clazz) {
         // is absolute, relative path or parent relative path
@@ -82,7 +86,7 @@ public class ResourceHelper {
         }
 
         // if parent relative path (to walk up directories)
-        int parentPathCount = numOccurence("../", pathString);
+        int parentPathCount = numberOfOccurrence("../", pathString);
         String parentPath = obtainPackageAsPath(clazz);
         String childPath = pathString;
 
@@ -94,7 +98,7 @@ public class ResourceHelper {
         return parentPath + "/" + childPath;
 
     }
-    public static int numOccurence(String substr, String fullString) {
+    public static int numberOfOccurrence(String substr, String fullString) {
         int lastIndex = 0;
         int count = 0;
 
@@ -108,21 +112,21 @@ public class ResourceHelper {
         return count;
     }
     public static void main(String[] args) {
-        int numOccurence = numOccurence("../", "../../hello");
+        int numberOfOccurrence = numberOfOccurrence("../", "../../hello");
         PathType pathType1 = determinePathType("/sss");
         PathType pathType2 = determinePathType("../");
         PathType pathType3 = determinePathType("hello/");
         PathType pathType4 = determinePathType(null);
-        System.out.println("%s %s %s %s".formatted(pathType1, pathType2, pathType3, pathType4));
-        System.out.println(numOccurence);
+        LOG.info("%s %s %s %s".formatted(pathType1, pathType2, pathType3, pathType4));
+        LOG.info(String.valueOf(numberOfOccurrence));
         String url1 = toAbsolutePath("abc.txt", ResourceHelper.class);
         String url2 = toAbsolutePath("/dev/ikm/komet/amplify/utils/abc.txt", ResourceHelper.class);
         String url3 = toAbsolutePath("../../abc.txt", ResourceHelper.class);
         String url4 = toAbsolutePath("../abc.txt", ResourceHelper.class);
-        System.out.println("1:%s\n2:%s \n3:%s \n4:%s".formatted(url1, url2, url3, url4));
+        LOG.info("1:%s\n2:%s \n3:%s \n4:%s".formatted(url1, url2, url3, url4));
         // test "../details/amplify-details.fxml"
 
         String url5 = toAbsolutePath("../details/amplify-details.fxml", ResourceHelper.class);
-        System.out.println("Url 5 test. " + url5);
+        LOG.info("Url 5 test. " + url5);
     }
 }

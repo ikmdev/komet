@@ -16,7 +16,6 @@
 package dev.ikm.komet.amplify.properties;
 
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -63,12 +62,13 @@ public class PropertiesController implements Serializable {
     private BorderPane contentBorderPane;
 
     private Pane historyTabsBorderPane;
-    private dev.ikm.komet.amplify.properties.HistoryChangeController historyChangeController;
+    private HistoryChangeController historyChangeController;
 
     private Pane editBorderPane = new StackPane(genText("Edit Concept"));
     private Pane navigatorPane = new StackPane(genText("Navigator Pane"));
     private Pane commentsPane = new StackPane(genText("Comments Pane"));
-
+    private ViewProperties viewProperties;
+    private EntityFacade entityFacade;
     /**
      * This is called after dependency injection has occurred to the JavaFX controls above.
      */
@@ -101,10 +101,13 @@ public class PropertiesController implements Serializable {
             contentBorderPane.setCenter(commentsPane);
         }
     }
-
-    public void updateView(final ViewProperties viewProperties, EntityFacade entityFacade) {
-        ViewCalculator viewCalculator = viewProperties.calculator();
-        this.historyChangeController.updateView(viewProperties, entityFacade);
+    public void updateModel(final ViewProperties viewProperties, EntityFacade entityFacade){
+        this.viewProperties = viewProperties;
+        this.entityFacade = entityFacade;
+    }
+    public void updateView() {
+        this.historyChangeController.updateModel(viewProperties, entityFacade);
+        this.historyChangeController.updateView();
     }
 
     @FXML
@@ -133,8 +136,10 @@ public class PropertiesController implements Serializable {
 
     }
 
+    public HistoryChangeController getHistoryChangeController() {
+        return historyChangeController;
+    }
 
     public void clearView() {
-
     }
 }

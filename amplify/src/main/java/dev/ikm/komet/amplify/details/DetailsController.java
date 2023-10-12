@@ -15,8 +15,6 @@
  */
 package dev.ikm.komet.amplify.details;
 
-import dev.ikm.komet.amplify.properties.PropertiesController;
-import dev.ikm.komet.amplify.timeline.TimelineController;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.propsheet.KometPropertySheet;
@@ -53,7 +51,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.*;
+import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideIn;
+import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
@@ -164,15 +163,11 @@ public class DetailsController implements Serializable {
     @FXML
     private Pane propertiesSlideoutTrayPane;
 
-    private PropertiesController propertiesController;
-    private Pane propertiesViewBorderPane;
-
     @FXML
     private Pane timelineSlideoutTrayPane;
-    //private TimeTravelController timeTravelController;
-    private Pane timelineViewBorderPane;
-    private TimelineController timelineController;
 
+    private ViewProperties viewProperties;
+    private EntityFacade entityFacade;
 
     @FXML
     public void initialize() {
@@ -180,31 +175,21 @@ public class DetailsController implements Serializable {
         clearView();
     }
 
-    public void setupPropertiesView(Pane propertiesViewBorderPane, PropertiesController propertiesController) {
-        this.propertiesViewBorderPane = propertiesViewBorderPane;
-        this.propertiesController = propertiesController;
-
-        double width = propertiesViewBorderPane.getWidth();
-        propertiesViewBorderPane.setLayoutX(width);
-        propertiesViewBorderPane.getStyleClass().add("slideout-tray-pane");
-
-        propertiesSlideoutTrayPane.getChildren().add(propertiesViewBorderPane);
-        clipChildren(propertiesSlideoutTrayPane, 0);
-        propertiesViewBorderPane.setLayoutX(-width);
-        propertiesSlideoutTrayPane.setMaxWidth(0);
+    public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
+        addPaneToTray(propertiesViewBorderPane, propertiesSlideoutTrayPane);
     }
-    public void setupTimelineView(Pane timelineViewBorderPane, TimelineController timelineController) {
-        this.timelineViewBorderPane = timelineViewBorderPane;
-        this.timelineController = timelineController;
+    public void attachTimelineViewSlideoutTray(Pane timelineViewBorderPane) {
+        addPaneToTray(timelineViewBorderPane, timelineSlideoutTrayPane);
+    }
+    private void addPaneToTray(Pane contentViewPane, Pane slideoutTrayPane) {
+        double width = contentViewPane.getWidth();
+        contentViewPane.setLayoutX(width);
+        contentViewPane.getStyleClass().add("slideout-tray-pane");
 
-        double width = timelineViewBorderPane.getWidth();
-        timelineViewBorderPane.setLayoutX(width);
-        timelineViewBorderPane.getStyleClass().add("slideout-tray-pane");
-
-        timelineSlideoutTrayPane.getChildren().add(timelineViewBorderPane);
-        clipChildren(timelineSlideoutTrayPane, 0);
-        timelineViewBorderPane.setLayoutX(-width);
-        timelineSlideoutTrayPane.setMaxWidth(0);
+        slideoutTrayPane.getChildren().add(contentViewPane);
+        clipChildren(slideoutTrayPane, 0);
+        contentViewPane.setLayoutX(-width);
+        slideoutTrayPane.setMaxWidth(0);
     }
 
     @FXML
@@ -216,31 +201,28 @@ public class DetailsController implements Serializable {
         return propertiesSlideoutTrayPane;
     }
 
-    public void updateView(final ViewProperties viewProperties, EntityFacade entityFacade) {
-        ViewCalculator viewCalculator = viewProperties.calculator();
-
+    public void updateModel(final ViewProperties viewProperties, EntityFacade entityFacade) {
+        this.viewProperties = viewProperties;
+        this.entityFacade = entityFacade;
+    }
+    public void updateView() {
         // Display info for top banner area
-        updateConceptBanner(viewCalculator, entityFacade);
+        updateConceptBanner();
 
         // Display Description info area
-        updateConceptDescription(viewCalculator, entityFacade);
+        updateConceptDescription();
 
         // Axioms area
-        updateAxioms(viewProperties, entityFacade);
-
-        // Update properties controller
-        propertiesController.updateView(viewProperties, entityFacade);
-        timelineController.updateView(viewProperties, entityFacade);
+        updateAxioms();
     }
 
     /**
      * Responsible for populating the top banner area of the concept view panel.
-     * @param viewCalculator View Calculator determines valid items to display.
-     * @param entityFacade A minimalistic object representing an entity.
      */
-    public void updateConceptBanner(final ViewCalculator viewCalculator, EntityFacade entityFacade) {
+    public void updateConceptBanner() {
         // TODO do a null check on the entityFacade
         // Title (FQN of concept)
+        final ViewCalculator viewCalculator = viewProperties.calculator();
         fqnTitleText.setText(viewCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade));
 
         // Definition description text
@@ -283,13 +265,11 @@ public class DetailsController implements Serializable {
     /**
      * Responsible for populating the Descriptions TitledPane area. This retrieves the latest concept version and
      * semantics for language and case significance.
-     *
-     * @param viewCalculator View Calculator determines valid items to display.
-     * @param conceptFacade A minimalistic object representing an entity.
      */
-    public void updateConceptDescription(final ViewCalculator viewCalculator, final EntityFacade conceptFacade) {
+    public void updateConceptDescription() {
+        final ViewCalculator viewCalculator = viewProperties.calculator();
         // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
-        Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(viewCalculator, conceptFacade);
+        Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(viewCalculator, entityFacade);
         descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
 
             PatternEntity<PatternEntityVersion> patternEntity = semanticEntityVersion.pattern();
@@ -456,10 +436,8 @@ public class DetailsController implements Serializable {
 
     /**
      * This will update the EL++ inferred and stated terminological axioms
-     * @param viewProperties view properties containing a view calculator
-     * @param conceptFacade a concept facade.
      */
-    private void updateAxioms(ViewProperties viewProperties, EntityFacade conceptFacade) {
+    private void updateAxioms() {
         // clear Axioms areas
         inferredAxiomsVBox.getChildren().clear();
         statedAxiomsVBox.getChildren().clear();
@@ -470,13 +448,13 @@ public class DetailsController implements Serializable {
         // Create a SheetItem (AXIOM inferred semantic version)
         // TODO Should this be reused instead of instanciating a new one everytime?
         KometPropertySheet inferredPropertySheet = new KometPropertySheet(viewProperties, true);
-        Latest<SemanticEntityVersion> inferredSemanticVersion = viewCalculator.getInferredAxiomSemanticForEntity(conceptFacade.nid());
+        Latest<SemanticEntityVersion> inferredSemanticVersion = viewCalculator.getInferredAxiomSemanticForEntity(entityFacade.nid());
         makeSheetItem(viewProperties, inferredPropertySheet, inferredSemanticVersion);
         inferredAxiomsVBox.getChildren().add(inferredPropertySheet);
 
         // Create a SheetItem (AXIOM stated semantic version)
         KometPropertySheet statedPropertySheet = new KometPropertySheet(viewProperties, true);
-        Latest<SemanticEntityVersion> statedSemanticVersion    = viewCalculator.getStatedAxiomSemanticForEntity(conceptFacade.nid());
+        Latest<SemanticEntityVersion> statedSemanticVersion    = viewCalculator.getStatedAxiomSemanticForEntity(entityFacade.nid());
         makeSheetItem(viewProperties, statedPropertySheet, statedSemanticVersion);
         statedAxiomsVBox.getChildren().add(statedPropertySheet);
 
