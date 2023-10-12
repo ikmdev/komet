@@ -79,6 +79,9 @@ public class Identicon {
         byte[] hash2 = new byte[]{(byte) Math.abs((byte) (publicIdHash >> 24)),
                 (byte) Math.abs((byte) (publicIdHash >> 16)),
                 (byte) Math.abs((byte) (publicIdHash >> 8))};
+        redHash = redHash < 0 ? (byte) redHash & 0xff : redHash;
+        greenHash = greenHash < 0 ? (byte) greenHash & 0xff : greenHash;
+        blueHash = blueHash < 0 ? (byte) blueHash & 0xff : blueHash;
 
         WritableImage identicon = new WritableImage(width, height);
         PixelWriter raster = identicon.getPixelWriter();

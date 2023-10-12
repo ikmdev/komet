@@ -148,8 +148,12 @@
 }
 
 /* Properties Buttons At the Top */
-.properties-tab-outer-container, .properties-tab-container,
-.timeline-outer-container, .timeline-toolbar-container {
+.properties-tab-outer-container,
+.properties-tab-container,
+.timeline-outer-container,
+.timeline-toolbar-container,
+.timeline-content,
+.timeline-scrollpane{
     -fx-background-color: transparent;
 }
 
@@ -270,6 +274,11 @@
     /*-fx-border-style: solid;*/
     /*-fx-border-width: 0.083333em;*/
     /*-fx-border-color: #CFD8E4FF;*/
+}
+
+.descr-row-container.selected {
+    -fx-background-color: #FF2222FF, #FFFFFFFF;
+    -fx-background-insets: 0, 2;
 }
 
 .descr-row-container:hover {
@@ -1048,6 +1057,14 @@ Timeline (time travel) components
 .toggle-button.year-timeline-expand:selected > .expand-arrow {
     -fx-shape: "M1.69 0.530215L0.75 1.47021L4.75 5.47021L8.75 1.47021L7.81 0.530214L4.75 3.58355L1.69 0.530215Z";
 }
+
+.timeline-content,
+.timeline-scrollpane > .viewport {
+    -fx-background-radius: 0 0 10 10;
+}
+.timeline-row-container {
+    -fx-spacing: 20;
+}
 /*
 Timeline Year line segment (will overlay change circles)
  */
@@ -1074,6 +1091,24 @@ Timeline Year line segment (will overlay change circles)
     -fx-stroke-line-cap: round;
 }
 
+.timeline-year-line.first,
+.timeline-year-end-point.first,
+.timeline-year-date-point.first {
+    -fx-stroke: #0085FF;
+}
+
+.timeline-year-line.second,
+.timeline-year-end-point.second,
+.timeline-year-date-point.second {
+    -fx-stroke: #956AFF;
+}
+
+.timeline-year-line.third,
+.timeline-year-end-point.third,
+.timeline-year-date-point.third {
+    -fx-stroke: #FF6252;
+}
+
 .timeline-year-date-point.selected {
     -fx-fill: #5DCF16;
     -fx-stroke: #000000;
@@ -1088,6 +1123,28 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-style: normal;
     -fx-font-weight: 600;
 
+}
+
+.timeline-range-slider-body-top {
+    -fx-background-color: linear-gradient(to bottom, #00000010 2%, #00000040 100%);
+    -fx-border-color: transparent transparent #5896F6 transparent;
+    -fx-border-width: 2;
+}
+
+.timeline-range-slider-body-bottom {
+    -fx-background-color: linear-gradient(to top, #00000010 2%, #00000040 100%);
+    -fx-border-color: #5896F6 transparent transparent transparent;
+    -fx-border-width: 2;
+}
+
+.timeline-range-slider-button {
+    -fx-background-color:  #5896F6;
+    -fx-background-radius: 4;
+}
+.timeline-range-slider-button-arrows {
+    -fx-background-color:  white;
+    -fx-shape: "M 3.1326794,-2.1218575 0.85728885,0.17111128 H 2.56432 V 1.8781425 H 3.7010388 V 0.17111128 H 5.40807 Z M 2.56432,2.0988456 V 3.8058769 H 0.85728885 L 3.1326794,6.0988456 5.40807,3.8058769 H 3.7010388 V 2.0988456 Z";
+    -fx-scale-shape: false;
 }
 
 .menu-button  {
@@ -1107,8 +1164,87 @@ Timeline Year line segment (will overlay change circles)
     -fx-content-display: graphic-only;
 }
 
-.button.menu-button .hamburger {
+.timeline-header-bar .menu-button > .arrow-button,
+.timeline-header-bar .menu-button > .arrow-button > .arrow,
+.timeline-header-bar .menu-button > .arrow-button > .label {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+.timeline-header-bar .menu-button .hamburger {
     -fx-background-color: #44495Eff;
+}
+
+.filter-menu-container {
+    -fx-background-color: #2E3240;
+    -fx-background-insets: 0;
+    /*-fx-background-radius: 8;*/
+    -fx-pref-width: 214px;
+    -fx-border-radius: 8;
+    -fx-border-color: #44495E;
+}
+
+.filter-menu-container .divider {
+    -fx-stroke: #545D72FF;
+    -fx-stroke-width: 1;
+}
+
+.filter-menu-title {
+    -fx-font-family: "Open Sans SemiBold";
+    -fx-size: 1em;
+    -fx-fill: #B3BDCD;
+    -fx-text-fill: #B3BDCD;
+    -fx-label-padding: 12 12 4 12;
+}
+
+.filter-menu-options-container {
+    -fx-background-color: inherit;
+    -fx-padding: 8 4 8 10;
+    -fx-spacing: 12;
+    -fx-pref-width: 214;
+    -fx-max-width: 214;
+}
+
+.filter-menu-container .radio-button,
+.filter-menu-container .check-box {
+    -fx-font-family: "Open Sans SemiBold";
+    -fx-size: 1em;
+    -fx-fill: #FFFFFF;
+    -fx-text-fill: #FFFFFF;
+}
+
+.filter-menu-options-container > .radio-button:selected > .radio > .dot,
+.filter-menu-options-container > .check-box:selected > .check-box > .box {
+    /*-fx-background-color: -fx-mark-highlight-color, -fx-mark-color;*/
+    -fx-background-color: -fx-mark-color;
+    -fx-background-insets: 0;
+}
+
+.filter-menu-container .button {
+    -fx-pref-width: 190;
+    -fx-pref-height: 32;
+    -fx-max-height: 32;
+    -fx-background-radius: 4;
+    -fx-background-color: #4A7AD2FF;
+    -fx-alignment: center;
+    -fx-font-family: "Open Sans SemiBold";
+    -fx-font-size: 1.166667em;
+    -fx-text-fill: #ffffffff;
+    /*-fx-content-display: graphic-only;*/
+}
+
+.popover.filter-menu-popup > .border {
+    -fx-border-style: none;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+    -fx-fill: #2E3240;
+
+}
+
+#menubutton > .arrow-button,
+#menubutton > .label{
+    -fx-background-color: transparent;
+    -fx-padding: 0;
 }
 
 /* History Search and Change Chronology filter */

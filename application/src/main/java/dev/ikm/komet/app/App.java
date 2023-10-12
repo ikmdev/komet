@@ -63,11 +63,11 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
+import javafx.scene.input.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import org.eclipse.collections.api.factory.Lists;
@@ -484,7 +484,7 @@ public class App extends Application {
     }
 
     private void handleEvent(ActionEvent actionEvent) {
-        System.out.println("clicked " + actionEvent.getSource());  // NOSONAR
+        LOG.debug("clicked " + actionEvent.getSource());  // NOSONAR
     }
 
     private void appStateChangeListener(ObservableValue<? extends AppState> observable, AppState oldValue, AppState newValue) {

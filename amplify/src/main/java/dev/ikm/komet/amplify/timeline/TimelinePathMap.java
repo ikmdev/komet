@@ -13,11 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.amplify.commons;
+package dev.ikm.komet.amplify.timeline;
 
-public interface BasicController {
-    void initialize();
-    void updateView();
-    void clearView();
-    void cleanup();
+import dev.ikm.tinkar.coordinate.stamp.change.VersionChangeRecord;
+
+import java.util.List;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+/**
+ * Path Name -> ModuleNid -> StampNid -> Set of VersionChangeRecords
+ */
+public class TimelinePathMap extends TreeMap<String, TreeMap<Integer, TreeMap<Integer, TreeSet<VersionChangeRecord>>>> {
+    public List<Integer> getModuleNids(String pathName) {
+        return get(pathName).keySet().stream().toList();
+    }
 }

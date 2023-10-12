@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.amplify.commons;
+package dev.ikm.komet.amplify.om;
 
-public interface BasicController {
-    void initialize();
-    void updateView();
-    void clearView();
-    void cleanup();
+import dev.ikm.tinkar.coordinate.stamp.change.VersionChangeRecord;
+
+public record ChangeCoordinate(String pathName, int moduleNid, VersionChangeRecord versionChangeRecord) {
 }

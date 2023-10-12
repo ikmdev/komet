@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.amplify.properties;
 
+import dev.ikm.komet.amplify.om.ChangeCoordinate;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.alert.AlertStreams;
@@ -46,6 +47,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 /**
  * Displays change chronology based on an entity's versions. For example A concept was created and updated over time.
+ * See updateModel() for details.
  * A JavaFX Controller associated to the view file change-list-item.fxml.
  */
 public class ChangeListItemController {
@@ -68,6 +70,10 @@ public class ChangeListItemController {
     private Label transactionLabel;
 
     private Tooltip moduleAndPath = new Tooltip();
+
+    private ViewProperties viewProperties;
+    private int entityNid;
+    private ChangeCoordinate changeCoordinate;
 
     /**
      * Semantic chronology will include Status but ignore Time, Author Module and Path.
@@ -97,6 +103,7 @@ public class ChangeListItemController {
 
     private Color extensionColor= COLORS_FOR_EXTENSIONS[0];
 
+
     @FXML
     public void initialize()  {
         stampTimeLabel.setTooltip(moduleAndPath);
@@ -110,9 +117,27 @@ public class ChangeListItemController {
         extensionVline.setStyle(backgroundColor.formatted(toWebColor(color)));
     }
 
-    public void updateView(final ViewProperties viewProperties, final int entityNid, final VersionChangeRecord versionChangeRecord) {
-        ViewCalculator viewCalculator = viewProperties.calculator();
+    public ViewProperties getViewProperties() {
+        return viewProperties;
+    }
 
+    public int getEntityNid() {
+        return entityNid;
+    }
+
+    public ChangeCoordinate getChangeCoordinate() {
+        return changeCoordinate;
+    }
+
+    public void updateModel(final ViewProperties viewProperties, int entityNid, ChangeCoordinate changeCoordinate) {
+        this.viewProperties = viewProperties;
+        this.changeCoordinate = changeCoordinate;
+        this.entityNid = entityNid;
+    }
+
+    public void updateView() {
+        ViewCalculator viewCalculator = getViewProperties().calculator();
+        VersionChangeRecord versionChangeRecord = getChangeCoordinate().versionChangeRecord();
         // Get STAMP
         StampEntity stampForChange = Entity.getStamp(versionChangeRecord.stampNid());
 
@@ -121,7 +146,7 @@ public class ChangeListItemController {
 
         // Module
         String moduleName = viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stampForChange.moduleNid());
-        String pathName   = viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stampForChange.pathNid());
+        String pathName = viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stampForChange.pathNid());
         moduleAndPath.setText("Module: %s \nPath: %s".formatted(moduleName, pathName));
 
         // Author
@@ -129,34 +154,34 @@ public class ChangeListItemController {
 
         boolean showPriorValue = false;
         StringBuilder sb = new StringBuilder();
-        Entity referencedEntity = EntityService.get().getEntityFast(entityNid);
+        Entity referencedEntity = EntityService.get().getEntityFast(getEntityNid());
         // Identicon
         Image identicon = Identicon.generateIdenticonImage(referencedEntity.publicId());
         identiconImageView.setImage(identicon);
 
         // An entity can be a Concept or Semantic (Chronology). An Axiom is subtype of Semantic.
         boolean isItAConcept = referencedEntity instanceof ConceptRecord;
-        boolean isItASemantic   = referencedEntity instanceof SemanticRecord;
-        boolean isItAnAxiom      = false;
+        boolean isItASemantic = referencedEntity instanceof SemanticRecord;
+        boolean isItAnAxiom = false;
         boolean newlyCreated = stampForChange.moduleNid() == PRIMORDIAL_MODULE.nid();
 
         // Is the field a concept as a datatype.
         Function<Integer, Boolean> isDataTypeConceptField = dataTypeNid ->
                 dataTypeNid == CONCEPT_FIELD.nid() || dataTypeNid == COMPONENT_FIELD.nid();
 
-        for (FieldChangeRecord fieldChange: versionChangeRecord.changes()) {
+        for (FieldChangeRecord fieldChange : versionChangeRecord.changes()) {
             // default format function
             Function<Object, String> formatFunction = value -> String.valueOf(value);
 
             // Field Change's current value
             FieldRecord currentFieldRecord = fieldChange.currentValue();
-            FieldRecord   priorFieldRecord = fieldChange.priorValue();
-            Object         priorFieldValue = priorFieldRecord.value();
+            FieldRecord priorFieldRecord = fieldChange.priorValue();
+            Object priorFieldValue = priorFieldRecord.value();
             // Indicate previous value was an unitialized entity.
             newlyCreated = priorFieldValue == State.PRIMORDIAL || UNINITIALIZED_COMPONENT.equals(priorFieldValue);
 
             // detect if it's a field value of DiTreeEntity
-            isItAnAxiom = currentFieldRecord.value() instanceof DiTreeEntity;
+            isItAnAxiom = isItAnAxiom || currentFieldRecord.value() instanceof DiTreeEntity;
 
             // Current Field definition
             FieldDefinitionForEntity currentFieldDefinition = currentFieldRecord.fieldDefinition();
@@ -198,10 +223,11 @@ public class ChangeListItemController {
                     fieldChange.priorValue().value() instanceof DiTreeEntity priorTree) {
                 SemanticEntity theSemantic = (SemanticEntity) referencedEntity;
                 IsomorphicResultsLeafHash<?> isomorphicResult = new IsomorphicResultsLeafHash(currentTree, priorTree, theSemantic.referencedComponentNid());
+
                 try {
                     isomorphicResult.call();
                     sb.append("\n");
-                    if (!isomorphicResult.getAdditionalVertexRoots().isEmpty())  {
+                    if (!isomorphicResult.getAdditionalVertexRoots().isEmpty()) {
                         sb.append("\nAdditions: \n\n");
                         isomorphicResult.getAdditionalVertexRoots().forEach((EntityVertex additionRoot) -> {
                             sb.append("  ").append(isomorphicResult.getReferenceTree().fragmentToString(additionRoot));
@@ -230,10 +256,12 @@ public class ChangeListItemController {
 
         if (isItAConcept) {
             versionType = "Concept";
-        } else if (isItASemantic && !isItAnAxiom) {
-            versionType = "Description";
-        } else if (isItAnAxiom) {
-            versionType = "Axiom";
+        } else if (isItASemantic) {
+            if (isItAnAxiom) {
+                versionType = "Axiom";
+            } else {
+                versionType = "Description";
+            }
         }
 
         String transactionType = newlyCreated ? "Created" : "Changed";
