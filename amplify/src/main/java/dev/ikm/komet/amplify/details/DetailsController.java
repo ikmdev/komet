@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideOut;
@@ -166,6 +167,11 @@ public class DetailsController implements Serializable {
     @FXML
     private Pane timelineSlideoutTrayPane;
 
+    /**
+     * A function from the caller. This class passes a boolean true if classifier button is pressed invoke caller's function to be returned a controller.
+     */
+    private Consumer<ToggleButton> reasonerResultsControllerConsumer;
+
     private ViewProperties viewProperties;
     private EntityFacade entityFacade;
 
@@ -215,7 +221,9 @@ public class DetailsController implements Serializable {
         // Axioms area
         updateAxioms();
     }
-
+    public void onReasonerSlideoutTray(Consumer<ToggleButton> reasonerResultsControllerConsumer) {
+        this.reasonerResultsControllerConsumer = reasonerResultsControllerConsumer;
+    }
     /**
      * Responsible for populating the top banner area of the concept view panel.
      */
@@ -503,7 +511,7 @@ public class DetailsController implements Serializable {
     }
 
     @FXML
-    void openPropertiesPanel(ActionEvent event) {
+    private void openPropertiesPanel(ActionEvent event) {
         ToggleButton propertyToggle = (ToggleButton) event.getSource();
         // if selected open properties
         if (propertyToggle.isSelected()) {
@@ -516,7 +524,7 @@ public class DetailsController implements Serializable {
     }
 
     @FXML
-    void openTimelinePanel(ActionEvent event) {
+    private void openTimelinePanel(ActionEvent event) {
         ToggleButton timelineToggle = (ToggleButton) event.getSource();
         // if selected open properties
         if (timelineToggle.isSelected()) {
@@ -526,5 +534,11 @@ public class DetailsController implements Serializable {
             LOG.info("Close Properties slideout");
             slideIn(timelineSlideoutTrayPane, detailsOuterBorderPane);
         }
+    }
+
+    @FXML
+    private void openReasonerSlideout(ActionEvent event) {
+        ToggleButton reasonerToggle = (ToggleButton) event.getSource();
+        reasonerResultsControllerConsumer.accept(reasonerToggle);
     }
 }

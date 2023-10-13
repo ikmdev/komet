@@ -22,6 +22,7 @@ module dev.ikm.komet.amplify {
     requires transitive dev.ikm.komet.framework;
     requires dev.ikm.komet.search;
     requires dev.ikm.komet.navigator;
+    requires dev.ikm.komet.classification;
 
     opens dev.ikm.komet.amplify.details to javafx.fxml;
     exports dev.ikm.komet.amplify.details;

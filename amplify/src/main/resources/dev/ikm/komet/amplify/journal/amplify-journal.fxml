@@ -116,6 +116,7 @@
                <children>
                   <Pane fx:id="navSlideoutTrayPane" styleClass="slideout-tray-pane" />
                   <Pane fx:id="searchSlideoutTrayPane" styleClass="slideout-tray-pane" />
+                  <Pane fx:id="reasonerSlideoutTrayPane" styleClass="slideout-tray-pane" />
                </children>
             </StackPane>
          </left>
@@ -158,6 +159,17 @@
                   </Region>
                </graphic>
             </ToggleButton>
+            <ToggleButton fx:id="reasonerToggleButton" mnemonicParsing="false" styleClass="reasoner" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="reasoner-icon" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </ToggleButton>
+            <Rectangle fill="DODGERBLUE" height="1.0" stroke="BLACK" strokeType="INSIDE" styleClass="divider" width="36.0" />
             <ToggleButton mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
                   <Region prefHeight="200.0" prefWidth="200.0">

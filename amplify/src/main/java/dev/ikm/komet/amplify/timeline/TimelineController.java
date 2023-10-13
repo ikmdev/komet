@@ -817,7 +817,7 @@ public class TimelineController implements BasicController {
             } else {
                 ChangeCoordinate changeCoordinate = (ChangeCoordinate) datePointSelected.get().getUserData();
                 StampEntity<StampEntityVersion> stampForChange = Entity.getStamp(changeCoordinate.versionChangeRecord().stampNid());
-                LOG.info(" Date Point selected: Path: %s Module: %s Date Point: %s%n".formatted(
+                LOG.info(" Date Point selected: Path: %s Module: %s Date Point: %s".formatted(
                         changeCoordinate.pathName(),
                         viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(changeCoordinate.moduleNid()),
                         DateTimeUtil.format(stampForChange.time(), DATE_POINT_FORMATTER)));
