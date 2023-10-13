@@ -217,7 +217,7 @@ public class TimelineController implements BasicController {
     //// housekeeping objects
     private ViewProperties viewProperties;
     private EntityFacade mainConcept;
-    private final DateTimeFormatter DATE_POINT_FORMATTER = DateTimeFormatter.ofPattern("MM.dd.yyyy");
+    private final DateTimeFormatter DATE_POINT_FORMATTER = DateTimeFormatter.ofPattern("MM-dd-yyyy");
     /**
      * <pre>
      *     Paths:

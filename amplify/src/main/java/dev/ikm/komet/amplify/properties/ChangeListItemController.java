@@ -38,6 +38,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -142,7 +143,7 @@ public class ChangeListItemController {
         StampEntity stampForChange = Entity.getStamp(versionChangeRecord.stampNid());
 
         // Time format
-        stampTimeLabel.setText(DateTimeUtil.format(stampForChange.time()));
+        stampTimeLabel.setText(DateTimeUtil.format(stampForChange.time(), DateTimeFormatter.ofPattern("MM-dd-yyyy")));
 
         // Module
         String moduleName = viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stampForChange.moduleNid());
