@@ -146,7 +146,7 @@ public class TopPanelFactory {
         GridPane.setFillWidth(centerNode, true);
         if (centerNode instanceof Region centerRegion) {
             centerRegion.setMaxWidth(Double.MAX_VALUE);
-            centerRegion.setPrefWidth(Double.MAX_VALUE);
+            centerRegion.setPrefWidth(-1);
             centerRegion.setMaxHeight(Double.MAX_VALUE);
             if (centerRegion instanceof Labeled centerLabeled) {
                 centerLabeled.setAlignment(Pos.TOP_LEFT);

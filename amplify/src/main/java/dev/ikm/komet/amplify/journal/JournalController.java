@@ -28,6 +28,7 @@ import dev.ikm.komet.framework.annotations.KometNodeFactoryFilter;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
+import dev.ikm.komet.reasoner.ReasonerResultsNode;
 import dev.ikm.komet.search.SearchNode;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
@@ -91,6 +92,12 @@ public class JournalController {
     private Pane searchSlideoutTrayPane;
 
     @FXML
+    private Pane reasonerSlideoutTrayPane;
+
+    @FXML
+    private ToggleButton reasonerToggleButton;
+
+    @FXML
     private ToggleButton navigatorToggleButton;
     @FXML
     private ToggleButton searchToggleButton;
@@ -100,13 +107,18 @@ public class JournalController {
 
     private Pane navigatorNodePanel;
     private Pane searchNodePanel;
+    private Pane reasonerNodePanel;
 
     private ActivityStream navigatorActivityStream;
     private ActivityStream searchActivityStream;
+    private ActivityStream reasonerActivityStream;
 
     private volatile boolean isSlideOutOpen = false;
 
     private List<PublicIdStringKey<ActivityStream>> activityStreams = new ArrayList<>();
+
+    private static Consumer<ToggleButton> reasonerToggleConsumer;
+
     /**
      * Called after JavaFX FXML DI has occurred. Any annotated items above should be valid.
      */
@@ -123,6 +135,8 @@ public class JournalController {
             // slide out new panel selected
             slideOut(newValue);
         });
+
+        reasonerToggleConsumer = createReasonerToggleConsumer();
     }
 
     public ToggleButton getSettingsToggleButton() {
@@ -136,7 +150,6 @@ public class JournalController {
     private void slideOut(Toggle toggleButton) {
         Pane trayPane = getCurrentSideBarSelection(toggleButton);
         if (trayPane == null) return;
-
         SlideOutTrayHelper.slideOut(trayPane);
     }
 
@@ -145,6 +158,8 @@ public class JournalController {
             return navSlideoutTrayPane;
         } else if (searchToggleButton.equals(selectedToggleButton)) {
             return searchSlideoutTrayPane;
+        } else if (reasonerToggleButton.equals(selectedToggleButton)) {
+            return reasonerSlideoutTrayPane;
         }
         return null;
     }
@@ -153,7 +168,9 @@ public class JournalController {
         if (toggleButton == null) return;
         Pane trayPane = getCurrentSideBarSelection(toggleButton);
         if (trayPane == null) return;
+
         SlideOutTrayHelper.slideIn(trayPane);
+
     }
     public void shutdown() {
         // cleanup code here...
@@ -164,10 +181,15 @@ public class JournalController {
     /**
      * Iterate through all available KometNodeFactories that will be displayed on the journal.
      * Note: Each journal will have a unique navigation activity stream.
-     * @param windowView
-     * @param navigationFactory
+     * @param windowView The window view properties
+     * @param navigationFactory A factory to create navigation view.
+     * @param reasonerFactory A factory to create reasoner results view.
      */
-    public void launchKometFactoryNodes(String journalName, ObservableViewNoOverride windowView, KometNodeFactory navigationFactory, KometNodeFactory searchFactory) {
+    public void launchKometFactoryNodes(String journalName,
+                                        ObservableViewNoOverride windowView,
+                                        KometNodeFactory navigationFactory,
+                                        KometNodeFactory searchFactory,
+                                        KometNodeFactory reasonerFactory) {
         // Generate a unique activity stream for a navigator for each journal launched. Children (window Panels will subscribe to them).
         String uniqueNavigatorTopic = "navigation-%s".formatted(journalName);
         UUID uuid = UuidT5Generator.get(uniqueNavigatorTopic);
@@ -191,6 +213,9 @@ public class JournalController {
                     KometNode kometNode = factory.create(windowView,
                             navigationActivityStreamKey, activityStreamOptionKey, AlertStreams.ROOT_ALERT_STREAM_KEY, false);
 
+                    if (kometNode instanceof DetailsNode amplifyDetailsNode) {
+                        amplifyDetailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
+                    }
                     Pane kometNodePanel = (Pane) kometNode.getNode();
                     Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
                     Node[] draggables = new Node[draggableToolbar.size()];
@@ -210,6 +235,7 @@ public class JournalController {
         searchActivityStream = ActivityStreams.create(searchActivityStreamKey);
 
         loadSearchPanel(searchActivityStreamKey, windowView, searchFactory);
+        loadReasonerPanel(ActivityStreams.REASONER, windowView, reasonerFactory);
         isSlideOutOpen = false;
     }
 
@@ -242,6 +268,8 @@ public class JournalController {
             KometNodeFactory detailsNodeFactory = new DetailsNodeFactory();
             DetailsNode detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
                     detailsActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY, true);
+            detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
+
             Pane kometNodePanel = (Pane) detailsNode.getNode();
             Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
             Node[] draggables = new Node[draggableToolbar.size()];
@@ -290,6 +318,8 @@ public class JournalController {
                 KometNodeFactory detailsNodeFactory = new DetailsNodeFactory();
                 DetailsNode detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
                         detailsActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY, true);
+                detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
+
                 Pane kometNodePanel = (Pane) detailsNode.getNode();
                 Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
                 Node[] draggables = new Node[draggableToolbar.size()];
@@ -304,5 +334,33 @@ public class JournalController {
         navigatorNodePanel = (Pane) navigatorNode.getNode();
         setupSlideOutTrayPane(navigatorNodePanel, navSlideoutTrayPane);
     }
+    private  void loadReasonerPanel(PublicIdStringKey<ActivityStream> activityStreamKey,
+                                    ObservableViewNoOverride windowView,
+                                    KometNodeFactory nodeFactory) {
+        // Create reasoner panel and publish on the search activity stream
+        ReasonerResultsNode reasonerNode = (ReasonerResultsNode) nodeFactory.create(windowView,
+                activityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
 
+        reasonerNodePanel = (Pane) reasonerNode.getNode();
+        //reasonerNodePanel = new VBox(reasonerNodePanel);
+
+        setupSlideOutTrayPane(reasonerNodePanel, reasonerSlideoutTrayPane);
+
+    }
+    private Consumer<ToggleButton> createReasonerToggleConsumer() {
+        return (detailToggleReasonerButton) -> {
+            if (detailToggleReasonerButton.isSelected() && reasonerToggleButton.isSelected()) {
+                // if global button is already selected don't do anything
+            } else if (detailToggleReasonerButton.isSelected() && !reasonerToggleButton.isSelected()){
+                // if global is not selected fire an event to trigger it.
+                slideOut(reasonerToggleButton);
+                reasonerToggleButton.setSelected(true);
+            } else if (!detailToggleReasonerButton.isSelected() && !reasonerToggleButton.isSelected()) {
+                // if details is not selected and the global is not selected ignore
+            } else if (!detailToggleReasonerButton.isSelected() && reasonerToggleButton.isSelected()) {
+                slideIn(reasonerToggleButton);
+                reasonerToggleButton.setSelected(false);
+            }
+        };
+    }
 }

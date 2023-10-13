@@ -92,15 +92,16 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button mnemonicParsing="false" text="Button">
+                        <ToggleButton fx:id="reasonerToggleButton" mnemonicParsing="false" onAction="#openReasonerSlideout" styleClass="reasoner" text="ToggleButton">
                            <graphic>
-                              <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@../journal/classify-concept.png" />
-                                 </image>
-                              </ImageView>
+                              <Region prefHeight="200.0" prefWidth="200.0">
+                                 <styleClass>
+                                    <String fx:value="icon" />
+                                    <String fx:value="reasoner-icon" />
+                                 </styleClass>
+                              </Region>
                            </graphic>
-                        </Button>
+                        </ToggleButton>
                      </children>
                   </HBox>
                   <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
@@ -268,7 +269,7 @@
                                     <content>
                                       <AnchorPane maxHeight="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="309.0" prefWidth="890.0" style="-fx-background-color: white;" styleClass="rounded-bottom">
                                              <children>
-                                                <BorderPane layoutX="21.4" layoutY="20.4" maxHeight="1.7976931348623157E308" prefHeight="200.0" prefWidth="869.0" styleClass="rounded-bottom" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="10.0">
+                                                <BorderPane layoutX="21.4" layoutY="20.4" maxHeight="1.7976931348623157E308" prefHeight="200.0" prefWidth="869.0" styleClass="rounded-bottom" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                    <center>
                                                       <GridPane maxWidth="1.7976931348623157E308" prefHeight="279.0" prefWidth="794.0" style="-fx-background-color: white;" styleClass="rounded-bottom" BorderPane.alignment="CENTER">
                                                          <columnConstraints>
@@ -276,8 +277,8 @@
                                                             <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="Infinity" minWidth="10.0" prefWidth="804.0" />
                                                          </columnConstraints>
                                                          <rowConstraints>
-                                                            <RowConstraints maxHeight="Infinity" minHeight="10.0" prefHeight="142.0" vgrow="ALWAYS" />
-                                                            <RowConstraints maxHeight="Infinity" minHeight="10.0" prefHeight="137.0" vgrow="ALWAYS" />
+                                                            <RowConstraints maxHeight="Infinity" minHeight="10.0" vgrow="ALWAYS" />
+                                                            <RowConstraints fillHeight="false" maxHeight="Infinity" minHeight="10.0" vgrow="ALWAYS" />
                                                          </rowConstraints>
                                                          <children>
                                                             <VBox prefHeight="142.0" prefWidth="46.0" GridPane.hgrow="NEVER">
@@ -385,16 +386,16 @@
                                                                   </HBox>
                                                                </children>
                                                             </VBox>
-                                                            <VBox fx:id="inferredAxiomsVBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="239.0" prefWidth="301.0" GridPane.columnIndex="1">
+                                                            <VBox fx:id="inferredAxiomsVBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
                                                                <children>
-                                                                  <Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="50.0" prefWidth="191.0" text="Not Available" textAlignment="CENTER" textFill="#c99c9c">
+                                                                  <Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="50.0" prefWidth="191.0" text="Not Available" textAlignment="CENTER" textFill="#c99c9c" VBox.vgrow="ALWAYS">
                                                                      <font>
                                                                         <Font name="Open Sans Regular" size="18.0" />
                                                                      </font>
                                                                   </Label>
                                                                </children>
                                                             </VBox>
-                                                            <VBox fx:id="statedAxiomsVBox" layoutX="63.0" layoutY="10.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="239.0" prefWidth="301.0" style="-fx-background-color: white;" styleClass="rounded-bottom" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                                            <VBox fx:id="statedAxiomsVBox" layoutX="63.0" layoutY="10.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="239.0" prefWidth="301.0" style="-fx-background-color: white;" styleClass="rounded-bottom" GridPane.columnIndex="1" GridPane.hgrow="SOMETIMES" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
                                                                <children>
                                                                   <Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="59.0" prefWidth="190.0" text="Not Available" textFill="#c99c9c">
                                                                      <font>

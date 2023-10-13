@@ -59,7 +59,7 @@ public class KometClipboard
                 });
         GENERATOR_MAP.put(
                 DataFormat.PLAIN_TEXT,
-                (t) -> t.publicId().toString());
+                (t) -> t != null ? t.publicId().toString() : "");
     }
 
     //~--- constructors --------------------------------------------------------
