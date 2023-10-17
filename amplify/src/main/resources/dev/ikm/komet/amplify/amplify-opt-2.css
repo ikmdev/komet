@@ -262,12 +262,15 @@
 }
 
 .descr-row-container {
-    -fx-background-color: #CFD8E4FF, #FFFFFFFF;
+    -fx-background-color: #FFFFFF;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 2, 2;
     -fx-pref-width: 421px;
     -fx-pref-height: 95px;
     -fx-padding: 0 5 5 5;
+    -fx-border-color: #B3BDCD;
+    -fx-border-width: 3px;
+    -fx-border-radius: 2px;
 
     /*-fx-background-radius: 0 0 0 0;*/
     /*-fx-border-radius: 0 0 0 0;*/
@@ -276,15 +279,31 @@
     /*-fx-border-color: #CFD8E4FF;*/
 }
 
+.descr-row-container .descr-semantic-name {
+    -fx-text-fill: #000000;
+}
+
 .descr-row-container.selected {
-    -fx-background-color: #FF2222FF, #FFFFFFFF;
+    -fx-background-color: #FFFFFF;
     -fx-background-insets: 0, 2;
+    -fx-border-color: #67BA3F;
 }
 
 .descr-row-container:hover {
-    -fx-background-color: #67BA3FFF, #FFFFFFFF;
+    -fx-text-fill: #4277D8;
+    -fx-background-color: #F4F9FF;
     -fx-background-insets: 0, 2;
+    -fx-border-color: #B3BDCD;
 }
+
+.descr-row-container:hover .descr-semantic-name {
+    -fx-text-fill: #4277D8;
+}
+
+.descr-row-container.selected .descr-semantic-name {
+    -fx-text-fill: #5EA03C;
+}
+
 .descr-row-container .descr-info-container {
     -fx-padding: 0 0 0 4;
 }

@@ -141,12 +141,20 @@ public class HistoryChangeController implements BasicController {
     }
     public void highlightListItemByChangeCoordinate(ChangeCoordinate changeCoordinate) {
         this.changeChronologyPane.getChildren().forEach(node -> {
-            if (changeCoordinate.equals(node.getUserData())) {
+            if (checkEqualityOfChangeCoordinate(changeCoordinate, (ChangeCoordinate) node.getUserData())) {
                 node.getStyleClass().add("selected");
             } else {
                 node.getStyleClass().remove("selected");
             }
         });
+    }
+
+    private boolean checkEqualityOfChangeCoordinate(ChangeCoordinate changeCoordinate, ChangeCoordinate userData) {
+        StampEntity<StampEntityVersion> stamp1 = Entity.getStamp(changeCoordinate.versionChangeRecord().stampNid());
+        StampEntity<StampEntityVersion> stamp2 = Entity.getStamp(userData.versionChangeRecord().stampNid());
+        return (stamp1.time() == stamp2.time()
+                && stamp1.moduleNid() == stamp2.moduleNid()
+                && stamp1.pathNid() == stamp2.pathNid());
     }
 
     public void updateView() {
