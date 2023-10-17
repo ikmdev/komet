@@ -25,7 +25,7 @@
                               <ToggleGroup fx:id="propertyToggleButtonGroup" />
                            </toggleGroup>
                         </ToggleButton>
-                        <ToggleButton fx:id="navigateButton" mnemonicParsing="false" onAction="#showNavigatorView" styleClass="properties-tab" text="Hierchy" toggleGroup="$propertyToggleButtonGroup">
+                        <ToggleButton fx:id="navigateButton" mnemonicParsing="false" onAction="#showNavigatorView" styleClass="properties-tab" text="Hierarchy" toggleGroup="$propertyToggleButtonGroup">
                            <graphic>
                               <SVGPath content="M10 11H5V16H10V18H3V8H5V9H10V11ZM6 2V4H2V2H6ZM8 0H0V6H8V0ZM18 9V11H14V9H18ZM20 7H12V13H20V7ZM18 16V18H14V16H18ZM20 14H12V20H20V14Z" styleClass="svg-tab" />
                            </graphic>
