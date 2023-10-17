@@ -15,10 +15,9 @@
  */
 package dev.ikm.komet.progress;
 
-import com.google.auto.service.AutoService;
-import javafx.scene.control.Label;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -28,9 +27,17 @@ import dev.ikm.komet.framework.preferences.Reconstructor;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
+import javafx.scene.control.Label;
 
-@AutoService(KometNodeFactory.class)
 public class ProgressNodeFactory implements KometNodeFactory {
+	
+	public static ProgressNodeFactory provider() {
+		return new ProgressNodeFactory();
+	}
+
+	public ProgressNodeFactory() {
+		super();
+	}
 
     @Override
     public void addDefaultNodePreferences(KometPreferences nodePreferences) {

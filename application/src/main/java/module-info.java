@@ -54,7 +54,6 @@ module dev.ikm.komet.application {
     requires org.kordamp.ikonli.javafx;
     requires jdk.jdwp.agent;
     requires transitive dev.ikm.komet.rules;
-    requires static com.google.auto.service;
 
     uses DataServiceController;
     uses DefaultDescriptionForNidService;

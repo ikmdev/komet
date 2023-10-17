@@ -15,10 +15,11 @@
  */
 package dev.ikm.komet.navigator.graph;
 
-import com.google.auto.service.AutoService;
- import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
- import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -28,19 +29,24 @@ import dev.ikm.komet.framework.preferences.Reconstructor;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 
  */
 
-@AutoService(KometNodeFactory.class)
 public class GraphNavigatorNodeFactory
         implements KometNodeFactory {
     private static final Logger LOG = LoggerFactory.getLogger(GraphNavigatorNodeFactory.class);
     protected static final String STYLE_ID = GraphNavigatorNode.STYLE_ID;
     protected static final String TITLE = GraphNavigatorNode.TITLE;
+    
+    public static GraphNavigatorNodeFactory provider() {
+		return new GraphNavigatorNodeFactory();
+	}
+
+	public GraphNavigatorNodeFactory() {
+		super();
+	}
 
     @Override
     public void addDefaultNodePreferences(KometPreferences nodePreferences) {

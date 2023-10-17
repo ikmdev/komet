@@ -24,7 +24,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.IntSupplier;
 
-import com.google.auto.service.AutoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import dev.ikm.komet.framework.Dialogs;
+import dev.ikm.komet.framework.FxUtils;
+import dev.ikm.tinkar.common.service.CachingService;
+import dev.ikm.tinkar.common.service.TinkExecutor;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.scene.Node;
@@ -37,12 +43,6 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
-import dev.ikm.komet.framework.Dialogs;
-import dev.ikm.komet.framework.FxUtils;
-import dev.ikm.tinkar.common.service.CachingService;
-import dev.ikm.tinkar.common.service.TinkExecutor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * {@link DragRegistry}
@@ -53,7 +53,6 @@ import org.slf4j.LoggerFactory;
 public class DragRegistry {
     private static final Logger LOG = LoggerFactory.getLogger(DragRegistry.class);
 
-    @AutoService(CachingService.class)
     public static class CacheProvider implements CachingService {
         @Override
         public void reset() {

@@ -293,7 +293,6 @@
             <id>create-installer</id>
             <properties>
                 <jpackage.app.name>Komet</jpackage.app.name>
-<!--                <jpackage.app.version>1.16.0</jpackage.app.version>-->
                 <jpackage.app.version>${project.version}</jpackage.app.version>
                 <jpackage.app.dest>target/dist/installer</jpackage.app.dest>
             </properties>

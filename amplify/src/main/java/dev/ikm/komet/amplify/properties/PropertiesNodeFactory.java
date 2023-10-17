@@ -15,7 +15,11 @@
  */
 package dev.ikm.komet.amplify.properties;
 
-import com.google.auto.service.AutoService;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -26,18 +30,21 @@ import dev.ikm.komet.framework.preferences.Reconstructor;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-@AutoService(KometNodeFactory.class)
 @KometNodeFactoryDisplay(dockFXView = false, journalView = false)
 public class PropertiesNodeFactory implements KometNodeFactory {
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesNodeFactory.class);
 
     protected static final String STYLE_ID = PropertiesNode.STYLE_ID;
     protected static final String TITLE = PropertiesNode.TITLE;
+    
+    public static PropertiesNodeFactory provider() {
+		return new PropertiesNodeFactory();
+	}
+
+	private PropertiesNodeFactory() {
+		super();
+	}
 
     @Override
     public void addDefaultNodePreferences(KometPreferences nodePreferences) {

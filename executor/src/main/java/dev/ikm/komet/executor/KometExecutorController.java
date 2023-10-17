@@ -15,57 +15,71 @@
  */
 package dev.ikm.komet.executor;
 
-import com.google.auto.service.AutoService;
-import dev.ikm.tinkar.common.service.CachingService;
-import dev.ikm.tinkar.common.service.ExecutorController;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.atomic.AtomicReference;
+import dev.ikm.tinkar.common.service.CachingService;
+import dev.ikm.tinkar.common.service.ExecutorController;
 
-@AutoService({ExecutorController.class})
 public class KometExecutorController implements ExecutorController {
-    private static final Logger LOG = LoggerFactory.getLogger(KometExecutorController.class);
-    private static AlertDialogSubscriber alertDialogSubscriber;
-    private static AtomicReference<KometExecutorProvider> providerReference = new AtomicReference<>();
+	private static final Logger LOG = LoggerFactory.getLogger(KometExecutorController.class);
+	private static AlertDialogSubscriber alertDialogSubscriber;
+	private static AtomicReference<KometExecutorProvider> providerReference = new AtomicReference<>();
 
-    @Override
-    public KometExecutorProvider create() {
-        if (providerReference.get() == null) {
-            providerReference.updateAndGet(executorProvider -> {
-                if (executorProvider != null) {
-                    return executorProvider;
-                }
-                KometExecutorController.alertDialogSubscriber = new AlertDialogSubscriber();
-                return new KometExecutorProvider();
-            });
-            providerReference.get().start();
-        }
-        return providerReference.get();
-    }
+	public static KometExecutorController provider() {
+		return new KometExecutorController();
+	}
 
-    @Override
-    public void stop() {
-        providerReference.updateAndGet(executorProvider -> {
-            if (executorProvider != null) {
-                executorProvider.stop();
-            }
-            return null;
-        });
-    }
+	private KometExecutorController() {
+		super();
+	}
 
+	@Override
+	public KometExecutorProvider create() {
+		if (providerReference.get() == null) {
+			providerReference.updateAndGet(executorProvider -> {
+				if (executorProvider != null) {
+					return executorProvider;
+				}
+				KometExecutorController.alertDialogSubscriber = new AlertDialogSubscriber();
+				return new KometExecutorProvider();
+			});
+			providerReference.get().start();
+		}
+		return providerReference.get();
+	}
 
-    @AutoService(CachingService.class)
-    public static class CacheProvider implements CachingService {
-        @Override
-        public void reset() {
-            providerReference.updateAndGet(executorProvider -> {
-                if (executorProvider != null) {
-                    executorProvider.stop();
-                }
-                return null;
-            });
-        }
-    }
+	@Override
+	public void stop() {
+		providerReference.updateAndGet(executorProvider -> {
+			if (executorProvider != null) {
+				executorProvider.stop();
+			}
+			return null;
+		});
+	}
+
+	public static class CacheProvider implements CachingService {
+
+		public static CacheProvider provider() {
+			return new CacheProvider();
+		}
+
+		private CacheProvider() {
+			super();
+		}
+
+		@Override
+		public void reset() {
+			providerReference.updateAndGet(executorProvider -> {
+				if (executorProvider != null) {
+					executorProvider.stop();
+				}
+				return null;
+			});
+		}
+	}
 
 }

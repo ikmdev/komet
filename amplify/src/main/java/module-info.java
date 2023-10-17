@@ -18,7 +18,6 @@ import dev.ikm.komet.amplify.properties.PropertiesNodeFactory;
 import dev.ikm.komet.framework.KometNodeFactory;
 
 module dev.ikm.komet.amplify {
-
     requires transitive dev.ikm.komet.framework;
     requires dev.ikm.komet.search;
     requires dev.ikm.komet.navigator;
@@ -36,13 +35,12 @@ module dev.ikm.komet.amplify {
     opens dev.ikm.komet.amplify.journal to javafx.fxml;
     exports dev.ikm.komet.amplify.journal;
 
-    exports dev.ikm.komet.amplify.commons;
-    exports dev.ikm.komet.amplify.window;
     opens dev.ikm.komet.amplify.window to javafx.fxml;
+    exports dev.ikm.komet.amplify.window;
+
     exports dev.ikm.komet.amplify.om;
+    exports dev.ikm.komet.amplify.commons;
+
     opens dev.ikm.komet.amplify.om to javafx.fxml;
-    requires static com.google.auto.service;
     provides KometNodeFactory with DetailsNodeFactory, PropertiesNodeFactory;
-
-
 }

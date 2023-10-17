@@ -15,9 +15,9 @@
  */
 package dev.ikm.komet.builder;
 
-import com.google.auto.service.AutoService;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -28,10 +28,17 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 
-@AutoService(KometNodeFactory.class)
 public class ConceptBuilderNodeFactory implements KometNodeFactory {
     protected static final String STYLE_ID = ConceptBuilderNode.STYLE_ID;
     protected static final String TITLE = ConceptBuilderNode.TITLE;
+    
+    public static ConceptBuilderNodeFactory provider() {
+		return new ConceptBuilderNodeFactory();
+	}
+
+	private ConceptBuilderNodeFactory() {
+		super();
+	}
 
     @Override
     public void addDefaultNodePreferences(KometPreferences nodePreferences) {
