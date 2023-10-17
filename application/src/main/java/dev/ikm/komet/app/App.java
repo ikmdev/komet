@@ -374,6 +374,7 @@ public class App extends Application {
 
         // Launch windows window pane inside journal view
         amplifyStage.setOnShown(windowEvent -> {
+            //TODO: Refactor factory constructor calls below to use ServiceLoader (make constructors private)
             KometNodeFactory navigatorNodeFactory = new GraphNavigatorNodeFactory();
             KometNodeFactory searchNodeFactory = new SearchNodeFactory();
             KometNodeFactory reasonerNodeFactory = new ReasonerResultsNodeFactory();

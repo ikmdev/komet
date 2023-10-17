@@ -15,9 +15,9 @@
  */
 package dev.ikm.komet.table;
 
-import com.google.auto.service.AutoService;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -28,10 +28,17 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 
-@AutoService(KometNodeFactory.class)
 public class TableNodeFactory implements KometNodeFactory {
     protected static final String STYLE_ID = TableNode.STYLE_ID;
     protected static final String TITLE = TableNode.TITLE;
+    
+    public static TableNodeFactory provider() {
+		return new TableNodeFactory();
+	}
+
+	public TableNodeFactory() {
+		super();
+	}
 
     @Override
     public void addDefaultNodePreferences(KometPreferences nodePreferences) {

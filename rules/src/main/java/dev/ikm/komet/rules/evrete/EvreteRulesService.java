@@ -15,26 +15,10 @@
  */
 package dev.ikm.komet.rules.evrete;
 
-import com.google.auto.service.AutoService;
-import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
-import dev.ikm.komet.framework.performance.Request;
-import dev.ikm.komet.framework.performance.impl.ObservationRecord;
-import dev.ikm.komet.framework.performance.impl.RequestRecord;
-import dev.ikm.komet.framework.rulebase.RuleService;
-import dev.ikm.komet.framework.performance.Statement;
-import dev.ikm.komet.framework.performance.Topic;
-import dev.ikm.komet.framework.rulebase.Consequence;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.rules.annotated.AxiomFocusedRules;
-import dev.ikm.komet.rules.annotated.ComponentFocusRules;
-import dev.ikm.komet.rules.annotated.NewConceptRules;
-import dev.ikm.tinkar.common.sets.ConcurrentHashSet;
-import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
-import dev.ikm.tinkar.entity.ConceptEntityVersion;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.graph.EntityVertex;
-import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.util.Map;
+
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -48,11 +32,26 @@ import org.evrete.dsl.AbstractDSLProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.lang.invoke.MethodHandles;
-import java.util.Map;
+import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
+import dev.ikm.komet.framework.performance.Request;
+import dev.ikm.komet.framework.performance.Statement;
+import dev.ikm.komet.framework.performance.Topic;
+import dev.ikm.komet.framework.performance.impl.ObservationRecord;
+import dev.ikm.komet.framework.performance.impl.RequestRecord;
+import dev.ikm.komet.framework.rulebase.Consequence;
+import dev.ikm.komet.framework.rulebase.RuleService;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.rules.annotated.AxiomFocusedRules;
+import dev.ikm.komet.rules.annotated.ComponentFocusRules;
+import dev.ikm.komet.rules.annotated.NewConceptRules;
+import dev.ikm.tinkar.common.sets.ConcurrentHashSet;
+import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
+import dev.ikm.tinkar.entity.ConceptEntityVersion;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.graph.EntityVertex;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.TinkarTerm;
 
-@AutoService(EvreteRulesService.class)
 public class EvreteRulesService implements RuleService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EvreteRulesService.class);

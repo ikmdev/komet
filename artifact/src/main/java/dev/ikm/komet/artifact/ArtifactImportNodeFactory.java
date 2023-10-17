@@ -15,7 +15,9 @@
  */
 package dev.ikm.komet.artifact;
 
-import com.google.auto.service.AutoService;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -24,13 +26,18 @@ import dev.ikm.komet.framework.preferences.Reconstructor;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
 
-@AutoService(KometNodeFactory.class)
 public class ArtifactImportNodeFactory implements KometNodeFactory {
     protected static final String STYLE_ID = ArtifactImportNode.STYLE_ID;
     protected static final String TITLE = ArtifactImportNode.TITLE;
+    
+    public static ArtifactImportNodeFactory provider() {
+		return new ArtifactImportNodeFactory();
+	}
+
+	private ArtifactImportNodeFactory() {
+		super();
+	}
 
     @Override
     public void addDefaultNodePreferences(KometPreferences nodePreferences) {

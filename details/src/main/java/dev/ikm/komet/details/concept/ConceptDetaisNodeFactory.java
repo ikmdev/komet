@@ -17,6 +17,7 @@ package dev.ikm.komet.details.concept;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -30,10 +31,17 @@ import dev.ikm.tinkar.common.id.PublicIdStringKey;
 /**
  * TODO consider removing and replace with only details node...
  */
-//@AutoService(KometNodeFactory.class)
 public class ConceptDetaisNodeFactory implements KometNodeFactory {
     protected static final String STYLE_ID = ConceptDetailsNode.STYLE_ID;
     protected static final String TITLE = ConceptDetailsNode.TITLE;
+    
+    public static ConceptDetaisNodeFactory provider() {
+		return new ConceptDetaisNodeFactory();
+	}
+
+	private ConceptDetaisNodeFactory() {
+		super();
+	}
 
     @Override
     public void addDefaultNodePreferences(KometPreferences nodePreferences) {

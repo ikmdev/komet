@@ -15,9 +15,11 @@
  */
 package dev.ikm.komet.navigator.pattern;
 
-import com.google.auto.service.AutoService;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -27,15 +29,20 @@ import dev.ikm.komet.framework.preferences.Reconstructor;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-@AutoService(KometNodeFactory.class)
 public class PatternNavigatorFactory
         implements KometNodeFactory {
     private static final Logger LOG = LoggerFactory.getLogger(PatternNavigatorFactory.class);
     protected static final String STYLE_ID = PatternNavigatorNode.STYLE_ID;
     protected static final String TITLE = PatternNavigatorNode.TITLE;
+    
+    public static PatternNavigatorFactory provider() {
+		return new PatternNavigatorFactory();
+	}
+
+	public PatternNavigatorFactory() {
+		super();
+	}
 
     @Override
     public void addDefaultNodePreferences(KometPreferences nodePreferences) {

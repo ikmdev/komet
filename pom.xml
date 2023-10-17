@@ -63,7 +63,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
-        <tinkar-core.version>1.16.0</tinkar-core.version>
+        <tinkar-core.version>1.18.0</tinkar-core.version>
 
         <ikm-classifier.groupId>dev.ikm.elk</ikm-classifier.groupId>
         <ikm-classifier.version>0.8.0</ikm-classifier.version>
@@ -74,7 +74,6 @@
         <tinkar-jpms-deps.groupId>dev.ikm.jpms</tinkar-jpms-deps.groupId>
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
 
-        <jpms-auto-service.version>1.0.1-r2</jpms-auto-service.version>
         <jpms-record-builder-core.version>34-r2</jpms-record-builder-core.version>
         <jpms-roaringbitmap.version>0.9.31-r3</jpms-roaringbitmap.version>
 
@@ -259,13 +258,6 @@
                 <version>${ikm-evrete.version}</version>
             </dependency>
 
-            <!-- Wrapped JPMS Depenendencies -->
-            <dependency>
-                <groupId>${tinkar-jpms-deps.groupId}</groupId>
-                <artifactId>auto-service</artifactId>
-                <version>${jpms-auto-service.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>${tinkar-jpms-deps.groupId}</groupId>
                 <artifactId>record-builder-core</artifactId>
@@ -421,13 +413,6 @@
                 <version>${slf4j.version}</version>
             </dependency>
 
-<!--            <dependency>-->
-<!--                <groupId>org.eclipse.jetty</groupId>-->
-<!--                <artifactId>jetty-slf4j-impl</artifactId>-->
-<!--                <version>${jetty-slf4j-impl.version}</version>-->
-<!--                <scope>runtime</scope>-->
-<!--            </dependency>-->
-
             <dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-slf4j2-impl</artifactId>
@@ -499,21 +484,11 @@
             <artifactId>slf4j-api</artifactId>
 		</dependency>
 
-<!--		<dependency>-->
-<!--			<groupId>org.eclipse.jetty</groupId>-->
-<!--			<artifactId>jetty-slf4j-impl</artifactId>-->
-<!--		</dependency>-->
-
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j2-impl</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-        <dependency>
-            <groupId>${tinkar-jpms-deps.groupId}</groupId>
-            <artifactId>auto-service</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -567,15 +542,9 @@
                             <artifactId>record-builder-processor</artifactId>
                             <version>${record-builder-processor.version}</version>
                         </annotationProcessorPath>
-                        <annotationProcessorPath>
-                            <groupId>com.google.auto.service</groupId>
-                            <artifactId>auto-service</artifactId>
-                            <version>${auto-service.version}</version>
-                        </annotationProcessorPath>
                     </annotationProcessorPaths>
                     <annotationProcessors>
                         <annotationProcessor>io.soabase.recordbuilder.processor.RecordBuilderProcessor</annotationProcessor>
-                        <annotationProcessor>com.google.auto.service.processor.AutoServiceProcessor</annotationProcessor>
                     </annotationProcessors>
                 </configuration>
             </plugin>
