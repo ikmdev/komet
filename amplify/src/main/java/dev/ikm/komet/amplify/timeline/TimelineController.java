@@ -83,7 +83,7 @@ public class TimelineController implements BasicController {
     private final ObjectProperty<Circle> datePointSelected = new SimpleObjectProperty<>();
     private Consumer<ChangeCoordinate> datePointSelectedConsumer;
     private BiConsumer<Boolean, Set<ChangeCoordinate>> datePointsInDateRangeConsumer;
-
+    //private List<BiConsumer<Boolean, Set<ChangeCoordinate>>> datePointsInDateRangeConsumers;
     private final ObjectProperty<Rectangle2D> rangeViewRectangleProp = new SimpleObjectProperty<>();
 
     /**
@@ -91,7 +91,6 @@ public class TimelineController implements BasicController {
      * When the range sliders are used the data points visible within the range (detect box - between top and bottom sliders).
      */
     private ObservableSet<ChangeCoordinate> slideControlDatePointsInRangeSet;
-
     /**
      * All circles (date points) created. This helps us determine date points in range.
      */
@@ -683,18 +682,24 @@ public class TimelineController implements BasicController {
         int firstYear = parseYear(datePoints.first());
         int endYear = parseYear(datePoints.last());
 
-        IntStream yearRange = IntStream.range(firstYear, endYear);
-        Set<Integer> allYears = yearRange.boxed().collect(Collectors.toSet());
-
-        // Fill in missing years for extensions (modules) not having date points.
-        TreeSet<Integer> missingYears = new TreeSet<>(allYears.stream().filter(year -> !availableYears.contains(year)).toList());
-        missingYears.forEach( year -> {
-            String dateInString = year + "0101";
-            LocalDate localDate = LocalDate.parse(dateInString, DateTimeFormatter.BASIC_ISO_DATE);
-            Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
-            long timeInMillis = truncateTime(instant.toEpochMilli());
-            datePoints.add(timeInMillis);
-        });
+        System.out.println("====> IntStream.range(%s, %s);".formatted(firstYear, endYear));
+        int nowYear = parseYear(System.currentTimeMillis());
+        if (endYear > nowYear) {
+            endYear = nowYear;
+        }
+        if (firstYear > 1970 && endYear > firstYear) {
+            IntStream yearRange = IntStream.range(firstYear, endYear);
+            Set<Integer> allYears = yearRange.boxed().collect(Collectors.toSet());
+            // Fill in missing years for extensions (modules) not having date points.
+            TreeSet<Integer> missingYears = new TreeSet<>(allYears.stream().filter(year -> !availableYears.contains(year)).toList());
+            missingYears.forEach(year -> {
+                String dateInString = year + "0101";
+                LocalDate localDate = LocalDate.parse(dateInString, DateTimeFormatter.BASIC_ISO_DATE);
+                Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+                long timeInMillis = truncateTime(instant.toEpochMilli());
+                datePoints.add(timeInMillis);
+            });
+        }
 
         return datePoints;
     }

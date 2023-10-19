@@ -40,11 +40,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TreeItem;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -64,6 +60,7 @@ import java.util.OptionalInt;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static javafx.scene.layout.Region.USE_COMPUTED_SIZE;
 
@@ -287,6 +284,9 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
 
     public List<Consumer<Object>> getDoubleCLickConsumers() {
         return searchTreeView.getDoubleCLickConsumers();
+    }
+    public void setItemContextMenu(Function<SearchTreeView, ContextMenu> contextMenuConsumer) {
+        searchTreeView.setContextMenu(contextMenuConsumer.apply(searchTreeView));
     }
 
     public void setProperties(Region parentNode, ReadOnlyObjectProperty<PublicIdStringKey<ActivityStream>> activityStreamKeyProperty,

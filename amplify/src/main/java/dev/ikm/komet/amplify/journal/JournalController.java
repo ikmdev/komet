@@ -34,6 +34,7 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
+import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -44,6 +45,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.primitive.IntLists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,6 +121,7 @@ public class JournalController {
 
     private static Consumer<ToggleButton> reasonerToggleConsumer;
 
+    private GraphNavigatorNode navigatorNode;
     /**
      * Called after JavaFX FXML DI has occurred. Any annotated items above should be valid.
      */
@@ -239,6 +242,10 @@ public class JournalController {
         isSlideOutOpen = false;
     }
 
+    public GraphNavigatorNode getNavigatorNode() {
+        return navigatorNode;
+    }
+
     private void loadSearchPanel(PublicIdStringKey<ActivityStream> searchActivityStreamKey,
                                  ObservableViewNoOverride windowView,
                                  KometNodeFactory searchFactory) {
@@ -248,12 +255,11 @@ public class JournalController {
 
         // What to do when you can double-click on a cell
         SearchPanelController controller = searchNode.getController();
-        Consumer<Object> displayInDetailsView = (treeItem) -> {
-            LOG.debug("tree item is a " + treeItem.getClass().getName());
+        Consumer<Object> displayInDetailsView = (treeItemValue) -> {
             ConceptFacade conceptFacade = null;
-            if (treeItem instanceof SearchPanelController.NidTextRecord nidTextRecord) {
+            if (treeItemValue instanceof SearchPanelController.NidTextRecord nidTextRecord) {
                 conceptFacade = Entity.getFast(nidTextRecord.nid());
-            } else if (treeItem instanceof SemanticEntityVersion semanticEntityVersion) {
+            } else if (treeItemValue instanceof SemanticEntityVersion semanticEntityVersion) {
                 conceptFacade = Entity.getConceptForSemantic(semanticEntityVersion.nid()).get();
             } else {
                 return;
@@ -283,6 +289,57 @@ public class JournalController {
         controller.getDoubleCLickConsumers().add(displayInDetailsView);
         searchNodePanel = (Pane) searchNode.getNode();
         setupSlideOutTrayPane(searchNodePanel, searchSlideoutTrayPane);
+
+        // When user right clicks selected item in search results (tree view)
+        controller.setItemContextMenu((searchTreeView -> {
+            // Context menu to allow user to right-click a searched item to show concept in navigator view.
+            ContextMenu contextMenu = new ContextMenu();
+            MenuItem openNewWindow = new MenuItem("Open Concept");
+            openNewWindow.setOnAction(actionEvent -> {
+                TreeItem<Object> treeItem = searchTreeView.getSelectionModel().getSelectedItem();
+                switch (treeItem.getValue()) {
+                    case LatestVersionSearchResult latestVersionSearchResult -> displayInDetailsView.accept(latestVersionSearchResult.latestVersion().get());
+                    default -> displayInDetailsView.accept(treeItem.getValue());
+                }
+            });
+            contextMenu.getItems().add(openNewWindow);
+
+            Runnable showInConceptNavigator = ()-> {
+                TreeItem<Object> treeItem = searchTreeView.getSelectionModel().getSelectedItem();
+                switch (treeItem.getValue()) {
+                    case LatestVersionSearchResult latestVersionSearchResult -> {
+                        int conceptNid = latestVersionSearchResult.latestVersion().get().nid();
+                        getNavigatorNode().getController().showConcept(conceptNid);
+                        getNavigatorNode().getController().expandAndSelect(IntLists.immutable.of(conceptNid));
+                    }
+                    default -> {}
+                }
+                ConceptFacade conceptFacade = null;
+                Object treeItemValue = treeItem.getValue();
+                if (treeItemValue instanceof SearchPanelController.NidTextRecord nidTextRecord) {
+                    conceptFacade = Entity.getFast(nidTextRecord.nid());
+                } else if (treeItemValue instanceof SemanticEntityVersion semanticEntityVersion) {
+                    conceptFacade = Entity.getConceptForSemantic(semanticEntityVersion.nid()).get();
+                } else {
+                    return;
+                }
+                getNavigatorNode().getController().showConcept(conceptFacade.nid());
+            };
+            MenuItem showInCurrentConceptWindow = new MenuItem("Show in Current Concept Window");
+            showInCurrentConceptWindow.setOnAction(actionEvent -> {
+                showInConceptNavigator.run();
+            });
+            contextMenu.getItems().add(showInCurrentConceptWindow);
+
+            MenuItem showInNavigator = new MenuItem("Show in Concept Navigator");
+            showInNavigator.setOnAction(actionEvent -> {
+                showInConceptNavigator.run();
+                navigatorToggleButton.setSelected(true);
+            });
+            contextMenu.getItems().add(showInNavigator);
+
+            return contextMenu;
+        }));
     }
 
     /**
@@ -296,7 +353,7 @@ public class JournalController {
                                      KometNodeFactory navigationFactory) {
 
         // Create navigator panel and publish on the navigation activity stream
-        GraphNavigatorNode navigatorNode = (GraphNavigatorNode) navigationFactory.create(windowView,
+        navigatorNode = (GraphNavigatorNode) navigationFactory.create(windowView,
                 navigationActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
 
         // What to do when you can double-click on a cell

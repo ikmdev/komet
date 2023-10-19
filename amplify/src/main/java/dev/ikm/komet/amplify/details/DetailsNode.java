@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Set;
 
 import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
 import static dev.ikm.komet.framework.activity.ActivityStreamOption.PUBLISH;
@@ -125,8 +126,10 @@ public class DetailsNode extends ExplorationNodeAbstract {
             timelineViewController.onDatePointInRange((rangeToggleOn, changeCoordinates) -> {
                 if (rangeToggleOn) {
                     propertiesViewController.getHistoryChangeController().filterByRange(changeCoordinates);
+                    propertiesViewController.getHierarchyController().diffNavigationGraph(changeCoordinates);
                 } else {
                     propertiesViewController.getHistoryChangeController().unfilterByRange();
+                    propertiesViewController.getHierarchyController().diffNavigationGraph(Set.of());
                 }
             });
 
