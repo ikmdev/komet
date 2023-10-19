@@ -197,7 +197,7 @@
                                                             </FlowPane>
                                                             <ImageView fitHeight="153.0" fitWidth="554.0" pickOnBounds="true" preserveRatio="true">
                                                                <image>
-                                                                  <Image url="@image83087.png" />
+                                                                  <Image url="@placeholder-concept-image.png" />
                                                                </image>
                                                             </ImageView>
                                                          </children>
