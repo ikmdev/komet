@@ -43,6 +43,7 @@ import static dev.ikm.komet.amplify.commons.CssHelper.genText;
 public class PropertiesController implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesController.class);
     protected static final String HISTORY_CHANGE_FXML_FILE = "history-change-selection.fxml";
+    protected static final String HIERARCHY_VIEW_FXML_FILE = "hierarchy-view.fxml";
     @FXML
     private SVGPath commentsButton;
 
@@ -53,7 +54,7 @@ public class PropertiesController implements Serializable {
     private ToggleButton historyButton;
 
     @FXML
-    private ToggleButton navigateButton;
+    private ToggleButton hierarchyButton;
 
     @FXML
     private ToggleGroup propertyToggleButtonGroup;
@@ -64,8 +65,11 @@ public class PropertiesController implements Serializable {
     private Pane historyTabsBorderPane;
     private HistoryChangeController historyChangeController;
 
+    private Pane hierarchyTabBorderPane;
+    private HierarchyController hierarchyController;
+
     private Pane editBorderPane = new StackPane(genText("Edit Concept"));
-    private Pane navigatorPane = new StackPane(genText("Navigator Pane"));
+
     private Pane commentsPane = new StackPane(genText("Comments Pane"));
     private ViewProperties viewProperties;
     private EntityFacade entityFacade;
@@ -75,14 +79,20 @@ public class PropertiesController implements Serializable {
     @FXML
     public void initialize() throws IOException {
         clearView();
+        // Programmatically change CSS Theme
+        String styleSheet = defaultStyleSheet();
+
         // Load History tabs View Panel (FXML & Controller)
         FXMLLoader loader = new FXMLLoader(getClass().getResource(HISTORY_CHANGE_FXML_FILE));
         this.historyTabsBorderPane = loader.load();
+        this.historyTabsBorderPane.getStylesheets().add(styleSheet);
         this.historyChangeController = loader.getController();
 
-        // Programmatically change CSS Theme
-        String styleSheet = defaultStyleSheet();
-        this.historyTabsBorderPane.getStylesheets().add(styleSheet);
+        // Load Hierarchy tab View Panel (FXML & Controller)
+        FXMLLoader loader2 = new FXMLLoader(getClass().getResource(HIERARCHY_VIEW_FXML_FILE));
+        this.hierarchyTabBorderPane = loader2.load();
+        this.hierarchyTabBorderPane.getStylesheets().add(styleSheet);
+        this.hierarchyController = loader2.getController();
 
         // initially a default selected tab and view is shown
         updateDefaultSelectedViews();
@@ -93,8 +103,8 @@ public class PropertiesController implements Serializable {
         Toggle tab = propertyToggleButtonGroup.getSelectedToggle();
         if (editButton.equals(tab)) {
             contentBorderPane.setCenter(editBorderPane);
-        } else if (navigateButton.equals(tab)) {
-            contentBorderPane.setCenter(navigatorPane);
+        } else if (hierarchyButton.equals(tab)) {
+            contentBorderPane.setCenter(hierarchyTabBorderPane);
         } else if (historyButton.equals(tab)) {
             contentBorderPane.setCenter(historyTabsBorderPane);
         } else if (commentsButton.equals(tab)) {
@@ -104,10 +114,12 @@ public class PropertiesController implements Serializable {
     public void updateModel(final ViewProperties viewProperties, EntityFacade entityFacade){
         this.viewProperties = viewProperties;
         this.entityFacade = entityFacade;
+        this.historyChangeController.updateModel(viewProperties, entityFacade);
+        this.hierarchyController.updateModel(viewProperties, entityFacade);
     }
     public void updateView() {
-        this.historyChangeController.updateModel(viewProperties, entityFacade);
         this.historyChangeController.updateView();
+        this.hierarchyController.updateView();
     }
 
     @FXML
@@ -120,7 +132,7 @@ public class PropertiesController implements Serializable {
     private void showNavigatorView(ActionEvent event) {
         event.consume();
         LOG.info("Show Navigator View " + event);
-        contentBorderPane.setCenter(navigatorPane);
+        contentBorderPane.setCenter(hierarchyTabBorderPane);
     }
     @FXML
     private void showHistoryView(ActionEvent event) {
@@ -138,6 +150,10 @@ public class PropertiesController implements Serializable {
 
     public HistoryChangeController getHistoryChangeController() {
         return historyChangeController;
+    }
+
+    public HierarchyController getHierarchyController() {
+        return hierarchyController;
     }
 
     public void clearView() {

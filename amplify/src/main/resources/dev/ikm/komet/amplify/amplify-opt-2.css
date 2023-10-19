@@ -1406,3 +1406,166 @@ Timeline Year line segment (will overlay change circles)
     -fx-pref-width: -default-width;
     -fx-max-width: -default-width;
 }
+
+/*******************************************************************************
+ * Hierarchy UI elements                                                                            *
+ * TreeView and TreeCell                                                       *
+ *                                                                             *
+ ******************************************************************************/
+.hierarchy-container .label.status {
+    /*-fx-alignment: center-left;*/
+    -fx-text-alignment: left;
+    -fx-text-fill: white;
+    -fx-font-family: "Open Sans";
+    -fx-font-size: 10;
+    -fx-font-style: normal;
+    -fx-font-weight: normal;
+}
+
+.hierarchy-container.concept {
+    -fx-background-color: #4689C899;
+}
+.hierarchy-container.retired {
+    -fx-background-color: #C8464699;
+}
+.hierarchy-container.added,
+.hierarchy-container.edited {
+    -fx-background-color: #46C8B899;
+}
+.hierarchy-container .label.concept-parent > .icon.red-arrow {
+    /*-fx-alignment: center-left;*/
+    -fx-text-alignment: left;
+    -fx-text-fill: white;
+    -fx-font-family: "Open Sans";
+    -fx-font-size: 10;
+    -fx-font-style: normal;
+    -fx-font-weight: normal;
+}
+
+.hierarchy-container .concept-label,
+.hierarchy-container .tree-cell {
+    -fx-padding: 0.25em; /* 3 */
+    -fx-indent: 1em;
+    /*-fx-background-color: #3E7DE833;*/
+    -fx-font-family: "Open Sans";
+    /*-fx-font-size: 14;*/
+    -fx-font-style:	normal;
+    -fx-font-weight: normal;
+}
+
+.hierarchy-container .tree-cell:selected {
+    -fx-font-weight: bold;
+}
+
+
+.concept-ring {
+    -fx-background-color: #3EC244FF;
+    -fx-pref-width: 11;
+    -fx-pref-height: 12;
+    -fx-scale-shape: false;
+    -fx-shape: "M5.5 11.5C2.46244 11.5 0 9.03755 0 6C0 2.96244 2.46244 0.5 5.5 0.5C8.53755 0.5 11 2.96244 11 6C11 9.03756 8.53755 11.5 5.5 11.5ZM5.5 1.69565C3.12245 1.69565 1.19565 3.62305 1.19565 6C1.19565 8.37696 3.12245 10.3043 5.5 10.3043C7.87755 10.3043 9.80434 8.37696 9.80434 6C9.80434 3.62305 7.87755 1.69565 5.5 1.69565Z";
+}
+
+.hierarchy-container .tree-view > .virtual-flow > .clipped-container > .sheet > .tree-cell:filled .node-cell .status.concept {
+    -fx-background: #3E7DE833;
+    -fx-table-cell-border-color: derive(-fx-selection-bar, 20%);
+}
+.hierarchy-container .tree-view > .virtual-flow > .clipped-container > .sheet > .tree-cell:filled .node-cell .status.added {
+    -fx-background: #46C8B899;
+    -fx-table-cell-border-color: derive(-fx-selection-bar, 20%);
+}
+.hierarchy-container .tree-view > .virtual-flow > .clipped-container > .sheet > .tree-cell {
+    -fx-background: #C8464699;
+    -fx-table-cell-border-color: derive(-fx-selection-bar, 20%);
+}
+.hierarchy-container .tree-view > .virtual-flow > .clipped-container > .sheet > .tree-cell:filled {
+    -fx-background: #C8464699;
+    -fx-table-cell-border-color: derive(-fx-selection-bar, 20%);
+}
+
+.hierarchy-container .tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-cell:focused {
+    -fx-background-color: #3E7DE833, #3E7DE833, #3E7DE833;
+    -fx-background-insets: 0, 1, 2;
+}
+
+.hierarchy-container .tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-cell:filled:selected {
+    -fx-background: #3E7DE833;
+    -fx-table-cell-border-color: derive(-fx-selection-bar, 20%);
+}
+
+.hierarchy-container .tree-cell > .tree-disclosure-node,
+.hierarchy-container .tree-table-row-cell > .tree-disclosure-node {
+    -fx-padding: 4 6 4 8;
+    -fx-background-color: transparent;
+}
+.hierarchy-container .tree-cell > .tree-disclosure-node > .arrow,
+.hierarchy-container .tree-table-row-cell > .tree-disclosure-node > .arrow {
+    -fx-background-color: -fx-text-background-color;
+    -fx-padding: 0.333333em 0.229em 0.333333em 0.229em; /* 4 */
+    -fx-shape: "M0.000651836 0.958984L0.000651396 11.0423L6.33398 6.00065";
+}
+.hierarchy-container .tree-cell:expanded > .tree-disclosure-node > .arrow,
+.hierarchy-container .tree-table-row-cell:expanded > .tree-disclosure-node > .arrow {
+    -fx-rotate: 90;
+}
+
+.node-cell {
+    -fx-alignment: center-left;
+    -fx-spacing: 5;
+}
+
+
+.node-cell > .icon {
+    -fx-pref-width: 11;
+    -fx-pref-height: 12;
+    -fx-scale-shape: false;
+}
+
+/* Green Concept Ring (circle) */
+.node-cell > .icon.circle {
+    -fx-background-color: #3EC244FF;
+    -fx-shape: "M5.5 11.5C2.46244 11.5 0 9.03755 0 6C0 2.96244 2.46244 0.5 5.5 0.5C8.53755 0.5 11 2.96244 11 6C11 9.03756 8.53755 11.5 5.5 11.5ZM5.5 1.69565C3.12245 1.69565 1.19565 3.62305 1.19565 6C1.19565 8.37696 3.12245 10.3043 5.5 10.3043C7.87755 10.3043 9.80434 8.37696 9.80434 6C9.80434 3.62305 7.87755 1.69565 5.5 1.69565Z";
+}
+
+
+.node-cell > .label.title-text {
+    /*-fx-alignment: center-left;*/
+    -fx-text-alignment: left;
+    -fx-text-fill: black;
+    -fx-font-family: "Open Sans";
+    -fx-font-size: 12;
+    -fx-font-style: normal;
+    -fx-font-weight: normal;
+}
+.node-cell .label.date-text {
+    -fx-pref-width: 58;
+    -fx-pref-height: 18;
+    -fx-background-radius: 2;
+    -fx-background-color: #545D72FF;
+    -fx-alignment: center;
+    -fx-font-family: "Open Sans SemiBold";
+    -fx-font-size: 1em;
+    -fx-text-fill: #ffffffff;
+}
+
+.node-cell .label.added.date-text {
+    -fx-pref-width: 58;
+    -fx-pref-height: 18;
+    -fx-background-radius: 2;
+    -fx-background-color: #46C8B899;
+    -fx-alignment: center;
+    -fx-font-family: "Open Sans SemiBold";
+    -fx-font-size: 1em;
+    -fx-text-fill: #ffffffff;
+}
+
+.node-cell .label.retired.date-text {
+    -fx-pref-width: 58;
+    -fx-pref-height: 18;
+    -fx-background-radius: 2;
+    -fx-background-color: #C8464699;
+    -fx-alignment: center;
+    -fx-font-family: "Open Sans SemiBold";
+    -fx-font-size: 1em;
+    -fx-text-fill: #ffffffff;
+}

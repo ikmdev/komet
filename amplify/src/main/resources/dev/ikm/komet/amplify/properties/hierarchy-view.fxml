@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.TreeItem?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+
+<BorderPane maxWidth="-Infinity" minHeight="100.0" minWidth="100.0" prefHeight="669.0" prefWidth="487.0" stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.properties.HierarchyController">
+   <top>
+      <FlowPane alignment="CENTER" columnHalignment="CENTER" prefHeight="5.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+         <children>
+            <HBox alignment="CENTER" prefHeight="20.0" prefWidth="421.0" spacing="16.0" styleClass="control-container">
+               <children>
+                  <HBox alignment="CENTER_LEFT" prefWidth="267.0" styleClass="search-container">
+                     <children>
+                        <TextField fx:id="searchTextField" onAction="#searchText" prefHeight="16.0" prefWidth="215.0" promptText="Search" styleClass="search-text-field" HBox.hgrow="ALWAYS" />
+                        <ToggleButton fx:id="searchFilterToggleButton" contentDisplay="GRAPHIC_ONLY" maxWidth="32.0" mnemonicParsing="false" onAction="#popupSearchFilterOptions" prefHeight="8.0" prefWidth="32.0" styleClass="search-filter" text="search filter toggle" textFill="#1b1717">
+                           <graphic>
+                              <Region prefHeight="200.0" prefWidth="200.0" styleClass="search-filter-icon" />
+                           </graphic>
+                        </ToggleButton>
+                     </children>
+                  </HBox>
+                  <ChoiceBox fx:id="changeFilterChoiceBox" prefWidth="150.0" HBox.hgrow="NEVER" />
+               </children>
+            </HBox>
+         </children>
+      </FlowPane>
+   </top>
+   <center>
+      <TreeView fx:id="hiearchyTreeView">
+         <root>
+            <TreeItem expanded="true" value="">
+               <graphic>
+                  <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" prefWidth="200.0" spacing="5.0" styleClass="node-cell" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Region snapToPixel="false">
+                           <HBox.margin>
+                              <Insets bottom="3.0" />
+                           </HBox.margin>
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="circle" />
+                           </styleClass>
+                        </Region>
+                        <Label maxWidth="1.7976931348623157E308" prefWidth="255.0" styleClass="title-text" text="Tetralogy of FallotTetralogy of FallotTetralogy of FallotTetralogy of FallotTetralogy of FallotTetralogy of FallotTetralogy of FallotTetralogy of FallotTetralogy of FallotTetralogy of FallotTetralogy of Fallot" HBox.hgrow="ALWAYS" />
+                        <Label alignment="CENTER" contentDisplay="CENTER" minHeight="-Infinity" minWidth="-Infinity" prefHeight="16.0" prefWidth="58.0" styleClass="date-text" text="08.06.23" />
+                     </children>
+                     <padding>
+                        <Insets left="5.0" />
+                     </padding>
+                  </HBox>
+               </graphic>
+               <children>
+                  <TreeItem value="parents">
+                     <children>
+                        <TreeItem value="parent 1" />
+                        <TreeItem value="parent 2" />
+                        <TreeItem value="parent 3" />
+                     </children>
+                  </TreeItem>
+                  <TreeItem value="children">
+                     <children>
+                        <TreeItem value="child 1" />
+                        <TreeItem value="child 2" />
+                        <TreeItem value="">
+                           <graphic>
+                              <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" prefWidth="200.0" spacing="5.0" styleClass="node-cell" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Region snapToPixel="false">
+                                       <HBox.margin>
+                                          <Insets bottom="3.0" />
+                                       </HBox.margin>
+                                       <styleClass>
+                                          <String fx:value="icon" />
+                                          <String fx:value="circle" />
+                                       </styleClass>
+                                    </Region>
+                                    <Label maxWidth="1.7976931348623157E308" styleClass="title-text" text="Tetralogy of FallotTetralogy of FallotTetralogy of FallotTetralogy of FallotTetralogy of FallotTetralogy of FallotTetralogy of FallotTetralogy of FallotTetralogy of FallotTetralogy of FallotTetralogy of Fallot" HBox.hgrow="ALWAYS" />
+                                    <Label alignment="CENTER" contentDisplay="CENTER" minHeight="-Infinity" minWidth="-Infinity" prefHeight="16.0" prefWidth="58.0" styleClass="date-text" text="08.06.23" />
+                                 </children>
+                                 <padding>
+                                    <Insets left="5.0" />
+                                 </padding>
+                              </HBox>
+                           </graphic>
+                        </TreeItem>
+                     </children>
+                  </TreeItem>
+               </children>
+            </TreeItem>
+         </root>
+      </TreeView>
+   </center>
+</BorderPane>

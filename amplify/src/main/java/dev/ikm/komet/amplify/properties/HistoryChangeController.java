@@ -72,8 +72,10 @@ public class HistoryChangeController implements BasicController {
         changeFilterChoiceBox.getItems().addAll("All", "Concept", "Description", "Axiom");
         changeFilterChoiceBox.setValue("All");
         changeFilterChoiceBox.valueProperty().addListener( (obs, oldVal, newVal) -> {
-            updateModel(getViewProperties(), getEntityFacade());
-            updateView();
+            if (getViewProperties() != null && getEntityFacade() != null) {
+                updateModel(getViewProperties(), getEntityFacade());
+                updateView();
+            }
         });
 
 
