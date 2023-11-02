@@ -16,6 +16,12 @@ pipeline {
 
     agent any
 
+    tools {
+       jdk "java-21"
+       maven 'default'
+       git 'git'
+    }
+
     environment {
         TRUNK_BRANCH_NAME   = 'main'
         REPO_NAME           = "${GIT_URL.split('/')[4].split('\\.')[0]}"

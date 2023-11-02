@@ -3,7 +3,14 @@
 @Library("titan-library") _
 
 pipeline {
+
     agent any
+
+    tools {
+        jdk "java-21"
+        maven 'default'
+        git 'git'
+    }
 
     environment {
         SONAR_AUTH_TOKEN    = credentials('sonarqube_pac_token')
@@ -171,10 +178,6 @@ pipeline {
                     agent {
                         label 'linux'
                     }
-                    tools {
-                        jdk 'default'
-                        maven 'default'
-                    }
                     stages {
                         stage("Build Linux Installer") {
                             steps {
@@ -238,10 +241,6 @@ pipeline {
                 stage("Mac M1 Installer") {
                     agent {
                         label 'mac_m1'
-                    }
-                    tools {
-                        jdk 'default'
-                        maven 'default'
                     }
                     stages {
                         stage("Build Mac M1 Installer") {
@@ -307,10 +306,6 @@ pipeline {
                     agent {
                         label 'mac_intel'
                     }
-                    tools {
-                        jdk 'default'
-                        maven 'default'
-                    }
                     stages {
                         stage("Build Mac Intel Installer") {
                             steps {
@@ -374,11 +369,6 @@ pipeline {
                 stage("Windows Installer") {
                     agent {
                         label 'windows'
-                    }
-                    tools {
-                        jdk 'default'
-                        maven 'default'
-                        //wix added to path using jenkins agent environment variables
                     }
                     stages {
                         stage("Build Windows Installer") {

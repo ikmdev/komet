@@ -81,7 +81,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<useModulePath>true</useModulePath>
-					<argLine>--enable-preview</argLine>
+<!--					<argLine>&#45;&#45;enable-preview</argLine>-->
 					<forkCount>1</forkCount>
 					<reuseForks>false</reuseForks>
 				</configuration>

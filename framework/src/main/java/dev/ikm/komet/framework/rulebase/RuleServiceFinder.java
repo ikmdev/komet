@@ -27,7 +27,7 @@ public enum RuleServiceFinder {
 
     RuleServiceFinder() {
         System.setProperty("org.evrete.runtime.compiler.Options",
-                "--release|19|--enable-preview|--add-modules|dev.ikm.komet.framework,dev.ikm.komet.rules");
+                "--release|21|--add-modules|dev.ikm.komet.framework,dev.ikm.komet.rules");
 
         // TODO Developer documentation and cookbook need to describe why this inclusion of jars is done
         // TODO Find alternatives, including pre-compilation of rules.
