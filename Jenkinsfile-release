@@ -4,6 +4,12 @@ pipeline {
 
     agent any
 
+    tools {
+       jdk "java-21"
+       maven 'default'
+       git 'git'
+    }
+
     options {
         buildDiscarder logRotator(
             numToKeepStr: '10'
@@ -52,10 +58,6 @@ pipeline {
         }
 
         stage ('Set Release Version'){
-            tools {
-                jdk 'default'
-                maven 'default'
-            }
             steps {
                 configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
                     sh """
@@ -70,10 +72,6 @@ pipeline {
         }
 
         stage ('Test Release Build'){
-            tools {
-                jdk 'default'
-                maven 'default'
-            }
             steps {
                 configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
                     sh """
@@ -107,10 +105,6 @@ pipeline {
         }
 
         stage ('Set next dev version'){
-            tools {
-                jdk 'default'
-                maven 'default'
-            }
             steps {
                 configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
                     sh """

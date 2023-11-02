@@ -161,7 +161,7 @@
                             <jlinkZipName>kometJlink</jlinkZipName>
                             <options>
                                 <option>-Xmx8g</option>
-                                <option>--enable-preview</option>
+<!--                                <option>&#45;&#45;enable-preview</option>-->
                                 <option>--add-opens</option>
                                 <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
                                 <option>--add-exports</option>
@@ -183,7 +183,7 @@
                             <jlinkVerbose>true</jlinkVerbose>
                             <jlinkZipName>kometDebugJlink</jlinkZipName>
                             <options>
-                                <option>--enable-preview</option>
+<!--                                <option>&#45;&#45;enable-preview</option>-->
                                 <option>--add-opens</option>
                                 <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
                                 <option>--add-exports</option>
@@ -211,7 +211,7 @@
                             <jlinkVerbose>true</jlinkVerbose>
                             <jlinkZipName>kometProfileJlink</jlinkZipName>
                             <options>
-                                <option>--enable-preview</option>
+<!--                                <option>&#45;&#45;enable-preview</option>-->
                                 <option>--add-opens</option>
                                 <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
                                 <option>--add-exports</option>
@@ -313,7 +313,7 @@
                             <module>dev.ikm.komet.application/dev.ikm.komet.app.App</module>
                             <javaOptions>
                                 <option>-Xmx8g</option>
-                                <option>--enable-preview</option>
+<!--                                <option>&#45;&#45;enable-preview</option>-->
                                 <option>--add-opens</option>
                                 <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
                                 <option>--add-exports</option>
@@ -400,7 +400,7 @@
                                     <jlinkVerbose>true</jlinkVerbose>
                                     <jlinkZipName>kometProfileJlink</jlinkZipName>
                                     <options>
-                                        <option>--enable-preview</option>
+<!--                                        <option>&#45;&#45;enable-preview</option>-->
                                         <option>--add-opens</option>
                                         <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
                                         <option>--add-exports</option>
@@ -445,7 +445,7 @@
                                     <jlinkVerbose>true</jlinkVerbose>
                                     <jlinkZipName>kometJlink</jlinkZipName>
                                     <options>
-                                        <option>--enable-preview</option>
+<!--                                        <option>&#45;&#45;enable-preview</option>-->
                                         <option>--add-opens</option>
                                         <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
                                         <option>--add-exports</option>

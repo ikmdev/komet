@@ -3,7 +3,7 @@
     <parent>
         <groupId>dev.ikm.build</groupId>
         <artifactId>java-parent</artifactId>
-        <version>1.20.0</version>
+        <version>1.23.0</version>
         <relativePath />
     </parent>
 
@@ -63,7 +63,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
-        <tinkar-core.version>1.18.0</tinkar-core.version>
+        <tinkar-core.version>1.20.0</tinkar-core.version>
 
         <ikm-classifier.groupId>dev.ikm.elk</ikm-classifier.groupId>
         <ikm-classifier.version>0.8.0</ikm-classifier.version>
@@ -82,7 +82,7 @@
         <controlsfx.version>11.1.0</controlsfx.version>
         <ikonli.version>12.2.0</ikonli.version>
         <nsmenufx.version>3.1.0</nsmenufx.version>
-        <openjfx.version>19</openjfx.version>
+        <openjfx.version>21</openjfx.version>
         <javafx.version>0.0.8</javafx.version>
         <jpackage.version>1.6.0</jpackage.version>
         <record-builder-processor.version>34</record-builder-processor.version>
@@ -91,7 +91,7 @@
 		<log4j.version>3.0.0-alpha1</log4j.version>
         <!-- Here to support existing ELK unit tests until we can remove this from the codebase by switching to ikm classifier-->
         <elk.junit.version>4.13.2</elk.junit.version>
-        <mockito.version>5.2.0</mockito.version>
+        <mockito.version>5.5.0</mockito.version>
         <common-java5.version>3.0.0-M9</common-java5.version>
         <owlapi.version>4.5.25-ikm-r1</owlapi.version>
 
@@ -532,8 +532,10 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <fork>true</fork>
+                    <source>21</source>
+                    <target>21</target>
                     <compilerArgs>
-                        <arg>--enable-preview</arg>
+<!--                        <arg>&#45;&#45;enable-preview</arg>-->
                         <arg>-parameters</arg>
                     </compilerArgs>
                     <annotationProcessorPaths>
