@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 public enum RuleServiceFinder {
     INSTANCE;
@@ -29,12 +30,14 @@ public enum RuleServiceFinder {
         System.setProperty("org.evrete.runtime.compiler.Options",
                 "--release|21|--add-modules|dev.ikm.komet.framework,dev.ikm.komet.rules");
 
-        // TODO Developer documentation and cookbook need to describe why this inclusion of jars is done
-        // TODO Find alternatives, including pre-compilation of rules.
         if (System.getProperty("jdk.module.path") == null) {
+
             Path javaHome = FileSystems.getDefault().getPath(System.getProperty("java.home"));
-            Path thisModules = javaHome.resolve("module-jars");
-            System.setProperty("jdk.module.path", thisModules.toAbsolutePath().toString());
+            Path thisModules = javaHome.resolve("lib").resolve("modules");
+
+            System.setProperty("jdk.module.path",
+                    thisModules.toAbsolutePath().toString());
+            System.setProperty("jlink.binary", Boolean.TRUE.toString());
         }
 
         ServiceLoader<RuleService> serviceLoader = ServiceLoader.load(RuleService.class);
