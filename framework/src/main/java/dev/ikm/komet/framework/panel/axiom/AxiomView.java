@@ -20,6 +20,7 @@ import javafx.event.Event;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import org.controlsfx.property.editor.PropertyEditor;
@@ -71,12 +72,18 @@ public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
         viewProperties.calculator().getFieldForSemanticWithPurpose(axiomTreeSemanticVersion, TinkarTerm.LOGICAL_DEFINITION).ifPresentOrElse(objectField -> {
             axiomTree = (DiTreeEntity) objectField.value();
         }, () -> {
-            throw new IllegalStateException("No logical definition found. ");
+            // TODO handle this state better...
+            //throw new IllegalStateException("No logical definition found. ");
         });
         this.viewProperties = viewProperties;
         this.premiseType = premiseType;
-        ClauseView clauseView = new ClauseView(axiomTree.root(), this);
-        borderPane.setCenter(clauseView.rootBorderPane);
+        // TODO handle this better.
+        if (this.axiomTree != null) {
+            ClauseView clauseView = new ClauseView(axiomTree.root(), this);
+            borderPane.setCenter(clauseView.rootBorderPane);
+        } else {
+            borderPane.setCenter(new Label("No axioms to show..."));
+        }
     }
 
     public static final Node computeGraphic(int conceptNid, boolean expanded, State state, ViewProperties viewProperties, PremiseType premiseType) {
@@ -123,12 +130,18 @@ public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
 
     public static AxiomView create(ObservableSemanticVersion logicGraphVersion, PremiseType premiseType, ViewProperties viewProperties) {
         AxiomView axiomView = new AxiomView(logicGraphVersion, premiseType, viewProperties);
-        BorderPane axiomBorderPane = axiomView.create(axiomView.axiomTree.root());
-        AnchorPane.setBottomAnchor(axiomBorderPane, 0.0);
-        AnchorPane.setLeftAnchor(axiomBorderPane, 0.0);
-        AnchorPane.setRightAnchor(axiomBorderPane, 0.0);
-        AnchorPane.setTopAnchor(axiomBorderPane, 0.0);
-        axiomView.anchorPane.getChildren().setAll(axiomBorderPane);
+
+        if (axiomView.axiomTree != null) {
+            BorderPane axiomBorderPane = axiomView.create(axiomView.axiomTree.root());
+            AnchorPane.setBottomAnchor(axiomBorderPane, 0.0);
+            AnchorPane.setLeftAnchor(axiomBorderPane, 0.0);
+            AnchorPane.setRightAnchor(axiomBorderPane, 0.0);
+            AnchorPane.setTopAnchor(axiomBorderPane, 0.0);
+            axiomView.anchorPane.getChildren().setAll(axiomBorderPane);
+        } else {
+            //TODO this state should never happen, fix handling...
+            LOG.info("TODO this state should never happen, fix handling...");
+        }
         return axiomView;
     }
 
@@ -161,25 +174,31 @@ public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
 
     @Override
     public void setValue(DiTree<EntityVertex> value) {
-        this.axiomTree = axiomTree;
+        this.axiomTree = (DiTreeEntity) value;
         ClauseView clauseView = new ClauseView(axiomTree.root(), this);
         borderPane.setCenter(clauseView.rootBorderPane);
     }
 
     String getEntityForAxiomsText(String prefix) {
-        if (axiomTreeSemanticVersion.referencedComponentNid() != TinkarTerm.UNINITIALIZED_COMPONENT.nid()) {
-            StringBuilder builder = new StringBuilder();
-            if (prefix != null) {
-                builder.append(prefix);
-                builder.append(": ");
+        //TODO This null check should not be necessary...
+        if (axiomTreeSemanticVersion != null) {
+            if (axiomTreeSemanticVersion.referencedComponentNid() != TinkarTerm.UNINITIALIZED_COMPONENT.nid()) {
+                StringBuilder builder = new StringBuilder();
+                if (prefix != null) {
+                    builder.append(prefix);
+                    builder.append(": ");
+                }
+                builder.append(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(axiomTreeSemanticVersion.referencedComponentNid()));
+                return builder.toString();
+            } else if (prefix != null) {
+                return prefix + ": Concept being defined";
             }
-            builder.append(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(axiomTreeSemanticVersion.referencedComponentNid()));
-            return builder.toString();
-        } else if (prefix != null) {
-            return prefix + ": Concept being defined";
+            return "Concept being defined";
+        } else {
+            LOG.info("axiomTreeSemanticVersion is null... Fix handling");
+            return "Version is not available... ";
         }
-        return "Concept being defined";
-    }
+     }
 
     public final void setPremiseTypePseudoClasses(Node node) {
         switch (premiseType) {

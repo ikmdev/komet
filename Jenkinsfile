@@ -153,7 +153,11 @@ pipeline {
                     if (isSnapshot) {
                         snapshotBranchName = BRANCH_NAME
                         if (BRANCH_NAME != "main") {
-                            snapshotBranchName = BRANCH_NAME.split("/")[1].substring(0, Math.min(BRANCH_NAME.split("/")[1].length(), 15))
+                            try {
+                                snapshotBranchName = BRANCH_NAME.split("/")[1].substring(0, Math.min(BRANCH_NAME.split("/")[1].length(), 15))
+                            } catch(Throwable th) {
+                                snapshotBranchName = BRANCH_NAME.substring(0, Math.min(BRANCH_NAME.length(), 15))
+                            }
                         }
                         jpackageAppName = "Komet-SNAPSHOT-\${NODE_NAME}-" + snapshotBranchName
                         jpackageAppVersion = pomVersion.split('\\.')[0] + "." + pomVersion.split('\\.')[1] + "."  + BUILD_NUMBER

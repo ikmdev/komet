@@ -69,15 +69,20 @@ public class ComponentIsFinalPanel<ES extends ObservableEntitySnapshot<OE, OV, E
         TinkExecutor.threadPool().execute(() -> {
             Latest<OV> latestComponent = component.getLatestVersion();
             latestComponent.ifPresent(latestVersion -> {
-                addVersionPanel(latestVersion, true);
+                Platform.runLater(() -> addVersionPanel(latestVersion, true));
             });
             for (OV contradictedVersion : latestComponent.contradictions()) {
-                addVersionPanel(contradictedVersion, true);
+                Platform.runLater(() -> addVersionPanel(contradictedVersion, true));
             }
             for (OV historicVersion : component.getHistoricVersions()) {
-                addVersionPanel(historicVersion, false);
+                if (historicVersion != null) {
+                    Platform.runLater(() -> addVersionPanel(historicVersion, false));
+                } else {
+                    // TODO this should never happen.
+                    System.out.println("TODO this should never happen. 21");
+                }
             }
-            addSemanticReferences(component, topEnclosingComponentProperty);
+            Platform.runLater(() -> addSemanticReferences(component, topEnclosingComponentProperty));
         });
     }
 

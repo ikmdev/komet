@@ -28,22 +28,17 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.NavigableSet;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -57,7 +52,7 @@ public class HierarchyController implements BasicController {
     private ChoiceBox<String> changeFilterChoiceBox;
 
     @FXML
-    private TreeView<String> hiearchyTreeView;
+    private TreeView<ConceptTreeItemRecord> hiearchyTreeView;
 
     @FXML
     private ToggleButton searchFilterToggleButton;
@@ -76,9 +71,11 @@ public class HierarchyController implements BasicController {
         clearView();
         changeFilterChoiceBox.getItems().addAll("All", "Concept", "Description", "Axiom");
         changeFilterChoiceBox.setValue("All");
-//        hiearchyTreeView.setCellFactory(stringTreeView -> new HierarchyTreeCell());
+        hiearchyTreeView.setCellFactory(param -> new HierarchyTreeCell());
+
         // provide a root tree item
-        TreeItem<String> rootTreeItem = new TreeItem<>("root");
+        TreeItem<ConceptTreeItemRecord> rootTreeItem = new TreeItem<>();
+        rootTreeItem.setValue(new ConceptTreeItemRecord(0, "root", "", "", null));
         hiearchyTreeView.setRoot(rootTreeItem);
         hiearchyTreeView.setShowRoot(false);
         rootTreeItem.setExpanded(true);
@@ -88,7 +85,9 @@ public class HierarchyController implements BasicController {
         timelineRangeChangeCoordinateSet.clear();
     }
     public void clearView() {
-        hiearchyTreeView.getRoot().getChildren().clear();
+        if (hiearchyTreeView.getRoot() != null) {
+            hiearchyTreeView.getRoot().getChildren().clear();
+        }
     }
 
     private boolean isFilterSelected(String ...value) {
@@ -133,21 +132,24 @@ public class HierarchyController implements BasicController {
      */
     public void updateView() {
         if (getViewProperties() == null || getEntityFacade() == null) return;
+        if (isUpdatingTreeView) return;
+        isUpdatingTreeView = true;
         // Clear VBox of rows
         clearView();
+        String conceptShow = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(getEntityFacade().nid());
 
         NavigableSet<Long> datePointsEpochMillis = extractEpochTimeMillis();
         if (datePointsEpochMillis.size() == 0) {
             // show the current navigation
-            System.out.println("show the current navigation now");
+            System.out.println("Shows the current navigation (as of now) concept: " + conceptShow);
             updateHierarchy();
         } else if (datePointsEpochMillis.size() == 1) {
             // range date will be change date to now.
-            System.out.println("show range diff of one (past) date point to now.");
+            System.out.println("show range diff of one (past) date point to latest datetime (now). concept: " + conceptShow);
             updateHierarchy(datePointsEpochMillis.first());
         } else {
             // take start point and end point and diff them.
-            System.out.println("show range diff of past Point and latest Point.");
+            System.out.println("show range diff of past Point (lower range slider) and latest Point (upper range slider). concept: " + conceptShow);
             updateHierarchy(datePointsEpochMillis.last(), datePointsEpochMillis.first());
         }
     }
@@ -164,6 +166,7 @@ public class HierarchyController implements BasicController {
         }
         return times.descendingSet();
     }
+
     private void updateHierarchy(long pastEpochMillis, long latestEpochMillis) {
         ViewCalculator viewCalculator = getViewProperties().calculator();
 
@@ -192,28 +195,62 @@ public class HierarchyController implements BasicController {
         Set<Integer> sameNewInFutureSet = futureParentSet.stream().filter(e -> pastParentSet.contains(e)).collect(Collectors.toSet());
         Set<Integer> retiredInFutureSet = pastParentSet.stream().filter(e -> !futureParentSet.contains(e)).collect(Collectors.toSet());
 
-        TreeItem<String> root = hiearchyTreeView.getRoot();
-
         //
-
-        addConceptTreeItems(root, latestViewCalculator, latestEpochMillis,"ADDED", "added", addedNewInFutureSet);
-        addConceptTreeItems(root, latestViewCalculator,   pastMillis,    "", "", sameNewInFutureSet);
-        addConceptTreeItems(root, pastViewCalculator  , latestEpochMillis,"RETIRED", "retired", retiredInFutureSet);
-
-        // Create the main concept selected.
-        TreeItem<String> conceptSelected = new TreeItem<>(conceptName); //
-        conceptSelected.setExpanded(true);
-        root.getChildren().add(conceptSelected);
+        CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>>  addedParentFuture = addConceptTreeItems(latestViewCalculator, latestEpochMillis,"ADDED", "added", addedNewInFutureSet);
+        CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>>  existingParentFuture = addConceptTreeItems(latestViewCalculator,   pastMillis,    "", "", sameNewInFutureSet);
+        CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>>  retiredParentFuture = addConceptTreeItems(pastViewCalculator  , latestEpochMillis,"RETIRED", "retired", retiredInFutureSet);
 
         final Set<Integer> futureChildrenSet = new TreeSet<>(latestChildrenOfconcept.intStream().boxed().toList());
         final Set<Integer> pastChildrenSet = new TreeSet<>(pastChildrenOfconcept.intStream().boxed().toList());
-        addedNewInFutureSet = futureChildrenSet.stream().filter(e -> !pastChildrenSet.contains(e)).collect(Collectors.toSet());
-        sameNewInFutureSet = futureChildrenSet.stream().filter(e -> pastChildrenSet.contains(e)).collect(Collectors.toSet());
-        retiredInFutureSet = pastChildrenSet.stream().filter(e -> !futureChildrenSet.contains(e)).collect(Collectors.toSet());
 
-        addConceptTreeItems(conceptSelected, latestViewCalculator, latestEpochMillis,"ADDED", "added", addedNewInFutureSet);
-        addConceptTreeItems(conceptSelected, latestViewCalculator, pastMillis,    "", "", sameNewInFutureSet);
-        addConceptTreeItems(conceptSelected, pastViewCalculator, latestEpochMillis,"RETIRED", "retired", retiredInFutureSet);
+        Set<Integer> addedChildrenInFutureSet = futureChildrenSet.stream().filter(e -> !pastChildrenSet.contains(e)).collect(Collectors.toSet());
+        Set<Integer> sameChildrenInFutureSet = futureChildrenSet.stream().filter(e -> pastChildrenSet.contains(e)).collect(Collectors.toSet());
+        Set<Integer> retiredChildrenInFutureSet = pastChildrenSet.stream().filter(e -> !futureChildrenSet.contains(e)).collect(Collectors.toSet());
+
+        CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>>  addedChildrenFuture = addConceptTreeItems(latestViewCalculator, latestEpochMillis,"ADDED", "added", addedChildrenInFutureSet);
+        CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>>  existingChildrenFuture = addConceptTreeItems(latestViewCalculator, pastMillis,    "", "", sameChildrenInFutureSet);
+        CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>>  retiredChildrenFuture = addConceptTreeItems(pastViewCalculator, latestEpochMillis,"RETIRED", "retired", retiredChildrenInFutureSet);
+
+        CompletableFuture<TreeItem<String>>[] futures = new CompletableFuture[] {
+                addedParentFuture, existingParentFuture, retiredParentFuture,
+                addedChildrenFuture, existingChildrenFuture, retiredChildrenFuture
+        };
+        final String latestConceptDateStr = simpleDateStr(latestEpochMillis);
+        // when all queries are completed add to the tree node.
+        CompletableFuture
+            .allOf(futures)
+            .whenComplete((result, throwable) -> {
+                if (throwable != null) {
+                    isUpdatingTreeView = false;
+                    throw new RuntimeException(throwable);
+                }
+                // build root concept
+                Platform.runLater(() ->{
+                    try {
+                        List<TreeItem<ConceptTreeItemRecord>> rootChildren = hiearchyTreeView.getRoot().getChildren();
+                        rootChildren.addAll(addedParentFuture.get());
+                        rootChildren.addAll(existingParentFuture.get());
+                        rootChildren.addAll(retiredParentFuture.get());
+                        TreeItem<ConceptTreeItemRecord> conceptSelected = new TreeItem<>(); //
+                        conceptSelected.setValue(new ConceptTreeItemRecord(getEntityFacade().nid(), conceptName, latestConceptDateStr,"", "concept"));
+                        conceptSelected.setExpanded(true);
+                        rootChildren.add(conceptSelected);
+
+                        List<TreeItem<ConceptTreeItemRecord>> conceptChildren = conceptSelected.getChildren();
+                        conceptChildren.addAll(addedChildrenFuture.get());
+                        conceptChildren.addAll(existingChildrenFuture.get());
+                        conceptChildren.addAll(retiredChildrenFuture.get());
+
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    } catch (ExecutionException e) {
+                        throw new RuntimeException(e);
+                    } finally {
+                        hiearchyTreeView.refresh();
+                        isUpdatingTreeView = false;
+                    }
+                });
+        });
     }
 
     private void updateHierarchy(long pastEpochMillis) {
@@ -226,15 +263,21 @@ public class HierarchyController implements BasicController {
             dateStr = dateStr.substring(0, 5) + "-" + dateStr.substring(8);
             return dateStr;
         } catch (Throwable th) {
-            th.printStackTrace();
             String dateStr = DateTimeUtil.format(System.currentTimeMillis(), DATE_POINT_FORMATTER);
             dateStr = dateStr.substring(0, 5) + "-" + dateStr.substring(8);
+            LOG.error("Error date from this MM-dd-yyyy formatting date using epochTime: %s format to: %s, defaulted to System.currentTimeMillis() or %s".formatted(epochTime,
+                    DateTimeUtil.format(epochTime, DATE_POINT_FORMATTER),
+                    dateStr), th);
             return dateStr;
         }
 
     }
-
+    private volatile boolean isUpdatingTreeView = false;
+    /**
+     * Query the database to display the latest view of the concept's parents and children.
+     */
     private void updateHierarchy() {
+
         ViewCalculator viewCalculator = getViewProperties().calculator();
         long latestMillis = System.currentTimeMillis();
         StampCoordinateRecord latestStampCoordinate = viewCalculator.vertexStampCalculator().filter().withStampPositionTime(latestMillis);
@@ -245,32 +288,66 @@ public class HierarchyController implements BasicController {
         IntIdList latestChildrenOfconcept = latestViewCalculator.navigationCalculator().childrenOf(getEntityFacade().nid());
         String conceptName = latestViewCalculator.getPreferredDescriptionTextWithFallbackOrNid(getEntityFacade().nid());
 
-        TreeItem<String> root = hiearchyTreeView.getRoot();
-
-        addConceptTreeItems(root, viewCalculator, latestMillis, "", null, new TreeSet<>(latestParentsOfconcept.intStream().boxed().toList()));
-
-        // Create the main concept selected.
-        TreeItem<String> conceptSelected = new TreeItem<>(conceptName); //
-        root.getChildren().add(conceptSelected);
-        conceptSelected.setExpanded(true);
+        CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>> parentTreeItems = addConceptTreeItems(viewCalculator, latestMillis, "", null, new TreeSet<>(latestParentsOfconcept.intStream().boxed().toList()));
 
         // Add children concepts
+        CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>> childrenTreeItems = addConceptTreeItems(latestViewCalculator, latestMillis, null, null, new TreeSet<>(latestChildrenOfconcept.intStream().boxed().toList()));
+        CompletableFuture
+                .allOf(parentTreeItems, childrenTreeItems)
+                .whenComplete((result, throwable)-> {
+                    if (throwable != null) {
+                        isUpdatingTreeView = false;
+                        throw new RuntimeException(throwable);
+                    }
+            Platform.runLater(() ->{
+                List<TreeItem<ConceptTreeItemRecord>> rootChildren = hiearchyTreeView.getRoot().getChildren();
+                try {
+                    // Add parents (appear as siblings)
+                    rootChildren.addAll(parentTreeItems.get());
 
-        addConceptTreeItems(conceptSelected, latestViewCalculator, latestMillis, null, null, new TreeSet<>(latestChildrenOfconcept.intStream().boxed().toList()));
+                    // Create the main concept selected.
+                    TreeItem<ConceptTreeItemRecord> conceptSelected = new TreeItem<>(); //
+                    conceptSelected.setValue(new ConceptTreeItemRecord(getEntityFacade().nid(), conceptName, simpleDateStr(latestMillis), "", "concept"));
+                    rootChildren.add(conceptSelected);
+                    conceptSelected.setExpanded(true);
+
+                    // Add children to the main concept
+                    conceptSelected.getChildren().addAll(childrenTreeItems.get());
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    hiearchyTreeView.refresh();
+                    isUpdatingTreeView = false;
+                }
+
+            });
+        });
     }
 
-    private void addConceptTreeItems(TreeItem<String> parentTreeNode, ViewCalculator viewCalculator, long epochTime, String transaction, String styleClasses, Set<Integer> conceptNids) {
-        conceptNids.forEach(nid -> {
-            String conceptTitle = viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(nid);
-            String dateStr = simpleDateStr(epochTime);
-            TreeItem<String> treeItem = new TreeItem<>("");
-            //treeItem.setValue(transaction + conceptTitle);
-            String[] styleClassesArray = null;
-            if (styleClasses != null && styleClasses.trim().length() > 0) {
-                styleClassesArray =  styleClasses.split("\\.");
-            }
-            treeItem.setGraphic(createTreeCellGraphic(conceptTitle, dateStr, transaction, styleClassesArray));
-            parentTreeNode.getChildren().add(treeItem);
+    private CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>> addConceptTreeItems(ViewCalculator viewCalculator,
+                                                                                 long epochTime,
+                                                                                 String transaction,
+                                                                                 String styleClasses,
+                                                                                 Set<Integer> conceptNids) {
+        // This now uses async threads off of the application thread.
+        Comparator<TreeItem<ConceptTreeItemRecord>> c = (treeItem1, treeItem2) -> treeItem1.getValue().conceptTitle().compareTo(treeItem2.getValue().conceptTitle());
+        return CompletableFuture.supplyAsync( () -> {
+            final TreeSet<TreeItem<ConceptTreeItemRecord>> treeItems = new TreeSet<>(c);
+            conceptNids.forEach(nid -> {
+                String conceptTitle = viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(nid);
+                String dateStr = simpleDateStr(epochTime);
+                TreeItem<ConceptTreeItemRecord> treeItem = new TreeItem<>();
+                String[] styleClassesArray = null;
+                if (styleClasses != null && styleClasses.trim().length() > 0) {
+                    styleClassesArray =  styleClasses.split("\\.");
+                }
+                // display graphic instead of text.
+                treeItem.setValue(new ConceptTreeItemRecord(nid, conceptTitle, dateStr, transaction, styleClassesArray));
+                treeItems.add(treeItem);
+            });
+            return treeItems;
         });
     }
 
@@ -284,59 +361,6 @@ public class HierarchyController implements BasicController {
         System.out.println(styleClassesArray);
         String dateStr = simpleDateStr(System.currentTimeMillis());
         System.out.println(dateStr);
-    }
-    /**
-     *  [disclosure] [icon] [concept text] [date badge]
-     * @param conceptTitle
-     * @param date
-     * @return
-     */
-    private HBox createTreeCellGraphic(String conceptTitle, String date, String transaction, String ...states) {
-
-        HBox treeItemDisplay = new HBox();
-        treeItemDisplay.setAlignment(Pos.CENTER_LEFT);
-        treeItemDisplay.setMaxWidth(Double.MAX_VALUE);
-        treeItemDisplay.setPrefWidth(200.0);
-        treeItemDisplay.setSpacing(5.0);
-        treeItemDisplay.getStyleClass().add("node-cell");
-        HBox.setHgrow(treeItemDisplay, Priority.ALWAYS);
-
-        // Concept circle
-        Region icon = new Region();
-        HBox.setMargin(icon, new Insets(0,0,3, 0));
-        icon.getStyleClass().addAll("icon", "circle");
-        treeItemDisplay.getChildren().add(icon);
-
-        // Label
-        Label conceptTitleLabel = new Label(conceptTitle);
-        conceptTitleLabel.setPrefWidth(255.0);
-        conceptTitleLabel.setMaxWidth(Double.MAX_VALUE);
-        Tooltip.install(conceptTitleLabel, new Tooltip(conceptTitle));
-        conceptTitleLabel.getStyleClass().add("title-text");
-        HBox.setHgrow(conceptTitleLabel, Priority.ALWAYS);
-        treeItemDisplay.getChildren().add(conceptTitleLabel);
-
-        // Transaction badge
-//        Label transactionLabel = new Label(transaction);
-//        if (states != null && states.length > 0) {
-//            transactionLabel.getStyleClass().addAll(states);
-//        }
-//        transactionLabel.setPrefSize(16, 58);
-//        HBox.setHgrow(transactionLabel, Priority.ALWAYS);
-//        treeItemDisplay.getChildren().add(transactionLabel);
-
-        // Date badge
-        Label dateLabel = new Label(date);
-        dateLabel.getStyleClass().addAll("date-text");
-        if (states != null && states.length > 0) {
-            dateLabel.getStyleClass().addAll(states);
-        }
-        dateLabel.setPrefSize(16, 58);
-        HBox.setHgrow(dateLabel, Priority.ALWAYS);
-        treeItemDisplay.getChildren().add(dateLabel);
-
-
-        return treeItemDisplay;
     }
 
     @FXML
@@ -362,7 +386,11 @@ public class HierarchyController implements BasicController {
      * @param changeCoordinates
      */
     public void diffNavigationGraph(Set<ChangeCoordinate> changeCoordinates) {
-        timelineRangeChangeCoordinateSet = changeCoordinates;
-        updateView();
+        if (timelineRangeChangeCoordinateSet != null && timelineRangeChangeCoordinateSet.size()>0 && timelineRangeChangeCoordinateSet.containsAll(changeCoordinates)) {
+            timelineRangeChangeCoordinateSet = changeCoordinates;
+            updateView();
+        } else {
+            timelineRangeChangeCoordinateSet = changeCoordinates;
+        }
     }
 }

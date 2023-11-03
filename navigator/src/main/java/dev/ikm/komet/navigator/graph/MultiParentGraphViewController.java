@@ -30,14 +30,15 @@ import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.navigator.graph.treetasks.ExpandTask;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.alert.AlertCategory;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertType;
+import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.common.util.broadcast.Subscriber;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.stamp.StampPathImmutable;
@@ -71,7 +72,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.primitive.IntList;
 import org.eclipse.collections.api.list.primitive.MutableIntList;
 import org.eclipse.collections.api.set.primitive.MutableIntSet;
 import org.eclipse.collections.impl.factory.primitive.IntLists;
@@ -279,12 +279,21 @@ public class MultiParentGraphViewController implements RefreshListener {
     private void onSelectionChanged(ListChangeListener.Change<? extends TreeItem<ConceptFacade>> c) {
         ActivityStream activityStream = this.activityStreamProperty.get();
         if (activityStream != null) {
-            EntityFacade[] selectionArray = new EntityFacade[c.getList().size()];
-            int i = 0;
-            for (TreeItem<ConceptFacade> treeItem : c.getList()) {
-                selectionArray[i++] = treeItem.getValue();
+//            EntityFacade[] selectionArray = new EntityFacade[c.getList().size()];
+//            int i = 0;
+//            for (TreeItem<ConceptFacade> treeItem : c.getList()) {
+//                selectionArray[i++] = treeItem.getValue();
+//            }
+//            activityStream.dispatch(selectionArray);
+//            LOG.atTrace().log("Selected: " + c.getList());
+            EntityFacade[] selectionArray = new EntityFacade[0];
+            c.getList().stream()
+                    .filter(treeItem -> treeItem!=null && treeItem.getValue() instanceof EntityFacade)
+                    .map(treeItem -> treeItem.getValue()).toList().toArray(selectionArray);
+
+            if (selectionArray != null && selectionArray.length > 0) {
+                activityStream.dispatch(selectionArray);
             }
-            activityStream.dispatch(selectionArray);
             LOG.atTrace().log("Selected: " + c.getList());
         }
     }
@@ -468,16 +477,14 @@ public class MultiParentGraphViewController implements RefreshListener {
         });
     }
 
-    public void expandAndSelect(IntList expansionPath) {
+    public void expandAndSelect(IntIdList expansionPath) {
         boolean foundRoot = false;
         for (TreeItem<ConceptFacade> rootConcept : rootTreeItem.getChildren()) {
             MultiParentVertexImpl viewRoot = (MultiParentVertexImpl) rootConcept;
             if (viewRoot.getConceptNid() == expansionPath.get(0)) {
                 foundRoot = true;
-                viewRoot.addChildrenNow();
-                viewRoot.setExpanded(true);
-                ExpandTask expandTask = new ExpandTask(viewRoot, expansionPath, 1);
-                Platform.runLater(TaskWrapper.make(expandTask));
+                ExpandTask expandTask = new ExpandTask(this, expansionPath);
+                TinkExecutor.threadPool().execute(TaskWrapper.make(expandTask));
             }
         }
         if (!foundRoot) {
@@ -672,7 +679,7 @@ public class MultiParentGraphViewController implements RefreshListener {
         return rootTreeItem;
     }
 
-    protected Navigator getNavigator() {
+    public Navigator getNavigator() {
         return navigatorProperty.get();
     }
 
@@ -692,40 +699,6 @@ public class MultiParentGraphViewController implements RefreshListener {
         graphNavigatorNode.dispatchAlert(alertObject);
     }
 
-    private class ExpandTask extends TrackingCallable<Void> {
-
-        final IntList expansionPath;
-        final int pathIndex;
-        final MultiParentVertexImpl currentItem;
-
-        public ExpandTask(MultiParentVertexImpl currentItem, IntList expansionPath, int pathIndex) {
-            this.currentItem = currentItem;
-            this.expansionPath = expansionPath;
-            this.pathIndex = pathIndex;
-        }
-
-        @Override
-        protected Void compute() throws Exception {
-            treeView.scrollTo(treeView.getRow(currentItem));
-            treeView.getSelectionModel().clearSelection();
-            treeView.getSelectionModel().select(currentItem);
-            if (pathIndex < expansionPath.size()) {
-                int childNidToMatch = expansionPath.get(pathIndex);
-                for (TreeItem child : currentItem.getChildren()) {
-                    MultiParentVertexImpl childItem = (MultiParentVertexImpl) child;
-                    if (childItem.getConceptNid() == childNidToMatch) {
-                        childItem.addChildrenNow();
-                        currentItem.setExpanded(true);
-                        Platform.runLater(TaskWrapper.make(
-                                new MultiParentGraphViewController.ExpandTask(childItem, expansionPath, pathIndex + 1)));
-                        break;
-                    }
-                }
-            }
-            return null;
-        }
-
-    }
 
 
     //~--- get methods ---------------------------------------------------------
@@ -738,6 +711,8 @@ public class MultiParentGraphViewController implements RefreshListener {
         }
 
         private void handleChange(int nid, MultiParentVertexImpl treeItem) {
+            // TODO: Change could be a semantic, concept, pattern, or stamp...
+            // Need to decide how (or if) to handle STAMP. Do we look at the versions and see if the stamp matches?
             if (treeItem.getConceptNid() == nid) {
                 // Update description if desc changed
                 treeItem.invalidate();

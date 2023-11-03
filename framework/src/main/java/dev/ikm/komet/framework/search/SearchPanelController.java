@@ -106,7 +106,7 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
         searchTreeView.setCellFactory(param -> new SearchResultCell());
 
         resultsLayoutCombo.getItems().addAll(RESULT_LAYOUT_OPTIONS.values());
-        resultsLayoutCombo.getSelectionModel().select(RESULT_LAYOUT_OPTIONS.MATCHED_SEMANTIC_SCORE);
+        resultsLayoutCombo.getSelectionModel().select(RESULT_LAYOUT_OPTIONS.TOP_COMPONENT_SEMANTIC_SCORE);
         resultsLayoutCombo.setOnAction(event ->{
             doSearch(event);
             clearDropDown();
@@ -148,7 +148,7 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
                                     .toSortedList((o1, o2) -> Float.compare(o2.score(), o1.score()))
                                     .toImmutable();
 
-                            for (LatestVersionSearchResult result : getSemanticsWithUniqueStampNids(resultsSortedOnScore)) {
+                            for (LatestVersionSearchResult result : resultsSortedOnScore) {
                                 tempRoot.getChildren().add(new TreeItem<>(result));
                             }
                         }
@@ -159,7 +159,7 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
                                         String string2 = (String) o2.latestVersion().get().fieldValues().get(o2.fieldIndex());
                                         return NaturalOrder.compareStrings(string1, string2);
                                     }).toImmutable();
-                            for (LatestVersionSearchResult result : getSemanticsWithUniqueStampNids(resultsSortedOnNaturalOrder)) {
+                            for (LatestVersionSearchResult result : resultsSortedOnNaturalOrder) {
                                 tempRoot.getChildren().add(new TreeItem<>(result));
                             }
                         }
@@ -170,7 +170,7 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
                                         String string2 = (String) o2.latestVersion().get().fieldValues().get(o2.fieldIndex());
                                         return NaturalOrder.compareStrings(string1, string2);
                                     }).toImmutableList();
-                            populateTempRoot(tempRoot, getSemanticsWithUniqueStampNids(resultsTopComponentNaturalOrder));
+                            populateTempRoot(tempRoot, resultsTopComponentNaturalOrder);
                             tempRoot.getChildren().sort((o1, o2) ->
                                     NaturalOrder.compareStrings(o1.getValue().toString(),
                                             o2.getValue().toString()));
@@ -183,7 +183,7 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
                             ImmutableList<LatestVersionSearchResult> resultsTopComponentScoreOrder = results
                                     .toSortedList((o1, o2) -> Float.compare(o2.score(), o1.score()))
                                     .toImmutableList();
-                            populateTempRoot(tempRoot, getSemanticsWithUniqueStampNids(resultsTopComponentScoreOrder));
+                            populateTempRoot(tempRoot, resultsTopComponentScoreOrder);
                             for (TreeItem<Object> topItem : tempRoot.getChildren()) {
                                 topItem.getChildren().sort((o1, o2) ->
                                         Float.compare(((LatestVersionSearchResult) o1.getValue()).score(),
@@ -201,21 +201,6 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
                 }
             });
         }
-    }
-
-    private ImmutableList<LatestVersionSearchResult> getSemanticsWithUniqueStampNids(ImmutableList<LatestVersionSearchResult> results) {
-        final Set<Integer> uniqueStampNids = new HashSet<>();
-        final MutableList<LatestVersionSearchResult> uniqueResults = Lists.mutable.empty();
-        results
-                .stream()
-                .forEach((x) -> {
-                    int stampNid = x.latestVersion().get().stampNid();
-                    if (!uniqueStampNids.contains(stampNid)) {
-                        uniqueStampNids.add(stampNid);
-                        uniqueResults.add(x);
-                    }
-                });
-        return uniqueResults.toImmutable();
     }
 
     private void clearDropDown() {
