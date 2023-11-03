@@ -28,6 +28,7 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.layout.BorderPane;
@@ -47,6 +48,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
 
     protected final SimpleObjectProperty<EntityFacade> entityFocusProperty = new SimpleObjectProperty<>();
     protected FlowSubscriber<Integer> invalidationSubscriber;
+    protected ChangeListener<EntityFacade> entityFocusChangeListener;
     protected static final String CONCEPT_DETAILS_VIEW_FXML_FILE = "amplify-details.fxml";
 
     protected static final String STYLE_ID = "amplify-details-node";
@@ -139,6 +141,9 @@ public class DetailsNode extends ExplorationNodeAbstract {
             // setup view and controller into details controller
             detailsViewController.attachTimelineViewSlideoutTray(this.timelineViewBorderPane);
 
+            // add callback to close bound listeners
+            detailsViewController.setOnCloseConceptWindow((detailsController -> close()));
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -149,9 +154,8 @@ public class DetailsNode extends ExplorationNodeAbstract {
      * @param viewProperties
      */
     private void registerListeners(ViewProperties viewProperties) {
-
-        // When a new entity is selected populate the view. An entity has been selected upstream (activity stream)
-        this.entityFocusProperty.addListener((observable, oldEntityFacade, newEntityFacade) -> {
+        // remove later when closing
+        this.entityFocusChangeListener = (observable, oldEntityFacade, newEntityFacade) -> {
             if (newEntityFacade != null) {
                 titleProperty.set(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(newEntityFacade));
                 toolTipTextProperty.set(viewProperties.calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(newEntityFacade));
@@ -188,7 +192,10 @@ public class DetailsNode extends ExplorationNodeAbstract {
                 getDetailsViewController().clearView();
                 getPropertiesViewController().clearView();
             }
-        });
+        };
+
+        // When a new entity is selected populate the view. An entity has been selected upstream (activity stream)
+        this.entityFocusProperty.addListener(this.entityFocusChangeListener);
 
         // If database updates the underlying entity, this will do a force update of the UI.
         this.invalidationSubscriber = new FlowSubscriber<>(nid -> {
@@ -201,7 +208,6 @@ public class DetailsNode extends ExplorationNodeAbstract {
 
         // Register to the Entity Service
         Entity.provider().addSubscriberWithWeakReference(this.invalidationSubscriber);
-
     }
 
     protected void revertDetailsPreferences() {
@@ -280,7 +286,9 @@ public class DetailsNode extends ExplorationNodeAbstract {
 
     @Override
     public void close() {
-
+        LOG.info("Closing DetailsNode Concept nid: " + this.entityFocusProperty.get().nid());
+        this.entityFocusProperty.removeListener(this.entityFocusChangeListener);
+        Entity.provider().removeSubscriber(this.invalidationSubscriber);
     }
 
     @Override

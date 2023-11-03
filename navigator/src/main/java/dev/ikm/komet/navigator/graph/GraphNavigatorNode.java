@@ -53,7 +53,9 @@ public class GraphNavigatorNode extends ExplorationNodeAbstract {
             selectedItems.addListener((ListChangeListener.Change<? extends TreeItem<ConceptFacade>> c) -> {
                 MutableList<EntityFacade> selectedItemList = Lists.mutable.empty();
                 for (TreeItem<ConceptFacade> item : c.getList()) {
-                    selectedItemList.add(item.getValue());
+                    if (item != null && item.getValue() != null) {
+                        selectedItemList.add(item.getValue());
+                    }
                 }
                 dispatchActivity(selectedItemList.toImmutable());
             });
@@ -118,6 +120,6 @@ public class GraphNavigatorNode extends ExplorationNodeAbstract {
     }
 
     enum NavigatorKeys {
-        
+
     }
 }

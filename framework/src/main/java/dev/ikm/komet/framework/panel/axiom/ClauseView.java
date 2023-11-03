@@ -239,29 +239,35 @@ public class ClauseView {
     }
 
     private void setupForDefinitionRoot() {
-        rootBorderPane.getStyleClass()
-                .add(StyleClasses.DEF_ROOT.toString());
-        rootBorderPane.setBorder(ROOT_BORDER);
-        titleLabel.setText(axiomView.getEntityForAxiomsText(null));
-        Latest<EntityVersion> latest = calculator().latest(axiomView.getEntityBeingDefinedNid());
-        if (latest.isPresent()) {
-            titleLabel.setGraphic(computeGraphic(axiomTreeSemanticVersion().referencedComponentNid(), false,
-                    latest.get().stamp().state(), viewProperties(), this.axiomView.premiseType));
-            rootBorderPane.pseudoClassStateChanged(INACTIVE_PSEUDO_CLASS, !latest.get().active());
-            titleLabel.pseudoClassStateChanged(INACTIVE_PSEUDO_CLASS, !latest.get().active());
-            rootGridPane.pseudoClassStateChanged(INACTIVE_PSEUDO_CLASS, !latest.get().active());
+        // TODO should never be null, need better handling.
+        if (this.axiomTreeSemanticVersion() != null) {
+            rootBorderPane.getStyleClass()
+                    .add(StyleClasses.DEF_ROOT.toString());
+            rootBorderPane.setBorder(ROOT_BORDER);
+            titleLabel.setText(axiomView.getEntityForAxiomsText(null));
+            Latest<EntityVersion> latest = calculator().latest(axiomView.getEntityBeingDefinedNid());
+            if (latest.isPresent()) {
+                titleLabel.setGraphic(computeGraphic(axiomTreeSemanticVersion().referencedComponentNid(), false,
+                        latest.get().stamp().state(), viewProperties(), this.axiomView.premiseType));
+                rootBorderPane.pseudoClassStateChanged(INACTIVE_PSEUDO_CLASS, !latest.get().active());
+                titleLabel.pseudoClassStateChanged(INACTIVE_PSEUDO_CLASS, !latest.get().active());
+                rootGridPane.pseudoClassStateChanged(INACTIVE_PSEUDO_CLASS, !latest.get().active());
+            } else {
+                titleLabel.setGraphic(computeGraphic(axiomTreeSemanticVersion().referencedComponentNid(), false,
+                        State.PRIMORDIAL, viewProperties(), this.axiomView.premiseType));
+            }
+
+            titleLabel.setContextMenu(getContextMenu());
+            int column = 0;
+            this.axiomView.addToGridPaneNoGrow(rootGridPane, expandButton, column++);
+            this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
+            if (this.axiomView.premiseType == STATED) {
+                this.axiomView.addToGridPaneNoGrow(rootGridPane, editButton, column++);
+            }
         } else {
-            titleLabel.setGraphic(computeGraphic(axiomTreeSemanticVersion().referencedComponentNid(), false,
-                    State.PRIMORDIAL, viewProperties(), this.axiomView.premiseType));
+            LOG.info("TODO should never be null, need better handling. 39");
         }
 
-        titleLabel.setContextMenu(getContextMenu());
-        int column = 0;
-        this.axiomView.addToGridPaneNoGrow(rootGridPane, expandButton, column++);
-        this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
-        if (this.axiomView.premiseType == STATED) {
-            this.axiomView.addToGridPaneNoGrow(rootGridPane, editButton, column++);
-        }
     }
 
     private void setupForSufficientSet() {

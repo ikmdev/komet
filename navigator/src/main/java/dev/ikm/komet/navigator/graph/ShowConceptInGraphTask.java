@@ -16,8 +16,14 @@
 package dev.ikm.komet.navigator.graph;
 
  import dev.ikm.komet.navigator.graph.MultiParentGraphViewController;
+ import dev.ikm.tinkar.common.id.IntIdList;
+ import dev.ikm.tinkar.common.id.IntIds;
+ import dev.ikm.tinkar.common.service.PrimitiveData;
  import javafx.application.Platform;
-import org.eclipse.collections.api.list.primitive.MutableIntList;
+ import org.eclipse.collections.api.factory.Lists;
+ import org.eclipse.collections.api.list.ImmutableList;
+ import org.eclipse.collections.api.list.MutableList;
+ import org.eclipse.collections.api.list.primitive.MutableIntList;
 import org.eclipse.collections.impl.factory.primitive.IntLists;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.service.TrackingCallable;
@@ -29,6 +35,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Optional;
+ import java.util.SortedSet;
+ import java.util.TreeSet;
 
 /**
  * 
@@ -52,52 +60,63 @@ public class ShowConceptInGraphTask extends TrackingCallable<Void> {
     protected Void compute() throws Exception {
         // await() init() completion.
 
-        final MutableIntList pathToRoot = IntLists.mutable.empty();
+        IntIdList pathSeed = IntIds.list.of(conceptNid);
+        ImmutableList<IntIdList> pathsToRoot = findPathsToRoot(conceptNid, Lists.immutable.of(pathSeed));
 
-        pathToRoot.add(conceptNid);
-
-        // Walk up taxonomy to origin until no parent found.
-        int currentNid = conceptNid;
-
-        while (true) {
-            Optional<? extends ConceptEntity> conceptOptional = Entity.get(currentNid);
-
-            if (!conceptOptional.isPresent()) {
-                // Must be a "pending concept".
-                // Not handled yet.
-                multiParentGraphView.dispatchAlert(AlertObject.makeWarning("Concept is not in datastore",
-                        "Could be a pending uncommitted concept: " +
-                                multiParentGraphView.getViewCalculator().getDescriptionTextOrNid(currentNid)));
-                return null;
+        SortedSet<PathToRootWithScore> sortedListsForReturn = new TreeSet<>();
+        for (IntIdList pathToRoot: pathsToRoot) {
+            int score = 0;
+            for (int pathConceptNid: pathToRoot.toArray()) {
+                IntIdList childCount = multiParentGraphView.getNavigator().getViewCalculator().unsortedUnversionedChildrenOf(pathConceptNid);
+                score += childCount.size();
             }
-
-            ConceptEntity concept = conceptOptional.get();
-
-            // Look for an IS_A relationship to origin.
-            boolean found = false;
-
-            for (int parent : multiParentGraphView.getNavigator().getParentNids(concept.nid())) {
-                currentNid = parent;
-                pathToRoot.add(currentNid);
-                found = true;
-                break;
-            }
-
-            // No parent IS_A relationship found, stop looking.
-            if (!found) {
-                if (concept.nid() != TinkarTerm.ROOT_VERTEX.nid()) {
-                    multiParentGraphView.dispatchAlert(AlertObject.makeWarning("No parents for concept",
-                            multiParentGraphView.getViewCalculator().getDescriptionTextOrNid(concept)));
+            sortedListsForReturn.add(new PathToRootWithScore(pathToRoot, score));
+        }
+        // TODO: One of the sortedListsForReturn for Urine Homocystine Measurement, did not end at Solor (ended earlier)
+        // Need to understand why. Workaround for now. Possibly data error in the parent for Amino acids measurement.
+        // 17:26:33,328 [INFO  ] t.navigator.graph.ShowConceptInGraphTask - Calculated root path: [Amino acids measurement, Homocystine measurement, Urine homocystine measurement]
+        // There are other options in the list that include SOLOR_CONCEPT, so we will find the lowest score that ends with
+        // Solor concept
+        IntIdList bestPath = sortedListsForReturn.first().pathToRoot;
+        if (bestPath.get(bestPath.size()-1) != TinkarTerm.SOLOR_CONCEPT.nid()) {
+            for (PathToRootWithScore pathToRootWithScore: sortedListsForReturn) {
+                if (pathToRootWithScore.pathToRoot.get(pathToRootWithScore.pathToRoot.size()-1)
+                        == TinkarTerm.SOLOR_CONCEPT.nid()) {
+                    bestPath = pathToRootWithScore.pathToRoot;
+                    break;
                 }
-                break;
             }
         }
 
-        final MutableIntList reversedPathToRoot = pathToRoot.reverseThis();
-        LOG.atDebug().log(() -> String.format("Calculated root path {}", Arrays.toString(reversedPathToRoot.toArray())));
-        Platform.runLater(() -> {
-            this.multiParentGraphView.expandAndSelect(reversedPathToRoot);
-        });
+
+        final IntIdList reversedPathToRoot = IntIds.list.of(IntLists.mutable.of(bestPath.toArray()).reverseThis().toArray());
+        LOG.atInfo().log(() -> String.format("Calculated root path: " + Arrays.toString(PrimitiveData.textList(reversedPathToRoot.toArray()).toArray())));
+        this.multiParentGraphView.expandAndSelect(reversedPathToRoot);
         return null;
+    }
+
+    private ImmutableList<IntIdList> findPathsToRoot(int conceptNid, ImmutableList<IntIdList> incomingLists) {
+        int[] parentNids = multiParentGraphView.getNavigator().getParentNids(conceptNid);
+        if (parentNids.length == 0) {
+            return incomingLists; // Nothing to add
+        }
+        MutableList<IntIdList> listsForReturn = Lists.mutable.ofInitialCapacity(incomingLists.size() * parentNids.length);
+
+        for (int parentNid: parentNids) {
+            MutableList<IntIdList> listsWithAddedParent = Lists.mutable.ofInitialCapacity(incomingLists.size());
+            for (IntIdList incomingList: incomingLists) {
+                listsWithAddedParent.add(incomingList.with(parentNid));
+            }
+            listsForReturn.addAll(findPathsToRoot(parentNid, listsWithAddedParent.toImmutableList()).castToList());
+        }
+        return listsForReturn.toImmutableList();
+    }
+
+    private record PathToRootWithScore(IntIdList pathToRoot, int score) implements Comparable<PathToRootWithScore> {
+
+        @Override
+        public int compareTo(PathToRootWithScore o) {
+            return Integer.compare(this.score, o.score);
+        }
     }
 }

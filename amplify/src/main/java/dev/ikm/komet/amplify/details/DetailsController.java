@@ -82,12 +82,17 @@ public class DetailsController implements Serializable {
 
     @FXML
     private Label fqnTitleText;
+    @FXML
+    private Tooltip conceptNameTooltip;
 
     @FXML
-    private Label definitionText;
+    private TextArea definitionTextArea;
 
     @FXML
     private TextField identifierText;
+
+    @FXML
+    private Tooltip identifierTooltip;
 
     @FXML
     private Text lastUpdatedText;
@@ -111,6 +116,8 @@ public class DetailsController implements Serializable {
 
     ///// Descriptions Section /////////////////////////////////
     @FXML
+    private TitledPane descriptionsTitledPane;
+    @FXML
     private Button editConceptButton;
 
     @FXML
@@ -130,21 +137,26 @@ public class DetailsController implements Serializable {
 
     ///// Axioms Section    ///////////////////
     @FXML
+    private TitledPane axiomsTitledPane;
+
+    @FXML
     private Button elppSemanticCountButton;
 
     /**
      * Responsible for holding rows of Axiom semantics as Property Sheet (SheetItem) from ControlsFX.
      */
     @FXML
-    private VBox inferredAxiomsVBox;
-    @FXML
-    private VBox statedAxiomsVBox;
+    private ScrollPane statedAxiomScrollPane;
 
-    /**
-     * This displays as rounded rectangle with a number inside. That can be pressed.
-     */
     @FXML
-    private Button editAxiomsButton;
+    private ScrollPane inferredAxiomScrollPane;
+
+    @FXML
+    private Label notAvailInferredAxiomLabel;
+
+    @FXML
+    private Label notAvailStatedAxiomLabel;
+
 
     @FXML
     private HBox conceptHeaderControlToolBarHbox;
@@ -177,7 +189,10 @@ public class DetailsController implements Serializable {
 
     @FXML
     public void initialize() {
+        Tooltip.install(identifierText, identifierTooltip);
         Tooltip.install(lastUpdatedText, authorTooltip);
+        Tooltip.install(fqnTitleText, conceptNameTooltip);
+
         clearView();
     }
 
@@ -197,9 +212,16 @@ public class DetailsController implements Serializable {
         contentViewPane.setLayoutX(-width);
         slideoutTrayPane.setMaxWidth(0);
     }
-
+    private Consumer<DetailsController> onCloseConceptWindow;
+    public void setOnCloseConceptWindow(Consumer<DetailsController> onClose) {
+        this.onCloseConceptWindow = onClose;
+    }
     @FXML
     void closeConceptWindow(ActionEvent event) {
+        LOG.info("Cleanup occurring: Closing Window with concept: " + fqnTitleText.getText());
+        if (this.onCloseConceptWindow != null) {
+            onCloseConceptWindow.accept(this);
+        }
         Pane parent = (Pane) detailsOuterBorderPane.getParent();
         parent.getChildren().remove(detailsOuterBorderPane);
     }
@@ -231,13 +253,17 @@ public class DetailsController implements Serializable {
         // TODO do a null check on the entityFacade
         // Title (FQN of concept)
         final ViewCalculator viewCalculator = viewProperties.calculator();
-        fqnTitleText.setText(viewCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade));
+        String conceptNameStr = viewCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade);
+        fqnTitleText.setText(conceptNameStr);
+        conceptNameTooltip.setText(conceptNameStr);
 
         // Definition description text
-        definitionText.setText(viewCalculator.getDefinitionDescriptionText(entityFacade.nid()).orElse(""));
+        definitionTextArea.setText(viewCalculator.getDefinitionDescriptionText(entityFacade.nid()).orElse(""));
 
         // Public ID (UUID)
-        identifierText.setText(entityFacade.publicId() != null ? entityFacade.publicId().asUuidArray()[0].toString(): "");
+        String uuidStr = entityFacade.publicId() != null ? entityFacade.publicId().asUuidArray()[0].toString(): "";
+        identifierText.setText(uuidStr);
+        identifierTooltip.setText(uuidStr);
 
         // Identicon
         Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
@@ -297,14 +323,23 @@ public class DetailsController implements Serializable {
             } else {
                 otherNamesVBox.getChildren().clear();
                 // start adding a row
-                otherNamesVBox.getChildren().add(generateOtherNameRow(semanticEntityVersion, fieldDescriptions));
+                otherNamesVBox.getChildren().addAll(generateOtherNameRow(semanticEntityVersion, fieldDescriptions));
 
                 LOG.debug("Other Names = " + semanticEntityVersion + " " + fieldDescriptions);
             }
         });
     }
 
-    private VBox generateOtherNameRow(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
+    /**
+     * Returns a list of TextFlow objects as rows of text items allowing the window to allow text
+     * to be responsive when the gets width smaller.
+     * @param semanticEntityVersion
+     * @param fieldDescriptions
+     * @return
+     */
+    private List<TextFlow> generateOtherNameRow(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
+
+        List<TextFlow> textFlows = new ArrayList<>();
         DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
         String descrSemanticStr = String.join(" | ", fieldDescriptions);
@@ -314,31 +349,36 @@ public class DetailsController implements Serializable {
         ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
         String time = DATE_TIME_FORMATTER.format(stampTime);
 
-
-        VBox rowGroup = new VBox();
+        // create textflow to hold regular name label
         TextFlow row1 = new TextFlow();
-        Label otherNameLabel = new Label(String.valueOf(semanticEntityVersion.fieldValues().get(1)));
+        Text otherNameLabel = new Text(String.valueOf(semanticEntityVersion.fieldValues().get(1)));
         otherNameLabel.getStyleClass().add("descr-concept-name");
 
-        Label semanticDescrLabel = new Label();
+        Text semanticDescrLabel = new Text();
         if (fieldDescriptions.size() > 0) {
             semanticDescrLabel.setText(" (%s)".formatted(descrSemanticStr));
             semanticDescrLabel.getStyleClass().add("descr-semantic");
         } else {
             semanticDescrLabel.setText("");
         }
+        // add the other name label and description semantic label
         row1.getChildren().addAll(otherNameLabel, semanticDescrLabel);
 
-        FlowPane row2 = new FlowPane();
-        Label dateAddedLabel = new Label("Date Added:"); dateAddedLabel.getStyleClass().add("descr-semantic");
-        Label dateLabel = new Label(time);                    dateLabel.getStyleClass().add("descr-semantic");
+        TextFlow row2 = new TextFlow();
+        Text dateAddedLabel = new Text("Date Added:");
+        dateAddedLabel.getStyleClass().add("descr-semantic");
+        Text dateLabel = new Text(time);
+        dateLabel.getStyleClass().add("descr-semantic");
 
         Hyperlink attachmentHyperlink = new Hyperlink("Attachment");
         Hyperlink commentHyperlink = new Hyperlink("Comment");
+
+        // Add the date info and additional hyperlinks
         row2.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentHyperlink);
 
-        rowGroup.getChildren().addAll(row1, row2);
-        return rowGroup;
+        textFlows.add(row1);
+        textFlows.add(row2);
+        return textFlows;
     }
 
     private void updateFQNSemantics(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
@@ -447,24 +487,25 @@ public class DetailsController implements Serializable {
      */
     private void updateAxioms() {
         // clear Axioms areas
-        inferredAxiomsVBox.getChildren().clear();
-        statedAxiomsVBox.getChildren().clear();
-
         ViewCalculator viewCalculator = viewProperties.calculator();
-
 
         // Create a SheetItem (AXIOM inferred semantic version)
         // TODO Should this be reused instead of instanciating a new one everytime?
         KometPropertySheet inferredPropertySheet = new KometPropertySheet(viewProperties, true);
         Latest<SemanticEntityVersion> inferredSemanticVersion = viewCalculator.getInferredAxiomSemanticForEntity(entityFacade.nid());
         makeSheetItem(viewProperties, inferredPropertySheet, inferredSemanticVersion);
-        inferredAxiomsVBox.getChildren().add(inferredPropertySheet);
+        inferredAxiomScrollPane.setFitToWidth(true);
+        inferredAxiomScrollPane.setFitToHeight(true);
+        inferredAxiomScrollPane.setContent(inferredPropertySheet);
+
 
         // Create a SheetItem (AXIOM stated semantic version)
         KometPropertySheet statedPropertySheet = new KometPropertySheet(viewProperties, true);
         Latest<SemanticEntityVersion> statedSemanticVersion    = viewCalculator.getStatedAxiomSemanticForEntity(entityFacade.nid());
         makeSheetItem(viewProperties, statedPropertySheet, statedSemanticVersion);
-        statedAxiomsVBox.getChildren().add(statedPropertySheet);
+        statedAxiomScrollPane.setFitToWidth(true);
+        statedAxiomScrollPane.setFitToHeight(true);
+        statedAxiomScrollPane.setContent(statedPropertySheet);
 
         //TODO discuss the blue theme color related to AXIOMs
 
@@ -486,7 +527,7 @@ public class DetailsController implements Serializable {
     public void clearView() {
         identiconImageView.setImage(null);
         //fqnTitleText.setText(""); // Defaults to 'Concept Name'. It's what is specified in Scene builder
-        definitionText.setText("");
+        definitionTextArea.setText("");
         identifierText.setText("");
         lastUpdatedText.setText("");
         moduleText.setText("");
@@ -494,8 +535,8 @@ public class DetailsController implements Serializable {
         originationText.setText("");
         statusText.setText("");
         authorTooltip.setText("");
-        //inferredAxiomsVBox.getChildren().clear(); // Defaults to 'Not Available'
-        //statedAxiomsVBox.getChildren().clear();   // Defaults to 'Not Available'
+        inferredAxiomScrollPane.setContent(notAvailInferredAxiomLabel);
+        statedAxiomScrollPane.setContent(notAvailStatedAxiomLabel);
     }
     @FXML
     private void displayEditConceptView(ActionEvent event) {
@@ -540,5 +581,12 @@ public class DetailsController implements Serializable {
     private void openReasonerSlideout(ActionEvent event) {
         ToggleButton reasonerToggle = (ToggleButton) event.getSource();
         reasonerResultsControllerConsumer.accept(reasonerToggle);
+    }
+
+    public void compactSizeWindow() {
+        descriptionsTitledPane.setExpanded(false);
+        axiomsTitledPane.setExpanded(false);
+        //581 x 242
+        detailsOuterBorderPane.setPrefSize(581, 242);
     }
 }

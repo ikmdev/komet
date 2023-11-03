@@ -88,10 +88,10 @@
         <record-builder-processor.version>34</record-builder-processor.version>
         <scenic-view.version>11.0.2</scenic-view.version>
         <slf4j.version>2.0.7</slf4j.version>
-		<log4j.version>3.0.0-alpha1</log4j.version>
+        <log4j.version>3.0.0-alpha1</log4j.version>
         <!-- Here to support existing ELK unit tests until we can remove this from the codebase by switching to ikm classifier-->
         <elk.junit.version>4.13.2</elk.junit.version>
-        <mockito.version>5.5.0</mockito.version>
+        <mockito.version>5.6.0</mockito.version>
         <common-java5.version>3.0.0-M9</common-java5.version>
         <owlapi.version>4.5.25-ikm-r1</owlapi.version>
 
@@ -414,11 +414,11 @@
             </dependency>
 
             <dependency>
-				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-slf4j2-impl</artifactId>
-				<version>${log4j.version}</version>
-				<scope>test</scope>
-			</dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j2-impl</artifactId>
+                <version>${log4j.version}</version>
+                <scope>test</scope>
+            </dependency>
 
             <dependency>
                 <groupId>org.mockito</groupId>
@@ -446,34 +446,34 @@
             </dependency>
 
             <dependency>
-				<groupId>net.sourceforge.owlapi</groupId>
-				<artifactId>owlapi-api</artifactId>
-				<version>${owlapi.version}</version>
-			</dependency>
+                <groupId>net.sourceforge.owlapi</groupId>
+                <artifactId>owlapi-api</artifactId>
+                <version>${owlapi.version}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>net.sourceforge.owlapi</groupId>
-				<artifactId>owlapi-impl</artifactId>
-				<version>${owlapi.version}</version>
-			</dependency>
+            <dependency>
+                <groupId>net.sourceforge.owlapi</groupId>
+                <artifactId>owlapi-impl</artifactId>
+                <version>${owlapi.version}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>net.sourceforge.owlapi</groupId>
-				<artifactId>owlapi-apibinding</artifactId>
-				<version>${owlapi.version}</version>
-			</dependency>
+            <dependency>
+                <groupId>net.sourceforge.owlapi</groupId>
+                <artifactId>owlapi-apibinding</artifactId>
+                <version>${owlapi.version}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>net.sourceforge.owlapi</groupId>
-				<artifactId>owlapi-parsers</artifactId>
-				<version>${owlapi.version}</version>
-			</dependency>
+            <dependency>
+                <groupId>net.sourceforge.owlapi</groupId>
+                <artifactId>owlapi-parsers</artifactId>
+                <version>${owlapi.version}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>${ikm-classifier.groupId}</groupId>
-				<artifactId>elk-owlapi4</artifactId>
-				<version>${ikm-classifier.version}</version>
-			</dependency>
+            <dependency>
+                <groupId>${ikm-classifier.groupId}</groupId>
+                <artifactId>elk-owlapi4</artifactId>
+                <version>${ikm-classifier.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -482,13 +482,13 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-		</dependency>
+        </dependency>
 
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j2-impl</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -535,7 +535,6 @@
                     <source>21</source>
                     <target>21</target>
                     <compilerArgs>
-<!--                        <arg>&#45;&#45;enable-preview</arg>-->
                         <arg>-parameters</arg>
                     </compilerArgs>
                     <annotationProcessorPaths>

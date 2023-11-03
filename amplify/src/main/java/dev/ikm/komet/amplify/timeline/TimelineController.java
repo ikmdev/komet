@@ -682,12 +682,12 @@ public class TimelineController implements BasicController {
         int firstYear = parseYear(datePoints.first());
         int endYear = parseYear(datePoints.last());
 
-        System.out.println("====> IntStream.range(%s, %s);".formatted(firstYear, endYear));
         int nowYear = parseYear(System.currentTimeMillis());
         if (endYear > nowYear) {
             endYear = nowYear;
         }
         if (firstYear > 1970 && endYear > firstYear) {
+            LOG.info("====> IntStream.range(%s, %s);".formatted(firstYear, endYear));
             IntStream yearRange = IntStream.range(firstYear, endYear);
             Set<Integer> allYears = yearRange.boxed().collect(Collectors.toSet());
             // Fill in missing years for extensions (modules) not having date points.

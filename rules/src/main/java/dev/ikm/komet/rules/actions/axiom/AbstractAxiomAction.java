@@ -76,6 +76,8 @@ public abstract class AbstractAxiomAction extends AbstractActionSuggested {
             SemanticVersionRecord newSemanticVersion = new SemanticVersionRecord(semanticContainingAxiom, stampEntity.nid(), Lists.immutable.of(newTree));
             SemanticRecord analogue = semanticContainingAxiom.with(newSemanticVersion).build();
             Entity.provider().putEntity(analogue);
+            //TODO need to surface transactions in the journal, then turn off this "auto commit"...
+            transaction.commit();
         }, () -> {
             throw new IllegalStateException("No latest pattern version for: " + Entity.getFast(TINKAR_BASE_MODEL_COMPONENT_PATTERN));
         });

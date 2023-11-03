@@ -42,6 +42,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.concurrent.CountDownLatch;
+import java.util.regex.Pattern;
 
 /**
  * A {@link TreeItem} for modeling nodes in ISAAC taxonomies.
@@ -49,7 +50,7 @@ import java.util.concurrent.CountDownLatch;
  * The {@code MultiParentGraphItemImpl} is not a visual component. The
  * {@code MultiParentGraphCell} provides the rendering for this tree item.
  *
- * 
+ *
  * @author ocarlsen
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  * @see MultiParentGraphCell
@@ -57,6 +58,7 @@ import java.util.concurrent.CountDownLatch;
 public class MultiParentVertexImpl
         extends TreeItem<ConceptFacade>
         implements MultiParentVertex, Comparable<MultiParentVertexImpl> {
+    private static final Pattern intPattern = Pattern.compile("^-?[0-9]+$");
 
     /**
      * The Constant LOG.
@@ -78,18 +80,18 @@ public class MultiParentVertexImpl
     private LeafStatus leafStatus = LeafStatus.UNKNOWN;
 
     //~--- constructors --------------------------------------------------------
-    MultiParentVertexImpl(MultiParentGraphViewController graphController) {
+    public MultiParentVertexImpl(MultiParentGraphViewController graphController) {
         super();
         this.graphController = graphController;
         this.nid = Integer.MAX_VALUE;
         this.typeNids = IntIds.set.of(TinkarTerm.UNINITIALIZED_COMPONENT.nid());
     }
 
-    MultiParentVertexImpl(int conceptNid, MultiParentGraphViewController graphController, IntIdSet typeNids) {
+    public MultiParentVertexImpl(int conceptNid, MultiParentGraphViewController graphController, IntIdSet typeNids) {
         this(Entity.getFast(conceptNid), graphController, typeNids, null);
     }
 
-    MultiParentVertexImpl(ConceptEntity conceptEntity
+    public MultiParentVertexImpl(ConceptEntity conceptEntity
             , MultiParentGraphViewController graphController, IntIdSet typeNids, Node graphic) {
         super(conceptEntity, graphic);
         this.graphController = graphController;
@@ -145,7 +147,7 @@ public class MultiParentVertexImpl
         return Integer.compare(nid, o.nid);
     }
 
-    private void updateDescription() {
+    public void updateDescription() {
         if (this.nid != Integer.MAX_VALUE) {
             this.conceptDescriptionText = graphController.getObservableView().getDescriptionTextOrNid(nid);
         } else {
@@ -331,7 +333,8 @@ public class MultiParentVertexImpl
     public String toString() {
         try {
             if (this.getValue() != null) {
-                if ((conceptDescriptionText == null) || conceptDescriptionText.startsWith("no description for ")) {
+                if ((conceptDescriptionText == null) || conceptDescriptionText.startsWith("no description for ")
+                        || (conceptDescriptionText.startsWith("-") && intPattern.matcher(conceptDescriptionText).matches())) {
                     updateDescription();
                 }
                 return this.conceptDescriptionText;
@@ -343,7 +346,6 @@ public class MultiParentVertexImpl
             throw re;
         }
     }
-
     //~--- get methods ---------------------------------------------------------
     @Override
     public boolean isRoot() {

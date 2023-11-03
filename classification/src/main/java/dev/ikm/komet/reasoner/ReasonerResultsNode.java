@@ -15,26 +15,14 @@
  */
 package dev.ikm.komet.reasoner;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN;
-import static dev.ikm.tinkar.terms.TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
-import org.eclipse.collections.api.list.ImmutableList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import dev.ikm.komet.framework.ExplorationNodeAbstract;
 import dev.ikm.komet.framework.TopPanelFactory;
 import dev.ikm.komet.framework.activity.ActivityStreams;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.reasoner.elkowl.ElkOwlAxiomData;
-import dev.ikm.komet.reasoner.elkowl.RunElkOwlReasonerTask;
 import dev.ikm.komet.reasoner.elkowl.RunElkOwlReasonerIncrementalTask;
+import dev.ikm.komet.reasoner.elkowl.RunElkOwlReasonerTask;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -48,10 +36,24 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+import static dev.ikm.tinkar.terms.TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN;
+import static dev.ikm.tinkar.terms.TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN;
 
 //import dev.ikm.komet.reasoner.elk.RunElkReasonerTask;
 
 public class ReasonerResultsNode extends ExplorationNodeAbstract {
+
+	public static boolean reinferAllHierarchy = false;
+
 	private static final Logger LOG = LoggerFactory.getLogger(ReasonerResultsNode.class);
 	protected static final String STYLE_ID = "classification-results-node";
 	protected static final String TITLE = "Reasoner Results";
@@ -81,35 +83,41 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 //				collectionMenuItems.add(elkReasonerMenuItem);
 
 				{
-					MenuItem item = new MenuItem("Run ElkOwl reasoner");
-					item.setOnAction(this::elkOwlReasoner);
-					collectionMenuItems.add(item);
-				}
-				
-				{
 					MenuItem item = new MenuItem("Run ElkOwl incremental reasoner");
 					item.setOnAction(this::elkOwlReasonerIncremental);
 					collectionMenuItems.add(item);
 				}
+
+				{
+					MenuItem item = new MenuItem("Run ElkOwl full reasoner");
+					item.setOnAction(this::elkOwlReasoner);
+					collectionMenuItems.add(item);
+				}
+
+				{
+					MenuItem item = new MenuItem("Run ElkOwl redo hierarchy reasoner");
+					item.setOnAction(this::elkOwlReasonerRedo);
+					collectionMenuItems.add(item);
+				}
+
 
 				ObservableList<MenuItem> topMenuItems = topPanelParts.viewPropertiesMenuButton().getItems();
 				topMenuItems.addAll(collectionMenuItems);
 			});
 		});
 
-		Platform.runLater(() -> {
-			try {
-				FXMLLoader loader = new FXMLLoader(
-						getClass().getResource("/dev/ikm/komet/reasoner/ReasonerResultsInterface.fxml"));
-				loader.load();
-				this.resultsController = loader.getController();
+		try {
+			FXMLLoader loader = new FXMLLoader(
+					getClass().getResource("/dev/ikm/komet/reasoner/ReasonerResultsInterface.fxml"));
+			loader.load();
+			this.resultsController = loader.getController();
 
-				resultsController.setViewProperties(this.viewProperties, ActivityStreams.get(ActivityStreams.REASONER));
-				contentPane.setCenter(loader.getRoot());
-			} catch (IOException e) {
-				AlertStreams.dispatchToRoot(e);
-			}
-		});
+			resultsController.setViewProperties(this.viewProperties, ActivityStreams.get(ActivityStreams.REASONER));
+			contentPane.setCenter(loader.getRoot());
+		} catch (IOException e) {
+			AlertStreams.dispatchToRoot(e);
+		}
+
 	}
 
 //	private void snorocketReasoner(ActionEvent actionEvent) {
@@ -150,7 +158,16 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 //		});
 //	}
 
+	private void elkOwlReasonerRedo(ActionEvent actionEvent) {
+		reinferAllHierarchy = true;
+		fullReasoner();
+	}
 	private void elkOwlReasoner(ActionEvent actionEvent) {
+		reinferAllHierarchy = false;
+		fullReasoner();
+	}
+
+	private void fullReasoner() {
 		TinkExecutor.threadPool().execute(() -> {
 			RunElkOwlReasonerTask task = new RunElkOwlReasonerTask(getViewProperties().calculator(),
 					EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN,
@@ -168,8 +185,9 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 			LOG.info("Stated axiom count: " + statedCount + " " + task.durationString());
 		});
 	}
-	
+
 	private void elkOwlReasonerIncremental(ActionEvent actionEvent) {
+		reinferAllHierarchy = false;
 		TinkExecutor.threadPool().execute(() -> {
 			RunElkOwlReasonerIncrementalTask task = new RunElkOwlReasonerIncrementalTask(getViewProperties().calculator(),
 					EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN,
@@ -231,5 +249,9 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 	@Override
 	public Class factoryClass() {
 		return ReasonerResultsNodeFactory.class;
+	}
+
+	public ReasonerResultsController getResultsController() {
+		return resultsController;
 	}
 }

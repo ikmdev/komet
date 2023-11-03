@@ -15,6 +15,12 @@
  */
 package dev.ikm.komet.reasoner;
 
+import dev.ikm.komet.framework.activity.ActivityStream;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
@@ -23,18 +29,12 @@ import javafx.util.Callback;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.primitive.ImmutableIntObjectMap;
-import dev.ikm.komet.framework.activity.ActivityStream;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.service.PrimitiveData;
-import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
-
 
 import java.net.URL;
 import java.text.NumberFormat;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.function.Function;
 
 public class ReasonerResultsController {
 
@@ -141,6 +141,10 @@ public class ReasonerResultsController {
         }
     }
 
+    // create a context menu to compare and launch window
+    public void setOnContextMenuForEquiv(Function<TreeView<StringWithOptionalConceptFacade>, ContextMenu> contextMenuConsumer) {
+        equivalenciesTree.setContextMenu(contextMenuConsumer.apply(equivalenciesTree));
+    }
 
     private void onChanged(ListChangeListener.Change<? extends Integer> change) {
         if (!change.getList().isEmpty()) {

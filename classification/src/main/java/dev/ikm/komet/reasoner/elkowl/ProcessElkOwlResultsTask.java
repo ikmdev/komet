@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import dev.ikm.komet.reasoner.ReasonerResultsNode;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -76,6 +77,8 @@ import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 
+import static dev.ikm.komet.reasoner.ReasonerResultsNode.reinferAllHierarchy;
+
 public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ProcessElkOwlResultsTask.class);
@@ -92,6 +95,14 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 
 	ViewCoordinateRecord commitView;
 	AtomicInteger classificationDuplicateCount = new AtomicInteger(-1);
+
+	// (Hcys)2 Ur Ql: [c6dfb251-a75f-547e-944a-3fd2d115ceb2]
+	//final int watchNid = PrimitiveData.nid(UUID.fromString("c6dfb251-a75f-547e-944a-3fd2d115ceb2"));
+
+	// Chronic lung disease: [23e07078-f1e2-3f6a-9b7a-9397bcd91cfe]
+	final int watchNid = PrimitiveData.nid(UUID.fromString("23e07078-f1e2-3f6a-9b7a-9397bcd91cfe"));
+
+
 
 	public ProcessElkOwlResultsTask(OWLReasoner reasoner, ViewCalculator viewCalculator,
 			PatternFacade inferredAxiomPattern, ElkOwlAxiomData axiomData) {
@@ -117,7 +128,6 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 	/**
 	 * Collect results.
 	 *
-	 * @param classifiedResult         the classified result
 	 * @param classificationConceptSet the concepts processed by the classifier
 	 * @return the classifier results
 	 */
@@ -210,10 +220,17 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 		LogicalExpressionAdaptorFactory logicalExpressionAdaptor = new LogicalExpressionAdaptorFactory();
 //		AtomicInteger writtenCounter = new AtomicInteger();
 		MultipleEndpointTimer multipleEndpointTimer = new MultipleEndpointTimer(IsomorphicResults.EndPoints.class);
+
 		classificationConceptSet.primitiveParallelStream().forEach(conceptNid -> {
 //			int cnt = writtenCounter.incrementAndGet();
 //			if (cnt % 1000 == 0)
 //				LOG.info("Wrote " + cnt);
+
+			if (conceptNid == watchNid) {
+				LOG.info("found it... ");
+			}
+			boolean watchFound = conceptNid == watchNid;
+
 			final LogicalExpressionBuilder inferredBuilder = new LogicalExpressionBuilder();
 			int[] statedSemanticNids = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptNid,
 					statedPatternNid);
@@ -318,7 +335,7 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 										}
 									}
 								}
-								if (changed) {
+								if (changed || ReasonerResultsNode.reinferAllHierarchy) {
 									conceptNidsWithInferredChanges.add(conceptNid);
 									conceptsWithNavigationChanges.add(conceptNid);
 									processSemantic(viewCalculator.updateFields(inferredSemanticNids[0], fields,
@@ -408,6 +425,9 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 
 	private void updateConceptsWithInferredNavigationChanges(int conceptNid, int inferredNavigationPatternNid,
 			ConcurrentHashSet<Integer> conceptsWithNavigationChanges, ImmutableIntSet parentNids) {
+		if (watchNid == conceptNid) {
+			LOG.info("Found it");
+		}
 		int[] inferredNavigationNids = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptNid,
 				inferredNavigationPatternNid);
 		switch (inferredNavigationNids.length) {
@@ -438,6 +458,8 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 			int inferredNavigationPatternNid, int updateStampNid, Transaction updateTransaction) {
 		AtomicInteger axiomDataNotFoundCounter = new AtomicInteger();
 		conceptsWithNavigationChanges.parallelStream().forEach(conceptNid -> {
+
+
 			OWLClass inferredNode = axiomData.nidConceptMap.get(conceptNid);
 			ImmutableIntSet parentNids = IntSets.immutable.of();
 			ImmutableIntSet childNids = IntSets.immutable.of();

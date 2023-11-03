@@ -99,8 +99,6 @@ public class RunElkOwlReasonerTask extends TrackingCallable<ElkOwlAxiomData> {
 		ElkOwlAxiomData axiomData = axiomDataFuture.get();
 		updateProgress(workDone++, maxWork);
 		//
-		writeAxioms(axiomData);
-		//
 		msg = "Step " + workDone + ": Loading axioms into reasoner";
 		updateMessage(msg);
 		LOG.info(msg);
@@ -108,8 +106,6 @@ public class RunElkOwlReasonerTask extends TrackingCallable<ElkOwlAxiomData> {
 		Future<OWLReasoner> reasonerFuture = TinkExecutor.threadPool().submit(loadTask);
 		OWLReasoner reasoner = reasonerFuture.get();
 		updateProgress(workDone++, maxWork);
-		//
-		writeOntology(reasoner.getRootOntology());
 		//
 		msg = "Step " + workDone + ": Computing taxonomy";
 		updateMessage("Step " + workDone + ": Computing taxonomy");
