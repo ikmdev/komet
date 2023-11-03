@@ -132,7 +132,7 @@ public class RunElkOwlReasonerTask extends TrackingCallable<ElkOwlAxiomData> {
 		return axiomData;
 	}
 
-	private boolean write = true;
+	private boolean write = false;
 
 	private Path getPath(String filePart) {
 		Path path = Paths.get("..", "classification", "target",
@@ -142,9 +142,9 @@ public class RunElkOwlReasonerTask extends TrackingCallable<ElkOwlAxiomData> {
 	}
 
 	private void writeAxioms(ElkOwlAxiomData axiomData) throws Exception {
-		LOG.info(">>>>>");
-		LOG.info("Writing axioms: " + write);
 		if (write) {
+			LOG.info(">>>>>");
+			LOG.info("Writing axioms: " + write);
 			Files.write(getPath("concepts"), axiomData.nidConceptMap.entrySet().stream() //
 					.map(Entry::getKey) //
 					.map(key -> key + "\t" + PrimitiveData.publicId(key).asUuidArray()[0] + "\t"
@@ -163,9 +163,9 @@ public class RunElkOwlReasonerTask extends TrackingCallable<ElkOwlAxiomData> {
 	}
 
 	private void writeOntology(OWLOntology ontology) throws Exception {
-		LOG.info(">>>>>");
-		LOG.info("Writing ontology: " + write);
 		if (write) {
+			LOG.info(">>>>>");
+			LOG.info("Writing ontology: " + write);
 			ElkOwlManager.writeOntology(ontology, getPath("ofn"));
 			LOG.info("Write ontology in " + durationString());
 		}
