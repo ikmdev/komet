@@ -93,7 +93,7 @@
         <elk.junit.version>4.13.2</elk.junit.version>
         <mockito.version>5.6.0</mockito.version>
         <common-java5.version>3.0.0-M9</common-java5.version>
-        <owlapi.version>4.5.25-ikm-r1</owlapi.version>
+        <owlapi.version>4.5.25-ikm-r2</owlapi.version>
 
         <maven.assembly-plugin.version>3.6.0</maven.assembly-plugin.version>
     </properties>

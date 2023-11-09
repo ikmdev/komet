@@ -69,6 +69,7 @@ open module dev.ikm.komet.framework {
     requires transitive javafx.fxml;
     requires transitive javafx.graphics;
     requires transitive org.controlsfx.controls;
+//    requires transitive org.eclipse.jetty.logging;
     requires transitive dev.ikm.komet.preferences;
     requires transitive dev.ikm.komet.terms;
     requires transitive dev.ikm.tinkar.common;
@@ -80,7 +81,7 @@ open module dev.ikm.komet.framework {
     requires transitive dev.ikm.tinkar.terms;
     requires transitive org.kordamp.ikonli.javafx;
     requires transitive org.slf4j;
-    requires static com.google.auto.service;
+
     uses TaskListsService;
     uses PreferencesService;
     uses KometNodeFactory;

@@ -26,7 +26,7 @@ module dev.ikm.komet.application {
     exports dev.ikm.komet.app to javafx.graphics;
     opens dev.ikm.komet.app to javafx.fxml;
 
-    // TODO Not happy that I have to specify these here... Can't dynamically add modules?
+    // Not happy that I have to specify these here... Can't dynamically add modules?
     requires dev.ikm.tinkar.provider.spinedarray;
     requires dev.ikm.tinkar.provider.mvstore;
     requires dev.ikm.tinkar.provider.ephemeral;
