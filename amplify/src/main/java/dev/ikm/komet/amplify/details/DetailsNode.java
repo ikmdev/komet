@@ -92,15 +92,16 @@ public class DetailsNode extends ExplorationNodeAbstract {
             String styleSheet = defaultStyleSheet();
             this.detailsViewBorderPane.getStylesheets().add(styleSheet);
 
-            // Add the menu drop down for coordinates & activity stream options with Blue Title of concept
+
             if (!displayOnJournalView) {
-                this.detailsViewBorderPane.setTop(
-                        TopPanelFactory.make(
-                                viewProperties,
-                                entityFocusProperty,
-                                activityStreamKeyProperty,
-                                optionForActivityStreamKeyProperty,
-                                false));
+                // Add the menu drop down for coordinates & activity stream options with Blue Title of concept
+                Node topPanel = TopPanelFactory.make(
+                        viewProperties,
+                        entityFocusProperty,
+                        activityStreamKeyProperty,
+                        optionForActivityStreamKeyProperty,
+                        false);
+                this.detailsViewBorderPane.setTop(topPanel);
             }
 
 
