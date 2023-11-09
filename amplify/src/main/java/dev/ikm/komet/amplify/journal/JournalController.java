@@ -53,10 +53,7 @@ import org.eclipse.collections.api.factory.primitive.IntLists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -225,9 +222,23 @@ public class JournalController {
                         amplifyDetailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
                     }
                     Pane kometNodePanel = (Pane) kometNode.getNode();
-                    Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
-                    Node[] draggables = new Node[draggableToolbar.size()];
-                    WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
+                    Node blueDraggable = kometNodePanel.lookup(".top-panel");
+
+                    // Recreate a new Set
+                    Set<Node> draggableNodes = new HashSet<>(kometNodePanel.lookupAll(".draggable-region"));
+
+                    // Add the draggable blue (GridPane)
+                    draggableNodes.add(blueDraggable);
+
+                    // Create an array for the toolbar
+                    Node[] draggables = new Node[draggableNodes.size()];
+
+                    // Populate the array
+                    draggableNodes.toArray(draggables);
+
+                    // Add draggable nodes to the variable arguments
+                    WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggables);
+
                     staggerWindows.getAndAdd(20);
                     kometNodePanel.setLayoutX(staggerWindows.get());
                     kometNodePanel.setLayoutY(staggerWindows.get());
