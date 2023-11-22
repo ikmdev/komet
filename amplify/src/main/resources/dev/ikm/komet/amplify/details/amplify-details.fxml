@@ -33,15 +33,6 @@
                         <Region prefHeight="200.0" prefWidth="200.0" styleClass="amplify-listview" />
                      </graphic>
                   </Button>
-                  <Button mnemonicParsing="false" text="Button">
-                     <graphic>
-                        <ImageView fitHeight="150.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../journal/graphic-viewer.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
                   <Region fx:id="controlBoxRegion1" prefHeight="200.0" prefWidth="200.0" styleClass="spacer3" />
                   <HBox fx:id="controlBoxHbox1" alignment="CENTER" spacing="15.0">
                      <children>
