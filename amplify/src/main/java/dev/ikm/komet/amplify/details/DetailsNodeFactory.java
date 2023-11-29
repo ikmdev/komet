@@ -31,7 +31,7 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 
-@KometNodeFactoryDisplay(journalView = true, dockFXView = false)
+@KometNodeFactoryDisplay(journalView = false, dockFXView = false)
 public class DetailsNodeFactory implements KometNodeFactory {
     private static final Logger LOG = LoggerFactory.getLogger(DetailsNodeFactory.class);
 
