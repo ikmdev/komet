@@ -33,7 +33,6 @@ import dev.ikm.komet.reasoner.ReasonerResultsNode;
 import dev.ikm.komet.reasoner.StringWithOptionalConceptFacade;
 import dev.ikm.komet.search.SearchNode;
 import dev.ikm.tinkar.common.alert.AlertStreams;
-import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
@@ -49,7 +48,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.primitive.IntLists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -201,50 +199,6 @@ public class JournalController {
         final PublicIdStringKey<ActivityStream> navigationActivityStreamKey = new PublicIdStringKey(PublicIds.of(uuid.toString()), uniqueNavigatorTopic);
         navigatorActivityStream = ActivityStreams.create(navigationActivityStreamKey);
         activityStreams.add(navigationActivityStreamKey);
-
-        // display any factory windows onto the journal view.
-        AtomicInteger staggerWindows = new AtomicInteger();
-        KometNodeFactory
-                .getKometNodeFactories()
-                .stream()
-                .filter(factoryProvider ->
-                        KometNodeFactoryFilter.shouldDisplayOnJournalView(factoryProvider.type()))
-                .forEach(kometNodeFactoryProvider -> {
-                    // For each window or panel subscribe to the navigation activity stream. As a user clicks on the navigator the child windows display detail views.
-                    KometNodeFactory factory = kometNodeFactoryProvider.get();
-                    PublicIdStringKey<ActivityStreamOption> activityStreamOptionKey = ActivityStreamOption.SUBSCRIBE.keyForOption();
-
-                    // Factory creates a panel to be added to the journal
-                    KometNode kometNode = factory.create(windowView,
-                            navigationActivityStreamKey, activityStreamOptionKey, AlertStreams.ROOT_ALERT_STREAM_KEY, false);
-
-                    if (kometNode instanceof DetailsNode amplifyDetailsNode) {
-                        amplifyDetailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
-                    }
-                    Pane kometNodePanel = (Pane) kometNode.getNode();
-                    Node blueDraggable = kometNodePanel.lookup(".top-panel");
-
-                    // Recreate a new Set
-                    Set<Node> draggableNodes = new HashSet<>(kometNodePanel.lookupAll(".draggable-region"));
-
-                    // Add the draggable blue (GridPane)
-                    draggableNodes.add(blueDraggable);
-
-                    // Create an array for the toolbar
-                    Node[] draggables = new Node[draggableNodes.size()];
-
-                    // Populate the array
-                    draggableNodes.toArray(draggables);
-
-                    // Add draggable nodes to the variable arguments
-                    WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggables);
-
-                    staggerWindows.getAndAdd(20);
-                    kometNodePanel.setLayoutX(staggerWindows.get());
-                    kometNodePanel.setLayoutY(staggerWindows.get());
-                    desktopSurfacePane.getChildren().add(kometNodePanel);
-
-                });
 
         loadNavigationPanel(navigationActivityStreamKey, windowView, navigationFactory);
 
