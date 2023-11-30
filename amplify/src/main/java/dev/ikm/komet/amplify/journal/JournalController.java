@@ -295,11 +295,6 @@ public class JournalController {
                 }
                 getNavigatorNode().getController().showConcept(conceptFacade.nid());
             };
-            MenuItem showInCurrentConceptWindow = new MenuItem("Show in Current Concept Window");
-            showInCurrentConceptWindow.setOnAction(actionEvent -> {
-                showInConceptNavigator.run();
-            });
-            contextMenu.getItems().add(showInCurrentConceptWindow);
 
             MenuItem showInNavigator = new MenuItem("Show in Concept Navigator");
             showInNavigator.setOnAction(actionEvent -> {
