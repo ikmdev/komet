@@ -15,29 +15,10 @@
  */
 package dev.ikm.komet.framework.panel;
 
-import static dev.ikm.komet.framework.StyleClasses.COMPONENT_VERSION_BORDER_PANEL;
-import static dev.ikm.komet.framework.StyleClasses.COMPONENT_VERSION_PANEL;
-import static dev.ikm.komet.framework.StyleClasses.EDIT_COMPONENT_BUTTON;
-import static dev.ikm.komet.framework.StyleClasses.STAMP_LABEL;
-
-import java.util.ArrayList;
-import java.util.concurrent.Future;
-
-import org.controlsfx.control.action.Action;
-import org.controlsfx.control.action.ActionUtils;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import dev.ikm.komet.framework.EditedConceptTracker;
 import dev.ikm.komet.framework.PseudoClasses;
 import dev.ikm.komet.framework.graphics.Icon;
-import dev.ikm.komet.framework.observable.ObservableConceptVersion;
-import dev.ikm.komet.framework.observable.ObservablePatternVersion;
-import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
-import dev.ikm.komet.framework.observable.ObservableStampVersion;
-import dev.ikm.komet.framework.observable.ObservableVersion;
+import dev.ikm.komet.framework.observable.*;
 import dev.ikm.komet.framework.performance.Measures;
 import dev.ikm.komet.framework.performance.Topic;
 import dev.ikm.komet.framework.performance.impl.ObservationRecord;
@@ -58,11 +39,7 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.entity.transaction.CancelTransactionTask;
-import dev.ikm.tinkar.entity.transaction.CancelVersionTask;
-import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
-import dev.ikm.tinkar.entity.transaction.CommitVersionTask;
-import dev.ikm.tinkar.entity.transaction.Transaction;
+import dev.ikm.tinkar.entity.transaction.*;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -72,6 +49,17 @@ import javafx.scene.control.MenuButton;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import org.controlsfx.control.action.Action;
+import org.controlsfx.control.action.ActionUtils;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.concurrent.Future;
+
+import static dev.ikm.komet.framework.StyleClasses.*;
 
 public abstract class ComponentVersionIsFinalPanel<OV extends ObservableVersion> {
 	private static final Logger LOG = LoggerFactory.getLogger(ComponentVersionIsFinalPanel.class);
