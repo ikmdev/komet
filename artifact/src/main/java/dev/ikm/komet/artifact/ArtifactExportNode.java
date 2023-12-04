@@ -15,14 +15,21 @@
  */
 package dev.ikm.komet.artifact;
 
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Pane;
 import org.eclipse.collections.api.list.ImmutableList;
 import dev.ikm.komet.framework.ExplorationNodeAbstract;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.terms.EntityFacade;
 
+import java.io.IOException;
+
+/**
+ * This class is responsible for populating and render the contents of the artifact export tab.
+ */
 public class ArtifactExportNode extends ExplorationNodeAbstract {
     protected static final String STYLE_ID = "export-node";
     protected static final String TITLE = "Export Artifact";
@@ -33,7 +40,13 @@ public class ArtifactExportNode extends ExplorationNodeAbstract {
 
     @Override
     public Node getNode() {
-        return new Label(titleProperty.getValue());
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("ArtifactExport.fxml"));
+        try {
+            Pane pane = loader.load();
+            return pane;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
