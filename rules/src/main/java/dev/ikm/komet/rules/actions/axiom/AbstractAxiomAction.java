@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.rules.actions.axiom;
 
+import dev.ikm.komet.framework.EditedConceptTracker;
 import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpression;
 import dev.ikm.komet.rules.actions.AbstractActionSuggested;
@@ -28,12 +29,17 @@ import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.State;
 import javafx.event.ActionEvent;
 import org.eclipse.collections.api.factory.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
 
 public abstract class AbstractAxiomAction extends AbstractActionSuggested {
+	
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractAxiomAction.class);
+
     private final AxiomSubjectRecord axiomSubjectRecord;
 
     public AbstractAxiomAction(String text, AxiomSubjectRecord axiomSubjectRecord,
@@ -48,7 +54,7 @@ public abstract class AbstractAxiomAction extends AbstractActionSuggested {
     }
 
     public abstract void doAction(ActionEvent t, AxiomSubjectRecord axiomSubjectRecord, EditCoordinateRecord editCoordinate);
-
+    
     protected void putUpdatedLogicalExpression(EditCoordinateRecord editCoordinate, LogicalExpression logicalExpression) {
         switch (logicalExpression.sourceGraph()) {
             case DiTreeEntity diTreeEntity -> putUpdatedDiTree(this.axiomSubjectRecord, editCoordinate, diTreeEntity);
@@ -76,6 +82,9 @@ public abstract class AbstractAxiomAction extends AbstractActionSuggested {
             SemanticVersionRecord newSemanticVersion = new SemanticVersionRecord(semanticContainingAxiom, stampEntity.nid(), Lists.immutable.of(newTree));
             SemanticRecord analogue = semanticContainingAxiom.with(newSemanticVersion).build();
             Entity.provider().putEntity(analogue);
+            // Incremental reasoner
+        	LOG.info(">>>>>" + "putUpdatedDiTree" + newSemanticVersion);
+            EditedConceptTracker.addEdit(newSemanticVersion);
             //TODO need to surface transactions in the journal, then turn off this "auto commit"...
             transaction.commit();
         }, () -> {

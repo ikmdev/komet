@@ -62,25 +62,27 @@ public class RunElkOwlReasonerIncrementalTask extends TrackingCallable<ElkOwlAxi
 	protected ElkOwlAxiomData compute() throws Exception {
 		final int maxWork = 4;
 		int workDone = 1;
+		ElkOwlReasonerIncremental reasoner = ElkOwlReasonerIncremental.getInstance();
+		if (!reasoner.isInitialized())
+			throw new Exception("Need to run full reasoner first");
 		updateMessage("Step " + workDone + ": Build changes");
-		ElkOwlAxiomData axiomData = ElkOwlReasonerIncremental.getInstance().getAxiomData();
+		ElkOwlAxiomData axiomData = reasoner.getAxiomData();
 		ElkOwlAxiomDataBuilder builder = new ElkOwlAxiomDataBuilder(viewCalculator, statedAxiomPattern, axiomData);
 		for (SemanticVersionRecord edit : EditedConceptTracker.getEdits()) {
 			LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>");
 			LOG.info("Edit: " + edit + " " + PrimitiveData.text(edit.referencedComponentNid()));
 			IncrementalChanges changes = builder.processIncremental((DiTreeEntity) edit.fieldValues().get(0),
 					edit.referencedComponentNid());
-			ElkOwlReasonerIncremental.getInstance().processChanges(changes);
+			reasoner.processChanges(changes);
 		}
 		updateProgress(workDone++, maxWork);
 		updateMessage("Step " + workDone + ": Process changes");
-		ElkOwlReasonerIncremental.getInstance().getReasoner().flush();
+		reasoner.getReasoner().flush();
 		LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>");
 		for (SemanticVersionRecord edit : EditedConceptTracker.getEdits()) {
 			OWLClass con = axiomData.nidConceptMap.get(edit.referencedComponentNid());
 			LOG.info("Con: " + con + " " + PrimitiveData.text(Integer.parseInt(con.getIRI().getShortForm())));
-			for (OWLClass parent : ElkOwlReasonerIncremental.getInstance().getReasoner().getSuperClasses(con, true)
-					.getFlattened()) {
+			for (OWLClass parent : reasoner.getReasoner().getSuperClasses(con, true).getFlattened()) {
 				LOG.info("Parent: " + parent + " "
 						+ PrimitiveData.text(Integer.parseInt(parent.getIRI().getShortForm())));
 			}
@@ -89,9 +91,8 @@ public class RunElkOwlReasonerIncrementalTask extends TrackingCallable<ElkOwlAxi
 		LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>");
 		updateProgress(workDone++, maxWork);
 		updateMessage("Step " + workDone + ": Processing results");
-		ProcessElkOwlResultsTask processResultsTask = new ProcessElkOwlResultsTask(
-				ElkOwlReasonerIncremental.getInstance().getReasoner(), this.viewCalculator, this.inferredAxiomPattern,
-				axiomData);
+		ProcessElkOwlResultsTask processResultsTask = new ProcessElkOwlResultsTask(reasoner.getReasoner(),
+				this.viewCalculator, this.inferredAxiomPattern, axiomData);
 		Future<ClassifierResults> processResultsFuture = TinkExecutor.threadPool().submit(processResultsTask);
 		ClassifierResults classifierResults = processResultsFuture.get();
 

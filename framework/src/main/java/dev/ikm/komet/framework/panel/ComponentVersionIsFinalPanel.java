@@ -199,15 +199,6 @@ public abstract class ComponentVersionIsFinalPanel<OV extends ObservableVersion>
 	}
 
 	private Button newCommitVersionButton(OV version) {
-		LOG.info(">>>>>" + version);
-		if (version instanceof ObservableSemanticVersion) {
-			SemanticVersionRecord edit = ((ObservableSemanticVersion) version).getVersionRecord();
-			EditedConceptTracker.addEdit(edit);
-			LOG.info("Edit: " + edit);
-			LOG.info("Nid : " + edit.nid() + " " + PrimitiveData.text(edit.nid()));
-			LOG.info(
-					"RCN : " + edit.referencedComponentNid() + " " + PrimitiveData.text(edit.referencedComponentNid()));
-		}
 		Button button = new Button("commit version");
 		button.setOnAction(event -> {
 			Transaction.forVersion(version).ifPresentOrElse(transaction -> {
