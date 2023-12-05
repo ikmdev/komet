@@ -38,6 +38,10 @@ public class ElkOwlReasonerIncremental {
 		return instance;
 	}
 
+	public boolean isInitialized() {
+		return reasoner != null && axiomData != null;
+	}
+
 	public void init(OWLReasoner reasoner, ElkOwlAxiomData axiomData) {
 		this.reasoner = reasoner;
 		this.axiomData = axiomData;
