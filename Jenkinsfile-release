@@ -93,7 +93,7 @@ pipeline {
                 git 'git'
             }
             steps {
-                withCredentials([gitUsernamePassword(credentialsId: 'gitlab-for-ikmdev-release-token', gitToolName: 'git')]) {
+                withCredentials([gitUsernamePassword(credentialsId: 'vault-gitlab-user-pat', gitToolName: 'git')]) {
                     sh """
                         git add .
                         git config user.name jenkins
@@ -123,7 +123,7 @@ pipeline {
                 git 'git'
             }
             steps {
-                withCredentials([gitUsernamePassword(credentialsId: 'gitlab-for-ikmdev-release-token', gitToolName: 'git')]) {
+                withCredentials([gitUsernamePassword(credentialsId: 'vault-gitlab-user-pat', gitToolName: 'git')]) {
                     sh """
                         git add .
                         git config user.name jenkins
