@@ -30,7 +30,7 @@ pipeline {
         GITLAB_OWNER        = "${GIT_URL.split('/')[3]}"
         GITLAB_REPO         = "https://gitlab.tinkarbuild.com/${GITLAB_OWNER}/${REPO_NAME}.git"
         GITLAB_RELEASE_API  = "https://gitlab.tinkarbuild.com/api/v4/projects/${GITLAB_OWNER}%2F${REPO_NAME}/releases"
-        GITLAB_CREDS_ID     = 'gitlab-jenkins-username-pat'
+        GITLAB_CREDS_ID     = 'vault-gitlab-user-pat'
         
         GITHUB_OWNER        = "ikmdev"
         GITHUB_REPO         = "https://github.com/${GITHUB_OWNER}/${REPO_NAME}.git"
