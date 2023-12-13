@@ -175,7 +175,7 @@
                   <Region prefHeight="200.0" prefWidth="200.0">
                      <styleClass>
                         <String fx:value="icon" />
-                        <String fx:value="star" />
+                        <String fx:value="heart" />
                      </styleClass>
                   </Region>
                </graphic>
