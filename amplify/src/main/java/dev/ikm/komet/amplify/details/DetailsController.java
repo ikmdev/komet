@@ -15,6 +15,11 @@
  */
 package dev.ikm.komet.amplify.details;
 
+import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideIn;
+import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideOut;
+import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
+import static dev.ikm.tinkar.terms.TinkarTerm.*;
+
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.propsheet.KometPropertySheet;
@@ -28,19 +33,6 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -51,11 +43,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-
-import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideIn;
-import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideOut;
-import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
-import static dev.ikm.tinkar.terms.TinkarTerm.*;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DetailsController implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(DetailsController.class);

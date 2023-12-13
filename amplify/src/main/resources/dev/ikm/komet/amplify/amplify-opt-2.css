@@ -30,6 +30,10 @@
     -fx-border-radius: 10 10 10 10;
 }
 
+.concept-detail-pane .content-description-insets {
+    -fx-padding: 8 12 16 12;
+}
+
 .concept-detail-banner-background {
     -fx-background-color: #ffffffff;
 }
