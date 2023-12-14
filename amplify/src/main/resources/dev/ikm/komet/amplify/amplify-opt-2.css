@@ -558,6 +558,7 @@
     -fx-min-width: -width-size;
     -fx-max-height: -height-size;
     -fx-max-width: -width-size;
+    -icon-paint: #E1E8F1;
     -fx-shape: "M7 20C6.73478 20 6.48043 19.8946 6.29289 19.7071C6.10536 19.5196 6 19.2652 6 19V16H2C1.46957 16 0.960859 15.7893 0.585786 15.4142C0.210714 15.0391 0 14.5304 0 14V2C0 0.89 0.9 0 2 0H18C18.5304 0 19.0391 0.210714 19.4142 0.585786C19.7893 0.960859 20 1.46957 20 2V14C20 14.5304 19.7893 15.0391 19.4142 15.4142C19.0391 15.7893 18.5304 16 18 16H11.9L8.2 19.71C8 19.9 7.75 20 7.5 20H7ZM8 14V17.08L11.08 14H18V2H2V14H8Z";
 }
 
@@ -605,12 +606,11 @@
     -fx-spacing: 4;
     -fx-alignment: center;
     -fx-background-insets: 0;
-    /*-fx-background-color: #F3F5F8FF;*/
-    -fx-background-color: #e9ecf0ff;
+    -fx-background-color: #304971;
     -fx-border-insets: 0 -1 0 -1;
     -fx-border-style: solid;
-    -fx-border-width: 1;
-    -fx-border-color: #44495EFF;
+    -fx-border-width: 1.5;
+    -fx-border-color: #2E3240;
 
     -fx-min-height: -default-height;
     -fx-pref-height: -default-height;
@@ -637,14 +637,15 @@
     -fx-background-color: -icon-paint;
 }
 
-.compass {
+.coordinate-project-bar {
     -width-size: 20;
     -height-size: 20;
     -fx-min-height: -height-size;
     -fx-min-width: -width-size;
     -fx-max-height: -height-size;
     -fx-max-width: -width-size;
-    -fx-shape: "M2.19169 9.17431H3.16055C3.61657 9.17431 3.98624 9.54399 3.98624 10C3.98624 10.456 3.61657 10.8257 3.16055 10.8257H2.19169C2.35721 12.5116 3.02422 14.0503 4.04155 15.2908L4.72638 14.6059C5.04883 14.2835 5.57162 14.2835 5.89407 14.6059C6.21653 14.9284 6.21653 15.4512 5.89407 15.7736L5.20925 16.4585C6.44965 17.4758 7.98839 18.1428 9.67431 18.3083V17.3394C9.67431 16.8834 10.044 16.5138 10.5 16.5138C10.956 16.5138 11.3257 16.8834 11.3257 17.3394V18.3083C13.0116 18.1428 14.5503 17.4758 15.7908 16.4585L15.1059 15.7736C14.7835 15.4512 14.7835 14.9284 15.1059 14.6059C15.4284 14.2835 15.9512 14.2835 16.2736 14.6059L16.9585 15.2908C17.9758 14.0503 18.6428 12.5116 18.8083 10.8257H17.8394C17.3834 10.8257 17.0138 10.456 17.0138 10C17.0138 9.54399 17.3834 9.17431 17.8394 9.17431H18.8083C18.6428 7.48839 17.9758 5.94965 16.9585 4.70925L16.2736 5.39407C15.9512 5.71653 15.4284 5.71653 15.1059 5.39407C14.7835 5.07162 14.7835 4.54883 15.1059 4.22638L15.7908 3.54155C14.5503 2.52422 13.0116 1.85721 11.3257 1.69169V2.66055C11.3257 3.11657 10.956 3.48624 10.5 3.48624C10.044 3.48624 9.67431 3.11657 9.67431 2.66055V1.69169C7.98839 1.85721 6.44965 2.52422 5.20925 3.54155L5.89407 4.22638C6.21653 4.54883 6.21653 5.07162 5.89407 5.39407C5.57162 5.71653 5.04883 5.71653 4.72638 5.39407L4.04155 4.70925C3.02422 5.94965 2.35721 7.48839 2.19169 9.17431ZM0.5 10C0.5 4.47715 4.97715 0 10.5 0C16.0228 0 20.5 4.47715 20.5 10C20.5 15.5228 16.0228 20 10.5 20C4.97715 20 0.5 15.5228 0.5 10ZM10.5 5.50459C10.79 5.50459 11.0588 5.65676 11.208 5.90546L12.478 8.02203L14.5945 9.29198C14.8432 9.4412 14.9954 9.70997 14.9954 10C14.9954 10.29 14.8432 10.5588 14.5945 10.708L12.478 11.978L11.208 14.0945C11.0588 14.3432 10.79 14.4954 10.5 14.4954C10.21 14.4954 9.9412 14.3432 9.79198 14.0945L8.52203 11.978L6.40546 10.708C6.15676 10.5588 6.00459 10.29 6.00459 10C6.00459 9.70997 6.15676 9.4412 6.40546 9.29198L8.52203 8.02203L9.79198 5.90546C9.9412 5.65676 10.21 5.50459 10.5 5.50459ZM10.5 7.93512L9.83187 9.04867C9.76215 9.16488 9.66488 9.26215 9.54867 9.33187L8.43512 10L9.54867 10.6681C9.66488 10.7379 9.76215 10.8351 9.83187 10.9513L10.5 12.0649L11.1681 10.9513C11.2379 10.8351 11.3351 10.7379 11.4513 10.6681L12.5649 10L11.4513 9.33187C11.3351 9.26215 11.2379 9.16488 11.1681 9.04867L10.5 7.93512Z";
+    -icon-paint: #E1E8F1;
+    -fx-shape: "M11.5 2V4.07C7.88 4.53 5.03 7.38 4.57 11H2.5V13H4.57C5.03 16.62 7.88 19.47 11.5 19.93V22H13.5V19.93C17.12 19.47 19.97 16.62 20.43 13H22.5V11H20.43C19.97 7.38 17.12 4.53 13.5 4.07V2M11.5 6.08V8H13.5V6.09C16 6.5 18 8.5 18.42 11H16.5V13H18.41C18 15.5 16 17.5 13.5 17.92V16H11.5V17.91C9 17.5 7 15.5 6.58 13H8.5V11H6.59C7 8.5 9 6.5 11.5 6.08ZM12.5 11C12.2348 11 11.9804 11.1054 11.7929 11.2929C11.6054 11.4804 11.5 11.7348 11.5 12C11.5 12.2652 11.6054 12.5196 11.7929 12.7071C11.9804 12.8946 12.2348 13 12.5 13C12.7652 13 13.0196 12.8946 13.2071 12.7071C13.3946 12.5196 13.5 12.2652 13.5 12C13.5 11.7348 13.3946 11.4804 13.2071 11.2929C13.0196 11.1054 12.7652 11 12.5 11Z";
 }
 .download {
     -width-size: 16;
@@ -653,6 +654,7 @@
     -fx-min-width: -width-size;
     -fx-max-height: -height-size;
     -fx-max-width: -width-size;
+    -icon-paint: #E1E8F1;
     -fx-shape: "M14.5 11V14H2.5V11H0.5V14C0.5 15.1 1.4 16 2.5 16H14.5C15.6 16 16.5 15.1 16.5 14V11H14.5ZM13.5 7L12.09 5.59L9.5 8.17V0H7.5V8.17L4.91 5.59L3.5 7L8.5 12L13.5 7Z";
 }
 .plus-symbol {
@@ -662,6 +664,7 @@
     -fx-min-width: -width-size;
     -fx-max-height: -height-size;
     -fx-max-width: -width-size;
+    -icon-paint: #E1E8F1;
     -fx-shape: "M16.5 9H9.5V16H7.5V9H0.5V7H7.5V0H9.5V7H16.5V9Z";
 }
 
@@ -670,32 +673,50 @@
     -fx-stroke-width: 0;
 }
 
-.project-bar .combo-box {
-    -fx-fill: #C3CDDCFF;
-    -fx-stroke-width: 0;
+/* Editable Combo box Journal #1  */
+.project-bar .combo-box-base,
+.project-bar .combo-box-base:focused {
+    -fx-background-color: #304971, #304971, #304971, #304971, #304971;
+    -fx-background-insets: -0.2, 1, 2, -1.4, 2.6;
+    -fx-background-radius: 3, 2, 1, 4, 1;
+}
+
+.project-bar .combo-box:focused > .list-cell,
+.project-bar .combo-box > .list-cell {
+    -fx-background: #304971;
+    -fx-background-color: #304971;
+    -fx-text-fill: white;
+    -fx-padding: 0.333333em 0.666667em 0.333333em 0.666667em; /* 4 8 4 8 */
+}
+.project-bar .combo-box-base > .arrow-button {
+    -fx-background-radius: 0 3 3 0, 0 2 2 0, 0 1 1 0;
+    -fx-padding: 0.5em 0.667em 0.5em 0.833333em; /* 6 8 6 10 */
+    -fx-background-color: #304971;
 }
 
 .project-bar .combo-box-base > .arrow-button > .arrow {
-    -fx-background-color: -fx-mark-highlight-color, -fx-mark-color;
-    -fx-background-insets: 0 0 -1 0, 0;
-    -fx-padding: 0.166667em 0.333333em 0.166667em 0.333333em; /* 2 4 2 4 */
+    -fx-background-color: #FFFFFF;
     -fx-shape: "M0.792893 0.292893C1.18342 -0.097631 1.81658 -0.097631 2.20711 0.292893L5.5 3.58579L8.79289 0.292893C9.18342 -0.0976311 9.81658 -0.0976311 10.2071 0.292893C10.5976 0.683417 10.5976 1.31658 10.2071 1.70711L6.20711 5.70711C5.81658 6.09763 5.18342 6.09763 4.79289 5.70711L0.792893 1.70711C0.402369 1.31658 0.402369 0.683418 0.792893 0.292893Z";
 }
 .project-bar .combo-box-base:editable > .arrow-button {
-    -fx-background-color: #d7dce3ff;
-    -fx-background-insets: 0;
-    -fx-background-radius: 3px, 3px, 2px, 1px;
-    -fx-padding: 0.333333em 0.666667em 0.333333em 0.666667em; /* 4 8 4 8 */
+    -fx-background-color: #304971;
     -fx-text-fill: -fx-text-base-color;
     -fx-alignment: CENTER;
     -fx-content-display: LEFT;
 }
+/* TODO: ComboBoxThe is not editable yet. The following will be revisited */
+/*.project-bar .combo-box-base:editable > .text-field,*/
+/*.project-bar .combo-box-base:editable > .text-field:focused,*/
+/*.project-bar .combo-box-base:editable:focused > .text-field {*/
+/*    !*-fx-background-color: #white, #304971, #304971, #304971, #304971;*!*/
+/*    !*-fx-background-insets: 3, 1, 2, -1.4, 2.6;*!*/
+/*    !*-fx-background-radius: 8, 2, 1, 4, 1;*!*/
 
-.project-bar .combo-box-base:editable > .text-field {
-    -fx-background-color: #d7dce3ff;
-    -fx-background-insets: 0;
-    -fx-background-radius: 0;
-}
+/*    !*-fx-background-color: blue;*!*/
+/*    -fx-prompt-text-fill: #FFFFFF;*/
+/*    !*-fx-background-insets: -10;*!*/
+/*    !*-fx-background-radius: 5;*!*/
+/*}*/
 
 .chapter-header-bar {
     -icon-paint: #44495EFF;
@@ -1432,7 +1453,7 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .control-container .choice-box > .arrow-button > .arrow {
-    -fx-background-color: -fx-mark-highlight-color, -fx-mark-color;
+    -fx-background-color: -fx-mark-highlight-color, #FFFFFF;
     -fx-background-insets: 0 0 -1 0, 0;
     -fx-padding: 0.166667em 0.333333em 0.166667em 0.333333em; /* 2 4 2 4 */
     -fx-shape: "M0.792893 0.292893C1.18342 -0.097631 1.81658 -0.097631 2.20711 0.292893L5.5 3.58579L8.79289 0.292893C9.18342 -0.0976311 9.81658 -0.0976311 10.2071 0.292893C10.5976 0.683417 10.5976 1.31658 10.2071 1.70711L6.20711 5.70711C5.81658 6.09763 5.18342 6.09763 4.79289 5.70711L0.792893 1.70711C0.402369 1.31658 0.402369 0.683418 0.792893 0.292893Z";
