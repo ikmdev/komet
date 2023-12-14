@@ -766,14 +766,25 @@
 }
 
 .hamburger {
-    -width-size: 4;
-    -height-size: 16;
+    -width-size: 16;
+    -height-size: 4;
     -fx-min-height: -height-size;
     -fx-min-width: -width-size;
     -fx-max-height: -height-size;
     -fx-max-width: -width-size;
     -fx-background-color: #FBFBFCFF;
-    -fx-shape: "M2 4C3.1 4 4 3.1 4 2C4 0.9 3.1 0 2 0C0.9 0 0 0.9 0 2C0 3.1 0.9 4 2 4ZM2 6C0.9 6 0 6.9 0 8C0 9.1 0.9 10 2 10C3.1 10 4 9.1 4 8C4 6.9 3.1 6 2 6ZM0 14C0 12.9 0.9 12 2 12C3.1 12 4 12.9 4 14C4 15.1 3.1 16 2 16C0.9 16 0 15.1 0 14Z";
+    -fx-shape: "M6 10C4.9 10 4 10.9 4 12C4 13.1 4.9 14 6 14C7.1 14 8 13.1 8 12C8 10.9 7.1 10 6 10ZM18 10C16.9 10 16 10.9 16 12C16 13.1 16.9 14 18 14C19.1 14 20 13.1 20 12C20 10.9 19.1 10 18 10ZM10 12C10 10.9 10.9 10 12 10C13.1 10 14 10.9 14 12C14 13.1 13.1 14 12 14C10.9 14 10 13.1 10 12Z";
+}
+
+.collapse {
+    -width-size: 18;
+    -height-size: 18;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-background-color: #F1F3F8;
+    -fx-shape: "M15 21V3H17.03V21H15ZM9 8L13.03 12L9 16V13H6V11H9V8Z";
 }
 
 .chapter-header-bar .label {
@@ -818,11 +829,11 @@
     -default-width: 26px;
     -fx-alignment: center;
     -fx-background-insets: 0;
-    -fx-background-color: #E1E8F1FF;
+    -fx-background-color: #4A7AD2;
     -fx-border-insets: 0 0 0 0;
     -fx-border-style: solid;
     -fx-border-width: 1;
-    -fx-border-color: #B3BDCDFF;
+    -fx-border-color: #304971;
 
     -fx-min-height: -default-height;
     -fx-pref-height: -1;
@@ -842,18 +853,6 @@
     -fx-min-width: -default-width;
     -fx-pref-width: -default-width;
     -fx-max-width: -default-width;
-}
-
-/* The expand icon on the Chapters vertical bar */
-.expand {
-    -width-size: 10;
-    -height-size: 16;
-    -fx-min-height: -height-size;
-    -fx-min-width: -width-size;
-    -fx-max-height: -height-size;
-    -fx-max-width: -width-size;
-    -fx-background-color: #000000;
-    -fx-shape: "M7.99973 0.5V16.5H10.0297V0.5H7.99973Z M0 8.5L4.03 12.5L4.03 9.5H7.03V7.5H4.03V4.5L0 8.5Z";
 }
 
 /* The horizontal header control above the concept details view */
@@ -1003,7 +1002,7 @@
     -fx-min-width: -width-size;
     -fx-max-height: -height-size;
     -fx-max-width: -width-size;
-    -fx-background-color: #44495EFF;
+    -fx-background-color: #F1F3F8;
     -fx-shape: "M11.8337 1.8415L10.6587 0.666504L6.00033 5.32484L1.34199 0.666504L0.166992 1.8415L4.82533 6.49984L0.166992 11.1582L1.34199 12.3332L6.00033 7.67484L10.6587 12.3332L11.8337 11.1582L7.17533 6.49984L11.8337 1.8415Z";
 }
 

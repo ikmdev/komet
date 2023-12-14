@@ -91,6 +91,11 @@
                               <Region prefHeight="200.0" prefWidth="200.0" styleClass="hamburger" />
                            </graphic>
                         </Button>
+                        <Button mnemonicParsing="false" text="Button">
+                           <graphic>
+                              <Region prefHeight="200.0" prefWidth="200.0" styleClass="collapse" />
+                           </graphic>
+                        </Button>
                      </children>
                   </HBox>
                </top>
@@ -102,12 +107,7 @@
                      <children>
                         <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0" styleClass="chapter-block-bar">
                            <children>
-                              <Label alignment="BOTTOM_CENTER" minWidth="-Infinity" rotate="-90.0" text="Chapters" VBox.vgrow="ALWAYS" />
-                              <Button mnemonicParsing="false" text="Button">
-                                 <graphic>
-                                    <Region prefHeight="200.0" prefWidth="200.0" styleClass="expand" />
-                                 </graphic>
-                              </Button>
+                              <Label alignment="BOTTOM_CENTER" minWidth="-Infinity" rotate="-90.0" text="Chapter #2" textFill="WHITE" VBox.vgrow="ALWAYS" />
                            </children>
                         </VBox>
                      </children>
