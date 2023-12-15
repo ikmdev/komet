@@ -68,9 +68,8 @@
 }
 
 .titled-pane {
-    -fx-text-fill: #4581deff;
+    -fx-text-fill: #212430;
     -fx-border-insets: 1, 0, 1, 0;
-    /*-fx-border-color: #9caabfff;*/
 }
 
 .titled-pane:focused {
@@ -78,14 +77,14 @@
 }
 
 .titled-pane > .title {
-    -fx-background-color: #dbe9ffff;
+    -fx-background-color: #F1F3F8;
     -fx-border-width: 1, .5, 1, .5;
-    /*-fx-border-color: #9caabfff;*/
 }
 
 /* focus purely on the arrow */
 .titled-pane:focused > .title > .arrow-button > .arrow {
-    -fx-background-color: -fx-focus-color, -fx-mark-color;
+    -fx-background-color: #4277D8;
+    -fx-shape: "M7.91 8.29508L6.5 9.70508L12.5 15.7051L18.5 9.70508L17.09 8.29508L12.5 12.8751L7.91 8.29508Z";
     -fx-background-insets: -1, 0;
 }
 .titled-pane > .title > .arrow-button {
@@ -896,6 +895,21 @@
     -fx-min-width: -default-width;
     -fx-pref-width: -default-width;
     -fx-max-width: -default-width;
+}
+
+/* applied to an SVGPath Node */
+.duplicate {
+    -fx-fill: #F1F3F8;
+}
+.share-concept {
+    -fx-fill: #F1F3F8;
+}
+.favorite-concept {
+    -fx-fill: #F1F3F8;
+}
+
+.pencil-icon-description {
+    -fx-fill: #4A7AD2;
 }
 /*.concept-header-control .button .icon {*/
 /*    -fx-background-color: -icon-paint;*/
