@@ -206,22 +206,22 @@
                </graphic>
             </ToggleButton>
             <Region styleClass="flex-space" VBox.vgrow="ALWAYS" />
-            <ToggleButton mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
-               <graphic>
-                  <Region prefHeight="200.0" prefWidth="200.0">
-                     <styleClass>
-                        <String fx:value="icon" />
-                        <String fx:value="avatar" />
-                     </styleClass>
-                  </Region>
-               </graphic>
-            </ToggleButton>
             <ToggleButton fx:id="settingsToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
                   <Region prefHeight="200.0" prefWidth="200.0">
                      <styleClass>
                         <String fx:value="icon" />
                         <String fx:value="settings" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </ToggleButton>
+            <ToggleButton mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="avatar" />
                      </styleClass>
                   </Region>
                </graphic>
