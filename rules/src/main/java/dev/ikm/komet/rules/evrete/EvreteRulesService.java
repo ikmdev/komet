@@ -15,23 +15,6 @@
  */
 package dev.ikm.komet.rules.evrete;
 
-import java.io.IOException;
-import java.lang.invoke.MethodHandles;
-import java.util.Map;
-
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
-import org.evrete.Configuration;
-import org.evrete.KnowledgeService;
-import org.evrete.api.ActivationMode;
-import org.evrete.api.FactHandle;
-import org.evrete.api.Knowledge;
-import org.evrete.api.StatelessSession;
-import org.evrete.dsl.AbstractDSLProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
 import dev.ikm.komet.framework.performance.Request;
 import dev.ikm.komet.framework.performance.Statement;
@@ -44,13 +27,30 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.rules.annotated.AxiomFocusedRules;
 import dev.ikm.komet.rules.annotated.ComponentFocusRules;
 import dev.ikm.komet.rules.annotated.NewConceptRules;
+import dev.ikm.komet.rules.annotated.NewPatternRules;
 import dev.ikm.tinkar.common.sets.ConcurrentHashSet;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.entity.ConceptEntityVersion;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.PatternRecord;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.util.Map;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
+import org.evrete.Configuration;
+import org.evrete.KnowledgeService;
+import org.evrete.api.ActivationMode;
+import org.evrete.api.FactHandle;
+import org.evrete.api.Knowledge;
+import org.evrete.api.StatelessSession;
+import org.evrete.dsl.AbstractDSLProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EvreteRulesService implements RuleService {
 
@@ -73,6 +73,7 @@ public class EvreteRulesService implements RuleService {
         conf.addImport(ObservationRecord.class);
         conf.addImport(Statement.class);
         conf.addImport(AxiomSubjectRecord.class);
+        conf.addImport(PatternRecord.class);
 
         for (Map.Entry<Object, Object> confEntry: conf.entrySet()) {
             LOG.info(confEntry.toString());
@@ -80,7 +81,7 @@ public class EvreteRulesService implements RuleService {
 
         this.service = new KnowledgeService(this.conf, MethodHandles.lookup());
         this.knowledge = service.newKnowledge(AbstractDSLProvider.PROVIDER_JAVA_C,
-                ComponentFocusRules.class, NewConceptRules.class, AxiomFocusedRules.class);
+                ComponentFocusRules.class, NewConceptRules.class, AxiomFocusedRules.class, NewPatternRules.class);
         LOG.info("Constructed EvreteRulesService");
     }
 

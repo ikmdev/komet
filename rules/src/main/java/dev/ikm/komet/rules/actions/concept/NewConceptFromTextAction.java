@@ -15,14 +15,14 @@
  */
 package dev.ikm.komet.rules.actions.concept;
 
-import dev.ikm.komet.framework.performance.Request;
-import dev.ikm.komet.rules.actions.AbstractActionImmediate;
-import javafx.event.ActionEvent;
-import org.eclipse.collections.api.list.ImmutableList;
+import static dev.ikm.komet.framework.activity.ActivityStreams.BUILDER;
+
 import dev.ikm.komet.framework.activity.ActivityStreams;
 import dev.ikm.komet.framework.builder.AxiomBuilderRecord;
 import dev.ikm.komet.framework.builder.ConceptEntityBuilder;
+import dev.ikm.komet.framework.performance.Request;
 import dev.ikm.komet.framework.rulebase.GeneratedActionImmediate;
+import dev.ikm.komet.rules.actions.AbstractActionImmediate;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
@@ -33,10 +33,10 @@ import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.event.ActionEvent;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static dev.ikm.komet.framework.activity.ActivityStreams.BUILDER;
 
 public class NewConceptFromTextAction extends AbstractActionImmediate implements GeneratedActionImmediate {
     private static final Logger LOG = LoggerFactory.getLogger(NewConceptFromTextAction.class);
@@ -46,7 +46,8 @@ public class NewConceptFromTextAction extends AbstractActionImmediate implements
     public NewConceptFromTextAction(Request newConceptRequest, ViewCalculator viewCalculator, EditCoordinate editCoordinate) {
         super("New concept from text", viewCalculator, editCoordinate);
         this.newConceptRequest = newConceptRequest;
-        if (newConceptRequest.subject() instanceof String newConceptText) {
+        if (newConceptRequest != null && newConceptRequest.subject() instanceof String newConceptText
+            && newConceptRequest.subject() != "") {
             this.newConceptText = newConceptText;
         } else {
             throw new IllegalStateException("newConceptRequest.subject() is not instanceof String");
@@ -56,7 +57,8 @@ public class NewConceptFromTextAction extends AbstractActionImmediate implements
     public final void doAction(ActionEvent actionEvent, EditCoordinateRecord editCoordinate) {
         TinkExecutor.threadPool().execute(() -> {
             Transaction transaction = Transaction.make("New concept for: " + newConceptText);
-            StampEntity stampEntity = transaction.getStamp(State.ACTIVE, editCoordinate.getAuthorNidForChanges(), editCoordinate.getDefaultModuleNid(), editCoordinate.getDefaultPathNid());
+            StampEntity stampEntity = transaction.getStamp(State.ACTIVE, editCoordinate.getAuthorNidForChanges(),
+                    editCoordinate.getDefaultModuleNid(), editCoordinate.getDefaultPathNid());
             Entity.provider().putStamp(stampEntity);
 
             ConceptEntityBuilder newConceptBuilder = ConceptEntityBuilder.builder(stampEntity);
