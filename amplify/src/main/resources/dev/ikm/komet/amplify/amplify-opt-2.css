@@ -817,10 +817,7 @@
     -fx-alignment: center;
     -fx-background-insets: 0;
     -fx-background-color: #E1E8F1FF;
-    -fx-border-insets: 0 0 0 0;
-    -fx-border-style: solid;
-    -fx-border-width: 1;
-    -fx-border-color: #B3BDCDFF;
+    -fx-border-width: 0;
 
     -fx-min-height: -default-height;
     -fx-pref-height: -1;
@@ -837,9 +834,10 @@
     -fx-alignment: center;
     -fx-background-insets: 0;
     -fx-background-color: #4A7AD2;
+
     -fx-border-insets: 0 0 0 0;
     -fx-border-style: solid;
-    -fx-border-width: 1;
+    -fx-border-width: 0 0 0 1;
     -fx-border-color: #304971;
 
     -fx-min-height: -default-height;
