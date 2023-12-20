@@ -71,36 +71,40 @@
             </HBox>
          </top>
          <center>
-            <BorderPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-               <top>
-                  <HBox fx:id="chapterHeaderbarHBox" alignment="CENTER" prefHeight="100.0" prefWidth="200.0" styleClass="chapter-header-bar" BorderPane.alignment="CENTER">
-                     <children>
-                        <Button mnemonicParsing="false" text="Button">
-                           <graphic>
-                              <Region prefHeight="200.0" prefWidth="200.0">
-                                 <styleClass>
-                                    <String fx:value="icon" />
-                                    <String fx:value="left-arrow" />
-                                 </styleClass>
-                              </Region>
-                           </graphic>
-                        </Button>
-                        <Label fx:id="chaptertitleLabel" alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="Chapter #1" HBox.hgrow="ALWAYS" />
-                        <Button mnemonicParsing="false" text="Button">
-                           <graphic>
-                              <Region prefHeight="200.0" prefWidth="200.0" styleClass="hamburger" />
-                           </graphic>
-                        </Button>
-                        <Button mnemonicParsing="false" text="Button">
-                           <graphic>
-                              <Region prefHeight="200.0" prefWidth="200.0" styleClass="collapse" />
-                           </graphic>
-                        </Button>
-                     </children>
-                  </HBox>
-               </top>
+            <BorderPane BorderPane.alignment="CENTER">
                <center>
-                  <Pane fx:id="desktopSurfacePane" prefHeight="200.0" prefWidth="200.0" styleClass="desktop-area" />
+                  <BorderPane prefHeight="200.0" prefWidth="200.0">
+                     <top>
+                        <HBox fx:id="chapterHeaderbarHBox" alignment="CENTER" prefHeight="100.0" prefWidth="200.0" styleClass="chapter-header-bar" BorderPane.alignment="CENTER">
+                           <children>
+                              <Button mnemonicParsing="false" text="Button">
+                                 <graphic>
+                                    <Region prefHeight="200.0" prefWidth="200.0">
+                                       <styleClass>
+                                          <String fx:value="icon" />
+                                          <String fx:value="left-arrow" />
+                                       </styleClass>
+                                    </Region>
+                                 </graphic>
+                              </Button>
+                              <Label fx:id="chaptertitleLabel" alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="Chapter #1" HBox.hgrow="ALWAYS" />
+                              <Button mnemonicParsing="false" text="Button">
+                                 <graphic>
+                                    <Region prefHeight="200.0" prefWidth="200.0" styleClass="hamburger" />
+                                 </graphic>
+                              </Button>
+                              <Button mnemonicParsing="false" prefWidth="44.0" text="Button">
+                                 <graphic>
+                                    <Region prefHeight="200.0" prefWidth="200.0" styleClass="collapse" />
+                                 </graphic>
+                              </Button>
+                           </children>
+                        </HBox>
+                     </top>
+                     <center>
+                        <Pane fx:id="desktopSurfacePane" prefHeight="200.0" prefWidth="200.0" styleClass="desktop-area" />
+                     </center>
+                  </BorderPane>
                </center>
                <right>
                   <HBox prefHeight="100.0" prefWidth="200.0" styleClass="chapter-block-bar-stack" BorderPane.alignment="CENTER">
