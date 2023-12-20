@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import dev.ikm.komet.builder.ConceptBuilderNodeFactory;
+import dev.ikm.komet.builder.PatternBuilderNodeFactory;
 import dev.ikm.komet.framework.KometNodeFactory;
 
 module dev.ikm.komet.builder {
@@ -23,6 +24,5 @@ module dev.ikm.komet.builder {
     exports dev.ikm.komet.builder;
     
     provides KometNodeFactory
-            with ConceptBuilderNodeFactory;
-
+            with ConceptBuilderNodeFactory, PatternBuilderNodeFactory;
 }
