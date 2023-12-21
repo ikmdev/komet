@@ -17,27 +17,27 @@
                <children>
                   <HBox alignment="CENTER" prefWidth="515.0">
                      <children>
-                        <ToggleButton fx:id="editButton" mnemonicParsing="false" onAction="#showEditView" styleClass="properties-tab" text="Edit">
+                        <ToggleButton fx:id="editButton" mnemonicParsing="false" onAction="#showEditView" styleClass="properties-tab" text="EDIT">
                            <graphic>
-                              <SVGPath content="M8.89461 4.75L9.59961 5.455L2.78961 12.25H2.09961V11.56L8.89461 4.75ZM11.5946 0.25C11.4071 0.25 11.2121 0.325 11.0696 0.4675L9.69711 1.84L12.5096 4.6525L13.8821 3.28C14.1746 2.9875 14.1746 2.5 13.8821 2.2225L12.1271 0.4675C11.9771 0.3175 11.7896 0.25 11.5946 0.25ZM8.89461 2.6425L0.599609 10.9375V13.75H3.41211L11.7071 5.455L8.89461 2.6425Z" scaleX="1.1" scaleY="1.1" styleClass="svg-tab" />
+                              <SVGPath content="M11.7167 8L12.5 8.78333L4.93333 16.3333H4.16667V15.5667L11.7167 8ZM14.7167 3C14.5083 3 14.2917 3.08333 14.1333 3.24167L12.6083 4.76667L15.7333 7.89167L17.2583 6.36667C17.5833 6.04167 17.5833 5.5 17.2583 5.19167L15.3083 3.24167C15.1417 3.075 14.9333 3 14.7167 3ZM11.7167 5.65833L2.5 14.875V18H5.625L14.8417 8.78333L11.7167 5.65833Z" scaleX="1.1" scaleY="1.1" styleClass="svg-tab" />
                            </graphic>
                            <toggleGroup>
                               <ToggleGroup fx:id="propertyToggleButtonGroup" />
                            </toggleGroup>
                         </ToggleButton>
-                        <ToggleButton fx:id="hierarchyButton" mnemonicParsing="false" onAction="#showNavigatorView" styleClass="properties-tab" text="Hierarchy" toggleGroup="$propertyToggleButtonGroup">
+                        <ToggleButton fx:id="hierarchyButton" mnemonicParsing="false" onAction="#showNavigatorView" styleClass="properties-tab" text="HIERARCHY" toggleGroup="$propertyToggleButtonGroup">
                            <graphic>
-                              <SVGPath content="M10 11H5V16H10V18H3V8H5V9H10V11ZM6 2V4H2V2H6ZM8 0H0V6H8V0ZM18 9V11H14V9H18ZM20 7H12V13H20V7ZM18 16V18H14V16H18ZM20 14H12V20H20V14Z" styleClass="svg-tab" />
+                              <SVGPath content="M10.0001 11.3332H5.83342V15.4998H10.0001V17.1665H4.16675V8.83317H5.83342V9.6665H10.0001V11.3332ZM6.66675 3.83317V5.49984H3.33341V3.83317H6.66675ZM8.33342 2.1665H1.66675V7.1665H8.33342V2.1665ZM16.6667 9.6665V11.3332H13.3334V9.6665H16.6667ZM18.3334 7.99984H11.6667V12.9998H18.3334V7.99984ZM16.6667 15.4998V17.1665H13.3334V15.4998H16.6667ZM18.3334 13.8332H11.6667V18.8332H18.3334V13.8332Z" styleClass="svg-tab" />
                            </graphic>
                         </ToggleButton>
-                        <ToggleButton fx:id="historyButton" mnemonicParsing="false" onAction="#showHistoryView" selected="true" styleClass="properties-tab" text="History" toggleGroup="$propertyToggleButtonGroup">
+                        <ToggleButton fx:id="historyButton" mnemonicParsing="false" onAction="#showHistoryView" selected="true" styleClass="properties-tab" text="HISTORY" toggleGroup="$propertyToggleButtonGroup">
                            <graphic>
-                              <SVGPath content="M3 0V6H1V0H3ZM1 20V14H3V20H1ZM4 10C4 11.11 3.11 12 2 12C0.9 12 0 11.11 0 10C0 8.9 0.9 8 2 8C3.11 8 4 8.9 4 10ZM15 2C19.42 2 23 5.58 23 10C23 14.42 19.42 18 15 18C11.4 18 8.36 15.62 7.35 12.35L5 10L7.35 7.65C8.36 4.38 11.4 2 15 2ZM15 4C11.69 4 9 6.69 9 10C9 13.31 11.69 16 15 16C18.31 16 21 13.31 21 10C21 6.69 18.31 4 15 4ZM14 11V6H15.5V10.2L18.5 12L17.68 13.26L14 11Z" styleClass="svg-tab" />
+                              <SVGPath content="M10.8333 3C6.69159 3 3.33325 6.35833 3.33325 10.5H0.833252L4.07492 13.7417L4.13325 13.8583L7.49992 10.5H4.99992C4.99992 7.275 7.60825 4.66667 10.8333 4.66667C14.0583 4.66667 16.6666 7.275 16.6666 10.5C16.6666 13.725 14.0583 16.3333 10.8333 16.3333C9.22492 16.3333 7.76659 15.675 6.71659 14.6167L5.53325 15.8C6.89158 17.1583 8.75825 18 10.8333 18C14.9749 18 18.3333 14.6417 18.3333 10.5C18.3333 6.35833 14.9749 3 10.8333 3ZM9.99992 7.16667V11.3333L13.5666 13.45L14.1666 12.4417L11.2499 10.7083V7.16667H9.99992Z" styleClass="svg-tab" />
                            </graphic>
                         </ToggleButton>
-                        <ToggleButton mnemonicParsing="false" onAction="#showCommentsView" styleClass="properties-tab" text="Comments" toggleGroup="$propertyToggleButtonGroup">
+                        <ToggleButton mnemonicParsing="false" onAction="#showCommentsView" styleClass="properties-tab" text="COMMENTS" toggleGroup="$propertyToggleButtonGroup">
                            <graphic>
-                              <SVGPath fx:id="commentsButton" content="M7 20C6.73478 20 6.48043 19.8946 6.29289 19.7071C6.10536 19.5196 6 19.2652 6 19V16H2C1.46957 16 0.960859 15.7893 0.585786 15.4142C0.210714 15.0391 0 14.5304 0 14V2C0 0.89 0.9 0 2 0H18C18.5304 0 19.0391 0.210714 19.4142 0.585786C19.7893 0.960859 20 1.46957 20 2V14C20 14.5304 19.7893 15.0391 19.4142 15.4142C19.0391 15.7893 18.5304 16 18 16H11.9L8.2 19.71C8 19.9 7.75 20 7.5 20H7ZM8 14V17.08L11.08 14H18V2H2V14H8Z" styleClass="svg-tab" />
+                              <SVGPath fx:id="commentsButton" content="M7.50008 18.8332C7.27907 18.8332 7.06711 18.7454 6.91083 18.5891C6.75455 18.4328 6.66675 18.2209 6.66675 17.9998V15.4998H3.33341C2.89139 15.4998 2.46746 15.3242 2.1549 15.0117C1.84234 14.6991 1.66675 14.2752 1.66675 13.8332V3.83317C1.66675 2.90817 2.41675 2.1665 3.33341 2.1665H16.6667C17.1088 2.1665 17.5327 2.3421 17.8453 2.65466C18.1578 2.96722 18.3334 3.39114 18.3334 3.83317V13.8332C18.3334 14.2752 18.1578 14.6991 17.8453 15.0117C17.5327 15.3242 17.1088 15.4998 16.6667 15.4998H11.5834L8.50008 18.5915C8.33342 18.7498 8.12508 18.8332 7.91675 18.8332H7.50008ZM8.33342 13.8332V16.3998L10.9001 13.8332H16.6667V3.83317H3.33341V13.8332H8.33342Z" styleClass="svg-tab" />
                            </graphic>
                            <font>
                               <Font name="Open Sans Regular" size="13.0" />
