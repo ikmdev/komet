@@ -195,46 +195,55 @@
 }
 
 .properties-tab.toggle-button {
-    -fx-pref-width: 92;
-    -fx-pref-height: 50;
-    -fx-max-height: 50;
+    -fx-pref-width: 84;
+    -fx-pref-height: 40;
+    -fx-max-height: 40;
+    -fx-label-padding: 0px 4px;
     -fx-position-shape: true;
     -fx-scale-shape: false;
     -fx-background-radius: 0;
     -fx-background-color: #e0e8f1ff;
     -fx-alignment: center;
     -fx-content-display: top;
-    -fx-font-family: "Open Sans";
-    -fx-font-size: 1em;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 9px;
     -fx-font-style: normal;
+    -fx-text-fill: #4A7AD2FF;
     /*-fx-content-display: graphic-only;*/
 }
 
 /* SVG inside button setGraphic as SVGPath in FXML*/
 .properties-tab.toggle-button .svg-tab {
-    -fx-fill: #545D72FF;
+    -fx-text-fill: #4A7AD2FF;
+    -fx-fill: #4A7AD2FF;
 }
 
 /* Hover over tab button */
 .properties-tab.toggle-button:hover {
-    -fx-background-color: #67BA3FFF;
-    -fx-text-fill: white;
+    -fx-text-fill: #4A7AD2FF;
+    -fx-fill: #4A7AD2FF;
+    -fx-background-color: #93BEFFFF;
 }
 
 /* Hover over tab button & SVG descendent */
 .properties-tab.toggle-button:hover .svg-tab {
-    -fx-fill: white;
+    -fx-text-fill: #4A7AD2FF;
+    -fx-fill: #4A7AD2FF;
+    -fx-background-color: #93BEFFFF;
 }
 
 /* Hover over tab button */
 .properties-tab.toggle-button:selected {
+    -fx-fill: black;
+    -fx-text-fill: black;
     -fx-background-color: #67BA3FFF;
-    -fx-text-fill: white;
 }
 
 /* Hover over tab button & SVG descendent */
 .properties-tab.toggle-button:selected .svg-tab {
-    -fx-fill: white;
+    -fx-fill: black;
+    -fx-text-fill: black;
+    -fx-background-color: #67BA3FFF;
 }
 
 .properties-tab-container-content {
