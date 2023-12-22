@@ -172,7 +172,7 @@
                   <Region prefHeight="200.0" prefWidth="200.0">
                      <styleClass>
                         <String fx:value="icon" />
-                        <String fx:value="reasoner-icon-left-bar" />
+                        <String fx:value="reasoner-icon" />
                      </styleClass>
                   </Region>
                </graphic>
