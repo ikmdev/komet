@@ -488,9 +488,8 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 							.mostSignificantBits(uuidForSemantic.getMostSignificantBits())
 							.nid(PrimitiveData.nid(uuidForSemantic)).referencedComponentNid(conceptNid)
 							.patternNid(inferredNavigationPatternNid).versions(versionRecords).build();
-
-					IntIdList parentIds = IntIds.list.of(parentNids.toArray());
-					IntIdList childrenIds = IntIds.list.of(childNids.toArray());
+					IntIdSet parentIds = IntIds.set.of(parentNids.toArray());
+					IntIdSet childrenIds = IntIds.set.of(childNids.toArray());
 					versionRecords.add(new SemanticVersionRecord(navigationRecord, updateStampNid,
 							Lists.immutable.of(childrenIds, parentIds)));
 					processSemantic(navigationRecord, updateTransaction);
