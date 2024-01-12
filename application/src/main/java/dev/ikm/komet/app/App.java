@@ -15,6 +15,13 @@
  */
 package dev.ikm.komet.app;
 
+import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
+import static dev.ikm.komet.amplify.commons.CssHelper.refreshPanes;
+import static dev.ikm.komet.app.AppState.*;
+import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
+import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
 import dev.ikm.komet.amplify.commons.CssHelper;
@@ -40,6 +47,7 @@ import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.list.ListNodeFactory;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNodeFactory;
 import dev.ikm.komet.navigator.pattern.PatternNavigatorFactory;
+import dev.ikm.komet.preferences.JournalWindowSettings;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.Preferences;
@@ -53,6 +61,13 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
+import java.io.File;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.time.Year;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.prefs.BackingStoreException;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -64,7 +79,10 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -76,20 +94,6 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.time.Year;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-
-import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
-import static dev.ikm.komet.amplify.commons.CssHelper.refreshPanes;
-import static dev.ikm.komet.app.AppState.*;
-import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
-
 /**
  * JavaFX App
  */
@@ -100,6 +104,25 @@ public class App extends Application {
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
     public static final String CSS_LOCATION = "dev/ikm/komet/framework/graphics/komet.css";
     public static final SimpleObjectProperty<AppState> state = new SimpleObjectProperty<>(STARTING);
+
+    // preferences folder path for the main komet window's preferences
+    public static final String MAIN_KOMET_WINDOW = "main-komet-window";
+
+    // preferences folder path for the journal window(s) preferences
+    public static final String JOURNAL_WINDOW = "journal-window";
+
+    public static final String JOURNAL_NAMES = "JOURNAL_NAMES";
+
+    public static final String JOURNAL_FOLDER_PREFIX = "JOURNAL_";
+
+    public static final Double DEFAULT_JOURNAL_HEIGHT = 600.0;
+
+    public static final Double DEFAULT_JOURNAL_WIDTH = 800.0;
+
+    public static final Double DEFAULT_JOURNAL_XPOS = 100.0;
+
+    public static final Double DEFAULT_JOURNAL_YPOS = 50.0;
+
     private static Stage primaryStage;
     private static Module graphicsModule;
     private static long windowCount = 1;
@@ -114,6 +137,9 @@ public class App extends Application {
      * This is a list of new windows that have been launched. During shutdown, the application close each stage gracefully.
      */
     private List<Stage> journalWindows = new ArrayList<>();
+
+    // keep track of journal window numbers as they are created manually or from preferences
+    private static int journalWindowNumber = 0;
 
     public static void main(String[] args) {
         System.setProperty("apple.laf.useScreenMenuBar", "false");
@@ -250,6 +276,8 @@ public class App extends Application {
 
             kometAppMenu.getItems().add(2, prefsItem);
             kometAppMenu.getItems().add(3, new SeparatorMenuItem());
+            MenuItem appleQuit = kometAppMenu.getItems().getLast();
+            appleQuit.setOnAction(event -> quit());
 
             tk.setApplicationMenu(kometAppMenu);
             //tk.setGlobalMenuBar();
@@ -270,7 +298,7 @@ public class App extends Application {
             // disable until app state is running
             this.createJournalViewMenuItem.setDisable(true);
             viewMenu.getItems().add(this.createJournalViewMenuItem);
-            this.createJournalViewMenuItem.setOnAction(actionEvent -> launchAmplifyDetails("Journal " + (journalWindows.size() + 1)));
+            this.createJournalViewMenuItem.setOnAction(actionEvent -> launchAmplifyDetails("Journal " + (journalWindowNumber + 1), null));
 
             // Window Menu
             Menu windowMenu = new Menu("Window");
@@ -338,10 +366,12 @@ public class App extends Application {
      * When a user selects the menu option View/New Journal a new Stage Window is launched.
      * This method will load a navigation panel to be a publisher and windows will be connected (subscribed) to the activity stream.
      * @param journalName abritrary Journal name.
+     * @param journalWindowSettings if present will give the size and positioning of the journal window
      */
-    private void launchAmplifyDetails(String journalName) {
+    private void launchAmplifyDetails(String journalName, Map<JournalWindowSettings, Object> journalWindowSettings) {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        KometPreferences windowPreferences = appPreferences.node("main-komet-window");
+        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
+
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
 
         Stage amplifyStage = new Stage();
@@ -362,7 +392,18 @@ public class App extends Application {
             amplifyStage.setScene(sourceScene);
             amplifyStage.setTitle(journalName);
 
-            amplifyStage.setMaximized(true);
+            if (journalWindowSettings != null) {
+                // load journal specific window settings
+                amplifyStage.setMaxHeight((Double)journalWindowSettings.get(JOURNAL_HEIGHT));
+                amplifyStage.setMaxWidth((Double)journalWindowSettings.get(JOURNAL_WIDTH));
+                amplifyStage.setX((Double)journalWindowSettings.get(JOURNAL_XPOS));
+                amplifyStage.setY((Double)journalWindowSettings.get(JOURNAL_YPOS));
+            } else {
+                amplifyStage.setMaximized(true);
+                // if being created manually increment the journal number
+                journalWindowNumber++;
+            }
+
             amplifyStage.setOnCloseRequest(windowEvent -> {
                 // call shutdown method on the controller
                 journalController.shutdown();
@@ -389,7 +430,68 @@ public class App extends Application {
 
         journalWindows.add(amplifyStage);
         amplifyStage.show();
+    }
 
+    private void saveJournalWindowsToPreferences() {
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        KometPreferences journalPreferences = appPreferences.node(JOURNAL_WINDOW);
+
+        List<String> journalSubWindowFolders = new ArrayList<>(journalWindows.size());
+        for(Stage journalWindow : journalWindows) {
+            String journalSubWindowPrefFolder = JOURNAL_FOLDER_PREFIX + UUID.randomUUID();
+            journalSubWindowFolders.add(journalSubWindowPrefFolder);
+
+            KometPreferences journalSubWindowPreferences = appPreferences.node(JOURNAL_WINDOW +
+                    File.separator + journalSubWindowPrefFolder);
+            journalSubWindowPreferences.put(JOURNAL_TITLE, journalWindow.getTitle());
+            journalSubWindowPreferences.putDouble(JOURNAL_HEIGHT, journalWindow.getHeight());
+            journalSubWindowPreferences.putDouble(JOURNAL_WIDTH, journalWindow.getWidth());
+            journalSubWindowPreferences.putDouble(JOURNAL_XPOS, journalWindow.getX());
+            journalSubWindowPreferences.putDouble(JOURNAL_YPOS, journalWindow.getY());
+        }
+        journalPreferences.putList(JOURNAL_NAMES, journalSubWindowFolders);
+
+        try {
+            journalPreferences.flush();
+        } catch (BackingStoreException e) {
+            LOG.error("error writing journal window flag to preferences", e);
+        }
+    }
+
+    private void recreateJournalWindows(KometPreferences journalPreferences) {
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        for (String journalSubWindowPrefFolder : journalPreferences.getList(JOURNAL_NAMES)) {
+            KometPreferences journalSubWindowPreferences = appPreferences.node(JOURNAL_WINDOW +
+                    File.separator + journalSubWindowPrefFolder);
+            Optional<String> journalTitleOptional = journalSubWindowPreferences.get(JOURNAL_TITLE);
+
+            Double height = journalSubWindowPreferences.getDouble(
+                    journalSubWindowPreferences.enumToGeneralKey(JOURNAL_HEIGHT), DEFAULT_JOURNAL_HEIGHT);
+            Double width = journalSubWindowPreferences.getDouble(
+                    journalSubWindowPreferences.enumToGeneralKey(JOURNAL_WIDTH), DEFAULT_JOURNAL_WIDTH);
+            Double xpos = journalSubWindowPreferences.getDouble(
+                    journalSubWindowPreferences.enumToGeneralKey(JOURNAL_XPOS), DEFAULT_JOURNAL_XPOS);
+            Double ypos = journalSubWindowPreferences.getDouble(
+                    journalSubWindowPreferences.enumToGeneralKey(JOURNAL_YPOS), DEFAULT_JOURNAL_YPOS);
+
+
+            Map<JournalWindowSettings, Object> journalWindowSettings = new HashMap<>();
+            journalWindowSettings.put(JOURNAL_HEIGHT, height);
+            journalWindowSettings.put(JOURNAL_WIDTH, width);
+            journalWindowSettings.put(JOURNAL_XPOS, xpos);
+            journalWindowSettings.put(JOURNAL_YPOS, ypos);
+
+            if (journalTitleOptional.isPresent()) {
+                launchAmplifyDetails(journalTitleOptional.get(), journalWindowSettings);
+                // keep track of latest journal number when reloading from preferences
+                journalWindowNumber = parseJournalNumber(journalTitleOptional.get());
+            }
+
+        }
+    }
+
+    private int parseJournalNumber(String journalName) {
+        return Integer.parseInt(journalName.split(" ")[1]);
     }
 
     /**
@@ -531,7 +633,7 @@ public class App extends Application {
 
                     primaryStage.setScene(kometScene);
 
-                    KometPreferences windowPreferences = appPreferences.node("main-komet-window");
+                    KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
                     boolean mainWindowInitialized = windowPreferences.getBoolean(KometStageController.WindowKeys.WINDOW_INITIALIZED, false);
                     controller.setup(windowPreferences);
                     primaryStage.setTitle("Komet");
@@ -570,6 +672,8 @@ public class App extends Application {
                         createJournalViewMenuItem.setDisable(false);
                         KeyCombination newJournalKeyCombo = new KeyCodeCombination(KeyCode.J, KeyCombination.SHORTCUT_DOWN);
                         createJournalViewMenuItem.setAccelerator(newJournalKeyCombo);
+                        KometPreferences journalPreferences = appPreferences.node(JOURNAL_WINDOW);
+                        recreateJournalWindows(journalPreferences);
                     }
 
                 }
@@ -607,7 +711,7 @@ public class App extends Application {
 
         MenuItem newJournal = new MenuItem("New Journal");
         KeyCombination newJournalKeyCombo = new KeyCodeCombination(KeyCode.J, KeyCombination.CONTROL_DOWN);
-        newJournal.setOnAction(actionEvent -> launchAmplifyDetails("Journal " + (journalWindows.size() + 1)));
+        newJournal.setOnAction(actionEvent -> launchAmplifyDetails("Journal " + (journalWindowNumber + 1), null));
         newJournal.setAccelerator(newJournalKeyCombo);
         editMenu.getItems().add(newJournal);
 
@@ -643,6 +747,8 @@ public class App extends Application {
 
 
     private void quit() {
+        //TODO: that this call will likely be moved into the landing page functionality
+        saveJournalWindowsToPreferences();
         PrimitiveData.stop();
         Preferences.stop();
         Platform.exit();
