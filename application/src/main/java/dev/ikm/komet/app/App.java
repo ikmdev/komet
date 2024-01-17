@@ -15,19 +15,14 @@
  */
 package dev.ikm.komet.app;
 
-import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
-import static dev.ikm.komet.amplify.commons.CssHelper.refreshPanes;
-import static dev.ikm.komet.app.AppState.*;
-import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
-import static dev.ikm.komet.preferences.JournalWindowSettings.*;
-
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
 import dev.ikm.komet.amplify.commons.CssHelper;
 import dev.ikm.komet.amplify.commons.ResourceHelper;
 import dev.ikm.komet.amplify.journal.JournalController;
 import dev.ikm.komet.amplify.journal.JournalViewFactory;
+import dev.ikm.komet.amplify.landingpage.LandingPageController;
+import dev.ikm.komet.amplify.landingpage.LandingPageViewFactory;
 import dev.ikm.komet.details.DetailsNodeFactory;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
@@ -61,13 +56,6 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import java.io.File;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.time.Year;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.prefs.BackingStoreException;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -93,6 +81,21 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.time.Year;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.prefs.BackingStoreException;
+
+import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
+import static dev.ikm.komet.amplify.commons.CssHelper.refreshPanes;
+import static dev.ikm.komet.app.AppState.*;
+import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
+import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
 /**
  * JavaFX App
@@ -137,6 +140,7 @@ public class App extends Application {
      * This is a list of new windows that have been launched. During shutdown, the application close each stage gracefully.
      */
     private List<Stage> journalWindows = new ArrayList<>();
+    private static Stage landingPageWindow;
 
     // keep track of journal window numbers as they are created manually or from preferences
     private static int journalWindowNumber = 0;
@@ -300,6 +304,12 @@ public class App extends Application {
             viewMenu.getItems().add(this.createJournalViewMenuItem);
             this.createJournalViewMenuItem.setOnAction(actionEvent -> launchAmplifyDetails("Journal " + (journalWindowNumber + 1), null));
 
+            MenuItem landingPage = new MenuItem("_Landing Page");
+            KeyCombination landingPageKeyCombo = new KeyCodeCombination(KeyCode.L, KeyCombination.SHORTCUT_DOWN);
+            landingPage.setOnAction(actionEvent -> launchLandingPage());
+            landingPage.setAccelerator(landingPageKeyCombo);
+            viewMenu.getItems().add(landingPage);
+
             // Window Menu
             Menu windowMenu = new Menu("Window");
             windowMenu.getItems().addAll(tk.createMinimizeMenuItem(), tk.createZoomMenuItem(), tk.createCycleWindowsItem(),
@@ -362,6 +372,53 @@ public class App extends Application {
         }
     }
 
+    private void launchLandingPage() {
+        if (landingPageWindow != null) {
+            landingPageWindow.show();
+            return;
+        }
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        KometPreferences windowPreferences = appPreferences.node("main-komet-window");
+        WindowSettings windowSettings = new WindowSettings(windowPreferences);
+
+        Stage amplifyStage = new Stage();
+        FXMLLoader landingPageLoader = LandingPageViewFactory.createFXMLLoader();
+
+        JournalController journalController;
+        try {
+            BorderPane amplifyLandingPageBorderPane = landingPageLoader.load();
+            LandingPageController landingPageController = landingPageLoader.getController();
+            Scene sourceScene = new Scene(amplifyLandingPageBorderPane, 1200, 800);
+
+            // Add Komet.css and amplify css
+            sourceScene.getStylesheets().addAll(
+                    graphicsModule.getClassLoader().getResource(CSS_LOCATION).toString(), CssHelper.defaultStyleSheet());
+
+            // Attach a listener to provide a CSS refresher ability for each Journal window. Right double click settings button (gear)
+            attachCSSRefresher(landingPageController.getSettingsToggleButton(), amplifyLandingPageBorderPane);
+
+            amplifyStage.setScene(sourceScene);
+            amplifyStage.setTitle("Landing Page");
+
+            amplifyStage.setMaximized(true);
+            amplifyStage.setOnCloseRequest(windowEvent -> {
+                // call shutdown method on the controller
+                landingPageController.cleanup();
+                landingPageWindow = null;
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Launch windows window pane inside journal view
+        amplifyStage.setOnShown(windowEvent -> {
+            // do stuff when shown.
+        });
+
+        landingPageWindow = amplifyStage;
+        amplifyStage.show();
+
+    }
     /**
      * When a user selects the menu option View/New Journal a new Stage Window is launched.
      * This method will load a navigation panel to be a publisher and windows will be connected (subscribed) to the activity stream.
@@ -714,6 +771,12 @@ public class App extends Application {
         newJournal.setOnAction(actionEvent -> launchAmplifyDetails("Journal " + (journalWindowNumber + 1), null));
         newJournal.setAccelerator(newJournalKeyCombo);
         editMenu.getItems().add(newJournal);
+
+        MenuItem landingPage = new MenuItem("Landing Page");
+        KeyCombination landingPageKeyCombo = new KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN);
+        landingPage.setOnAction(actionEvent -> launchLandingPage());
+        landingPage.setAccelerator(landingPageKeyCombo);
+        editMenu.getItems().add(landingPage);
 
         Menu windowMenu = new Menu("Window");
         MenuItem minimizeWindow = new MenuItem("Minimize");

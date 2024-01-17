@@ -35,6 +35,9 @@ module dev.ikm.komet.amplify {
     opens dev.ikm.komet.amplify.journal to javafx.fxml;
     exports dev.ikm.komet.amplify.journal;
 
+    opens dev.ikm.komet.amplify.landingpage to javafx.fxml;
+    exports dev.ikm.komet.amplify.landingpage;
+
     opens dev.ikm.komet.amplify.window to javafx.fxml;
     exports dev.ikm.komet.amplify.window;
 
