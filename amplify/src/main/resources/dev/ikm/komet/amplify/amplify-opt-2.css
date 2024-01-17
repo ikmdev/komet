@@ -12,7 +12,7 @@
 
     -Secondary-07: #304971;
     -Secondary-06: #395C9A;
-    -Secondary-05: #4277D8;
+    -Secondary-05: #4A7AD2;
     -Secondary-04: #5896F6;
     -Secondary-03: #9DC4FF;
     -Secondary-02: #CADFFF;
@@ -40,8 +40,10 @@
     -Accent-color-lavender: #956AFF;
     -Accent-color-blue: #0085FF;
     -Accent-color-tiffany: #02CACD;
+    -Chip-Accepted-color-green: #00BC62;
+    -Chip-Error-color-red: -Accent-color-red;
 
-    -fx-font-family: "OpenSans";
+    -fx-font-family: "Noto Sans";
 }
 
 .rounded-top {
@@ -247,7 +249,7 @@
     -fx-font-family: "Noto Sans";
     -fx-font-size: 9px;
     -fx-font-style: normal;
-    -fx-text-fill: #4A7AD2FF;
+    -fx-text-fill: -Secondary-05;
     /*-fx-content-display: graphic-only;*/
 }
 
@@ -307,12 +309,12 @@
 
 /* Mouse hover on top of pill button */
 .toggle-button.left-pill:hover, .toggle-button.center-pill:hover, .toggle-button.right-pill:hover {
-    -fx-text-fill: #4A7AD2ff;
+    -fx-text-fill: -Secondary-05;
 }
 
 /* Selected pill button */
 .toggle-button.left-pill:selected, .toggle-button.center-pill:selected, .toggle-button.right-pill:selected {
-    -fx-text-fill: #4A7AD2ff;
+    -fx-text-fill: -Secondary-05;
     -fx-background-color: -Grey-White;
 }
 
@@ -409,7 +411,7 @@
 .descr-semantic-name {
     -fx-font-family: "Open Sans";
     -fx-font-weight: bold;
-    -fx-text-fill: #4A7AD2ff;
+    -fx-text-fill: -Secondary-05;
     -fx-font-size: 1.166667em;
 }
 .descr-comment {
@@ -431,9 +433,9 @@
 .side-bar {
     -icon-paint: -Grey-10;
     -default-height: -1;
-    -default-width: 48px;
+    -default-width: -1;
     -default-button-height: 56px;
-    -default-button-width: 48px;
+    -default-button-width: -1;
 
     -fx-alignment: top-center;
     -fx-background-insets: 0;
@@ -458,6 +460,13 @@
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-background-radius: 0px, 0px, 0px, 0px;
+    -fx-padding: 16 12;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 400;
+    -fx-text-fill: -Grey-3;
+    -fx-alignment: baseline-left;
     -fx-min-height: -default-button-height;
     -fx-pref-height: -default-button-height;
     -fx-max-height: -default-button-height;
@@ -465,6 +474,15 @@
     -fx-min-width: -default-button-width;
     -fx-pref-width: -default-button-width;
     -fx-max-width: -default-button-width;
+}
+
+.side-bar.show-text > .button,
+.side-bar.show-text > .toggle-button  {
+    -fx-content-display: left;
+    -fx-graphic-text-gap: 8;
+    -fx-min-width: -default-button-width;
+    -fx-pref-width: 144;
+    -fx-max-width: 144;
 }
 
 /* all sidebar button regions are transparent */
@@ -483,6 +501,10 @@ selected(active) - dark black
 */
 
 /* Hover over tab button */
+.side-bar.show-text .toggle-button:selected,
+.side-bar.show-text .button:selected,
+.side-bar.show-text .toggle-button:hover,
+.side-bar.show-text .button:hover,
 .side-bar .toggle-button:selected,
 .side-bar .button:selected,
 .side-bar .toggle-button:hover,
@@ -891,7 +913,7 @@ selected(active) - dark black
     -default-width: 26px;
     -fx-alignment: center;
     -fx-background-insets: 0;
-    -fx-background-color: #4A7AD2;
+    -fx-background-color: -Secondary-05;
 
     -fx-border-insets: 0 0 0 0;
     -fx-border-style: solid;
@@ -973,7 +995,7 @@ selected(active) - dark black
 }
 
 .pencil-icon-description {
-    -fx-fill: #4A7AD2;
+    -fx-fill: -Secondary-05;
 }
 /*.concept-header-control .button .icon {*/
 /*    -fx-background-color: -icon-paint;*/
@@ -1110,7 +1132,7 @@ selected(active) - dark black
     -fx-arc-height: 20;
     -fx-arc-width: 20;
     -fx-stroke-width: 0;
-    -fx-fill: #4A7AD2;
+    -fx-fill: -Secondary-05;
 }
 .toggle-button:selected .toggle-switch-body {
     -fx-arc-height: 20;
@@ -1436,7 +1458,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-pref-height: 32;
     -fx-max-height: 32;
     -fx-background-radius: 4;
-    -fx-background-color: #4A7AD2FF;
+    -fx-background-color: -Secondary-05;
     -fx-alignment: center;
     -fx-font-family: "Open Sans SemiBold";
     -fx-font-size: 1.166667em;
@@ -1505,7 +1527,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-radius: 0;
     -fx-background-color: transparent;
     -fx-alignment: center;
-    -fx-content-display: graphic-only;
+    /*-fx-content-display: graphic-only;*/
 
 }
 
@@ -1670,4 +1692,519 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-family: "Open Sans SemiBold";
     -fx-font-size: 1em;
     -fx-text-fill: -Grey-White;
+}
+
+
+
+/*
+
+Landing page elements.
+    Notifications
+    flat-split-divider
+ */
+.landing-container {
+    -fx-min-width: 144px;
+    -fx-min-height: -1;
+
+    -fx-pref-width: 1228px;
+    -fx-pref-height: 1045px;
+
+    -fx-max-width: 4000px;
+    -fx-max-height: 4000px;
+
+}
+
+/* label */
+.counter {
+    -fx-text-fill: -Grey-White;
+    -fx-label-padding: 2;
+    -fx-padding: 0 4 1 4;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 11px;
+    -fx-font-style: normal;
+    -fx-font-weight: 700;
+    -fx-background-radius: 12;
+    -fx-background-color: -Accent-color-red;
+
+}
+
+.split-pane.flat-split-divider:horizontal > .split-pane-divider {
+    -fx-background-color: transparent;
+}
+
+.split-pane.flat-split-divider:vertical > .split-pane-divider {
+    -fx-background-color: transparent;
+}
+
+/* Notification area (top section) AnchorPane*/
+.notification-container {
+    -fx-background-color: -Grey-3;
+    -fx-max-height: 356px;
+}
+
+/* welcome container HBox > Label StackPane*/
+.welcome-container {
+    -fx-padding: 8 0 8 8;
+    /*-fx-border-width: 1px;*/
+    /*-fx-border-color: blue;*/
+}
+/* Welcome, David */
+.welcome-title {
+    -fx-text-fill: -Secondary-06;
+    -fx-fill: -Secondary-06;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 28px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+    -fx-max-width: 1728px;
+    /*-fx-border-width: 1px;*/
+    /*-fx-border-color: red;*/
+
+}
+/* help tips circle - StackPane > Circle SVGPath*/
+.help-tips > .circle-background {
+    -fx-stroke: transparent;
+    -fx-stroke-width: 0px;
+    -fx-fill: -Secondary-05;
+}
+.help-tips .help-shape {
+    -fx-fill: -Grey-White;
+}
+
+.notification-container {
+    -fx-spacing: 8;
+}
+/* notification section hbox > region dropdown button*/
+.notification-title-icon {
+    -fx-pref-width: 20px;
+    -fx-max-width: 20;
+    -fx-pref-height: 20px;
+    -fx-max-height: 20px;
+    -fx-background-color: -Grey-Black;
+    -fx-shape: "M19 17V11.8C18.5 11.9 18 12 17.5 12H17V18H7V11C7 8.2 9.2 6 12 6C12.1 4.7 12.7 3.6 13.5 2.7C13.2 2.3 12.6 2 12 2C10.9 2 10 2.9 10 4V4.3C7 5.2 5 7.9 5 11V17L3 19V20H21V19L19 17ZM10 21C10 22.1 10.9 23 12 23C13.1 23 14 22.1 14 21H10ZM21 6.5C21 8.4 19.4 10 17.5 10C15.6 10 14 8.4 14 6.5C14 4.6 15.6 3 17.5 3C19.4 3 21 4.6 21 6.5Z";
+    /*-fx-background-insets: -1, 0;*/
+}
+.notification-title {
+    -fx-text-fill: -Grey-11;
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 16px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+    -fx-max-width: 1728px;
+}
+
+.landing-container .combo-box-base,
+.landing-container .combo-box-base:focused {
+    -fx-background-color: -Secondary-05, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 2, 2;
+    -fx-pref-height: 28px;
+    -fx-max-height: 28px;
+}
+
+.landing-container .combo-box:focused > .list-cell,
+.landing-container .combo-box > .list-cell {
+    -fx-background: -Grey-1;
+    -fx-background-color: -Grey-1;
+    -fx-text-fill: white;
+    -fx-padding: 0.333333em 0.666667em 0.333333em 0.666667em; /* 4 8 4 8 */
+}
+.landing-container .combo-box-base > .arrow-button {
+    -fx-background-radius: 0 3 3 0, 0 2 2 0, 0 1 1 0;
+    -fx-padding: 0.5em 0.667em 0.5em 0.833333em; /* 6 8 6 10 */
+    -fx-background-color: -Grey-1;
+}
+
+.landing-container .combo-box-base > .arrow-button > .arrow {
+    -fx-background-color: -Secondary-05;
+    -fx-shape: "M0.792893 0.292893C1.18342 -0.097631 1.81658 -0.097631 2.20711 0.292893L5.5 3.58579L8.79289 0.292893C9.18342 -0.0976311 9.81658 -0.0976311 10.2071 0.292893C10.5976 0.683417 10.5976 1.31658 10.2071 1.70711L6.20711 5.70711C5.81658 6.09763 5.18342 6.09763 4.79289 5.70711L0.792893 1.70711C0.402369 1.31658 0.402369 0.683418 0.792893 0.292893Z";
+}
+.landing-container .combo-box-base:editable > .arrow-button {
+    -fx-background-color: -Grey-1;
+    -fx-text-fill: -fx-text-base-color;
+    -fx-alignment: CENTER;
+    -fx-content-display: LEFT;
+}
+
+.notification-card-container.scroll-pane,
+.notification-card-container.scroll-pane:focused {
+    -fx-pref-height: 196px;
+    -fx-background-color: -Grey-3;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+}
+.notification-card-container.scroll-pane > .viewport,
+.notification-card-container.scroll-pane:focused > .viewport {
+    -fx-pref-height: 196px;
+    -fx-background-color: -Grey-3;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+}
+.card {
+    -fx-background-radius: 8px;
+    -fx-background-color: -Grey-White;
+    -fx-border-color: -Grey-6;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    /*-fx-padding: 12px 16px;*/
+    /*
+    Figma:
+    0px 4px 4px 0px
+    box-shadow: [horizontal offset] [vertical offset] [blur radius] [spread radius] [color];
+    x, y, blur, spread, color
+    0, 4,   4, 0,
+
+    JavaFX effect DropShadow:
+    blurType - the algorithm used to blur the shadow
+    color - the shadow Color
+    radius - the radius of the shadow blur kernel
+    spread - the portion of the radius where the contribution of the source material will be 100%
+    offsetX - the shadow offset in the x direction
+    offsetY - the shadow offset in the y direction
+    color, blur, spread, x, y
+         ,    4,      0, 0, 4
+    */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 4, 0, 0, 4);
+}
+
+.notification-card {
+    -fx-pref-width: 280px;
+    -fx-pref-height: 178px;
+}
+
+.journal-project-card {
+    -default-width: 280px;
+    -default-height: 226px;
+    -fx-pref-width: -default-width;
+    -fx-pref-height: -default-height;
+    -fx-min-width: -default-width;
+    -fx-min-height: -default-height;
+    -fx-max-width: -default-width;
+    -fx-max-height: -default-height;
+}
+
+/* region svg shape of an X to close card */
+.notification-card .close-button {
+    -fx-background-radius: 4px;
+    -fx-background-insets: 0;
+    -fx-background-color: -Grey-8;
+    -fx-padding: 4;
+
+    -width-size: 12px;
+    -height-size: 12px;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M15.8334 5.3415L14.6584 4.1665L10.0001 8.82484L5.34175 4.1665L4.16675 5.3415L8.82508 9.99984L4.16675 14.6582L5.34175 15.8332L10.0001 11.1748L14.6584 15.8332L15.8334 14.6582L11.1751 9.99984L15.8334 5.3415Z";
+}
+/* Contains the card's info VBox */
+.card-info-container {
+    /*-fx-padding: 12px 16px;*/
+
+}
+.card-info-container .title {
+    -fx-text-fill: -Grey-Black;
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+}
+.card-info-container .validation-counts {
+    -fx-fill: -Accent-color-red;
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 32px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+}
+.card-info-container .validation-message {
+    -fx-fill: -Grey-12;
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 13px;
+    -fx-font-style: normal;
+    -fx-font-weight: 400;
+}
+.card-info-container .edit-info-container {
+    -fx-spacing: 6px;
+}
+.card-info-container .icon.avatar {
+    -fx-background-color: -Secondary-05;
+}
+
+.card-info-container .last-user-edit {
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 11px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-text-fill: -Grey-11;
+    -fx-fill: -Grey-8;
+}
+
+.card-info-container .edit-time {
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 11px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-text-fill: -Grey-8;
+    -fx-fill: -Grey-8;
+}
+
+
+.landing-container .button {
+    -fx-text-fill: -Secondary-05;
+    -fx-text-alignment: center;
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+    -fx-pref-height: 32px;
+    -fx-max-height: 32px;
+    -fx-background-color: -Secondary-05, -Grey-2;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4;
+}
+
+/* All notification button on landing page */
+.landing-container .button.all-notification-button {
+    -fx-background-color: -Secondary-05, -Grey-2;
+}
+
+.landing-container .button.all-notification-button:hover {
+    -fx-background-color: -Secondary-04, -Grey-1;
+    -fx-text-fill: -Secondary-04;
+}
+
+.add-symbol {
+    -fx-shape: "M16.6666 10.8334H10.8333V16.6667H9.16665V10.8334H3.33331V9.16671H9.16665V3.33337H10.8333V9.16671H16.6666V10.8334Z";
+}
+
+.add-new-journal-button {
+    -fx-background-color: -Grey-White;
+    -width-size: 12;
+    -height-size: 12;
+    -fx-scale-shape: true;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+}
+
+.add-new-journal-card {
+    -fx-background-color: -Secondary-05;
+    -width-size: 56;
+    -height-size: 56;
+    -fx-scale-shape: true;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+}
+
+.create-new-journal-card-text {
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+
+    -fx-min-width: 264;
+    -fx-min-height: 64;
+    -fx-pref-width: 264;
+    -fx-pref-height: 64;
+    -fx-max-width: 264;
+    -fx-max-height: 64;
+
+}
+
+.import-symbol {
+    -width-size: 12;
+    -height-size: 12;
+    -fx-scale-shape: true;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-background-color: -Secondary-04;
+    -fx-shape: "M15 12.5V15H4.99998V12.5H3.33331V15C3.33331 15.9167 4.08331 16.6667 4.99998 16.6667H15C15.9166 16.6667 16.6666 15.9167 16.6666 15V12.5H15ZM14.1666 9.16671L12.9916 7.99171L10.8333 10.1417V3.33337H9.16665V10.1417L7.00831 7.99171L5.83331 9.16671L9.99998 13.3334L14.1666 9.16671Z";
+}
+
+.landing-container .button.main-button {
+    -fx-text-fill: -Grey-White;
+    -fx-text-alignment: center;
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+    -fx-pref-height: 32px;
+    -fx-max-height: 32px;
+    -fx-pref-width: 204px;
+    -fx-background-color: -Secondary-05;
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+}
+
+.landing-container .button.main-button:hover {
+    -fx-background-color: -Secondary-04;
+}
+
+/* Import button on landing page */
+.landing-container .button.import-button .import-symbol {
+    -fx-background-color: -Secondary-04;
+}
+.landing-container .button.import-button {
+    -fx-text-fill: -Secondary-04;
+    -fx-background-color: -Secondary-04, -Grey-1;
+}
+
+.landing-container .button.import-button:hover .import-symbol {
+    -fx-background-color: -Secondary-05;
+}
+.landing-container .button.import-button:hover {
+    -fx-text-fill: -Secondary-05;
+    -fx-background-color: -Secondary-05, -Grey-2;
+}
+
+
+.landing-container .text-field {
+    -fx-text-alignment: center;
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 16px;
+    -fx-font-style: normal;
+    -fx-font-weight: 400;
+}
+
+.landing-container .flex-space-horizontal {
+    -fx-min-width: 8;
+    -fx-pref-width: -1;
+    -fx-max-width: 3000;
+}
+
+.grid-view-symbol {
+    -width-size: 25;
+    -height-size: 25;
+    -fx-scale-shape: true;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-background-color: -Secondary-05;
+    -fx-shape: "M4.50389 25.6666C3.30513 25.6666 2.33334 24.6948 2.33334 23.4961V16.9845C2.33334 15.7857 3.30513 14.8139 4.50389 14.8139H11.0155C12.2143 14.8139 13.1861 15.7857 13.1861 16.9845V23.4961C13.1861 24.6948 12.2143 25.6666 11.0155 25.6666H4.50389ZM4.50389 23.4961H11.0155V16.9845H4.50389V23.4961ZM4.50389 13.186C3.30513 13.186 2.33334 12.2142 2.33334 11.0155V4.50384C2.33334 3.30508 3.30513 2.33329 4.50389 2.33329H11.0155C12.2143 2.33329 13.1861 3.30508 13.1861 4.50384V11.0155C13.1861 12.2142 12.2143 13.186 11.0155 13.186H4.50389ZM4.50389 11.0155H11.0155V4.50384H4.50389V11.0155ZM14.814 23.4961C14.814 24.6948 15.7857 25.6666 16.9845 25.6666H23.4961C24.6949 25.6666 25.6667 24.6948 25.6667 23.4961V16.9845C25.6667 15.7857 24.6949 14.8139 23.4961 14.8139H16.9845C15.7857 14.8139 14.814 15.7857 14.814 16.9845V23.4961ZM23.4961 23.4961H16.9845V16.9845H23.4961V23.4961ZM16.9845 13.186C15.7857 13.186 14.814 12.2142 14.814 11.0155V4.50384C14.814 3.30508 15.7857 2.33329 16.9845 2.33329H23.4961C24.6949 2.33329 25.6667 3.30508 25.6667 4.50384V11.0155C25.6667 12.2142 24.6949 13.186 23.4961 13.186H16.9845ZM16.9845 11.0155H23.4961V4.50384H16.9845V11.0155Z";
+}
+
+.journal-project-container {
+    -fx-background-color: -Grey-White;
+}
+.journal-card-container-scroll-pane > .viewport {
+    -fx-background-color: -Grey-White;
+}
+/* A grid view FlowPane inside a scroll-pane*/
+.journal-project-container .titled-pane .grid-view-layout {
+    -fx-hgap: 24;
+    -fx-vgap: 20;
+    -fx-background-insets: 0;
+    -fx-background-color: transparent;
+    /*-fx-pref-width: 800px;*/
+}
+
+/* */
+.card-chapter-container {
+    -fx-background-insets: 0;
+    -fx-background-color: -Grey-2;
+    -fx-hgap: 15;
+    -fx-vgap: 8;
+    -fx-pref-width: 250px;
+    -fx-pref-height: 3000px;
+}
+.card-chapter-window {
+    /* titlebar */
+    -fx-background-insets: 0, 6 0 0 0;
+    -fx-background-radius: 2, 0 0 2 2;
+    -fx-background-color: -Secondary-07, #CAD3E2;
+    -fx-pref-width: 118px;
+    -fx-pref-height: 69px;
+}
+.status-info-container {
+    -fx-spacing: 4;
+}
+.chip-text {
+    -fx-background-insets: 0;
+    -fx-background-color: -Chip-Accepted-color-green;
+    -fx-background-radius: 4;
+    -fx-padding: 2px 4px 0px 4px;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    -fx-text-fill: white;
+    -fx-text-alignment: center;
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 11px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+
+}
+
+.chip-accepted {
+    -fx-background-color: -Chip-Accepted-color-green;
+    -fx-pref-height: 20px;
+    -fx-pref-width: 57px;
+}
+
+.chip-error {
+    -fx-background-color: -Chip-Error-color-red;
+}
+
+.chip-new {
+    -fx-background-color: -Accent-color-lavender;
+}
+
+.chip-under-review{
+    -fx-background-color: -Accent-color-yellow;
+}
+
+
+/* The main scrollbar **track** CSS class  */
+.landing-container .scroll-bar:horizontal .track,
+.landing-container .scroll-bar:vertical .track{
+    -fx-background-color:transparent;
+    -fx-border-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-border-radius:2em;
+}
+
+/* The increment and decrement button CSS class of scrollbar */
+.landing-container .scroll-bar:horizontal .increment-button ,
+.landing-container .scroll-bar:horizontal .decrement-button {
+    -fx-background-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-padding:0 0 10 0;
+
+}
+
+/* The increment and decrement button CSS class of scrollbar */
+
+.landing-container .scroll-bar:vertical .increment-button ,
+.landing-container .scroll-bar:vertical .decrement-button {
+
+    -fx-background-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-padding:0 10 0 0;
+
+}
+
+.landing-container  .scroll-bar .increment-arrow,
+.landing-container  .scroll-bar .decrement-arrow
+{
+    -fx-shape: " ";
+    -fx-padding:0;
+}
+
+/* The main scrollbar **thumb** CSS class which we drag every time (movable) */
+.landing-container .scroll-bar:horizontal .thumb,
+.landing-container .scroll-bar:vertical .thumb {
+    -fx-background-color:derive(black,90%);
+    -fx-background-insets: 2, 0, 0;
+    -fx-background-radius: 2em;
+
 }
