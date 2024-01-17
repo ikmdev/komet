@@ -259,7 +259,7 @@
 
 /* Hover over tab button */
 .properties-tab.toggle-button:hover {
-    -fx-background-color: -Primary-05;
+    -fx-background-color: #93BEFF4D;
     -fx-text-fill: #4A7AD2FF;
     -fx-fill: #4A7AD2FF;
 }
@@ -268,7 +268,7 @@
 .properties-tab.toggle-button:hover .svg-tab {
     -fx-text-fill: #4A7AD2FF;
     -fx-fill: #4A7AD2FF;
-    -fx-background-color: #93BEFFFF;
+    -fx-background-color: #93BEFF4D;
 }
 
 /* Hover over tab button */
