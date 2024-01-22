@@ -15,11 +15,7 @@
  */
 package dev.ikm.komet.preferences;
 
-public enum JournalWindowSettings {
-    JOURNAL_TITLE,
-    JOURNAL_HEIGHT,
-    JOURNAL_WIDTH,
-    JOURNAL_XPOS,
-    JOURNAL_YPOS,
-    CONCEPT_NAMES,
+public enum NidTextEnum {
+    NID_TEXT,
+    SEMANTIC_ENTITY,
 }

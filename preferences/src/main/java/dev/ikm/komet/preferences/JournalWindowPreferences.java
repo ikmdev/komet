@@ -15,11 +15,20 @@
  */
 package dev.ikm.komet.preferences;
 
-public enum JournalWindowSettings {
-    JOURNAL_TITLE,
-    JOURNAL_HEIGHT,
-    JOURNAL_WIDTH,
-    JOURNAL_XPOS,
-    JOURNAL_YPOS,
-    CONCEPT_NAMES,
+public class JournalWindowPreferences {
+    public static final String MAIN_KOMET_WINDOW = "main-komet-window";
+
+    public static final String JOURNAL_WINDOW = "journal-window";
+
+    public static final String JOURNAL_NAMES = "JOURNAL_NAMES";
+
+    public static final String JOURNAL_FOLDER_PREFIX = "JOURNAL_";
+
+    public static final Double DEFAULT_JOURNAL_HEIGHT = 600.0;
+
+    public static final Double DEFAULT_JOURNAL_WIDTH = 800.0;
+
+    public static final Double DEFAULT_JOURNAL_XPOS = 100.0;
+
+    public static final Double DEFAULT_JOURNAL_YPOS = 50.0;
 }
