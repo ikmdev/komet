@@ -15,6 +15,10 @@
  */
 package dev.ikm.komet.amplify.details;
 
+import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
+import static dev.ikm.komet.framework.activity.ActivityStreamOption.PUBLISH;
+import static dev.ikm.komet.framework.activity.ActivityStreamOption.SYNCHRONIZE;
+
 import dev.ikm.komet.amplify.properties.PropertiesController;
 import dev.ikm.komet.amplify.timeline.TimelineController;
 import dev.ikm.komet.framework.ExplorationNodeAbstract;
@@ -26,6 +30,8 @@ import dev.ikm.tinkar.common.flow.FlowSubscriber;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import java.io.IOException;
+import java.util.Set;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -35,13 +41,6 @@ import javafx.scene.layout.BorderPane;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Set;
-
-import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
-import static dev.ikm.komet.framework.activity.ActivityStreamOption.PUBLISH;
-import static dev.ikm.komet.framework.activity.ActivityStreamOption.SYNCHRONIZE;
 
 public class DetailsNode extends ExplorationNodeAbstract {
     private static final Logger LOG = LoggerFactory.getLogger(DetailsNode.class);
@@ -141,9 +140,6 @@ public class DetailsNode extends ExplorationNodeAbstract {
 
             // setup view and controller into details controller
             detailsViewController.attachTimelineViewSlideoutTray(this.timelineViewBorderPane);
-
-            // add callback to close bound listeners
-            detailsViewController.setOnCloseConceptWindow((detailsController -> close()));
 
         } catch (IOException e) {
             throw new RuntimeException(e);

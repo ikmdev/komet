@@ -13,13 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.preferences;
+package dev.ikm.komet.amplify.details;
 
-public enum JournalWindowSettings {
-    JOURNAL_TITLE,
-    JOURNAL_HEIGHT,
-    JOURNAL_WIDTH,
-    JOURNAL_XPOS,
-    JOURNAL_YPOS,
-    CONCEPT_NAMES,
+import dev.ikm.komet.preferences.NidTextEnum;
+import java.util.List;
+
+public class ConceptPreferenceUtil {
+
+    public static ConceptPreference findElement(NidTextEnum nidTextEnum, Integer nid, List<ConceptPreference> conceptPreferenceList){
+        ConceptPreference element = null;
+        for (ConceptPreference conceptPreference : conceptPreferenceList) {
+            if (conceptPreference.getNidType().equals(nidTextEnum) && conceptPreference.getNid().equals(nid)) {
+                element = conceptPreference;
+                break;
+            }
+        }
+        return element;
+    }
 }

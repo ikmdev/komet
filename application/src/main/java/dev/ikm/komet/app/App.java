@@ -95,6 +95,7 @@ import static dev.ikm.komet.amplify.commons.CssHelper.refreshPanes;
 import static dev.ikm.komet.app.AppState.*;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
 /**
@@ -107,25 +108,6 @@ public class App extends Application {
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
     public static final String CSS_LOCATION = "dev/ikm/komet/framework/graphics/komet.css";
     public static final SimpleObjectProperty<AppState> state = new SimpleObjectProperty<>(STARTING);
-
-    // preferences folder path for the main komet window's preferences
-    public static final String MAIN_KOMET_WINDOW = "main-komet-window";
-
-    // preferences folder path for the journal window(s) preferences
-    public static final String JOURNAL_WINDOW = "journal-window";
-
-    public static final String JOURNAL_NAMES = "JOURNAL_NAMES";
-
-    public static final String JOURNAL_FOLDER_PREFIX = "JOURNAL_";
-
-    public static final Double DEFAULT_JOURNAL_HEIGHT = 600.0;
-
-    public static final Double DEFAULT_JOURNAL_WIDTH = 800.0;
-
-    public static final Double DEFAULT_JOURNAL_XPOS = 100.0;
-
-    public static final Double DEFAULT_JOURNAL_YPOS = 50.0;
-
     private static Stage primaryStage;
     private static Module graphicsModule;
     private static long windowCount = 1;
@@ -139,8 +121,8 @@ public class App extends Application {
     /**
      * This is a list of new windows that have been launched. During shutdown, the application close each stage gracefully.
      */
-    private List<Stage> journalWindows = new ArrayList<>();
     private static Stage landingPageWindow;
+    private List<JournalController> journalControllersList = new ArrayList<>();
 
     // keep track of journal window numbers as they are created manually or from preferences
     private static int journalWindowNumber = 0;
@@ -455,6 +437,7 @@ public class App extends Application {
                 amplifyStage.setMaxWidth((Double)journalWindowSettings.get(JOURNAL_WIDTH));
                 amplifyStage.setX((Double)journalWindowSettings.get(JOURNAL_XPOS));
                 amplifyStage.setY((Double)journalWindowSettings.get(JOURNAL_YPOS));
+                journalController.recreateConceptWindows((List<String>) journalWindowSettings.get(CONCEPT_NAMES));
             } else {
                 amplifyStage.setMaximized(true);
                 // if being created manually increment the journal number
@@ -464,7 +447,7 @@ public class App extends Application {
             amplifyStage.setOnCloseRequest(windowEvent -> {
                 // call shutdown method on the controller
                 journalController.shutdown();
-                journalWindows.remove(amplifyStage);
+                journalControllersList.remove(journalController);
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -485,7 +468,7 @@ public class App extends Application {
                     reasonerNodeFactory);
         });
 
-        journalWindows.add(amplifyStage);
+        journalControllersList.add(journalController);
         amplifyStage.show();
     }
 
@@ -493,18 +476,24 @@ public class App extends Application {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences journalPreferences = appPreferences.node(JOURNAL_WINDOW);
 
-        List<String> journalSubWindowFolders = new ArrayList<>(journalWindows.size());
-        for(Stage journalWindow : journalWindows) {
+        List<String> journalSubWindowFolders = new ArrayList<>(journalControllersList.size());
+        for(JournalController controller : journalControllersList) {
             String journalSubWindowPrefFolder = JOURNAL_FOLDER_PREFIX + UUID.randomUUID();
             journalSubWindowFolders.add(journalSubWindowPrefFolder);
 
             KometPreferences journalSubWindowPreferences = appPreferences.node(JOURNAL_WINDOW +
                     File.separator + journalSubWindowPrefFolder);
-            journalSubWindowPreferences.put(JOURNAL_TITLE, journalWindow.getTitle());
-            journalSubWindowPreferences.putDouble(JOURNAL_HEIGHT, journalWindow.getHeight());
-            journalSubWindowPreferences.putDouble(JOURNAL_WIDTH, journalWindow.getWidth());
-            journalSubWindowPreferences.putDouble(JOURNAL_XPOS, journalWindow.getX());
-            journalSubWindowPreferences.putDouble(JOURNAL_YPOS, journalWindow.getY());
+            controller.saveConceptWindowPreferences(journalSubWindowPreferences);
+            journalSubWindowPreferences.put(JOURNAL_TITLE, controller.getTitle());
+            journalSubWindowPreferences.putDouble(JOURNAL_HEIGHT, controller.getHeight());
+            journalSubWindowPreferences.putDouble(JOURNAL_WIDTH, controller.getWidth());
+            journalSubWindowPreferences.putDouble(JOURNAL_XPOS, controller.getX());
+            journalSubWindowPreferences.putDouble(JOURNAL_YPOS, controller.getY());
+            try {
+                journalSubWindowPreferences.flush();
+            } catch (BackingStoreException e) {
+                throw new RuntimeException(e);
+            }
         }
         journalPreferences.putList(JOURNAL_NAMES, journalSubWindowFolders);
 
@@ -530,16 +519,17 @@ public class App extends Application {
                     journalSubWindowPreferences.enumToGeneralKey(JOURNAL_XPOS), DEFAULT_JOURNAL_XPOS);
             Double ypos = journalSubWindowPreferences.getDouble(
                     journalSubWindowPreferences.enumToGeneralKey(JOURNAL_YPOS), DEFAULT_JOURNAL_YPOS);
+            List<String> conceptList = journalSubWindowPreferences.getList(journalSubWindowPreferences.enumToGeneralKey(CONCEPT_NAMES));
 
-
-            Map<JournalWindowSettings, Object> journalWindowSettings = new HashMap<>();
-            journalWindowSettings.put(JOURNAL_HEIGHT, height);
-            journalWindowSettings.put(JOURNAL_WIDTH, width);
-            journalWindowSettings.put(JOURNAL_XPOS, xpos);
-            journalWindowSettings.put(JOURNAL_YPOS, ypos);
+            Map<JournalWindowSettings, Object> journalWindowSettingsMap = new HashMap<>();
+            journalWindowSettingsMap.put(JOURNAL_HEIGHT, height);
+            journalWindowSettingsMap.put(JOURNAL_WIDTH, width);
+            journalWindowSettingsMap.put(JOURNAL_XPOS, xpos);
+            journalWindowSettingsMap.put(JOURNAL_YPOS, ypos);
+            journalWindowSettingsMap.put(CONCEPT_NAMES, conceptList);
 
             if (journalTitleOptional.isPresent()) {
-                launchAmplifyDetails(journalTitleOptional.get(), journalWindowSettings);
+                launchAmplifyDetails(journalTitleOptional.get(), journalWindowSettingsMap);
                 // keep track of latest journal number when reloading from preferences
                 journalWindowNumber = parseJournalNumber(journalTitleOptional.get());
             }
@@ -613,7 +603,7 @@ public class App extends Application {
         LOG.info("Stopping application\n\n###############\n\n");
 
         // close all journal windows
-        journalWindows.forEach(stage -> stage.close());
+        journalControllersList.forEach(journalController -> journalController.close());
     }
 
     private MenuItem createMenuItem(String title) {

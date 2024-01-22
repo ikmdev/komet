@@ -15,11 +15,10 @@
  */
 package dev.ikm.komet.preferences;
 
-public enum JournalWindowSettings {
-    JOURNAL_TITLE,
-    JOURNAL_HEIGHT,
-    JOURNAL_WIDTH,
-    JOURNAL_XPOS,
-    JOURNAL_YPOS,
-    CONCEPT_NAMES,
+public class ConceptWindowPreferences {
+    public static final Double DEFAULT_CONCEPT_HEIGHT = 600.00;
+    public static final Double DEFAULT_CONCEPT_WIDTH = 762.00;
+    public static final Double DEFAULT_CONCEPT_XPOS = -1630.0;
+    public static final Double DEFAULT_CONCEPT_YPOS = 177.0;
+    public static final String CONCEPT_FOLDER_PREFIX = "CONCEPT_";
 }
