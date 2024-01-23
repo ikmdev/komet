@@ -127,12 +127,50 @@ pipeline {
                             -s '${MAVEN_SETTINGS}' \
                             -P inject-application-properties \
                             -DrepositoryId='${repositoryId}' \
-                            -PsignArtifacts -Dgpg.passphrase='${GPG_PASSPHRASE}'
+                            -Dgpg.passphrase='${GPG_PASSPHRASE}'
                         """
                     }
                 }
             }
         }
+
+        stage("Publish to OSSRH maven central") {
+            steps {
+                script {
+                    pomModel = readMavenPom(file: 'pom.xml')
+                    pomVersion = pomModel.getVersion()
+                    isSnapshot = pomVersion.contains("-SNAPSHOT")
+                    repositoryId = 'maven-snapshots'
+
+                    if (env.TAG_NAME) {
+                        if (!isSnapshot) {
+                            repositoryId = 'maven-releases'
+                        } else {
+                            echo "ERROR: Only tag release versions. Tagged version was '${pomVersion}'"
+                            fail()
+                        }
+                    }
+
+                    configFileProvider([configFile(fileId: 'settings.xml', variable: 'MAVEN_SETTINGS')]) {
+                        sh """
+                            mvn deploy \
+                                --batch-mode \
+                                -e \
+                                -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+                                -DskipTests \
+                                -DskipITs \
+                                -Dmaven.main.skip \
+                                -Dmaven.test.skip \
+                                -s '${MAVEN_SETTINGS}' \
+                                -DrepositoryId='${repositoryId}' \
+                                -DrepositoryIdOSSRH='true' \
+                                -PsourceJavadocOSSRH,stageOSSRH -Dgpg.passphrase='${GPG_PASSPHRASE}'
+                        """
+                    }
+                }
+            }
+        }
+
 
         stage("Get POM Version") {
             steps {
