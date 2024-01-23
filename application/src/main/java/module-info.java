@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.concurrent.TaskListsService;
+import dev.ikm.komet.framework.events.AmplifyEvtBus;
 import dev.ikm.tinkar.common.service.DataServiceController;
 import dev.ikm.tinkar.common.service.DefaultDescriptionForNidService;
 import dev.ikm.tinkar.common.service.PublicIdService;
@@ -62,6 +64,7 @@ module dev.ikm.komet.application {
     uses PublicIdService;
     uses StampService;
     uses TaskListsService;
+    uses AmplifyEvtBus;
 
     // For ScenicView...
     //requires org.scenicview.scenicview;
