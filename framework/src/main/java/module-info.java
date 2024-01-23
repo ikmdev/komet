@@ -16,6 +16,8 @@
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.concurrent.TaskListsService;
 import dev.ikm.komet.framework.dnd.DragRegistry;
+import dev.ikm.komet.framework.events.DefaultEvtBus;
+import dev.ikm.komet.framework.events.AmplifyEvtBus;
 import dev.ikm.komet.framework.rulebase.RuleService;
 import dev.ikm.komet.preferences.PreferencesService;
 import dev.ikm.tinkar.common.service.CachingService;
@@ -47,6 +49,7 @@ open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.window;
     exports dev.ikm.komet.framework.tabs;
     exports dev.ikm.komet.framework.panel.axiom;
+    exports dev.ikm.komet.framework.events;
     provides CachingService with DragRegistry.CacheProvider;
     requires io.github.classgraph;
     requires dev.ikm.tinkar.collection;
@@ -87,4 +90,9 @@ open module dev.ikm.komet.framework {
     uses dev.ikm.tinkar.common.alert.AlertReportingService;
     uses RuleService;
 
+
+    provides dev.ikm.komet.framework.events.EvtBus
+            with AmplifyEvtBus, DefaultEvtBus;
+
+    uses dev.ikm.komet.framework.events.EvtBus;
 }

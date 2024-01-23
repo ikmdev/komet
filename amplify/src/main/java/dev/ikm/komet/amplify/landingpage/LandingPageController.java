@@ -15,8 +15,13 @@
  */
 package dev.ikm.komet.amplify.landingpage;
 
+import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
+
 import dev.ikm.komet.amplify.commons.BasicController;
+import dev.ikm.komet.amplify.events.CreateJournalEvent;
+import dev.ikm.komet.framework.events.EvtBus;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.FlowPane;
@@ -27,8 +32,14 @@ public class LandingPageController implements BasicController {
 
     @FXML
     private FlowPane gridViewFlowPane;
+
     @FXML
     ToggleButton settingsToggleButton;
+
+    @FXML
+    Button newProjectJournalButton;
+
+    private EvtBus journalEventBus;
 
     public ToggleButton getSettingsToggleButton() {
         return settingsToggleButton;
@@ -42,9 +53,17 @@ public class LandingPageController implements BasicController {
     @Override
     public void initialize() {
         clearView();
+        journalEventBus = EvtBus.getInstance("AmplifyEvtBus");
+
         journalProjectCardScrollPane.viewportBoundsProperty().addListener((ov, oldBounds, bounds) -> {
             gridViewFlowPane.setPrefWidth(bounds.getWidth());
             gridViewFlowPane.setPrefHeight(bounds.getHeight());
+        });
+
+        newProjectJournalButton.setOnAction(event ->  {
+            // publish the event that the new journal button was pressed
+            journalEventBus.publish(JOURNAL_TOPIC,
+                    new CreateJournalEvent(newProjectJournalButton, CreateJournalEvent.CREATE_JOURNAL));
         });
     }
 

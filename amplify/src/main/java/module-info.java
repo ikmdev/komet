@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import dev.ikm.komet.amplify.details.DetailsNodeFactory;
 import dev.ikm.komet.amplify.properties.PropertiesNodeFactory;
 import dev.ikm.komet.framework.KometNodeFactory;
@@ -45,5 +46,8 @@ module dev.ikm.komet.amplify {
     exports dev.ikm.komet.amplify.commons;
 
     opens dev.ikm.komet.amplify.om to javafx.fxml;
+    exports dev.ikm.komet.amplify.events;
     provides KometNodeFactory with DetailsNodeFactory, PropertiesNodeFactory;
+
+    uses dev.ikm.komet.framework.events.EvtBus;
 }

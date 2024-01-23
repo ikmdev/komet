@@ -15,10 +15,20 @@
  */
 package dev.ikm.komet.app;
 
+import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
+import static dev.ikm.komet.amplify.commons.CssHelper.refreshPanes;
+import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.app.AppState.*;
+import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
+import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
 import dev.ikm.komet.amplify.commons.CssHelper;
 import dev.ikm.komet.amplify.commons.ResourceHelper;
+import dev.ikm.komet.amplify.events.CreateJournalEvent;
 import dev.ikm.komet.amplify.journal.JournalController;
 import dev.ikm.komet.amplify.journal.JournalViewFactory;
 import dev.ikm.komet.amplify.landingpage.LandingPageController;
@@ -29,6 +39,8 @@ import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.ScreenInfo;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
+import dev.ikm.komet.framework.events.EvtBus;
+import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.KometPreferencesStage;
@@ -56,6 +68,13 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
+import java.io.File;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.time.Year;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.prefs.BackingStoreException;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -81,22 +100,6 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.time.Year;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.prefs.BackingStoreException;
-
-import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
-import static dev.ikm.komet.amplify.commons.CssHelper.refreshPanes;
-import static dev.ikm.komet.app.AppState.*;
-import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
-import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
 /**
  * JavaFX App
@@ -126,6 +129,8 @@ public class App extends Application {
 
     // keep track of journal window numbers as they are created manually or from preferences
     private static int journalWindowNumber = 0;
+
+    private EvtBus journalEventBus;
 
     public static void main(String[] args) {
         System.setProperty("apple.laf.useScreenMenuBar", "false");
@@ -244,6 +249,15 @@ public class App extends Application {
                 .findModule("dev.ikm.komet.framework")
                 // Optional<Module> at this point
                 .orElseThrow();
+
+        journalEventBus = EvtBus.getInstance("AmplifyEvtBus");
+        Subscriber detailsSubscriber = evt -> {
+            if (evt instanceof CreateJournalEvent) {
+                launchAmplifyDetails("Journal " +
+                        (journalWindowNumber + 1), null);
+            }
+        };
+        journalEventBus.subscribe(JOURNAL_TOPIC, detailsSubscriber);
     }
 
     @Override
@@ -284,7 +298,8 @@ public class App extends Application {
             // disable until app state is running
             this.createJournalViewMenuItem.setDisable(true);
             viewMenu.getItems().add(this.createJournalViewMenuItem);
-            this.createJournalViewMenuItem.setOnAction(actionEvent -> launchAmplifyDetails("Journal " + (journalWindowNumber + 1), null));
+            this.createJournalViewMenuItem.setOnAction(actionEvent -> launchAmplifyDetails("Journal " +
+                    (journalWindowNumber + 1), null));
 
             MenuItem landingPage = new MenuItem("_Landing Page");
             KeyCombination landingPageKeyCombo = new KeyCodeCombination(KeyCode.L, KeyCombination.SHORTCUT_DOWN);
