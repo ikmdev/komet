@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.concurrent.TaskListsService;
 import dev.ikm.komet.framework.dnd.DragRegistry;
 import dev.ikm.komet.framework.events.DefaultEvtBus;
-import dev.ikm.komet.framework.events.AmplifyEvtBus;
 import dev.ikm.komet.framework.rulebase.RuleService;
 import dev.ikm.komet.preferences.PreferencesService;
 import dev.ikm.tinkar.common.service.CachingService;
@@ -92,7 +92,7 @@ open module dev.ikm.komet.framework {
 
 
     provides dev.ikm.komet.framework.events.EvtBus
-            with AmplifyEvtBus, DefaultEvtBus;
+            with DefaultEvtBus;
 
     uses dev.ikm.komet.framework.events.EvtBus;
 }
