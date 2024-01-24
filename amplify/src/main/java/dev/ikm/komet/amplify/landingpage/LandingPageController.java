@@ -20,6 +20,7 @@ import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
 import dev.ikm.komet.amplify.commons.BasicController;
 import dev.ikm.komet.amplify.events.CreateJournalEvent;
 import dev.ikm.komet.framework.events.EvtBus;
+import dev.ikm.komet.framework.events.EvtBusFactory;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
@@ -39,7 +40,7 @@ public class LandingPageController implements BasicController {
     @FXML
     Button newProjectJournalButton;
 
-    private EvtBus journalEventBus;
+    private EvtBus amplifyEventBus;
 
     public ToggleButton getSettingsToggleButton() {
         return settingsToggleButton;
@@ -53,7 +54,9 @@ public class LandingPageController implements BasicController {
     @Override
     public void initialize() {
         clearView();
-        journalEventBus = EvtBus.getInstance("AmplifyEvtBus");
+
+        // get the instance of the event bus
+        amplifyEventBus = EvtBusFactory.getInstance(EvtBus.class);
 
         journalProjectCardScrollPane.viewportBoundsProperty().addListener((ov, oldBounds, bounds) -> {
             gridViewFlowPane.setPrefWidth(bounds.getWidth());
@@ -62,7 +65,7 @@ public class LandingPageController implements BasicController {
 
         newProjectJournalButton.setOnAction(event ->  {
             // publish the event that the new journal button was pressed
-            journalEventBus.publish(JOURNAL_TOPIC,
+            amplifyEventBus.publish(JOURNAL_TOPIC,
                     new CreateJournalEvent(newProjectJournalButton, CreateJournalEvent.CREATE_JOURNAL));
         });
     }

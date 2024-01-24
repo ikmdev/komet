@@ -40,6 +40,7 @@ import dev.ikm.komet.framework.ScreenInfo;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
 import dev.ikm.komet.framework.events.EvtBus;
+import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.graphics.LoadFonts;
@@ -130,7 +131,7 @@ public class App extends Application {
     // keep track of journal window numbers as they are created manually or from preferences
     private static int journalWindowNumber = 0;
 
-    private EvtBus journalEventBus;
+    private EvtBus amplifyEventBus;
 
     public static void main(String[] args) {
         System.setProperty("apple.laf.useScreenMenuBar", "false");
@@ -250,14 +251,16 @@ public class App extends Application {
                 // Optional<Module> at this point
                 .orElseThrow();
 
-        journalEventBus = EvtBus.getInstance("AmplifyEvtBus");
+        // get the instance of the event bus
+        amplifyEventBus = EvtBusFactory.getInstance(EvtBus.class);
         Subscriber detailsSubscriber = evt -> {
             if (evt instanceof CreateJournalEvent) {
                 launchAmplifyDetails("Journal " +
                         (journalWindowNumber + 1), null);
             }
         };
-        journalEventBus.subscribe(JOURNAL_TOPIC, detailsSubscriber);
+        // subscribe to the topic
+        amplifyEventBus.subscribe(JOURNAL_TOPIC, detailsSubscriber);
     }
 
     @Override

@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Default implemenation of an Event Bus
+ */
 @EvtBusName("DefaultEvtBus")
 public class DefaultEvtBus implements EvtBus {
 
@@ -30,12 +33,14 @@ public class DefaultEvtBus implements EvtBus {
 
     public DefaultEvtBus() {}
 
+    // keep track of the subscribers
     private Map<Enum, List<Subscriber>> subscribersMap = new HashMap<>();
 
     /**
-     * @param topic
-     * @param evt
-     * @param <T>
+     * publish an event to a topic
+     * @param topic the topic
+     * @param evt the custom event
+     * @param <T> the custom type of the event
      */
     @Override
     public <T extends Evt> void publish(Enum topic, T evt) {
@@ -48,8 +53,9 @@ public class DefaultEvtBus implements EvtBus {
     }
 
     /**
-     * @param topic
-     * @param subscriber
+     * subscribe to a topic
+     * @param topic the topic
+     * @param subscriber the subscriber
      */
     @Override
     public void subscribe(Enum topic, Subscriber subscriber) {
@@ -66,8 +72,9 @@ public class DefaultEvtBus implements EvtBus {
     }
 
     /**
-     * @param topic
-     * @param subscriber
+     * unsubscribe from a topic
+     * @param topic the topic
+     * @param subscriber the subscriber
      */
     @Override
     public void unsubscribe(Enum topic, Subscriber subscriber) {

@@ -20,6 +20,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 
+/**
+ * Factory class to create and return an Event Bus implementation
+ */
 public class EvtBusFactory {
 
     // collection of EvtBus implementations
@@ -27,20 +30,31 @@ public class EvtBusFactory {
 
     private EvtBusFactory() {}
 
+    /**
+     * Get instance by class definition, this is the preferred approach.
+     * @param clazz the class definition
+     * @return the EvtBus implementation
+     */
     public static EvtBus getInstance(Class clazz) {
-        if (null == evtBusMap.get(clazz.getName())) {
+        if (null == evtBusMap.get(clazz.getSimpleName())) {
             EvtBus bus = (EvtBus) ServiceLoader.load(clazz).findFirst().get();
-            evtBusMap.put(clazz.getName(), bus);
+            evtBusMap.put(clazz.getSimpleName(), bus);
         }
-        return evtBusMap.get(clazz.getName());
+        return evtBusMap.get(clazz.getSimpleName());
     }
 
+    /**
+     * Get instance by class name as a String
+     * @param name the class definition
+     * @return the EvtBus implementation
+     */
     public static EvtBus getInstance(String name) {
         if (null == evtBusMap.get(name)) {
             Optional<EvtBus> optBus = ServiceLoader.load(EvtBus.class)
                     .stream()
                     .filter(evtBusProvider ->
                             evtBusProvider.type().isAnnotationPresent(EvtBusName.class)
+                                    && evtBusProvider.type().getAnnotation(EvtBusName.class).value().equals(name)
                     ).map(ServiceLoader.Provider::get).findFirst();
             if (optBus.isPresent()) {
                 evtBusMap.put(name, optBus.get());

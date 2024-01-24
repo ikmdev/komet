@@ -18,37 +18,28 @@ package dev.ikm.komet.framework.events;
 
 import java.util.*;
 
+/**
+ * Event Bus. Allow components in the Komet Application to communicate
+ * events to other components in a decoupled way
+ */
 public interface EvtBus {
 
     static final Map<String, EvtBus> evtBusMap = new HashMap<>();
 
     <T extends Evt> void publish(Enum topic, T evt);
 
+    /**
+     * subscribe to a topic
+     * @param topic the topic name
+     * @param subscriber subscriber to the topic
+     */
     void subscribe(Enum topic, Subscriber subscriber);
 
+    /**
+     * unsubscribe to the topic
+     * @param topic the topic name
+     * @param subscriber the subscriber to the topic
+     */
     void unsubscribe(Enum topic, Subscriber subscriber);
-
-    static EvtBus getInstance(Class clazz) {
-        if (null == evtBusMap.get(clazz.getName())) {
-            EvtBus bus = (EvtBus) ServiceLoader.load(clazz).findFirst().get();
-            evtBusMap.put(clazz.getName(), bus);
-        }
-        return evtBusMap.get(clazz.getName());
-    }
-
-    static EvtBus getInstance(String name) {
-        if (null == evtBusMap.get(name)) {
-            Optional<EvtBus> optBus = ServiceLoader.load(EvtBus.class)
-                    .stream()
-                    .filter(evtBusProvider ->
-                            evtBusProvider.type().isAnnotationPresent(EvtBusName.class)
-                    ).map(ServiceLoader.Provider::get).findFirst();
-            if (optBus.isPresent()) {
-                evtBusMap.put(name, optBus.get());
-            }
-
-        }
-        return evtBusMap.get(name);
-    }
 
 }
