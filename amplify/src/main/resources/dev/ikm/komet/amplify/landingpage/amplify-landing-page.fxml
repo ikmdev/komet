@@ -29,7 +29,7 @@
    <left>
       <VBox fillWidth="false" maxWidth="201.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0" prefWidth="144.0" BorderPane.alignment="CENTER">
          <children>
-            <ToggleButton graphicTextGap="8.0" mnemonicParsing="false" text="Home" textFill="#d3b5b5">
+            <ToggleButton graphicTextGap="8.0" mnemonicParsing="false" selected="true" text="Home" textFill="#d3b5b5">
                <graphic>
                   <Region>
                      <styleClass>
