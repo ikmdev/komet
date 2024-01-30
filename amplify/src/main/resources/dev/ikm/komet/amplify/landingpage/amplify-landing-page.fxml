@@ -72,7 +72,7 @@
                               <String fx:value="notification" />
                            </styleClass>
                         </Region>
-                        <Label fx:id="notificationCounter" layoutX="6.0" layoutY="-9.0" styleClass="counter" text="3" textFill="#c39292" />
+                        <Label fx:id="notificationCounter" layoutX="6.0" layoutY="-9.0" styleClass="counter" text="4" textFill="#c39292" />
                      </children>
                   </Pane>
                </graphic>
@@ -128,7 +128,7 @@
                   <HBox alignment="CENTER_LEFT" layoutX="36.0" layoutY="98.0" prefWidth="200.0" styleClass="notification-container" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="36.0" AnchorPane.topAnchor="104.0">
                      <children>
                         <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="200.0" styleClass="notification-title-icon" />
-                        <Label styleClass="notification-title" text="New Notifications (3)" HBox.hgrow="ALWAYS" />
+                        <Label styleClass="notification-title" text="New Notifications (4)" HBox.hgrow="ALWAYS" />
                         <ComboBox editable="true" minHeight="-Infinity" minWidth="-Infinity" prefWidth="150.0" promptText="All Types" visibleRowCount="5" />
                         <Button alignment="CENTER" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" styleClass="all-notification-button" text="SEE ALL NOTIFICATIONS" />
                      </children>
