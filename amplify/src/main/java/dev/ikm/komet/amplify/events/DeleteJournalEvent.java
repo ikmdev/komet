@@ -17,24 +17,22 @@ package dev.ikm.komet.amplify.events;
 
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
-import dev.ikm.komet.framework.preferences.PrefX;
 
-public class CreateJournalEvent extends Evt {
+public class DeleteJournalEvent extends Evt {
+    public static final EvtType<DeleteJournalEvent> DELETE_JOURNAL = new EvtType<>(Evt.ANY, "DELETE");
 
-    public static final EvtType<CreateJournalEvent> CREATE_JOURNAL = new EvtType<>(Evt.ANY, "CREATE");
+    private String journalName;
 
-    private PrefX journalWindowSettingsObjectMap;
-
-    public CreateJournalEvent(Object source, EvtType<? extends Evt> evtType, PrefX journalWindowSettingsObjectMap) {
+    public DeleteJournalEvent(Object source, EvtType<? extends Evt> evtType, String journalName) {
         super(source, evtType);
-        this.journalWindowSettingsObjectMap = journalWindowSettingsObjectMap;
+        this.journalName = journalName;
     }
 
-    public PrefX getWindowSettingsObjectMap() {
-        return journalWindowSettingsObjectMap;
+    public String getJournalName() {
+        return journalName;
     }
 
-    public void setWindowSettingsObjectMap(PrefX journalWindowSettingsObjectMap) {
-        this.journalWindowSettingsObjectMap = journalWindowSettingsObjectMap;
+    public void setJournalName(String journalName) {
+        this.journalName = journalName;
     }
 }

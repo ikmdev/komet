@@ -13,15 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.preferences;
+package dev.ikm.komet.amplify.commons;
 
-public enum JournalWindowSettings {
-    JOURNAL_TITLE,
-    JOURNAL_HEIGHT,
-    JOURNAL_WIDTH,
-    JOURNAL_XPOS,
-    JOURNAL_YPOS,
-    JOURNAL_LAST_EDIT,
-    JOURNAL_AUTHOR,
-    CONCEPT_NAMES,
+public class Constants {
+    public static final String JOURNAL_NAME_PREFIX = "Journal ";
 }

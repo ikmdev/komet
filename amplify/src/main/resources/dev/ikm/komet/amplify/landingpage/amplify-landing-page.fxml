@@ -514,7 +514,7 @@
                                                 <String fx:value="card" />
                                              </styleClass>
                                           </AnchorPane>
-                                          <AnchorPane prefHeight="178.0" prefWidth="250.0">
+                                          <AnchorPane fx:id="createCardPane" onMousePressed="#createNewJournalViewFromCard" prefHeight="178.0" prefWidth="250.0">
                                              <children>
                                                 <VBox layoutX="18.0" layoutY="14.0" prefHeight="187.0" prefWidth="246.0" styleClass="card-info-container" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="17.0" AnchorPane.rightAnchor="17.0" AnchorPane.topAnchor="13.0">
                                                    <children>
