@@ -13,15 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.preferences;
+package dev.ikm.komet.framework.preferences;
 
-public enum JournalWindowSettings {
-    JOURNAL_TITLE,
-    JOURNAL_HEIGHT,
-    JOURNAL_WIDTH,
-    JOURNAL_XPOS,
-    JOURNAL_YPOS,
-    JOURNAL_LAST_EDIT,
-    JOURNAL_AUTHOR,
-    CONCEPT_NAMES,
+import java.util.HashMap;
+import java.util.Map;
+
+public class PrefX {
+    private Map<Enum, Object> pref = new HashMap<>();
+    private PrefX(){
+
+    }
+    public static PrefX create() { return new PrefX();}
+    public <T> PrefX setValue(Enum e, T value) {
+        pref.put(e, value);
+        return this;
+    }
+    public <T> T getValue(Enum e) {
+        return (T) pref.get(e);
+    }
+    public String toString() {
+        return pref.toString(); // may have to iterate
+    }
 }

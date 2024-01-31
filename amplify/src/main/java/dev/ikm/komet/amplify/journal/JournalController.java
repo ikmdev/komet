@@ -15,6 +15,17 @@
  */
 package dev.ikm.komet.amplify.journal;
 
+import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.setupSlideOutTrayPane;
+import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
+import static dev.ikm.komet.amplify.details.ConceptPreferenceUtil.findElement;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.*;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.*;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_NAMES;
+import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
+import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
+
 import dev.ikm.komet.amplify.commons.SlideOutTrayHelper;
 import dev.ikm.komet.amplify.details.ConceptPreference;
 import dev.ikm.komet.amplify.details.DetailsNode;
@@ -45,6 +56,12 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.prefs.BackingStoreException;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -55,24 +72,6 @@ import javafx.stage.Stage;
 import org.eclipse.collections.api.factory.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.prefs.BackingStoreException;
-
-import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.setupSlideOutTrayPane;
-import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
-import static dev.ikm.komet.amplify.details.ConceptPreferenceUtil.findElement;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.*;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.*;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_NAMES;
-import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
-import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
 
 /**
  * This controller is responsible for updating the Amplify journal window by loading a navigation panel
@@ -121,7 +120,6 @@ public class JournalController {
 
     @FXML
     private ToggleButton settingsToggleButton;
-
     private Pane navigatorNodePanel;
     private Pane searchNodePanel;
     private Pane reasonerNodePanel;

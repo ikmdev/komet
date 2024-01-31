@@ -13,15 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.preferences;
+package dev.ikm.komet.amplify.commons;
 
-public enum JournalWindowSettings {
-    JOURNAL_TITLE,
-    JOURNAL_HEIGHT,
-    JOURNAL_WIDTH,
-    JOURNAL_XPOS,
-    JOURNAL_YPOS,
-    JOURNAL_LAST_EDIT,
-    JOURNAL_AUTHOR,
-    CONCEPT_NAMES,
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * Singleton to keep track of the journal count
+ */
+public class JournalCounter extends AtomicInteger {
+    private static JournalCounter INSTANCE = null;
+    private JournalCounter() {
+
+    }
+
+    public static JournalCounter getInstance() {
+        if (INSTANCE == null) {
+            synchronized (JournalCounter.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new JournalCounter();
+                }
+            }
+        }
+        return INSTANCE;
+    }
 }

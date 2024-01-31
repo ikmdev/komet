@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane prefHeight="178.0" prefWidth="280.0" stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.landingpage.JournalCardController">
+   <children>
+      <VBox layoutX="18.0" layoutY="14.0" prefHeight="187.0" prefWidth="246.0" styleClass="card-info-container" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="17.0" AnchorPane.rightAnchor="17.0" AnchorPane.topAnchor="13.0">
+         <children>
+            <FlowPane prefHeight="143.0" prefWidth="244.0" styleClass="card-chapter-container" VBox.vgrow="ALWAYS">
+               <children>
+                  <Region prefHeight="99.0" prefWidth="200.0" styleClass="card-chapter-window" />
+                  <Text fx:id="journalCardConceptCount" strokeType="OUTSIDE" strokeWidth="0.0" text="Concepts:" wrappingWidth="115.21630859375">
+                     <FlowPane.margin>
+                        <Insets />
+                     </FlowPane.margin>
+                  </Text>
+               </children>
+            </FlowPane>
+            <!-- text="Tetralogy of Fallot Research in Columns" -->
+            <Text fx:id="journalCardName" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="title" />
+            <HBox alignment="BOTTOM_LEFT" prefHeight="26.0" prefWidth="214.0" spacing="6.0" styleClass="status-info-container">
+               <children>
+                  <Label alignment="CENTER" text="Accepted">
+                     <styleClass>
+                        <String fx:value="chip-text" />
+                        <String fx:value="chip-accepted" />
+                     </styleClass>
+                  </Label>
+                  <Label fx:id="journalTimestampValue" maxWidth="1.7976931348623157E308" styleClass="edit-time" HBox.hgrow="ALWAYS" />
+                  <HBox alignment="BOTTOM_RIGHT" spacing="2.0">
+                     <children>
+                        <Region>
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="avatar" />
+                           </styleClass>
+                        </Region>
+                        <Region>
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="avatar" />
+                           </styleClass>
+                        </Region>
+                     </children>
+                  </HBox>
+               </children>
+            </HBox>
+            <Region prefHeight="200.0" prefWidth="200.0" />
+         </children>
+      </VBox>
+   </children>
+   <styleClass>
+      <String fx:value="journal-project-card" />
+      <String fx:value="card" />
+   </styleClass>
+</AnchorPane>

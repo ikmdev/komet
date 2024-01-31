@@ -15,13 +15,12 @@
  */
 package dev.ikm.komet.framework.events;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Default implemenation of an Event Bus
@@ -48,7 +47,9 @@ public class DefaultEvtBus implements EvtBus {
         LOG.info(evt.getSource().toString());
         List<Subscriber> subscribers = subscribersMap.get(topic);
         if (null != subscribers && !subscribers.isEmpty()) {
-            subscribers.forEach(s -> s.handle(evt));
+            subscribers.forEach(s -> {
+                s.handle(evt);
+            });
         }
     }
 
