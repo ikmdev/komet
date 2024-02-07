@@ -129,7 +129,7 @@
                      <children>
                         <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="200.0" styleClass="notification-title-icon" />
                         <Label styleClass="notification-title" text="New Notifications (4)" HBox.hgrow="ALWAYS" />
-                        <ComboBox editable="true" minHeight="-Infinity" minWidth="-Infinity" prefWidth="150.0" promptText="All Types" visibleRowCount="5" />
+                        <ComboBox fx:id="notificationTypeFilterComboBox" minHeight="-Infinity" minWidth="-Infinity" prefWidth="150.0" promptText="All Types" visibleRowCount="5" />
                         <Button alignment="CENTER" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" styleClass="all-notification-button" text="SEE ALL NOTIFICATIONS" />
                      </children>
                   </HBox>
@@ -362,8 +362,8 @@
                         <Region prefHeight="200.0" prefWidth="200.0" styleClass="flex-space-horizontal" HBox.hgrow="ALWAYS" />
                         <HBox alignment="CENTER" spacing="4.0">
                            <children>
-                              <Region prefHeight="200.0" prefWidth="200.0" styleClass="grid-view-symbol" />
-                              <ComboBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="28.0" prefWidth="25.0" styleClass="journal-project-container" visibleRowCount="2" />
+                              <Region maxWidth="41.0" prefHeight="25.0" prefWidth="41.0" styleClass="grid-view-symbol" />
+                              <ComboBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="28.0" prefWidth="25.0" styleClass="non-border-combo-box" visibleRowCount="3" />
                            </children>
                         </HBox>
                      </children>
@@ -546,7 +546,7 @@
                         </TitledPane>
                      </children>
                   </VBox>
-                  <ComboBox editable="true" layoutX="909.0" layoutY="79.0" maxHeight="28.0" prefHeight="30.0" prefWidth="135.0" promptText="Last Opened" visibleRowCount="5" AnchorPane.rightAnchor="36.0" AnchorPane.topAnchor="79.0" />
+                  <ComboBox layoutX="909.0" layoutY="79.0" maxHeight="28.0" prefHeight="30.0" prefWidth="135.0" promptText="Last Opened" visibleRowCount="5" AnchorPane.rightAnchor="36.0" AnchorPane.topAnchor="79.0" />
                </children></AnchorPane>
         </items>
       </SplitPane>

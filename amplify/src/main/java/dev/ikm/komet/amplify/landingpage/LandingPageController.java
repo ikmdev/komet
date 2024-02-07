@@ -15,12 +15,6 @@
  */
 package dev.ikm.komet.amplify.landingpage;
 
-import static dev.ikm.komet.amplify.commons.Constants.JOURNAL_NAME_PREFIX;
-import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.framework.controls.TimeAgoCalculatorUtil.calculateTimeAgoWithPeriodAndDuration;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
-import static dev.ikm.komet.preferences.JournalWindowSettings.*;
-
 import dev.ikm.komet.amplify.commons.BasicController;
 import dev.ikm.komet.amplify.commons.JournalCounter;
 import dev.ikm.komet.amplify.events.CreateJournalEvent;
@@ -32,6 +26,18 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.Pane;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -39,16 +45,12 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
-import javafx.scene.layout.*;
-import javafx.stage.Stage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static dev.ikm.komet.amplify.commons.Constants.JOURNAL_NAME_PREFIX;
+import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.framework.controls.TimeAgoCalculatorUtil.calculateTimeAgoWithPeriodAndDuration;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
+import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
 public class LandingPageController implements BasicController {
 
@@ -71,6 +73,8 @@ public class LandingPageController implements BasicController {
 
     @FXML
     BorderPane landingPageBorderPane;
+    @FXML
+    ComboBox<String> notificationTypeFilterComboBox;
 
     public static final String DEMO_AUTHOR = "David";
     private EvtBus amplifyEventBus;
@@ -91,6 +95,10 @@ public class LandingPageController implements BasicController {
     @Override
     public void initialize() {
         clearView();
+
+        notificationTypeFilterComboBox.getItems().addAll("All types");
+        notificationTypeFilterComboBox.getSelectionModel().selectFirst();
+
         // get the instance of the event bus
         amplifyEventBus = EvtBusFactory.getInstance(EvtBus.class);
         createJournalTileSubscriber = evt -> {

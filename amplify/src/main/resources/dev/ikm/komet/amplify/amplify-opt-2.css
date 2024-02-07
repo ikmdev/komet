@@ -1793,38 +1793,75 @@ Landing page elements.
     -fx-max-width: 1728px;
 }
 
-.landing-container .combo-box-base,
-.landing-container .combo-box-base:focused {
-    -fx-background-color: -Secondary-05, white;
-    -fx-background-insets: 0, 1;
-    -fx-background-radius: 2, 2;
-    -fx-pref-height: 28px;
-    -fx-max-height: 28px;
-}
 
-.landing-container .combo-box:focused > .list-cell,
 .landing-container .combo-box > .list-cell {
-    -fx-background: -Grey-1;
-    -fx-background-color: -Grey-1;
-    -fx-text-fill: white;
-    -fx-padding: 0.333333em 0.666667em 0.333333em 0.666667em; /* 4 8 4 8 */
+    -fx-border-width: 1 0 1 1;
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -Grey-5;
+    -fx-border-radius: 5 0 0 5;
+    -fx-border-insets: 0 -1 0 0;
+
+    -fx-background-insets: 1 -1 1 1;
+    -fx-background-color: -Grey-1 -Grey-1 -Grey-1 -Grey-1;
+    -fx-background-radius: 3 0 0 3;
+    -fx-pref-height: 32px;
+    -fx-max-height: 32px;
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
 }
 .landing-container .combo-box-base > .arrow-button {
-    -fx-background-radius: 0 3 3 0, 0 2 2 0, 0 1 1 0;
+    -fx-border-width: 1 1 1 0;
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5;
+    -fx-border-radius: 0 5 5 0 ;
+    -fx-border-insets: 0 0 0 1;
+    -fx-background-insets: 0 0 0 0;
+    -fx-background-color: -Grey-1 -Grey-1 -Grey-1 -Grey-1;
+    -fx-background-radius: 0 3 3 0;
     -fx-padding: 0.5em 0.667em 0.5em 0.833333em; /* 6 8 6 10 */
-    -fx-background-color: -Grey-1;
 }
 
 .landing-container .combo-box-base > .arrow-button > .arrow {
     -fx-background-color: -Secondary-05;
     -fx-shape: "M0.792893 0.292893C1.18342 -0.097631 1.81658 -0.097631 2.20711 0.292893L5.5 3.58579L8.79289 0.292893C9.18342 -0.0976311 9.81658 -0.0976311 10.2071 0.292893C10.5976 0.683417 10.5976 1.31658 10.2071 1.70711L6.20711 5.70711C5.81658 6.09763 5.18342 6.09763 4.79289 5.70711L0.792893 1.70711C0.402369 1.31658 0.402369 0.683418 0.792893 0.292893Z";
 }
-.landing-container .combo-box-base:editable > .arrow-button {
+
+.landing-container .combo-box:focused > .list-cell,
+.landing-container .combo-box > .list-cell {
+    -fx-background: -Grey-1;
     -fx-background-color: -Grey-1;
-    -fx-text-fill: -fx-text-base-color;
-    -fx-alignment: CENTER;
-    -fx-content-display: LEFT;
+    -fx-text-fill: black;
+    -fx-padding: 0.333333em 0.666667em 0.333333em 0.666667em; /* 4 8 4 8 */
 }
+
+.non-border-combo-box {
+    -fx-border-width: 0;
+    /*-fx-border-color: -Grey-5 -Grey-5 -Grey-5 -Grey-5;*/
+    /*-fx-border-radius: 5 0 0 5;*/
+    /*-fx-border-insets: 0 -1 0 0;*/
+
+    -fx-background-insets: 1 -1 1 1;
+    -fx-background-color: -Grey-1 -Grey-1 -Grey-1 -Grey-1;
+    -fx-background-radius: 3 0 0 3;
+    -fx-pref-height: 32px;
+    -fx-max-height: 32px;
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+}
+
+.non-border-combo-box.combo-box-base > .arrow-button {
+    -fx-border-width: 0;
+    -fx-border-color: -Grey-White;
+    -fx-border-radius: 0 5 5 0 ;
+    -fx-border-insets: 0 0 0 1;
+    -fx-background-insets: 0 0 0 0;
+    -fx-background-color: -Grey-White;
+    -fx-background-radius: 0 3 3 0;
+    -fx-padding: 0.5em 0.667em 0.5em 0.833333em; /* 6 8 6 10 */
+}
+
 
 .notification-card-container.scroll-pane,
 .notification-card-container.scroll-pane:focused {
@@ -1951,6 +1988,20 @@ Landing page elements.
     -fx-fill: -Grey-8;
 }
 
+.landing-container .titled-pane > .title {
+    -fx-pref-height: 32;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+.landing-container .titled-pane > .title > .text {
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 16px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+    -fx-text-fill: -Grey-11;
+    -fx-fill: -Grey-11;
+}
 
 .landing-container .button {
     -fx-text-fill: -Secondary-05;
@@ -2083,9 +2134,10 @@ Landing page elements.
 }
 
 .grid-view-symbol {
-    -width-size: 25;
-    -height-size: 25;
-    -fx-scale-shape: true;
+    -width-size: 32;
+    -height-size: 32;
+    -fx-position-shape: true;
+    -fx-scale-shape: false;
     -fx-min-height: -height-size;
     -fx-min-width: -width-size;
     -fx-max-height: -height-size;
@@ -2106,7 +2158,6 @@ Landing page elements.
     -fx-vgap: 20;
     -fx-background-insets: 0;
     -fx-background-color: transparent;
-    /*-fx-pref-width: 800px;*/
 }
 
 /* */
