@@ -41,11 +41,12 @@ import java.util.Optional;
 import java.util.OptionalLong;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.Pane;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +68,9 @@ public class LandingPageController implements BasicController {
 
     @FXML
     Pane createCardPane;
+
+    @FXML
+    BorderPane landingPageBorderPane;
 
     public static final String DEMO_AUTHOR = "David";
     private EvtBus amplifyEventBus;

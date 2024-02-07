@@ -1380,7 +1380,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-scale-shape: false;
 }
 
-.menu-button  {
+.timeline-header-bar .menu-button  {
     -fx-pref-width: 28;
     -fx-pref-height: 28;
     -fx-max-width: 28;
