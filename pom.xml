@@ -97,8 +97,6 @@
         <scenic-view.version>11.0.2</scenic-view.version>
         <slf4j.version>2.0.7</slf4j.version>
         <log4j.version>3.0.0-alpha1</log4j.version>
-        <!-- Here to support existing ELK unit tests until we can remove this from the codebase by switching to ikm classifier-->
-        <elk.junit.version>4.13.2</elk.junit.version>
         <mockito.version>5.6.0</mockito.version>
         <common-java5.version>3.0.0-M9</common-java5.version>
         <owlapi.version>4.5.25-ikm-r2</owlapi.version>
@@ -438,13 +436,6 @@
                 <groupId>org.apache.maven.surefire</groupId>
                 <artifactId>common-java5</artifactId>
                 <version>${common-java5.version}</version>
-            </dependency>
-
-            <dependency>
-                <!-- Here to support existing ELK unit tests until we can remove this from the codebase by switching to ikm classifier-->
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${elk.junit.version}</version>
             </dependency>
 
             <dependency>
