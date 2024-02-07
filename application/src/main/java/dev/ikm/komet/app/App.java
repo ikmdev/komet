@@ -97,10 +97,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import org.eclipse.collections.api.factory.Lists;
@@ -318,11 +315,19 @@ public class App extends Application {
                         new CreateJournalEvent(this, CreateJournalEvent.CREATE_JOURNAL,
                                 journalWindowSettingsMap));
             });
-            MenuItem landingPage = new MenuItem("_Landing Page");
-            KeyCombination landingPageKeyCombo = new KeyCodeCombination(KeyCode.L, KeyCombination.SHORTCUT_DOWN);
-            landingPage.setOnAction(actionEvent -> launchLandingPage());
-            landingPage.setAccelerator(landingPageKeyCombo);
-            viewMenu.getItems().add(landingPage);
+            MenuItem classicKometPage = new MenuItem("Classic Komet");
+            KeyCombination classicKometPageKeyCombo = new KeyCodeCombination(KeyCode.K, KeyCombination.SHORTCUT_DOWN);
+            classicKometPage.setOnAction(actionEvent -> {
+                try {
+                    launchClassicKomet();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (BackingStoreException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            classicKometPage.setAccelerator(classicKometPageKeyCombo);
+            viewMenu.getItems().add(classicKometPage);
 
             // Window Menu
             Menu windowMenu = new Menu("Window");
@@ -401,6 +406,10 @@ public class App extends Application {
         JournalController journalController;
         try {
             BorderPane amplifyLandingPageBorderPane = landingPageLoader.load();
+            // if NOT on Mac OS
+            if(System.getProperty("os.name")!=null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
+                createMenuOptions(amplifyLandingPageBorderPane);
+            }
             LandingPageController landingPageController = landingPageLoader.getController();
             Scene sourceScene = new Scene(amplifyLandingPageBorderPane, 1200, 800);
 
@@ -417,6 +426,7 @@ public class App extends Application {
             amplifyStage.setMaximized(true);
             amplifyStage.setOnCloseRequest(windowEvent -> {
                 // call shutdown method on the controller
+                state.set(SHUTDOWN);
                 landingPageController.cleanup();
                 landingPageWindow = null;
             });
@@ -656,73 +666,7 @@ public class App extends Application {
 
                 case RUNNING -> {
                     primaryStage.hide();
-                    Preferences.start();
-                    KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-                    boolean appInitialized = appPreferences.getBoolean(AppKeys.APP_INITIALIZED, false);
-                    if (appInitialized) {
-                        LOG.info("Restoring configuration preferences. ");
-                    } else {
-                        LOG.info("Creating new configuration preferences. ");
-                    }
-
-                    MainWindowRecord mainWindowRecord = MainWindowRecord.make();
-
-                    BorderPane kometRoot = mainWindowRecord.root();
-                    KometStageController controller = mainWindowRecord.controller();
-
-                    Scene kometScene = new Scene(kometRoot, 1800, 1024);
-                    kometScene.getStylesheets()
-                            .add(graphicsModule.getClassLoader().getResource(CSS_LOCATION).toString());
-
-                    // if NOT on Mac
-                    if(System.getProperty("os.name")!=null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
-                        generateMsWindowsMenu(kometRoot);
-                    }
-
-
-                    primaryStage.setScene(kometScene);
-
-                    KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
-                    boolean mainWindowInitialized = windowPreferences.getBoolean(KometStageController.WindowKeys.WINDOW_INITIALIZED, false);
-                    controller.setup(windowPreferences);
-                    primaryStage.setTitle("Komet");
-                    //primaryStage.centerOnScreen();
-
-                    if (!mainWindowInitialized) {
-                        controller.setLeftTabs(makeDefaultLeftTabs(controller.windowView()), 0);
-                        controller.setCenterTabs(makeDefaultCenterTabs(controller.windowView()), 0);
-                        controller.setRightTabs(makeDefaultRightTabs(controller.windowView()), 1);
-                        windowPreferences.putBoolean(KometStageController.WindowKeys.WINDOW_INITIALIZED, true);
-                        appPreferences.putBoolean(AppKeys.APP_INITIALIZED, true);
-                    } else {
-                        // Restore nodes from preferences.
-                        windowPreferences.get(LEFT_TAB_PREFERENCES).ifPresent(leftTabPreferencesName -> {
-                            restoreTab(windowPreferences, leftTabPreferencesName, controller.windowView(), node -> controller.leftBorderPaneSetCenter(node));
-                        });
-                        windowPreferences.get(CENTER_TAB_PREFERENCES).ifPresent(centerTabPreferencesName -> {
-                            restoreTab(windowPreferences, centerTabPreferencesName, controller.windowView(), node -> controller.centerBorderPaneSetCenter(node));
-                        });
-                        windowPreferences.get(RIGHT_TAB_PREFERENCES).ifPresent(rightTabPreferencesName -> {
-                            restoreTab(windowPreferences, rightTabPreferencesName, controller.windowView(), node -> controller.rightBorderPaneSetCenter(node));
-                        });
-                    }
-                    primaryStage.setX(controller.windowSettings().xLocationProperty().get());
-                    primaryStage.setY(controller.windowSettings().yLocationProperty().get());
-                    primaryStage.setHeight(controller.windowSettings().heightProperty().get());
-                    primaryStage.setWidth(controller.windowSettings().widthProperty().get());
-                    primaryStage.show();
-
-                    App.kometPreferencesStage = new KometPreferencesStage(controller.windowView().makeOverridableViewProperties());
-
-                    windowPreferences.sync();
-                    appPreferences.sync();
-                    if (createJournalViewMenuItem != null) {
-                        createJournalViewMenuItem.setDisable(false);
-                        KeyCombination newJournalKeyCombo = new KeyCodeCombination(KeyCode.J, KeyCombination.SHORTCUT_DOWN);
-                        createJournalViewMenuItem.setAccelerator(newJournalKeyCombo);
-                        KometPreferences journalPreferences = appPreferences.node(JOURNAL_WINDOW);
-                    }
-
+                    launchLandingPage();
                 }
                 case SHUTDOWN -> {
                     quit();
@@ -731,6 +675,76 @@ public class App extends Application {
         } catch (Throwable e) {
             e.printStackTrace();
             Platform.exit();
+        }
+    }
+
+    private void launchClassicKomet() throws IOException, BackingStoreException {
+        //Starting up preferences and getting configurations
+        Preferences.start();
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        boolean appInitialized = appPreferences.getBoolean(AppKeys.APP_INITIALIZED, false);
+        if (appInitialized) {
+            LOG.info("Restoring configuration preferences. ");
+        } else {
+            LOG.info("Creating new configuration preferences. ");
+        }
+
+        MainWindowRecord mainWindowRecord = MainWindowRecord.make();
+
+        BorderPane kometRoot = mainWindowRecord.root();
+        KometStageController controller = mainWindowRecord.controller();
+
+        //Loading/setting the Komet screen
+        Scene kometScene = new Scene(kometRoot, 1800, 1024);
+        kometScene.getStylesheets()
+                .add(graphicsModule.getClassLoader().getResource(CSS_LOCATION).toString());
+
+        // if NOT on Mac OS
+        if(System.getProperty("os.name")!=null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
+            generateMsWindowsMenu(kometRoot);
+        }
+
+        primaryStage.setScene(kometScene);
+
+        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
+        boolean mainWindowInitialized = windowPreferences.getBoolean(KometStageController.WindowKeys.WINDOW_INITIALIZED, false);
+        controller.setup(windowPreferences);
+        primaryStage.setTitle("Komet");
+
+        if (!mainWindowInitialized) {
+            controller.setLeftTabs(makeDefaultLeftTabs(controller.windowView()), 0);
+            controller.setCenterTabs(makeDefaultCenterTabs(controller.windowView()), 0);
+            controller.setRightTabs(makeDefaultRightTabs(controller.windowView()), 1);
+            windowPreferences.putBoolean(KometStageController.WindowKeys.WINDOW_INITIALIZED, true);
+            appPreferences.putBoolean(AppKeys.APP_INITIALIZED, true);
+        } else {
+            // Restore nodes from preferences.
+            windowPreferences.get(LEFT_TAB_PREFERENCES).ifPresent(leftTabPreferencesName -> {
+                restoreTab(windowPreferences, leftTabPreferencesName, controller.windowView(), node -> controller.leftBorderPaneSetCenter(node));
+            });
+            windowPreferences.get(CENTER_TAB_PREFERENCES).ifPresent(centerTabPreferencesName -> {
+                restoreTab(windowPreferences, centerTabPreferencesName, controller.windowView(), node -> controller.centerBorderPaneSetCenter(node));
+            });
+            windowPreferences.get(RIGHT_TAB_PREFERENCES).ifPresent(rightTabPreferencesName -> {
+                restoreTab(windowPreferences, rightTabPreferencesName, controller.windowView(), node -> controller.rightBorderPaneSetCenter(node));
+            });
+        }
+        //Setting X and Y coordinates for location of the Komet stage
+        primaryStage.setX(controller.windowSettings().xLocationProperty().get());
+        primaryStage.setY(controller.windowSettings().yLocationProperty().get());
+        primaryStage.setHeight(controller.windowSettings().heightProperty().get());
+        primaryStage.setWidth(controller.windowSettings().widthProperty().get());
+        primaryStage.show();
+
+        App.kometPreferencesStage = new KometPreferencesStage(controller.windowView().makeOverridableViewProperties());
+
+        windowPreferences.sync();
+        appPreferences.sync();
+        if (createJournalViewMenuItem != null) {
+            createJournalViewMenuItem.setDisable(false);
+            KeyCombination newJournalKeyCombo = new KeyCodeCombination(KeyCode.J, KeyCombination.SHORTCUT_DOWN);
+            createJournalViewMenuItem.setAccelerator(newJournalKeyCombo);
+            KometPreferences journalPreferences = appPreferences.node(JOURNAL_WINDOW);
         }
     }
 
@@ -825,6 +839,63 @@ public class App extends Application {
                 AlertStreams.getRoot().dispatch(AlertObject.makeError(e));
             }
         });
+    }
+
+    public void createMenuOptions(BorderPane landingPageRoot) {
+        MenuBar menuBar = new MenuBar();
+
+        Menu fileMenu = new Menu("File");
+        MenuItem about = new MenuItem("About");
+        about.setOnAction(actionEvent -> showWindowsAboutScreen());
+        fileMenu.getItems().add(about);
+
+        MenuItem menuItemQuit = new MenuItem("Quit");
+        KeyCombination quitKeyCombo = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
+        menuItemQuit.setOnAction(actionEvent -> quit());
+        menuItemQuit.setAccelerator(quitKeyCombo);
+        fileMenu.getItems().add(menuItemQuit);
+
+        Menu viewMenu = new Menu("View");
+        MenuItem newJournal = new MenuItem("New Journal");
+        KeyCombination newJournalKeyCombo = new KeyCodeCombination(KeyCode.J, KeyCombination.CONTROL_DOWN);
+        newJournal.setOnAction(actionEvent ->  {
+            PrefX journalWindowSettingsMap = PrefX.create();
+            journalWindowSettingsMap.setValue(JOURNAL_TITLE, "Journal " + JournalCounter.getInstance().incrementAndGet());
+            amplifyEventBus.publish(JOURNAL_TOPIC,
+                    new CreateJournalEvent(this, CreateJournalEvent.CREATE_JOURNAL,
+                            journalWindowSettingsMap));
+        });
+        newJournal.setAccelerator(newJournalKeyCombo);
+        viewMenu.getItems().add(newJournal);
+
+        MenuItem classicKometMenuItem = new MenuItem("Classic Komet");
+        KeyCombination classicKometKeyCombo = new KeyCodeCombination(KeyCode.K, KeyCombination.CONTROL_DOWN);
+        classicKometMenuItem.setOnAction(actionEvent -> {
+            try {
+                launchClassicKomet();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (BackingStoreException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        classicKometMenuItem.setAccelerator(classicKometKeyCombo);
+        viewMenu.getItems().add(classicKometMenuItem);
+
+        Menu windowMenu = new Menu("Window");
+        MenuItem minimizeWindow = new MenuItem("Minimize");
+        KeyCombination minimizeKeyCombo = new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN);
+        minimizeWindow.setOnAction(event -> {
+            Stage obj = (Stage) landingPageRoot.getScene().getWindow();
+            obj.setIconified(true);
+        });
+        minimizeWindow.setAccelerator(minimizeKeyCombo);
+        windowMenu.getItems().add(minimizeWindow);
+
+        menuBar.getMenus().add(fileMenu);
+        menuBar.getMenus().add(viewMenu);
+        menuBar.getMenus().add(windowMenu);
+        Platform.runLater(() -> landingPageRoot.setTop(menuBar));
     }
 
     public enum AppKeys {
