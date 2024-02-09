@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane minHeight="100.0" minWidth="100.0" prefHeight="669.0" prefWidth="487.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.properties.EditDescriptionController">
+    <top>
+        <HBox alignment="TOP_CENTER" prefHeight="0.0" prefWidth="0.0" styleClass="edit-concept-title" BorderPane.alignment="TOP_CENTER">
+            <children>
+                <Label fx:id="editDescriptionTitleLabel" alignment="TOP_CENTER" text="" textAlignment="CENTER" />
+            </children>
+        </HBox>
+    </top>
+    <center>
+      <VBox BorderPane.alignment="CENTER">
+         <children>
+              <GridPane prefWidth="487.0">
+                  <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="310.0" minWidth="310.0" prefWidth="310.0" />
+                  </columnConstraints>
+                  <rowConstraints>
+                      <RowConstraints maxHeight="40.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                      <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                      <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                      <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                      <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                      <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                  </rowConstraints>
+                  <children>
+                      <Label styleClass="add-description-label" text="Name" />
+                      <Label styleClass="add-description-label" text="Type" GridPane.rowIndex="1" />
+                      <Label prefWidth="100.0" styleClass="add-description-label" text="Case Significance" wrapText="true" GridPane.rowIndex="2" />
+                      <Label styleClass="add-description-label" text="Language" GridPane.rowIndex="3" />
+                      <Label styleClass="add-description-label" text="Status" GridPane.rowIndex="4" />
+                      <Label styleClass="add-description-label" text="Module" GridPane.rowIndex="5" />
+                      <TextField GridPane.columnIndex="1" />
+                      <ComboBox prefHeight="25.0" prefWidth="310.0" promptText="Select" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                      <ComboBox prefHeight="25.0" prefWidth="310.0" promptText="Select" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                      <ComboBox prefHeight="25.0" prefWidth="310.0" promptText="Select" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                      <ComboBox prefHeight="25.0" prefWidth="310.0" promptText="Select" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                      <ComboBox prefHeight="25.0" prefWidth="310.0" promptText="Select" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                  </children>
+              </GridPane>
+            <Separator prefHeight="0.0" prefWidth="487.0" styleClass="edit-axiom-separator" />
+            <GridPane>
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="100.0" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <Label styleClass="add-description-label" text="Input Label" />
+                  <Label styleClass="add-description-label" text="Input Label" GridPane.rowIndex="1" />
+                  <TextField maxWidth="310.0" prefWidth="310.0" text="Input Text*" GridPane.columnIndex="1" />
+                  <TextField maxWidth="310.0" prefWidth="310.0" text="What is the max character count" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+               </children>
+            </GridPane>
+         </children>
+      </VBox>
+    </center>
+   <bottom>
+       <VBox alignment="BOTTOM_CENTER" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+           <children>
+               <HBox alignment="BOTTOM_RIGHT" styleClass="add-description-bottom-label">
+                   <children>
+                       <Label text="Purpose of this semantic is to help define this concept." />
+                   </children>
+               </HBox>
+               <HBox alignment="BOTTOM_RIGHT" layoutX="10.0" layoutY="110.0" prefHeight="50.0" prefWidth="200.0">
+                   <children>
+                       <ButtonBar prefHeight="75.0" prefWidth="200.0">
+                           <buttons>
+                               <Button mnemonicParsing="false" styleClass="edit-concept-cancel-button" text="CANCEL" />
+                               <Button layoutX="135.0" layoutY="47.0" minWidth="63.0" mnemonicParsing="false" styleClass="edit-concept-submit-button" text="SUBMIT" />
+                           </buttons>
+                       </ButtonBar>
+                   </children>
+                   <opaqueInsets>
+                       <Insets />
+                   </opaqueInsets>
+                   <VBox.margin>
+                       <Insets right="20.0" />
+                   </VBox.margin>
+               </HBox>
+           </children>
+       </VBox>
+   </bottom>
+</BorderPane>

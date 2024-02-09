@@ -15,8 +15,19 @@
  */
 package dev.ikm.komet.amplify.properties;
 
+import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
+import static dev.ikm.komet.amplify.commons.CssHelper.genText;
+import static dev.ikm.komet.amplify.events.AmplifyTopics.CONCEPT_TOPIC;
+
+import dev.ikm.komet.amplify.events.AddDescriptionToConceptEvent;
+import dev.ikm.komet.amplify.events.EditDescriptionConceptEvent;
+import dev.ikm.komet.framework.events.EvtBus;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.terms.EntityFacade;
+import java.io.IOException;
+import java.io.Serializable;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -30,12 +41,6 @@ import javafx.scene.shape.SVGPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.Serializable;
-
-import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
-import static dev.ikm.komet.amplify.commons.CssHelper.genText;
-
 /**
  * The properties window providing tabs of Edit, Hierarchy, History, and Comments.
  * This controller is associated with the view file history-change-selection.fxml.
@@ -44,6 +49,13 @@ public class PropertiesController implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesController.class);
     protected static final String HISTORY_CHANGE_FXML_FILE = "history-change-selection.fxml";
     protected static final String HIERARCHY_VIEW_FXML_FILE = "hierarchy-view.fxml";
+
+    protected static final String EDIT_VIEW_FXML_FILE = "edit-view.fxml";
+
+    protected static final String EDIT_ADD_DESCRIPTION_FXML_FILE = "add-description.fxml";
+
+    protected static final String ADD_AXIOM_FXML_FILE = "edit-description.fxml";
+
     @FXML
     private SVGPath commentsButton;
 
@@ -68,17 +80,36 @@ public class PropertiesController implements Serializable {
     private Pane hierarchyTabBorderPane;
     private HierarchyController hierarchyController;
 
-    private Pane editBorderPane = new StackPane(genText("Edit Concept"));
+    private Pane editBorderPane;
+
+    private Pane addDescriptionPane;
+
+    private Pane addAxiomPane;
+    private EditConceptController editConceptController;
+
+    private AddDescriptionController addDescriptionController;
+
+    private EditDescriptionController editDescriptionController;
 
     private Pane commentsPane = new StackPane(genText("Comments Pane"));
     private ViewProperties viewProperties;
     private EntityFacade entityFacade;
+
+    private EvtBus eventBus;
+
+    private Subscriber descriptionSubscriber;
+
+    private Subscriber axiomSubscriber;
+
     /**
      * This is called after dependency injection has occurred to the JavaFX controls above.
      */
     @FXML
     public void initialize() throws IOException {
         clearView();
+
+        eventBus = EvtBusFactory.getInstance(EvtBus.class);
+
         // Programmatically change CSS Theme
         String styleSheet = defaultStyleSheet();
 
@@ -94,8 +125,44 @@ public class PropertiesController implements Serializable {
         this.hierarchyTabBorderPane.getStylesheets().add(styleSheet);
         this.hierarchyController = loader2.getController();
 
+        // Load Edit tab
+        FXMLLoader loaderEdit = new FXMLLoader(getClass().getResource(EDIT_VIEW_FXML_FILE));
+        this.editBorderPane = loaderEdit.load();
+        this.editBorderPane.getStylesheets().add(styleSheet);
+        this.editConceptController = loaderEdit.getController();
+
+        FXMLLoader loaderEditDescription = new FXMLLoader(getClass().getResource(EDIT_ADD_DESCRIPTION_FXML_FILE));
+        this.addDescriptionPane = loaderEditDescription.load();
+        this.addDescriptionPane.getStylesheets().add(styleSheet);
+        this.addDescriptionController = loaderEditDescription.getController();
+
+        FXMLLoader loaderEditAxiom= new FXMLLoader(getClass().getResource(ADD_AXIOM_FXML_FILE));
+        this.addAxiomPane = loaderEditAxiom.load();
+        this.addAxiomPane.getStylesheets().add(styleSheet);
+        this.editDescriptionController = loaderEditAxiom.getController();
+
         // initially a default selected tab and view is shown
         updateDefaultSelectedViews();
+
+        // when we receive an event because the user clicked the
+        // Add Description button, we want to change the Pane in the
+        // Edit Concept bump out to be the Add Description form
+        descriptionSubscriber = evt -> {
+            if (evt instanceof AddDescriptionToConceptEvent createEvt) {
+                contentBorderPane.setCenter(addDescriptionPane);
+            }
+        };
+        eventBus.subscribe(CONCEPT_TOPIC, descriptionSubscriber);
+
+        // when we receive an event because the user clicked the
+        // Add Axiom button, we want to change the Pane in the
+        // Edit Concept bump out to be the Add Axiom form
+        axiomSubscriber = evt -> {
+            if (evt instanceof EditDescriptionConceptEvent createEvt) {
+                contentBorderPane.setCenter(addAxiomPane);
+            }
+        };
+        eventBus.subscribe(CONCEPT_TOPIC, axiomSubscriber);
     }
 
     private void updateDefaultSelectedViews() {

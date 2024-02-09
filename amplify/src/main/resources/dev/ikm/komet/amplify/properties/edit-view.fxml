@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+
+<BorderPane styleClass="edit-concept-container" stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.properties.EditConceptController">
+   <top>
+      <GridPane styleClass="edit-concept-gridpane">
+         <columnConstraints>
+            <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="451.0" />
+            <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="-Infinity" minWidth="10.0" prefWidth="36.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints maxHeight="1.7976931348623157E308" minHeight="10.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <Label fx:id="conceptTitleLabel" alignment="TOP_CENTER" maxHeight="-Infinity" styleClass="edit-concept-title" text="Edit: Tetrology of Fallout" textAlignment="CENTER" GridPane.halignment="CENTER" />
+            <StackPane GridPane.columnIndex="1">
+               <children>
+                  <Circle fill="#4a7ad2" radius="10.0" stroke="BLACK" strokeType="INSIDE" styleClass="edit-concept-about-circle-icon" />
+                  <Region maxHeight="105.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="105.0" styleClass="edit-concept-about-icon">
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                  </Region>
+               </children>
+            </StackPane>
+         </children>
+      </GridPane>
+   </top>
+   <center>
+      <VBox alignment="TOP_CENTER" BorderPane.alignment="TOP_CENTER">
+         <children>
+            <HBox alignment="TOP_CENTER" prefHeight="0.0" prefWidth="0.0" styleClass="edit-concept-button-container">
+               <children>
+                  <Button fx:id="addDescriptionsButton" mnemonicParsing="false" styleClass="edit-concept-button" text="ADD DESCRIPTION" />
+               </children>
+            </HBox>
+            <HBox alignment="TOP_CENTER" prefHeight="0.0" prefWidth="0.0">
+               <children>
+                  <Button fx:id="addAxiomsButton" mnemonicParsing="false" styleClass="edit-concept-button" text="ADD AXIOM" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </center>
+   <bottom>
+      <VBox alignment="BOTTOM_CENTER" prefHeight="89.0" prefWidth="487.0" BorderPane.alignment="CENTER">
+         <children>
+            <HBox alignment="BOTTOM_LEFT" prefHeight="39.0" prefWidth="487.0">
+               <children>
+                  <Label styleClass="edit-concept-bottom-label" text="Purpose of this semantic is to help define this concept." />
+               </children>
+            </HBox>
+            <HBox alignment="BOTTOM_RIGHT" layoutX="10.0" layoutY="110.0" prefHeight="50.0" prefWidth="200.0">
+               <children>
+                  <ButtonBar prefHeight="75.0" prefWidth="200.0">
+                    <buttons>
+                      <Button mnemonicParsing="false" styleClass="edit-concept-cancel-button" text="CANCEL" />
+                        <Button layoutX="135.0" layoutY="47.0" minWidth="63.0" mnemonicParsing="false" styleClass="edit-concept-submit-button" text="SUBMIT" />
+                    </buttons>
+                  </ButtonBar>
+               </children>
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+               <VBox.margin>
+                  <Insets right="20.0" />
+               </VBox.margin>
+            </HBox>
+         </children>
+      </VBox>
+   </bottom>
+</BorderPane>

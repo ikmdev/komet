@@ -15,8 +15,21 @@
  */
 package dev.ikm.komet.amplify.events;
 
-public enum AmplifyTopics {
-    JOURNAL_TOPIC,
+import dev.ikm.komet.framework.events.Evt;
+import dev.ikm.komet.framework.events.EvtType;
 
-    CONCEPT_TOPIC
+public class EditDescriptionConceptEvent extends Evt {
+
+    public static final EvtType<EditDescriptionConceptEvent> EDIT_DESCRIPTION = new EvtType<>(Evt.ANY, "EDIT_DESCRIPTION");
+
+    /**
+     * Constructs a prototypical Event.
+     *
+     * @param source    the object on which the Event initially occurred
+     * @param eventType
+     * @throws IllegalArgumentException if source is null
+     */
+    public EditDescriptionConceptEvent(Object source, EvtType eventType) {
+        super(source, eventType);
+    }
 }
