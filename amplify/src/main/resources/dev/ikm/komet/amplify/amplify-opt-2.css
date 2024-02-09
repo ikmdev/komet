@@ -144,6 +144,40 @@
     -fx-border-insets: -1 0 0 0;
 }
 
+/* a add pencil button for add/edit */
+.button.add-pencil-button {
+    -fx-padding: 4;
+    -fx-border-insets: 0;
+    -fx-border-radius: 4;
+
+    -width-size: 28px;
+    -height-size: 28px;
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+
+    -fx-min-height: -height-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+    -fx-background-color: transparent;
+}
+
+.button.add-pencil-button:hover {
+    -fx-background-color: -Primary-04;
+}
+
+/* A pencil add for description semantic and axiom titled pane */
+.add-pencil {
+    -fx-background-color: -Secondary-05;
+    -width-size: 16.67px;
+    -height-size: 15.83px;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M0.666748 4.83341V3.16675L3.16675 3.16675V0.666748H4.83341L4.83341 3.16675H7.33341V4.83342H4.83341L4.83341 7.33342H3.16675V4.83342L0.666748 4.83341Z  M13.9667 1.74175C14.1251 1.58341 14.3417 1.50008 14.5501 1.50008C14.7667 1.50008 14.9751 1.57508 15.1417 1.74175L17.0917 3.69175C17.4167 4.00008 17.4167 4.54175 17.0917 4.86675L15.5667 6.39175L12.4417 3.26675L13.9667 1.74175Z M2.33341 13.3751L11.5501 4.15842L14.6751 7.28341L5.45841 16.5001H2.33341V13.3751ZM12.3334 7.28341L11.5501 6.50008L4.00008 14.0667V14.8334H4.76675L12.3334 7.28341Z"
+}
+
 .descr-semantic {
     /*-fx-wrap-text: true;*/
     -fx-text-fill: #585757ff;
@@ -1694,6 +1728,108 @@ Timeline Year line segment (will overlay change circles)
     -fx-text-fill: -Grey-White;
 }
 
+/********************************************************************************
+ * Start of Journal > Edit Concept UI elements                                            *
+ ********************************************************************************/
+
+.edit-concept-container {
+    -fx-min-height: 200.0;
+    -fx-pref-height: 200.0;
+}
+
+.edit-concept-gridpane {
+    -fx-pref-width: 476.0;
+    -fx-pref-height: 29.0;
+    -fx-alignment: TOP_CENTER;
+}
+
+.label.edit-concept-title {
+    -fx-text-fill: -Grey-12;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 13px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+}
+
+.edit-concept-button-container {
+    -fx-padding: 0 0 15 0;
+}
+
+.edit-concept-button {
+    -fx-background-color: -Secondary-06;
+    -fx-text-fill: white;
+    -fx-pref-width: 320px;
+    -fx-pref-height: 32px;
+}
+
+.edit-concept-button:hover {
+    -fx-background-color: -Secondary-04;
+}
+
+.edit-concept-button:disabled {
+    -fx-background-color: -Grey-7;
+}
+
+.edit-concept-cancel-button {
+    -fx-padding: 0 0 0 0;
+    -fx-background-color: -Grey-2;
+    -fx-text-fill: -Secondary-05;
+    -fx-pref-width: 88px;
+    -fx-pref-height: 32px;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-border-color: -Secondary-05;
+}
+
+.edit-concept-submit-button {
+    -fx-background-color: -Secondary-05;
+    -fx-text-fill: white;
+    -fx-pref-width: 88px;
+    -fx-pref-height: 32px;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-border-width: 1;
+    -fx-border-color: -Secondary-05;
+}
+
+.edit-concept-bottom-label {
+    -fx-padding: 0 0 0 15;
+}
+
+.add-description-label {
+    -fx-padding: 0 0 0 15;
+}
+
+.add-description-bottom-label {
+    -fx-padding: 0 15 0 0;
+    -fx-pref-width: 200px;
+    -fx-pref-height: 100px;
+}
+
+.edit-concept-about-circle-icon {
+    -fx-fill: -Secondary-05;
+    -fx-stroke: -Secondary-05;
+}
+
+.edit-concept-about-icon {
+    -fx-background-color: white;
+    -width-size: 30;
+    -height-size: 30;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+    -fx-scale-shape: false;
+    -fx-shape: "M13.2058 17.0307V16.6742C13.2102 15.9788 13.2872 15.4132 13.4369 14.9775C13.5865 14.5417 13.8066 14.1742 14.0971 13.8749C14.392 13.5712 14.7573 13.2807 15.193 13.0035C15.5187 12.7922 15.7916 12.5699 16.0117 12.3366C16.2362 12.099 16.4056 11.8393 16.5201 11.5576C16.6389 11.2715 16.6983 10.9612 16.6983 10.6267C16.6983 10.1513 16.5861 9.73541 16.3616 9.37889C16.1415 9.02238 15.8422 8.74729 15.4637 8.55363C15.0852 8.35557 14.6649 8.25653 14.2027 8.25653C13.7626 8.25653 13.351 8.35336 12.9681 8.54703C12.5896 8.73629 12.2793 9.01798 12.0372 9.3921C11.7996 9.76182 11.6697 10.2196 11.6477 10.7653H10.3999C10.4219 10.0391 10.6024 9.4097 10.9413 8.87713C11.2802 8.34456 11.7335 7.93303 12.3013 7.64254C12.8691 7.34764 13.5029 7.2002 14.2027 7.2002C14.9334 7.2002 15.576 7.35204 16.1305 7.65574C16.6851 7.95504 17.1187 8.36657 17.4312 8.89034C17.7437 9.4097 17.8999 10.0061 17.8999 10.6795C17.8999 11.1241 17.8295 11.529 17.6886 11.8943C17.5478 12.2596 17.3365 12.5963 17.0548 12.9044C16.7775 13.2125 16.4298 13.503 16.0117 13.7759C15.6156 14.04 15.3009 14.3019 15.0676 14.5616C14.8343 14.8212 14.6671 15.1183 14.5658 15.4528C14.4646 15.7829 14.4096 16.1901 14.4008 16.6742V17.0307H13.2058ZM13.8396 21.0052C13.5799 21.0052 13.3554 20.9128 13.1662 20.7279C12.9813 20.5387 12.8889 20.3142 12.8889 20.0545C12.8889 19.7904 12.9813 19.566 13.1662 19.3811C13.3554 19.1962 13.5799 19.1038 13.8396 19.1038C14.0993 19.1038 14.3216 19.1962 14.5064 19.3811C14.6957 19.566 14.7903 19.7904 14.7903 20.0545C14.7903 20.2262 14.7463 20.3846 14.6583 20.5299C14.5746 20.6751 14.4602 20.7917 14.315 20.8798C14.1741 20.9634 14.0157 21.0052 13.8396 21.0052Z"
+}
+
+.edit-axiom-separator {
+    -fx-padding: 15 0 15 0;
+}
+
+/********************************************************************************
+ * End of Journal > Edit Concept UI elements                                            *
+ ********************************************************************************/
 
 
 /*

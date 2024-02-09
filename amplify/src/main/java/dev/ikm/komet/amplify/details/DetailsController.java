@@ -18,9 +18,13 @@ package dev.ikm.komet.amplify.details;
 import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
+import static dev.ikm.komet.amplify.events.AmplifyTopics.CONCEPT_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
+import dev.ikm.komet.amplify.events.EditDescriptionConceptEvent;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.events.EvtBus;
+import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
@@ -189,6 +193,8 @@ public class DetailsController implements Serializable {
     private ViewProperties viewProperties;
     private EntityFacade entityFacade;
 
+    private EvtBus eventBus;
+
     @FXML
     public void initialize() {
         Tooltip.install(identifierText, identifierTooltip);
@@ -196,6 +202,8 @@ public class DetailsController implements Serializable {
         Tooltip.install(fqnTitleText, conceptNameTooltip);
 
         clearView();
+
+        eventBus = EvtBusFactory.getInstance(EvtBus.class);
     }
 
     public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
@@ -324,8 +332,19 @@ public class DetailsController implements Serializable {
                 LOG.debug("FQN Name = " + semanticEntityVersion + " " + fieldDescriptions);
             } else {
                 otherNamesVBox.getChildren().clear();
+
                 // start adding a row
-                otherNamesVBox.getChildren().addAll(generateOtherNameRow(semanticEntityVersion, fieldDescriptions));
+                List<TextFlow> rows = generateOtherNameRow(semanticEntityVersion, fieldDescriptions);
+                rows.forEach(textFlowPane -> {
+                    // if the edit button is selected in the properties bump out
+                    // then allow editing of the description that the user clicked
+                    textFlowPane.setOnMouseClicked(event -> {
+                        eventBus.publish(CONCEPT_TOPIC,
+                                new EditDescriptionConceptEvent(textFlowPane,
+                                        EditDescriptionConceptEvent.EDIT_DESCRIPTION));
+                    });
+                });
+                otherNamesVBox.getChildren().addAll(rows);
 
                 LOG.debug("Other Names = " + semanticEntityVersion + " " + fieldDescriptions);
             }
