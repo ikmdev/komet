@@ -290,7 +290,7 @@ public class App extends Application {
             appleQuit.setOnAction(event -> quit());
 
             tk.setApplicationMenu(kometAppMenu);
-            //tk.setGlobalMenuBar();
+
             // File Menu
             Menu fileMenu = new Menu("File");
             MenuItem newItem = new MenuItem("New...");
