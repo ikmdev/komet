@@ -33,13 +33,13 @@ public interface EvtBus {
      * @param topic the topic name
      * @param subscriber subscriber to the topic
      */
-    void subscribe(Enum topic, Subscriber subscriber);
+    <T extends Evt> void subscribe(Enum topic, Class<T> eventClass, Subscriber<T> subscriber);
 
     /**
      * unsubscribe to the topic
      * @param topic the topic name
      * @param subscriber the subscriber to the topic
      */
-    void unsubscribe(Enum topic, Subscriber subscriber);
+    <T extends Evt> void unsubscribe(Enum topic, Class<T> eventClass, Subscriber<T> subscriber);
 
 }

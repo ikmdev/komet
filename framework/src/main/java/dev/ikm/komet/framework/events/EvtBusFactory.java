@@ -31,14 +31,17 @@ public class EvtBusFactory {
     private EvtBusFactory() {}
 
     /**
-     * Get instance by class definition, this is the preferred approach.
+     * Get instance by class definition, this is the preferred approach. If a caller uses EvtBus class the Default is returned event bus is returned.
      * @param clazz the class definition
      * @return the EvtBus implementation
      */
     public static EvtBus getInstance(Class clazz) {
         if (null == evtBusMap.get(clazz.getSimpleName())) {
             EvtBus bus = (EvtBus) ServiceLoader.load(clazz).findFirst().get();
-            evtBusMap.put(clazz.getSimpleName(), bus);
+            if (clazz == EvtBus.class) {
+                evtBusMap.put(clazz.getSimpleName(), bus);
+            }
+            evtBusMap.put(bus.getClass().getSimpleName(), bus);
         }
         return evtBusMap.get(clazz.getSimpleName());
     }
@@ -62,5 +65,13 @@ public class EvtBusFactory {
 
         }
         return evtBusMap.get(name);
+    }
+
+    /**
+     * This will create a singleton of the Default event bus implementation.
+     * @return A default event bus implementation to be used.
+     */
+    public static EvtBus getDefaultEvtBus() {
+        return getInstance(DefaultEvtBus.class);
     }
 }

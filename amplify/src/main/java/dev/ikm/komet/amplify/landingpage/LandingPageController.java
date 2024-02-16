@@ -18,14 +18,15 @@ package dev.ikm.komet.amplify.landingpage;
 import dev.ikm.komet.amplify.commons.BasicController;
 import dev.ikm.komet.amplify.commons.JournalCounter;
 import dev.ikm.komet.amplify.events.CreateJournalEvent;
-import dev.ikm.komet.amplify.events.CreateJournalTileEvent;
 import dev.ikm.komet.amplify.events.DeleteJournalEvent;
+import dev.ikm.komet.amplify.events.JournalTileEvent;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
@@ -42,12 +43,13 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.List;
-import java.util.Optional;
-import java.util.OptionalLong;
+import java.util.*;
+import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.amplify.commons.Constants.JOURNAL_NAME_PREFIX;
 import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.amplify.events.CreateJournalEvent.CREATE_JOURNAL;
+import static dev.ikm.komet.amplify.events.JournalTileEvent.CREATE_JOURNAL_TILE;
 import static dev.ikm.komet.framework.controls.TimeAgoCalculatorUtil.calculateTimeAgoWithPeriodAndDuration;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
@@ -79,9 +81,12 @@ public class LandingPageController implements BasicController {
     public static final String DEMO_AUTHOR = "David";
     private EvtBus amplifyEventBus;
 
-    private Subscriber createJournalTileSubscriber;
+    private Subscriber<JournalTileEvent> createJournalTileSubscriber;
 
-    private Subscriber deleteJournalSubscriber;
+    private Subscriber<DeleteJournalEvent> deleteJournalSubscriber;
+
+    private Map<String, JournalCardController> journalCardControllerMap = new HashMap<>();
+
 
     public ToggleButton getSettingsToggleButton() {
         return settingsToggleButton;
@@ -101,105 +106,164 @@ public class LandingPageController implements BasicController {
 
         // get the instance of the event bus
         amplifyEventBus = EvtBusFactory.getInstance(EvtBus.class);
-        createJournalTileSubscriber = evt -> {
-            if (evt instanceof CreateJournalTileEvent createEvt) {
-                final String journalName;
+        LOG.debug("Event bus instance %s, %s".formatted(this.getClass().getSimpleName(), amplifyEventBus));
+        createJournalTileSubscriber = evt ->  {
 
-                //Creating a new journal card
-                FXMLLoader amplifyJournalCard = new FXMLLoader(LandingPageController.class.getResource("amplify-journal-card.fxml"));
-                Pane journalCard = null;
-                try {
-                    journalCard = amplifyJournalCard.load();
-                } catch (IOException e) {
-                    throw new RuntimeException("unable to load journal card fxml ", e);
-                }
-                JournalCardController journalCardController = amplifyJournalCard.getController();
-                PrefX journalWindowSettingsObjectMap = createEvt.getJournalWindowSettingsMap();
-                if (null != journalWindowSettingsObjectMap) {
-                    journalName = journalWindowSettingsObjectMap.getValue(JOURNAL_TITLE);
-                    LocalDateTime nowDateTime = LocalDateTime.now();
-                    ZoneId nowZoneId = ZoneId.systemDefault();
-                    String calculatedTimeAgo = calculateTimeAgoWithPeriodAndDuration(nowDateTime, nowZoneId);
-                    journalCardController.setJournalTimestampValue(calculatedTimeAgo);
-                    if(journalWindowSettingsObjectMap.getValue(CONCEPT_NAMES) != null) {
-                        journalCardController.setJournalCardConceptCount("Concepts: "
-                                + ((List<String>) journalWindowSettingsObjectMap.getValue(CONCEPT_NAMES)).size());
-                    }
-                    else {
-                        journalCardController.setJournalCardConceptCount("Concepts: 0");
-                    }
-                } else {
-                    journalName = "Journal " + JournalCounter.getInstance().intValue();
-                    journalWindowSettingsObjectMap = PrefX.create();
-                    journalWindowSettingsObjectMap.setValue(JOURNAL_TITLE, journalName);
-                    journalCardController.setJournalTimestampValue("Edited Now");
+            // If NOT a CREATE_JOURNAL_TILE type do not execute code below!
+            if (evt.getEventType() != CREATE_JOURNAL_TILE) return;
 
-                }
-                journalCardController.setJournalCardName(journalName);
+            final String journalName;
 
-                final PrefX journalSettingsFinal = journalWindowSettingsObjectMap;
-                // get the correct Journal X name where X is a counting number 1...n
-                // decide if the name comes from the event or not
-                journalCard.setOnMouseClicked(event -> {
-                    amplifyEventBus.publish(JOURNAL_TOPIC,
-                            new CreateJournalEvent(this,
-                                    CreateJournalEvent.CREATE_JOURNAL, journalSettingsFinal));
-                    // fire create journal event... AND this should be the ONLY place it comes from besides the menu
-                });
+            //Creating a new journal card
+            FXMLLoader amplifyJournalCard = new FXMLLoader(LandingPageController.class.getResource("amplify-journal-card.fxml"));
+            Pane journalCard;
+            JournalCardController journalCardController;
+            try {
+                journalCard = amplifyJournalCard.load();
+                journalCardController = amplifyJournalCard.getController();
 
-
-                journalCard.setUserData(journalSettingsFinal);
-                gridViewFlowPane.getChildren().addFirst(journalCard);
+            } catch (IOException e) {
+                throw new RuntimeException("unable to load journal card fxml ", e);
             }
-        };
-        amplifyEventBus.subscribe(JOURNAL_TOPIC, createJournalTileSubscriber);
 
+            PrefX journalWindowSettingsObjectMap = evt.getJournalWindowSettingsMap();
+            if (null != journalWindowSettingsObjectMap) {
+                journalName = journalWindowSettingsObjectMap.getValue(JOURNAL_TITLE);
+                LocalDateTime nowDateTime = LocalDateTime.now();
+                ZoneId nowZoneId = ZoneId.systemDefault();
+                String calculatedTimeAgo = calculateTimeAgoWithPeriodAndDuration(nowDateTime, nowZoneId);
+                journalCardController.setJournalTimestampValue(calculatedTimeAgo);
+                if (journalWindowSettingsObjectMap.getValue(CONCEPT_NAMES) != null) {
+                    journalCardController.setJournalCardConceptCount("Concepts: "
+                            + ((List<String>) journalWindowSettingsObjectMap.getValue(CONCEPT_NAMES)).size());
+                } else {
+                    journalCardController.setJournalCardConceptCount("Concepts: 0");
+                }
+            } else {
+                journalName = "Journal " + JournalCounter.getInstance().get();
+                journalWindowSettingsObjectMap = PrefX.create();
+                journalWindowSettingsObjectMap.setValue(JOURNAL_TITLE, journalName);
+                journalCardController.setJournalTimestampValue("Edited Now");
+
+            }
+            journalCardController.setJournalCardName(journalName);
+            final PrefX journalSettingsFinal = journalWindowSettingsObjectMap;
+            // get the correct Journal X name where X is a counting number 1...n
+            // decide if the name comes from the event or not
+            journalCard.setOnMouseClicked(event -> {
+                PrefX prefX;
+                // if card already exists then load from disk.
+                if (gridViewFlowPane.getChildren().contains(journalCard)){
+                    // fetch preferences from disk for journal settings.
+                    prefX = loadJournalWindowPreference(journalSettingsFinal.getValue(JOURNAL_DIR_NAME));
+                } else {
+                    // newly added card to landing page.
+                    prefX = journalSettingsFinal;
+                }
+                amplifyEventBus.publish(JOURNAL_TOPIC, new CreateJournalEvent(this, CREATE_JOURNAL, prefX));
+                // fire create journal event... AND this should be the ONLY place it comes from besides the menu
+            });
+            journalCardControllerMap.put(journalName, journalCardController);
+            journalCard.setUserData(journalSettingsFinal);
+            gridViewFlowPane.getChildren().addFirst(journalCard);
+        };
+
+        amplifyEventBus.subscribe(JOURNAL_TOPIC, JournalTileEvent.class, createJournalTileSubscriber);
 
         deleteJournalSubscriber = evt -> {
-            if (evt instanceof DeleteJournalEvent delEvt) {
-                // remove the tile by finding its journal name
-                gridViewFlowPane.getChildren().removeIf(node ->
-                        node.getUserData() != null && ((PrefX) node.getUserData()).getValue(JOURNAL_TITLE) != null
-                                && ((PrefX) node.getUserData()).getValue(JOURNAL_TITLE).equals(delEvt.getJournalName())
-                );
-            }
+            // remove the tile by finding its journal name
+            gridViewFlowPane.getChildren().removeIf(node -> {
+
+                boolean removeIt = node.getUserData() != null && ((PrefX) node.getUserData()).getValue(JOURNAL_TITLE) != null
+                        && ((PrefX) node.getUserData()).getValue(JOURNAL_TITLE).equals(evt.getJournalName());
+
+                if (!removeIt) return false;
+
+                if (node.getUserData() instanceof PrefX prefX) {
+                    // remove preferences.
+                    KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+                    KometPreferences journalPreferences = appPreferences.node(JOURNAL_WINDOW);
+                    List<String> journalNames = journalPreferences.getList(JOURNAL_NAMES);
+
+                    String journalDirName = prefX.getValue(JOURNAL_TITLE).toString().replace(" ", "_");
+                    String journalSubWindowPrefFolder = JOURNAL_FOLDER_PREFIX + journalDirName;
+                    journalNames.remove(journalSubWindowPrefFolder);
+
+                    KometPreferences journalSubWindowPreferences = appPreferences.node(JOURNAL_WINDOW +
+                            File.separator + journalSubWindowPrefFolder);
+                    try {
+                        journalPreferences.putList(JOURNAL_NAMES, journalNames);
+                        journalSubWindowPreferences.removeNode();
+                        journalPreferences.flush();
+                        // TODO Remove all concept folders.
+                    } catch (BackingStoreException e) {
+                        throw new RuntimeException(e);
+                    } finally {
+                        journalCardControllerMap.remove(prefX.getValue(JOURNAL_TITLE).toString()).cleanup();
+                    }
+                }
+                return true;
+            });
         };
-        amplifyEventBus.subscribe(JOURNAL_TOPIC, deleteJournalSubscriber);
+        amplifyEventBus.subscribe(JOURNAL_TOPIC, DeleteJournalEvent.class, deleteJournalSubscriber);
 
         journalProjectCardScrollPane.viewportBoundsProperty().addListener((ov, oldBounds, bounds) -> {
             gridViewFlowPane.setPrefWidth(bounds.getWidth());
             gridViewFlowPane.setPrefHeight(bounds.getHeight());
         });
 
-        newProjectJournalButton.setOnAction(event ->  {
-            JournalCounter.getInstance().getAndIncrement();
-            // publish the event that the new journal button was pressed
-            PrefX journalWindowSettingsObjectMap = PrefX.create();
-            String journalName = JOURNAL_NAME_PREFIX + JournalCounter.getInstance().intValue();
-            journalWindowSettingsObjectMap.setValue(JOURNAL_TITLE, journalName);
-
-            // publish an event to create the tile on the landing page
-            amplifyEventBus.publish(JOURNAL_TOPIC,
-                    new CreateJournalTileEvent(newProjectJournalButton,
-                            CreateJournalTileEvent.CREATE_JOURNAL_TILE, journalWindowSettingsObjectMap));
-
-            // and also publish an event to create the journal window itself
-            PrefX journalWindowSettingsMap = PrefX.create();
-            journalWindowSettingsMap.setValue(JOURNAL_TITLE, journalName);
-            amplifyEventBus.publish(JOURNAL_TOPIC,
-                    new CreateJournalEvent(this, CreateJournalEvent.CREATE_JOURNAL,
-                            journalWindowSettingsMap));
-        });
         loadPreferencesForLandingPage();
     }
+    private PrefX loadJournalWindowPreference(String journalSubWindowPrefFolder) {
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        KometPreferences journalPreferences = appPreferences.node(JOURNAL_WINDOW);
 
+        KometPreferences journalSubWindowPreferences = appPreferences.node(JOURNAL_WINDOW +
+                File.separator + journalSubWindowPrefFolder);
+        Optional<String> journalTitleOptional = journalSubWindowPreferences.get(JOURNAL_TITLE);
+
+        Double height = journalSubWindowPreferences.getDouble(
+                journalSubWindowPreferences.enumToGeneralKey(JOURNAL_HEIGHT), DEFAULT_JOURNAL_HEIGHT);
+        Double width = journalSubWindowPreferences.getDouble(
+                journalSubWindowPreferences.enumToGeneralKey(JOURNAL_WIDTH), DEFAULT_JOURNAL_WIDTH);
+        Double xpos = journalSubWindowPreferences.getDouble(
+                journalSubWindowPreferences.enumToGeneralKey(JOURNAL_XPOS), DEFAULT_JOURNAL_XPOS);
+        Double ypos = journalSubWindowPreferences.getDouble(
+                journalSubWindowPreferences.enumToGeneralKey(JOURNAL_YPOS), DEFAULT_JOURNAL_YPOS);
+        String journalAuthor = journalSubWindowPreferences.get(
+                journalSubWindowPreferences.enumToGeneralKey(JOURNAL_AUTHOR), "");
+        OptionalLong journalLastEditOpt = journalSubWindowPreferences.getLong(
+                journalSubWindowPreferences.enumToGeneralKey(JOURNAL_LAST_EDIT));
+        List<String> conceptList = journalSubWindowPreferences.getList(journalSubWindowPreferences.enumToGeneralKey(CONCEPT_NAMES));
+
+        PrefX prefX = PrefX.create()
+                .setValue(JOURNAL_DIR_NAME, journalSubWindowPrefFolder )
+                .setValue(JOURNAL_TITLE, journalTitleOptional.get())
+                .setValue(JOURNAL_HEIGHT, height)
+                .setValue(JOURNAL_WIDTH, width)
+                .setValue(JOURNAL_XPOS, xpos)
+                .setValue(JOURNAL_YPOS, ypos)
+                .setValue(CONCEPT_NAMES, conceptList)
+                .setValue(JOURNAL_AUTHOR, journalAuthor)
+                .setValue(JOURNAL_LAST_EDIT, journalLastEditOpt.isPresent() ?
+                        journalLastEditOpt.getAsLong() : null);
+        return prefX;
+    }
     private void loadPreferencesForLandingPage() {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences journalPreferences = appPreferences.node(JOURNAL_WINDOW);
-        for (String journalSubWindowPrefFolder : journalPreferences.getList(JOURNAL_NAMES)) {
+        List<String> journalNames = journalPreferences.getList(JOURNAL_NAMES);
+        List<String> namesToRemove = new ArrayList<>();
+        for (String journalSubWindowPrefFolder : journalNames) {
             KometPreferences journalSubWindowPreferences = appPreferences.node(JOURNAL_WINDOW +
                     File.separator + journalSubWindowPrefFolder);
             Optional<String> journalTitleOptional = journalSubWindowPreferences.get(JOURNAL_TITLE);
+
+            //
+            if (journalTitleOptional.isEmpty()) {
+                namesToRemove.add(journalSubWindowPrefFolder);
+                continue;
+            }
 
             Double height = journalSubWindowPreferences.getDouble(
                     journalSubWindowPreferences.enumToGeneralKey(JOURNAL_HEIGHT), DEFAULT_JOURNAL_HEIGHT);
@@ -216,6 +280,7 @@ public class LandingPageController implements BasicController {
             List<String> conceptList = journalSubWindowPreferences.getList(journalSubWindowPreferences.enumToGeneralKey(CONCEPT_NAMES));
 
             PrefX prefX = PrefX.create()
+                .setValue(JOURNAL_DIR_NAME, journalSubWindowPrefFolder )
                 .setValue(JOURNAL_TITLE, journalTitleOptional.get())
                 .setValue(JOURNAL_HEIGHT, height)
                 .setValue(JOURNAL_WIDTH, width)
@@ -229,9 +294,15 @@ public class LandingPageController implements BasicController {
             // keep track of latest journal number when reloading from preferences
             JournalCounter.getInstance().set(parseJournalNumber(journalTitleOptional.get()));
             amplifyEventBus.publish(JOURNAL_TOPIC,
-                    new CreateJournalTileEvent(newProjectJournalButton,
-                            CreateJournalTileEvent.CREATE_JOURNAL_TILE, prefX));
-
+                    new JournalTileEvent(newProjectJournalButton,
+                            CREATE_JOURNAL_TILE, prefX));
+        }
+        journalNames.removeAll(namesToRemove);
+        journalPreferences.putList(JOURNAL_NAMES, journalNames);
+        try {
+            journalPreferences.flush();
+        } catch (BackingStoreException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -251,16 +322,32 @@ public class LandingPageController implements BasicController {
 
     @Override
     public void cleanup() {
-        amplifyEventBus.unsubscribe(JOURNAL_TOPIC, createJournalTileSubscriber);
-        amplifyEventBus.unsubscribe(JOURNAL_TOPIC, deleteJournalSubscriber);
+        amplifyEventBus.unsubscribe(JOURNAL_TOPIC, JournalTileEvent.class, createJournalTileSubscriber);
+        amplifyEventBus.unsubscribe(JOURNAL_TOPIC, DeleteJournalEvent.class, deleteJournalSubscriber);
     }
 
     @FXML
-    void createNewJournalViewFromCard() {
-        JournalCounter.getInstance().getAndIncrement();
+    void createNewJournalViewFromCard(Event event) {
+        // publish the event that the new journal button was pressed
+        PrefX journalWindowSettingsObjectMap = PrefX.create();
+        String journalName = JOURNAL_NAME_PREFIX + JournalCounter.getInstance().incrementAndGet();
+        String journalDirName = JOURNAL_FOLDER_PREFIX + journalName.replace(" ", "_");
+        journalWindowSettingsObjectMap.setValue(JOURNAL_TITLE, journalName);
+        journalWindowSettingsObjectMap.setValue(JOURNAL_DIR_NAME, journalDirName);
+
+        // publish an event to create the tile on the landing page
         amplifyEventBus.publish(JOURNAL_TOPIC,
-                new CreateJournalTileEvent(this,
-                        CreateJournalTileEvent.CREATE_JOURNAL_TILE, null));
+                new JournalTileEvent(newProjectJournalButton, CREATE_JOURNAL_TILE, journalWindowSettingsObjectMap));
+
+        // and also publish an event to create the journal window itself
+        PrefX journalWindowSettingsMap = PrefX.create();
+        journalWindowSettingsMap.setValue(JOURNAL_TITLE, journalName);
+        journalWindowSettingsMap.setValue(JOURNAL_DIR_NAME, journalDirName);
+
+        amplifyEventBus.publish(JOURNAL_TOPIC,
+                new CreateJournalEvent(this, CREATE_JOURNAL, journalWindowSettingsMap));
+
         LOG.info("CARD LAUNCHED");
+
     }
 }

@@ -22,4 +22,5 @@ public enum ConceptWindowSettings {
     CONCEPT_WIDTH,
     CONCEPT_XPOS,
     CONCEPT_YPOS,
+    CONCEPT_PREF_NAME
 }

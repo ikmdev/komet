@@ -20,6 +20,8 @@ public class JournalWindowPreferences {
 
     public static final String JOURNAL_WINDOW = "journal-window";
 
+    public static final String CONCEPTS_DIR = "concepts";
+
     public static final String JOURNAL_NAMES = "JOURNAL_NAMES";
 
     public static final String JOURNAL_FOLDER_PREFIX = "JOURNAL_";
