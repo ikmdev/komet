@@ -16,7 +16,6 @@
 package dev.ikm.komet.framework.events;
 
 
-public interface Subscriber {
-
-    void handle(Evt evt);
+public interface Subscriber<T extends Evt> {
+     void handle(T evt);
 }

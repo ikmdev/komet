@@ -19,17 +19,18 @@ import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.preferences.PrefX;
 
-public class CreateJournalTileEvent extends Evt {
-    public static final EvtType<CreateJournalTileEvent> CREATE_JOURNAL_TILE = new EvtType<>(Evt.ANY, "CREATE JOURNAL TILE");
+public class JournalTileEvent extends Evt {
+    public static final EvtType<JournalTileEvent> CREATE_JOURNAL_TILE = new EvtType<>(Evt.ANY, "CREATE JOURNAL TILE");
+    public static final EvtType<JournalTileEvent> UPDATE_JOURNAL_TILE = new EvtType<>(Evt.ANY, "UPDATE JOURNAL TILE");
 
     private PrefX journalWindowSettingsMap = PrefX.create();
 
-    public CreateJournalTileEvent(Object source, EvtType<? extends Evt> evtType) {
+    public JournalTileEvent(Object source, EvtType<? extends Evt> evtType) {
         super(source, evtType);
     }
 
-    public CreateJournalTileEvent(Object source, EvtType<? extends Evt> evtType,
-                                  PrefX journalWindowSettingsMap) {
+    public JournalTileEvent(Object source, EvtType<? extends Evt> evtType,
+                            PrefX journalWindowSettingsMap) {
 
         super(source, evtType);
         this.journalWindowSettingsMap = journalWindowSettingsMap;

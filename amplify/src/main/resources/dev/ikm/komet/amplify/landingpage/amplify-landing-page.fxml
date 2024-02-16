@@ -343,7 +343,7 @@
                <children>
                   <HBox prefHeight="19.0" prefWidth="1000.0" spacing="12.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="28.0">
                      <children>
-                        <Button fx:id="newProjectJournalButton" graphicTextGap="8.0" minHeight="32.0" minWidth="204.0" mnemonicParsing="false" styleClass="main-button" text="NEW PROJECT JOURNAL">
+                        <Button fx:id="newProjectJournalButton" graphicTextGap="8.0" minHeight="32.0" minWidth="204.0" mnemonicParsing="false" onAction="#createNewJournalViewFromCard" styleClass="main-button" text="NEW PROJECT JOURNAL">
                            <graphic>
                               <Region prefHeight="200.0" prefWidth="200.0">
                                  <styleClass>

@@ -15,12 +15,13 @@
  */
 package dev.ikm.komet.framework.events;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Default implemenation of an Event Bus
@@ -33,7 +34,7 @@ public class DefaultEvtBus implements EvtBus {
     public DefaultEvtBus() {}
 
     // keep track of the subscribers
-    private Map<Enum, List<Subscriber>> subscribersMap = new HashMap<>();
+    private Map<Enum, Map<String, List<Subscriber>>> subscribersMap = new HashMap<>();
 
     /**
      * publish an event to a topic
@@ -45,11 +46,14 @@ public class DefaultEvtBus implements EvtBus {
     public <T extends Evt> void publish(Enum topic, T evt) {
         // if there is no topic then create one as a String
         LOG.info(evt.getSource().toString());
-        List<Subscriber> subscribers = subscribersMap.get(topic);
+        // event class name is the key -> List<Subscriber>
+        String eventClassName = evt.getClass().getName();
+        subscribersMap.putIfAbsent(topic, new HashMap<>());
+        Map<String, List<Subscriber>> eventNameAndSubscribers = subscribersMap.get(topic);
+        eventNameAndSubscribers.putIfAbsent(eventClassName, new ArrayList<>());
+        List<Subscriber> subscribers = eventNameAndSubscribers.get(eventClassName).stream().toList();
         if (null != subscribers && !subscribers.isEmpty()) {
-            subscribers.forEach(s -> {
-                s.handle(evt);
-            });
+            subscribers.forEach(s -> s.handle(evt));
         }
     }
 
@@ -59,17 +63,16 @@ public class DefaultEvtBus implements EvtBus {
      * @param subscriber the subscriber
      */
     @Override
-    public void subscribe(Enum topic, Subscriber subscriber) {
-        LOG.info(subscriber.toString());
-        List<Subscriber> subscribers = subscribersMap.get(topic);
+    public <T extends Evt> void subscribe(Enum topic, Class<T> eventClass, Subscriber<T> subscriber) {
+        subscribersMap.putIfAbsent(topic, new HashMap<>());
+        List<Subscriber> subscribers = subscribersMap.get(topic).get(eventClass.getName());
         if (null == subscribers) {
             subscribers = new ArrayList<>();
             subscribers.add(subscriber);
-            subscribersMap.put(topic, subscribers);
+            subscribersMap.get(topic).putIfAbsent(eventClass.getName(), subscribers);
         } else {
             subscribers.add(subscriber);
         }
-
     }
 
     /**
@@ -78,8 +81,14 @@ public class DefaultEvtBus implements EvtBus {
      * @param subscriber the subscriber
      */
     @Override
-    public void unsubscribe(Enum topic, Subscriber subscriber) {
-        List<Subscriber> subscribers = subscribersMap.get(topic);
+    public <T extends Evt>void unsubscribe(Enum topic, Class<T> eventClass, Subscriber<T> subscriber) {
+        Map<String, List<Subscriber>> eventNameAndSubscribers = subscribersMap.get(topic);
+        if (null == eventNameAndSubscribers) {
+            LOG.warn("Unsubscribing Topic: %s, eventClass: %s, subscriber: %s. contains no subscriber ".formatted(topic, eventClass.getName(), String.valueOf(subscriber)));
+            return;
+        }
+
+        List<Subscriber> subscribers = eventNameAndSubscribers.get(eventClass.getName());
         if (null != subscribers && !subscribers.isEmpty()) {
             subscribers.removeIf(subscriber::equals);
         }

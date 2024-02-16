@@ -2042,6 +2042,72 @@ Landing page elements.
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 4, 0, 0, 4);
 }
 
+/* The icon for the button to delete or open a journal project from a card on the landing page
+   Note: In Scene Builder the button is transparent initially. When mouse is hovered over card
+         the button will appear with an opaque color.
+*/
+.journal-project-card .button.card-menu-options {
+    -fx-content-display: graphic-only;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+
+    -width-size: 28px;
+    -height-size: 28px;
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+
+    -fx-min-height: -height-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+}
+
+.journal-project-card:hover .button.card-menu-options {
+    -fx-background-color: -Primary-04;
+}
+
+.card-menu-options-icon {
+    -fx-background-color: transparent;
+    -width-size: 13.33px;
+    -height-size: 3.33px;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M8.99998 12.333C8.08331 12.333 7.33331 13.083 7.33331 13.9997C7.33331 14.9163 8.08331 15.6663 8.99998 15.6663C9.91665 15.6663 10.6666 14.9163 10.6666 13.9997C10.6666 13.083 9.91665 12.333 8.99998 12.333ZM19 12.333C18.0833 12.333 17.3333 13.083 17.3333 13.9997C17.3333 14.9163 18.0833 15.6663 19 15.6663C19.9166 15.6663 20.6666 14.9163 20.6666 13.9997C20.6666 13.083 19.9166 12.333 19 12.333ZM12.3333 13.9997C12.3333 13.083 13.0833 12.333 14 12.333C14.9166 12.333 15.6666 13.083 15.6666 13.9997C15.6666 14.9163 14.9166 15.6663 14 15.6663C13.0833 15.6663 12.3333 14.9163 12.3333 13.9997Z";
+}
+
+.journal-project-card:hover .card-menu-options-icon {
+    -fx-background-color: -Grey-White;
+}
+
+/* Styling a context menu for amplify ui/ux controls
+*/
+.context-menu.amplify-context-menu {
+    -fx-background-radius: 8px;
+    -fx-background-insets: 0;
+    -fx-background-color: -Grey-11;
+    -fx-padding: 8 0 8 0;
+}
+.context-menu.amplify-context-menu .separator {
+    -fx-padding: 5 12 5 12;
+}
+.context-menu.amplify-context-menu .separator:horizontal .line {
+    -fx-border-color:  -Grey-9 transparent transparent transparent;
+    -fx-border-insets: 1 0 0 0;
+}
+.context-menu.amplify-context-menu .menu-item > .label,
+.context-menu.amplify-context-menu .menu-item:hover > .label {
+    -fx-text-fill: -Grey-White;
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 400;
+    -fx-padding: 4 8 4 8;
+}
+
+
 .notification-card {
     -fx-pref-width: 280px;
     -fx-pref-height: 178px;

@@ -16,6 +16,7 @@
 package dev.ikm.komet.preferences;
 
 public enum JournalWindowSettings {
+    JOURNAL_DIR_NAME,
     JOURNAL_TITLE,
     JOURNAL_HEIGHT,
     JOURNAL_WIDTH,
@@ -24,4 +25,5 @@ public enum JournalWindowSettings {
     JOURNAL_LAST_EDIT,
     JOURNAL_AUTHOR,
     CONCEPT_NAMES,
+    CONCEPT_COUNT
 }

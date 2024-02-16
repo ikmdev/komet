@@ -15,26 +15,19 @@
  */
 package dev.ikm.komet.amplify.journal;
 
-import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.setupSlideOutTrayPane;
-import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
-import static dev.ikm.komet.amplify.details.ConceptPreferenceUtil.findElement;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.*;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.*;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_NAMES;
-import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
-import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
-
 import dev.ikm.komet.amplify.commons.SlideOutTrayHelper;
 import dev.ikm.komet.amplify.details.ConceptPreference;
 import dev.ikm.komet.amplify.details.DetailsNode;
 import dev.ikm.komet.amplify.details.DetailsNodeFactory;
+import dev.ikm.komet.amplify.events.JournalTileEvent;
 import dev.ikm.komet.amplify.window.WindowSupport;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
+import dev.ikm.komet.framework.events.EvtBus;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.WindowSettings;
@@ -56,12 +49,9 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import java.io.File;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.prefs.BackingStoreException;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -72,6 +62,24 @@ import javafx.stage.Stage;
 import org.eclipse.collections.api.factory.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.prefs.BackingStoreException;
+
+import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.setupSlideOutTrayPane;
+import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
+import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.amplify.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.*;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.*;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
+import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
+import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
+import static java.io.File.separator;
 
 /**
  * This controller is responsible for updating the Amplify journal window by loading a navigation panel
@@ -127,7 +135,7 @@ public class JournalController {
     private ActivityStream navigatorActivityStream;
     private ActivityStream searchActivityStream;
     private ActivityStream reasonerActivityStream;
-
+    private EvtBus journalEventBus = EvtBusFactory.getDefaultEvtBus();
     private volatile boolean isSlideOutOpen = false;
 
     private List<PublicIdStringKey<ActivityStream>> activityStreams = new ArrayList<>();
@@ -135,7 +143,7 @@ public class JournalController {
     private static Consumer<ToggleButton> reasonerToggleConsumer;
 
     private GraphNavigatorNode navigatorNode;
-    private List<ConceptPreference> conceptWindows = new ArrayList<>();
+    private ObservableList<ConceptPreference> conceptWindows = FXCollections.observableArrayList();
 
     /**
      * Called after JavaFX FXML DI has occurred. Any annotated items above should be valid.
@@ -154,6 +162,14 @@ public class JournalController {
             slideOut(newValue);
         });
 
+        conceptWindows.addListener((ListChangeListener<ConceptPreference>) change -> {
+            PrefX journalWindowPref = PrefX.create();
+            journalWindowPref.setValue(CONCEPT_COUNT, conceptWindows.size());
+            journalWindowPref.setValue(JOURNAL_TITLE, getTitle());
+
+            journalEventBus.publish(JOURNAL_TOPIC,
+                    new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowPref));
+        });
         reasonerToggleConsumer = createReasonerToggleConsumer();
     }
 
@@ -332,13 +348,21 @@ public class JournalController {
 
         // This will refresh the Concept details, history, timeline
         detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
-        conceptWindows.add(new ConceptPreference(nidTextEnum, conceptFacade.nid(),
-                kometNodePanel));
+
+        // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
+        Optional<String> conceptFolderName;
+        if (conceptWindowSettingsMap != null){
+            conceptFolderName = (Optional<String>) conceptWindowSettingsMap.getOrDefault(CONCEPT_PREF_NAME, CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
+        } else {
+            conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
+        }
+
+        conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, conceptFacade.nid(), kometNodePanel));
 
         //Calls the remove method to remove and concepts that were closed by the user.
-        detailsNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent -> {
-            removeConceptSetting(nidTextEnum, conceptFacade.nid(), detailsNode);
-        });
+        detailsNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent ->
+            removeConceptSetting((String)conceptWindowSettingsMap.get(CONCEPT_PREF_NAME), detailsNode)
+        );
         //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
         if (conceptWindowSettingsMap != null) {
             kometNodePanel.setPrefHeight((Double)conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
@@ -348,8 +372,8 @@ public class JournalController {
         }
     }
 
-    private void removeConceptSetting(NidTextEnum nidTextEnum, Integer nid, DetailsNode detailsNode) {
-        conceptWindows.remove(findElement(nidTextEnum, nid, conceptWindows));
+    private void removeConceptSetting(String conceptDirectoryName, DetailsNode detailsNode) {
+        conceptWindows.removeIf(c -> c.getDirectoryName().equals(conceptDirectoryName));
         detailsNode.close();
     }
 
@@ -499,24 +523,33 @@ public class JournalController {
         jStage.close();
     }
 
-    public void saveConceptWindowPreferences(KometPreferences journalSubWindowPreferences){
+    public void saveConceptWindowPreferences(String journalSubWindowPrefFolder, KometPreferences journalSubWindowPreferences){
         List<String> conceptFolderNames = new ArrayList<>();
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
 
         //Looping through each concept window to save position and size to preferences.
         for (ConceptPreference conceptPreference : conceptWindows) {
-            String journalSubWindowPrefFolder = CONCEPT_FOLDER_PREFIX + UUID.randomUUID();
-            conceptFolderNames.add(journalSubWindowPrefFolder);
+            String conceptPrefName = conceptPreference.getDirectoryName();
+            conceptFolderNames.add(conceptPrefName);
 
-            //Applying the preferences naming convention to the files.
+            // Applying the preferences naming convention to the files.
+            // e.g., journal-window/JOURNAL_Journal_1/concepts/CONCEPT_XXX
             KometPreferences conceptPreferences = appPreferences.node(JOURNAL_WINDOW +
-                    File.separator + journalSubWindowPrefFolder);
+                    separator + journalSubWindowPrefFolder +
+                    separator + CONCEPTS_DIR +
+                    separator + conceptPreference.getDirectoryName());
+            conceptPreferences.put(CONCEPT_PREF_NAME, conceptPreference.getDirectoryName());
             conceptPreferences.put(NID_TYPE, conceptPreference.getNidType().toString());
             conceptPreferences.putInt(NID_VALUE, conceptPreference.getNid());
             conceptPreferences.putDouble(CONCEPT_HEIGHT, conceptPreference.getConceptPane().getPrefHeight());
             conceptPreferences.putDouble(CONCEPT_WIDTH, conceptPreference.getConceptPane().getPrefWidth());
             conceptPreferences.putDouble(CONCEPT_XPOS, conceptPreference.getConceptPane().getBoundsInParent().getMinX());
             conceptPreferences.putDouble(CONCEPT_YPOS, conceptPreference.getConceptPane().getBoundsInParent().getMinY());
+            try {
+                conceptPreferences.flush();
+            } catch (BackingStoreException e) {
+                throw new RuntimeException(e);
+            }
         }
         //Putting the list of concepts in our preferences.
         journalSubWindowPreferences.putList(CONCEPT_NAMES, conceptFolderNames);
@@ -527,12 +560,15 @@ public class JournalController {
         }
     }
 
-    public void recreateConceptWindows(List<String> conceptList) {
+    public void recreateConceptWindows(PrefX journalPref) {
+        List<String> conceptList = journalPref.getValue(CONCEPT_NAMES);
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         //Looping through each concept in each journal.
         for(String conceptFolder: conceptList){
             KometPreferences conceptPreferences = appPreferences.node(JOURNAL_WINDOW +
-                    File.separator + conceptFolder);
+                    separator + journalPref.getValue(JOURNAL_DIR_NAME) +
+                    separator + CONCEPTS_DIR +
+                    separator + conceptFolder);
             KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
             WindowSettings windowSettings = new WindowSettings(windowPreferences);
             ObservableViewNoOverride window = windowSettings.getView();
@@ -552,6 +588,7 @@ public class JournalController {
             }
             //Creating a hashmap to store all position and size values for each concept.
             Map<ConceptWindowSettings, Object> conceptWindowSettingsMap = new HashMap<>();
+            conceptWindowSettingsMap.put(CONCEPT_PREF_NAME, conceptPreferences.get(CONCEPT_PREF_NAME));
             conceptWindowSettingsMap.put(CONCEPT_HEIGHT,conceptPreferences.getDouble(conceptPreferences.enumToGeneralKey(CONCEPT_HEIGHT), DEFAULT_CONCEPT_HEIGHT));
             conceptWindowSettingsMap.put(CONCEPT_WIDTH, conceptPreferences.getDouble(conceptPreferences.enumToGeneralKey(CONCEPT_WIDTH), DEFAULT_CONCEPT_HEIGHT));
             conceptWindowSettingsMap.put(CONCEPT_XPOS, conceptPreferences.getDouble(conceptPreferences.enumToGeneralKey(CONCEPT_XPOS), DEFAULT_CONCEPT_XPOS));
@@ -561,4 +598,13 @@ public class JournalController {
             makeConceptWindow(window, conceptFacade, nidTextEnum, conceptWindowSettingsMap);
         }
     }
+
+    /**
+     * Bring window to the front of all windows.
+     */
+    public void windowToFront() {
+        if (journalBorderPane != null && journalBorderPane.getScene() != null && journalBorderPane.getScene().getWindow() != null) {
+            ((Stage) journalBorderPane.getScene().getWindow()).toFront();
+        }
     }
+}

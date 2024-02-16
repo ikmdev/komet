@@ -15,10 +15,6 @@
  */
 package dev.ikm.komet.amplify.properties;
 
-import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
-import static dev.ikm.komet.amplify.commons.CssHelper.genText;
-import static dev.ikm.komet.amplify.events.AmplifyTopics.CONCEPT_TOPIC;
-
 import dev.ikm.komet.amplify.events.AddDescriptionToConceptEvent;
 import dev.ikm.komet.amplify.events.EditDescriptionConceptEvent;
 import dev.ikm.komet.framework.events.EvtBus;
@@ -26,8 +22,6 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.terms.EntityFacade;
-import java.io.IOException;
-import java.io.Serializable;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -40,6 +34,13 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.shape.SVGPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.Serializable;
+
+import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
+import static dev.ikm.komet.amplify.commons.CssHelper.genText;
+import static dev.ikm.komet.amplify.events.AmplifyTopics.CONCEPT_TOPIC;
 
 /**
  * The properties window providing tabs of Edit, Hierarchy, History, and Comments.
@@ -97,9 +98,9 @@ public class PropertiesController implements Serializable {
 
     private EvtBus eventBus;
 
-    private Subscriber descriptionSubscriber;
+    private Subscriber<AddDescriptionToConceptEvent> descriptionSubscriber;
 
-    private Subscriber axiomSubscriber;
+    private Subscriber<EditDescriptionConceptEvent> axiomSubscriber;
 
     /**
      * This is called after dependency injection has occurred to the JavaFX controls above.
@@ -147,22 +148,14 @@ public class PropertiesController implements Serializable {
         // when we receive an event because the user clicked the
         // Add Description button, we want to change the Pane in the
         // Edit Concept bump out to be the Add Description form
-        descriptionSubscriber = evt -> {
-            if (evt instanceof AddDescriptionToConceptEvent createEvt) {
-                contentBorderPane.setCenter(addDescriptionPane);
-            }
-        };
-        eventBus.subscribe(CONCEPT_TOPIC, descriptionSubscriber);
+        descriptionSubscriber = evt -> contentBorderPane.setCenter(addDescriptionPane);
+        eventBus.subscribe(CONCEPT_TOPIC, AddDescriptionToConceptEvent.class, descriptionSubscriber);
 
         // when we receive an event because the user clicked the
         // Add Axiom button, we want to change the Pane in the
         // Edit Concept bump out to be the Add Axiom form
-        axiomSubscriber = evt -> {
-            if (evt instanceof EditDescriptionConceptEvent createEvt) {
-                contentBorderPane.setCenter(addAxiomPane);
-            }
-        };
-        eventBus.subscribe(CONCEPT_TOPIC, axiomSubscriber);
+        axiomSubscriber = evt -> contentBorderPane.setCenter(addAxiomPane);
+        eventBus.subscribe(CONCEPT_TOPIC, EditDescriptionConceptEvent.class, axiomSubscriber);
     }
 
     private void updateDefaultSelectedViews() {

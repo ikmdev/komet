@@ -19,6 +19,7 @@ import dev.ikm.komet.preferences.NidTextEnum;
 import javafx.scene.layout.Pane;
 
 public class ConceptPreference {
+    private String directoryName;
     private Pane conceptPane;
 
     NidTextEnum nidType;
@@ -32,7 +33,8 @@ public class ConceptPreference {
         this.conceptPane = conceptPane;
     }
 
-    public ConceptPreference(NidTextEnum nidType, Integer nid, Pane conceptPane) {
+    public ConceptPreference(String directoryName, NidTextEnum nidType, Integer nid, Pane conceptPane) {
+        this.directoryName = directoryName;
         this.nidType = nidType;
         this.nid = nid;
         this.conceptPane = conceptPane;
@@ -52,6 +54,14 @@ public class ConceptPreference {
 
     public void setNidType(NidTextEnum nidType) {
         this.nidType = nidType;
+    }
+
+    public String getDirectoryName() {
+        return directoryName;
+    }
+
+    public void setDirectoryName(String directoryName) {
+        this.directoryName = directoryName;
     }
 }
 
