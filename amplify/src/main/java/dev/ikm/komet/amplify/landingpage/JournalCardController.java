@@ -63,7 +63,7 @@ public class JournalCardController implements BasicController {
     @FXML
     public void initialize() {
         journalEventBus = EvtBusFactory.getDefaultEvtBus();
-        System.out.println("Event bus instance %s, %s".formatted(this.getClass().getSimpleName(), journalEventBus));
+        LOG.debug("Event bus instance %s, %s".formatted(this.getClass().getSimpleName(), journalEventBus));
 
         // Add a context menu to the menu options button on the card
         setupContextMenuOptions(menuOptionButton);
@@ -117,7 +117,7 @@ public class JournalCardController implements BasicController {
                             menuOptionButton.getInsets().getTop(),
                             menuOptionButton.getInsets().getBottom()));
 
-            System.out.println("actionEvent = " + actionEvent);
+            LOG.debug("actionEvent = " + actionEvent);
             contextMenu.show(menuOptionButton.getScene().getWindow(), x, y);
         });
     }
