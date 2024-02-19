@@ -204,6 +204,16 @@ public class LandingPageController implements BasicController {
                 }
                 return true;
             });
+
+            // reset Journal counter (The add journal card is in the flow pane)
+            int maxJournalNumber = gridViewFlowPane.getChildren()
+                    .stream()
+                    .filter(node -> node.getUserData() instanceof PrefX)
+                    .map( node -> (PrefX)node.getUserData())
+                    .map( prefX -> parseJournalNumber(prefX.getValue(JOURNAL_TITLE).toString()))
+                    .max((a, b) -> Math.max(a,b))
+                    .orElse(0);
+            JournalCounter.getInstance().set(maxJournalNumber);
         };
         amplifyEventBus.subscribe(JOURNAL_TOPIC, DeleteJournalEvent.class, deleteJournalSubscriber);
 

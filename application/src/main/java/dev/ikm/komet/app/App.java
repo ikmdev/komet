@@ -515,12 +515,12 @@ public class App extends Application {
         // launched (journal Controllers List) will overwrite existing window preferences.
         List<String> journalSubWindowFolders = new ArrayList<>(journalControllersList.size());
         for(JournalController controller : journalControllersList) {
-            String journalSubWindowPrefFolder = JOURNAL_FOLDER_PREFIX + controller.getTitle().replace(" ", "_");
+            String journalSubWindowPrefFolder = controller.generateJournalDirNameBasedOnTitle();
             journalSubWindowFolders.add(journalSubWindowPrefFolder);
 
             KometPreferences journalSubWindowPreferences = appPreferences.node(JOURNAL_WINDOW +
                     File.separator + journalSubWindowPrefFolder);
-            controller.saveConceptWindowPreferences(journalSubWindowPrefFolder, journalSubWindowPreferences);
+            controller.saveConceptWindowPreferences(journalSubWindowPreferences);
             journalSubWindowPreferences.put(JOURNAL_TITLE, controller.getTitle());
             journalSubWindowPreferences.putDouble(JOURNAL_HEIGHT, controller.getHeight());
             journalSubWindowPreferences.putDouble(JOURNAL_WIDTH, controller.getWidth());

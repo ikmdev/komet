@@ -355,14 +355,19 @@ public class JournalController {
             conceptFolderName = (Optional<String>) conceptWindowSettingsMap.getOrDefault(CONCEPT_PREF_NAME, CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
         } else {
             conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
+            // create a conceptWindowSettingsMap
+            Map<ConceptWindowSettings, Object> conceptWindowSettingsObjectMap = createConceptPrefMap(conceptFolderName.get(), kometNodePanel);
+            kometNodePanel.setUserData(conceptWindowSettingsObjectMap);
         }
 
+        // add to the list of concept windows
+        final String finalConceptFolderName = conceptFolderName.get();
         conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, conceptFacade.nid(), kometNodePanel));
 
         //Calls the remove method to remove and concepts that were closed by the user.
-        detailsNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent ->
-            removeConceptSetting((String)conceptWindowSettingsMap.get(CONCEPT_PREF_NAME), detailsNode)
-        );
+        detailsNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent -> {
+            removeConceptSetting(finalConceptFolderName, detailsNode);
+        });
         //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
         if (conceptWindowSettingsMap != null) {
             kometNodePanel.setPrefHeight((Double)conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
@@ -372,9 +377,55 @@ public class JournalController {
         }
     }
 
+    /**
+     * Creates a map containing the current concept panel (window's) preferences.
+     * @param conceptPrefDirName - Unique name used in preferences as a directory name but also a way to remove a card.
+     * @param kometNodePanel - The detail concept view window (panel)
+     * @return
+     */
+    private Map<ConceptWindowSettings, Object> createConceptPrefMap(String conceptPrefDirName, Pane kometNodePanel) {
+        Map<ConceptWindowSettings, Object> conceptWindowSettingsMap = new HashMap<>();
+        conceptWindowSettingsMap.put(CONCEPT_PREF_NAME, conceptPrefDirName);
+        conceptWindowSettingsMap.put(CONCEPT_HEIGHT, kometNodePanel.getPrefHeight());
+        conceptWindowSettingsMap.put(CONCEPT_WIDTH, kometNodePanel.getPrefWidth());
+        conceptWindowSettingsMap.put(CONCEPT_XPOS, kometNodePanel.getLayoutX());
+        conceptWindowSettingsMap.put(CONCEPT_YPOS, kometNodePanel.getLayoutX());
+        return conceptWindowSettingsMap;
+    }
+
+    /**
+     * Removes the concept details node (Pane) from the scene graph, closes activity streams, and removes preferences from locally.
+     * @param conceptDirectoryName - The unique concept dir name used in each journal window.
+     * @param detailsNode - The Concept detailsNode - referencing both JavaFX Node and controller.
+     */
     private void removeConceptSetting(String conceptDirectoryName, DetailsNode detailsNode) {
+        // locate concept by unique directory name and remove from list.
         conceptWindows.removeIf(c -> c.getDirectoryName().equals(conceptDirectoryName));
         detailsNode.close();
+        removeConceptPreferences(conceptDirectoryName);
+    }
+
+    /**
+     * Removes a concept window's preference folder locally.
+     * @param conceptPrefDirName A unique concept directory name. e.g., CONCEPT_1efe8e7d-c2ad-4a24-85ce-db8609f5d7ee
+     */
+    private void removeConceptPreferences(String conceptPrefDirName) {
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+
+        // Applying the preferences naming convention to the files.
+        // e.g., journal-window/JOURNAL_Journal_1/concepts/CONCEPT_XXX
+        String path = JOURNAL_WINDOW +
+                separator + generateJournalDirNameBasedOnTitle() +
+                separator + CONCEPTS_DIR +
+                separator + conceptPrefDirName;
+        try {
+            if (appPreferences.nodeExists(path)) {
+                appPreferences.node(path).removeNode();
+            }
+        } catch (BackingStoreException e) {
+            // this should not get here. But if you do continue to remove the card from the display.
+            LOG.error("Error removing concept folder %s".formatted(conceptPrefDirName), e);
+        }
     }
 
     /**
@@ -523,7 +574,17 @@ public class JournalController {
         jStage.close();
     }
 
-    public void saveConceptWindowPreferences(String journalSubWindowPrefFolder, KometPreferences journalSubWindowPreferences){
+    /**
+     * This will use the title of the journal project and convert it to a unique journal directory name.
+     * This function will convert Journal 1 to JOURNAL_Journal_1.
+     * Todo Refactor code to allow user to change the name of the journal project and a unique name that doesn't conflict with the file system.
+     * @return
+     */
+    public String generateJournalDirNameBasedOnTitle() {
+        return JOURNAL_FOLDER_PREFIX + getTitle().replace(" ", "_");
+    }
+
+    public void saveConceptWindowPreferences(KometPreferences journalSubWindowPreferences){
         List<String> conceptFolderNames = new ArrayList<>();
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
 
@@ -534,9 +595,7 @@ public class JournalController {
 
             // Applying the preferences naming convention to the files.
             // e.g., journal-window/JOURNAL_Journal_1/concepts/CONCEPT_XXX
-            KometPreferences conceptPreferences = appPreferences.node(JOURNAL_WINDOW +
-                    separator + journalSubWindowPrefFolder +
-                    separator + CONCEPTS_DIR +
+            KometPreferences conceptPreferences =journalSubWindowPreferences.node(CONCEPTS_DIR +
                     separator + conceptPreference.getDirectoryName());
             conceptPreferences.put(CONCEPT_PREF_NAME, conceptPreference.getDirectoryName());
             conceptPreferences.put(NID_TYPE, conceptPreference.getNidType().toString());
