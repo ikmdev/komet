@@ -255,6 +255,7 @@ public class App extends Application {
         // get the instance of the event bus
         amplifyEventBus = EvtBusFactory.getInstance(EvtBus.class);
         Subscriber<CreateJournalEvent> detailsSubscriber = evt -> {
+
             String journalName = evt.getWindowSettingsObjectMap().getValue(JOURNAL_TITLE);
             // Inspects the existing journal windows to see if it is already open
             // So that we do not open duplicate journal windows

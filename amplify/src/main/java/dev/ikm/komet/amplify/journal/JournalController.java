@@ -413,10 +413,9 @@ public class JournalController {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
 
         // Applying the preferences naming convention to the files.
-        // e.g., journal-window/JOURNAL_Journal_1/concepts/CONCEPT_XXX
+        // e.g., journal-window/JOURNAL_Journal_1/CONCEPT_XXX
         String path = JOURNAL_WINDOW +
                 separator + generateJournalDirNameBasedOnTitle() +
-                separator + CONCEPTS_DIR +
                 separator + conceptPrefDirName;
         try {
             if (appPreferences.nodeExists(path)) {
@@ -594,9 +593,9 @@ public class JournalController {
             conceptFolderNames.add(conceptPrefName);
 
             // Applying the preferences naming convention to the files.
-            // e.g., journal-window/JOURNAL_Journal_1/concepts/CONCEPT_XXX
-            KometPreferences conceptPreferences =journalSubWindowPreferences.node(CONCEPTS_DIR +
-                    separator + conceptPreference.getDirectoryName());
+            // e.g., journal-window/JOURNAL_Journal_1/CONCEPT_XXX
+            KometPreferences conceptPreferences =journalSubWindowPreferences.node(
+                            conceptPreference.getDirectoryName());
             conceptPreferences.put(CONCEPT_PREF_NAME, conceptPreference.getDirectoryName());
             conceptPreferences.put(NID_TYPE, conceptPreference.getNidType().toString());
             conceptPreferences.putInt(NID_VALUE, conceptPreference.getNid());
@@ -626,7 +625,6 @@ public class JournalController {
         for(String conceptFolder: conceptList){
             KometPreferences conceptPreferences = appPreferences.node(JOURNAL_WINDOW +
                     separator + journalPref.getValue(JOURNAL_DIR_NAME) +
-                    separator + CONCEPTS_DIR +
                     separator + conceptFolder);
             KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
             WindowSettings windowSettings = new WindowSettings(windowPreferences);
