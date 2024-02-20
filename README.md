@@ -44,4 +44,4 @@ Note: Komet requires sample data to operate with full functionality
 
 Technical and non-technical issues can be reported to the Issue Tracker (LINK TO ISSUE TRACKER ONCE PUT IN KOMET REPO).
 
-Contributions can be submitted via pull requests. Please check the contribution guide for more details.
+Contributions can be submitted via pull requests. Please check the [contribution guide](doc/how-to-contribute.md) for more details.
