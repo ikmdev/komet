@@ -17,7 +17,9 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-assembly-plugin.version>3.6.0</maven-assembly-plugin.version>
-		<assembly-descriptor.version>1.15.0-SNAPSHOT</assembly-descriptor.version>
+		<!-- TODO this needs to be manually updated, since the chile modules are
+		not on project version-->
+		<assembly-descriptor.version>1.23.0-SNAPSHOT</assembly-descriptor.version>
 	</properties>
 
 	<modules>

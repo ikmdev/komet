@@ -15,14 +15,31 @@
  */
 package dev.ikm.komet.reasoner;
 
+import static dev.ikm.tinkar.terms.TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN;
+import static dev.ikm.tinkar.terms.TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.ServiceLoader;
+import java.util.ServiceLoader.Provider;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+import org.eclipse.collections.api.list.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import dev.ikm.komet.framework.ExplorationNodeAbstract;
 import dev.ikm.komet.framework.TopPanelFactory;
 import dev.ikm.komet.framework.activity.ActivityStreams;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.komet.reasoner.elkowl.ElkOwlAxiomData;
-import dev.ikm.komet.reasoner.elkowl.RunElkOwlReasonerIncrementalTask;
-import dev.ikm.komet.reasoner.elkowl.RunElkOwlReasonerTask;
+import dev.ikm.komet.reasoner.service.ReasonerService;
+import dev.ikm.komet.reasoner.ui.RunElkOwlReasonerIncrementalTask;
+import dev.ikm.komet.reasoner.ui.RunElkOwlReasonerTask;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -36,19 +53,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
-import static dev.ikm.tinkar.terms.TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN;
-import static dev.ikm.tinkar.terms.TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN;
-
-//import dev.ikm.komet.reasoner.elk.RunElkReasonerTask;
 
 public class ReasonerResultsNode extends ExplorationNodeAbstract {
 
@@ -60,11 +64,13 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 	private final BorderPane contentPane = new BorderPane();
 	private final HBox centerBox;
 
+	private ReasonerService reasonerService;
+
 	private ReasonerResultsController resultsController;
 
 	public ReasonerResultsNode(ViewProperties viewProperties, KometPreferences nodePreferences) {
 		super(viewProperties, nodePreferences);
-		this.centerBox = new HBox(5, new Label("   reasoner "));
+		this.centerBox = new HBox(5, new Label("   Reasoner "));
 
 		Platform.runLater(() -> {
 			TopPanelFactory.TopPanelParts topPanelParts = TopPanelFactory.make(viewProperties,
@@ -74,32 +80,41 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 				ArrayList<MenuItem> collectionMenuItems = new ArrayList<>();
 				collectionMenuItems.add(new SeparatorMenuItem());
 
-//				MenuItem snorocketReasonerMenuItem = new MenuItem("Run SnoRocket reasoner");
-//				snorocketReasonerMenuItem.setOnAction(this::snorocketReasoner);
-//				collectionMenuItems.add(snorocketReasonerMenuItem);
-
-//				MenuItem elkReasonerMenuItem = new MenuItem("Run ELK reasoner");
-//				elkReasonerMenuItem.setOnAction(this::elkReasoner);
-//				collectionMenuItems.add(elkReasonerMenuItem);
-
-				{
-					MenuItem item = new MenuItem("Run ElkOwl incremental reasoner");
-					item.setOnAction(this::elkOwlReasonerIncremental);
+				List<ReasonerService> rss = ServiceLoader.load(ReasonerService.class).stream().map(Provider::get)
+						.sorted(Comparator.comparing(ReasonerService::getName)).toList();
+				for (ReasonerService rs : rss) {
+					LOG.info("Reasoner service add: " + rs);
+					MenuItem item = new MenuItem("Use " + rs.getName());
+					item.setOnAction(x -> {
+						this.reasonerService = rs;
+						LOG.info("Reasoner service selected: " + rs.getName());
+					});
 					collectionMenuItems.add(item);
+					if (this.reasonerService == null)
+						this.reasonerService = rs;
 				}
+				if (this.reasonerService == null)
+					throw new RuntimeException("No ReasonerService available");
+				LOG.info("Default ReasonerService: " + this.reasonerService.getName());
+				collectionMenuItems.add(new SeparatorMenuItem());
 
 				{
-					MenuItem item = new MenuItem("Run ElkOwl full reasoner");
+					MenuItem item = new MenuItem("Run full reasoner");
 					item.setOnAction(this::elkOwlReasoner);
 					collectionMenuItems.add(item);
 				}
 
 				{
-					MenuItem item = new MenuItem("Run ElkOwl redo hierarchy reasoner");
-					item.setOnAction(this::elkOwlReasonerRedo);
+					MenuItem item = new MenuItem("Run incremental reasoner");
+					item.setOnAction(this::elkOwlReasonerIncremental);
 					collectionMenuItems.add(item);
 				}
 
+				{
+					MenuItem item = new MenuItem("Run redo hierarchy reasoner");
+					item.setOnAction(this::elkOwlReasonerRedo);
+					collectionMenuItems.add(item);
+				}
 
 				ObservableList<MenuItem> topMenuItems = topPanelParts.viewPropertiesMenuButton().getItems();
 				topMenuItems.addAll(collectionMenuItems);
@@ -120,48 +135,11 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 
 	}
 
-//	private void snorocketReasoner(ActionEvent actionEvent) {
-//		TinkExecutor.threadPool().execute(() -> {
-//			RunSnoRocketReasonerTask runSnoRocketReasonerTask = new RunSnoRocketReasonerTask(
-//					getViewProperties().calculator(), EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
-//					EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN, resultsController::setResults);
-//			Future<AxiomData> reasonerFuture = TinkExecutor.threadPool().submit(runSnoRocketReasonerTask);
-//			AxiomData axiomData = null;
-//			int statedCount = 0;
-//			try {
-//				axiomData = reasonerFuture.get();
-//				statedCount = axiomData.processedSemantics.get();
-//			} catch (InterruptedException | ExecutionException e) {
-//				AlertStreams.dispatchToRoot(e);
-//			}
-//
-//			LOG.info("Stated axiom count: " + statedCount + " " + runSnoRocketReasonerTask.durationString());
-//		});
-//	}
-
-//	private void elkReasoner(ActionEvent actionEvent) {
-//		TinkExecutor.threadPool().execute(() -> {
-//			RunElkReasonerTask runElkReasonerTask = new RunElkReasonerTask(getViewProperties().calculator(),
-//					EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN,
-//					resultsController::setResults);
-//			Future<AxiomData> reasonerFuture = TinkExecutor.threadPool().submit(runElkReasonerTask);
-//			AxiomData axiomData = null;
-//			int statedCount = 0;
-//			try {
-//				axiomData = reasonerFuture.get();
-//				statedCount = axiomData.processedSemantics.get();
-//			} catch (InterruptedException | ExecutionException e) {
-//				AlertStreams.dispatchToRoot(e);
-//			}
-//
-//			LOG.info("Stated axiom count: " + statedCount + " " + runElkReasonerTask.durationString());
-//		});
-//	}
-
 	private void elkOwlReasonerRedo(ActionEvent actionEvent) {
 		reinferAllHierarchy = true;
 		fullReasoner();
 	}
+
 	private void elkOwlReasoner(ActionEvent actionEvent) {
 		reinferAllHierarchy = false;
 		fullReasoner();
@@ -169,40 +147,38 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 
 	private void fullReasoner() {
 		TinkExecutor.threadPool().execute(() -> {
-			RunElkOwlReasonerTask task = new RunElkOwlReasonerTask(getViewProperties().calculator(),
-					EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN,
-					resultsController::setResults);
-			Future<ElkOwlAxiomData> reasonerFuture = TinkExecutor.threadPool().submit(task);
-			ElkOwlAxiomData axiomData = null;
-			int statedCount = 0;
+			// TODO use a factory for the service and then create here
+			reasonerService.init(getViewProperties().calculator(), EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
+					EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
+			RunElkOwlReasonerTask task = new RunElkOwlReasonerTask(reasonerService, resultsController::setResults);
+			Future<ReasonerService> reasonerFuture = TinkExecutor.threadPool().submit(task);
+			int conceptCount = 0;
 			try {
-				axiomData = reasonerFuture.get();
-				statedCount = axiomData.processedSemantics.get();
+				reasonerFuture.get();
+				conceptCount = reasonerService.getConceptCount();
 			} catch (InterruptedException | ExecutionException e) {
 				AlertStreams.dispatchToRoot(e);
 			}
 
-			LOG.info("Stated axiom count: " + statedCount + " " + task.durationString());
+			LOG.info("Concept count: " + conceptCount + " " + task.durationString());
 		});
 	}
 
 	private void elkOwlReasonerIncremental(ActionEvent actionEvent) {
 		reinferAllHierarchy = false;
 		TinkExecutor.threadPool().execute(() -> {
-			RunElkOwlReasonerIncrementalTask task = new RunElkOwlReasonerIncrementalTask(getViewProperties().calculator(),
-					EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN,
+			RunElkOwlReasonerIncrementalTask task = new RunElkOwlReasonerIncrementalTask(reasonerService,
 					resultsController::setResults);
-			Future<ElkOwlAxiomData> reasonerFuture = TinkExecutor.threadPool().submit(task);
-			ElkOwlAxiomData axiomData = null;
-			int statedCount = 0;
+			Future<ReasonerService> reasonerFuture = TinkExecutor.threadPool().submit(task);
+			int conceptCount = 0;
 			try {
-				axiomData = reasonerFuture.get();
-				statedCount = axiomData.processedSemantics.get();
+				reasonerFuture.get();
+				conceptCount = reasonerService.getConceptCount();
 			} catch (InterruptedException | ExecutionException e) {
 				AlertStreams.dispatchToRoot(e);
 			}
 
-			LOG.info("Stated axiom count: " + statedCount + " " + task.durationString());
+			LOG.info("Concept count: " + conceptCount + " " + task.durationString());
 		});
 	}
 
