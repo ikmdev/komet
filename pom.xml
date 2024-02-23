@@ -55,6 +55,9 @@
         <module>artifact</module>
         <module>builder</module>
         <module>classification</module>
+		<module>reasoner-service</module>
+		<module>reasoner-elk-snomed</module>
+		<module>reasoner-elk-owl</module>
         <module>reasoner-test-data</module>
         <module>details</module>
         <module>executor</module>
@@ -73,8 +76,11 @@
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-core.version>1.22.0</tinkar-core.version>
 
+		<owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
+		<owlapi.version>4.5.25-ikm-r3</owlapi.version>
+
         <ikm-classifier.groupId>dev.ikm.elk</ikm-classifier.groupId>
-        <ikm-classifier.version>0.8.0</ikm-classifier.version>
+		<ikm-classifier.version>0.17.0</ikm-classifier.version>
 
         <ikm-evrete.groupId>dev.ikm.evrete</ikm-evrete.groupId>
         <ikm-evrete.version>3.0.04-ikm-r2</ikm-evrete.version>
@@ -99,7 +105,6 @@
         <log4j.version>3.0.0-alpha1</log4j.version>
         <mockito.version>5.6.0</mockito.version>
         <common-java5.version>3.0.0-M9</common-java5.version>
-        <owlapi.version>4.5.25-ikm-r2</owlapi.version>
 
         <maven.assembly-plugin.version>3.6.0</maven.assembly-plugin.version>
     </properties>
@@ -127,6 +132,24 @@
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
+				<artifactId>reasoner-service</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>reasoner-elk-owl</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>reasoner-elk-snomed</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
                 <artifactId>amplify</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -445,25 +468,25 @@
             </dependency>
 
             <dependency>
-                <groupId>net.sourceforge.owlapi</groupId>
+				<groupId>${owlapi.groupId}</groupId>
                 <artifactId>owlapi-api</artifactId>
                 <version>${owlapi.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>net.sourceforge.owlapi</groupId>
+				<groupId>${owlapi.groupId}</groupId>
                 <artifactId>owlapi-impl</artifactId>
                 <version>${owlapi.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>net.sourceforge.owlapi</groupId>
+				<groupId>${owlapi.groupId}</groupId>
                 <artifactId>owlapi-apibinding</artifactId>
                 <version>${owlapi.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>net.sourceforge.owlapi</groupId>
+				<groupId>${owlapi.groupId}</groupId>
                 <artifactId>owlapi-parsers</artifactId>
                 <version>${owlapi.version}</version>
             </dependency>
@@ -473,6 +496,18 @@
                 <artifactId>elk-owlapi4</artifactId>
                 <version>${ikm-classifier.version}</version>
             </dependency>
+
+			<dependency>
+				<groupId>${ikm-classifier.groupId}</groupId>
+				<artifactId>elk-snomed</artifactId>
+				<version>${ikm-classifier.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${ikm-classifier.groupId}</groupId>
+				<artifactId>elk-snomed-owl</artifactId>
+				<version>${ikm-classifier.version}</version>
+			</dependency>
         </dependencies>
     </dependencyManagement>
 

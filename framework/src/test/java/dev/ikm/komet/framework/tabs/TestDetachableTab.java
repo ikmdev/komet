@@ -37,6 +37,7 @@ public class TestDetachableTab {
 
     @BeforeEach
     public void setUp() {
+    	;
         when(titleProperty.getValue()).thenReturn(
                 "NRCeO8Bi5ZSSqYM0Y3XiTWBosbrMjfiWVLDqqby8htPDleBW1njm8KS");
 
@@ -59,6 +60,7 @@ public class TestDetachableTab {
         // Given a detachable node,
         // When kometnode has a title shorter than 50 characters (actual 25)
         // Then the style for that KometNode should remove style : 'long-text'
+    	;
         when(titleProperty.getValue()).thenReturn("Dummy dummy dummy dummy");
         detachableTab.textProperty().setValue("Dummy dummy dummy dummy");
         assert !detachableTab.getStyleClass().contains("long-text");
@@ -68,6 +70,7 @@ public class TestDetachableTab {
     public void testForRenderingShortText() {
         // Given a detachable node,
         // When kometnode has a title shorter than 50 characters (actual 25)
+    	;
         when(titleProperty.getValue()).thenReturn("Dummy dummy dummy dummy");
         detachableTab.textProperty().setValue("Dummy dummy dummy dummy");
         assert !detachableTab.getStyleClass().contains("long-text");
@@ -77,6 +80,7 @@ public class TestDetachableTab {
     public void testForRenderingLongText() {
         // Given a detachable node,
         // When kometnode has a title shorter than 50 characters (actual 25)
+    	;
         when(titleProperty.getValue()).thenReturn(
                 "Dummy dummy dummy dummy dummy dummy dummy  dummy dummy dummy dummy dummy dummy dummy");
         detachableTab.textProperty().setValue(
