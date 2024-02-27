@@ -16,40 +16,52 @@
 package dev.ikm.komet.amplify.properties;
 
 import dev.ikm.komet.amplify.commons.BasicController;
+import java.util.UUID;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AddDescriptionController implements BasicController  {
+public class EditDescriptionFormController implements BasicController {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AddDescriptionController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EditDescriptionFormController.class);
 
-
+    private UUID conceptTopic;
 
     @FXML
-    private Label addDescriptionTitleLabel;
+    private Label editDescriptionTitleLabel;
 
+    public EditDescriptionFormController() { }
+
+    public EditDescriptionFormController(UUID conceptTopic) {
+        this.conceptTopic = conceptTopic;
+    }
+
+    @Override
     @FXML
     public void initialize() {
         clearView();
-        setAddDescriptionTitleLabel("Add New Description: Fallot's tetralogy");
+        setEditDescriptionTitleLabel("Edit Description: Other Name");
     }
 
-    public void setAddDescriptionTitleLabel(String addDescriptionTitleLabelText) {
-        this.addDescriptionTitleLabel.setText(addDescriptionTitleLabelText);
+    public void setEditDescriptionTitleLabel(String addAxiomTitleLabelText) {
+        this.editDescriptionTitleLabel.setText(addAxiomTitleLabelText);
     }
+
 
     @Override
     public void updateView() {
-    }
 
+    }
 
     @Override
     public void clearView() {
+
     }
+
 
     @Override
     public void cleanup() {
+
     }
 }

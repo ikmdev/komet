@@ -15,13 +15,20 @@
  */
 package dev.ikm.komet.amplify.properties;
 
-import dev.ikm.komet.amplify.events.AddDescriptionToConceptEvent;
-import dev.ikm.komet.amplify.events.EditDescriptionConceptEvent;
+import static dev.ikm.komet.amplify.commons.CssHelper.genText;
+
+import dev.ikm.komet.amplify.events.AddOtherNameToConceptEvent;
+import dev.ikm.komet.amplify.events.EditConceptFullyQualifiedNameEvent;
+import dev.ikm.komet.amplify.events.EditOtherNameConceptEvent;
+import dev.ikm.komet.amplify.events.ShowEditDescriptionPanelEvent;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.terms.EntityFacade;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.UUID;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -35,13 +42,6 @@ import javafx.scene.shape.SVGPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.Serializable;
-
-import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
-import static dev.ikm.komet.amplify.commons.CssHelper.genText;
-import static dev.ikm.komet.amplify.events.AmplifyTopics.CONCEPT_TOPIC;
-
 /**
  * The properties window providing tabs of Edit, Hierarchy, History, and Comments.
  * This controller is associated with the view file history-change-selection.fxml.
@@ -53,9 +53,13 @@ public class PropertiesController implements Serializable {
 
     protected static final String EDIT_VIEW_FXML_FILE = "edit-view.fxml";
 
-    protected static final String EDIT_ADD_DESCRIPTION_FXML_FILE = "add-description.fxml";
+    protected static final String EDIT_DESCRIPTIONS_FXML_FILE = "edit-descriptions.fxml";
 
-    protected static final String ADD_AXIOM_FXML_FILE = "edit-description.fxml";
+    protected static final String ADD_OTHER_NAME_FXML_FILE = "add-other-name.fxml";
+
+    protected static final String EDIT_OTHER_NAME_FXML_FILE = "edit-other-name-form.fxml";
+
+    protected static final String EDIT_FQN_FXML_FILE = "edit-fully-qualified-name.fxml";
 
     @FXML
     private SVGPath commentsButton;
@@ -83,14 +87,23 @@ public class PropertiesController implements Serializable {
 
     private Pane editBorderPane;
 
-    private Pane addDescriptionPane;
+    private Pane addOtherNamePane;
 
-    private Pane addAxiomPane;
+    private Pane editFqnPane;
+
+    private Pane editDescriptionsPane;
+
+    private Pane editOtherNamePane;
+
     private EditConceptController editConceptController;
 
-    private AddDescriptionController addDescriptionController;
+    private AddOtherNameController addOtherNameController;
 
-    private EditDescriptionController editDescriptionController;
+    private EditDescriptionFormController editDescriptionFormController;
+
+    private EditDescriptionsController editDescriptionsController;
+
+    private EditFullyQualifiedNameController editFullyQualifiedNameController;
 
     private Pane commentsPane = new StackPane(genText("Comments Pane"));
     private ViewProperties viewProperties;
@@ -98,9 +111,28 @@ public class PropertiesController implements Serializable {
 
     private EvtBus eventBus;
 
-    private Subscriber<AddDescriptionToConceptEvent> descriptionSubscriber;
+    private Subscriber<AddOtherNameToConceptEvent> addOtherNameSubscriber;
 
-    private Subscriber<EditDescriptionConceptEvent> axiomSubscriber;
+    private Subscriber<EditOtherNameConceptEvent> editOtherNameSubscriber;
+
+    private Subscriber<EditConceptFullyQualifiedNameEvent> fqnSubscriber;
+
+    private Subscriber<ShowEditDescriptionPanelEvent> editDescriptionPaneSubscriber;
+
+
+    private UUID conceptTopic;
+
+
+    public void postInit() {
+        eventBus.subscribe(conceptTopic, EditOtherNameConceptEvent.class, editOtherNameSubscriber);
+    }
+
+    public PropertiesController() {
+    }
+
+    public PropertiesController(UUID conceptTopic) {
+        this.conceptTopic = conceptTopic;
+    }
 
     /**
      * This is called after dependency injection has occurred to the JavaFX controls above.
@@ -109,53 +141,91 @@ public class PropertiesController implements Serializable {
     public void initialize() throws IOException {
         clearView();
 
-        eventBus = EvtBusFactory.getInstance(EvtBus.class);
-
-        // Programmatically change CSS Theme
-        String styleSheet = defaultStyleSheet();
+        eventBus = EvtBusFactory.getDefaultEvtBus();
 
         // Load History tabs View Panel (FXML & Controller)
         FXMLLoader loader = new FXMLLoader(getClass().getResource(HISTORY_CHANGE_FXML_FILE));
-        this.historyTabsBorderPane = loader.load();
-        this.historyTabsBorderPane.getStylesheets().add(styleSheet);
-        this.historyChangeController = loader.getController();
+        historyTabsBorderPane = loader.load();
+        historyChangeController = loader.getController();
 
         // Load Hierarchy tab View Panel (FXML & Controller)
         FXMLLoader loader2 = new FXMLLoader(getClass().getResource(HIERARCHY_VIEW_FXML_FILE));
-        this.hierarchyTabBorderPane = loader2.load();
-        this.hierarchyTabBorderPane.getStylesheets().add(styleSheet);
-        this.hierarchyController = loader2.getController();
+        hierarchyTabBorderPane = loader2.load();
+        hierarchyController = loader2.getController();
 
         // Load Edit tab
         FXMLLoader loaderEdit = new FXMLLoader(getClass().getResource(EDIT_VIEW_FXML_FILE));
-        this.editBorderPane = loaderEdit.load();
-        this.editBorderPane.getStylesheets().add(styleSheet);
-        this.editConceptController = loaderEdit.getController();
+        loaderEdit.setController(new EditConceptController(conceptTopic));
+        editBorderPane = loaderEdit.load();
+        editConceptController = loaderEdit.getController();
 
-        FXMLLoader loaderEditDescription = new FXMLLoader(getClass().getResource(EDIT_ADD_DESCRIPTION_FXML_FILE));
-        this.addDescriptionPane = loaderEditDescription.load();
-        this.addDescriptionPane.getStylesheets().add(styleSheet);
-        this.addDescriptionController = loaderEditDescription.getController();
+        // Edit Descriptions panel inside the Edit tab (under Properties bump out on Concept window)
+        FXMLLoader loaderEditDescriptions = new FXMLLoader(getClass().getResource(EDIT_DESCRIPTIONS_FXML_FILE));
+        loaderEditDescriptions.setController(new EditDescriptionsController(conceptTopic));
+        editDescriptionsPane = loaderEditDescriptions.load();
+        editDescriptionsController = loaderEditDescriptions.getController();
 
-        FXMLLoader loaderEditAxiom= new FXMLLoader(getClass().getResource(ADD_AXIOM_FXML_FILE));
-        this.addAxiomPane = loaderEditAxiom.load();
-        this.addAxiomPane.getStylesheets().add(styleSheet);
-        this.editDescriptionController = loaderEditAxiom.getController();
+
+        FXMLLoader loaderAddOtherName = new FXMLLoader(getClass().getResource(ADD_OTHER_NAME_FXML_FILE));
+        loaderAddOtherName.setController(new AddOtherNameController(conceptTopic));
+        addOtherNamePane = loaderAddOtherName.load();
+        addOtherNameController = loaderAddOtherName.getController();
+
+        FXMLLoader loaderEditOtherName = new FXMLLoader(getClass().getResource(EDIT_OTHER_NAME_FXML_FILE));
+        loaderEditOtherName.setController(new EditDescriptionFormController(conceptTopic));
+        editOtherNamePane = loaderEditOtherName.load();
+
+        //TODO for future there will be an edit axiom form
+
+        FXMLLoader loaderEditFqn= new FXMLLoader(getClass().getResource(EDIT_FQN_FXML_FILE));
+        loaderEditFqn.setController(new EditFullyQualifiedNameController(conceptTopic));
+        editFqnPane = loaderEditFqn.load();
+        editFullyQualifiedNameController = loaderEditFqn.getController();
 
         // initially a default selected tab and view is shown
         updateDefaultSelectedViews();
 
         // when we receive an event because the user clicked the
-        // Add Description button, we want to change the Pane in the
-        // Edit Concept bump out to be the Add Description form
-        descriptionSubscriber = evt -> contentBorderPane.setCenter(addDescriptionPane);
-        eventBus.subscribe(CONCEPT_TOPIC, AddDescriptionToConceptEvent.class, descriptionSubscriber);
+        // Edit Descriptions Button
+        // we then load the panel with the choice of buttons to edit
+        editDescriptionPaneSubscriber = evt -> contentBorderPane.setCenter(editDescriptionsPane);
+        eventBus.subscribe(conceptTopic, ShowEditDescriptionPanelEvent.class, editDescriptionPaneSubscriber);
+
+
+        // when we receive an event because the user clicked the
+        // Add Other Name button from the Properties > Edit bump out, we want to change the Pane in the
+        // Edit Concept bump out to be the Add Other Name form
+        addOtherNameSubscriber = evt -> {
+            contentBorderPane.setCenter(addOtherNamePane);
+            editButton.setSelected(true);
+        };
+        eventBus.subscribe(conceptTopic, AddOtherNameToConceptEvent.class, addOtherNameSubscriber);
 
         // when we receive an event because the user clicked the
         // Add Axiom button, we want to change the Pane in the
         // Edit Concept bump out to be the Add Axiom form
-        axiomSubscriber = evt -> contentBorderPane.setCenter(addAxiomPane);
-        eventBus.subscribe(CONCEPT_TOPIC, EditDescriptionConceptEvent.class, axiomSubscriber);
+
+        editOtherNameSubscriber = evt -> {
+            contentBorderPane.setCenter(editOtherNamePane);
+            editButton.setSelected(true);
+        };
+        eventBus.subscribe(conceptTopic, EditOtherNameConceptEvent.class, editOtherNameSubscriber);
+
+
+        // when we receive an event because the user clicked the
+        // Fully Qualified Name in the Concept, we want to change the Pane in the
+        // Edit Concept bump out to be the Edit Fully Qualified Name form
+        fqnSubscriber = evt -> {
+            contentBorderPane.setCenter(editFqnPane);
+            editButton.setSelected(true);
+        };
+        eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, fqnSubscriber);
+
+
+    }
+
+    public void setConceptTopic(UUID conceptTopic) {
+        this.conceptTopic = conceptTopic;
     }
 
     private void updateDefaultSelectedViews() {
@@ -185,6 +255,7 @@ public class PropertiesController implements Serializable {
     @FXML
     private void showEditView(ActionEvent event) {
         event.consume();
+        this.editButton.setSelected(true);
         LOG.info("Show Edit View " + event);
         contentBorderPane.setCenter(editBorderPane);
     }
@@ -218,4 +289,6 @@ public class PropertiesController implements Serializable {
 
     public void clearView() {
     }
+
+
 }

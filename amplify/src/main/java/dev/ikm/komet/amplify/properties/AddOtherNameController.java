@@ -16,41 +16,47 @@
 package dev.ikm.komet.amplify.properties;
 
 import dev.ikm.komet.amplify.commons.BasicController;
+import java.util.UUID;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class EditDescriptionController implements BasicController {
+public class AddOtherNameController implements BasicController  {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AddOtherNameController.class);
+
+    private UUID conceptTopic;
 
     @FXML
-    private Label editDescriptionTitleLabel;
+    private Label addOtherNameTitleLabel;
 
+    public AddOtherNameController() { }
 
-    @Override
+    public AddOtherNameController(UUID conceptTopic) {
+        this.conceptTopic = conceptTopic;
+    }
+
     @FXML
     public void initialize() {
         clearView();
-        setEditDescriptionTitleLabel("Subpulmonic stenosis, ventricular septal defect, " +
-                "overriding aorta, AND right ventricular hypertrophy");
+        setAddOtherNameTitleLabel("Add New Description: Fallot's tetralogy");
     }
 
-    public void setEditDescriptionTitleLabel(String addAxiomTitleLabelText) {
-        this.editDescriptionTitleLabel.setText(addAxiomTitleLabelText);
+    public void setAddOtherNameTitleLabel(String addDescriptionTitleLabelText) {
+        this.addOtherNameTitleLabel.setText(addDescriptionTitleLabelText);
     }
-
 
     @Override
     public void updateView() {
-
     }
+
 
     @Override
     public void clearView() {
-
     }
-
 
     @Override
     public void cleanup() {
-
     }
 }

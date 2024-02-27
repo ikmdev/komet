@@ -18,9 +18,9 @@ package dev.ikm.komet.amplify.events;
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
 
-public class AddDescriptionToConceptEvent extends Evt {
+public class ShowEditDescriptionPanelEvent extends Evt {
 
-    public static final EvtType<AddDescriptionToConceptEvent> ADD_DESCRIPTION = new EvtType<>(Evt.ANY, "ADD_DESCRIPTION");
+    public static final EvtType<ShowEditDescriptionPanelEvent> SHOW_EDIT_DESCRIPTION = new EvtType<>(Evt.ANY, "SHOW_EDIT_DESCRIPTION");
 
     /**
      * Constructs a prototypical Event.
@@ -29,7 +29,7 @@ public class AddDescriptionToConceptEvent extends Evt {
      * @param eventType
      * @throws IllegalArgumentException if source is null
      */
-    public AddDescriptionToConceptEvent(Object source, EvtType eventType) {
+    public ShowEditDescriptionPanelEvent(Object source, EvtType eventType) {
         super(source, eventType);
     }
 }

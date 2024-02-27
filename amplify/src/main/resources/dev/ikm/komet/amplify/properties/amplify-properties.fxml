@@ -9,9 +9,9 @@
 <?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="700.0" prefWidth="518.0" styleClass="properties-tab-outer-container" stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.properties.PropertiesController">
+<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="800.0" prefWidth="518.0" styleClass="properties-tab-outer-container" stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <center>
-      <BorderPane prefHeight="836.0" prefWidth="518.0" styleClass="properties-tab-container">
+      <BorderPane prefWidth="518.0" styleClass="properties-tab-container">
          <top>
             <FlowPane alignment="CENTER" BorderPane.alignment="CENTER">
                <children>
@@ -53,7 +53,7 @@
             </FlowPane>
          </top>
          <center>
-            <BorderPane fx:id="contentBorderPane" prefHeight="200.0" prefWidth="200.0" styleClass="properties-tab-container-content" />
+            <BorderPane fx:id="contentBorderPane" prefWidth="200.0" styleClass="properties-tab-container-content" />
          </center>
       </BorderPane>
    </center>

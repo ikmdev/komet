@@ -32,6 +32,7 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import java.io.IOException;
 import java.util.Set;
+import java.util.UUID;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -81,8 +82,12 @@ public class DetailsNode extends ExplorationNodeAbstract {
      */
     private void init(boolean displayOnJournalView) {
         try {
+            // create a unique topic for each concept detail instance
+            UUID conceptTopic = UUID.randomUUID();
+
             // Load Concept Details View Panel (FXML & Controller)
             FXMLLoader loader = new FXMLLoader(getClass().getResource(CONCEPT_DETAILS_VIEW_FXML_FILE));
+            loader.setController(new DetailsController(conceptTopic));
             this.detailsViewBorderPane = loader.load();
             this.detailsViewController = loader.getController();
 
@@ -106,9 +111,9 @@ public class DetailsNode extends ExplorationNodeAbstract {
 
             // Load Concept Properties View Panel (FXML & Controller)
             FXMLLoader propsFXMLLoader = new FXMLLoader(PropertiesController.class.getResource(CONCEPT_PROPERTIES_VIEW_FXML_FILE));
+            propsFXMLLoader.setController(new PropertiesController(conceptTopic));
             this.propertiesViewBorderPane = propsFXMLLoader.load();
             this.propertiesViewController = propsFXMLLoader.getController();
-
             // style the same as the details view
             this.propertiesViewBorderPane.getStylesheets().add(styleSheet);
 

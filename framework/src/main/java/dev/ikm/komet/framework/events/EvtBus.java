@@ -16,30 +16,27 @@
 package dev.ikm.komet.framework.events;
 
 
-import java.util.*;
-
 /**
  * Event Bus. Allow components in the Komet Application to communicate
  * events to other components in a decoupled way
  */
 public interface EvtBus {
 
-    static final Map<String, EvtBus> evtBusMap = new HashMap<>();
 
-    <T extends Evt> void publish(Enum topic, T evt);
+    <T extends Evt> void publish(Object topic, T evt);
 
     /**
      * subscribe to a topic
      * @param topic the topic name
      * @param subscriber subscriber to the topic
      */
-    <T extends Evt> void subscribe(Enum topic, Class<T> eventClass, Subscriber<T> subscriber);
+    <T extends Evt> void subscribe(Object topic, Class<T> eventClass, Subscriber<T> subscriber);
 
     /**
      * unsubscribe to the topic
      * @param topic the topic name
      * @param subscriber the subscriber to the topic
      */
-    <T extends Evt> void unsubscribe(Enum topic, Class<T> eventClass, Subscriber<T> subscriber);
+    <T extends Evt> void unsubscribe(Object topic, Class<T> eventClass, Subscriber<T> subscriber);
 
 }

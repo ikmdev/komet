@@ -18,13 +18,15 @@ package dev.ikm.komet.amplify.details;
 import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
-import static dev.ikm.komet.amplify.events.AmplifyTopics.CONCEPT_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
-import dev.ikm.komet.amplify.events.EditDescriptionConceptEvent;
+import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.amplify.events.EditConceptFullyQualifiedNameEvent;
+import dev.ikm.komet.amplify.events.EditOtherNameConceptEvent;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
@@ -42,10 +44,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -70,7 +69,7 @@ public class DetailsController implements Serializable {
     private Button closeConceptButton;
 
     /**
-     * The outer most part of the details (may remove)
+     * The outermost part of the details (may remove)
      */
     @FXML
     private BorderPane detailsOuterBorderPane;
@@ -194,6 +193,21 @@ public class DetailsController implements Serializable {
     private EntityFacade entityFacade;
 
     private EvtBus eventBus;
+    
+    private UUID conceptTopic;
+
+    private Subscriber<EditConceptFullyQualifiedNameEvent> fqnSubscriber;
+
+    private Subscriber<EditOtherNameConceptEvent> editOtherNameConceptEventSubscriber;
+
+    private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
+
+    public DetailsController() {
+    }
+
+    public DetailsController(UUID conceptTopic) {
+        this.conceptTopic = conceptTopic;
+    }
 
     @FXML
     public void initialize() {
@@ -203,7 +217,28 @@ public class DetailsController implements Serializable {
 
         clearView();
 
-        eventBus = EvtBusFactory.getInstance(EvtBus.class);
+        eventBus = EvtBusFactory.getDefaultEvtBus();
+
+        // when the user clicks a fully qualified name, open the PropertiesPanel
+        fqnSubscriber = evt -> {
+            if (!propertiesToggleButton.isSelected()) {
+                propertiesToggleButton.fire();
+            }
+        };
+        eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, fqnSubscriber);
+
+        // when the user clicks one of the other names, open the PropertiesPanel
+        editOtherNameConceptEventSubscriber = evt -> {
+            if (!propertiesToggleButton.isSelected()) {
+                propertiesToggleButton.fire();
+            }
+        };
+        eventBus.subscribe(conceptTopic, EditOtherNameConceptEvent.class, editOtherNameConceptEventSubscriber);
+
+        // if the user clicks the Close Properties Button from the Edit Descriptions panel
+        // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
+        closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
+        eventBus.subscribe(conceptTopic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
     }
 
     public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
@@ -339,9 +374,9 @@ public class DetailsController implements Serializable {
                     // if the edit button is selected in the properties bump out
                     // then allow editing of the description that the user clicked
                     textFlowPane.setOnMouseClicked(event -> {
-                        eventBus.publish(CONCEPT_TOPIC,
-                                new EditDescriptionConceptEvent(textFlowPane,
-                                        EditDescriptionConceptEvent.EDIT_DESCRIPTION));
+                        eventBus.publish(conceptTopic,
+                                new EditOtherNameConceptEvent(entityFacade,
+                                        EditOtherNameConceptEvent.EDIT_OTHER_NAME));
                     });
                 });
                 otherNamesVBox.getChildren().addAll(rows);
@@ -405,7 +440,14 @@ public class DetailsController implements Serializable {
     private void updateFQNSemantics(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
         DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
         // Latest FQN
-        latestFqnText.setText((String) semanticEntityVersion.fieldValues().get(1));
+        String fullyQualifiedName = (String) semanticEntityVersion.fieldValues().get(1);
+        latestFqnText.setText(fullyQualifiedName);
+
+        latestFqnText.setOnMouseClicked(event -> {
+            eventBus.publish(conceptTopic,
+                    new EditConceptFullyQualifiedNameEvent(fullyQualifiedName,
+                            EditConceptFullyQualifiedNameEvent.EDIT_FQN));
+        });
 
         String descrSemanticStr = String.join(" | ", fieldDescriptions);
         if (fieldDescriptions.size() > 0) {
@@ -609,5 +651,9 @@ public class DetailsController implements Serializable {
         axiomsTitledPane.setExpanded(false);
         //581 x 242
         detailsOuterBorderPane.setPrefSize(581, 242);
+    }
+
+    public void setConceptTopic(UUID conceptTopic) {
+        this.conceptTopic = conceptTopic;
     }
 }
