@@ -1729,18 +1729,18 @@ Timeline Year line segment (will overlay change circles)
 }
 
 /********************************************************************************
- * Start of Journal > Edit Concept UI elements                                            *
+ * Start of Journal > Edit Concept UI elements                                  *
  ********************************************************************************/
 
-.edit-concept-container {
-    -fx-min-height: 200.0;
-    -fx-pref-height: 200.0;
-}
 
 .edit-concept-gridpane {
     -fx-pref-width: 476.0;
     -fx-pref-height: 29.0;
     -fx-alignment: TOP_CENTER;
+}
+
+.edit-concept-label-container {
+    -fx-padding: 8 0 8 0;
 }
 
 .label.edit-concept-title {
@@ -1768,6 +1768,20 @@ Timeline Year line segment (will overlay change circles)
 
 .edit-concept-button:disabled {
     -fx-background-color: -Grey-7;
+}
+
+.close-properties-panel-button {
+    -fx-background-color: white;
+    -fx-text-fill: -Secondary-06;
+    -fx-pref-width: 320px;
+    -fx-pref-height: 32px;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-border-color: -Secondary-06;
+}
+
+.edit-concept-cancel-button-container {
+    -fx-padding: 15 0 0 0;
 }
 
 .edit-concept-cancel-button {
@@ -1827,8 +1841,18 @@ Timeline Year line segment (will overlay change circles)
     -fx-padding: 15 0 15 0;
 }
 
+.add-attachments-text-area {
+    -fx-pref-height: 74px;
+}
+
+.dialect-text-field {
+    -fx-pref-width: 260;
+    -fx-pref-height: 28;
+}
+
+
 /********************************************************************************
- * End of Journal > Edit Concept UI elements                                            *
+ * End of Journal > Edit Concept UI elements                                    *
  ********************************************************************************/
 
 

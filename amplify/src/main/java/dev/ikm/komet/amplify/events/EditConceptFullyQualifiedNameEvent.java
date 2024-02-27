@@ -18,9 +18,9 @@ package dev.ikm.komet.amplify.events;
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
 
-public class EditDescriptionConceptEvent extends Evt {
+public class EditConceptFullyQualifiedNameEvent extends Evt  {
 
-    public static final EvtType<EditDescriptionConceptEvent> EDIT_DESCRIPTION = new EvtType<>(Evt.ANY, "EDIT_DESCRIPTION");
+    public static final EvtType<EditConceptFullyQualifiedNameEvent> EDIT_FQN = new EvtType<>(Evt.ANY, "EDIT_FQN");
 
     /**
      * Constructs a prototypical Event.
@@ -29,7 +29,7 @@ public class EditDescriptionConceptEvent extends Evt {
      * @param eventType
      * @throws IllegalArgumentException if source is null
      */
-    public EditDescriptionConceptEvent(Object source, EvtType eventType) {
+    public EditConceptFullyQualifiedNameEvent(Object source, EvtType eventType) {
         super(source, eventType);
     }
 }

@@ -15,6 +15,15 @@
  */
 package dev.ikm.komet.app;
 
+import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
+import static dev.ikm.komet.amplify.commons.CssHelper.refreshPanes;
+import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.app.AppState.*;
+import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
+import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
 import dev.ikm.komet.amplify.commons.CssHelper;
@@ -60,6 +69,16 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
+import java.io.File;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.time.LocalDateTime;
+import java.time.Year;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.prefs.BackingStoreException;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -85,26 +104,6 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.time.LocalDateTime;
-import java.time.Year;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.prefs.BackingStoreException;
-
-import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
-import static dev.ikm.komet.amplify.commons.CssHelper.refreshPanes;
-import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.app.AppState.*;
-import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
-import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
 /**
  * JavaFX App

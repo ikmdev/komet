@@ -15,7 +15,21 @@
  */
 package dev.ikm.komet.amplify.events;
 
-public enum AmplifyTopics {
-    JOURNAL_TOPIC
+import dev.ikm.komet.framework.events.Evt;
+import dev.ikm.komet.framework.events.EvtType;
 
+public class ClosePropertiesPanelEvent extends Evt {
+
+    public static final EvtType<ClosePropertiesPanelEvent> CLOSE_PROPERTIES = new EvtType<>(Evt.ANY, "CLOSE_PROPERTIES");
+
+    /**
+     * Constructs a prototypical Event.
+     *
+     * @param source    the object on which the Event initially occurred
+     * @param eventType
+     * @throws IllegalArgumentException if source is null
+     */
+    public ClosePropertiesPanelEvent(Object source, EvtType eventType) {
+        super(source, eventType);
+    }
 }

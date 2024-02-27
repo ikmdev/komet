@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<BorderPane styleClass="edit-concept-container" stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.properties.EditConceptController">
+<BorderPane stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1"><!-- fx:controller="dev.ikm.komet.amplify.properties.EditConceptController" -->
    <top>
       <GridPane styleClass="edit-concept-gridpane">
          <columnConstraints>
@@ -44,12 +44,12 @@
          <children>
             <HBox alignment="TOP_CENTER" prefHeight="0.0" prefWidth="0.0" styleClass="edit-concept-button-container">
                <children>
-                  <Button fx:id="addDescriptionsButton" mnemonicParsing="false" styleClass="edit-concept-button" text="ADD DESCRIPTION" />
+                  <Button fx:id="editDescriptionsButton" mnemonicParsing="false" styleClass="edit-concept-button" text="EDIT DESCRIPTIONS" />
                </children>
             </HBox>
             <HBox alignment="TOP_CENTER" prefHeight="0.0" prefWidth="0.0">
                <children>
-                  <Button fx:id="addAxiomsButton" mnemonicParsing="false" styleClass="edit-concept-button" text="ADD AXIOM" />
+                  <Button fx:id="editAxiomsButton" mnemonicParsing="false" styleClass="edit-concept-button" text="EDIT AXIOMS" />
                </children>
             </HBox>
          </children>

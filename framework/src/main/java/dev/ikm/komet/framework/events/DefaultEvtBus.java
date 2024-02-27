@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Default implemenation of an Event Bus
+ * Default implementation of an Event Bus
  */
 @EvtBusName("DefaultEvtBus")
 public class DefaultEvtBus implements EvtBus {
@@ -34,7 +34,7 @@ public class DefaultEvtBus implements EvtBus {
     public DefaultEvtBus() {}
 
     // keep track of the subscribers
-    private Map<Enum, Map<String, List<Subscriber>>> subscribersMap = new HashMap<>();
+    private Map<Object, Map<String, List<Subscriber>>> subscribersMap = new HashMap<>();
 
     /**
      * publish an event to a topic
@@ -43,7 +43,7 @@ public class DefaultEvtBus implements EvtBus {
      * @param <T> the custom type of the event
      */
     @Override
-    public <T extends Evt> void publish(Enum topic, T evt) {
+    public <T extends Evt> void publish(Object topic, T evt) {
         // if there is no topic then create one as a String
         LOG.info(evt.getSource().toString());
         // event class name is the key -> List<Subscriber>
@@ -63,7 +63,7 @@ public class DefaultEvtBus implements EvtBus {
      * @param subscriber the subscriber
      */
     @Override
-    public <T extends Evt> void subscribe(Enum topic, Class<T> eventClass, Subscriber<T> subscriber) {
+    public <T extends Evt> void subscribe(Object topic, Class<T> eventClass, Subscriber<T> subscriber) {
         subscribersMap.putIfAbsent(topic, new HashMap<>());
         List<Subscriber> subscribers = subscribersMap.get(topic).get(eventClass.getName());
         if (null == subscribers) {
@@ -81,7 +81,7 @@ public class DefaultEvtBus implements EvtBus {
      * @param subscriber the subscriber
      */
     @Override
-    public <T extends Evt>void unsubscribe(Enum topic, Class<T> eventClass, Subscriber<T> subscriber) {
+    public <T extends Evt> void unsubscribe(Object topic, Class<T> eventClass, Subscriber<T> subscriber) {
         Map<String, List<Subscriber>> eventNameAndSubscribers = subscribersMap.get(topic);
         if (null == eventNameAndSubscribers) {
             LOG.warn("Unsubscribing Topic: %s, eventClass: %s, subscriber: %s. contains no subscriber ".formatted(topic, eventClass.getName(), String.valueOf(subscriber)));
