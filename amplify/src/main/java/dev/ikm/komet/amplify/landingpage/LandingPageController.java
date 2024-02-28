@@ -162,8 +162,8 @@ public class LandingPageController implements BasicController {
                     // newly added card to landing page.
                     prefX = journalSettingsFinal;
                 }
-                amplifyEventBus.publish(JOURNAL_TOPIC, new CreateJournalEvent(this, CREATE_JOURNAL, prefX));
                 // fire create journal event... AND this should be the ONLY place it comes from besides the menu
+                amplifyEventBus.publish(JOURNAL_TOPIC, new CreateJournalEvent(this, CREATE_JOURNAL, prefX));
             });
             journalCardControllerMap.put(journalName, journalCardController);
             journalCard.setUserData(journalSettingsFinal);

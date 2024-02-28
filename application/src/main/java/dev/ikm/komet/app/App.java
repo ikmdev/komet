@@ -20,6 +20,7 @@ import de.jangassen.model.AppearanceMode;
 import dev.ikm.komet.amplify.commons.CssHelper;
 import dev.ikm.komet.amplify.commons.ResourceHelper;
 import dev.ikm.komet.amplify.events.CreateJournalEvent;
+import dev.ikm.komet.amplify.events.JournalTileEvent;
 import dev.ikm.komet.amplify.journal.JournalController;
 import dev.ikm.komet.amplify.journal.JournalViewFactory;
 import dev.ikm.komet.amplify.landingpage.LandingPageController;
@@ -96,6 +97,7 @@ import java.util.prefs.BackingStoreException;
 import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
 import static dev.ikm.komet.amplify.commons.CssHelper.refreshPanes;
 import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.amplify.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.app.AppState.*;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
@@ -484,6 +486,9 @@ public class App extends Application {
                     // call shutdown method on the controller
                     journalController.shutdown();
                     journalControllersList.remove(journalController);
+                    // enable Delete menu option
+                    journalWindowSettings.setValue(CAN_DELETE, true);
+                    amplifyEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -503,7 +508,9 @@ public class App extends Application {
                     searchNodeFactory,
                     reasonerNodeFactory);
         });
-
+        // disable the delete menu option for a Journal Card.
+        journalWindowSettings.setValue(CAN_DELETE, false);
+        amplifyEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
         journalControllersList.add(journalController);
         journalStageWindow.show();
     }
