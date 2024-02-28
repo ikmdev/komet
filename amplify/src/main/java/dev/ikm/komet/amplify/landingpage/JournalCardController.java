@@ -38,8 +38,7 @@ import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.amplify.events.CreateJournalEvent.CREATE_JOURNAL;
 import static dev.ikm.komet.amplify.events.DeleteJournalEvent.DELETE_JOURNAL;
 import static dev.ikm.komet.amplify.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_COUNT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
 public class JournalCardController implements BasicController {
     private static final Logger LOG = LoggerFactory.getLogger(JournalCardController.class);
@@ -58,7 +57,7 @@ public class JournalCardController implements BasicController {
 
     @FXML
     Button menuOptionButton;
-
+    ContextMenu contextMenu = buildMenuOptionContextMenu();
     Subscriber<JournalTileEvent> updateCard;
     @FXML
     public void initialize() {
@@ -76,7 +75,19 @@ public class JournalCardController implements BasicController {
             if (evt.getEventType() != UPDATE_JOURNAL_TILE || !journalCardName.getText().equals(journalName)) return;
 
             // Update the card's info
-            journalCardConceptCount.setText("Concepts: " + evt.getJournalWindowSettingsMap().getValue(CONCEPT_COUNT));
+            if (evt.getJournalWindowSettingsMap().getValue(CONCEPT_COUNT) != null) {
+                journalCardConceptCount.setText("Concepts: " + evt.getJournalWindowSettingsMap().getValue(CONCEPT_COUNT));
+            }
+
+            // Update the card's menu option user can delete
+            if (evt.getJournalWindowSettingsMap().getValue(CAN_DELETE) != null) {
+                Boolean canDelete = evt.getJournalWindowSettingsMap().getValue(CAN_DELETE);
+                if (canDelete == null) {
+                    canDelete = true;
+                }
+                // update menu item
+                disableMenuItem("Delete", !canDelete); // not can delete means disable
+            }
         };
         journalEventBus.subscribe(JOURNAL_TOPIC, JournalTileEvent.class, updateCard);
     }
@@ -97,9 +108,7 @@ public class JournalCardController implements BasicController {
     }
 
     private void setupContextMenuOptions(Button menuOptionButton) {
-
         menuOptionButton.setOnAction(actionEvent -> {
-            ContextMenu contextMenu = buildMenuOptionContextMenu();
             contextMenu.setHideOnEscape(true);
 
             Bounds currentBounds = menuOptionButton.getLayoutBounds();
@@ -122,6 +131,24 @@ public class JournalCardController implements BasicController {
         });
     }
 
+
+    /**
+     * Enable or disable a menu item by name.
+     * @param name
+     * @param disable
+     */
+    private void disableMenuItem(String name, boolean disable) {
+        // scan through context menu (it's flat so it's easy) and find menu item to enable or disable.
+        contextMenu.getItems()
+                .stream()
+                .filter(menuItem ->
+                        String.valueOf(menuItem.getText())
+                              .toLowerCase()
+                              .trim()
+                              .equals(name.toLowerCase().trim()))
+                .findFirst()
+                .ifPresent(menuItem -> menuItem.setDisable(disable));
+    }
     /**
      * Builds the context menu for a card's menu option button (hover - upper right)
      * @return a ContextMenu
@@ -176,6 +203,7 @@ public class JournalCardController implements BasicController {
                     styleClass,                                                  /* styling */
                     menuItemAction                                               /* action when selected */
             );
+
             contextMenu.getItems().add(menuItem);
         }
 
