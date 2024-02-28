@@ -15,15 +15,6 @@
  */
 package dev.ikm.komet.app;
 
-import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
-import static dev.ikm.komet.amplify.commons.CssHelper.refreshPanes;
-import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.app.AppState.*;
-import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
-import static dev.ikm.komet.preferences.JournalWindowSettings.*;
-
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
 import dev.ikm.komet.amplify.commons.CssHelper;
@@ -69,16 +60,6 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import java.io.File;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.time.LocalDateTime;
-import java.time.Year;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.prefs.BackingStoreException;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -90,12 +71,8 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.input.*;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -104,6 +81,26 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.time.LocalDateTime;
+import java.time.Year;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.prefs.BackingStoreException;
+
+import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
+import static dev.ikm.komet.amplify.commons.CssHelper.refreshPanes;
+import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.app.AppState.*;
+import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
+import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
 /**
  * JavaFX App
@@ -460,6 +457,12 @@ public class App extends Application {
             attachCSSRefresher(journalController.getSettingsToggleButton(), journalController.getJournalBorderPane());
 
             journalStageWindow.setScene(sourceScene);
+
+            // if NOT on Mac OS
+            if(System.getProperty("os.name")!=null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
+                generateMsWindowsMenu(amplifyJournalBorderPane);
+            }
+
             String journalName;
             if (journalWindowSettings != null) {
                 // load journal specific window settings
@@ -757,8 +760,8 @@ public class App extends Application {
     }
 
     private void generateMsWindowsMenu(BorderPane kometRoot) {
-        VBox vBox = (VBox) kometRoot.getTop();
-        HBox hBox = (HBox) vBox.getChildren().get(0);
+//        VBox vBox = (VBox) kometRoot.getTop();
+//        HBox hBox = (HBox) vBox.getChildren().get(0);
 
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("File");
@@ -793,7 +796,8 @@ public class App extends Application {
         menuBar.getMenus().add(fileMenu);
         menuBar.getMenus().add(editMenu);
         menuBar.getMenus().add(windowMenu);
-        hBox.getChildren().add(menuBar);
+        //hBox.getChildren().add(menuBar);
+        Platform.runLater(() -> kometRoot.setTop(menuBar));
     }
 
     private void showWindowsAboutScreen() {
