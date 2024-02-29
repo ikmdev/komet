@@ -74,7 +74,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
-        <tinkar-core.version>1.22.0</tinkar-core.version>
+        <tinkar-core.version>1.28.0</tinkar-core.version>
 
 		<owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
 		<owlapi.version>4.5.25-ikm-r3</owlapi.version>
