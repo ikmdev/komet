@@ -410,17 +410,23 @@ public class DetailsController implements Serializable {
         Text otherNameLabel = new Text(String.valueOf(semanticEntityVersion.fieldValues().get(1)));
         otherNameLabel.getStyleClass().add("descr-concept-name");
 
-        Text semanticDescrLabel = new Text();
+
+        Text semanticDescrText = new Text();
         if (fieldDescriptions.size() > 0) {
-            semanticDescrLabel.setText(" (%s)".formatted(descrSemanticStr));
-            semanticDescrLabel.getStyleClass().add("descr-semantic");
+            semanticDescrText.setText(" (%s)".formatted(descrSemanticStr));
+            semanticDescrText.getStyleClass().add("descr-semantic");
         } else {
-            semanticDescrLabel.setText("");
+            semanticDescrText.setText("");
         }
         // add the other name label and description semantic label
-        row1.getChildren().addAll(otherNameLabel, semanticDescrLabel);
+        row1.getStyleClass().add("descr-semantic-container");
+
+        row1.getChildren().addAll(otherNameLabel);
 
         TextFlow row2 = new TextFlow();
+        row2.getChildren().addAll(semanticDescrText);
+
+        TextFlow row3 = new TextFlow();
         Text dateAddedLabel = new Text("Date Added:");
         dateAddedLabel.getStyleClass().add("descr-semantic");
         Text dateLabel = new Text(time);
@@ -430,10 +436,11 @@ public class DetailsController implements Serializable {
         Hyperlink commentHyperlink = new Hyperlink("Comment");
 
         // Add the date info and additional hyperlinks
-        row2.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentHyperlink);
+        row3.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentHyperlink);
 
         textFlows.add(row1);
         textFlows.add(row2);
+        textFlows.add(row3);
         return textFlows;
     }
 

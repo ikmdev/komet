@@ -174,6 +174,7 @@ public class PropertiesController implements Serializable {
         FXMLLoader loaderEditOtherName = new FXMLLoader(getClass().getResource(EDIT_OTHER_NAME_FXML_FILE));
         loaderEditOtherName.setController(new EditDescriptionFormController(conceptTopic));
         editOtherNamePane = loaderEditOtherName.load();
+        editDescriptionFormController = loaderEditOtherName.getController();
 
         //TODO for future there will be an edit axiom form
 
