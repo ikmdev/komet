@@ -154,7 +154,7 @@
                                                       <Font name="Open Sans Bold" size="14.0" />
                                                    </font>
                                                 </Text>
-                                                <TextFlow VBox.vgrow="SOMETIMES">
+                                                <TextFlow styleClass="fqn-container" VBox.vgrow="SOMETIMES">
                                                    <VBox.margin>
                                                       <Insets />
                                                    </VBox.margin>
@@ -194,7 +194,8 @@
                                                    <children>
                                                       <TextFlow prefWidth="200.0">
                                                          <children>
-                                                            <Label />
+                                                            <Text strokeType="OUTSIDE" strokeWidth="0.0" />
+                                                            <Label wrapText="true" />
                                                             <Label />
                                                          </children>
                                                       </TextFlow>
