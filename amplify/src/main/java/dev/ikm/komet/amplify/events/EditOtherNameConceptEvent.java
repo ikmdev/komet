@@ -17,13 +17,19 @@ package dev.ikm.komet.amplify.events;
 
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.tinkar.common.id.PublicId;
 
 public class EditOtherNameConceptEvent extends Evt {
 
     public static final EvtType<EditOtherNameConceptEvent> EDIT_OTHER_NAME = new EvtType<>(Evt.ANY, "EDIT_OTHER_NAME");
 
     /**
-     * Constructs a prototypical Event.
+     * TODO We might need to refactor to pass a SemanticEntityVersion instead?  That is being debated
+     */
+    private PublicId publicId;
+
+    /**
+     * Constructs an EditOtherNameConceptEvent.
      *
      * @param source    the object on which the Event initially occurred
      * @param eventType
@@ -31,5 +37,24 @@ public class EditOtherNameConceptEvent extends Evt {
      */
     public EditOtherNameConceptEvent(Object source, EvtType eventType) {
         super(source, eventType);
+    }
+
+    /**
+     * Constructs EditOtherNameConceptEvent with needed PublicId payload
+     * @param source    source of the event
+     * @param eventType     type of the event
+     * @param publicId  payload needed to for the Edit Other Name Form
+     */
+    public EditOtherNameConceptEvent(Object source, EvtType eventType, PublicId publicId) {
+        super(source, eventType);
+        this.publicId = publicId;
+    }
+
+    public PublicId getPublicId() {
+        return publicId;
+    }
+
+    public void setPublicId(PublicId publicId) {
+        this.publicId = publicId;
     }
 }

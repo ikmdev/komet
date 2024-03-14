@@ -15,6 +15,13 @@
  */
 package dev.ikm.komet.amplify.landingpage;
 
+import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.amplify.events.CreateJournalEvent.CREATE_JOURNAL;
+import static dev.ikm.komet.amplify.events.DeleteJournalEvent.DELETE_JOURNAL;
+import static dev.ikm.komet.amplify.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_COUNT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+
 import dev.ikm.komet.amplify.commons.BasicController;
 import dev.ikm.komet.amplify.commons.MenuHelper;
 import dev.ikm.komet.amplify.events.CreateJournalEvent;
@@ -201,7 +208,8 @@ public class JournalCardController implements BasicController {
                     String.valueOf(menuItemObj[NAME]),                           /* name */
                     Boolean.parseBoolean(String.valueOf(menuItemObj[ENABLED])),  /* enabled */
                     styleClass,                                                  /* styling */
-                    menuItemAction                                               /* action when selected */
+                    menuItemAction,                                              /* action when selected */
+                    null                                                         /* optional graphic */
             );
 
             contextMenu.getItems().add(menuItem);
