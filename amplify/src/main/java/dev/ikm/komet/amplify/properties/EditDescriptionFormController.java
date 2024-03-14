@@ -17,16 +17,28 @@ package dev.ikm.komet.amplify.properties;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
+import static dev.ikm.tinkar.terms.TinkarTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
 
 import dev.ikm.komet.amplify.commons.BasicController;
+import dev.ikm.komet.framework.performance.Topic;
+import dev.ikm.komet.framework.performance.impl.RequestRecord;
+import dev.ikm.komet.framework.rulebase.Consequence;
+import dev.ikm.komet.framework.rulebase.GeneratedActionImmediate;
+import dev.ikm.komet.framework.rulebase.GeneratedActionSuggested;
+import dev.ikm.komet.framework.rulebase.RuleService;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 
 import java.util.Arrays;
@@ -34,10 +46,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
+import org.controlsfx.control.action.Action;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,6 +107,10 @@ public class EditDescriptionFormController implements BasicController {
     @FXML
     private ComboBox dialectComboBox3;
 
+    @FXML
+    private Button submitButton;
+
+    private PublicId publicId;
 
     public EditDescriptionFormController() { }
 
@@ -102,6 +124,7 @@ public class EditDescriptionFormController implements BasicController {
         clearView();
         setEditDescriptionTitleLabel("Edit Description: Other Name");
         populateDialectComboBoxes();
+        submitButton.setOnAction(this::saveOtherName);
     }
 
     private void populateDialectComboBoxes() {
@@ -156,9 +179,6 @@ public class EditDescriptionFormController implements BasicController {
     private void setupComboBox(ComboBox comboBox, List<ConceptEntity> conceptEntities) {
         comboBox.setConverter(new StringConverter<ConceptEntity>() {
 
-
-            // might need to do the viewCalculator here where we get the latest description
-            // and pass into the entity nid
             @Override
             public String toString(ConceptEntity conceptEntity) {
                 return getDisplayText(conceptEntity);
@@ -197,6 +217,8 @@ public class EditDescriptionFormController implements BasicController {
     }
 
     public void setConceptAndPopulateForm(PublicId publicId) {
+        this.publicId = publicId;
+
         ViewCalculator viewCalculator = viewProperties.calculator();
 
         int nid = EntityService.get().nidForPublicId(publicId);
@@ -273,6 +295,61 @@ public class EditDescriptionFormController implements BasicController {
         LOG.info(publicId.toString());
     }
 
+
+    private void saveOtherName(ActionEvent actionEvent) {
+        Transaction transaction = Transaction.make();
+
+        StampEntity stampEntity = transaction.getStamp(
+                State.fromConcept(statusComboBox.getValue()), // active, inactive, etc
+                System.currentTimeMillis(),
+                TinkarTerm.USER.nid(),
+                moduleComboBox.getValue().nid(), // SNOMED CT, LOINC, etc
+                TinkarTerm.DEVELOPMENT_PATH.nid());
+
+
+        // existing semantic
+        SemanticEntity theSemantic = EntityService.get().getEntityFast(publicId.asUuidList());
+
+
+        // the versions that we will first populate with the existing versions of the semantic
+        RecordListBuilder versions = RecordListBuilder.make();
+
+        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(publicId, TinkarTerm.DESCRIPTION_PATTERN.nid(),
+                theSemantic.referencedComponentNid(), versions);
+
+        // we grabbing the form data
+        // populating the field values for the new version we are writing
+        MutableList<Object> descriptionFields = Lists.mutable.empty();
+        descriptionFields.add(languageComboBox.getValue());
+        descriptionFields.add(otherNameTextField.getText());
+        descriptionFields.add(caseSignificanceComboBox.getValue());
+        descriptionFields.add(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
+
+        // iterating over the existing versions and adding them to a new record list builder
+        theSemantic.versions().forEach(version -> versions.add(version));
+
+        // adding the new (edit form) version here
+        versions.add(SemanticVersionRecordBuilder.builder()
+                .chronology(descriptionSemantic)
+                .stampNid(stampEntity.nid())
+                .fieldValues(descriptionFields.toImmutable())
+                .build());
+
+        // apply the updated versions to the new semantic record
+        SemanticRecord newSemanticRecord = SemanticRecordBuilder.builder(descriptionSemantic).versions(versions.toImmutable()).build();
+
+        // put the new semantic record in the transaction
+        transaction.addComponent(newSemanticRecord);
+
+        // perform the save
+        Entity.provider().putEntity(newSemanticRecord);
+
+        // commit the transaction
+        CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
+        TinkExecutor.threadPool().submit(commitTransactionTask);
+
+        LOG.info("transaction complete");
+    }
 
 
 

@@ -467,21 +467,6 @@ public class DetailsController implements Serializable {
                 // start adding a row
                 List<TextFlow> rows = generateOtherNameRow(semanticEntityVersion, fieldDescriptions);
                 rows.forEach(textFlowPane -> {
-                    // if the edit button is selected in the properties bump out
-                    // then allow editing of the description that the user clicked
-
-                    // public id contains on or more uuids that the entity has
-                    // facades are overused
-
-                    //FIXME we should be sending a PublicId through the event bus
-
-                    // there is a notion of 'default' with respect to querying some coordinates
-                    // four types of coordinates:
-                    //      StampCalculatorDelegate, LanguageCalculatorDelegate, NavigationCalculatorDelegate, LogicCalculatorDelegate
-                    // 'latest' in tinkar is kind of like Optional<> in Java, idea of latest stamp or version
-                    // the latest object is in the view calculators
-                    // use the view calculators to populate the edit screen
-
                     textFlowPane.setOnMouseClicked(event -> {
                         eventBus.publish(conceptTopic,
                                 new EditOtherNameConceptEvent(textFlowPane,
