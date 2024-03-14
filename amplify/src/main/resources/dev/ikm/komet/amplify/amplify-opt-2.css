@@ -1874,10 +1874,23 @@ Timeline Year line segment (will overlay change circles)
     -fx-pref-height: 74px;
 }
 
-.dialect-text-field {
-    -fx-pref-width: 260;
-    -fx-pref-height: 28;
+
+.dialect-label {
+    -fx-padding: 0 0 0 15;
+    -fx-pref-width: 280;
+    -fx-pref-height: 24;
 }
+
+.dialect-container {
+    -fx-padding: 10 10 0 0;
+    -fx-background-color: white;
+    -fx-border-radius: 4; /* FIXME not working on the hbox at the moment */    
+}
+
+.dialect-combobox {
+    -fx-padding: 5 0 5 0;
+}
+
 
 
 /********************************************************************************
@@ -2141,15 +2154,16 @@ Landing page elements.
     -fx-background-radius: 8px;
     -fx-background-insets: 0;
     -fx-background-color: -Grey-11;
-    -fx-padding: 8 0 8 0;
+    /*-fx-padding: 8 0 8 0;*/
+    -fx-padding: 0;
 }
-.context-menu.amplify-context-menu .separator {
+/*.context-menu.amplify-context-menu .separator {
     -fx-padding: 5 12 5 12;
 }
 .context-menu.amplify-context-menu .separator:horizontal .line {
     -fx-border-color:  -Grey-9 transparent transparent transparent;
     -fx-border-insets: 1 0 0 0;
-}
+}*/
 .context-menu.amplify-context-menu .menu-item > .label,
 .context-menu.amplify-context-menu .menu-item:hover > .label {
     -fx-text-fill: -Grey-White;
@@ -2157,9 +2171,28 @@ Landing page elements.
     -fx-font-size: 14px;
     -fx-font-style: normal;
     -fx-font-weight: 400;
-    -fx-padding: 4 8 4 8;
+    /*-fx-padding: 4 8 4 8;*/
+    -fx-padding: 0;
 }
 
+
+.context-menu.amplify-context-menu .menu-item > .graphic-container {
+    -fx-max-width: 0px;
+    -fx-pref-width: 0px;
+    -fx-background-insets: 0;
+    -fx-padding: 100;
+}
+
+.concept-edit-description-menu-icon {
+    -fx-background-color: white;    
+    -width-size: 18px;
+    -height-size: 18px;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M9.00008 0.666504C4.40758 0.666504 0.666748 4.40733 0.666748 8.99984C0.666748 13.5923 4.40758 17.3332 9.00008 17.3332C13.5926 17.3332 17.3334 13.5923 17.3334 8.99984C17.3334 4.40733 13.5926 0.666504 9.00008 0.666504ZM9.00008 2.33317C12.6919 2.33317 15.6667 5.30807 15.6667 8.99984C15.6667 12.6916 12.6919 15.6665 9.00008 15.6665C5.30831 15.6665 2.33341 12.6916 2.33341 8.99984C2.33341 5.30807 5.30831 2.33317 9.00008 2.33317ZM8.16675 4.83317V8.1665H4.83342V9.83317H8.16675V13.1665H9.83342V9.83317H13.1667V8.1665H9.83342V4.83317H8.16675Z"
+}
 
 .notification-card {
     -fx-pref-width: 280px;

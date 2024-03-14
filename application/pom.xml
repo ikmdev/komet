@@ -138,6 +138,9 @@
                         <noHeaderFiles>true</noHeaderFiles>
                         <noManPages>true</noManPages>
                         <ignoreSigningInformation>true</ignoreSigningInformation>
+                        <options>
+                            <option>-Xmx10g</option>
+                        </options>
                     </configuration>
                 </plugin>
             </plugins>

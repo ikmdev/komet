@@ -17,6 +17,7 @@ package dev.ikm.komet.amplify.commons;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 
@@ -42,13 +43,14 @@ public class MenuHelper {
     }
 
     public MenuItem createMenuOption(String name, EventHandler<ActionEvent> action){
-        return createMenuOption(name, true, null, action);
+        return createMenuOption(name, true, null, action, null);
     }
     public MenuItem createMenuOption(String name, String[] styleClasses){
-        return createMenuOption(name, true, styleClasses, null);
+        return createMenuOption(name, true, styleClasses, null, null);
     }
 
-    public MenuItem createMenuOption(String name, boolean active, String[] styleClasses, EventHandler<ActionEvent> action){
+    public MenuItem createMenuOption(String name, boolean active, String[] styleClasses, EventHandler<ActionEvent> action,
+                                     Node menuItemGraphic){
         MenuItem menuItem = null;
 
         // Add a separator
@@ -64,6 +66,11 @@ public class MenuHelper {
         if (styleClasses != null && styleClasses.length > 0) {
             menuItem.getStyleClass().addAll(styleClasses);
         }
+
+        if (menuItemGraphic != null) {
+            menuItem.setGraphic(menuItemGraphic);
+        }
+
         return menuItem;
 
     }

@@ -234,7 +234,7 @@
                             </TitledPane>
                               <Pane prefHeight="200.0" prefWidth="200.0">
                                  <children>
-                                    <Button layoutX="-32.0" mnemonicParsing="false" styleClass="add-pencil-button" text="Button">
+                                    <Button fx:id="addDescriptionButton" layoutX="-32.0" mnemonicParsing="false" styleClass="add-pencil-button" text="Button">
                                        <graphic>
                                           <Region prefHeight="200.0" prefWidth="200.0" styleClass="add-pencil" />
                                        </graphic>

@@ -123,10 +123,6 @@ public class PropertiesController implements Serializable {
     private UUID conceptTopic;
 
 
-    public void postInit() {
-        eventBus.subscribe(conceptTopic, EditOtherNameConceptEvent.class, editOtherNameSubscriber);
-    }
-
     public PropertiesController() {
     }
 
@@ -164,7 +160,6 @@ public class PropertiesController implements Serializable {
         loaderEditDescriptions.setController(new EditDescriptionsController(conceptTopic));
         editDescriptionsPane = loaderEditDescriptions.load();
         editDescriptionsController = loaderEditDescriptions.getController();
-
 
         FXMLLoader loaderAddOtherName = new FXMLLoader(getClass().getResource(ADD_OTHER_NAME_FXML_FILE));
         loaderAddOtherName.setController(new AddOtherNameController(conceptTopic));
@@ -209,6 +204,9 @@ public class PropertiesController implements Serializable {
         editOtherNameSubscriber = evt -> {
             contentBorderPane.setCenter(editOtherNamePane);
             editButton.setSelected(true);
+            if (evt.getPublicId() != null) {
+                editDescriptionFormController.setConceptAndPopulateForm(evt.getPublicId());
+            }
         };
         eventBus.subscribe(conceptTopic, EditOtherNameConceptEvent.class, editOtherNameSubscriber);
 
@@ -247,6 +245,7 @@ public class PropertiesController implements Serializable {
         this.entityFacade = entityFacade;
         this.historyChangeController.updateModel(viewProperties, entityFacade);
         this.hierarchyController.updateModel(viewProperties, entityFacade);
+        this.editDescriptionFormController.updateModel(viewProperties, entityFacade);
     }
     public void updateView() {
         this.historyChangeController.updateView();

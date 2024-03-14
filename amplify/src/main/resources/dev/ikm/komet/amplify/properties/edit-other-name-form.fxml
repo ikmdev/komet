@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane minHeight="100.0" minWidth="100.0" prefHeight="669.0" prefWidth="487.0" stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane minHeight="100.0" minWidth="100.0" prefHeight="669.0" prefWidth="487.0" stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
     <top>
         <HBox alignment="TOP_CENTER" prefHeight="0.0" prefWidth="0.0" styleClass="edit-concept-label-container" BorderPane.alignment="TOP_CENTER">
             <children>
@@ -36,6 +36,7 @@
                       <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
                       <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
                   <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                  <RowConstraints />
                   <RowConstraints maxHeight="1.7976931348623157E308" vgrow="SOMETIMES" />
                   </rowConstraints>
                   <children>
@@ -45,90 +46,103 @@
                       <Label styleClass="add-description-label" text="Language" GridPane.rowIndex="5" />
                       <Label styleClass="add-description-label" text="Status" GridPane.rowIndex="3" />
                       <Label styleClass="add-description-label" text="Module" GridPane.rowIndex="4" />
-                      <TextField prefHeight="25.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
+                      <TextField fx:id="otherNameTextField" prefHeight="25.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
                      <GridPane.margin>
                         <Insets right="15.0" />
                      </GridPane.margin></TextField>
-                      <ComboBox maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+                      <ComboBox disable="true" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Other Name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
                      <GridPane.margin>
                         <Insets right="15.0" />
                      </GridPane.margin></ComboBox>
-                      <ComboBox maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
+                      <ComboBox fx:id="caseSignificanceComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
                      <GridPane.margin>
                         <Insets right="15.0" />
                      </GridPane.margin></ComboBox>
-                      <ComboBox maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5">
+                      <ComboBox fx:id="languageComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5">
                      <GridPane.margin>
                         <Insets right="15.0" />
                      </GridPane.margin></ComboBox>
-                      <ComboBox maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
+                      <ComboBox fx:id="statusComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
                      <GridPane.margin>
                         <Insets right="15.0" />
                      </GridPane.margin></ComboBox>
-                      <ComboBox maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4">
+                      <ComboBox fx:id="moduleComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4">
                      <GridPane.margin>
                         <Insets right="15.0" />
                      </GridPane.margin></ComboBox>
-                  <GridPane GridPane.columnSpan="2" GridPane.rowIndex="6">
-                    <columnConstraints>
-                      <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
-                      <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
-                    </columnConstraints>
-                    <rowConstraints>
-                      <RowConstraints maxHeight="1.7976931348623157E308" vgrow="SOMETIMES" />
-                      <RowConstraints maxHeight="1.7976931348623157E308" vgrow="SOMETIMES" />
-                        <RowConstraints maxHeight="1.7976931348623157E308" vgrow="SOMETIMES" />
-                      <RowConstraints maxHeight="1.7976931348623157E308" vgrow="SOMETIMES" />
-                    </rowConstraints>
+                  <VBox GridPane.columnSpan="2" GridPane.rowIndex="6">
                      <children>
-                        <TextField styleClass="dialect-text-field" text="Dialect #1">
+                        <HBox depthTest="ENABLE" styleClass="dialect-container" VBox.vgrow="ALWAYS">
+                           <children>
+                              <Label fx:id="dialect1" prefHeight="24.0" prefWidth="280.0" styleClass="dialect-label" text="Dialect #1">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                              </Label>
+                              <ComboBox fx:id="dialectComboBox1" prefHeight="28.0" prefWidth="173.0">
+                                 <HBox.margin>
+                                    <Insets bottom="8.0" />
+                                 </HBox.margin>
+                              </ComboBox>
+                           </children>
                            <opaqueInsets>
                               <Insets />
                            </opaqueInsets>
-                           <GridPane.margin>
+                           <padding>
+                              <Insets right="15.0" />
+                           </padding>
+                           <VBox.margin>
                               <Insets left="15.0" right="15.0" top="15.0" />
-                           </GridPane.margin>
-                        </TextField>
-                        <TextField styleClass="dialect-text-field" text="Dialect #2" GridPane.rowIndex="1">
-                           <GridPane.margin>
-                              <Insets left="15.0" right="15.0" top="15.0" />
-                           </GridPane.margin>
-                        </TextField>
-                        <TextField styleClass="dialect-text-field" text="Dialect #4" GridPane.rowIndex="3">
-                           <GridPane.margin>
-                              <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
-                           </GridPane.margin>
-                        </TextField>
-                        <ComboBox prefWidth="170.0" promptText="Preferred" GridPane.columnIndex="1">
-                           <GridPane.margin>
-                              <Insets left="3.0" top="15.0" />
-                           </GridPane.margin>
-                        </ComboBox>
-                        <ComboBox prefWidth="170.0" promptText="Preferred" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                           <GridPane.margin>
-                              <Insets left="3.0" top="15.0" />
-                           </GridPane.margin>
-                        </ComboBox>
-                        <ComboBox prefWidth="170.0" promptText="Preferred" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                           </VBox.margin>
+                        </HBox>
+                        <HBox depthTest="ENABLE" layoutX="25.0" layoutY="10.0" styleClass="dialect-container">
+                           <children>
+                              <Label fx:id="dialect2" prefHeight="24.0" prefWidth="280.0" styleClass="dialect-label" text="Dialect #2">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                              </Label>
+                              <ComboBox fx:id="dialectComboBox2" prefHeight="28.0" prefWidth="173.0">
+                                 <HBox.margin>
+                                    <Insets bottom="8.0" />
+                                 </HBox.margin>
+                              </ComboBox>
+                           </children>
                            <opaqueInsets>
                               <Insets />
                            </opaqueInsets>
-                           <GridPane.margin>
-                              <Insets left="3.0" />
-                           </GridPane.margin>
-                        </ComboBox>
-                        <TextField styleClass="dialect-text-field" text="Dialect #3" GridPane.rowIndex="2">
-                           <GridPane.margin>
+                           <padding>
+                              <Insets right="15.0" />
+                           </padding>
+                           <VBox.margin>
                               <Insets left="15.0" right="15.0" top="15.0" />
-                           </GridPane.margin>
-                        </TextField>
-                        <ComboBox prefWidth="170.0" promptText="Preferred" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                           <GridPane.margin>
-                              <Insets left="3.0" top="15.0" />
-                           </GridPane.margin>
-                        </ComboBox>
+                           </VBox.margin>
+                        </HBox>
+                        <HBox depthTest="ENABLE" layoutX="25.0" layoutY="55.0" styleClass="dialect-container">
+                           <children>
+                              <Label fx:id="dialect3" styleClass="dialect-label" text="Dialect #3">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                              </Label>
+                              <ComboBox fx:id="dialectComboBox3" prefHeight="28.0" prefWidth="173.0">
+                                 <HBox.margin>
+                                    <Insets bottom="8.0" />
+                                 </HBox.margin>
+                              </ComboBox>
+                           </children>
+                           <opaqueInsets>
+                              <Insets />
+                           </opaqueInsets>
+                           <padding>
+                              <Insets right="15.0" />
+                           </padding>
+                           <VBox.margin>
+                              <Insets left="15.0" right="15.0" top="15.0" />
+                           </VBox.margin>
+                        </HBox>
                      </children>
-                  </GridPane>
+                  </VBox>
                   </children>
               </GridPane>
          </children>

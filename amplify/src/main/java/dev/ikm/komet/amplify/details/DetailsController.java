@@ -20,6 +20,7 @@ import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
+import dev.ikm.komet.amplify.commons.MenuHelper;
 import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.amplify.events.EditConceptFullyQualifiedNameEvent;
 import dev.ikm.komet.amplify.events.EditOtherNameConceptEvent;
@@ -32,6 +33,7 @@ import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
@@ -47,14 +49,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import org.eclipse.collections.api.factory.Lists;
@@ -79,6 +81,9 @@ public class DetailsController implements Serializable {
      */
     @FXML
     private BorderPane detailsCenterBorderPane;
+
+    @FXML
+    private Button addDescriptionButton;
 
 
     //////////  Banner area /////////////////////
@@ -239,6 +244,96 @@ public class DetailsController implements Serializable {
         // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
         closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
         eventBus.subscribe(conceptTopic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
+
+        // Add a context menu to the pencil+ icon for: Add Fully Qualified, Add Other Name
+        //setUpDescriptionContextMenu(addDescriptionButton);
+    }
+
+    private void setUpDescriptionContextMenu(Button addDescriptionButton) {
+        addDescriptionButton.setOnAction(actionEvent -> {
+            ContextMenu contextMenu = buildMenuOptionContextMenu();
+            contextMenu.setHideOnEscape(true);
+
+            Bounds currentBounds = addDescriptionButton.getLayoutBounds();
+            Bounds boundsInScene = addDescriptionButton.localToScreen(currentBounds);
+
+            LOG.debug("Bounds (in getLayoutBounds) = " + currentBounds);
+            LOG.debug("Bounds (in Scene) = " + boundsInScene);
+
+            // Show context menu to the right of the button (based on Scene)
+            double x = boundsInScene.getMaxX()+ addDescriptionButton.getInsets().getTop() + addDescriptionButton.getInsets().getRight();
+            double y = boundsInScene.getMinY();
+            LOG.debug("double x = boundsInScene.getMaxX() +  menuOptionButton.getInsets().getTop() + menuOptionButton.getInsets().getRight(); \n" +
+                    "%s = %s + %s + %s".formatted(y,
+                            boundsInScene.getMinY(),
+                            addDescriptionButton.getInsets().getTop(),
+                            addDescriptionButton.getInsets().getRight()));
+
+            LOG.debug("actionEvent = " + actionEvent);
+
+            contextMenu.show(addDescriptionButton.getScene().getWindow(), x, y);
+        });
+    }
+
+    private ContextMenu buildMenuOptionContextMenu() {
+        MenuHelper menuHelper = MenuHelper.getInstance();
+        // name, state, style class
+        ContextMenu contextMenu = new ContextMenu();
+        //TODO styling might be different?... we will find out...
+        contextMenu.getStyleClass().add("amplify-context-menu");
+
+        final int NAME = 0;
+        final int ENABLED = 1;
+        final int STYLES = 2;
+        final int ACTION = 3;
+        final int GRAPHIC = 4;
+
+        Object[][] menuItems = new Object[][] {
+                { "ADD DESCRIPTION", false, new String[] {"concept-edit-add-description"}, null, null},
+                { MenuHelper.SEPARATOR },
+                { "Add Fully Qualified", true, null, (EventHandler<ActionEvent>) actionEvent ->
+                        eventBus.publish(conceptTopic, new EditConceptFullyQualifiedNameEvent(latestFqnText.getText(),
+                                EditConceptFullyQualifiedNameEvent.EDIT_FQN)),
+                        createConceptEditDescrIcon() },
+                { "Add Other Name", true, null, (EventHandler<ActionEvent>) actionEvent ->
+                        eventBus.publish(conceptTopic, new EditOtherNameConceptEvent(this, //FIXME send PublicId???
+                                EditOtherNameConceptEvent.EDIT_OTHER_NAME)),
+                        createConceptEditDescrIcon()},
+                { MenuHelper.SEPARATOR },
+        };
+        for (Object[] menuItemObj : menuItems) {
+            if (MenuHelper.SEPARATOR.equals(menuItemObj[NAME])){
+                contextMenu.getItems().add(new SeparatorMenuItem());
+                continue;
+            }
+
+            // uses a default action if one is not given.
+            EventHandler<ActionEvent> menuItemAction = switch (menuItemObj[ACTION]) {
+                case null ->  actionEvent -> LOG.info(menuItemObj[NAME] + " " + fqnTitleText.getText());
+                case EventHandler  eventHandler -> eventHandler;
+                default -> null;
+            };
+
+
+            // Create a menu item. Todo: if/when you have sub menus
+            MenuItem menuItem = menuHelper.createMenuOption(
+                    String.valueOf(menuItemObj[NAME]),                           /* name */
+                    Boolean.parseBoolean(String.valueOf(menuItemObj[ENABLED])),  /* enabled */
+                    (String[]) menuItemObj[STYLES],                                                  /* styling */
+                    menuItemAction,                                              /* action when selected */
+                    (Node) menuItemObj[GRAPHIC]                                                         /* optional graphic */
+            );
+            contextMenu.getItems().add(menuItem);
+        }
+
+
+        return contextMenu;
+    }
+
+    private Region createConceptEditDescrIcon() {
+        Region circlePlusIcon = new Region();
+        circlePlusIcon.getStyleClass().add("concept-edit-description-menu-icon");
+        return circlePlusIcon;
     }
 
     public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
@@ -361,6 +456,7 @@ public class DetailsController implements Serializable {
                 (fieldValue instanceof ConceptFacade facade) &&
                         facade.nid() == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid());
 
+
             if (isFQN) {
                 // Latest FQN
                 updateFQNSemantics(semanticEntityVersion, fieldDescriptions);
@@ -373,10 +469,23 @@ public class DetailsController implements Serializable {
                 rows.forEach(textFlowPane -> {
                     // if the edit button is selected in the properties bump out
                     // then allow editing of the description that the user clicked
+
+                    // public id contains on or more uuids that the entity has
+                    // facades are overused
+
+                    //FIXME we should be sending a PublicId through the event bus
+
+                    // there is a notion of 'default' with respect to querying some coordinates
+                    // four types of coordinates:
+                    //      StampCalculatorDelegate, LanguageCalculatorDelegate, NavigationCalculatorDelegate, LogicCalculatorDelegate
+                    // 'latest' in tinkar is kind of like Optional<> in Java, idea of latest stamp or version
+                    // the latest object is in the view calculators
+                    // use the view calculators to populate the edit screen
+
                     textFlowPane.setOnMouseClicked(event -> {
                         eventBus.publish(conceptTopic,
-                                new EditOtherNameConceptEvent(entityFacade,
-                                        EditOtherNameConceptEvent.EDIT_OTHER_NAME));
+                                new EditOtherNameConceptEvent(textFlowPane,
+                                        EditOtherNameConceptEvent.EDIT_OTHER_NAME, (PublicId) textFlowPane.getUserData()));
                     });
                 });
                 otherNamesVBox.getChildren().addAll(rows);
@@ -420,6 +529,7 @@ public class DetailsController implements Serializable {
         }
         // add the other name label and description semantic label
         row1.getStyleClass().add("descr-semantic-container");
+        row1.setUserData(semanticEntityVersion.publicId());
 
         row1.getChildren().addAll(otherNameLabel);
 
