@@ -161,7 +161,7 @@
                        <ButtonBar prefHeight="75.0" prefWidth="200.0">
                            <buttons>
                                <Button mnemonicParsing="false" styleClass="edit-concept-cancel-button" text="CANCEL" />
-                               <Button layoutX="135.0" layoutY="47.0" minWidth="63.0" mnemonicParsing="false" styleClass="edit-concept-submit-button" text="SUBMIT" />
+                               <Button fx:id="submitButton" layoutX="135.0" layoutY="47.0" minWidth="63.0" mnemonicParsing="false" styleClass="edit-concept-submit-button" text="SUBMIT" />
                            </buttons>
                        </ButtonBar>
                    </children>
