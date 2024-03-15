@@ -23,7 +23,6 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -43,7 +42,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -119,13 +117,13 @@ public class ArtifactExportController {
         fileChooser.setInitialFileName(initialFileName);
 
         //Triggers the file chooser screen (where a user can choose a location)
-        File exportFile = fileChooser.showSaveDialog(getExportButton().getScene().getWindow());
+        File exportFile = fileChooser.showSaveDialog(exportAllButton.getScene().getWindow());
         if (exportFile == null) {
             //User hits cancel
             return;
         }
 
-        getExportButton().setDisable(true);
+        exportAllButton.setDisable(true);
 
         // Proceed to export
         if (exportGroup.getSelectedToggle().equals(exportAllRadioButton)) {
@@ -143,10 +141,10 @@ public class ArtifactExportController {
         tagFilteredRadioButton.setToggleGroup(exportGroup);
         exportAllRadioButton.setToggleGroup(exportGroup);
 
-        exportGroup.selectedToggleProperty().addListener((observable,oldValue,newValue) ->{
-            if (newValue != null){
+        exportGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
                 RadioButton selectedRadiobutton = (RadioButton) newValue;
-                if (selectedRadiobutton.equals(timeFilteredRadioButton)){
+                if (selectedRadiobutton.equals(timeFilteredRadioButton)) {
                     setupFilteredRadioAndExportButton(true);
                     dateRangeFrom.setDisable(false);
                     timeRangeFromSpinner.setDisable(false);
@@ -154,13 +152,13 @@ public class ArtifactExportController {
                     timeRangeToSpinner.setDisable(false);
                     exportLabel.setText("Export time-filtered data");
                 }
-                if (selectedRadiobutton.equals(tagFilteredRadioButton)){
+                if (selectedRadiobutton.equals(tagFilteredRadioButton)) {
                     setupFilteredRadioAndExportButton(true);
                     handlePathComboBox.setDisable(false);
                     membershipPatternSelectionListView.setDisable(false);
                     exportLabel.setText("Export tag-filtered selection");
                 }
-                if (selectedRadiobutton.equals(exportAllRadioButton)){
+                if (selectedRadiobutton.equals(exportAllRadioButton)) {
                     setupFilteredRadioAndExportButton(true);
                     exportLabel.setText("Export all data");
                 }
@@ -241,76 +239,71 @@ public class ArtifactExportController {
     }
 
     private void exportAll(File exportFile) {
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                EntityService.get().fullExport(exportFile);
-            } catch (Throwable e) {
-                throw new RuntimeException(e);
-            } finally {
-                //Running a JavaFX method on the application thread using platform.runlater
-                Platform.runLater(() -> {
-                    getExportButton().setDisable(false);
-                });
-            }
-            return null;
-        });
+        EntityService.get()
+                .fullExport(exportFile).whenComplete(((entityCountSummary, th) -> {
+                    if (th != null) {
+                        LOG.error("Task failed");
+                        //exportLabel.setText("Task failed " + th.getMessage());
+                        exportAllButton.setDisable(false);
+                    }else {
+                        //exportLabel.setText("Task Complete " + entityCountSummary);
+                        LOG.info("Task Completed");
+                        exportAllButton.setDisable(false);
+                    }
+                }
+                ));
     }
 
     private void exportTimeFilteredSelection(File exportFile) {
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                LocalDate localDateDateRangeFrom = dateRangeFrom.getValue();
-                LocalDate localDateDateRangeTo = dateRangeTo.getValue();
-                LocalTime localTimeRangeFromSpinner = timeRangeFromSpinner.getValue();
-                LocalTime localTimeRangeToSpinner = timeRangeToSpinner.getValue();
-                String dateTimeRangeFrom = localDateDateRangeFrom.toString() + " " + localTimeRangeFromSpinner.toString();
-                String dateTimeRangeTo = localDateDateRangeTo.toString() + " " + localTimeRangeToSpinner.toString();
-                long selectedEpochMillisFrom = timeRangeToQuery(dateTimeRangeFrom);
-                long selectedEpocMillisTo = timeRangeToQuery(dateTimeRangeTo);
+        LocalDate localDateDateRangeFrom = dateRangeFrom.getValue();
+        LocalDate localDateDateRangeTo = dateRangeTo.getValue();
+        LocalTime localTimeRangeFromSpinner = timeRangeFromSpinner.getValue();
+        LocalTime localTimeRangeToSpinner = timeRangeToSpinner.getValue();
+        String dateTimeRangeFrom = localDateDateRangeFrom.toString() + " " + localTimeRangeFromSpinner.toString();
+        String dateTimeRangeTo = localDateDateRangeTo.toString() + " " + localTimeRangeToSpinner.toString();
+        long selectedEpochMillisFrom = timeRangeToQuery(dateTimeRangeFrom);
+        long selectedEpocMillisTo = timeRangeToQuery(dateTimeRangeTo);
 
-                LOG.info("Time range from: " + dateTimeRangeFrom);
-                LOG.info("Time range to: " + dateTimeRangeTo);
-                LOG.info("EpocMillis for DateTime selectedRange From: " + selectedEpochMillisFrom);
-                LOG.info("EpocMillis for DateTime selectedRange To: " + selectedEpocMillisTo);
-                //Calls a tinkar-core class that is responsible for transforming entities from the database to
-                EntityService.get().temporalExport(exportFile, selectedEpochMillisFrom, selectedEpocMillisTo);
-            } catch (Throwable e) {
-                throw new RuntimeException(e);
-            } finally {
-                //Running a JavaFX method on the application thread using platform.runlater
-                Platform.runLater(() -> {
-                    getExportButton().setDisable(false);
-                });
-            }
-            return null;
-        });
+        LOG.info("Time range from: " + dateTimeRangeFrom);
+        LOG.info("Time range to: " + dateTimeRangeTo);
+        LOG.info("EpocMillis for DateTime selectedRange From: " + selectedEpochMillisFrom);
+        LOG.info("EpocMillis for DateTime selectedRange To: " + selectedEpocMillisTo);
+        //Calls a tinkar-core class that is responsible for transforming entities from the database to
+        EntityService.get().temporalExport(exportFile, selectedEpochMillisFrom, selectedEpocMillisTo)
+                .whenComplete(((entityCountSummary, th) -> {
+                    if (th != null) {
+                        LOG.error("Task failed", th.getMessage());
+                        //exportLabel.setText("Task failed " + th.getMessage());
+                        exportAllButton.setDisable(false);
+                    }else {
+                        //exportLabel.setText("Task Complete " + entityCountSummary);
+                        LOG.info("Task Completed");
+                        exportAllButton.setDisable(false);
+                    }
+                }
+                ));
     }
 
     private void exportTagFilteredSelection(File exportFile) {
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                List<PublicId> selectedTagIds = membershipPatternSelectionListView.getSelectionModel()
-                        .getSelectedItems().stream().map(EntityFacade::publicId).toList();
+        List<PublicId> selectedTagIds = membershipPatternSelectionListView.getSelectionModel()
+                .getSelectedItems().stream().map(EntityFacade::publicId).toList();
 
-                LOG.info("Path selected: " + handlePathComboBox.getSelectionModel().getSelectedItem().description());
-                LOG.info("membership Pattern selected: " + membershipPatternSelectionListView.getSelectionModel()
-                        .getSelectedItems().stream().map(EntityFacade::description).toList());
+        LOG.info("Path selected: " + handlePathComboBox.getSelectionModel().getSelectedItem().description());
+        LOG.info("membership Pattern selected: " + membershipPatternSelectionListView.getSelectionModel()
+                .getSelectedItems().stream().map(EntityFacade::description).toList());
 
-                EntityService.get().membershipExport(exportFile, selectedTagIds);
-            } catch (Throwable e) {
-                throw new RuntimeException(e);
-            } finally {
-                //Running a JavaFX method on the application thread using platform.runlater
-                Platform.runLater(() -> {
-                    getExportButton().setDisable(false);
+        EntityService.get().membershipExport(exportFile, selectedTagIds)
+                .whenComplete((entityCountSummary, th) -> {
+                    if (th != null) {
+                        LOG.error("Task failed", th.getMessage());
+                        //exportLabel.setText("Task failed " + th.getMessage());
+                        exportAllButton.setDisable(false);
+                    }else {
+                        //exportLabel.setText("Task Complete " + entityCountSummary);
+                        LOG.info("Task Completed");
+                        exportAllButton.setDisable(false);
+                    }
                 });
-            }
-            return null;
-        });
-    }
-
-    public Button getExportButton() {
-        return exportAllButton;
     }
 
     public void handleSelectivePathExport(ActionEvent event) {
