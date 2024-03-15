@@ -242,12 +242,10 @@ public class ArtifactExportController {
         EntityService.get()
                 .fullExport(exportFile).whenComplete((entityCountSummary, th) -> {
                     if (th != null) {
-                        LOG.error("Task failed");
-                        //exportLabel.setText("Task failed " + th.getMessage());
+                        LOG.error("Export failed to complete");
                         exportAllButton.setDisable(false);
                     }else {
-                        //exportLabel.setText("Task Complete " + entityCountSummary);
-                        LOG.info("Task Completed");
+                        LOG.info("Export Completed");
                         exportAllButton.setDisable(false);
                     }
                 });
@@ -271,12 +269,10 @@ public class ArtifactExportController {
         EntityService.get().temporalExport(exportFile, selectedEpochMillisFrom, selectedEpocMillisTo)
                 .whenComplete((entityCountSummary, th) -> {
                     if (th != null) {
-                        LOG.error("Task failed", th.getMessage());
-                        //exportLabel.setText("Task failed " + th.getMessage());
+                        LOG.error("Export failed to complete");
                         exportAllButton.setDisable(false);
                     }else {
-                        //exportLabel.setText("Task Complete " + entityCountSummary);
-                        LOG.info("Task Completed");
+                        LOG.info("Export Completed");
                         exportAllButton.setDisable(false);
                     }
                 });
@@ -293,12 +289,10 @@ public class ArtifactExportController {
         EntityService.get().membershipExport(exportFile, selectedTagIds)
                 .whenComplete((entityCountSummary, th) -> {
                     if (th != null) {
-                        LOG.error("Task failed", th.getMessage());
-                        //exportLabel.setText("Task failed " + th.getMessage());
+                        LOG.error("Export failed to complete");
                         exportAllButton.setDisable(false);
                     }else {
-                        //exportLabel.setText("Task Complete " + entityCountSummary);
-                        LOG.info("Task Completed");
+                        LOG.info("Export Completed");
                         exportAllButton.setDisable(false);
                     }
                 });
