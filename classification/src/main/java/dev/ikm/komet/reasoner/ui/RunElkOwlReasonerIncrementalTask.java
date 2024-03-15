@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import dev.ikm.komet.framework.EditedConceptTracker;
 import dev.ikm.komet.reasoner.ClassifierResults;
-import dev.ikm.komet.reasoner.service.ReasonerService;
+import dev.ikm.tinkar.reasoner.service.ReasonerService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.service.TrackingCallable;

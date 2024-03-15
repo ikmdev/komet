@@ -18,7 +18,7 @@ package dev.ikm.komet.reasoner.ui;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.ikm.komet.reasoner.service.ReasonerService;
+import dev.ikm.tinkar.reasoner.service.ReasonerService;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 
 public class ExtractElkOwlAxiomsTask extends TrackingCallable<ReasonerService> {
