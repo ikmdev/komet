@@ -4,9 +4,13 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Group?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ContextMenu?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
@@ -16,6 +20,7 @@
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.FlowPane?>
@@ -141,7 +146,7 @@
                <center>
                   <VBox focusTraversable="true" maxHeight="1.7976931348623157E308" opacity="0.92" prefWidth="762.0">
                      <children>
-                        <HBox>
+                        <HBox VBox.vgrow="SOMETIMES">
                            <children>
                             <TitledPane fx:id="descriptionsTitledPane" contentDisplay="BOTTOM" maxWidth="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" prefWidth="4000.0" text="DESCRIPTIONS">
                               <content>
@@ -232,7 +237,7 @@
                                     <Font name="Open Sans Bold" size="13.0" />
                                  </font>
                             </TitledPane>
-                              <Pane prefHeight="200.0" prefWidth="200.0">
+                              <Pane>
                                  <children>
                                     <Button fx:id="addDescriptionButton" layoutX="-32.0" mnemonicParsing="false" styleClass="add-pencil-button" text="Button">
                                        <graphic>
@@ -427,14 +432,6 @@
                               <RowConstraints minHeight="9.0" prefHeight="22.0" vgrow="NEVER" />
                            </rowConstraints>
                            <children>
-                              <Label fx:id="fqnTitleText" maxHeight="1.7976931348623157E308" prefHeight="43.0" prefWidth="598.0" styleClass="concept-title" text="Concept Name " wrapText="true">
-                                 <font>
-                                    <Font name="Open Sans Bold" size="14.0" />
-                                 </font>
-                                 <tooltip>
-                                    <Tooltip fx:id="conceptNameTooltip" text="Empty Tooltip" />
-                                 </tooltip>
-                              </Label>
                               <HBox prefHeight="42.0" prefWidth="501.0" GridPane.rowIndex="2" GridPane.rowSpan="2" GridPane.valignment="TOP" GridPane.vgrow="SOMETIMES">
                                  <children>
                                     <Label minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="70.0" text="Definition:">
@@ -465,6 +462,14 @@
                                     </TextField>
                                  </children>
                               </HBox>
+                              <Label fx:id="fqnTitleText" maxHeight="1.7976931348623157E308" prefHeight="43.0" prefWidth="598.0" styleClass="concept-title" text="Concept Name " wrapText="true">
+                                 <font>
+                                    <Font name="Open Sans Bold" size="14.0" />
+                                 </font>
+                                 <tooltip>
+                                    <Tooltip fx:id="conceptNameTooltip" text="Empty Tooltip" />
+                                 </tooltip>
+                              </Label>
                            </children>
                         </GridPane>
                      </center>
@@ -479,78 +484,99 @@
                         </VBox>
                      </left>
                      <right>
-                        <VBox prefHeight="148.0" prefWidth="210.0" BorderPane.alignment="CENTER">
-                           <children>
-                              <FlowPane>
-                                 <children>
-                                    <Label text="Status:">
-                                       <font>
-                                          <Font name="Open Sans Regular" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Text fx:id="statusText" strokeType="OUTSIDE" strokeWidth="0.0">
-                                       <font>
-                                          <Font name="Open Sans Regular" size="12.0" />
-                                       </font>
-                                    </Text>
-                                 </children>
-                              </FlowPane>
-                              <FlowPane>
-                                 <children>
-                                    <Label minWidth="-Infinity" text="Last Updated:">
-                                       <font>
-                                          <Font name="Open Sans Regular" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Text fx:id="lastUpdatedText" strokeType="OUTSIDE" strokeWidth="0.0">
-                                       <font>
-                                          <Font name="Open Sans Regular" size="12.0" />
-                                       </font>
-                                    </Text>
-                                 </children>
-                              </FlowPane>
-                              <FlowPane>
-                                 <children>
-                                    <Label text="Module:">
-                                       <font>
-                                          <Font name="Open Sans Regular" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Text fx:id="moduleText" strokeType="OUTSIDE" strokeWidth="0.0">
-                                       <font>
-                                          <Font name="Open Sans Regular" size="12.0" />
-                                       </font>
-                                    </Text>
-                                 </children>
-                              </FlowPane>
-                              <FlowPane>
-                                 <children>
-                                    <Label text="Path:">
-                                       <font>
-                                          <Font name="Open Sans Regular" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Text fx:id="pathText" strokeType="OUTSIDE" strokeWidth="0.0" />
-                                 </children>
-                              </FlowPane>
-                              <FlowPane prefHeight="200.0" prefWidth="200.0">
-                                 <children>
-                                    <Label text="Origination:">
-                                       <font>
-                                          <Font name="Open Sans Regular" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Text fx:id="originationText" strokeType="OUTSIDE" strokeWidth="0.0" />
-                                 </children>
-                              </FlowPane>
-                           </children>
-                           <padding>
-                              <Insets left="8.0" top="8.0" />
-                           </padding>
+                        <AnchorPane prefHeight="128.0" prefWidth="210.0" BorderPane.alignment="CENTER">
                            <BorderPane.margin>
                               <Insets />
                            </BorderPane.margin>
-                        </VBox>
+                           <children>
+                              <VBox prefHeight="108.0" prefWidth="210.0">
+                                 <children>
+                                    <FlowPane>
+                                       <children>
+                                          <Label text="Status:">
+                                             <font>
+                                                <Font name="Open Sans Regular" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Text fx:id="statusText" strokeType="OUTSIDE" strokeWidth="0.0">
+                                             <font>
+                                                <Font name="Open Sans Regular" size="12.0" />
+                                             </font>
+                                          </Text>
+                                       </children>
+                                    </FlowPane>
+                                    <FlowPane>
+                                       <children>
+                                          <Label minWidth="-Infinity" text="Last Updated:">
+                                             <font>
+                                                <Font name="Open Sans Regular" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Text fx:id="lastUpdatedText" strokeType="OUTSIDE" strokeWidth="0.0">
+                                             <font>
+                                                <Font name="Open Sans Regular" size="12.0" />
+                                             </font>
+                                          </Text>
+                                       </children>
+                                    </FlowPane>
+                                    <FlowPane>
+                                       <children>
+                                          <Label text="Module:">
+                                             <font>
+                                                <Font name="Open Sans Regular" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Text fx:id="moduleText" strokeType="OUTSIDE" strokeWidth="0.0">
+                                             <font>
+                                                <Font name="Open Sans Regular" size="12.0" />
+                                             </font>
+                                          </Text>
+                                       </children>
+                                    </FlowPane>
+                                    <FlowPane>
+                                       <children>
+                                          <Label text="Path:">
+                                             <font>
+                                                <Font name="Open Sans Regular" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Text fx:id="pathText" strokeType="OUTSIDE" strokeWidth="0.0" />
+                                       </children>
+                                    </FlowPane>
+                                    <FlowPane prefHeight="43.0" prefWidth="202.0">
+                                       <children>
+                                          <Label text="Origination:">
+                                             <font>
+                                                <Font name="Open Sans Regular" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Text fx:id="originationText" strokeType="OUTSIDE" strokeWidth="0.0" />
+                                       </children>
+                                    </FlowPane>
+                                 </children>
+                                 <padding>
+                                    <Insets left="8.0" top="8.0" />
+                                 </padding>
+                              </VBox>
+                              <Button contentDisplay="GRAPHIC_ONLY" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="11.0" prefWidth="30.0" styleClass="mini-options-button" text="Button" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="4.0">
+                                 <graphic>
+                                    <Region styleClass="hamburger" />
+                                 </graphic>
+                                 <contextMenu>
+                                    <ContextMenu styleClass="amplify-context-menu">
+                                      <items>
+                                        <MenuItem mnemonicParsing="false" styleClass="menu-header" text="EDIT STAMP" />
+                                          <SeparatorMenuItem mnemonicParsing="false" />
+                                          <Menu mnemonicParsing="false" text="Status" />
+                                          <Menu mnemonicParsing="false" text="Path" />
+                                          <Menu mnemonicParsing="false" text="Module" />
+                                          <SeparatorMenuItem mnemonicParsing="false" />
+                                      </items>
+                                    </ContextMenu>
+                                 </contextMenu>
+                              </Button>
+                           </children>
+                        </AnchorPane>
                      </right>
                   </BorderPane>
                </top>

@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.amplify.journal;
 
+import dev.ikm.komet.amplify.commons.MenuHelper;
 import dev.ikm.komet.amplify.commons.SlideOutTrayHelper;
 import dev.ikm.komet.amplify.details.ConceptPreference;
 import dev.ikm.komet.amplify.details.DetailsNode;
@@ -52,12 +53,15 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import org.eclipse.collections.api.factory.Lists;
 import org.slf4j.Logger;
@@ -128,6 +132,16 @@ public class JournalController {
 
     @FXML
     private ToggleButton settingsToggleButton;
+
+    @FXML
+    private Button addButton;
+
+    @FXML
+    private ContextMenu addContextMenu;
+
+    /////////////////////////////////////////////////////////////////
+    // Private Data
+    /////////////////////////////////////////////////////////////////
     private Pane navigatorNodePanel;
     private Pane searchNodePanel;
     private Pane reasonerNodePanel;
@@ -135,6 +149,7 @@ public class JournalController {
     private ActivityStream navigatorActivityStream;
     private ActivityStream searchActivityStream;
     private ActivityStream reasonerActivityStream;
+    private final UUID journalTopic;
     private EvtBus journalEventBus = EvtBusFactory.getDefaultEvtBus();
     private volatile boolean isSlideOutOpen = false;
 
@@ -145,12 +160,17 @@ public class JournalController {
     private GraphNavigatorNode navigatorNode;
     private ObservableList<ConceptPreference> conceptWindows = FXCollections.observableArrayList();
 
+
+    public JournalController(){
+        journalTopic = UUID.randomUUID();;
+    }
+
     /**
      * Called after JavaFX FXML DI has occurred. Any annotated items above should be valid.
      */
     @FXML
     public void initialize() {
-        // According to the JavaFX docs an ordinary Pane does not clip region.
+        // According to the JavaFX docs an ordinary Pane does not clip region. TODO infinite workspace
         clipChildren(desktopSurfacePane, 0);
 
         // When user clicks on sidebar tray's toggle buttons.
@@ -663,5 +683,21 @@ public class JournalController {
         if (journalBorderPane != null && journalBorderPane.getScene() != null && journalBorderPane.getScene().getWindow() != null) {
             ((Stage) journalBorderPane.getScene().getWindow()).toFront();
         }
+    }
+
+    @FXML
+    private void popupAddContextMenu(ActionEvent actionEvent) {
+        MenuHelper.fireContextMenuEvent(actionEvent, Side.BOTTOM, -50, 0);
+    }
+    /**
+     * Returns a Region representing the icon for a menu item.
+     * Utility to create a region with a style class defined in CSS as the icon graphic to the left of the menu item.
+     * @param styleClass
+     * @return
+     */
+    private Region createMenuIcon(String styleClass){
+        Region graphic = new Region();
+        graphic.getStyleClass().add(styleClass);
+        return graphic;
     }
 }

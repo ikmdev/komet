@@ -43,6 +43,7 @@
     -Chip-Accepted-color-green: #00BC62;
     -Chip-Error-color-red: -Accent-color-red;
     -Text-hover: #C6DCFF4D;
+    -Hover-light-blue: rgba(198, 220, 255, 0.30);
 
     -fx-font-family: "Noto Sans";
 }
@@ -778,6 +779,9 @@ selected(active) - dark black
     -fx-pref-width: -default-width;
     -fx-max-width: -default-width;
 }
+.project-bar .button:hover {
+    -fx-background-color: #FFFFFF1A;
+}
 
 /* all sidebar button regions are transparent */
 .project-bar .button .icon {
@@ -815,8 +819,19 @@ selected(active) - dark black
     -fx-shape: "M16.5 9H9.5V16H7.5V9H0.5V7H7.5V0H9.5V7H16.5V9Z";
 }
 
+.notepad-symbol {
+    -width-size: 17;
+    -height-size: 20;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -icon-paint: -Grey-3;
+    -fx-shape: "M11 14H4V16H11V14Z M4 6H13V8H4V6Z M13 10H4V12H13V10Z M14 2H15C16.1 2 17 2.9 17 4V18C17 19.1 16.1 20 15 20H2C0.9 20 0 19.1 0 18V4C0 2.9 0.9 2 2 2H3V0H5V2H6V0H8V2H9V0H11V2H12V0H14V2ZM2 18H15V4H2V18Z";
+}
+
 .vertical-divider {
-    -fx-fill: -Secondary-06;
+    -fx-fill: -Grey-9;
     -fx-stroke-width: 0;
 }
 
@@ -2148,40 +2163,153 @@ Landing page elements.
     -fx-background-color: -Grey-White;
 }
 
-/* Styling a context menu for amplify ui/ux controls
+/*
+Styling a context menu for amplify ui/ux controls
 */
+.menu-arrow-right {
+    -fx-background-color: -Secondary-04;
+    -fx-shape: "M8.0876 5L6.9126 6.175L10.7293 10L6.9126 13.825L8.0876 15L13.0876 10L8.0876 5Z";
+}
+.amplify-context-menu .menu {
+    -fx-background-color: transparent;
+    -fx-padding: 0.333333em 0.666667em 0.333333em 0.666667em; /* 4 8 4 8 */
+}
+.amplify-context-menu .menu > .right-container > .arrow {
+    /*-fx-padding: 0.458em 0.167em 0.458em 0.167em; !* 4.5 2 4.5 2 *!*/
+    -fx-background-color: -Secondary-04;
+    -fx-shape: "M8.0876 5L6.9126 6.175L10.7293 10L6.9126 13.825L8.0876 15L13.0876 10L8.0876 5Z";
+    -fx-scale-shape: false;
+}
+.amplify-context-menu .menu:focused > .right-container {
+    -fx-background-color: transparent;
+    -fx-max-width: 300;
+    -fx-alignment: center-right;
+}
+.amplify-context-menu .menu:focused > .right-container > .arrow {
+    -fx-background-color: -fx-focused-mark-color;
+    -fx-alignment: center-right;
+}
+/* Add Concept menu item */
+.add-notepad {
+    -fx-background-color: white;
+    -width-size: 16.09px;
+    -height-size: 16.25px;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M7.0755 2.99992V1.83325L8.8255 1.83325V0.083252H9.99217V1.83325H11.7422V2.99992H9.99217V4.74992H8.8255V2.99992H7.0755Z M6.17758 1.33325H2.763C1.52036 1.33325 0.513 2.34061 0.513 3.58325V14.0833C0.513 15.3259 1.52036 16.3333 2.763 16.3333H13.263C14.5056 16.3333 15.513 15.3259 15.513 14.0833V8.41658H13.8463V13.8333C13.8463 14.2475 13.4272 14.6666 13.013 14.6666H3.013C2.59879 14.6666 2.17967 14.2475 2.17967 13.8333V3.83325C2.17967 3.41904 2.59879 2.99992 3.013 2.99992H6.17758V1.33325Z M15.0595 1.33325C14.9438 1.33325 14.8234 1.37955 14.7355 1.46751L13.8884 2.31473L15.6242 4.05084L16.4714 3.20362C16.6519 3.02307 16.6519 2.72214 16.4714 2.55084L15.3882 1.46751C15.2956 1.37492 15.1799 1.33325 15.0595 1.33325Z M13.4191 2.8101L8.29946 7.93047V9.66658H10.0353L15.155 4.54621L13.4191 2.8101Z";
+}
+
+/* Add Chapter menu item */
+.add-chapter {
+    -fx-background-color: white;
+    -width-size: 16.09px;
+    -height-size: 16.25px;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M9.00002 0.666748C4.40002 0.666748 0.666687 4.40008 0.666687 9.00008C0.666687 13.6001 4.40002 17.3334 9.00002 17.3334C13.6 17.3334 17.3334 13.6001 17.3334 9.00008C17.3334 4.40008 13.6 0.666748 9.00002 0.666748ZM8.16669 13.1667V11.5001H9.83335V13.1667H8.16669ZM8.16669 4.83342V9.83342H9.83335V4.83342H8.16669Z";
+}
+
 .context-menu.amplify-context-menu {
     -fx-background-radius: 8px;
-    -fx-background-insets: 0;
+    -fx-background-insets: 1;
     -fx-background-color: -Grey-11;
-    /*-fx-padding: 8 0 8 0;*/
-    -fx-padding: 0;
+    -fx-pref-width: 197px;
 }
-/*.context-menu.amplify-context-menu .separator {
-    -fx-padding: 5 12 5 12;
+.context-menu.amplify-context-menu .separator:horizontal {
+    -fx-padding: 4px 8px 4px 8px;
 }
+
 .context-menu.amplify-context-menu .separator:horizontal .line {
-    -fx-border-color:  -Grey-9 transparent transparent transparent;
+    -fx-border-color: -Grey-9 transparent transparent transparent;
     -fx-border-insets: 1 0 0 0;
-}*/
-.context-menu.amplify-context-menu .menu-item > .label,
-.context-menu.amplify-context-menu .menu-item:hover > .label {
-    -fx-text-fill: -Grey-White;
-    -fx-font-family: Noto Sans;
+}
+
+/*TODO: when menu options are larger scroll arrows will need to be styled */
+/*.context-menu.amplify-context-menu > .scroll-arrow {*/
+/*    -fx-padding: 0.416667em 0.416667em 0.416667em 0.416667em; !* 5 *!*/
+/*    -fx-background-color: transparent;*/
+/*}*/
+/*.context-menu.amplify-context-menu > .scroll-arrow:hover {*/
+/*    -fx-background: -fx-selection-bar;*/
+/*    -fx-background-color: -fx-background;*/
+/*    -fx-text-fill: -fx-text-background-color;*/
+/*}*/
+
+.amplify-context-menu .menu-item {
+    -fx-background-color: transparent;
+    -fx-padding: 6px 4px 6px 8px;
+}
+
+.amplify-context-menu .menu-item > .left-container {
+    -fx-padding: 0.458em 0.791em 0.458em 0.458em;
+    -fx-background-color: transparent;
+}
+
+.amplify-context-menu .menu-item > .graphic-container  {
+    -fx-background-color: transparent;
+    -width-size: 20px;
+    -height-size: 20px;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-pref-height: -height-size;
+    -fx-pref-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+}
+
+.amplify-context-menu .menu-item > .label {
+    -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
     -fx-font-weight: 400;
-    /*-fx-padding: 4 8 4 8;*/
-    -fx-padding: 0;
+    -fx-text-fill: -Grey-White;
+    -fx-background-color: transparent;
 }
 
-
-.context-menu.amplify-context-menu .menu-item > .graphic-container {
-    -fx-max-width: 0px;
-    -fx-pref-width: 0px;
-    -fx-background-insets: 0;
-    -fx-padding: 100;
+.amplify-context-menu .menu-item:focused:hover {
+    -fx-background: -fx-selection-bar;
+    -fx-background-color: -Grey-9;
+    -fx-background-insets: 2 0 2 0;
+    -fx-text-fill:  -fx-text-background-color;
 }
+
+.amplify-context-menu .menu-item.menu-header > .label,
+.amplify-context-menu .menu-item.menu-header-left-align > .label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+    -fx-text-fill: -Grey-6;
+}
+.amplify-context-menu .menu-item.menu-header,
+.amplify-context-menu .menu-item.menu-header:hover,
+.amplify-context-menu .menu-item.menu-header:focused:hover {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-background-insets: 2 0 2 0;
+    -fx-padding: 4 0 0 8;
+}
+.amplify-context-menu .menu-item.menu-header-left-align,
+.amplify-context-menu .menu-item.menu-header-left-align:hover,
+.amplify-context-menu .menu-item.menu-header-left-align:focused:hover {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-background-insets: 2 0 2 0;
+    -fx-padding: 4 0 0 -18;
+}
+
+.amplify-context-menu .menu-item:focused > .label {
+    -fx-text-fill: -fx-focused-text-base-color;
+}
+.amplify-context-menu .menu-item > .right-container {
+    /*-fx-padding: 0em 0em 0em 0.5em;*/
+    -fx-background-color: transparent;
+}
+
 
 .concept-edit-description-menu-icon {
     -fx-background-color: white;    
@@ -2546,4 +2674,32 @@ Landing page elements.
     -fx-background-insets: 2, 0, 0;
     -fx-background-radius: 2em;
 
+}
+
+/* Used over concept details upper right of the STAMP edit */
+.mini-options-button {
+    -width-size: 30;
+    -height-size: 11;
+    -fx-min-width: -width-size;
+    -fx-min-height: -height-size;
+    -fx-pref-width: -width-size;
+    -fx-pref-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-padding: 0 7 0 7;
+    -fx-background-insets: 0;
+    -fx-background-radius: 2;
+    -fx-background-color: -Grey-4;
+    -fx-alignment: center;
+    -fx-content-display: top;
+    -fx-content-display: graphic-only;
+}
+
+.mini-options-button:hover {
+    -fx-background-color: -Hover-light-blue;
+}
+
+.mini-options-button > .hamburger {
+    -fx-background-color: #151515;
+    -fx-scale-shape: false;
 }
