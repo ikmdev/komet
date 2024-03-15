@@ -4,7 +4,10 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.ContextMenu?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.BorderPane?>
@@ -14,6 +17,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.shape.SVGPath?>
 
 <BorderPane fx:id="journalBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="546.0" prefWidth="600.0" stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.journal.JournalController">
    <center>
@@ -31,15 +35,30 @@
                         </Region>
                      </graphic>
                   </Button>
-                  <Button mnemonicParsing="false" text="Button">
+                  <Button fx:id="addButton" mnemonicParsing="false" onAction="#popupAddContextMenu" text="Button">
                      <graphic>
-                        <Region prefHeight="200.0" prefWidth="200.0">
+                        <Region focusTraversable="true">
                            <styleClass>
+                              <String fx:value="plus-symbol" />
                               <String fx:value="icon" />
-                              <String fx:value="download" />
                            </styleClass>
                         </Region>
                      </graphic>
+                     <contextMenu>
+                        <ContextMenu fx:id="addContextMenu" opacity="0.99" styleClass="amplify-context-menu">
+                          <items>
+                            <MenuItem mnemonicParsing="false" text="New Concept">
+                                 <graphic>
+                                    <Region styleClass="add-notepad" />
+                                 </graphic></MenuItem>
+                              <SeparatorMenuItem mnemonicParsing="false" />
+                              <MenuItem mnemonicParsing="false" text="New Chapter">
+                                 <graphic>
+                                    <SVGPath content="M9.00002 0.666748C4.40002 0.666748 0.666687 4.40008 0.666687 9.00008C0.666687 13.6001 4.40002 17.3334 9.00002 17.3334C13.6 17.3334 17.3334 13.6001 17.3334 9.00008C17.3334 4.40008 13.6 0.666748 9.00002 0.666748ZM8.16669 13.1667V11.5001H9.83335V13.1667H8.16669ZM8.16669 4.83342V9.83342H9.83335V4.83342H8.16669Z" fill="WHITE" fillRule="EVEN_ODD" />
+                                 </graphic></MenuItem>
+                          </items>
+                        </ContextMenu>
+                     </contextMenu>
                   </Button>
                   <Rectangle fill="DODGERBLUE" height="32.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
                   <ComboBox prefWidth="150.0" promptText="Project Journal #1" styleClass="combo-box-drop">
@@ -51,7 +70,7 @@
                      <graphic>
                         <Region prefHeight="200.0" prefWidth="200.0">
                            <styleClass>
-                              <String fx:value="plus-symbol" />
+                              <String fx:value="notepad-symbol" />
                               <String fx:value="icon" />
                            </styleClass>
                         </Region>

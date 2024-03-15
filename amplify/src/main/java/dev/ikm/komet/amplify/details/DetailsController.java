@@ -15,11 +15,6 @@
  */
 package dev.ikm.komet.amplify.details;
 
-import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideIn;
-import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideOut;
-import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
-import static dev.ikm.tinkar.terms.TinkarTerm.*;
-
 import dev.ikm.komet.amplify.commons.MenuHelper;
 import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.amplify.events.EditConceptFullyQualifiedNameEvent;
@@ -41,17 +36,10 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import java.io.Serializable;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.function.Consumer;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Bounds;
+import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -64,7 +52,20 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DetailsController implements Serializable {
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.Consumer;
+
+import static dev.ikm.komet.amplify.commons.MenuHelper.fireContextMenuEvent;
+import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideIn;
+import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideOut;
+import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
+import static dev.ikm.tinkar.terms.TinkarTerm.*;
+
+public class DetailsController  {
     private static final Logger LOG = LoggerFactory.getLogger(DetailsController.class);
 
     @FXML
@@ -246,40 +247,23 @@ public class DetailsController implements Serializable {
         eventBus.subscribe(conceptTopic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
 
         // Add a context menu to the pencil+ icon for: Add Fully Qualified, Add Other Name
-        //setUpDescriptionContextMenu(addDescriptionButton);
+        setUpDescriptionContextMenu(addDescriptionButton);
     }
 
     private void setUpDescriptionContextMenu(Button addDescriptionButton) {
-        addDescriptionButton.setOnAction(actionEvent -> {
-            ContextMenu contextMenu = buildMenuOptionContextMenu();
-            contextMenu.setHideOnEscape(true);
-
-            Bounds currentBounds = addDescriptionButton.getLayoutBounds();
-            Bounds boundsInScene = addDescriptionButton.localToScreen(currentBounds);
-
-            LOG.debug("Bounds (in getLayoutBounds) = " + currentBounds);
-            LOG.debug("Bounds (in Scene) = " + boundsInScene);
-
-            // Show context menu to the right of the button (based on Scene)
-            double x = boundsInScene.getMaxX()+ addDescriptionButton.getInsets().getTop() + addDescriptionButton.getInsets().getRight();
-            double y = boundsInScene.getMinY();
-            LOG.debug("double x = boundsInScene.getMaxX() +  menuOptionButton.getInsets().getTop() + menuOptionButton.getInsets().getRight(); \n" +
-                    "%s = %s + %s + %s".formatted(y,
-                            boundsInScene.getMinY(),
-                            addDescriptionButton.getInsets().getTop(),
-                            addDescriptionButton.getInsets().getRight()));
-
-            LOG.debug("actionEvent = " + actionEvent);
-
-            contextMenu.show(addDescriptionButton.getScene().getWindow(), x, y);
-        });
+        ContextMenu contextMenu = buildMenuOptionContextMenu();
+        addDescriptionButton.setContextMenu(contextMenu);
+        addDescriptionButton.setOnAction(actionEvent -> fireContextMenuEvent(actionEvent, Side.RIGHT, 2, 0));
     }
 
     private ContextMenu buildMenuOptionContextMenu() {
         MenuHelper menuHelper = MenuHelper.getInstance();
         // name, state, style class
         ContextMenu contextMenu = new ContextMenu();
-        //TODO styling might be different?... we will find out...
+        contextMenu.setHideOnEscape(true);
+        contextMenu.setAutoHide(true);
+        contextMenu.setConsumeAutoHidingEvents(true);
+
         contextMenu.getStyleClass().add("amplify-context-menu");
 
         final int NAME = 0;
@@ -289,7 +273,7 @@ public class DetailsController implements Serializable {
         final int GRAPHIC = 4;
 
         Object[][] menuItems = new Object[][] {
-                { "ADD DESCRIPTION", false, new String[] {"concept-edit-add-description"}, null, null},
+                { "ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
                 { MenuHelper.SEPARATOR },
                 { "Add Fully Qualified", true, null, (EventHandler<ActionEvent>) actionEvent ->
                         eventBus.publish(conceptTopic, new EditConceptFullyQualifiedNameEvent(latestFqnText.getText(),
@@ -332,6 +316,8 @@ public class DetailsController implements Serializable {
 
     private Region createConceptEditDescrIcon() {
         Region circlePlusIcon = new Region();
+        circlePlusIcon.setPrefHeight(20);
+        circlePlusIcon.setPrefWidth(20);
         circlePlusIcon.getStyleClass().add("concept-edit-description-menu-icon");
         return circlePlusIcon;
     }

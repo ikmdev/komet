@@ -16,10 +16,16 @@
 package dev.ikm.komet.amplify.commons;
 
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
+import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.PickResult;
 
 /**
  * A JavaFX Menu Helper class to create Menu items. Class is created as a singleton to allow Mocking frameworks to easily test.
@@ -72,6 +78,39 @@ public class MenuHelper {
         }
 
         return menuItem;
+
+    }
+
+    /**
+     * A way to mimic a context menu right click operation.
+     * @param actionEvent Typical button action event.
+     * @param side - what side of the button to display context menu
+     * @param xOffset - offset x to display context menu
+     * @param yOffset - offset y to display context menu
+     */
+    public static void fireContextMenuEvent(ActionEvent actionEvent, Side side, double xOffset, double yOffset) {
+        Node node = (Node) actionEvent.getSource();
+        Bounds bounds = node.getBoundsInLocal();
+        double x = bounds.getMinX();
+        double y = bounds.getMaxY(); // bottom of button
+        if (side == Side.BOTTOM) {
+            x = bounds.getMinX();
+            y = bounds.getMaxY();
+        } else if (side == Side.LEFT) {
+            x = bounds.getMinX();
+            y = bounds.getMaxY();
+        } else if (side == Side.TOP) {
+            x = bounds.getMinX();
+            y = bounds.getMinY();
+        } else if (side == Side.RIGHT) {
+            x = bounds.getMaxX();
+            y = bounds.getMinY();
+        }
+        Point2D location = node.localToScreen(x, y);
+        double scrnX = location.getX();
+        double scrnY = location.getY();
+        Event event = new ContextMenuEvent(ContextMenuEvent.CONTEXT_MENU_REQUESTED, x, y, scrnX+xOffset, scrnY+yOffset, false, new PickResult(node, x, y));
+        Event.fireEvent(node, event);
 
     }
 }
