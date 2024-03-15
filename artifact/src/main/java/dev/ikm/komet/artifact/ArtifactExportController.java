@@ -240,7 +240,7 @@ public class ArtifactExportController {
 
     private void exportAll(File exportFile) {
         EntityService.get()
-                .fullExport(exportFile).whenComplete(((entityCountSummary, th) -> {
+                .fullExport(exportFile).whenComplete((entityCountSummary, th) -> {
                     if (th != null) {
                         LOG.error("Task failed");
                         //exportLabel.setText("Task failed " + th.getMessage());
@@ -250,8 +250,7 @@ public class ArtifactExportController {
                         LOG.info("Task Completed");
                         exportAllButton.setDisable(false);
                     }
-                }
-                ));
+                });
     }
 
     private void exportTimeFilteredSelection(File exportFile) {
@@ -270,7 +269,7 @@ public class ArtifactExportController {
         LOG.info("EpocMillis for DateTime selectedRange To: " + selectedEpocMillisTo);
         //Calls a tinkar-core class that is responsible for transforming entities from the database to
         EntityService.get().temporalExport(exportFile, selectedEpochMillisFrom, selectedEpocMillisTo)
-                .whenComplete(((entityCountSummary, th) -> {
+                .whenComplete((entityCountSummary, th) -> {
                     if (th != null) {
                         LOG.error("Task failed", th.getMessage());
                         //exportLabel.setText("Task failed " + th.getMessage());
@@ -280,8 +279,7 @@ public class ArtifactExportController {
                         LOG.info("Task Completed");
                         exportAllButton.setDisable(false);
                     }
-                }
-                ));
+                });
     }
 
     private void exportTagFilteredSelection(File exportFile) {
