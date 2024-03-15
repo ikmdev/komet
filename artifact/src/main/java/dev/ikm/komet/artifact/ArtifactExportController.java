@@ -15,15 +15,14 @@
  */
 package dev.ikm.komet.artifact;
 
+import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.entity.export.ExportEntitiesToProtobufFile;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -32,7 +31,6 @@ import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
-import javafx.util.converter.LocalTimeStringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +42,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -59,16 +56,16 @@ public class ArtifactExportController {
     private static final Logger LOG = LoggerFactory.getLogger(ArtifactExportController.class);
 
     @FXML
-    private Button exportFilteredButton;
-
-    @FXML
     private Button exportAllButton;
 
     @FXML
     private ComboBox<ConceptEntity<ConceptEntityVersion>> handlePathComboBox;
 
     @FXML
-    private RadioButton filteredRadioButton;
+    private RadioButton timeFilteredRadioButton;
+
+    @FXML
+    private RadioButton tagFilteredRadioButton;
 
     @FXML
     private RadioButton exportAllRadioButton;
@@ -94,30 +91,12 @@ public class ArtifactExportController {
     @FXML
     private ToggleGroup exportGroup;
 
-    /**
-     * This method is responsible for triggering the export from entities to a protobuf zip file.
-     * @throws IOException if the export fails to succeed
-     */
     @FXML
     public void initialize() {
         setupPathComboBox();
-
         setupMembershipPatternSelectionListView();
-
         setupDateRangeSpinner();
-    }
-
-    @FXML
-    void handleRadioButton(ActionEvent event) throws IOException {
-
-        if (filteredRadioButton.isSelected()) {
-            setFilteredRadioAndExportButton(false);
-            exportLabel.setText("Exporting filtered selection");
-
-        } else if (exportAllRadioButton.isSelected()) {
-            setFilteredRadioAndExportButton(true);
-            exportLabel.setText("Exporting all data");
-        }
+        setupExportToggleGroupAndRadioButtons();
     }
 
     @FXML
@@ -138,22 +117,56 @@ public class ArtifactExportController {
         fileChooser.setInitialFileName(initialFileName);
 
         //Triggers the file chooser screen (where a user can choose a location)
-        File exportFile = fileChooser.showSaveDialog(getExportButton().getScene().getWindow());
-        if(exportFile == null){
+        File exportFile = fileChooser.showSaveDialog(exportAllButton.getScene().getWindow());
+        if (exportFile == null) {
             //User hits cancel
             return;
         }
 
+        exportAllButton.setDisable(true);
+
         // Proceed to export
-        getExportButton().setDisable(false);
         if (exportGroup.getSelectedToggle().equals(exportAllRadioButton)) {
             exportAll(exportFile);
-        } else {
-            exportFilteredSelection(exportFile);
+        } else if (exportGroup.getSelectedToggle().equals(timeFilteredRadioButton)) {
+            exportTimeFilteredSelection(exportFile);
+        } else if (exportGroup.getSelectedToggle().equals(tagFilteredRadioButton)) {
+            exportTagFilteredSelection(exportFile);
         }
     }
 
-    private void setupPathComboBox(){
+    private void setupExportToggleGroupAndRadioButtons() {
+        exportGroup = new ToggleGroup();
+        timeFilteredRadioButton.setToggleGroup(exportGroup);
+        tagFilteredRadioButton.setToggleGroup(exportGroup);
+        exportAllRadioButton.setToggleGroup(exportGroup);
+
+        exportGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                RadioButton selectedRadiobutton = (RadioButton) newValue;
+                if (selectedRadiobutton.equals(timeFilteredRadioButton)) {
+                    setupFilteredRadioAndExportButton(true);
+                    dateRangeFrom.setDisable(false);
+                    timeRangeFromSpinner.setDisable(false);
+                    dateRangeTo.setDisable(false);
+                    timeRangeToSpinner.setDisable(false);
+                    exportLabel.setText("Export time-filtered data");
+                }
+                if (selectedRadiobutton.equals(tagFilteredRadioButton)) {
+                    setupFilteredRadioAndExportButton(true);
+                    handlePathComboBox.setDisable(false);
+                    membershipPatternSelectionListView.setDisable(false);
+                    exportLabel.setText("Export tag-filtered selection");
+                }
+                if (selectedRadiobutton.equals(exportAllRadioButton)) {
+                    setupFilteredRadioAndExportButton(true);
+                    exportLabel.setText("Export all data");
+                }
+            }
+        });
+    }
+
+    private void setupPathComboBox() {
 
         handlePathComboBox.setConverter(new StringConverter<ConceptEntity<ConceptEntityVersion>>() {
             @Override
@@ -167,11 +180,10 @@ public class ArtifactExportController {
             }
         });
 
-
         handlePathComboBox.setCellFactory(new Callback<>() {
             @Override
             public ListCell<ConceptEntity<ConceptEntityVersion>> call(ListView<ConceptEntity<ConceptEntityVersion>> conceptEntityListView) {
-                return new ListCell<>(){
+                return new ListCell<>() {
                     @Override
                     protected void updateItem(ConceptEntity<ConceptEntityVersion> conceptEntityVersionConceptEntity, boolean b) {
                         super.updateItem(conceptEntityVersionConceptEntity, b);
@@ -188,14 +200,14 @@ public class ArtifactExportController {
         handlePathComboBox.getItems().addAll(findAllPaths());
     }
 
-    private void setupMembershipPatternSelectionListView(){
+    private void setupMembershipPatternSelectionListView() {
 
         membershipPatternSelectionListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         membershipPatternSelectionListView.setCellFactory(new Callback<>() {
             @Override
             public ListCell<PatternEntity<PatternEntityVersion>> call(ListView<PatternEntity<PatternEntityVersion>> patternEntityListView) {
-                return new ListCell<>(){
+                return new ListCell<>() {
                     @Override
                     protected void updateItem(PatternEntity<PatternEntityVersion> patternEntityVersionPatternEntity, boolean b) {
                         super.updateItem(patternEntityVersionPatternEntity, b);
@@ -204,14 +216,13 @@ public class ArtifactExportController {
                         } else {
                             setText(null);
                         }
-
                     }
                 };
             }
         });
     }
 
-    private void setupDateRangeSpinner(){
+    private void setupDateRangeSpinner() {
         dateRangeFrom.setValue(LocalDate.now().minusDays(1L));
         dateRangeTo.setValue(LocalDate.now());
 
@@ -224,64 +235,78 @@ public class ArtifactExportController {
         timeRangeToSpinner.setValueFactory(spinnerValueFactoryDateRangeTo);
 
         timeRangeFromSpinner.getValueFactory().setValue(LocalTime.of(12, 0));
-        timeRangeToSpinner.getValueFactory().setValue(LocalTime.of(23,59));
+        timeRangeToSpinner.getValueFactory().setValue(LocalTime.of(23, 59));
     }
 
-    private void exportAll(File exportFile){
-        //Asynchronously starting a thread to run the export to protobuf
-        CompletableFuture.supplyAsync( () -> {
-            try {
-                //Calls a tinkar-core class that is responsible for transforming entities from the database to
-                ExportEntitiesToProtobufFile exportEntitiesToProtobufFile = new ExportEntitiesToProtobufFile(exportFile);
-                exportEntitiesToProtobufFile.compute();
-            } catch(Throwable e) {
-                throw new RuntimeException(e);
-            } finally {
-                //Running a JavaFX method on the application thread using platform.runlater
-                Platform.runLater(() -> {
-                    getExportButton().setDisable(false);
+    private void exportAll(File exportFile) {
+        EntityService.get()
+                .fullExport(exportFile).whenComplete((entityCountSummary, th) -> {
+                    if (th != null) {
+                        LOG.error("Export failed to complete");
+                        exportAllButton.setDisable(false);
+                    }else {
+                        LOG.info("Export Completed");
+                        exportAllButton.setDisable(false);
+                    }
                 });
-            }
-            return null;
-        });
     }
 
-    private void exportFilteredSelection(File exportFile) {
-
-        // TODO: Need a method from exportEntitiesToProtobufFile that will collect filtered selection
-
+    private void exportTimeFilteredSelection(File exportFile) {
         LocalDate localDateDateRangeFrom = dateRangeFrom.getValue();
         LocalDate localDateDateRangeTo = dateRangeTo.getValue();
         LocalTime localTimeRangeFromSpinner = timeRangeFromSpinner.getValue();
         LocalTime localTimeRangeToSpinner = timeRangeToSpinner.getValue();
         String dateTimeRangeFrom = localDateDateRangeFrom.toString() + " " + localTimeRangeFromSpinner.toString();
-        String  dateTimeRangeTo = localDateDateRangeTo.toString() + " " + localTimeRangeToSpinner.toString();
-        long epocMilliDateTimeSelectedRangeFrom = timeRangeToQuery(dateTimeRangeFrom);
-        long epocMilliDateTimeSelectedRangeTo = timeRangeToQuery(dateTimeRangeTo);
+        String dateTimeRangeTo = localDateDateRangeTo.toString() + " " + localTimeRangeToSpinner.toString();
+        long selectedEpochMillisFrom = timeRangeToQuery(dateTimeRangeFrom);
+        long selectedEpocMillisTo = timeRangeToQuery(dateTimeRangeTo);
 
+        LOG.info("Time range from: " + dateTimeRangeFrom);
+        LOG.info("Time range to: " + dateTimeRangeTo);
+        LOG.info("EpocMillis for DateTime selectedRange From: " + selectedEpochMillisFrom);
+        LOG.info("EpocMillis for DateTime selectedRange To: " + selectedEpocMillisTo);
+        //Calls a tinkar-core class that is responsible for transforming entities from the database to
+        EntityService.get().temporalExport(exportFile, selectedEpochMillisFrom, selectedEpocMillisTo)
+                .whenComplete((entityCountSummary, th) -> {
+                    if (th != null) {
+                        LOG.error("Export failed to complete");
+                        exportAllButton.setDisable(false);
+                    }else {
+                        LOG.info("Export Completed");
+                        exportAllButton.setDisable(false);
+                    }
+                });
+    }
+
+    private void exportTagFilteredSelection(File exportFile) {
+        List<PublicId> selectedTagIds = membershipPatternSelectionListView.getSelectionModel()
+                .getSelectedItems().stream().map(EntityFacade::publicId).toList();
 
         LOG.info("Path selected: " + handlePathComboBox.getSelectionModel().getSelectedItem().description());
         LOG.info("membership Pattern selected: " + membershipPatternSelectionListView.getSelectionModel()
                 .getSelectedItems().stream().map(EntityFacade::description).toList());
-        LOG.info("Time range from: " + dateTimeRangeFrom);
-        LOG.info("Time range to: "+ dateTimeRangeTo);
-        LOG.info("EpocMilli for DateTime selectedRange From: " + epocMilliDateTimeSelectedRangeFrom);
-        LOG.info("EpocMilli for DateTime selectedRange To: " + epocMilliDateTimeSelectedRangeTo);
-    }
 
-    public Button getExportButton() {
-        return exportAllButton;
+        EntityService.get().membershipExport(exportFile, selectedTagIds)
+                .whenComplete((entityCountSummary, th) -> {
+                    if (th != null) {
+                        LOG.error("Export failed to complete");
+                        exportAllButton.setDisable(false);
+                    }else {
+                        LOG.info("Export Completed");
+                        exportAllButton.setDisable(false);
+                    }
+                });
     }
 
     public void handleSelectivePathExport(ActionEvent event) {
         //Getting selected item from the combobox
         LOG.info("Path Id: " + handlePathComboBox.getSelectionModel().getSelectedItem().nid());
-        LOG.info("Patterns: "+ findAllMembershipPatterns(handlePathComboBox.getSelectionModel().getSelectedItem().nid()));
+        LOG.info("Patterns: " + findAllMembershipPatterns(handlePathComboBox.getSelectionModel().getSelectedItem().nid()));
         membershipPatternSelectionListView.getItems().clear();
         membershipPatternSelectionListView.getItems().addAll(findAllMembershipPatterns(handlePathComboBox.getSelectionModel().getSelectedItem().nid()));
     }
 
-    private List<ConceptEntity<ConceptEntityVersion>> findAllPaths(){
+    private List<ConceptEntity<ConceptEntityVersion>> findAllPaths() {
         //List of Concepts that represent available Paths in the data
         List<ConceptEntity<ConceptEntityVersion>> paths = new ArrayList<>();
         //Get all Path semantics from the Paths Pattern
@@ -320,7 +345,7 @@ public class ArtifactExportController {
         return membershipPatterns;
     }
 
-    public void setFilteredRadioAndExportButton( boolean disable) {
+    public void setupFilteredRadioAndExportButton(boolean disable) {
         handlePathComboBox.setDisable(disable);
         membershipPatternSelectionListView.setDisable(disable);
         dateRangeFrom.setDisable(disable);
@@ -336,13 +361,12 @@ public class ArtifactExportController {
         return instant.toEpochMilli();
     }
 
-    private List<LocalTime> generateLocalTimes(){
+    private List<LocalTime> generateLocalTimes() {
         return IntStream.range(0, 24)
                 .boxed()
-                .flatMap(hour -> IntStream.range(0,60)
+                .flatMap(hour -> IntStream.range(0, 60)
                         .mapToObj(minute -> LocalTime.of(hour, minute)))
                 .collect(Collectors.toList());
     }
 
 }
-
