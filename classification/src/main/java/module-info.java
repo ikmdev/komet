@@ -15,7 +15,7 @@
  */
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.reasoner.ReasonerResultsNodeFactory;
-import dev.ikm.komet.reasoner.service.ReasonerService;
+import dev.ikm.tinkar.reasoner.service.ReasonerService;
 
 module dev.ikm.komet.classification {
 	requires org.eclipse.collections;
@@ -30,12 +30,12 @@ module dev.ikm.komet.classification {
 
 	requires transitive dev.ikm.komet.framework;
 
-	requires dev.ikm.komet.reasoner.service;
+	requires dev.ikm.tinkar.reasoner.service;
 
 	uses ReasonerService;
 
-	requires dev.ikm.komet.reasoner.elkowl;
-	requires dev.ikm.komet.reasoner.elksnomed;
+	requires dev.ikm.tinkar.reasoner.elkowl;
+	requires dev.ikm.tinkar.reasoner.elksnomed;
 
 	exports dev.ikm.komet.reasoner;
 

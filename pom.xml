@@ -55,10 +55,6 @@
         <module>artifact</module>
         <module>builder</module>
         <module>classification</module>
-		<module>reasoner-service</module>
-		<module>reasoner-elk-snomed</module>
-		<module>reasoner-elk-owl</module>
-        <module>reasoner-test-data</module>
         <module>details</module>
         <module>executor</module>
         <module>list</module>
@@ -74,7 +70,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
-        <tinkar-core.version>1.33.0</tinkar-core.version>
+        <tinkar-core.version>1.34.0</tinkar-core.version>
 
 		<owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
 		<owlapi.version>4.5.25-ikm-r3</owlapi.version>
@@ -131,21 +127,21 @@
             </dependency>
 
             <dependency>
-                <groupId>${project.groupId}</groupId>
+                <groupId>${tinkar-core.groupId}</groupId>
 				<artifactId>reasoner-service</artifactId>
-				<version>${project.version}</version>
+				<version>${tinkar-core.version}</version>
 			</dependency>
 
 			<dependency>
-				<groupId>${project.groupId}</groupId>
+				<groupId>${tinkar-core.groupId}</groupId>
 				<artifactId>reasoner-elk-owl</artifactId>
-				<version>${project.version}</version>
+				<version>${tinkar-core.version}</version>
 			</dependency>
 
 			<dependency>
-				<groupId>${project.groupId}</groupId>
+				<groupId>${tinkar-core.groupId}</groupId>
 				<artifactId>reasoner-elk-snomed</artifactId>
-				<version>${project.version}</version>
+				<version>${tinkar-core.version}</version>
 			</dependency>
 
 			<dependency>

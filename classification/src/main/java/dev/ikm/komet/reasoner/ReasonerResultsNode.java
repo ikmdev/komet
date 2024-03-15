@@ -37,7 +37,7 @@ import dev.ikm.komet.framework.TopPanelFactory;
 import dev.ikm.komet.framework.activity.ActivityStreams;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.komet.reasoner.service.ReasonerService;
+import dev.ikm.tinkar.reasoner.service.ReasonerService;
 import dev.ikm.komet.reasoner.ui.RunElkOwlReasonerIncrementalTask;
 import dev.ikm.komet.reasoner.ui.RunElkOwlReasonerTask;
 import dev.ikm.tinkar.common.alert.AlertStreams;

@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import dev.ikm.komet.reasoner.ClassifierResults;
 import dev.ikm.komet.reasoner.ReasonerResultsNode;
-import dev.ikm.komet.reasoner.service.ReasonerService;
+import dev.ikm.tinkar.reasoner.service.ReasonerService;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
