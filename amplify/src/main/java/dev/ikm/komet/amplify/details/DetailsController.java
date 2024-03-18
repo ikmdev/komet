@@ -208,6 +208,10 @@ public class DetailsController  {
 
     private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
 
+    private PublicId fqnPublicId;
+
+    private PublicId otherNamePublicId;
+
     public DetailsController() {
     }
 
@@ -277,11 +281,11 @@ public class DetailsController  {
                 { MenuHelper.SEPARATOR },
                 { "Add Fully Qualified", true, null, (EventHandler<ActionEvent>) actionEvent ->
                         eventBus.publish(conceptTopic, new EditConceptFullyQualifiedNameEvent(latestFqnText.getText(),
-                                EditConceptFullyQualifiedNameEvent.EDIT_FQN)),
+                                EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId)),
                         createConceptEditDescrIcon() },
                 { "Add Other Name", true, null, (EventHandler<ActionEvent>) actionEvent ->
-                        eventBus.publish(conceptTopic, new EditOtherNameConceptEvent(this, //FIXME send PublicId???
-                                EditOtherNameConceptEvent.EDIT_OTHER_NAME)),
+                        eventBus.publish(conceptTopic, new EditOtherNameConceptEvent(this,
+                                EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId)),
                         createConceptEditDescrIcon()},
                 { MenuHelper.SEPARATOR },
         };
@@ -456,7 +460,7 @@ public class DetailsController  {
                     textFlowPane.setOnMouseClicked(event -> {
                         eventBus.publish(conceptTopic,
                                 new EditOtherNameConceptEvent(textFlowPane,
-                                        EditOtherNameConceptEvent.EDIT_OTHER_NAME, (PublicId) textFlowPane.getUserData()));
+                                        EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId));
                     });
                 });
                 otherNamesVBox.getChildren().addAll(rows);
@@ -500,7 +504,10 @@ public class DetailsController  {
         }
         // add the other name label and description semantic label
         row1.getStyleClass().add("descr-semantic-container");
-        row1.setUserData(semanticEntityVersion.publicId());
+        // store the public id of this semantic entity version
+        // so that when clicked the event bus can pass it to the form
+        // and the form can populate the data from the publicId
+        this.otherNamePublicId = semanticEntityVersion.publicId();
 
         row1.getChildren().addAll(otherNameLabel);
 
@@ -531,10 +538,11 @@ public class DetailsController  {
         String fullyQualifiedName = (String) semanticEntityVersion.fieldValues().get(1);
         latestFqnText.setText(fullyQualifiedName);
 
+        this.fqnPublicId = semanticEntityVersion.publicId();
         latestFqnText.setOnMouseClicked(event -> {
             eventBus.publish(conceptTopic,
-                    new EditConceptFullyQualifiedNameEvent(fullyQualifiedName,
-                            EditConceptFullyQualifiedNameEvent.EDIT_FQN));
+                    new EditConceptFullyQualifiedNameEvent(latestFqnText,
+                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId));
         });
 
         String descrSemanticStr = String.join(" | ", fieldDescriptions);

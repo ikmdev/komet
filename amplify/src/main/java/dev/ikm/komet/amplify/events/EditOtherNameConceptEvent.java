@@ -23,21 +23,8 @@ public class EditOtherNameConceptEvent extends Evt {
 
     public static final EvtType<EditOtherNameConceptEvent> EDIT_OTHER_NAME = new EvtType<>(Evt.ANY, "EDIT_OTHER_NAME");
 
-    /**
-     * TODO We might need to refactor to pass a SemanticEntityVersion instead?  That is being debated
-     */
     private PublicId publicId;
 
-    /**
-     * Constructs an EditOtherNameConceptEvent.
-     *
-     * @param source    the object on which the Event initially occurred
-     * @param eventType
-     * @throws IllegalArgumentException if source is null
-     */
-    public EditOtherNameConceptEvent(Object source, EvtType eventType) {
-        super(source, eventType);
-    }
 
     /**
      * Constructs EditOtherNameConceptEvent with needed PublicId payload

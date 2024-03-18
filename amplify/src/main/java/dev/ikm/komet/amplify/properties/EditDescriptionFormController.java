@@ -17,20 +17,15 @@ package dev.ikm.komet.amplify.properties;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
-import static dev.ikm.tinkar.terms.TinkarTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
 
 import dev.ikm.komet.amplify.commons.BasicController;
-import dev.ikm.komet.framework.performance.Topic;
-import dev.ikm.komet.framework.performance.impl.RequestRecord;
-import dev.ikm.komet.framework.rulebase.Consequence;
-import dev.ikm.komet.framework.rulebase.GeneratedActionImmediate;
-import dev.ikm.komet.framework.rulebase.GeneratedActionSuggested;
-import dev.ikm.komet.framework.rulebase.RuleService;
+import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.framework.events.EvtBus;
+import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
@@ -52,9 +47,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
-import org.controlsfx.control.action.Action;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,6 +105,8 @@ public class EditDescriptionFormController implements BasicController {
 
     private PublicId publicId;
 
+    private EvtBus eventBus;
+
     public EditDescriptionFormController() { }
 
     public EditDescriptionFormController(UUID conceptTopic) {
@@ -121,6 +116,7 @@ public class EditDescriptionFormController implements BasicController {
     @Override
     @FXML
     public void initialize() {
+        eventBus = EvtBusFactory.getDefaultEvtBus();
         clearView();
         setEditDescriptionTitleLabel("Edit Description: Other Name");
         populateDialectComboBoxes();
@@ -349,6 +345,8 @@ public class EditDescriptionFormController implements BasicController {
         TinkExecutor.threadPool().submit(commitTransactionTask);
 
         LOG.info("transaction complete");
+        eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(submitButton,
+                ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
     }
 
 
