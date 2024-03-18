@@ -17,19 +17,38 @@ package dev.ikm.komet.amplify.events;
 
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.tinkar.common.id.PublicId;
 
 public class EditConceptFullyQualifiedNameEvent extends Evt  {
 
     public static final EvtType<EditConceptFullyQualifiedNameEvent> EDIT_FQN = new EvtType<>(Evt.ANY, "EDIT_FQN");
 
+    private PublicId publicId;
+
+
+    public EditConceptFullyQualifiedNameEvent(Object source, EvtType eventType) {
+        super(source, eventType);
+    }
     /**
      * Constructs a prototypical Event.
      *
      * @param source    the object on which the Event initially occurred
      * @param eventType
+     * @param publicId
      * @throws IllegalArgumentException if source is null
      */
-    public EditConceptFullyQualifiedNameEvent(Object source, EvtType eventType) {
+    public EditConceptFullyQualifiedNameEvent(Object source, EvtType eventType, PublicId publicId) {
         super(source, eventType);
+        this.publicId = publicId;
     }
+
+    public PublicId getPublicId() {
+        return publicId;
+    }
+
+    public void setPublicId(PublicId publicId) {
+        this.publicId = publicId;
+    }
+
+
 }

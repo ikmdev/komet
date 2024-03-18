@@ -217,6 +217,9 @@ public class PropertiesController implements Serializable {
         fqnSubscriber = evt -> {
             contentBorderPane.setCenter(editFqnPane);
             editButton.setSelected(true);
+            if (evt.getPublicId() != null) {
+                editFullyQualifiedNameController.setConceptAndPopulateForm(evt.getPublicId());
+            }
         };
         eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, fqnSubscriber);
 
@@ -246,6 +249,7 @@ public class PropertiesController implements Serializable {
         this.historyChangeController.updateModel(viewProperties, entityFacade);
         this.hierarchyController.updateModel(viewProperties, entityFacade);
         this.editDescriptionFormController.updateModel(viewProperties, entityFacade);
+        this.editFullyQualifiedNameController.updateModel(viewProperties, entityFacade);
     }
     public void updateView() {
         this.historyChangeController.updateView();
