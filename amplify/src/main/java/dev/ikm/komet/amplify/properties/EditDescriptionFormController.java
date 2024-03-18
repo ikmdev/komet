@@ -103,6 +103,9 @@ public class EditDescriptionFormController implements BasicController {
     @FXML
     private Button submitButton;
 
+    @FXML
+    private Button cancelButton;
+
     private PublicId publicId;
 
     private EvtBus eventBus;
@@ -121,6 +124,11 @@ public class EditDescriptionFormController implements BasicController {
         setEditDescriptionTitleLabel("Edit Description: Other Name");
         populateDialectComboBoxes();
         submitButton.setOnAction(this::saveOtherName);
+    }
+    @FXML
+    private void handleCancelButtonEvent() {
+        eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(cancelButton,
+                ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
     }
 
     private void populateDialectComboBoxes() {

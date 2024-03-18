@@ -142,8 +142,7 @@ public class ArtifactExportController {
         exportAllRadioButton.setToggleGroup(exportGroup);
 
         exportGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                RadioButton selectedRadiobutton = (RadioButton) newValue;
+            if (newValue instanceof RadioButton selectedRadiobutton) {
                 if (selectedRadiobutton.equals(timeFilteredRadioButton)) {
                     setupFilteredRadioAndExportButton(true);
                     dateRangeFrom.setDisable(false);
