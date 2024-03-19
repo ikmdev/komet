@@ -14,16 +14,16 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane minHeight="100.0" minWidth="100.0" prefWidth="487.0" stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane minHeight="100.0" minWidth="100.0" prefWidth="487.0" stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
     <top>
         <HBox alignment="TOP_CENTER" prefHeight="0.0" prefWidth="0.0" styleClass="edit-concept-label-container" BorderPane.alignment="TOP_CENTER">
             <children>
-                <Label fx:id="addOtherNameTitleLabel" alignment="TOP_CENTER" styleClass="edit-concept-title" text="Add New Description: Fallot's tetralogy" textAlignment="CENTER" />
+                <Label fx:id="addOtherNameTitleLabel" alignment="TOP_CENTER" styleClass="edit-concept-title" text="Add New Description: Other Name" textAlignment="CENTER" />
             </children>
         </HBox>
     </top>
     <bottom>
-        <VBox alignment="BOTTOM_CENTER" BorderPane.alignment="CENTER">
+        <VBox alignment="TOP_CENTER" BorderPane.alignment="CENTER">
             <children>
                 <HBox alignment="BOTTOM_RIGHT" styleClass="add-description-bottom-label">
                     <children>
@@ -35,7 +35,7 @@
                         <ButtonBar prefHeight="75.0" prefWidth="200.0">
                             <buttons>
                                 <Button mnemonicParsing="false" styleClass="edit-concept-cancel-button" text="CANCEL" />
-                                <Button layoutX="135.0" layoutY="47.0" minWidth="63.0" mnemonicParsing="false" styleClass="edit-concept-submit-button" text="SUBMIT" />
+                                <Button fx:id="submitButton" layoutX="135.0" layoutY="47.0" minWidth="63.0" mnemonicParsing="false" onAction="#saveOtherName" styleClass="edit-concept-submit-button" text="SUBMIT" />
                             </buttons>
                         </ButtonBar>
                     </children>
@@ -62,7 +62,8 @@
             <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
             <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
             <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="1.7976931348623157E308" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="1.7976931348623157E308" vgrow="NEVER" />
             <RowConstraints vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
@@ -72,92 +73,36 @@
             <Label styleClass="add-description-label" text="Language" GridPane.rowIndex="5" />
             <Label styleClass="add-description-label" text="Status" GridPane.rowIndex="3" />
             <Label styleClass="add-description-label" text="Module" GridPane.rowIndex="4" />
-            <TextField prefHeight="25.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
+            <TextField fx:id="otherNameTextField" prefHeight="25.0" promptText="Enter Name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
                <GridPane.margin>
                   <Insets right="15.0" />
                </GridPane.margin></TextField>
-            <ComboBox maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+            <ComboBox editable="true" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Other Name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
                <GridPane.margin>
                   <Insets right="15.0" />
                </GridPane.margin></ComboBox>
-            <ComboBox maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
+            <ComboBox fx:id="caseSignificanceComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select case sensitivity" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
                <GridPane.margin>
                   <Insets right="15.0" />
                </GridPane.margin></ComboBox>
-            <ComboBox maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5">
+            <ComboBox fx:id="languageComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select Language" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5">
                <GridPane.margin>
                   <Insets right="15.0" />
                </GridPane.margin></ComboBox>
-            <ComboBox maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
+            <ComboBox fx:id="statusComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select Status" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
                <GridPane.margin>
                   <Insets right="15.0" />
                </GridPane.margin></ComboBox>
-            <ComboBox maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4">
+            <ComboBox fx:id="moduleComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select Module" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4">
                <GridPane.margin>
                   <Insets right="15.0" />
                </GridPane.margin></ComboBox>
-                <TextArea maxHeight="80.0" maxWidth="1.7976931348623157E308" minHeight="30.0" prefHeight="80.0" text="Add comments here..." GridPane.columnSpan="2" GridPane.rowIndex="7">
+                <TextArea maxHeight="80.0" maxWidth="1.7976931348623157E308" text="Add comment here..." GridPane.columnSpan="2" GridPane.rowIndex="7">
                <GridPane.margin>
                   <Insets left="15.0" right="15.0" />
                </GridPane.margin>
             </TextArea>
-            <GridPane GridPane.columnSpan="2" GridPane.rowIndex="6">
-              <columnConstraints>
-                <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
-                <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
-              </columnConstraints>
-              <rowConstraints>
-                <RowConstraints maxHeight="1.7976931348623157E308" vgrow="SOMETIMES" />
-                <RowConstraints maxHeight="1.7976931348623157E308" vgrow="SOMETIMES" />
-                <RowConstraints maxHeight="1.7976931348623157E308" vgrow="SOMETIMES" />
-                  <RowConstraints maxHeight="1.7976931348623157E308" vgrow="SOMETIMES" />
-              </rowConstraints>
-               <children>
-                  <TextField styleClass="dialect-text-field" text="Dialect #1">
-                     <opaqueInsets>
-                        <Insets />
-                     </opaqueInsets>
-                     <GridPane.margin>
-                        <Insets left="15.0" right="15.0" top="15.0" />
-                     </GridPane.margin>
-                  </TextField>
-                  <TextField styleClass="dialect-text-field" text="Dialect #2" GridPane.rowIndex="1">
-                     <GridPane.margin>
-                        <Insets left="15.0" right="15.0" top="15.0" />
-                     </GridPane.margin>
-                  </TextField>
-                  <TextField styleClass="dialect-text-field" text="Dialect #3" GridPane.rowIndex="2">
-                     <GridPane.margin>
-                        <Insets left="15.0" right="15.0" top="15.0" />
-                     </GridPane.margin>
-                  </TextField>
-                  <TextField styleClass="dialect-text-field" text="Dialect #4" GridPane.rowIndex="3">
-                     <GridPane.margin>
-                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
-                     </GridPane.margin>
-                  </TextField>
-                  <ComboBox prefWidth="170.0" promptText="Preferred" GridPane.columnIndex="1">
-                     <GridPane.margin>
-                        <Insets left="3.0" top="15.0" />
-                     </GridPane.margin>
-                  </ComboBox>
-                  <ComboBox prefWidth="170.0" promptText="Preferred" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                     <GridPane.margin>
-                        <Insets left="3.0" top="15.0" />
-                     </GridPane.margin>
-                  </ComboBox>
-                  <ComboBox prefWidth="170.0" promptText="Preferred" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                     <GridPane.margin>
-                        <Insets left="3.0" top="15.0" />
-                     </GridPane.margin>
-                  </ComboBox>
-                  <ComboBox prefWidth="170.0" promptText="Preferred" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                     <GridPane.margin>
-                        <Insets left="3.0" />
-                     </GridPane.margin>
-                  </ComboBox>
-               </children>
-            </GridPane>
+            <Label styleClass="add-description-label" text="Comments" GridPane.rowIndex="6" />
          </children>
       </GridPane>
    </center>

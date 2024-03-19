@@ -20,11 +20,13 @@ import static dev.ikm.komet.amplify.commons.CssHelper.genText;
 import dev.ikm.komet.amplify.events.AddOtherNameToConceptEvent;
 import dev.ikm.komet.amplify.events.EditConceptFullyQualifiedNameEvent;
 import dev.ikm.komet.amplify.events.EditOtherNameConceptEvent;
+import dev.ikm.komet.amplify.events.OpenPropertiesPanelEvent;
 import dev.ikm.komet.amplify.events.ShowEditDescriptionPanelEvent;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.terms.EntityFacade;
 import java.io.IOException;
 import java.io.Serializable;
@@ -109,6 +111,10 @@ public class PropertiesController implements Serializable {
     private ViewProperties viewProperties;
     private EntityFacade entityFacade;
 
+    private PublicId fqnPublicId;
+
+    private PublicId otherNamePublicId; // latest other name
+
     private EvtBus eventBus;
 
     private Subscriber<AddOtherNameToConceptEvent> addOtherNameSubscriber;
@@ -118,6 +124,8 @@ public class PropertiesController implements Serializable {
     private Subscriber<EditConceptFullyQualifiedNameEvent> fqnSubscriber;
 
     private Subscriber<ShowEditDescriptionPanelEvent> editDescriptionPaneSubscriber;
+
+    private Subscriber<OpenPropertiesPanelEvent> propsPanelOpen;
 
 
     private UUID conceptTopic;
@@ -194,6 +202,9 @@ public class PropertiesController implements Serializable {
         addOtherNameSubscriber = evt -> {
             contentBorderPane.setCenter(addOtherNamePane);
             editButton.setSelected(true);
+            if (evt.getPublicId() != null) {
+                addOtherNameController.setConceptAndPopulateForm(evt.getPublicId());
+            }
         };
         eventBus.subscribe(conceptTopic, AddOtherNameToConceptEvent.class, addOtherNameSubscriber);
 
@@ -223,6 +234,12 @@ public class PropertiesController implements Serializable {
         };
         eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, fqnSubscriber);
 
+        // when opening the properties panel the default toggle to view is the history tab
+        propsPanelOpen = evt -> {
+            historyButton.setSelected(true);
+            contentBorderPane.setCenter(historyTabsBorderPane);
+        };
+        eventBus.subscribe(conceptTopic, OpenPropertiesPanelEvent.class, propsPanelOpen);
 
     }
 
@@ -250,7 +267,9 @@ public class PropertiesController implements Serializable {
         this.hierarchyController.updateModel(viewProperties, entityFacade);
         this.editDescriptionFormController.updateModel(viewProperties, entityFacade);
         this.editFullyQualifiedNameController.updateModel(viewProperties, entityFacade);
+        this.addOtherNameController.updateModel(viewProperties, entityFacade);
     }
+
     public void updateView() {
         this.historyChangeController.updateView();
         this.hierarchyController.updateView();

@@ -131,7 +131,6 @@ public class EditFullyQualifiedNameController implements BasicController {
         clearView();
         setEditFullyQualifiedNameTitleLabel("Edit Description: Fully Qualified Name");
         populateDialectComboBoxes();
-        submitButton.setOnAction(this::saveOtherName);
     }
 
     private void populateDialectComboBoxes() {
@@ -286,6 +285,7 @@ public class EditFullyQualifiedNameController implements BasicController {
         LOG.info(publicId.toString());
     }
 
+    @FXML
     private void saveOtherName(ActionEvent actionEvent) {
         Transaction transaction = Transaction.make();
 

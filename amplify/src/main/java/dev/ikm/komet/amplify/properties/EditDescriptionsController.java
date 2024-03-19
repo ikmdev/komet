@@ -19,13 +19,19 @@ import dev.ikm.komet.amplify.commons.BasicController;
 import dev.ikm.komet.amplify.events.AddOtherNameToConceptEvent;
 import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.amplify.events.EditConceptFullyQualifiedNameEvent;
+import dev.ikm.komet.amplify.events.OpenPropertiesPanelEvent;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
-import java.util.UUID;
+import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.tinkar.common.id.PublicId;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.ObjectProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.UUID;
 
 public class EditDescriptionsController implements BasicController {
 
@@ -44,20 +50,35 @@ public class EditDescriptionsController implements BasicController {
 
     private UUID conceptTopic;
 
+    private Subscriber<OpenPropertiesPanelEvent> propsPanelOpen;
+
     public EditDescriptionsController() {}
 
     public EditDescriptionsController(UUID conceptTopic) {
         this.conceptTopic = conceptTopic;
     }
 
+    private ObjectProperty<PublicId> fqnPublicId = new SimpleObjectProperty<>();
+
+    private ObjectProperty<PublicId> otherNamePublicId = new SimpleObjectProperty<>();
+
     @Override
     @FXML
     public void initialize() {
         eventBus = EvtBusFactory.getDefaultEvtBus();
 
+        // when the user opens the properties panel, the edit fqn and add other name
+        // buttons should be able to populate their respective forms by passing the
+        // appropriate PublicId through the event bus
+        propsPanelOpen = evt -> {
+            fqnPublicId.set(evt.getFqnPublicId());
+            otherNamePublicId.set(evt.getOtherNamePublicId());
+        };
+        eventBus.subscribe(conceptTopic, OpenPropertiesPanelEvent.class, propsPanelOpen);
+
         editFullyQualifiedNameButton.setOnMouseClicked(event ->
                 eventBus.publish(conceptTopic, new EditConceptFullyQualifiedNameEvent(event,
-                        EditConceptFullyQualifiedNameEvent.EDIT_FQN))); //FIXME we need the publicID here
+                        EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId.get())));
 
         closePropertiesPanelButton.setOnMouseClicked(event ->
             eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(event,
@@ -65,7 +86,7 @@ public class EditDescriptionsController implements BasicController {
 
         addOtherNameButton.setOnMouseClicked(event ->
             eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(event,
-                AddOtherNameToConceptEvent.ADD_DESCRIPTION)));
+                AddOtherNameToConceptEvent.ADD_DESCRIPTION, otherNamePublicId.get())));
     }
 
 
