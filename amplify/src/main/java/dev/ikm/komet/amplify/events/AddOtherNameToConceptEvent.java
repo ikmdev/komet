@@ -17,19 +17,41 @@ package dev.ikm.komet.amplify.events;
 
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.tinkar.common.id.PublicId;
 
 public class AddOtherNameToConceptEvent extends Evt {
 
     public static final EvtType<AddOtherNameToConceptEvent> ADD_DESCRIPTION = new EvtType<>(Evt.ANY, "ADD_DESCRIPTION");
 
+    private PublicId publicId;
+
     /**
      * Constructs a prototypical Event.
      *
-     * @param source    the object on which the Event initially occurred
-     * @param eventType
-     * @throws IllegalArgumentException if source is null
+     * @param source    source of the event
+     * @param eventType     type of the event
+     * @param publicId  payload needed to for the Edit Other Name Form
+     */
+    public AddOtherNameToConceptEvent(Object source, EvtType eventType, PublicId publicId) {
+        super(source, eventType);
+        this.publicId = publicId;
+    }
+
+    /**
+     * Constructs a prototypical Event.
+     *
+     * @param source    source of the event
+     * @param eventType     type of the event
      */
     public AddOtherNameToConceptEvent(Object source, EvtType eventType) {
         super(source, eventType);
+    }
+
+    public PublicId getPublicId() {
+        return publicId;
+    }
+
+    public void setPublicId(PublicId publicId) {
+        this.publicId = publicId;
     }
 }

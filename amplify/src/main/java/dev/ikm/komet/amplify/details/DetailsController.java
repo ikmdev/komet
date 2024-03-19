@@ -19,6 +19,7 @@ import dev.ikm.komet.amplify.commons.MenuHelper;
 import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.amplify.events.EditConceptFullyQualifiedNameEvent;
 import dev.ikm.komet.amplify.events.EditOtherNameConceptEvent;
+import dev.ikm.komet.amplify.events.OpenPropertiesPanelEvent;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -558,6 +559,7 @@ public class DetailsController  {
         String time = DATE_TIME_FORMATTER.format(stampTime);
         fqnAddDateLabel.setText(time);
     }
+
     /**
      * Returns a list of description semantics. This currently returns two specific semantics
      * Case significance & Language preferred. E.g. (Case-sensitive | English)
@@ -717,6 +719,8 @@ public class DetailsController  {
         if (propertyToggle.isSelected()) {
             LOG.info("Opening slideout of properties");
             slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
+            eventBus.publish(conceptTopic, new OpenPropertiesPanelEvent(propertyToggle,
+                    OpenPropertiesPanelEvent.OPEN_PROPERTIES_PANEL, fqnPublicId, otherNamePublicId));
         } else {
             LOG.info("Close Properties slideout");
             slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);

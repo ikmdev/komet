@@ -108,7 +108,6 @@ public class DetailsNode extends ExplorationNodeAbstract {
                 this.detailsViewBorderPane.setTop(topPanel);
             }
 
-
             // Load Concept Properties View Panel (FXML & Controller)
             FXMLLoader propsFXMLLoader = new FXMLLoader(PropertiesController.class.getResource(CONCEPT_PROPERTIES_VIEW_FXML_FILE));
             propsFXMLLoader.setController(new PropertiesController(conceptTopic));
