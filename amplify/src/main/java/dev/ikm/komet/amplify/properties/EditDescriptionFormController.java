@@ -121,8 +121,10 @@ public class EditDescriptionFormController implements BasicController {
     public void initialize() {
         eventBus = EvtBusFactory.getDefaultEvtBus();
         clearView();
+        submitButton.setDisable(true);
         setEditDescriptionTitleLabel("Edit Description: Other Name");
         populateDialectComboBoxes();
+        setupAddListenerForEditDescriptionForm();
         submitButton.setOnAction(this::saveOtherName);
     }
     @FXML
@@ -130,7 +132,23 @@ public class EditDescriptionFormController implements BasicController {
         eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(cancelButton,
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
     }
-
+    private void setupAddListenerForEditDescriptionForm(){
+        otherNameTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            submitButton.setDisable(oldValue.trim().isEmpty());
+        });
+        moduleComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            submitButton.setDisable(oldValue == null);
+        });
+        statusComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            submitButton.setDisable(oldValue == null);
+        });
+        caseSignificanceComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            submitButton.setDisable(oldValue == null);
+        });
+        languageComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            submitButton.setDisable(oldValue == null);
+        });
+    }
     private void populateDialectComboBoxes() {
         // currently no UNACCEPTABLE in TinkarTerm
         Entity<? extends EntityVersion> acceptable = EntityService.get().getEntityFast(TinkarTerm.ACCEPTABLE);
@@ -298,8 +316,6 @@ public class EditDescriptionFormController implements BasicController {
 
         LOG.info(publicId.toString());
     }
-
-
     private void saveOtherName(ActionEvent actionEvent) {
         Transaction transaction = Transaction.make();
 
@@ -355,8 +371,7 @@ public class EditDescriptionFormController implements BasicController {
         LOG.info("transaction complete");
         eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(submitButton,
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
+        submitButton.setDisable(true);
     }
-
-
 
 }
