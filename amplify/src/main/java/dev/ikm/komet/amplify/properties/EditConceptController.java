@@ -16,10 +16,20 @@
 package dev.ikm.komet.amplify.properties;
 
 import dev.ikm.komet.amplify.commons.BasicController;
+import dev.ikm.komet.amplify.events.OpenPropertiesPanelEvent;
 import dev.ikm.komet.amplify.events.ShowEditDescriptionPanelEvent;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import java.util.UUID;
+
+import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -31,6 +41,8 @@ public class EditConceptController implements BasicController {
     private static final Logger LOG = LoggerFactory.getLogger(EditConceptController.class);
 
 
+    private static final String EDIT_LABEL_PREFIX = "Edit: ";
+
     @FXML
     private Label conceptTitleLabel;
 
@@ -40,9 +52,12 @@ public class EditConceptController implements BasicController {
     @FXML
     private Button editAxiomsButton;
 
+    private Subscriber<OpenPropertiesPanelEvent> propsPanelOpen;
+
     private EvtBus eventBus;
 
     private UUID conceptTopic;
+
 
     public EditConceptController() { }
 
@@ -57,10 +72,10 @@ public class EditConceptController implements BasicController {
 
         eventBus = EvtBusFactory.getDefaultEvtBus();
 
-        // FIXME: for the mock-up, enter a dummy value of the concept title
-        //  for the future, the concept title will populate this Label text
-        //setConceptTitleLabel("Edit: Tetrology of Fallout");
-
+        propsPanelOpen = evt -> {
+            setConceptTitleLabel(evt.getConceptFQName());
+        };
+        eventBus.subscribe(conceptTopic, OpenPropertiesPanelEvent.class, propsPanelOpen);
 
         // when the user clicks the ADD DESCRIPTION button
         // on the Journal > Concept > Properties bump out > Edit tab
@@ -77,8 +92,8 @@ public class EditConceptController implements BasicController {
         // is part of a mock-up for future functionality
     }
 
-    public void setConceptTitleLabel(String conceptTitleText) {
-        this.conceptTitleLabel.setText(conceptTitleText);
+    private void setConceptTitleLabel(String conceptTitleLabel) {
+        this.conceptTitleLabel.setText(EDIT_LABEL_PREFIX + conceptTitleLabel);
     }
 
     @Override

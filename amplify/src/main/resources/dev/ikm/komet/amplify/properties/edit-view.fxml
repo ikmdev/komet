@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<BorderPane stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1"><!-- fx:controller="dev.ikm.komet.amplify.properties.EditConceptController" -->
+<BorderPane stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
    <top>
       <GridPane styleClass="edit-concept-gridpane">
          <columnConstraints>
@@ -25,7 +25,7 @@
             <RowConstraints maxHeight="1.7976931348623157E308" minHeight="10.0" vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
-            <Label fx:id="conceptTitleLabel" alignment="TOP_CENTER" maxHeight="-Infinity" styleClass="edit-concept-title" text="Edit: Tetrology of Fallout" textAlignment="CENTER" GridPane.halignment="CENTER" />
+            <Label fx:id="conceptTitleLabel" alignment="TOP_CENTER" maxHeight="-Infinity" styleClass="edit-concept-title" text="Edit:" textAlignment="CENTER" GridPane.halignment="CENTER" />
             <StackPane GridPane.columnIndex="1">
                <children>
                   <Circle fill="#4a7ad2" radius="10.0" stroke="BLACK" strokeType="INSIDE" styleClass="edit-concept-about-circle-icon" />
@@ -52,29 +52,27 @@
                   <Button fx:id="editAxiomsButton" mnemonicParsing="false" styleClass="edit-concept-button" text="EDIT AXIOMS" />
                </children>
             </HBox>
+            <HBox alignment="TOP_CENTER" prefHeight="0.0" prefWidth="0.0" styleClass="edit-concept-cancel-button-container" />
          </children>
       </VBox>
    </center>
    <bottom>
-      <VBox alignment="BOTTOM_CENTER" prefHeight="89.0" prefWidth="487.0" BorderPane.alignment="CENTER">
+      <VBox BorderPane.alignment="CENTER">
          <children>
-            <HBox alignment="BOTTOM_LEFT" prefHeight="39.0" prefWidth="487.0">
+            <HBox alignment="BOTTOM_RIGHT" styleClass="add-description-bottom-label">
                <children>
-                  <Label styleClass="edit-concept-bottom-label" text="Purpose of this semantic is to help define this concept." />
+                  <Label text="Purpose of this semantic is to help define this concept." />
                </children>
             </HBox>
-            <HBox alignment="BOTTOM_RIGHT" layoutX="10.0" layoutY="110.0" prefHeight="50.0" prefWidth="200.0">
+            <HBox alignment="BOTTOM_RIGHT" prefHeight="50.0" prefWidth="200.0">
                <children>
                   <ButtonBar prefHeight="75.0" prefWidth="200.0">
-                    <buttons>
-                      <Button mnemonicParsing="false" styleClass="edit-concept-cancel-button" text="CANCEL" />
-                        <Button layoutX="135.0" layoutY="47.0" minWidth="63.0" mnemonicParsing="false" styleClass="edit-concept-submit-button" text="SUBMIT" />
-                    </buttons>
+                     <buttons>
+                        <Button disable="true" mnemonicParsing="false" styleClass="edit-concept-cancel-button" text="CANCEL" />
+                        <Button fx:id="submitButton" disable="true" layoutX="135.0" layoutY="47.0" minWidth="63.0" mnemonicParsing="false" styleClass="edit-concept-submit-button" text="SUBMIT" />
+                     </buttons>
                   </ButtonBar>
                </children>
-               <opaqueInsets>
-                  <Insets />
-               </opaqueInsets>
                <VBox.margin>
                   <Insets right="20.0" />
                </VBox.margin>
