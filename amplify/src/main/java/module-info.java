@@ -47,6 +47,7 @@ module dev.ikm.komet.amplify {
 
     opens dev.ikm.komet.amplify.om to javafx.fxml;
     exports dev.ikm.komet.amplify.events;
+    exports dev.ikm.komet.amplify.mvvm;
     provides KometNodeFactory with DetailsNodeFactory, PropertiesNodeFactory;
 
     uses dev.ikm.komet.framework.events.EvtBus;
