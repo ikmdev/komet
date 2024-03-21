@@ -42,6 +42,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -110,6 +113,8 @@ public class EditDescriptionFormController implements BasicController {
 
     private EvtBus eventBus;
 
+    private final BooleanProperty isValid = new SimpleBooleanProperty(false);
+
     public EditDescriptionFormController() { }
 
     public EditDescriptionFormController(UUID conceptTopic) {
@@ -124,7 +129,21 @@ public class EditDescriptionFormController implements BasicController {
         submitButton.setDisable(true);
         setEditDescriptionTitleLabel("Edit Description: Other Name");
         populateDialectComboBoxes();
-        setupAddListenerForEditDescriptionForm();
+
+        ChangeListener ch = (observable, oldValue, newValue )->{
+            if (oldValue != null)
+                   validateForm();
+        };
+
+        otherNameTextField.textProperty().addListener(ch);
+        moduleComboBox.valueProperty().addListener(ch);
+        caseSignificanceComboBox.valueProperty().addListener(ch);
+        statusComboBox.valueProperty().addListener(ch);
+        languageComboBox.valueProperty().addListener(ch);
+
+        isValid.addListener(obs -> {
+            submitButton.setDisable(!isValid.get());
+        });
         submitButton.setOnAction(this::saveOtherName);
     }
     @FXML
@@ -132,23 +151,20 @@ public class EditDescriptionFormController implements BasicController {
         eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(cancelButton,
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
     }
-    private void setupAddListenerForEditDescriptionForm(){
-        otherNameTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-            submitButton.setDisable(oldValue.trim().isEmpty());
-        });
-        moduleComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
-            submitButton.setDisable(oldValue == null);
-        });
-        statusComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
-            submitButton.setDisable(oldValue == null);
-        });
-        caseSignificanceComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
-            submitButton.setDisable(oldValue == null);
-        });
-        languageComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
-            submitButton.setDisable(oldValue == null);
-        });
+
+    private void validateForm() {
+        isValid.set(isValid());
     }
+
+    private boolean isValid() {
+        // check requirements
+        return otherNameTextField.getText().length() > 3
+                && moduleComboBox.getSelectionModel().getSelectedItem() != null
+                &&  statusComboBox.getSelectionModel().getSelectedItem() != null
+                &&  caseSignificanceComboBox.getSelectionModel().getSelectedItem() != null
+                &&  languageComboBox.getSelectionModel().getSelectedItem() != null;
+    }
+
     private void populateDialectComboBoxes() {
         // currently no UNACCEPTABLE in TinkarTerm
         Entity<? extends EntityVersion> acceptable = EntityService.get().getEntityFast(TinkarTerm.ACCEPTABLE);
