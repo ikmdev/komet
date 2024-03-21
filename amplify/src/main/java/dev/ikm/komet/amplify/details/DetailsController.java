@@ -16,6 +16,7 @@
 package dev.ikm.komet.amplify.details;
 
 import dev.ikm.komet.amplify.commons.MenuHelper;
+import dev.ikm.komet.amplify.events.AddOtherNameToConceptEvent;
 import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.amplify.events.EditConceptFullyQualifiedNameEvent;
 import dev.ikm.komet.amplify.events.EditOtherNameConceptEvent;
@@ -207,6 +208,8 @@ public class DetailsController  {
 
     private Subscriber<EditOtherNameConceptEvent> editOtherNameConceptEventSubscriber;
 
+    private Subscriber<AddOtherNameToConceptEvent> addOtherNameToConceptEventSubscriber;
+
     private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
 
     private PublicId fqnPublicId;
@@ -246,6 +249,13 @@ public class DetailsController  {
         };
         eventBus.subscribe(conceptTopic, EditOtherNameConceptEvent.class, editOtherNameConceptEventSubscriber);
 
+        addOtherNameToConceptEventSubscriber = evt -> {
+            if (!propertiesToggleButton.isSelected()) {
+                propertiesToggleButton.fire();
+            }
+        };
+        eventBus.subscribe(conceptTopic, AddOtherNameToConceptEvent.class, addOtherNameToConceptEventSubscriber);
+
         // if the user clicks the Close Properties Button from the Edit Descriptions panel
         // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
         closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
@@ -277,19 +287,35 @@ public class DetailsController  {
         final int ACTION = 3;
         final int GRAPHIC = 4;
 
-        Object[][] menuItems = new Object[][] {
-                { "ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
-                { MenuHelper.SEPARATOR },
-                { "Add Fully Qualified", true, null, (EventHandler<ActionEvent>) actionEvent ->
-                        eventBus.publish(conceptTopic, new EditConceptFullyQualifiedNameEvent(latestFqnText.getText(),
-                                EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId)),
-                        createConceptEditDescrIcon() },
-                { "Add Other Name", true, null, (EventHandler<ActionEvent>) actionEvent ->
-                        eventBus.publish(conceptTopic, new EditOtherNameConceptEvent(this,
-                                EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId)),
-                        createConceptEditDescrIcon()},
-                { MenuHelper.SEPARATOR },
-        };
+        // if there is a fully qualified name, then do not give the option Add Fully Qualified
+        Object[][] menuItems;
+        if (fqnPublicId != null) {
+            menuItems = new Object[][]{
+                    {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
+                    {MenuHelper.SEPARATOR},
+                    {"Add Fully Qualified", true, null, (EventHandler<ActionEvent>) actionEvent ->
+                            eventBus.publish(conceptTopic, new EditConceptFullyQualifiedNameEvent(latestFqnText.getText(),
+                                    EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId)),
+                            createConceptEditDescrIcon()},
+                    {"Add Other Name", true, null, (EventHandler<ActionEvent>) actionEvent -> {
+                        eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(this,
+                                AddOtherNameToConceptEvent.ADD_DESCRIPTION, otherNamePublicId));
+                    },
+                            createConceptEditDescrIcon()},
+                    {MenuHelper.SEPARATOR},
+            };
+        } else {
+            menuItems = new Object[][]{
+                    {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
+                    {MenuHelper.SEPARATOR},
+                    {"Add Other Name", true, null, (EventHandler<ActionEvent>) actionEvent -> {
+                        eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(this,
+                                AddOtherNameToConceptEvent.ADD_DESCRIPTION, otherNamePublicId));
+                    },
+                            createConceptEditDescrIcon()},
+                    {MenuHelper.SEPARATOR},
+            };
+        }
         for (Object[] menuItemObj : menuItems) {
             if (MenuHelper.SEPARATOR.equals(menuItemObj[NAME])){
                 contextMenu.getItems().add(new SeparatorMenuItem());
@@ -720,7 +746,7 @@ public class DetailsController  {
             LOG.info("Opening slideout of properties");
             slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
             eventBus.publish(conceptTopic, new OpenPropertiesPanelEvent(propertyToggle,
-                    OpenPropertiesPanelEvent.OPEN_PROPERTIES_PANEL, fqnPublicId, otherNamePublicId));
+                    OpenPropertiesPanelEvent.OPEN_PROPERTIES_PANEL, fqnPublicId, otherNamePublicId, fqnTitleText.getText()));
         } else {
             LOG.info("Close Properties slideout");
             slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);

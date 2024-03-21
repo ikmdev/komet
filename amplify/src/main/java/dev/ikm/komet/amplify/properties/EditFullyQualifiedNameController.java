@@ -217,10 +217,10 @@ public class EditFullyQualifiedNameController implements BasicController {
 
         StampEntity stampEntity = latestEntityVersion.get().stamp();
 
-        //FIX ME: we need to get the Fully Qualified Name and not the Other Name
+
         // populate the other name text field (e.g. 'Chronic lung disease')
-        String otherName = viewCalculator.getDescriptionText(nid).get();
-        this.fqnText.setText(otherName);
+        String fullyQualifiedName = viewCalculator.getDescriptionText(nid).get();
+        this.fqnText.setText(fullyQualifiedName);
 
         Entity<? extends EntityVersion> moduleEntity = EntityService.get().getEntityFast(TinkarTerm.MODULE);
         IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(moduleEntity.nid());
