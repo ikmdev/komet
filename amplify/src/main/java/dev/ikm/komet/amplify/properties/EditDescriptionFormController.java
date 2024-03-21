@@ -130,7 +130,7 @@ public class EditDescriptionFormController implements BasicController {
         setEditDescriptionTitleLabel("Edit Description: Other Name");
         populateDialectComboBoxes();
 
-        ChangeListener ch = (observable, oldValue, newValue )->{
+        ChangeListener ch = (observable, oldValue, newValue)->{
             if (oldValue != null)
                    validateForm();
         };
@@ -141,9 +141,7 @@ public class EditDescriptionFormController implements BasicController {
         statusComboBox.valueProperty().addListener(ch);
         languageComboBox.valueProperty().addListener(ch);
 
-        isValid.addListener(obs -> {
-            submitButton.setDisable(!isValid.get());
-        });
+        isValid.addListener(obs -> submitButton.setDisable(!isValid.get()));
         submitButton.setOnAction(this::saveOtherName);
     }
     @FXML
@@ -158,7 +156,7 @@ public class EditDescriptionFormController implements BasicController {
 
     private boolean isValid() {
         // check requirements
-        return otherNameTextField.getText().length() > 3
+        return !otherNameTextField.getText().isEmpty()
                 && moduleComboBox.getSelectionModel().getSelectedItem() != null
                 &&  statusComboBox.getSelectionModel().getSelectedItem() != null
                 &&  caseSignificanceComboBox.getSelectionModel().getSelectedItem() != null
