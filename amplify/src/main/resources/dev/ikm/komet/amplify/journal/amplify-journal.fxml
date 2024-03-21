@@ -47,7 +47,7 @@
                      <contextMenu>
                         <ContextMenu fx:id="addContextMenu" opacity="0.99" styleClass="amplify-context-menu">
                           <items>
-                            <MenuItem mnemonicParsing="false" text="New Concept">
+                            <MenuItem mnemonicParsing="false" onAction="#newCreateConceptWindow" text="New Concept">
                                  <graphic>
                                     <Region styleClass="add-notepad" />
                                  </graphic></MenuItem>

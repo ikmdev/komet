@@ -106,6 +106,9 @@ public class JournalController {
     private Pane desktopSurfacePane;
 
     @FXML
+    private MenuItem newConceptMenuItem;
+
+    @FXML
     private HBox chapterHeaderbarHBox;
 
     @FXML
@@ -383,6 +386,66 @@ public class JournalController {
         // add to the list of concept windows
         final String finalConceptFolderName = conceptFolderName.get();
         conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, conceptFacade.nid(), kometNodePanel));
+
+        //Calls the remove method to remove and concepts that were closed by the user.
+        detailsNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent -> {
+            removeConceptSetting(finalConceptFolderName, detailsNode);
+        });
+        //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
+        if (conceptWindowSettingsMap != null) {
+            kometNodePanel.setPrefHeight((Double)conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
+            kometNodePanel.setPrefWidth((Double)conceptWindowSettingsMap.get(CONCEPT_WIDTH));
+            kometNodePanel.setLayoutX((Double)conceptWindowSettingsMap.get(CONCEPT_XPOS));
+            kometNodePanel.setLayoutY((Double)conceptWindowSettingsMap.get(CONCEPT_YPOS));
+        }
+    }
+
+    /**
+     * TODO: This displays a blank concept window to allow user to Create a Concept.
+     * @param windowView
+     * @param nidTextEnum
+     * @param conceptWindowSettingsMap
+     */
+    private void makeCreateConceptWindow(ObservableViewNoOverride windowView, NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
+
+        // each detail window will publish on their own activity stream.
+        String uniqueDetailsTopic = "details-%s".formatted(UUID.randomUUID());
+        UUID uuid = UuidT5Generator.get(uniqueDetailsTopic);
+        final PublicIdStringKey<ActivityStream> detailsActivityStreamKey = new PublicIdStringKey(PublicIds.of(uuid.toString()), uniqueDetailsTopic);
+        ActivityStream detailActivityStream = ActivityStreams.create(detailsActivityStreamKey);
+        activityStreams.add(detailsActivityStreamKey);
+        KometNodeFactory detailsNodeFactory = new DetailsNodeFactory();
+        DetailsNode detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
+                detailsActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY, true);
+        detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
+        detailsNode.getDetailsViewController().updateModel(windowView.makeOverridableViewProperties(), null);
+        //Getting the concept window pane
+        Pane kometNodePanel = (Pane) detailsNode.getNode();
+        //Appling the CSS from draggable-region to the panel (makes it movable/sizable).
+        Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
+        Node[] draggables = new Node[draggableToolbar.size()];
+
+        WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
+        //Adding the concept window panel as a child to the desktop pane.
+        desktopSurfacePane.getChildren().add(kometNodePanel);
+
+        // This will refresh the Concept details, history, timeline
+        //detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
+
+        // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
+        Optional<String> conceptFolderName;
+        if (conceptWindowSettingsMap != null){
+            conceptFolderName = (Optional<String>) conceptWindowSettingsMap.getOrDefault(CONCEPT_PREF_NAME, CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
+        } else {
+            conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
+            // create a conceptWindowSettingsMap
+            Map<ConceptWindowSettings, Object> conceptWindowSettingsObjectMap = createConceptPrefMap(conceptFolderName.get(), kometNodePanel);
+            kometNodePanel.setUserData(conceptWindowSettingsObjectMap);
+        }
+
+        // add to the list of concept windows
+        final String finalConceptFolderName = conceptFolderName.get();
+        conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, -1, kometNodePanel));
 
         //Calls the remove method to remove and concepts that were closed by the user.
         detailsNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent -> {
@@ -699,5 +762,19 @@ public class JournalController {
         Region graphic = new Region();
         graphic.getStyleClass().add(styleClass);
         return graphic;
+    }
+
+    /**
+     * When user selects menuitem to create a new concept
+     * @param actionEvent - button press
+     */
+    @FXML
+    public void newCreateConceptWindow(ActionEvent actionEvent) {
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
+
+        WindowSettings windowSettings = new WindowSettings(windowPreferences);
+        makeCreateConceptWindow(windowSettings.getView(), NID_TEXT, null);
+
     }
 }

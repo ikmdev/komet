@@ -2632,6 +2632,8 @@ Styling a context menu for amplify ui/ux controls
 
 
 /* The main scrollbar **track** CSS class  */
+.popup-container .scroll-bar:horizontal .track,
+.popup-container .scroll-bar:vertical .track,
 .landing-container .scroll-bar:horizontal .track,
 .landing-container .scroll-bar:vertical .track{
     -fx-background-color:transparent;
@@ -2641,6 +2643,8 @@ Styling a context menu for amplify ui/ux controls
 }
 
 /* The increment and decrement button CSS class of scrollbar */
+.popup-container .scroll-bar:horizontal .increment-button ,
+.popup-container .scroll-bar:horizontal .decrement-button ,
 .landing-container .scroll-bar:horizontal .increment-button ,
 .landing-container .scroll-bar:horizontal .decrement-button {
     -fx-background-color:transparent;
@@ -2650,7 +2654,8 @@ Styling a context menu for amplify ui/ux controls
 }
 
 /* The increment and decrement button CSS class of scrollbar */
-
+.popup-container .scroll-bar:vertical .increment-button,
+.popup-container .scroll-bar:vertical .decrement-button,
 .landing-container .scroll-bar:vertical .increment-button ,
 .landing-container .scroll-bar:vertical .decrement-button {
 
@@ -2660,6 +2665,8 @@ Styling a context menu for amplify ui/ux controls
 
 }
 
+.popup-container  .scroll-bar .increment-arrow,
+.popup-container  .scroll-bar .decrement-arrow,
 .landing-container  .scroll-bar .increment-arrow,
 .landing-container  .scroll-bar .decrement-arrow
 {
@@ -2668,12 +2675,13 @@ Styling a context menu for amplify ui/ux controls
 }
 
 /* The main scrollbar **thumb** CSS class which we drag every time (movable) */
+.popup-container .scroll-bar:horizontal .thumb,
+.popup-container .scroll-bar:vertical .thumb,
 .landing-container .scroll-bar:horizontal .thumb,
 .landing-container .scroll-bar:vertical .thumb {
     -fx-background-color:derive(black,90%);
     -fx-background-insets: 2, 0, 0;
     -fx-background-radius: 2em;
-
 }
 
 /* Used over concept details upper right of the STAMP edit */
@@ -2702,4 +2710,146 @@ Styling a context menu for amplify ui/ux controls
 .mini-options-button > .hamburger {
     -fx-background-color: #151515;
     -fx-scale-shape: false;
+}
+
+
+/*******************************************************************************
+ *                                                                             *
+ * STAMP Edit Popup                                                            *
+ *                                                                             *
+ ******************************************************************************/
+/* VBox */
+.popup-container {
+    -fx-pref-width: 318px;
+    -fx-background-insets: 0;
+    -fx-background-color: -Grey-11;
+    /*-fx-background-radius: 8;*/
+}
+
+.popup-container > .label,
+.popup-container > .label.title {
+    -fx-padding: 2 4 2 8;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+    -fx-text-fill: -Grey-6;
+    -fx-background-color: transparent;
+}
+.popup-container > .horizontal-separator {
+    -fx-padding: 4 8 4 8;
+    -fx-background-color: transparent;
+}
+.popup-container > .horizontal-separator > .line {
+    -fx-background-color: -Grey-9;
+    -fx-background-insets: 0;
+    -fx-min-height: 1;
+    -fx-pref-height: 1;
+    -fx-max-height: 1;
+}
+
+
+.popup-container .titled-pane {
+    -fx-text-fill: -Grey-White;
+}
+.popup-container .titled-pane:focused {
+    -fx-color: transparent;
+}
+.popup-container .titled-pane > .title {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 4 12 4 12;
+    -fx-spacing: 2;
+    -fx-pref-height: 32;
+}
+
+.popup-container .titled-pane > .title > .text {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 400;
+}
+/* alternative focus using the ring around the entire title area */
+/*.popup-container  .titled-pane:focused > .title {
+    -fx-background-color: -fx-faint-focus-color, -fx-focus-color, -fx-inner-border, -fx-body-color;
+    -fx-background-insets: 0, 0.7, 2, 3;
+}*/
+/* focus purely on the arrow */
+.popup-container .titled-pane:focused > .title > .arrow-button > .arrow {
+    -fx-background-color: derive(-Secondary-04, 20%);
+    -fx-background-insets: -1;
+}
+.popup-container .titled-pane:collapsed > .title > .arrow-button {
+    -fx-rotate: -90;
+}
+.popup-container .titled-pane:expanded > .title > .arrow-button {
+    -fx-rotate: 90;
+}
+.popup-container .titled-pane > .title > .arrow-button {
+    -fx-background-color: null;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 4;
+    -width-size: 20;
+    -height-size: 20;
+    -fx-min-width: -width-size;
+    -fx-min-height: -height-size;
+    -fx-pref-width: -width-size;
+    -fx-pref-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-max-height: -height-size;
+}
+.popup-container .titled-pane > .title > .arrow-button > .arrow {
+    -fx-background-color: -Secondary-04;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-scale-shape: false;
+    -fx-shape: "M8.0876 5L6.9126 6.175L10.7293 10L6.9126 13.825L8.0876 15L13.0876 10L8.0876 5Z";
+
+}
+/*.popup-container .titled-pane > .title:hover {*/
+/*    -fx-color: red;*/
+/*}*/
+/* alternative content using a border and a grad to transparent background - why should TitledPane content have a colour? */
+.popup-container .titled-pane > *.content {
+    -fx-border-color: transparent;
+    -fx-border-insets: -1 0 0 0;
+    -fx-background-color: transparent;
+    -fx-padding: -5 0 0 0;
+}
+
+.popup-container .titled-pane > *.content .option-container .radio-button {
+    -fx-label-padding: 4;
+    -fx-text-fill: -Grey-White;
+    -fx-padding: 0 0 0 12;
+}
+.popup-container .titled-pane > *.content .option-container .radio-button > .radio,
+.popup-container .titled-pane > *.content .option-container .radio-button:focused > .radio {
+    -fx-background-radius: 0; /* large value to make sure this remains circular */
+    -fx-padding: 0; /* 4 -- padding from outside edge to the inner black dot */
+    -fx-background-color: -Grey-White;
+    -fx-scale-shape: false;
+    -fx-shape: "M8.99984 0.666748C4.39984 0.666748 0.666504 4.40008 0.666504 9.00008C0.666504 13.6001 4.39984 17.3334 8.99984 17.3334C13.5998 17.3334 17.3332 13.6001 17.3332 9.00008C17.3332 4.40008 13.5998 0.666748 8.99984 0.666748ZM8.99984 15.6667C5.3165 15.6667 2.33317 12.6834 2.33317 9.00008C2.33317 5.31675 5.3165 2.33341 8.99984 2.33341C12.6832 2.33341 15.6665 5.31675 15.6665 9.00008C15.6665 12.6834 12.6832 15.6667 8.99984 15.6667Z";
+}
+.popup-container .titled-pane > *.content .option-container .radio-button:selected > .radio,
+.popup-container .titled-pane > *.content .option-container .radio-button:selected:focused > .radio {
+    -fx-background-color: -Primary-04;
+}
+
+.popup-container .titled-pane > *.content .option-container .radio-button > .radio > .dot {
+    -fx-background-color: transparent;
+    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
+    -fx-padding: 0.333333em; /* 4 -- radius of the inner black dot when selected */
+    -fx-shape: "M8.99984 13.1667C11.301 13.1667 13.1665 11.3013 13.1665 9.00008C13.1665 6.69889 11.301 4.83342 8.99984 4.83342C6.69865 4.83342 4.83317 6.69889 4.83317 9.00008C4.83317 11.3013 6.69865 13.1667 8.99984 13.1667Z";
+}
+
+.popup-container .titled-pane > *.content .option-container .radio-button:selected > .radio > .dot {
+    -fx-background-color: -Primary-04;
+    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
+    /*-fx-padding: 0.333333em; !* 4 -- radius of the inner black dot when selected *!*/
+    -fx-shape: "M8.99984 13.1667C11.301 13.1667 13.1665 11.3013 13.1665 9.00008C13.1665 6.69889 11.301 4.83342 8.99984 4.83342C6.69865 4.83342 4.83317 6.69889 4.83317 9.00008C4.83317 11.3013 6.69865 13.1667 8.99984 13.1667Z";
+}
+.popup-container .titled-pane > *.content .scroll-pane .viewport {
+    -fx-background-color: transparent;
 }

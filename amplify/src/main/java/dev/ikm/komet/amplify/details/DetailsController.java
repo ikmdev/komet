@@ -20,6 +20,7 @@ import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.amplify.events.EditConceptFullyQualifiedNameEvent;
 import dev.ikm.komet.amplify.events.EditOtherNameConceptEvent;
 import dev.ikm.komet.amplify.events.OpenPropertiesPanelEvent;
+import dev.ikm.komet.amplify.mvvm.ViewModel;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -40,6 +41,7 @@ import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -48,11 +50,13 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import org.controlsfx.control.PopOver;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -68,7 +72,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 public class DetailsController  {
     private static final Logger LOG = LoggerFactory.getLogger(DetailsController.class);
-
+    private static final String EDIT_STAMP_OPTIONS_FXML = "edit-stamp.fxml";
     @FXML
     private Button closeConceptButton;
 
@@ -213,6 +217,13 @@ public class DetailsController  {
 
     private PublicId otherNamePublicId;
 
+    /**
+     * Stamp Edit
+     */
+    private PopOver stampEdit;
+    private ViewModel stampViewModel;
+    private StampEditController stampEditController;
+
     public DetailsController() {
     }
 
@@ -253,7 +264,17 @@ public class DetailsController  {
 
         // Add a context menu to the pencil+ icon for: Add Fully Qualified, Add Other Name
         setUpDescriptionContextMenu(addDescriptionButton);
+
+        // If this is create mode.
+        stampViewModel = new StampViewModel()
+                .addProperty("status", "Incomplete")
+                .addProperty("time", System.currentTimeMillis())
+                .addProperty("module", 0)
+                .addProperty("path", 0)
+                .addProperty("modules", StampViewModel::findAllModules)
+                .addProperty("paths", StampViewModel::findAllPaths);
     }
+
 
     private void setUpDescriptionContextMenu(Button addDescriptionButton) {
         ContextMenu contextMenu = buildMenuOptionContextMenu();
@@ -373,6 +394,9 @@ public class DetailsController  {
 
         // Axioms area
         updateAxioms();
+
+        // TODO Update stamps view model
+
     }
     public void onReasonerSlideoutTray(Consumer<ToggleButton> reasonerResultsControllerConsumer) {
         this.reasonerResultsControllerConsumer = reasonerResultsControllerConsumer;
@@ -744,6 +768,62 @@ public class DetailsController  {
     private void openReasonerSlideout(ActionEvent event) {
         ToggleButton reasonerToggle = (ToggleButton) event.getSource();
         reasonerResultsControllerConsumer.accept(reasonerToggle);
+    }
+
+    /**
+     * When user selects the STAMP edit button to pop up the options to edit.
+     * @param event
+     */
+    @FXML
+    public void popupStampEdit(ActionEvent event) {
+        if (stampEdit !=null && stampEditController != null) {
+            stampEdit.show((Node) event.getSource());
+            return;
+        }
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(EDIT_STAMP_OPTIONS_FXML));
+        try {
+            Pane editStampPane = loader.load();
+            PopOver popOver = new PopOver(editStampPane);
+            popOver.getStyleClass().add("filter-menu-popup");
+            StampEditController stampEditController = loader.getController();
+
+            stampEditController.updateModel(viewProperties, stampViewModel);
+            stampEditController.updateView();
+
+            popOver.setOnHidden(windowEvent -> {
+                // set Stamp info into Details form
+                stampViewModel.save();
+                System.out.println("Update Stamp info " + stampViewModel);
+                updateUIStamp(stampViewModel);
+            });
+
+            popOver.show((Node) event.getSource());
+
+            // store and use later.
+            stampEdit = popOver;
+            this.stampEditController = stampEditController;
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void updateUIStamp(ViewModel stampViewModel) {
+        long time = stampViewModel.getValue("time");
+        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
+        Instant stampInstance = Instant.ofEpochSecond(time/1000);
+        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
+        String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
+
+        lastUpdatedText.setText(lastUpdated);
+        int moduleNid = stampViewModel.getValue("module");
+        String moduleDescr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleNid);
+        moduleText.setText(moduleDescr);
+        int pathNid = stampViewModel.getValue("path");
+        String pathDescr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(pathNid);
+        pathText.setText(pathDescr);
+        statusText.setText(stampViewModel.getValue("status"));
     }
 
     public void compactSizeWindow() {
