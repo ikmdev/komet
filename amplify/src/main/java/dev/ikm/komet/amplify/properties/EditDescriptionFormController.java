@@ -42,9 +42,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ChangeListener;
+import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -113,8 +111,6 @@ public class EditDescriptionFormController implements BasicController {
 
     private EvtBus eventBus;
 
-    private final BooleanProperty isValid = new SimpleBooleanProperty(false);
-
     public EditDescriptionFormController() { }
 
     public EditDescriptionFormController(UUID conceptTopic) {
@@ -126,22 +122,19 @@ public class EditDescriptionFormController implements BasicController {
     public void initialize() {
         eventBus = EvtBusFactory.getDefaultEvtBus();
         clearView();
-        submitButton.setDisable(true);
         setEditDescriptionTitleLabel("Edit Description: Other Name");
         populateDialectComboBoxes();
 
-        ChangeListener ch = (observable, oldValue, newValue)->{
-            if (oldValue != null)
-                   validateForm();
-        };
+        InvalidationListener invalidationListener = obs -> validateForm();
 
-        otherNameTextField.textProperty().addListener(ch);
-        moduleComboBox.valueProperty().addListener(ch);
-        caseSignificanceComboBox.valueProperty().addListener(ch);
-        statusComboBox.valueProperty().addListener(ch);
-        languageComboBox.valueProperty().addListener(ch);
+        otherNameTextField.textProperty().addListener(invalidationListener);
+        moduleComboBox.valueProperty().addListener(invalidationListener);
+        caseSignificanceComboBox.valueProperty().addListener(invalidationListener);
+        statusComboBox.valueProperty().addListener(invalidationListener);
+        languageComboBox.valueProperty().addListener(invalidationListener);
 
-        isValid.addListener(obs -> submitButton.setDisable(!isValid.get()));
+        validateForm();
+
         submitButton.setOnAction(this::saveOtherName);
     }
     @FXML
@@ -151,16 +144,16 @@ public class EditDescriptionFormController implements BasicController {
     }
 
     private void validateForm() {
-        isValid.set(isValid());
-    }
+        boolean isOtherNameTextFieldEmpty = otherNameTextField.getText().trim().isEmpty();
+        boolean isModuleComboBoxSelected = moduleComboBox.getValue() != null;
+        boolean isCaseSignificanceComboBoxSelected = caseSignificanceComboBox.getValue() != null;
+        boolean isStatusComboBoxComboBoxSelected = statusComboBox.getValue() != null;
+        boolean isLanguageComboBoxComboBoxSelected = languageComboBox.getValue() != null;
 
-    private boolean isValid() {
-        // check requirements
-        return !otherNameTextField.getText().isEmpty()
-                && moduleComboBox.getSelectionModel().getSelectedItem() != null
-                &&  statusComboBox.getSelectionModel().getSelectedItem() != null
-                &&  caseSignificanceComboBox.getSelectionModel().getSelectedItem() != null
-                &&  languageComboBox.getSelectionModel().getSelectedItem() != null;
+        submitButton.setDisable(
+                isOtherNameTextFieldEmpty || !isModuleComboBoxSelected
+                || !isCaseSignificanceComboBoxSelected || !isLanguageComboBoxComboBoxSelected
+                || !isStatusComboBoxComboBoxSelected);
     }
 
     private void populateDialectComboBoxes() {
@@ -181,7 +174,6 @@ public class EditDescriptionFormController implements BasicController {
         this.editDescriptionTitleLabel.setText(addAxiomTitleLabelText);
     }
 
-
     @Override
     public void updateView() {
 
@@ -191,7 +183,6 @@ public class EditDescriptionFormController implements BasicController {
     public void clearView() {
 
     }
-
 
     @Override
     public void cleanup() {
@@ -271,7 +262,6 @@ public class EditDescriptionFormController implements BasicController {
         Entity<? extends EntityVersion> moduleEntity = EntityService.get().getEntityFast(TinkarTerm.MODULE);
         IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(moduleEntity.nid());
 
-
         // get all descendant modules
         List<ConceptEntity> allModules =
                 moduleDescendents.intStream()
@@ -282,7 +272,6 @@ public class EditDescriptionFormController implements BasicController {
         // populate the current module and select it (e.g. 'SNOMED CT core module')
         ConceptEntity currentModule = (ConceptEntity) stampEntity.module();
         moduleComboBox.getSelectionModel().select(currentModule);
-
 
         // get all statuses
         Entity<? extends EntityVersion> statusEntity = EntityService.get().getEntityFast(TinkarTerm.STATUS_VALUE);
@@ -295,7 +284,6 @@ public class EditDescriptionFormController implements BasicController {
         // populate the current status (ACTIVE | INACTIVE) and select it
         ConceptEntity currentStatus = Entity.getFast(stampEntity.state().nid());
         statusComboBox.getSelectionModel().select(currentStatus);
-
 
         // populate all case significance choices
         Entity<? extends EntityVersion> caseSenseEntity = EntityService.get().getEntityFast(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE);
@@ -328,6 +316,9 @@ public class EditDescriptionFormController implements BasicController {
         ConceptEntity langConcept = Entity.getFast(langConceptFacade.nid());
         languageComboBox.getSelectionModel().select(langConcept);
 
+        //initial state of edit screen, the submit button should be disabled
+        submitButton.setDisable(true);
+
         LOG.info(publicId.toString());
     }
     private void saveOtherName(ActionEvent actionEvent) {
@@ -339,7 +330,6 @@ public class EditDescriptionFormController implements BasicController {
                 TinkarTerm.USER.nid(),
                 moduleComboBox.getValue().nid(), // SNOMED CT, LOINC, etc
                 TinkarTerm.DEVELOPMENT_PATH.nid());
-
 
         // existing semantic
         SemanticEntity theSemantic = EntityService.get().getEntityFast(publicId.asUuidList());
@@ -385,7 +375,6 @@ public class EditDescriptionFormController implements BasicController {
         LOG.info("transaction complete");
         eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(submitButton,
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
-        submitButton.setDisable(true);
     }
 
 }
