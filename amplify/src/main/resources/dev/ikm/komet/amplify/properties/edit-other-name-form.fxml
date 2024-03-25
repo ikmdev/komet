@@ -13,9 +13,9 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane minHeight="100.0" minWidth="100.0" prefWidth="487.0" stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane minWidth="100.0" prefWidth="487.0" stylesheets="@../amplify-opt-2.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
     <top>
-        <HBox alignment="TOP_CENTER" prefHeight="0.0" prefWidth="0.0" styleClass="edit-concept-label-container" BorderPane.alignment="TOP_CENTER">
+        <HBox alignment="TOP_CENTER" styleClass="edit-concept-label-container" BorderPane.alignment="TOP_CENTER">
             <children>
                 <Label fx:id="editDescriptionTitleLabel" alignment="TOP_CENTER" text="Edit Description: Other Name" textAlignment="CENTER" />
             </children>
@@ -149,7 +149,7 @@
       </VBox>
     </center>
    <bottom>
-       <VBox alignment="BOTTOM_CENTER" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+       <VBox alignment="BOTTOM_CENTER" prefHeight="100.0" prefWidth="100.0" BorderPane.alignment="CENTER">
            <children>
                <HBox alignment="BOTTOM_RIGHT" styleClass="add-description-bottom-label">
                    <children>

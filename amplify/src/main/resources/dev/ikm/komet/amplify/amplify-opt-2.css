@@ -1861,7 +1861,6 @@ Timeline Year line segment (will overlay change circles)
 .add-description-bottom-label {
     -fx-padding: 0 15 0 0;
     -fx-pref-width: 200px;
-    -fx-pref-height: 100px;
 }
 
 .edit-concept-about-circle-icon {
