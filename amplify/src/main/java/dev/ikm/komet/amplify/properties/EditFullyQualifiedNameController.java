@@ -117,6 +117,9 @@ public class EditFullyQualifiedNameController implements BasicController {
     @FXML
     private Button submitButton;
 
+    @FXML
+    private Button cancelButton;
+
     private EvtBus eventBus;
 
     public EditFullyQualifiedNameController() { }
@@ -131,6 +134,12 @@ public class EditFullyQualifiedNameController implements BasicController {
         clearView();
         setEditFullyQualifiedNameTitleLabel("Edit Description: Fully Qualified Name");
         populateDialectComboBoxes();
+    }
+
+    @FXML
+    private void handleCancelButtonEvent() {
+        eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(cancelButton,
+                ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
     }
 
     private void populateDialectComboBoxes() {
@@ -217,10 +226,10 @@ public class EditFullyQualifiedNameController implements BasicController {
 
         StampEntity stampEntity = latestEntityVersion.get().stamp();
 
-
+        //FIX ME: we need to get the Fully Qualified Name and not the Other Name
         // populate the other name text field (e.g. 'Chronic lung disease')
-        String fullyQualifiedName = viewCalculator.getDescriptionText(nid).get();
-        this.fqnText.setText(fullyQualifiedName);
+        String otherName = viewCalculator.getDescriptionText(nid).get();
+        this.fqnText.setText(otherName);
 
         Entity<? extends EntityVersion> moduleEntity = EntityService.get().getEntityFast(TinkarTerm.MODULE);
         IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(moduleEntity.nid());
