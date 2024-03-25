@@ -200,10 +200,12 @@ public class PropertiesController implements Serializable {
         // Add Other Name button from the Properties > Edit bump out, we want to change the Pane in the
         // Edit Concept bump out to be the Add Other Name form
         addOtherNameSubscriber = evt -> {
-            contentBorderPane.setCenter(addOtherNamePane);
-            editButton.setSelected(true);
-            if (evt.getPublicId() != null) {
-                addOtherNameController.setConceptAndPopulateForm(evt.getPublicId());
+            if (!contentBorderPane.getCenter().equals(addOtherNamePane)) {
+                contentBorderPane.setCenter(addOtherNamePane);
+                editButton.setSelected(true);
+                if (evt.getPublicId() != null) {
+                    addOtherNameController.setConceptAndPopulateForm(evt.getPublicId());
+                }
             }
         };
         eventBus.subscribe(conceptTopic, AddOtherNameToConceptEvent.class, addOtherNameSubscriber);
@@ -213,10 +215,12 @@ public class PropertiesController implements Serializable {
         // Edit Concept bump out to be the Add Axiom form
 
         editOtherNameSubscriber = evt -> {
-            contentBorderPane.setCenter(editOtherNamePane);
-            editButton.setSelected(true);
-            if (evt.getPublicId() != null) {
-                editDescriptionFormController.setConceptAndPopulateForm(evt.getPublicId());
+            if (!contentBorderPane.getCenter().equals(editOtherNamePane)) {
+                contentBorderPane.setCenter(editOtherNamePane);
+                editButton.setSelected(true);
+                if (evt.getPublicId() != null) {
+                    editDescriptionFormController.setConceptAndPopulateForm(evt.getPublicId());
+                }
             }
         };
         eventBus.subscribe(conceptTopic, EditOtherNameConceptEvent.class, editOtherNameSubscriber);
@@ -226,10 +230,13 @@ public class PropertiesController implements Serializable {
         // Fully Qualified Name in the Concept, we want to change the Pane in the
         // Edit Concept bump out to be the Edit Fully Qualified Name form
         fqnSubscriber = evt -> {
-            contentBorderPane.setCenter(editFqnPane);
-            editButton.setSelected(true);
-            if (evt.getPublicId() != null) {
-                editFullyQualifiedNameController.setConceptAndPopulateForm(evt.getPublicId());
+            // check if the center pane is already showing, we don't want duplicate entries in the dropdowns
+            if (!contentBorderPane.getCenter().equals(editFqnPane)) {
+                contentBorderPane.setCenter(editFqnPane);
+                editButton.setSelected(true);
+                if (evt.getPublicId() != null) {
+                    editFullyQualifiedNameController.setConceptAndPopulateForm(evt.getPublicId());
+                }
             }
         };
         eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, fqnSubscriber);

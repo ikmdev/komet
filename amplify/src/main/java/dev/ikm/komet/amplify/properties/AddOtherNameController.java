@@ -16,11 +16,6 @@
 package dev.ikm.komet.amplify.properties;
 
 import dev.ikm.komet.amplify.commons.BasicController;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -28,15 +23,12 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.RecordListBuilder;
 import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.SemanticRecordBuilder;
 import dev.ikm.tinkar.entity.SemanticVersionRecordBuilder;
@@ -59,6 +51,12 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class AddOtherNameController implements BasicController  {
 
@@ -124,7 +122,7 @@ public class AddOtherNameController implements BasicController  {
         return stringOptional.orElse("");
     }
 
-    private void setupComboBox(ComboBox comboBox, List<ConceptEntity> conceptEntities) {
+    private void setupComboBox(ComboBox comboBox, Collection<ConceptEntity> conceptEntities) {
         comboBox.setConverter(new StringConverter<ConceptEntity>() {
 
             @Override
@@ -167,29 +165,17 @@ public class AddOtherNameController implements BasicController  {
     public void setConceptAndPopulateForm(PublicId publicId) {
         this.publicId = publicId;
 
-        ViewCalculator viewCalculator = viewProperties.calculator();
-
-        int nid = EntityService.get().nidForPublicId(publicId);
-
-        // this is the Other Name
-        Latest<SemanticEntityVersion> latestEntityVersion = viewCalculator.latest(nid);
-
-        StampEntity stampEntity = latestEntityVersion.get().stamp();
-
-
-        String otherName = viewCalculator.getDescriptionText(nid).get();
-
-        Entity<? extends EntityVersion> moduleEntity = EntityService.get().getEntityFast(TinkarTerm.MODULE);
-        IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(moduleEntity.nid());
 
         otherNameTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             submitButton.setDisable(!isFormPopulated());
         });
+
         // get all descendant modules
-        List<ConceptEntity> allModules =
+        IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.MODULE.nid());
+        Set<ConceptEntity> allModules =
                 moduleDescendents.intStream()
                         .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
-                        .toList();
+                        .collect(Collectors.toSet());
         setupComboBox(moduleComboBox, allModules);
 
         moduleComboBox.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
@@ -200,9 +186,9 @@ public class AddOtherNameController implements BasicController  {
         // get all statuses
         Entity<? extends EntityVersion> statusEntity = EntityService.get().getEntityFast(TinkarTerm.STATUS_VALUE);
         IntIdSet statusDescendents = viewProperties.calculator().descendentsOf(statusEntity.nid());
-        List<ConceptEntity> allStatuses = statusDescendents.intStream()
-                .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
-                .toList();
+        Set<ConceptEntity> allStatuses = statusDescendents.intStream()
+                .mapToObj(statusNid -> (ConceptEntity) Entity.getFast(statusNid))
+                .collect(Collectors.toSet());
         setupComboBox(statusComboBox, allStatuses);
         statusComboBox.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
             submitButton.setDisable(!isFormPopulated());
@@ -210,22 +196,20 @@ public class AddOtherNameController implements BasicController  {
 
 
         // populate all case significance choices
-        Entity<? extends EntityVersion> caseSenseEntity = EntityService.get().getEntityFast(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE);
-        IntIdSet caseSenseDescendents = viewProperties.calculator().descendentsOf(caseSenseEntity.nid());
-        List<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
-                .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
-                .toList();
+        IntIdSet caseSenseDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
+        Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
+                .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
+                .collect(Collectors.toSet());
         setupComboBox(caseSignificanceComboBox, allCaseDescendents);
         caseSignificanceComboBox.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
             submitButton.setDisable(!isFormPopulated());
         });
 
         // get all available languages
-        Entity<? extends EntityVersion> languageEntity = EntityService.get().getEntityFast(TinkarTerm.LANGUAGE);
-        IntIdSet languageDescendents = viewProperties.calculator().descendentsOf(languageEntity.nid());
-        List<ConceptEntity> allLangs = languageDescendents.intStream()
-                .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
-                .toList();
+        IntIdSet languageDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.LANGUAGE.nid());
+        Set<ConceptEntity> allLangs = languageDescendents.intStream()
+                .mapToObj(langNid -> (ConceptEntity) Entity.getFast(langNid))
+                .collect(Collectors.toSet());
         setupComboBox(languageComboBox, allLangs);
         languageComboBox.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
             submitButton.setDisable(!isFormPopulated());
