@@ -389,6 +389,12 @@ public class DetailsController  {
         clipChildren(slideoutTrayPane, 0);
         contentViewPane.setLayoutX(-width);
         slideoutTrayPane.setMaxWidth(0);
+
+        Region contentRegion = contentViewPane;
+        // binding the child's height to the preferred height of hte parent
+        // so that when we resize the window the content in the slide out pane
+        // aligns with the details controller
+        contentRegion.prefHeightProperty().bind(slideoutTrayPane.heightProperty());
     }
     private Consumer<DetailsController> onCloseConceptWindow;
     public void setOnCloseConceptWindow(Consumer<DetailsController> onClose) {

@@ -47,6 +47,9 @@
                     </VBox.margin>
                 </HBox>
             </children>
+         <opaqueInsets>
+            <Insets top="30.0" />
+         </opaqueInsets>
         </VBox>
     </bottom>
     <center>
