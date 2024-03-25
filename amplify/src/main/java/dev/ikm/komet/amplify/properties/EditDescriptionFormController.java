@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -123,12 +124,36 @@ public class EditDescriptionFormController implements BasicController {
         clearView();
         setEditDescriptionTitleLabel("Edit Description: Other Name");
         populateDialectComboBoxes();
+
+        InvalidationListener invalidationListener = obs -> validateForm();
+
+        otherNameTextField.textProperty().addListener(invalidationListener);
+        moduleComboBox.valueProperty().addListener(invalidationListener);
+        caseSignificanceComboBox.valueProperty().addListener(invalidationListener);
+        statusComboBox.valueProperty().addListener(invalidationListener);
+        languageComboBox.valueProperty().addListener(invalidationListener);
+
+        validateForm();
+
         submitButton.setOnAction(this::saveOtherName);
     }
     @FXML
     private void handleCancelButtonEvent() {
         eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(cancelButton,
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
+    }
+
+    private void validateForm() {
+        boolean isOtherNameTextFieldEmpty = otherNameTextField.getText().trim().isEmpty();
+        boolean isModuleComboBoxSelected = moduleComboBox.getValue() != null;
+        boolean isCaseSignificanceComboBoxSelected = caseSignificanceComboBox.getValue() != null;
+        boolean isStatusComboBoxComboBoxSelected = statusComboBox.getValue() != null;
+        boolean isLanguageComboBoxComboBoxSelected = languageComboBox.getValue() != null;
+
+        submitButton.setDisable(
+                isOtherNameTextFieldEmpty || !isModuleComboBoxSelected
+                || !isCaseSignificanceComboBoxSelected || !isLanguageComboBoxComboBoxSelected
+                || !isStatusComboBoxComboBoxSelected);
     }
 
     private void populateDialectComboBoxes() {
@@ -149,7 +174,6 @@ public class EditDescriptionFormController implements BasicController {
         this.editDescriptionTitleLabel.setText(addAxiomTitleLabelText);
     }
 
-
     @Override
     public void updateView() {
 
@@ -159,7 +183,6 @@ public class EditDescriptionFormController implements BasicController {
     public void clearView() {
 
     }
-
 
     @Override
     public void cleanup() {
@@ -239,7 +262,6 @@ public class EditDescriptionFormController implements BasicController {
         Entity<? extends EntityVersion> moduleEntity = EntityService.get().getEntityFast(TinkarTerm.MODULE);
         IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(moduleEntity.nid());
 
-
         // get all descendant modules
         List<ConceptEntity> allModules =
                 moduleDescendents.intStream()
@@ -250,7 +272,6 @@ public class EditDescriptionFormController implements BasicController {
         // populate the current module and select it (e.g. 'SNOMED CT core module')
         ConceptEntity currentModule = (ConceptEntity) stampEntity.module();
         moduleComboBox.getSelectionModel().select(currentModule);
-
 
         // get all statuses
         Entity<? extends EntityVersion> statusEntity = EntityService.get().getEntityFast(TinkarTerm.STATUS_VALUE);
@@ -263,7 +284,6 @@ public class EditDescriptionFormController implements BasicController {
         // populate the current status (ACTIVE | INACTIVE) and select it
         ConceptEntity currentStatus = Entity.getFast(stampEntity.state().nid());
         statusComboBox.getSelectionModel().select(currentStatus);
-
 
         // populate all case significance choices
         Entity<? extends EntityVersion> caseSenseEntity = EntityService.get().getEntityFast(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE);
@@ -296,10 +316,11 @@ public class EditDescriptionFormController implements BasicController {
         ConceptEntity langConcept = Entity.getFast(langConceptFacade.nid());
         languageComboBox.getSelectionModel().select(langConcept);
 
+        //initial state of edit screen, the submit button should be disabled
+        submitButton.setDisable(true);
+
         LOG.info(publicId.toString());
     }
-
-
     private void saveOtherName(ActionEvent actionEvent) {
         Transaction transaction = Transaction.make();
 
@@ -309,7 +330,6 @@ public class EditDescriptionFormController implements BasicController {
                 TinkarTerm.USER.nid(),
                 moduleComboBox.getValue().nid(), // SNOMED CT, LOINC, etc
                 TinkarTerm.DEVELOPMENT_PATH.nid());
-
 
         // existing semantic
         SemanticEntity theSemantic = EntityService.get().getEntityFast(publicId.asUuidList());
@@ -356,7 +376,5 @@ public class EditDescriptionFormController implements BasicController {
         eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(submitButton,
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
     }
-
-
 
 }
