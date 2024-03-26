@@ -54,6 +54,7 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -136,12 +137,37 @@ public class EditFullyQualifiedNameController implements BasicController {
         clearView();
         setEditFullyQualifiedNameTitleLabel("Edit Description: Fully Qualified Name");
         populateDialectComboBoxes();
+
+        InvalidationListener invalidationListener = obs -> validateForm();
+
+        fqnText.textProperty().addListener(invalidationListener);
+        moduleComboBox.valueProperty().addListener(invalidationListener);
+        caseSignificanceComboBox.valueProperty().addListener(invalidationListener);
+        statusComboBox.valueProperty().addListener(invalidationListener);
+        languageComboBox.valueProperty().addListener(invalidationListener);
+
+        validateForm();
+        submitButton.setOnAction(this::saveOtherName);
+
     }
 
     @FXML
     private void handleCancelButtonEvent() {
         eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(cancelButton,
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
+    }
+
+    private void validateForm() {
+        boolean isFqnTextEmpty = fqnText.getText().trim().isEmpty();
+        boolean isModuleComboBoxSelected = moduleComboBox.getValue() != null;
+        boolean isCaseSignificanceComboBoxSelected = caseSignificanceComboBox.getValue() != null;
+        boolean isStatusComboBoxComboBoxSelected = statusComboBox.getValue() != null;
+        boolean isLanguageComboBoxComboBoxSelected = languageComboBox.getValue() != null;
+
+        submitButton.setDisable(
+                isFqnTextEmpty || !isModuleComboBoxSelected
+                        || !isCaseSignificanceComboBoxSelected || !isLanguageComboBoxComboBoxSelected
+                        || !isStatusComboBoxComboBoxSelected);
     }
 
     private void populateDialectComboBoxes() {
@@ -288,6 +314,9 @@ public class EditFullyQualifiedNameController implements BasicController {
 
         ConceptEntity langConcept = Entity.getFast(langConceptFacade.nid());
         languageComboBox.getSelectionModel().select(langConcept);
+
+        //initial state of edit screen, the submit button should be disabled
+        submitButton.setDisable(true);
 
         LOG.info(publicId.toString());
     }
