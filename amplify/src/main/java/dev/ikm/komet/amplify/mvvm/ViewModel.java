@@ -47,7 +47,8 @@ public interface ViewModel {
      */
     <T extends ViewModel> T setPropertyValue(String name, Object value);
     <T extends ViewModel> T setPropertyValues(String name, Collection values);
-
+    <T extends ViewModel> T setPropertyValue(String name, Object value, boolean skip);
+    <T extends ViewModel> T setPropertyValues(String name, Collection values, boolean skip);
     Property removeProperty(String name);
     /**
      * Sets the model data (valueMap values). TODO: check type before putting it into valueMap. e.g. if StringProperty value should not allow an Integer.

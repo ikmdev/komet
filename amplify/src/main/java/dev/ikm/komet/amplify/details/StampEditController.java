@@ -20,6 +20,7 @@ import dev.ikm.komet.amplify.mvvm.ViewModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import javafx.beans.property.IntegerProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.NodeOrientation;
 import javafx.scene.control.RadioButton;
@@ -28,6 +29,8 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
+
+import static dev.ikm.komet.amplify.details.StampViewModel.*;
 
 public class StampEditController implements BasicController {
 
@@ -67,13 +70,13 @@ public class StampEditController implements BasicController {
     public void initialize() {
         clearView();
         moduleToggleGroup.selectedToggleProperty().addListener((observableValue, toggle, t1) -> {
-            getStampViewModel().setPropertyValue("module", t1.getUserData());
+            getStampViewModel().setPropertyValue(MODULE_PROPERTY, t1.getUserData());
             String description = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid((int)t1.getUserData());
             moduleTitledPane.setText("Module: " + description);
         });
 
         pathToggleGroup.selectedToggleProperty().addListener(((observableValue, toggle, t1) -> {
-            getStampViewModel().setPropertyValue("path", t1.getUserData());
+            getStampViewModel().setPropertyValue(PATH_PROPERTY, t1.getUserData());
             String description = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid((int)t1.getUserData());
             pathTitledPane.setText("Path: " + description);
 
@@ -95,26 +98,28 @@ public class StampEditController implements BasicController {
         ViewCalculator vc = viewProperties.calculator();
 
         // populate paths
-        List<ConceptEntity> paths = stampViewModel.getObservableList("paths");
+        List<ConceptEntity> paths = stampViewModel.getObservableList(PATHS_PROPERTY);
         paths.forEach(path -> {
             RadioButton rb = new RadioButton(vc.getPreferredDescriptionStringOrNid(path.nid()));
             rb.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
             rb.setUserData(path.nid());
             rb.setToggleGroup(pathToggleGroup);
-            if (getStampViewModel().getValue("path").toString().equals(String.valueOf(path.nid()))) {
+            IntegerProperty pathNid = getStampViewModel().getProperty(PATH_PROPERTY);
+            if (pathNid.get() == path.nid()) {
                 rb.setSelected(true);
             }
             pathVBox.getChildren().add(rb);
         });
 
         // populate modules
-        List<ConceptEntity> mods = stampViewModel.getObservableList("modules");
+        List<ConceptEntity> mods = stampViewModel.getObservableList(MODULES_PROPERTY);
         mods.forEach(module -> {
             RadioButton rb = new RadioButton(vc.getPreferredDescriptionStringOrNid(module.nid()));
             rb.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
             rb.setUserData(module.nid());
             rb.setToggleGroup(moduleToggleGroup);
-            if (getStampViewModel().getValue("module").toString().equals(String.valueOf(module.nid()))) {
+            IntegerProperty moduleNid = getStampViewModel().getProperty(MODULE_PROPERTY);
+            if (moduleNid.get() == module.nid()) {
                 rb.setSelected(true);
             }
             moduleVBox.getChildren().add(rb);
