@@ -37,16 +37,17 @@ import java.util.stream.Collectors;
  */
 public class SimpleViewModel implements ViewModel {
     private static final Logger LOG = LoggerFactory.getLogger(SimpleViewModel.class);
-    private ObservableMap<String, Property> singleValueMap = FXCollections.observableMap(new TreeMap<>());
-    private ObservableMap<String, Observable> multiValueMap = FXCollections.observableMap(new TreeMap<>());
-    private Map<String, Object> valueMap = FXCollections.observableMap(new TreeMap<>());
+    protected ObservableMap<String, Property> singleValueMap = FXCollections.observableMap(new LinkedHashMap<>());
+    protected ObservableMap<String, Observable> multiValueMap = FXCollections.observableMap(new LinkedHashMap<>());
+    protected Map<String, Object> valueMap = FXCollections.observableMap(new LinkedHashMap<>());
+    private final List<String> skipPropertiesToSave = new ArrayList<>();
 
     /**
      * Copies value from valueMap to property. Updating view from model.
      * @param name property name
      * @param property
      */
-    private void reloadProperty(String name, Property property) {
+    public void reloadProperty(String name, Property property) {
         Object value = valueMap.get(name);
         if (property instanceof IntegerProperty p) {
             p.set((int)valueMap.get(name));
@@ -64,28 +65,34 @@ public class SimpleViewModel implements ViewModel {
             p.set(value);
         }
     }
-
+    protected boolean shouldSkip(String name) {
+        return skipPropertiesToSave.contains(name);
+    }
     /**
      * Copies value model to properties. ValueMap to Properties.
      * @return
      */
     public SimpleViewModel reset() {
-        singleValueMap.forEach((name, propVal) -> {
-            // copy values into properties
-            reloadProperty(name, propVal);
+        getSingleValueMap().forEach((name, propVal) -> {
+            if (!shouldSkip(name)) {
+                // copy values into properties
+                reloadProperty(name, propVal);
+            }
         });
-        multiValueMap.forEach((k, observableVal) -> {
-            // copy values into properties
-            if (observableVal instanceof Collection<?> collection) {
-                Collection c2 = (Collection) valueMap.get(k);
-                if (c2 != null) {
-                    collection.clear();
-                    collection.addAll(c2);
+        getMultiValueMap().forEach((k, observableVal) -> {
+            if (!shouldSkip(k)) {
+                // copy values into properties
+                if (observableVal instanceof Collection<?> collection) {
+                    Collection c2 = (Collection) valueMap.get(k);
+                    if (c2 != null) {
+                        collection.clear();
+                        collection.addAll(c2);
+                    } else {
+                        collection.clear();
+                    }
                 } else {
-                    collection.clear();
+                    throw new RuntimeException("Each value should be a Collection not a " + observableVal);
                 }
-            } else {
-                throw new RuntimeException("Each value should be a Collection not a " + observableVal);
             }
         });
         return this;
@@ -96,21 +103,27 @@ public class SimpleViewModel implements ViewModel {
      * @return returns itself of type SimpleViewModel.
      */
     public SimpleViewModel save() {
+
         // single values
-        singleValueMap.keySet().forEach( key -> {
-            Property value = singleValueMap.get(key);
-            // copy values into properties
-            valueMap.put(key, value.getValue());
-        });
+        getSingleValueMap()
+                .forEach((key, value) -> {
+                    if (!shouldSkip(key)) {
+                        // copy values into properties
+                        valueMap.put(key, value.getValue());
+                    }
+                });
         // multiple values (lists and sets)
-        multiValueMap.keySet().forEach( key -> {
-            Observable c = multiValueMap.get(key);
-            if (c instanceof List collection) {
-                valueMap.put(key, new ArrayList<>(collection));
-            } else if (c instanceof Set collection) {
-                valueMap.put(key, new TreeSet<>(collection));
-            }
-        });
+        getMultiValueMap()
+                .forEach((key, value) -> {
+                    if (!shouldSkip(key)) {
+                        Observable c = value;
+                        if (c instanceof List collection) {
+                            valueMap.put(key, new ArrayList<>(collection));
+                        } else if (c instanceof Set collection) {
+                            valueMap.put(key, new TreeSet<>(collection));
+                        }
+                    }
+                });
         return this;
     }
 
@@ -129,21 +142,28 @@ public class SimpleViewModel implements ViewModel {
 
     /**
      * Sets the Property to contain the new value. It does not set the model value.
+     * TODO: Skip value is not supported yet. Collections are supported.
      * @param name property name
      * @param value raw value
      * @return returns itself of type SimpleViewModel.
      */
-    public SimpleViewModel setPropertyValue(String name, Object value) {
+    public SimpleViewModel setPropertyValue(String name, Object value, boolean skip) {
         if (value instanceof Collection<?> collection) {
-            setPropertyValues(name, collection);
+            setPropertyValues(name, collection, skip);
             //throw new RuntimeException("Setting property:%s value cannot be a Collection. Try calling setPropertyValues().".formatted(name));
             return this;
         }
+
         getProperty(name).setValue(value);
         return this;
     }
-    public SimpleViewModel setPropertyValues(String name, Collection values) {
+    public SimpleViewModel setPropertyValues(String name, Collection values, boolean skip) {
         Observable observable = multiValueMap.get(name);
+        if (observable == null) {
+            // create
+            addProperty(name, values, skip);
+            observable = getObservableCollection(name);
+        }
         if (observable instanceof ObservableSet<?> observableSet) {
             observableSet.clear();
             if (values != null) {
@@ -159,6 +179,17 @@ public class SimpleViewModel implements ViewModel {
         }
         return this;
     }
+
+    @Override
+    public SimpleViewModel setPropertyValue(String name, Object value) {
+        return this.setPropertyValue(name, value, false);
+    }
+
+    @Override
+    public SimpleViewModel setPropertyValues(String name, Collection values) {
+        return this.setPropertyValues(name, values, false);
+    }
+
     /**
      * Gets the raw value from the model data.
      * @param name Name of the property
@@ -197,20 +228,31 @@ public class SimpleViewModel implements ViewModel {
         return addProperty(name, new SimpleBooleanProperty(value));
     }
     public <U extends SimpleViewModel> U addProperty(String name, Collection value) {
+        return this.addProperty(name, value, false);
+    }
+    public <U extends SimpleViewModel> U addProperty(String name, Collection value, boolean skip) {
         // if it's already an observable list or set just add it.
         if (value instanceof ObservableList<?> observableList) {
             multiValueMap.put(name, observableList);
-            valueMap.put(name, new ArrayList<>(value));
+            if (!skip) {
+                valueMap.put(name, new ArrayList<>(value));
+            }
         } else if (value instanceof ObservableSet observableSet) {
             multiValueMap.put(name, observableSet);
-            valueMap.put(name, new TreeSet<>(value));
+            if (!skip) {
+                valueMap.put(name, new TreeSet<>(value));
+            }
         } else {
             if (value instanceof Set set) {
-                multiValueMap.put(name, FXCollections.observableSet(new TreeSet<>(set)));
-                valueMap.put(name, new TreeSet<>(value));
+                multiValueMap.put(name, FXCollections.observableSet(new LinkedHashSet<>(set)));
+                if (!skip) {
+                    valueMap.put(name, new TreeSet<>(value));
+                }
             } else if (value instanceof List list) {
                 multiValueMap.put(name, FXCollections.observableList(new ArrayList<>(value)));
-                valueMap.put(name, new ArrayList<>(value));
+                if (!skip) {
+                    valueMap.put(name, new ArrayList<>(value));
+                }
             }
         }
 
@@ -223,7 +265,10 @@ public class SimpleViewModel implements ViewModel {
     }
 
     public <U extends SimpleViewModel> U addProperty(String name, Function<U, Collection> value) {
-        return addProperty(name, value.apply((U)this));
+        return addProperty(name, value.apply((U)this), false);
+    }
+    public <U extends SimpleViewModel> U addProperty(String name, Function<U, Collection> value, boolean skip) {
+        return addProperty(name, value.apply((U)this), skip);
     }
     public <T extends Property> T getProperty(String name) {
         return (T) singleValueMap.get(name);
@@ -267,6 +312,23 @@ public class SimpleViewModel implements ViewModel {
         return "Unknown viewProperty:%s    ".formatted(name);
 
     }
+
+    protected ObservableMap<String, Property> getSingleValueMap() {
+        return singleValueMap;
+    }
+
+    protected ObservableMap<String, Observable> getMultiValueMap() {
+        return multiValueMap;
+    }
+
+    protected Map<String, Object> getValueMap() {
+        return valueMap;
+    }
+
+    public Set<String> getPropertyNames() {
+        return getValueMap().keySet();
+    }
+
     @Override
     public String toString() {
         return "SimpleViewModel {\n" +
@@ -281,87 +343,5 @@ public class SimpleViewModel implements ViewModel {
                         .map(name -> " " + debugPropertyMessage(name) + "\n")
                         .collect(Collectors.joining()) +
                 '}';
-    }
-    public static void main(String[] args){
-
-        ViewModel personVm = new SimpleViewModel()
-                .addProperty("firstName", "Fred")
-                .addProperty("age", 54l)
-                .addProperty("height", 123)
-                .addProperty("colors", Set.of("red", "blue"))
-                .addProperty("foods", List.of("bbq", "chips", "bbq"))
-                .addProperty("thing", new Object(){
-                    @Override
-                    public String toString() {
-                        return "thing ";
-                    }
-                })
-                .addProperty("mpg", 20.5f);
-        log("--------------");
-        log("Creation personVm \n" + personVm);
-
-        log("--------------");
-        personVm.setPropertyValue("firstName", "Mary");
-        log("before save " + personVm.debugPropertyMessage("firstName"));
-        personVm.save();
-        log("after save " + personVm.debugPropertyMessage("firstName"));
-        log("--------------");
-        personVm.setPropertyValue("age", 20);
-        log("before save " + personVm.debugPropertyMessage("age"));
-        personVm.save();
-        log("after save " + personVm.debugPropertyMessage("age"));
-        log("--------------");
-        personVm.setPropertyValue("height", 555);
-        log("before save " + personVm.debugPropertyMessage("height"));
-        personVm.save();
-        log("after save " + personVm.debugPropertyMessage("height"));
-        log("--------------");
-        personVm.setPropertyValue("colors", Set.of("green"));
-        log("before save " + personVm.debugPropertyMessage("colors"));
-        personVm.save();
-        log("after save " + personVm.debugPropertyMessage("colors"));
-
-        // changing ("bbq", "chips", "bbq") TO ("corn", "crabs")
-        personVm.setPropertyValues("foods", Set.of("corn", "crabs"));
-        log("before save " + personVm.debugPropertyMessage("foods"));
-        personVm.save(); // commit data from
-        log("after save  " + personVm.debugPropertyMessage("foods"));
-
-
-        log("--------------");
-
-        ViewModel personVm2 = new SimpleViewModel()
-                .addProperty("firstName", "Fred")
-                .addProperty("age", 54l)
-                .addProperty("height", 123)
-                .addProperty("colors", Set.of("red", "blue"))
-                .addProperty("foods", List.of("bbq", "chips", "bbq"))
-                .addProperty("thing", new Object(){
-                    @Override
-                    public String toString() {
-                        return "thing ";
-                    }
-                })
-                .addProperty("mpg", 20.5f);
-
-
-        personVm2.setPropertyValue("firstName", "Mary");
-        personVm2.setPropertyValue("age", 20);
-        personVm2.setPropertyValue("height", 555);
-        personVm2.setPropertyValue("colors", Set.of("green"));
-        personVm2.setPropertyValues("foods", Set.of("corn", "crabs"));
-        personVm2.setPropertyValue("thing", new Object(){
-            @Override
-            public String toString() {
-                return "thing 2";
-            }
-        });
-        log("before reset personVm2 \n" + personVm2);
-        personVm2.reset();
-        log("after reset  personVm2 \n" + personVm2);
-
-    }
-    private static void log(String message) {
-        System.out.println(message);
     }
 }

@@ -21,6 +21,7 @@ import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.amplify.events.EditConceptFullyQualifiedNameEvent;
 import dev.ikm.komet.amplify.events.EditOtherNameConceptEvent;
 import dev.ikm.komet.amplify.events.OpenPropertiesPanelEvent;
+import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
 import dev.ikm.komet.amplify.mvvm.ViewModel;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
@@ -69,6 +70,7 @@ import static dev.ikm.komet.amplify.commons.MenuHelper.fireContextMenuEvent;
 import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
+import static dev.ikm.komet.amplify.details.StampViewModel.*;
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 public class DetailsController  {
@@ -223,8 +225,12 @@ public class DetailsController  {
     /**
      * Stamp Edit
      */
+    private final static String MODE_PROPERTY = "mode";
+    private final static String CREATE_MODE = "Create";
+    private final static String EDIT_MODE = "Edit";
+
     private PopOver stampEdit;
-    private ViewModel stampViewModel;
+    private ValidationViewModel stampViewModel;
     private StampEditController stampEditController;
 
     public DetailsController() {
@@ -277,14 +283,19 @@ public class DetailsController  {
 
         // If this is create mode.
         stampViewModel = new StampViewModel()
-                .addProperty("status", "Incomplete")
-                .addProperty("time", System.currentTimeMillis())
-                .addProperty("module", 0)
-                .addProperty("path", 0)
-                .addProperty("modules", StampViewModel::findAllModules)
-                .addProperty("paths", StampViewModel::findAllPaths);
+                .addProperty(MODE_PROPERTY, CREATE_MODE)
+                .setPropertyValue(STATUS_PROPERTY, "Incomplete")
+                .setPropertyValue(TIME_PROPERTY, System.currentTimeMillis())
+                .setPropertyValue(MODULE_PROPERTY, 0)
+                .setPropertyValue(PATH_PROPERTY, 0)
+                .addProperty(MODULES_PROPERTY, StampViewModel::findAllModules, true)
+                .addProperty(PATHS_PROPERTY, StampViewModel::findAllPaths, true)
+                .save(true);
     }
 
+    public ValidationViewModel getStampViewModel() {
+        return stampViewModel;
+    }
 
     private void setUpDescriptionContextMenu(Button addDescriptionButton) {
         ContextMenu contextMenu = buildMenuOptionContextMenu();
@@ -362,7 +373,6 @@ public class DetailsController  {
             contextMenu.getItems().add(menuItem);
         }
 
-
         return contextMenu;
     }
 
@@ -416,6 +426,12 @@ public class DetailsController  {
     public void updateModel(final ViewProperties viewProperties, EntityFacade entityFacade) {
         this.viewProperties = viewProperties;
         this.entityFacade = entityFacade;
+        if (entityFacade != null) {
+            stampViewModel.setPropertyValue(MODE_PROPERTY, EDIT_MODE);
+        } else {
+            stampViewModel.setPropertyValue(MODE_PROPERTY, CREATE_MODE);
+        }
+
     }
     public void updateView() {
         // Display info for top banner area
@@ -481,6 +497,19 @@ public class DetailsController  {
 
         // Author tooltip
         authorTooltip.setText(stamp.author().description());
+
+        // set stamp view model
+        if (entityFacade != null) {
+            stampViewModel.setPropertyValue(MODE_PROPERTY, EDIT_MODE)
+                    .setPropertyValue(STATUS_PROPERTY, status)
+                    .setPropertyValue(MODULE_PROPERTY, stamp.moduleNid())
+                    .setPropertyValue(PATH_PROPERTY, stamp.pathNid())
+                    .setPropertyValue(TIME_PROPERTY, stamp.time())
+                    .save();
+        } else {
+            stampViewModel.setPropertyValue(MODE_PROPERTY, CREATE_MODE);
+        }
+
     }
 
     /**
@@ -820,14 +849,14 @@ public class DetailsController  {
             popOver.getStyleClass().add("filter-menu-popup");
             StampEditController stampEditController = loader.getController();
 
-            stampEditController.updateModel(viewProperties, stampViewModel);
+            stampEditController.updateModel(viewProperties, getStampViewModel());
             stampEditController.updateView();
 
             popOver.setOnHidden(windowEvent -> {
                 // set Stamp info into Details form
-                stampViewModel.save();
-                System.out.println("Update Stamp info " + stampViewModel);
-                updateUIStamp(stampViewModel);
+                getStampViewModel().save();
+                System.out.println("Update Stamp info " + getStampViewModel());
+                updateUIStamp(getStampViewModel());
             });
 
             popOver.show((Node) event.getSource());
@@ -842,20 +871,20 @@ public class DetailsController  {
     }
 
     private void updateUIStamp(ViewModel stampViewModel) {
-        long time = stampViewModel.getValue("time");
+        long time = stampViewModel.getValue(TIME_PROPERTY);
         DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
         Instant stampInstance = Instant.ofEpochSecond(time/1000);
         ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
         String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
 
         lastUpdatedText.setText(lastUpdated);
-        int moduleNid = stampViewModel.getValue("module");
+        int moduleNid = stampViewModel.getValue(MODULE_PROPERTY);
         String moduleDescr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleNid);
         moduleText.setText(moduleDescr);
-        int pathNid = stampViewModel.getValue("path");
+        int pathNid = stampViewModel.getValue(PATH_PROPERTY);
         String pathDescr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(pathNid);
         pathText.setText(pathDescr);
-        statusText.setText(stampViewModel.getValue("status"));
+        statusText.setText(stampViewModel.getValue(STATUS_PROPERTY));
     }
 
     public void compactSizeWindow() {
