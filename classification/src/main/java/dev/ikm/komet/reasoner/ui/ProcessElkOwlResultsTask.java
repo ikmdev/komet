@@ -107,7 +107,7 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 		updateMessage("Getting classified results");
 		LOG.info("Getting classified results...");
 		Transaction updateTransaction = Transaction.make("Committing classification");
-		ClassifierResults classifierResults = collectResults(reasonerService.getClassificationConceptSet(),
+		ClassifierResults classifierResults = collectResults(reasonerService.getReasonerConceptSet(),
 				updateTransaction);
 		updateMessage("Processed results in " + durationString());
 		return classifierResults;
@@ -145,7 +145,7 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 		ConcurrentHashSet<Integer> conceptsWithInferredChanges = new ConcurrentHashSet<>();
 		ConcurrentHashSet<Integer> conceptsWithNavigationChanges = new ConcurrentHashSet<>();
 
-		ViewCoordinateRecord commitView = writeBackInferred(reasonerService.getClassificationConceptSet(),
+		ViewCoordinateRecord commitView = writeBackInferred(reasonerService.getReasonerConceptSet(),
 				conceptsWithInferredChanges, conceptsWithNavigationChanges, updateTransaction);
 
 		int[] conceptsWithNavigationChangesNidArray = conceptsWithNavigationChanges.stream()

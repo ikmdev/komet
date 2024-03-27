@@ -27,10 +27,8 @@ import dev.ikm.tinkar.reasoner.service.ReasonerService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.service.TrackingCallable;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
-import dev.ikm.tinkar.terms.PatternFacade;
 
 public class RunElkOwlReasonerIncrementalTask extends TrackingCallable<ReasonerService> {
 
@@ -40,20 +38,11 @@ public class RunElkOwlReasonerIncrementalTask extends TrackingCallable<ReasonerS
 
 	private final Consumer<ClassifierResults> classifierResultsConsumer;
 
-	private final ViewCalculator viewCalculator;
-
-	private final PatternFacade statedAxiomPattern;
-
-	private final PatternFacade inferredAxiomPattern;
-
 	public RunElkOwlReasonerIncrementalTask(ReasonerService reasonerService,
 			Consumer<ClassifierResults> classifierResultsConsumer) {
 		super(true, true);
 		this.reasonerService = reasonerService;
 		this.classifierResultsConsumer = classifierResultsConsumer;
-		this.viewCalculator = reasonerService.getViewCalculator();
-		this.statedAxiomPattern = reasonerService.getStatedAxiomPattern();
-		this.inferredAxiomPattern = reasonerService.getInferredAxiomPattern();
 		updateTitle("Running reasoner (" + reasonerService.getClass().getSimpleName() + "): "
 				+ reasonerService.getViewCalculator()
 						.getPreferredDescriptionTextWithFallbackOrNid(reasonerService.getStatedAxiomPattern()));
@@ -80,7 +69,7 @@ public class RunElkOwlReasonerIncrementalTask extends TrackingCallable<ReasonerS
 		updateProgress(workDone++, maxWork);
 		//
 		msg = "Step " + workDone + ": Computing taxonomy";
-		updateMessage("Step " + workDone + ": Computing taxonomy");
+		updateMessage(msg);
 		LOG.info(msg);
 		reasonerService.computeInferences();
 		logParents();
@@ -111,50 +100,5 @@ public class RunElkOwlReasonerIncrementalTask extends TrackingCallable<ReasonerS
 		}
 		LOG.info(">>>>>");
 	}
-
-//	protected ElkOwlAxiomData compute1() throws Exception {
-//
-//		// Occupations [753d2b35-3924-5f9c-a6c7-a5c3a55fda29]
-//		// Occupation [4d0506d1-d961-5bf9-9a7f-bb1a702c7425]
-//		int occupationsNid = PrimitiveData.nid(UUID.fromString("753d2b35-3924-5f9c-a6c7-a5c3a55fda29"));
-//		int occupationNid = PrimitiveData.nid(UUID.fromString("4d0506d1-d961-5bf9-9a7f-bb1a702c7425"));
-//		TempEditUtil editor = new TempEditUtil(viewCalculator, statedAxiomPattern);
-//		DiTreeEntity editedDefinition = editor.setParent(occupationNid, occupationsNid);
-//
-//		// Do the elk incremental part...
-//		final int maxWork = 4;
-//		int workDone = 1;
-//		updateMessage("Step " + workDone + ": Build changes");
-//		ElkOwlAxiomData axiomData = ElkOwlReasonerIncremental.getInstance().getAxiomData();
-//		ElkOwlAxiomDataBuilder builder = new ElkOwlAxiomDataBuilder(viewCalculator, statedAxiomPattern, axiomData);
-//		IncrementalChanges changes = builder.processIncremental(editedDefinition, occupationNid);
-//		updateProgress(workDone++, maxWork);
-//		updateMessage("Step " + workDone + ": Process changes");
-//		ElkOwlReasonerIncremental.getInstance().processChanges(changes);
-//		LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>");
-//		OWLClass sub = axiomData.nidConceptMap.get(occupationNid);
-//		OWLClass sup = axiomData.nidConceptMap.get(occupationsNid);
-//		LOG.info("Sub: " + sub + " " + PrimitiveData.text(Integer.parseInt(sub.getIRI().getShortForm())));
-//		LOG.info("Sup: " + sup + " " + PrimitiveData.text(Integer.parseInt(sup.getIRI().getShortForm())));
-//		ElkOwlReasonerIncremental.getInstance().getReasoner().flush();
-//		for (OWLClass parent : ElkOwlReasonerIncremental.getInstance().getReasoner().getSuperClasses(sub, true)
-//				.getFlattened()) {
-//			LOG.info("Parent: " + parent + " " + PrimitiveData.text(Integer.parseInt(parent.getIRI().getShortForm())));
-//		}
-//		LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>");
-//		updateProgress(workDone++, maxWork);
-//		updateMessage("Step " + workDone + ": Processing results");
-//		ProcessElkOwlResultsTask processResultsTask = new ProcessElkOwlResultsTask(
-//				ElkOwlReasonerIncremental.getInstance().getReasoner(), this.viewCalculator, this.inferredAxiomPattern,
-//				axiomData);
-//		Future<ClassifierResults> processResultsFuture = TinkExecutor.threadPool().submit(processResultsTask);
-//		ClassifierResults classifierResults = processResultsFuture.get();
-//
-//		updateProgress(workDone++, maxWork);
-//		classifierResultsConsumer.accept(classifierResults);
-//
-//		updateMessage("Reasoner run complete in " + durationString());
-//		return axiomData;
-//	}
 
 }

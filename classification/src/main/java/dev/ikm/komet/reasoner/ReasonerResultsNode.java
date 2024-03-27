@@ -15,12 +15,8 @@
  */
 package dev.ikm.komet.reasoner;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN;
-import static dev.ikm.tinkar.terms.TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN;
-
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -43,6 +39,7 @@ import dev.ikm.komet.reasoner.ui.RunElkOwlReasonerTask;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -148,8 +145,8 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 	private void fullReasoner() {
 		TinkExecutor.threadPool().execute(() -> {
 			// TODO use a factory for the service and then create here
-			reasonerService.init(getViewProperties().calculator(), EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
-					EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
+			reasonerService.init(getViewProperties().calculator(), TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
+					TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
 			RunElkOwlReasonerTask task = new RunElkOwlReasonerTask(reasonerService, resultsController::setResults);
 			Future<ReasonerService> reasonerFuture = TinkExecutor.threadPool().submit(task);
 			int conceptCount = 0;

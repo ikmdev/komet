@@ -15,6 +15,10 @@
  */
 package dev.ikm.komet.reasoner;
 
+import java.time.Instant;
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.eclipse.collections.api.block.procedure.primitive.IntObjectProcedure;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.primitive.ImmutableIntList;
@@ -26,14 +30,13 @@ import org.eclipse.collections.api.set.primitive.ImmutableIntSet;
 import org.eclipse.collections.impl.factory.primitive.IntLists;
 import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.impl.factory.primitive.IntSets;
-import dev.ikm.tinkar.common.binary.*;
-import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
-import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
 
-import java.time.Instant;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import dev.ikm.tinkar.common.binary.Decoder;
+import dev.ikm.tinkar.common.binary.DecoderInput;
+import dev.ikm.tinkar.common.binary.Encodable;
+import dev.ikm.tinkar.common.binary.Encoder;
+import dev.ikm.tinkar.common.binary.EncoderOutput;
+import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 
 public class ClassifierResults implements Encodable {
 
