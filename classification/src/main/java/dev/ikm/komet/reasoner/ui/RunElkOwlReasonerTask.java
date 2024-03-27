@@ -25,8 +25,6 @@ import dev.ikm.komet.reasoner.ClassifierResults;
 import dev.ikm.tinkar.reasoner.service.ReasonerService;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.service.TrackingCallable;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.terms.PatternFacade;
 
 /**
  * Reasoning Tasks
@@ -59,20 +57,11 @@ public class RunElkOwlReasonerTask extends TrackingCallable<ReasonerService> {
 
 	private final Consumer<ClassifierResults> classifierResultsConsumer;
 
-	private final ViewCalculator viewCalculator;
-
-	private final PatternFacade statedAxiomPattern;
-
-	private final PatternFacade inferredAxiomPattern;
-
 	public RunElkOwlReasonerTask(ReasonerService reasonerService,
 			Consumer<ClassifierResults> classifierResultsConsumer) {
 		super(true, true);
 		this.reasonerService = reasonerService;
 		this.classifierResultsConsumer = classifierResultsConsumer;
-		this.viewCalculator = reasonerService.getViewCalculator();
-		this.statedAxiomPattern = reasonerService.getStatedAxiomPattern();
-		this.inferredAxiomPattern = reasonerService.getInferredAxiomPattern();
 		updateTitle("Running reasoner (" + reasonerService.getClass().getSimpleName() + "): "
 				+ reasonerService.getViewCalculator()
 						.getPreferredDescriptionTextWithFallbackOrNid(reasonerService.getStatedAxiomPattern()));
@@ -103,7 +92,7 @@ public class RunElkOwlReasonerTask extends TrackingCallable<ReasonerService> {
 		updateProgress(workDone++, maxWork);
 		//
 		msg = "Step " + workDone + ": Computing taxonomy";
-		updateMessage("Step " + workDone + ": Computing taxonomy");
+		updateMessage(msg);
 		LOG.info(msg);
 		ComputeElkOwlInferencesTask classifyTask = new ComputeElkOwlInferencesTask(reasonerService);
 		Future<ReasonerService> classifyFuture = TinkExecutor.threadPool().submit(classifyTask);
@@ -119,7 +108,9 @@ public class RunElkOwlReasonerTask extends TrackingCallable<ReasonerService> {
 		updateProgress(workDone++, maxWork);
 		//
 		classifierResultsConsumer.accept(classifierResults);
-		updateMessage("Reasoner run complete in " + durationString());
+		msg = "Reasoner run complete in " + durationString();
+		updateMessage(msg);
+		LOG.info(msg);
 		return reasonerService;
 	}
 
