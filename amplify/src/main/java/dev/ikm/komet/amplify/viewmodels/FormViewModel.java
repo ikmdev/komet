@@ -13,16 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.amplify.mvvm.validator;
+package dev.ikm.komet.amplify.viewmodels;
 
-import dev.ikm.komet.amplify.mvvm.ViewModel;
+import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
 
-import java.util.function.BiFunction;
+public class FormViewModel extends ValidationViewModel {
+    public static String MODE = "mode";
 
-/**
- * A validator will valid a view model based on property values or model values. When an error occurs messages are
- * created to allow a UI developer to display as feedback to the User.
- * @param <T>
- */
-public interface Validator<T> extends BiFunction<T, ViewModel, ValidationMessage> {
+    // Create or Edit mode value
+    public static String CREATE = "CREATE";
+    public static String EDIT = "EDIT";
+
+    public FormViewModel() {
+        // Default Form View
+        addProperty(MODE, EDIT);
+    }
 }

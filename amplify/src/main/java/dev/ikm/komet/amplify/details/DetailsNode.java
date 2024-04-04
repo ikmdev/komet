@@ -15,6 +15,9 @@
  */
 package dev.ikm.komet.amplify.details;
 
+import dev.ikm.komet.amplify.mvvm.loader.Config;
+import dev.ikm.komet.amplify.mvvm.loader.FXMLMvvmLoader;
+import dev.ikm.komet.amplify.mvvm.loader.JFXNode;
 import dev.ikm.komet.amplify.properties.PropertiesController;
 import dev.ikm.komet.amplify.timeline.TimelineController;
 import dev.ikm.komet.framework.ExplorationNodeAbstract;
@@ -41,6 +44,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
+import static dev.ikm.komet.amplify.viewmodels.ConceptViewModel.CURRENT_ENTITY;
 import static dev.ikm.komet.framework.activity.ActivityStreamOption.PUBLISH;
 import static dev.ikm.komet.framework.activity.ActivityStreamOption.SYNCHRONIZE;
 
@@ -87,10 +91,15 @@ public class DetailsNode extends ExplorationNodeAbstract {
             UUID conceptTopic = UUID.randomUUID();
 
             // Load Concept Details View Panel (FXML & Controller)
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(CONCEPT_DETAILS_VIEW_FXML_FILE));
-            loader.setController(new DetailsController(conceptTopic));
-            this.detailsViewBorderPane = loader.load();
-            this.detailsViewController = loader.getController();
+            // 1) inside fxml                     - apply(file, ...view models)
+            // 2) not in fxml controller class    - apply(file, controller, ...view models)
+            // 3) not in fxml controller instance - apply(file, controller instance, ...view models)
+            Config config = new Config(getClass().getResource(CONCEPT_DETAILS_VIEW_FXML_FILE))
+                    .controller(new DetailsController(conceptTopic));
+            JFXNode<BorderPane, DetailsController> jfxNode = FXMLMvvmLoader.make(config);
+
+            this.detailsViewBorderPane = jfxNode.node();
+            this.detailsViewController = jfxNode.controller();
 
             // Programmatically change CSS Theme
             this.detailsViewBorderPane.getStylesheets().clear();
@@ -116,6 +125,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
             this.propertiesViewController = propsFXMLLoader.getController();
             // style the same as the details view
             this.propertiesViewBorderPane.getStylesheets().add(styleSheet);
+            this.propertiesViewController.updateModel(viewProperties, null);
 
             // setup view and controller into details controller
             detailsViewController.attachPropertiesViewSlideoutTray(this.propertiesViewBorderPane);
@@ -159,6 +169,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
         // remove later when closing
         this.entityFocusChangeListener = (observable, oldEntityFacade, newEntityFacade) -> {
             if (newEntityFacade != null) {
+
                 titleProperty.set(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(newEntityFacade));
                 toolTipTextProperty.set(viewProperties.calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(newEntityFacade));
 
@@ -170,7 +181,10 @@ public class DetailsNode extends ExplorationNodeAbstract {
 
                 // Populate Detail View
                 if (getDetailsViewController() != null) {
-                    getDetailsViewController().updateModel(viewProperties, newEntityFacade);
+                    getDetailsViewController()
+                            .getConceptViewModel()
+                            .setPropertyValue(CURRENT_ENTITY, newEntityFacade);
+                    getDetailsViewController().updateModel(viewProperties);
                     getDetailsViewController().updateView();
                 }
 
@@ -193,7 +207,9 @@ public class DetailsNode extends ExplorationNodeAbstract {
                 toolTipTextProperty.set(EntityLabelWithDragAndDrop.EMPTY_TEXT);
                 getDetailsViewController().clearView();
                 getPropertiesViewController().clearView();
+                getPropertiesViewController().updateModel(viewProperties, newEntityFacade);
             }
+
         };
 
         // When a new entity is selected populate the view. An entity has been selected upstream (activity stream)

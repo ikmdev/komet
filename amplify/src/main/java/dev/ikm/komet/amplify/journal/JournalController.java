@@ -31,6 +31,7 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
 import dev.ikm.komet.preferences.ConceptWindowSettings;
@@ -77,6 +78,8 @@ import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.setupSlideOutTray
 import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
 import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.amplify.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.amplify.viewmodels.FormViewModel.CREATE;
+import static dev.ikm.komet.amplify.viewmodels.FormViewModel.MODE;
 import static dev.ikm.komet.preferences.ConceptWindowPreferences.*;
 import static dev.ikm.komet.preferences.ConceptWindowSettings.*;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
@@ -418,7 +421,15 @@ public class JournalController {
         DetailsNode detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
                 detailsActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY, true);
         detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
-        detailsNode.getDetailsViewController().updateModel(windowView.makeOverridableViewProperties(), null);
+        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
+        // For Create mode for Creating a concept.
+        detailsNode.getDetailsViewController()
+                .getConceptViewModel()
+                .setPropertyValue(MODE, CREATE);
+
+        detailsNode.getDetailsViewController().updateModel(viewProperties);
+        detailsNode.getDetailsViewController().updateView();
+
         //Getting the concept window pane
         Pane kometNodePanel = (Pane) detailsNode.getNode();
         //Appling the CSS from draggable-region to the panel (makes it movable/sizable).
@@ -672,6 +683,12 @@ public class JournalController {
 
         //Looping through each concept window to save position and size to preferences.
         for (ConceptPreference conceptPreference : conceptWindows) {
+
+            // skip concept windows without a proper nid, these could be concepts that are not fully created
+            if (conceptPreference.getNid().equals(-1)) {
+                continue;
+            }
+
             String conceptPrefName = conceptPreference.getDirectoryName();
             conceptFolderNames.add(conceptPrefName);
 

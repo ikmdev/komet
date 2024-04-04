@@ -20,10 +20,14 @@ import dev.ikm.komet.amplify.events.AddOtherNameToConceptEvent;
 import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.amplify.events.EditConceptFullyQualifiedNameEvent;
 import dev.ikm.komet.amplify.events.OpenPropertiesPanelEvent;
+import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
+import dev.ikm.komet.amplify.viewmodels.DescrNameViewModel;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.beans.property.SimpleObjectProperty;
@@ -61,6 +65,8 @@ public class EditDescriptionsController implements BasicController {
     private ObjectProperty<PublicId> fqnPublicId = new SimpleObjectProperty<>();
 
     private ObjectProperty<PublicId> otherNamePublicId = new SimpleObjectProperty<>();
+
+    private ViewProperties viewProperties;
 
     @Override
     @FXML
@@ -103,5 +109,9 @@ public class EditDescriptionsController implements BasicController {
     @Override
     public void cleanup() {
 
+    }
+
+    public void updateModel(final ViewProperties viewProperties) {
+        this.viewProperties = viewProperties;
     }
 }

@@ -52,6 +52,10 @@ module dev.ikm.komet.amplify {
     opens dev.ikm.komet.amplify.mvvm.validator to javafx.fxml;
     exports dev.ikm.komet.amplify.mvvm;
     exports dev.ikm.komet.amplify.mvvm.validator;
+    exports dev.ikm.komet.amplify.viewmodels;
+    opens dev.ikm.komet.amplify.viewmodels to javafx.fxml;
+    exports dev.ikm.komet.amplify.mvvm.loader;
+    opens dev.ikm.komet.amplify.mvvm.loader to javafx.fxml;
 
     provides KometNodeFactory with DetailsNodeFactory, PropertiesNodeFactory;
 

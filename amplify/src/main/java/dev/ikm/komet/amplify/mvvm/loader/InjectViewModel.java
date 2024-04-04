@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.amplify.mvvm.validator;
+package dev.ikm.komet.amplify.mvvm.loader;
 
-import dev.ikm.komet.amplify.mvvm.ViewModel;
-
-import java.util.function.BiFunction;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * A validator will valid a view model based on property values or model values. When an error occurs messages are
- * created to allow a UI developer to display as feedback to the User.
- * @param <T>
+ * Annotation to mark fields wanting dependency injection of view models into controller classes.
  */
-public interface Validator<T> extends BiFunction<T, ViewModel, ValidationMessage> {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface InjectViewModel {
 }

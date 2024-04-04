@@ -15,22 +15,16 @@
  */
 package dev.ikm.komet.amplify.properties;
 
-import static dev.ikm.komet.amplify.commons.CssHelper.genText;
-
-import dev.ikm.komet.amplify.events.AddOtherNameToConceptEvent;
-import dev.ikm.komet.amplify.events.EditConceptFullyQualifiedNameEvent;
-import dev.ikm.komet.amplify.events.EditOtherNameConceptEvent;
-import dev.ikm.komet.amplify.events.OpenPropertiesPanelEvent;
-import dev.ikm.komet.amplify.events.ShowEditDescriptionPanelEvent;
+import dev.ikm.komet.amplify.events.*;
+import dev.ikm.komet.amplify.mvvm.loader.FXMLMvvmLoader;
+import dev.ikm.komet.amplify.mvvm.loader.JFXNode;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.terms.EntityFacade;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.UUID;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -43,6 +37,13 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.shape.SVGPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.UUID;
+
+import static dev.ikm.komet.amplify.commons.CssHelper.genText;
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.*;
 
 /**
  * The properties window providing tabs of Edit, Hierarchy, History, and Comments.
@@ -62,6 +63,8 @@ public class PropertiesController implements Serializable {
     protected static final String EDIT_OTHER_NAME_FXML_FILE = "edit-other-name-form.fxml";
 
     protected static final String EDIT_FQN_FXML_FILE = "edit-fully-qualified-name.fxml";
+
+    protected static final String ADD_FQN_FXML_FILE = "add-fqn.fxml";
 
     @FXML
     private SVGPath commentsButton;
@@ -93,6 +96,8 @@ public class PropertiesController implements Serializable {
 
     private Pane editFqnPane;
 
+    private Pane addFqnPane;
+
     private Pane editDescriptionsPane;
 
     private Pane editOtherNamePane;
@@ -106,6 +111,8 @@ public class PropertiesController implements Serializable {
     private EditDescriptionsController editDescriptionsController;
 
     private EditFullyQualifiedNameController editFullyQualifiedNameController;
+
+    private AddFullyQualifiedNameController addFullyQualifiedNameController;
 
     private Pane commentsPane = new StackPane(genText("Comments Pane"));
     private ViewProperties viewProperties;
@@ -122,6 +129,8 @@ public class PropertiesController implements Serializable {
     private Subscriber<EditOtherNameConceptEvent> editOtherNameSubscriber;
 
     private Subscriber<EditConceptFullyQualifiedNameEvent> fqnSubscriber;
+
+    private Subscriber<AddFullyQualifiedNameEvent> addFqnSubscriber;
 
     private Subscriber<ShowEditDescriptionPanelEvent> editDescriptionPaneSubscriber;
 
@@ -169,10 +178,13 @@ public class PropertiesController implements Serializable {
         editDescriptionsPane = loaderEditDescriptions.load();
         editDescriptionsController = loaderEditDescriptions.getController();
 
-        FXMLLoader loaderAddOtherName = new FXMLLoader(getClass().getResource(ADD_OTHER_NAME_FXML_FILE));
-        loaderAddOtherName.setController(new AddOtherNameController(conceptTopic));
-        addOtherNamePane = loaderAddOtherName.load();
-        addOtherNameController = loaderAddOtherName.getController();
+        // NOTE: New way of using injected View Models inside of Controllers.
+        JFXNode<Pane, AddOtherNameController> addOtherNameControllerNode = FXMLMvvmLoader.make(
+                getClass().getResource(ADD_OTHER_NAME_FXML_FILE),
+                new AddOtherNameController(conceptTopic));
+
+        addOtherNamePane = addOtherNameControllerNode.node();
+        addOtherNameController = addOtherNameControllerNode.controller();
 
         FXMLLoader loaderEditOtherName = new FXMLLoader(getClass().getResource(EDIT_OTHER_NAME_FXML_FILE));
         loaderEditOtherName.setController(new EditDescriptionFormController(conceptTopic));
@@ -185,6 +197,13 @@ public class PropertiesController implements Serializable {
         loaderEditFqn.setController(new EditFullyQualifiedNameController(conceptTopic));
         editFqnPane = loaderEditFqn.load();
         editFullyQualifiedNameController = loaderEditFqn.getController();
+
+        // NOTE: New way of using injected View Models inside of Controllers.
+        JFXNode<Pane, AddFullyQualifiedNameController> addFqnControllerNode = FXMLMvvmLoader.make(
+                getClass().getResource(ADD_FQN_FXML_FILE),
+                new AddFullyQualifiedNameController(conceptTopic));
+        addFqnPane = addFqnControllerNode.node();
+        addFullyQualifiedNameController = addFqnControllerNode.controller();
 
         // initially a default selected tab and view is shown
         updateDefaultSelectedViews();
@@ -200,12 +219,31 @@ public class PropertiesController implements Serializable {
         // Add Other Name button from the Properties > Edit bump out, we want to change the Pane in the
         // Edit Concept bump out to be the Add Other Name form
         addOtherNameSubscriber = evt -> {
+            // check if the center pane is already showing, we don't want duplicate entries in the dropdowns
             if (!contentBorderPane.getCenter().equals(addOtherNamePane)) {
                 contentBorderPane.setCenter(addOtherNamePane);
                 editButton.setSelected(true);
-                if (evt.getPublicId() != null) {
-                    addOtherNameController.setConceptAndPopulateForm(evt.getPublicId());
-                }
+
+                // Create a new View Model for this form
+                addOtherNameController.updateModel(getViewProperties(), (viewModel, controller) -> {
+                    // Clear view model. Please see addOtherNameController's initialize() method.
+                    viewModel.setValue(NAME_TEXT, "")
+                            .setValue(CASE_SIGNIFICANCE, null)
+                            .setValue(MODULE, null)
+                            .setValue(LANGUAGE, null)
+                            .setValue(STATUS, TinkarTerm.ACTIVE_STATE)
+                            .setValue(IS_SUBMITTED, false);
+                    // if in edit mode and navigating from the properties > edit > add other name
+                    // then the public id will be set
+                    if (evt.getPublicId() != null) {
+                        addOtherNameController.setPublicId(evt.getPublicId());
+                        viewModel.setValue(PUBLIC_ID, evt.getPublicId());
+                    }
+                    viewModel.reset(); // copy model values into property values
+                    // update the UI form
+                    controller.clearView();
+                    controller.updateView();
+                });
             }
         };
         eventBus.subscribe(conceptTopic, AddOtherNameToConceptEvent.class, addOtherNameSubscriber);
@@ -241,6 +279,29 @@ public class PropertiesController implements Serializable {
         };
         eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, fqnSubscriber);
 
+        // this event happens on during the creation of a new concept
+        // a new concept will not have a fully qualified name and will need one
+        addFqnSubscriber = evt -> {
+            // check if the center pane is already showing, we don't want duplicate entries in the dropdowns
+            if (!contentBorderPane.getCenter().equals(addFqnPane)) {
+                contentBorderPane.setCenter(addFqnPane);
+                editButton.setSelected(true);
+
+                // Clear existing ViewModel in form.
+                addFullyQualifiedNameController.updateModel(evt.getViewProperties(), (viewModel, controller) -> {
+                    viewModel.setPropertyValue(NAME_TEXT, "")
+                            .setPropertyValue(CASE_SIGNIFICANCE, null)
+                            .setPropertyValue(MODULE, null)
+                            .setPropertyValue(LANGUAGE, null)
+                            .setPropertyValue(STATUS, TinkarTerm.ACTIVE_STATE)
+                            .setPropertyValue(IS_SUBMITTED, false);
+                    controller.clearView();
+                    controller.updateView();
+                });
+            }
+        };
+        eventBus.subscribe(conceptTopic, AddFullyQualifiedNameEvent.class, addFqnSubscriber);
+
         // when opening the properties panel the default toggle to view is the history tab
         propsPanelOpen = evt -> {
             historyButton.setSelected(true);
@@ -248,6 +309,10 @@ public class PropertiesController implements Serializable {
         };
         eventBus.subscribe(conceptTopic, OpenPropertiesPanelEvent.class, propsPanelOpen);
 
+    }
+
+    public ViewProperties getViewProperties() {
+        return viewProperties;
     }
 
     public void setConceptTopic(UUID conceptTopic) {
@@ -267,14 +332,23 @@ public class PropertiesController implements Serializable {
             contentBorderPane.setCenter(commentsPane);
         }
     }
+
     public void updateModel(final ViewProperties viewProperties, EntityFacade entityFacade){
         this.viewProperties = viewProperties;
         this.entityFacade = entityFacade;
         this.historyChangeController.updateModel(viewProperties, entityFacade);
         this.hierarchyController.updateModel(viewProperties, entityFacade);
+
+        this.editDescriptionsController.updateModel(viewProperties);
+
         this.editDescriptionFormController.updateModel(viewProperties, entityFacade);
         this.editFullyQualifiedNameController.updateModel(viewProperties, entityFacade);
-        this.addOtherNameController.updateModel(viewProperties, entityFacade);
+
+        // Create a new DescrNameViewModel for the otherNameViewModel.
+        this.addOtherNameController.updateModel(viewProperties);
+
+        // Create a new DescrNameViewModel for the addfqncontroller.
+        this.addFullyQualifiedNameController.updateModel(viewProperties);
     }
 
     public void updateView() {

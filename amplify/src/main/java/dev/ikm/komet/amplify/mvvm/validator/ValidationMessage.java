@@ -22,6 +22,20 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A Java Record representing a validation message can evaluate rules related to a property (field) of a view model.
+ * Each message can be an info, error, or warning (messageType). It can optionally have an error code. If it is a
+ * global or runtime error the exception can be expressed in the message.
+ * <pre>
+ *     Messages can have variable substitutions such as
+ *     Error occurred in ${myPropertyName}. Should be greater than 20.
+ * </pre>
+ * @param propertyName Property or field name
+ * @param messageType message type is error, warn, or info
+ * @param errorCode Any integer for an error code can be used.
+ * @param message A message of the validation condition when not valid.
+ * @param th Any runtime exception
+ */
 public record ValidationMessage(String propertyName, MessageType messageType, int errorCode, String message, Throwable th){
     /**
      * Runtime exception and global type error

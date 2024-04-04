@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.amplify.mvvm.validator;
+package dev.ikm.komet.amplify.mvvm.loader;
 
 import dev.ikm.komet.amplify.mvvm.ViewModel;
 
-import java.util.function.BiFunction;
-
 /**
- * A validator will valid a view model based on property values or model values. When an error occurs messages are
- * created to allow a UI developer to display as feedback to the User.
- * @param <T>
+ * This represents a variable name and view model referencing an annotated view model inside a controller class.
+ * @param variableName A variable named that's annotated with InjectViewModel.
+ * @param viewModel A view model.
  */
-public interface Validator<T> extends BiFunction<T, ViewModel, ValidationMessage> {
+public record NamedVm(String variableName, ViewModel viewModel) {
 }

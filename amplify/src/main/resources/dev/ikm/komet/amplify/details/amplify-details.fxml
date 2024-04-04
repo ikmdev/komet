@@ -398,10 +398,29 @@
                             </TitledPane>
                               <Pane prefHeight="200.0" prefWidth="200.0">
                                  <children>
-                                    <Button fx:id="addAxiomButton" layoutX="-32.0" mnemonicParsing="false" styleClass="add-pencil-button" text="Button">
+                                    <Button fx:id="addAxiomButton" layoutX="-32.0" mnemonicParsing="false" onAction="#popupAddAxiomContextMenu" styleClass="add-pencil-button" text="Button">
                                        <graphic>
                                           <Region prefHeight="200.0" prefWidth="200.0" styleClass="add-pencil" />
                                        </graphic>
+                                       <contextMenu>
+                                          <ContextMenu fx:id="addContextMenu" opacity="0.99" styleClass="amplify-context-menu">
+                                             <items>
+                                                <MenuItem mnemonicParsing="false" text="ADD AXIOM" />
+                                                <SeparatorMenuItem mnemonicParsing="false" />
+                                                <MenuItem mnemonicParsing="false" onAction="#addSufficientSet" text="Add Sufficient Set">
+                                                   <graphic>
+                                                      <Region prefHeight="20.0" prefWidth="20.0" styleClass="concept-edit-description-menu-icon" />
+                                                   </graphic>
+                                                </MenuItem>
+                                                <MenuItem mnemonicParsing="false" onAction="#addNecessarySet" text="Add Necessary Set">
+                                                   <graphic>
+                                                      <Region prefHeight="20.0" prefWidth="20.0" styleClass="concept-edit-description-menu-icon" />
+                                                   </graphic>
+                                                </MenuItem>
+                                                <SeparatorMenuItem mnemonicParsing="false" />
+                                             </items>
+                                          </ContextMenu>
+                                       </contextMenu>
                                     </Button>
                                  </children>
                               </Pane>
