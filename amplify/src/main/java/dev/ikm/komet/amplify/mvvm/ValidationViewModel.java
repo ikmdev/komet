@@ -21,7 +21,7 @@ import javafx.beans.property.Property;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static dev.ikm.komet.amplify.mvvm.validator.MessageType.ERROR;
+import static dev.ikm.komet.amplify.mvvm.validator.MessageType.*;
 
 /**
  * A validation view model manages validation rules for associated view properties and global type validations.
@@ -210,6 +210,31 @@ public class ValidationViewModel extends SimpleViewModel {
         return validationMessages;
     }
 
+    public boolean hasErrorMsgs() {
+        return hasMsgType(ERROR);
+    }
+    public boolean hasNoErrorMsgs() {
+        return !hasErrorMsgs();
+    }
+    public boolean hasWarningMsgs() {
+        return hasMsgType(WARN);
+    }
+    public boolean hasNoWarningMsgs() {
+        return !hasWarningMsgs();
+    }
+    public boolean hasInfoMsgs() {
+        return hasMsgType(INFO);
+    }
+    public boolean hasNoInfoMsgs() {
+        return !hasInfoMsgs();
+    }
+
+    private boolean hasMsgType(MessageType type){
+        if (getValidationMessages() != null) {
+            return getValidationMessages().stream().filter(msg -> msg.messageType() == type).findAny().isPresent();
+        }
+        return false;
+    }
     public <U extends ValidationViewModel> U invalidate() {
         getValidationMessages().clear();
         return (U) this;

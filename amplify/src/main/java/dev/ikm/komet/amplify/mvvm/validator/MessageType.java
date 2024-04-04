@@ -15,6 +15,9 @@
  */
 package dev.ikm.komet.amplify.mvvm.validator;
 
+/**
+ * Each validation message has a message type indicating an info, error or warning.
+ */
 public enum MessageType {
     INFO,
     ERROR,

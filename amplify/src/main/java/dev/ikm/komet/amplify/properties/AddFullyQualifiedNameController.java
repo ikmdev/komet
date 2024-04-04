@@ -19,13 +19,13 @@ import dev.ikm.komet.amplify.commons.AbstractBasicController;
 import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.amplify.events.CreateConceptEvent;
 import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
+import dev.ikm.komet.amplify.om.DescrName;
 import dev.ikm.komet.amplify.viewmodels.DescrNameViewModel;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
@@ -42,20 +42,20 @@ import java.util.UUID;
 
 import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.*;
 
-public class AddOtherNameController extends AbstractBasicController {
+public class AddFullyQualifiedNameController extends AbstractBasicController {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AddOtherNameController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AddFullyQualifiedNameController.class);
 
     private UUID conceptTopic;
 
     @FXML
-    private Label addOtherNameTitleLabel;
+    private Label addFqnTitleLabel;
 
     @FXML
     private ComboBox<ConceptEntity> moduleComboBox;
 
     @FXML
-    private TextField otherNameTextField;
+    private TextField fullyQualifiedNameTextField;
 
     @FXML
     private ComboBox<ConceptEntity> statusComboBox;
@@ -73,17 +73,12 @@ public class AddOtherNameController extends AbstractBasicController {
 
     private ViewProperties viewProperties;
 
-    private EntityFacade entityFacade;
-
     private PublicId publicId;
 
     @InjectViewModel
-    private DescrNameViewModel otherNameViewModel;
+    private DescrNameViewModel fqnViewModel;
 
-
-    public AddOtherNameController() { }
-
-    public AddOtherNameController(UUID conceptTopic) {
+    public AddFullyQualifiedNameController(UUID conceptTopic) {
         this.conceptTopic = conceptTopic;
     }
 
@@ -91,11 +86,14 @@ public class AddOtherNameController extends AbstractBasicController {
     public void initialize() {
         eventBus = EvtBusFactory.getDefaultEvtBus();
         clearView();
-        setAddOtherNameTitleLabel("Add New Description: Other Name");
-        // Initialize view models
-        otherNameViewModel
-                .setPropertyValue(NAME_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE)
+        submitButton.setDisable(true);
+
+
+        // Initialize the fqnViewModel
+        fqnViewModel
+                .setPropertyValue(NAME_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
                 .setPropertyValue(STATUS, TinkarTerm.ACTIVE_STATE);
+
         // register listeners
         InvalidationListener formValid = (obs) -> {
             boolean isFormValid = isFormPopulated();
@@ -116,9 +114,9 @@ public class AddOtherNameController extends AbstractBasicController {
      * This copies form values into the ViewModel's property values. It does not save or validate.
      */
     private void copyUIToViewModelProperties() {
-        if (otherNameViewModel != null) {
-            otherNameViewModel.setPropertyValue(NAME_TEXT, otherNameTextField.getText())
-                    .setPropertyValue(NAME_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE)
+        if (fqnViewModel != null) {
+            fqnViewModel.setPropertyValue(NAME_TEXT, fullyQualifiedNameTextField.getText())
+                    .setPropertyValue(NAME_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
                     .setPropertyValue(CASE_SIGNIFICANCE, caseSignificanceComboBox.getSelectionModel().getSelectedItem())
                     .setPropertyValue(STATUS, statusComboBox.getSelectionModel().getSelectedItem())
                     .setPropertyValue(MODULE, moduleComboBox.getSelectionModel().getSelectedItem())
@@ -126,24 +124,49 @@ public class AddOtherNameController extends AbstractBasicController {
         }
     }
 
-    public void updateModel(final ViewProperties viewProperties) {
-        this.viewProperties = viewProperties;
-    }
-
     public void populate(ComboBox comboBox, Collection<ConceptEntity> entities) {
         comboBox.getItems().addAll(entities);
     }
 
-    public void setPublicId(PublicId publicId) {
-        this.publicId = publicId;
-    }
+    @Override
+    public void updateView() {
 
+        // populate form combo fields module, status, case significance, lang.
+        populate(moduleComboBox, fqnViewModel.findAllModules(getViewProperties()));
+        populate(statusComboBox, fqnViewModel.findAllStatuses(getViewProperties()));
+        populate(caseSignificanceComboBox, fqnViewModel.findAllCaseSignificants(getViewProperties()));
+        populate(languageComboBox, fqnViewModel.findAllLanguages(getViewProperties()));
+    }
 
     @Override
-    public DescrNameViewModel getViewModel() {
-        return otherNameViewModel;
+    public void clearView() {
+        fullyQualifiedNameTextField.setText("");
+        moduleComboBox.setValue(null);
+        statusComboBox.setValue(null);
+        caseSignificanceComboBox.setValue(null);
+        languageComboBox.setValue(null);
+//        if (fqnViewModel != null) {
+//            copyUIToViewModelProperties();
+//            fqnViewModel.save(true); // make UI properties as model values
+//        }
+        moduleComboBox.getItems().clear();
+        statusComboBox.getItems().clear();
+        caseSignificanceComboBox.getItems().clear();
+        languageComboBox.getItems().clear();
     }
 
+    @Override
+    public void cleanup() {
+
+    }
+
+    private boolean isFormPopulated() {
+        return (fullyQualifiedNameTextField.getText() != null && !fullyQualifiedNameTextField.getText().toString().isEmpty())
+                && (moduleComboBox.getSelectionModel().getSelectedItem() != null)
+                && (statusComboBox.getSelectionModel().getSelectedItem() != null)
+                && (caseSignificanceComboBox.getSelectionModel().getSelectedItem() != null)
+                && (languageComboBox.getSelectionModel().getSelectedItem() != null);
+    }
 
     private String getDisplayText(ConceptEntity conceptEntity) {
         Optional<String> stringOptional = getViewProperties().calculator().getRegularDescriptionText(conceptEntity.nid());
@@ -192,58 +215,31 @@ public class AddOtherNameController extends AbstractBasicController {
         comboBox.getSelectionModel().selectedItemProperty().addListener(listener);
     }
 
-    private boolean isFormPopulated() {
-        return (otherNameTextField.getText() != null && !otherNameTextField.getText().toString().isEmpty())
-                && (moduleComboBox.getSelectionModel().getSelectedItem() != null)
-                && (statusComboBox.getSelectionModel().getSelectedItem() != null)
-                && (caseSignificanceComboBox.getSelectionModel().getSelectedItem() != null)
-                && (languageComboBox.getSelectionModel().getSelectedItem() != null);
-    }
-
-    public void setAddOtherNameTitleLabel(String addDescriptionTitleLabelText) {
-        this.addOtherNameTitleLabel.setText(addDescriptionTitleLabelText);
-    }
-
     @FXML
-    private void saveOtherName(ActionEvent actionEvent) {
+    private void saveFullQualifiedName(ActionEvent actionEvent) {
         actionEvent.consume();
 
         // TODO assuming it's valid save() check for errors and publish event
-        otherNameViewModel.setPropertyValue(IS_SUBMITTED, true);
-        otherNameViewModel.save();
-        if (otherNameViewModel.hasNoErrorMsgs()) {
-            // publish event with the otherNameViewModel.
-            // ...
-            LOG.info("Ready to add to the concept view model: " + otherNameViewModel);
-            eventBus.publish(conceptTopic, new CreateConceptEvent(this, CreateConceptEvent.ADD_OTHER_NAME, otherNameViewModel.create()));
-            clearView();
-            close();
+
+        fqnViewModel.save();
+        if (fqnViewModel.getValidationMessages().size() == 0) {
+            // publish event with the fqnViewModel.
+            // ... This property may not be needed.
+            fqnViewModel.setPropertyValue(IS_SUBMITTED, true);
         }
 
-    }
+        LOG.info("Ready to add to the concept view model: " + fqnViewModel);
 
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // event received in Details Controller that will call conceptViewModel.createConcept()
+        //////////////////////////////////////////////////////////////////////////////////////////
+        DescrName fqnDescrName = fqnViewModel.create();
+        eventBus.publish(conceptTopic, new CreateConceptEvent(this, CreateConceptEvent.ADD_FQN, fqnDescrName));
 
-    @Override
-    public void updateView() {
-        // populate form combo fields module, status, case significance, lang.
-        populate(moduleComboBox, otherNameViewModel.findAllModules(getViewProperties()));
-        populate(statusComboBox, otherNameViewModel.findAllStatuses(getViewProperties()));
-        populate(caseSignificanceComboBox, otherNameViewModel.findAllCaseSignificants(getViewProperties()));
-        populate(languageComboBox, otherNameViewModel.findAllLanguages(getViewProperties()));
-    }
-
-
-    @Override
-    public void clearView() {
-        otherNameTextField.setText("");
-        moduleComboBox.setValue(null);
-        statusComboBox.setValue(null);
-        caseSignificanceComboBox.setValue(null);
-        languageComboBox.setValue(null);
-        moduleComboBox.getItems().clear();
-        statusComboBox.getItems().clear();
-        caseSignificanceComboBox.getItems().clear();
-        languageComboBox.getItems().clear();
+        // clear the form after saving.  otherwise when you navigate back to Add Other Name
+        // you would have the previous form values still there
+        clearView();
+        close();
     }
 
     @FXML
@@ -258,6 +254,7 @@ public class AddOtherNameController extends AbstractBasicController {
     }
 
     @Override
-    public void cleanup() {
+    public DescrNameViewModel getViewModel() {
+        return fqnViewModel;
     }
 }

@@ -16,17 +16,22 @@
 package dev.ikm.komet.amplify.mvvm.test;
 
 import dev.ikm.komet.amplify.viewmodels.StampViewModel;
-import dev.ikm.komet.amplify.mvvm.validator.ValidationMessage;
+import dev.ikm.komet.amplify.mvvm.ViewModel;
+import dev.ikm.komet.amplify.viewmodels.ConceptViewModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 
 import static dev.ikm.komet.amplify.viewmodels.StampViewModel.*;
+import static dev.ikm.komet.amplify.viewmodels.StampViewModel.PATHS_PROPERTY;
+import static dev.ikm.komet.amplify.viewmodels.ConceptViewModel.*;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
 
-public class StampViewModelTest {
+public class ConceptViewModelTest {
     public static void main(String[] args) {
+        // point to a file directory
+        // start datbase
         // TODO this throws an error because database is not started.
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
@@ -36,7 +41,8 @@ public class StampViewModelTest {
 
 
         StampViewModel stampViewModel = new StampViewModel();
-        stampViewModel.setPropertyValue(STATUS_PROPERTY, "Incomplete")
+        stampViewModel
+                .setPropertyValue(STATUS_PROPERTY, "Incomplete")
                 .setPropertyValue(TIME_PROPERTY, System.currentTimeMillis())
                 .setPropertyValue(MODULE_PROPERTY, 0)
                 .setPropertyValue(PATH_PROPERTY, 0)
@@ -45,21 +51,18 @@ public class StampViewModelTest {
         log("--------------");
         log("Creation stampViewModel \n" + stampViewModel);
         log("--------------");
-        stampViewModel.validate();
-        log("Validation stampViewModel \n" + stampViewModel);
-        stampViewModel.invalidate();
-        log("Invalidation stampViewModel \n" + stampViewModel);
 
-        log(" Number of errors: " + stampViewModel.getValidationMessages().size());
+        ViewModel conceptViewModel = new ConceptViewModel()
+                .setPropertyValue(MODE, CREATE)
+                .setPropertyValue(AXIOM, SUFFICIENT_SET)
+                .setPropertyValue(CONCEPT_STAMP_VIEW_MODEL, stampViewModel);
 
-        for (ValidationMessage vMsg : stampViewModel.getValidationMessages()) {
-            vMsg.interpolate(stampViewModel);
-            System.out.println("msg Type: %s errorcode: %s, msg: %s".formatted(vMsg.messageType(), vMsg.errorCode(), vMsg.interpolate(stampViewModel)) );
-        }
 
         log("--------------");
-        log(" Assuming there are no errors, the save will commit changes from view props to model values");
-        log(" After save -> \n" + stampViewModel);
+        log("Creation conceptViewModel \n" + conceptViewModel);
+        log("--------------");
+
+        // stop database
     }
     public static void log(String message) {
         System.out.println(message);

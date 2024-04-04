@@ -101,7 +101,9 @@ public class HistoryChangeController implements BasicController {
     public void updateModel(final ViewProperties viewProperties, final EntityFacade entityFacade) {
         this.viewProperties = viewProperties;
         this.entityFacade = entityFacade;
-        buildPathModel();
+        if (entityFacade != null) {
+            buildPathModel();
+        }
     }
 
     private void buildPathModel() {

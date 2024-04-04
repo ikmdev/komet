@@ -34,11 +34,16 @@ import java.util.*;
  * </pre>
  */
 public interface ViewModel {
-    <T extends ViewModel> T reset();
-    <T extends ViewModel> T save();
+    <T> T reset();
+    <T> T save();
 
     <T extends Property> T getProperty(String name);
-
+    default <T> T getPropertyValue(String name) {
+        return (T) getProperty(name).getValue();
+    }
+    default <T> T getPropertyValues(String name) {
+        return (T) getObservableCollection(name);
+    }
     /**
      * Sets the Property to contain the new value. It does not set the model value.
      * @param name property name

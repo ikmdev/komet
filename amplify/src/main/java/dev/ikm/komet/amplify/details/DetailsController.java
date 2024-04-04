@@ -16,13 +16,13 @@
 package dev.ikm.komet.amplify.details;
 
 import dev.ikm.komet.amplify.commons.MenuHelper;
-import dev.ikm.komet.amplify.events.AddOtherNameToConceptEvent;
-import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
-import dev.ikm.komet.amplify.events.EditConceptFullyQualifiedNameEvent;
-import dev.ikm.komet.amplify.events.EditOtherNameConceptEvent;
-import dev.ikm.komet.amplify.events.OpenPropertiesPanelEvent;
+import dev.ikm.komet.amplify.events.*;
 import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
 import dev.ikm.komet.amplify.mvvm.ViewModel;
+import dev.ikm.komet.amplify.mvvm.loader.*;
+import dev.ikm.komet.amplify.om.DescrName;
+import dev.ikm.komet.amplify.viewmodels.ConceptViewModel;
+import dev.ikm.komet.amplify.viewmodels.StampViewModel;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -40,10 +40,12 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.ObjectProperty;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -58,7 +60,6 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -70,7 +71,11 @@ import static dev.ikm.komet.amplify.commons.MenuHelper.fireContextMenuEvent;
 import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
-import static dev.ikm.komet.amplify.details.StampViewModel.*;
+import static dev.ikm.komet.amplify.viewmodels.ConceptViewModel.CREATE;
+import static dev.ikm.komet.amplify.viewmodels.ConceptViewModel.EDIT;
+import static dev.ikm.komet.amplify.viewmodels.ConceptViewModel.*;
+import static dev.ikm.komet.amplify.viewmodels.FormViewModel.MODE;
+import static dev.ikm.komet.amplify.viewmodels.StampViewModel.*;
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 public class DetailsController  {
@@ -180,6 +185,9 @@ public class DetailsController  {
     @FXML
     private HBox conceptHeaderControlToolBarHbox;
 
+    @FXML
+    private Button addAxiomButton;
+
     /**
      * Opens or slides out the properties window.
      */
@@ -204,19 +212,25 @@ public class DetailsController  {
     private Consumer<ToggleButton> reasonerResultsControllerConsumer;
 
     private ViewProperties viewProperties;
-    private EntityFacade entityFacade;
 
+    @InjectViewModel
+    private ConceptViewModel conceptViewModel;
     private EvtBus eventBus;
     
     private UUID conceptTopic;
 
     private Subscriber<EditConceptFullyQualifiedNameEvent> fqnSubscriber;
 
+    private Subscriber<AddFullyQualifiedNameEvent> addFqnSubscriber;
+
     private Subscriber<EditOtherNameConceptEvent> editOtherNameConceptEventSubscriber;
+    private Subscriber<EditConceptEvent> editConceptEventSubscriber;
 
     private Subscriber<AddOtherNameToConceptEvent> addOtherNameToConceptEventSubscriber;
 
     private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
+
+    private Subscriber<CreateConceptEvent> createConceptEventSubscriber;
 
     private PublicId fqnPublicId;
 
@@ -225,12 +239,7 @@ public class DetailsController  {
     /**
      * Stamp Edit
      */
-    private final static String MODE_PROPERTY = "mode";
-    private final static String CREATE_MODE = "Create";
-    private final static String EDIT_MODE = "Edit";
-
     private PopOver stampEdit;
-    private ValidationViewModel stampViewModel;
     private StampEditController stampEditController;
 
     public DetailsController() {
@@ -258,6 +267,13 @@ public class DetailsController  {
         };
         eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, fqnSubscriber);
 
+        addFqnSubscriber = evt -> {
+            if (!propertiesToggleButton.isSelected()) {
+                propertiesToggleButton.fire();
+            }
+        };
+        eventBus.subscribe(conceptTopic, AddFullyQualifiedNameEvent.class, addFqnSubscriber);
+
         // when the user clicks one of the other names, open the PropertiesPanel
         editOtherNameConceptEventSubscriber = evt -> {
             if (!propertiesToggleButton.isSelected()) {
@@ -278,23 +294,62 @@ public class DetailsController  {
         closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
         eventBus.subscribe(conceptTopic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
 
-        // Add a context menu to the pencil+ icon for: Add Fully Qualified, Add Other Name
-        setUpDescriptionContextMenu(addDescriptionButton);
+        // Listener when user enters a new fqn
+        ObjectProperty<DescrName> fqnProp = getConceptViewModel().getProperty(FULLY_QUALIFIED_NAME);
+        fqnProp.addListener(observable -> {
+            // not null, populate banner area.
+            DescrName fqnDescrName = fqnProp.get();
+            updateConceptBanner(fqnDescrName);
+            updateFQNConceptDescription(fqnDescrName);
+        });
+        ObservableList<DescrName> otherNames = getConceptViewModel().getObservableList(OTHER_NAMES);
+        otherNames.addListener((InvalidationListener) obs -> updateOtherNamesDescription(otherNames));
 
-        // If this is create mode.
-        stampViewModel = new StampViewModel()
-                .addProperty(MODE_PROPERTY, CREATE_MODE)
-                .setPropertyValue(STATUS_PROPERTY, "Incomplete")
-                .setPropertyValue(TIME_PROPERTY, System.currentTimeMillis())
-                .setPropertyValue(MODULE_PROPERTY, 0)
-                .setPropertyValue(PATH_PROPERTY, 0)
-                .addProperty(MODULES_PROPERTY, StampViewModel::findAllModules, true)
-                .addProperty(PATHS_PROPERTY, StampViewModel::findAllPaths, true)
-                .save(true);
+        // Listens for events related to new fqn or other names added to this concept. Subscriber is responsible for
+        // the final create concept transaction.
+        createConceptEventSubscriber = evt -> {
+            DescrName descrName = evt.getModel();
+
+            if (getConceptViewModel() == null || descrName == null) {
+                LOG.warn("ViewModel should not be null. Event type:" + evt.getEventType());
+                return;
+            }
+
+            if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
+                if (evt.getEventType() == CreateConceptEvent.ADD_FQN) {
+                    getConceptViewModel().setPropertyValue(FULLY_QUALIFIED_NAME, descrName);
+                } else if (evt.getEventType() == CreateConceptEvent.ADD_OTHER_NAME) {
+                    getConceptViewModel().getObservableList(OTHER_NAMES).add(descrName);
+                }
+                // Attempts to write data
+                boolean isWritten = conceptViewModel.createConcept(viewProperties.calculator().viewCoordinateRecord().editCoordinate());
+                // when written the mode changes to EDIT.
+                LOG.info("Is " + conceptViewModel + " created? " + isWritten);
+                if (isWritten) {
+                    updateModel(getViewProperties());
+                    updateView();
+                }
+            } else if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))){
+                conceptViewModel.addOtherName(viewProperties.calculator().viewCoordinateRecord().editCoordinate(), descrName);
+            }
+
+        };
+        eventBus.subscribe(conceptTopic, CreateConceptEvent.class, createConceptEventSubscriber);
+
+
+
+    }
+
+    public ViewProperties getViewProperties() {
+        return viewProperties;
+    }
+
+    public ValidationViewModel getConceptViewModel() {
+        return conceptViewModel;
     }
 
     public ValidationViewModel getStampViewModel() {
-        return stampViewModel;
+        return conceptViewModel.getPropertyValue(CONCEPT_STAMP_VIEW_MODEL);
     }
 
     private void setUpDescriptionContextMenu(Button addDescriptionButton) {
@@ -321,28 +376,32 @@ public class DetailsController  {
 
         // if there is a fully qualified name, then do not give the option Add Fully Qualified
         Object[][] menuItems;
-        if (fqnPublicId != null) {
+        // show the 'Add Fully Qualified' option when it is a new concept in create mode and there is no fully qualified name
+        if (this.conceptViewModel.getPropertyValue(MODE).equals(CREATE)) {
             menuItems = new Object[][]{
                     {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
                     {MenuHelper.SEPARATOR},
                     {"Add Fully Qualified", true, null, (EventHandler<ActionEvent>) actionEvent ->
-                            eventBus.publish(conceptTopic, new EditConceptFullyQualifiedNameEvent(latestFqnText.getText(),
-                                    EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId)),
+                            eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(latestFqnText.getText() //TODO need to get a source
+                                    ,
+                                    AddFullyQualifiedNameEvent.ADD_FQN, getViewProperties())),
                             createConceptEditDescrIcon()},
                     {"Add Other Name", true, null, (EventHandler<ActionEvent>) actionEvent -> {
                         eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(this,
-                                AddOtherNameToConceptEvent.ADD_DESCRIPTION, otherNamePublicId));
+                                AddOtherNameToConceptEvent.ADD_DESCRIPTION));
                     },
                             createConceptEditDescrIcon()},
                     {MenuHelper.SEPARATOR},
             };
-        } else {
+        } else { // EDIT mode
             menuItems = new Object[][]{
                     {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
                     {MenuHelper.SEPARATOR},
                     {"Add Other Name", true, null, (EventHandler<ActionEvent>) actionEvent -> {
+                        ConceptEntity currentConcept = getConceptViewModel().getPropertyValue(CURRENT_ENTITY);
                         eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(this,
-                                AddOtherNameToConceptEvent.ADD_DESCRIPTION, otherNamePublicId));
+                                // pass the publicId of the Concept
+                                AddOtherNameToConceptEvent.ADD_DESCRIPTION, currentConcept.publicId())); // concept's publicId
                     },
                             createConceptEditDescrIcon()},
                     {MenuHelper.SEPARATOR},
@@ -384,6 +443,41 @@ public class DetailsController  {
         return circlePlusIcon;
     }
 
+    @FXML
+    private void popupAddAxiomContextMenu(ActionEvent actionEvent) {
+        MenuHelper.fireContextMenuEvent(actionEvent, Side.RIGHT, 0, 0);
+    }
+
+    @FXML
+    private void addNecessarySet(ActionEvent actionEvent) {
+        conceptViewModel.setPropertyValue(AXIOM, ConceptViewModel.NECESSARY_SET);
+
+        // Attempts to write data
+        if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
+            boolean isWritten = conceptViewModel.createConcept(viewProperties.calculator().viewCoordinateRecord().editCoordinate());
+            LOG.info("Is " + conceptViewModel + " created? " + isWritten);
+            if (isWritten) {
+                updateModel(getViewProperties());
+                updateView();
+            }
+        }
+    }
+
+    @FXML
+    private void addSufficientSet(ActionEvent actionEvent) {
+        conceptViewModel.setPropertyValue(AXIOM, ConceptViewModel.SUFFICIENT_SET);
+
+        // Attempts to write data
+        if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
+            boolean isWritten = conceptViewModel.createConcept(viewProperties.calculator().viewCoordinateRecord().editCoordinate());
+            LOG.info("Is " + conceptViewModel + " created? " + isWritten);
+            if (isWritten) {
+                updateModel(getViewProperties());
+                updateView();
+            }
+        }
+    }
+
     public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
         addPaneToTray(propertiesViewBorderPane, propertiesSlideoutTrayPane);
     }
@@ -423,17 +517,31 @@ public class DetailsController  {
         return propertiesSlideoutTrayPane;
     }
 
-    public void updateModel(final ViewProperties viewProperties, EntityFacade entityFacade) {
+    public void updateModel(final ViewProperties viewProperties) {
         this.viewProperties = viewProperties;
-        this.entityFacade = entityFacade;
+    }
+
+    public void updateView() {
+        EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
         if (entityFacade != null) {
-            stampViewModel.setPropertyValue(MODE_PROPERTY, EDIT_MODE);
-        } else {
-            stampViewModel.setPropertyValue(MODE_PROPERTY, CREATE_MODE);
+            getConceptViewModel().setPropertyValue(MODE, EDIT);
+            if (conceptViewModel.getPropertyValue(CONCEPT_STAMP_VIEW_MODEL) == null) {
+
+                // add a new stamp view model to the concept view model
+                StampViewModel stampViewModel = new StampViewModel();
+                stampViewModel.setPropertyValue(MODE, EDIT)
+                        .setPropertyValues(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true)
+                        .setPropertyValues(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true);
+
+                conceptViewModel.setPropertyValue(CONCEPT_STAMP_VIEW_MODEL,stampViewModel);
+            }
+
+            // TODO: Ability to change Concept record. but for now user can edit stamp but not affect Concept version.
+            EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
+            StampEntity stamp = latestVersion.stamp();
+            updateStampViewModel(EDIT, stamp);
         }
 
-    }
-    public void updateView() {
         // Display info for top banner area
         updateConceptBanner();
 
@@ -443,16 +551,36 @@ public class DetailsController  {
         // Axioms area
         updateAxioms();
 
+        // Add a context menu to the pencil+ icon for: Add Fully Qualified, Add Other Name
+        setUpDescriptionContextMenu(addDescriptionButton);
         // TODO Update stamps view model
 
     }
     public void onReasonerSlideoutTray(Consumer<ToggleButton> reasonerResultsControllerConsumer) {
         this.reasonerResultsControllerConsumer = reasonerResultsControllerConsumer;
     }
+    public void updateConceptBanner(DescrName fqnDescrName) {
+        if (fqnDescrName == null) return;
+
+        // Title (FQN of concept)
+        String conceptNameStr = fqnDescrName.nameText();
+        fqnTitleText.setText(conceptNameStr);
+        conceptNameTooltip.setText(conceptNameStr);
+
+        // Definition description text
+        definitionTextArea.setText("");
+
+    }
     /**
      * Responsible for populating the top banner area of the concept view panel.
      */
     public void updateConceptBanner() {
+        // do not update ui should be blank
+        if (getConceptViewModel().getPropertyValue(MODE) == CREATE) {
+            return;
+        }
+
+        EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
         // TODO do a null check on the entityFacade
         // Title (FQN of concept)
         final ViewCalculator viewCalculator = viewProperties.calculator();
@@ -498,26 +626,69 @@ public class DetailsController  {
         // Author tooltip
         authorTooltip.setText(stamp.author().description());
 
-        // set stamp view model
-        if (entityFacade != null) {
-            stampViewModel.setPropertyValue(MODE_PROPERTY, EDIT_MODE)
-                    .setPropertyValue(STATUS_PROPERTY, status)
+    }
+
+    private void updateStampViewModel(String mode, StampEntity stamp) {
+        ValidationViewModel stampViewModel = conceptViewModel.getPropertyValue(CONCEPT_STAMP_VIEW_MODEL);
+        if (conceptViewModel.getPropertyValue(CONCEPT_STAMP_VIEW_MODEL) != null) {
+            stampViewModel.setPropertyValue(MODE, mode)
+                    .setPropertyValue(STATUS_PROPERTY, stamp.state().toString())
                     .setPropertyValue(MODULE_PROPERTY, stamp.moduleNid())
                     .setPropertyValue(PATH_PROPERTY, stamp.pathNid())
                     .setPropertyValue(TIME_PROPERTY, stamp.time())
-                    .save();
-        } else {
-            stampViewModel.setPropertyValue(MODE_PROPERTY, CREATE_MODE);
+                    .save(true);
         }
-
     }
 
+    public void updateFQNConceptDescription(DescrName fqnDescrName) {
+        // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
+        // Latest FQN
+        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+        // Latest FQN
+        String fullyQualifiedName = fqnDescrName.nameText();
+        latestFqnText.setText(fullyQualifiedName);
+
+        latestFqnText.setOnMouseClicked(event -> {
+//            eventBus.publish(conceptTopic,
+//                    new EditConceptFullyQualifiedNameEvent(latestFqnText,
+//                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId));
+        });
+
+        fqnDescriptionSemanticText.setText("");
+
+        // update date
+        Instant stampInstance = Instant.ofEpochSecond((long)getStampViewModel().getPropertyValue(TIME_PROPERTY)/1000);
+        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
+        String time = DATE_TIME_FORMATTER.format(stampTime);
+        fqnAddDateLabel.setText(time);
+    }
+    public void updateOtherNamesDescription(List<DescrName> descrNameViewModels) {
+        otherNamesVBox.getChildren().clear();
+        descrNameViewModels.stream().forEach( otherName -> {
+            // start adding a row
+            List<TextFlow> rows = generateOtherNameRow(otherName);
+            rows.forEach(textFlowPane -> {
+                textFlowPane.setOnMouseClicked(event -> {
+//                eventBus.publish(conceptTopic,
+//                        new EditOtherNameConceptEvent(textFlowPane,
+//                                EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId));
+                });
+            });
+            otherNamesVBox.getChildren().addAll(rows);
+        });
+    }
     /**
      * Responsible for populating the Descriptions TitledPane area. This retrieves the latest concept version and
      * semantics for language and case significance.
      */
     public void updateConceptDescription() {
+        // do not update ui should be blank
+        if (getConceptViewModel().getPropertyValue(MODE) == CREATE) {
+            return;
+        }
+
         final ViewCalculator viewCalculator = viewProperties.calculator();
+        EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
         // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
         Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(viewCalculator, entityFacade);
         descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
@@ -594,6 +765,67 @@ public class DetailsController  {
         // so that when clicked the event bus can pass it to the form
         // and the form can populate the data from the publicId
         this.otherNamePublicId = semanticEntityVersion.publicId();
+
+        row1.getChildren().addAll(otherNameLabel);
+
+        TextFlow row2 = new TextFlow();
+        row2.getChildren().addAll(semanticDescrText);
+
+        TextFlow row3 = new TextFlow();
+        Text dateAddedLabel = new Text("Date Added:");
+        dateAddedLabel.getStyleClass().add("descr-semantic");
+        Text dateLabel = new Text(time);
+        dateLabel.getStyleClass().add("descr-semantic");
+
+        Hyperlink attachmentHyperlink = new Hyperlink("Attachment");
+        Hyperlink commentHyperlink = new Hyperlink("Comment");
+
+        // Add the date info and additional hyperlinks
+        row3.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentHyperlink);
+
+        textFlows.add(row1);
+        textFlows.add(row2);
+        textFlows.add(row3);
+        return textFlows;
+    }
+    private List<TextFlow> generateOtherNameRow(DescrName otherName) {
+
+        List<TextFlow> textFlows = new ArrayList<>();
+        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+        ViewCalculator viewCalculator = getViewProperties().calculator();
+        ConceptEntity caseSigConcept = otherName.caseSignificance();
+        String casSigText = viewCalculator.getRegularDescriptionText(caseSigConcept.nid())
+                .orElse(caseSigConcept.nid()+"");
+        ConceptEntity langConcept = otherName.language();
+
+        String langText = viewCalculator.getRegularDescriptionText(langConcept.nid())
+                .orElse(String.valueOf(langConcept.nid()));
+
+        String descrSemanticStr = "%s | %s".formatted(casSigText, langText);
+
+        // update date
+        long epochmillis = getStampViewModel() == null ? System.currentTimeMillis() : getStampViewModel().getValue(TIME_PROPERTY);
+        Instant stampInstance = Instant.ofEpochSecond(epochmillis/1000);
+        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
+        String time = DATE_TIME_FORMATTER.format(stampTime);
+
+        // create textflow to hold regular name label
+        TextFlow row1 = new TextFlow();
+        Object obj = otherName.nameText();
+        String nameLabel = String.valueOf(obj);
+        Text otherNameLabel = new Text(nameLabel);
+        otherNameLabel.getStyleClass().add("descr-concept-name");
+
+        Text semanticDescrText = new Text();
+        semanticDescrText.setText(" (%s)".formatted(descrSemanticStr));
+        semanticDescrText.getStyleClass().add("descr-semantic");
+
+        // add the other name label and description semantic label
+        row1.getStyleClass().add("descr-semantic-container");
+        // store the public id of this semantic entity version
+        // so that when clicked the event bus can pass it to the form
+        // and the form can populate the data from the publicId
+//        this.otherNamePublicId = semanticEntityVersion.publicId();
 
         row1.getChildren().addAll(otherNameLabel);
 
@@ -732,8 +964,18 @@ public class DetailsController  {
      * This will update the EL++ inferred and stated terminological axioms
      */
     private void updateAxioms() {
+
+        // do not update ui should be blank
+        if (getConceptViewModel().getPropertyValue(MODE) == CREATE) {
+            return;
+        }
+
         // clear Axioms areas
         ViewCalculator viewCalculator = viewProperties.calculator();
+        EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
+
+        // add axiom pencil
+        addAxiomButton.setVisible(entityFacade == null); // In view mode you can't add a sufficient/necc set
 
         // Create a SheetItem (AXIOM inferred semantic version)
         // TODO Should this be reused instead of instanciating a new one everytime?
@@ -841,33 +1083,46 @@ public class DetailsController  {
             stampEdit.show((Node) event.getSource());
             return;
         }
+        // Prefetch modules and paths for controller to populate radio buttons in form.
+        StampViewModel stampViewModel = new StampViewModel();
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource(EDIT_STAMP_OPTIONS_FXML));
-        try {
-            Pane editStampPane = loader.load();
-            PopOver popOver = new PopOver(editStampPane);
-            popOver.getStyleClass().add("filter-menu-popup");
-            StampEditController stampEditController = loader.getController();
+        // Populate from database
+        stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
+                .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
 
-            stampEditController.updateModel(viewProperties, getStampViewModel());
-            stampEditController.updateView();
-
-            popOver.setOnHidden(windowEvent -> {
-                // set Stamp info into Details form
-                getStampViewModel().save();
-                System.out.println("Update Stamp info " + getStampViewModel());
-                updateUIStamp(getStampViewModel());
-            });
-
-            popOver.show((Node) event.getSource());
-
-            // store and use later.
-            stampEdit = popOver;
-            this.stampEditController = stampEditController;
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        // setup mode
+        if (getConceptViewModel().getPropertyValue(CURRENT_ENTITY) != null) {
+            stampViewModel.setPropertyValue(MODE, EDIT);
+        } else {
+            stampViewModel.setPropertyValue(MODE, CREATE);
         }
+
+        // IMPORTANT: Must set inside of concept view model
+        getConceptViewModel().setPropertyValue(CONCEPT_STAMP_VIEW_MODEL, stampViewModel);
+
+        // Inject Stamp view model into form.
+        Config stampConfig = new Config(getClass().getResource(EDIT_STAMP_OPTIONS_FXML))
+                .addNamedViewModel(new NamedVm("stampViewModel", stampViewModel));
+        JFXNode<Pane, StampEditController> stampJFXNode = FXMLMvvmLoader.make(stampConfig);
+
+        Pane editStampPane = stampJFXNode.node();
+        PopOver popOver = new PopOver(editStampPane);
+        popOver.getStyleClass().add("filter-menu-popup");
+        StampEditController stampEditController = stampJFXNode.controller();
+
+        stampEditController.updateModel(viewProperties);
+
+        popOver.setOnHidden(windowEvent -> {
+            // set Stamp info into Details form
+            getStampViewModel().save();
+            updateUIStamp(getStampViewModel());
+        });
+
+        popOver.show((Node) event.getSource());
+
+        // store and use later.
+        stampEdit = popOver;
+        this.stampEditController = stampEditController;
     }
 
     private void updateUIStamp(ViewModel stampViewModel) {
@@ -878,11 +1133,15 @@ public class DetailsController  {
         String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
 
         lastUpdatedText.setText(lastUpdated);
-        int moduleNid = stampViewModel.getValue(MODULE_PROPERTY);
-        String moduleDescr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleNid);
+        ConceptEntity moduleEntity = stampViewModel.getValue(MODULE_PROPERTY);
+        if (moduleEntity == null) {
+            LOG.warn("Must select a valid module for Stamp.");
+            return;
+        }
+        String moduleDescr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleEntity.nid());
         moduleText.setText(moduleDescr);
-        int pathNid = stampViewModel.getValue(PATH_PROPERTY);
-        String pathDescr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(pathNid);
+        ConceptEntity pathEntity = stampViewModel.getValue(PATH_PROPERTY);
+        String pathDescr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
         pathText.setText(pathDescr);
         statusText.setText(stampViewModel.getValue(STATUS_PROPERTY));
     }

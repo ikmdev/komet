@@ -20,21 +20,14 @@ import dev.ikm.komet.amplify.events.OpenPropertiesPanelEvent;
 import dev.ikm.komet.amplify.events.ShowEditDescriptionPanelEvent;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
-import java.util.UUID;
-
 import dev.ikm.komet.framework.events.Subscriber;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.terms.EntityFacade;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.UUID;
 
 public class EditConceptController implements BasicController {
 

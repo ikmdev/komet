@@ -18,48 +18,23 @@ package dev.ikm.komet.amplify.events;
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.PublicId;
 
-public class AddOtherNameToConceptEvent extends Evt {
+public class AddFullyQualifiedNameEvent extends Evt {
 
-    public static final EvtType<AddOtherNameToConceptEvent> ADD_DESCRIPTION = new EvtType<>(Evt.ANY, "ADD_DESCRIPTION");
+    public static final EvtType<AddFullyQualifiedNameEvent> ADD_FQN = new EvtType<>(Evt.ANY, "ADD_FQN");
 
-    private PublicId publicId;
     private ViewProperties viewProperties;
 
-    public AddOtherNameToConceptEvent(Object source, EvtType eventType) {
-        super(source, eventType);
-    }
-
     /**
      * Constructs a prototypical Event.
      *
-     * @param source    source of the event
-     * @param eventType     type of the event
-     * @param viewProperties  payload needed to for the Edit Other Name Form
+     * @param source         the object on which the Event initially occurred
+     * @param eventType
+     * @param viewProperties
      */
-    public AddOtherNameToConceptEvent(Object source, EvtType eventType, ViewProperties viewProperties) {
+    public AddFullyQualifiedNameEvent(Object source, EvtType eventType, ViewProperties viewProperties) {
         super(source, eventType);
         this.viewProperties = viewProperties;
-    }
-
-    /**
-     * Constructs a prototypical Event.
-     *
-     * @param source    source of the event
-     * @param eventType     type of the event
-     */
-    public AddOtherNameToConceptEvent(Object source, EvtType eventType, PublicId publicId) {
-        super(source, eventType);
-        this.publicId = publicId;
-    }
-
-    public PublicId getPublicId() {
-        return publicId;
-    }
-
-    public void setPublicId(PublicId publicId) {
-        this.publicId = publicId;
     }
 
     public ViewProperties getViewProperties() {

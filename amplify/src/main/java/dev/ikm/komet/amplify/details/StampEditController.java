@@ -15,12 +15,12 @@
  */
 package dev.ikm.komet.amplify.details;
 
-import dev.ikm.komet.amplify.commons.BasicController;
+import dev.ikm.komet.amplify.commons.AbstractBasicController;
 import dev.ikm.komet.amplify.mvvm.ViewModel;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
+import dev.ikm.komet.amplify.viewmodels.DescrNameViewModel;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.NodeOrientation;
 import javafx.scene.control.RadioButton;
@@ -30,9 +30,9 @@ import javafx.scene.layout.VBox;
 
 import java.util.List;
 
-import static dev.ikm.komet.amplify.details.StampViewModel.*;
+import static dev.ikm.komet.amplify.viewmodels.StampViewModel.*;
 
-public class StampEditController implements BasicController {
+public class StampEditController extends AbstractBasicController {
 
     @FXML
     private TitledPane moduleTitledPane;
@@ -62,68 +62,79 @@ public class StampEditController implements BasicController {
     private VBox statusVBox;
 
     //////////////// private variables ///////////////////////////
-    private ViewProperties viewProperties;
+    @InjectViewModel
     private ViewModel stampViewModel;
 
     @FXML
     @Override
     public void initialize() {
         clearView();
+        // setup modules and path radio button selection
+        setupModuleSelections();
+        setupPathSelections();
+
+        // When user selects a radio button
         moduleToggleGroup.selectedToggleProperty().addListener((observableValue, toggle, t1) -> {
-            getStampViewModel().setPropertyValue(MODULE_PROPERTY, t1.getUserData());
-            String description = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid((int)t1.getUserData());
-            moduleTitledPane.setText("Module: " + description);
+            ConceptEntity module = (ConceptEntity) t1.getUserData();
+            getStampViewModel().setPropertyValue(MODULE_PROPERTY, module);
+            if (module != null) {
+                moduleTitledPane.setText("Module: " + module.description());
+            }
         });
 
         pathToggleGroup.selectedToggleProperty().addListener(((observableValue, toggle, t1) -> {
-            getStampViewModel().setPropertyValue(PATH_PROPERTY, t1.getUserData());
-            String description = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid((int)t1.getUserData());
-            pathTitledPane.setText("Path: " + description);
+            ConceptEntity path = (ConceptEntity) t1.getUserData();
+            getStampViewModel().setPropertyValue(PATH_PROPERTY, path);
+            if (path != null) {
+                pathTitledPane.setText("Path: " + path.description());
+            }
 
         }));
     }
-    private ViewModel getStampViewModel() {
-        return stampViewModel;
-    }
-    private ViewProperties getViewProperties() {
-        return viewProperties;
-    }
-    public void updateModel(ViewProperties viewProperties, ViewModel stampViewModel) {
-        this.viewProperties = viewProperties;
-        this.stampViewModel = stampViewModel;
-    }
 
-    @Override
-    public void updateView() {
-        ViewCalculator vc = viewProperties.calculator();
-
-        // populate paths
-        List<ConceptEntity> paths = stampViewModel.getObservableList(PATHS_PROPERTY);
-        paths.forEach(path -> {
-            RadioButton rb = new RadioButton(vc.getPreferredDescriptionStringOrNid(path.nid()));
-            rb.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
-            rb.setUserData(path.nid());
-            rb.setToggleGroup(pathToggleGroup);
-            IntegerProperty pathNid = getStampViewModel().getProperty(PATH_PROPERTY);
-            if (pathNid.get() == path.nid()) {
-                rb.setSelected(true);
-            }
-            pathVBox.getChildren().add(rb);
-        });
-
+    private void setupModuleSelections() {
         // populate modules
         List<ConceptEntity> mods = stampViewModel.getObservableList(MODULES_PROPERTY);
         mods.forEach(module -> {
-            RadioButton rb = new RadioButton(vc.getPreferredDescriptionStringOrNid(module.nid()));
+            RadioButton rb = new RadioButton(module.description());
             rb.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
-            rb.setUserData(module.nid());
+            rb.setUserData(module);
             rb.setToggleGroup(moduleToggleGroup);
-            IntegerProperty moduleNid = getStampViewModel().getProperty(MODULE_PROPERTY);
-            if (moduleNid.get() == module.nid()) {
+            ObjectProperty<ConceptEntity> moduleProperty = getStampViewModel().getProperty(MODULE_PROPERTY);
+            if (moduleProperty.isNotNull().get() && moduleProperty.get().nid() == module.nid()) {
                 rb.setSelected(true);
             }
             moduleVBox.getChildren().add(rb);
         });
+    }
+    private void setupPathSelections() {
+        // populate paths
+        List<ConceptEntity> paths = stampViewModel.getObservableList(PATHS_PROPERTY);
+        paths.forEach(path -> {
+            RadioButton rb = new RadioButton(path.description());
+            rb.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
+            rb.setUserData(path);
+            rb.setToggleGroup(pathToggleGroup);
+            ObjectProperty<ConceptEntity> pathProperty = getStampViewModel().getProperty(PATH_PROPERTY);
+            if (pathProperty.isNotNull().get() && pathProperty.get().nid() == path.nid()) {
+                rb.setSelected(true);
+            }
+            pathVBox.getChildren().add(rb);
+        });
+    }
+
+    private ViewModel getStampViewModel() {
+        return stampViewModel;
+    }
+
+    @Override
+    public DescrNameViewModel getViewModel() {
+        return (DescrNameViewModel) stampViewModel;
+    }
+
+    @Override
+    public void updateView() {
+
     }
 
     @Override
