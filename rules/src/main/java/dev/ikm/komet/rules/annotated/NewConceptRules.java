@@ -17,36 +17,46 @@ package dev.ikm.komet.rules.annotated;
 
 import dev.ikm.komet.framework.performance.Request;
 import dev.ikm.komet.framework.performance.Statement;
-import dev.ikm.komet.framework.rulebase.Consequence;
-import dev.ikm.komet.framework.rulebase.ConsequenceAction;
-import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.rules.actions.concept.NewConceptFromTextAction;
-import dev.ikm.tinkar.common.sets.ConcurrentHashSet;
-import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import org.evrete.api.RhsContext;
+import org.evrete.dsl.annotation.FieldDeclaration;
 import org.evrete.dsl.annotation.Rule;
 import org.evrete.dsl.annotation.RuleSet;
 import org.evrete.dsl.annotation.Where;
 
-import java.util.UUID;
+/**
+ * Rules related to concept-related statements.
+ * <p>
+ * To simplify the conditions of the rules, this ruleset employs custom field declarations through
+ * the use of the {@link FieldDeclaration} annotation.
+ * </p>
+ * <p>
+ * Custom field declarations provide an additional abstraction layer for the domain classes and allow
+ * for changing the conditions easily should the domain classes change. And, as a side benefit,
+ * we no longer need to include now unnecessary imports via the
+ * {@link org.evrete.api.Knowledge#addImport(Class)} method.
+ * </p>
+ * <p>
+ * Custom fields are better placed in a common parent class so they could be reused
+ * by multiple rulesets.
+ * </p>
+ */
+@RuleSet("New concept rules")
+public class NewConceptRules extends RulesBase {
 
-@RuleSet(value = "New concept rules")
-public class NewConceptRules {
-    @Rule(value = "New concept rule")
-    @Where(value = {"$request.topic() == Topic.NEW_CONCEPT_REQUEST",
-    "$request instanceof Request request && request.subject() instanceof String",
+    /**
+     * @see RulesBase#isNewConceptRequest(Statement)
+     * @see RulesBase#requestWithStringSubject(Statement)
+     */
+    @Rule("New concept rule")
+    @Where({
+            "$request.isNewConceptRequest",
+            "$request.requestWithStringSubject"
     })
-    public void newConceptRule(Statement $request,
-                               ConcurrentHashSet<Consequence<?>> $actionList,
-                               ViewProperties $viewProperties,
-                               EditCoordinate $editCoordinate,
-                               RhsContext ctx) {
+    public void newConceptRule(Statement $request) {
         if ($request instanceof Request request) {
             NewConceptFromTextAction generatedAction =
-                    new NewConceptFromTextAction(request, $viewProperties.calculator(), $editCoordinate);
-            $actionList.add(new ConsequenceAction(UUID.randomUUID(),
-                    Thread.currentThread().getStackTrace()[1].toString(), generatedAction));
+                    new NewConceptFromTextAction(request, calculator(), editCoordinate());
+            addGeneratedActions(generatedAction);
         }
     }
 }
