@@ -33,12 +33,11 @@ import org.evrete.KnowledgeService;
 import org.evrete.api.ActivationMode;
 import org.evrete.api.Knowledge;
 import org.evrete.api.StatelessSession;
-import org.evrete.dsl.AbstractDSLProvider;
+import org.evrete.dsl.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 import java.util.Map;
 
 public class EvreteRulesService implements RuleService {
@@ -59,8 +58,8 @@ public class EvreteRulesService implements RuleService {
             LOG.info(confEntry.toString());
         }
 
-        this.service = new KnowledgeService(this.conf, MethodHandles.lookup());
-        this.knowledge = service.newKnowledge(AbstractDSLProvider.PROVIDER_JAVA_C,
+        this.service = new KnowledgeService(this.conf);
+        this.knowledge = service.newKnowledge(Constants.PROVIDER_JAVA_CLASS,
                 ComponentFocusRules.class,
                 NewConceptRules.class,
                 AxiomFocusedRules.class,
