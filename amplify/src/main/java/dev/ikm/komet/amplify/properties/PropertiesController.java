@@ -223,6 +223,7 @@ public class PropertiesController implements Serializable {
             if (!contentBorderPane.getCenter().equals(addOtherNamePane)) {
                 contentBorderPane.setCenter(addOtherNamePane);
                 editButton.setSelected(true);
+                editButton.setText("ADD");
 
                 // Create a new View Model for this form
                 addOtherNameController.updateModel(getViewProperties(), (viewModel, controller) -> {
@@ -256,6 +257,7 @@ public class PropertiesController implements Serializable {
             if (!contentBorderPane.getCenter().equals(editOtherNamePane)) {
                 contentBorderPane.setCenter(editOtherNamePane);
                 editButton.setSelected(true);
+                editButton.setText("EDIT");
                 if (evt.getPublicId() != null) {
                     editDescriptionFormController.setConceptAndPopulateForm(evt.getPublicId());
                 }
@@ -272,6 +274,7 @@ public class PropertiesController implements Serializable {
             if (!contentBorderPane.getCenter().equals(editFqnPane)) {
                 contentBorderPane.setCenter(editFqnPane);
                 editButton.setSelected(true);
+                editButton.setText("EDIT");
                 if (evt.getPublicId() != null) {
                     editFullyQualifiedNameController.setConceptAndPopulateForm(evt.getPublicId());
                 }
@@ -286,6 +289,7 @@ public class PropertiesController implements Serializable {
             if (!contentBorderPane.getCenter().equals(addFqnPane)) {
                 contentBorderPane.setCenter(addFqnPane);
                 editButton.setSelected(true);
+                editButton.setText("ADD");
 
                 // Clear existing ViewModel in form.
                 addFullyQualifiedNameController.updateModel(evt.getViewProperties(), (viewModel, controller) -> {
