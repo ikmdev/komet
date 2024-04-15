@@ -91,6 +91,7 @@ public class AddOtherNameController extends AbstractBasicController {
     public void initialize() {
         eventBus = EvtBusFactory.getDefaultEvtBus();
         clearView();
+        submitButton.setDisable(true);
         setAddOtherNameTitleLabel("Add New Description: Other Name");
         // Initialize view models
         otherNameViewModel
