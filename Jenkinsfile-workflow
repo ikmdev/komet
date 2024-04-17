@@ -2,7 +2,7 @@
 @Library("titan-library") _
 
 
-//Helper method to get feature branch name
+// Helper method to get feature branch name
 def getBranchName(currentBranch, customBranch) {
     if (currentBranch == "main" && customBranch.trim() == '') {
         echo "Error: Please provide branch name"
@@ -71,7 +71,6 @@ pipeline {
                     pomVersion = pomModel.getVersion()
                     isSnapshot = pomVersion.contains("-SNAPSHOT")
                     releaseVersion = pomVersion.split("-")[0]
-                    //feature_name = feature_branch.replaceAll("/s", "_")
                 }
             }
         }
@@ -211,7 +210,6 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: GITLAB_CREDS_ID, passwordVariable: 'token', usernameVariable: 'user')]) {
                         echo "GitLab User ${user}"
-                        echo  MERGE_REQUEST_EXIST
                         echo "Create Merge Request For ${CUSTOM_BRANCH_NAME}"
 
                         def data = "{\"title\": \"Draft: ${CUSTOM_BRANCH_NAME}\",\"source_branch\": " +
@@ -230,7 +228,7 @@ pipeline {
                                 returnStdout: true
                         ).trim()
 
-                        echo "Done creating Merge Request"
+                        echo "Done creating Merge Request For ${CUSTOM_BRANCH_NAME}"
 
                         def jsonPostResponse = readJSON text: postResponse
                         echo "${jsonPostResponse}"
@@ -262,12 +260,11 @@ pipeline {
                     git pull -p
                     git checkout ${CUSTOM_BRANCH_NAME}
                     mvn versions:set -DnewVersion=${releaseVersion}-SNAPSHOT -DgenerateBackupPoms=false
-                    git commit -am "Branch Ready For Review - Reverted back to original snapshot version to ${releaseVersion}-SNAPSHOT"
+                    git commit -am "Branch Ready For Review - Reverted back to original snapshot version ${releaseVersion}-SNAPSHOT"
                     git push origin ${CUSTOM_BRANCH_NAME}
                     """
                     }
                 }
-
             }
         }
 
@@ -284,7 +281,7 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: GITLAB_CREDS_ID, passwordVariable: 'token', usernameVariable: 'user')]) {
                         echo "GitLab User ${user}"
-                        echo "Create Merge Request For ${CUSTOM_BRANCH_NAME}"
+                        echo "Updating Merge Request For ${CUSTOM_BRANCH_NAME}"
 
                         def mergeRequestTitle = mergeRequestDescription = "Ready For Review: ${CUSTOM_BRANCH_NAME}".toString()
                         if(params.action == 'start' && BRANCH_NAME.startsWith('feature/')){
@@ -306,7 +303,7 @@ pipeline {
                                 returnStdout: true
                         ).trim()
 
-                        echo "Done updating Merge Request to Ready state"
+                        echo "Done updating Merge Request For ${CUSTOM_BRANCH_NAME}"
 
                         def jsonPostResponse = readJSON text: postResponse
                         echo "${jsonPostResponse}"
