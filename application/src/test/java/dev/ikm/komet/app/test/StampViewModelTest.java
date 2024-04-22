@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.amplify.mvvm.test;
+package dev.ikm.komet.app.test;
 
 import dev.ikm.komet.amplify.viewmodels.StampViewModel;
 import dev.ikm.komet.amplify.mvvm.validator.ValidationMessage;

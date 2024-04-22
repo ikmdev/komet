@@ -56,6 +56,23 @@ module dev.ikm.komet.amplify {
     opens dev.ikm.komet.amplify.viewmodels to javafx.fxml;
     exports dev.ikm.komet.amplify.mvvm.loader;
     opens dev.ikm.komet.amplify.mvvm.loader to javafx.fxml;
+    exports dev.ikm.komet.amplify.stamp;
+    opens dev.ikm.komet.amplify.stamp to javafx.fxml;
+
+
+    opens dev.ikm.komet.amplify.lidr.viewmodels to javafx.fxml;
+    exports dev.ikm.komet.amplify.lidr.viewmodels;
+
+    opens dev.ikm.komet.amplify.lidr.details to javafx.fxml;
+    exports dev.ikm.komet.amplify.lidr.details;
+    opens dev.ikm.komet.amplify.lidr.properties to javafx.fxml;
+    exports dev.ikm.komet.amplify.lidr.properties;
+    opens dev.ikm.komet.amplify.lidr.device to javafx.fxml;
+    exports dev.ikm.komet.amplify.lidr.device;
+    opens dev.ikm.komet.amplify.lidr.analyte to javafx.fxml;
+    exports dev.ikm.komet.amplify.lidr.analyte;
+    opens dev.ikm.komet.amplify.lidr.results to javafx.fxml;
+    exports dev.ikm.komet.amplify.lidr.results;
 
     provides KometNodeFactory with DetailsNodeFactory, PropertiesNodeFactory;
 

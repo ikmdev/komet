@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.amplify.details;
+package dev.ikm.komet.amplify.stamp;
 
 import dev.ikm.komet.amplify.commons.AbstractBasicController;
 import dev.ikm.komet.amplify.mvvm.ViewModel;

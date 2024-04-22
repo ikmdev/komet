@@ -16,8 +16,13 @@
 package dev.ikm.komet.amplify.viewmodels;
 
 import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
+import dev.ikm.komet.framework.view.ViewProperties;
+
+import java.util.UUID;
 
 public class FormViewModel extends ValidationViewModel {
+    public static String CONCEPT_TOPIC = "conceptTopic";
+    public static String VIEW_PROPERTIES = "viewProperties";
     public static String MODE = "mode";
 
     // Create or Edit mode value
@@ -27,5 +32,8 @@ public class FormViewModel extends ValidationViewModel {
     public FormViewModel() {
         // Default Form View
         addProperty(MODE, EDIT);
+
+        addProperty(CONCEPT_TOPIC, (UUID) null);
+        addProperty(VIEW_PROPERTIES, (ViewProperties) null);
     }
 }

@@ -121,7 +121,12 @@ public class SlideOutTrayHelper {
         Timeline timeline = new Timeline(keyFrame);
         timeline.play();
     }
-
+    public static boolean isOpen(Pane trayPane) {
+        return !isClosed(trayPane);
+    }
+    public static boolean isClosed(Pane trayPane) {
+        return trayPane.maxWidthProperty().get() == 0;
+    }
     /**
      * Perform an animated slide in effect with the tray pane beside (right side) the owning pane.
      * @param trayPane A tray pane consisting of one child (the panel to display)

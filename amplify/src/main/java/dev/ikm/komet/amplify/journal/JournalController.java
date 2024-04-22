@@ -21,6 +21,14 @@ import dev.ikm.komet.amplify.details.ConceptPreference;
 import dev.ikm.komet.amplify.details.DetailsNode;
 import dev.ikm.komet.amplify.details.DetailsNodeFactory;
 import dev.ikm.komet.amplify.events.JournalTileEvent;
+import dev.ikm.komet.amplify.lidr.details.LidrDetailsController;
+import dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel;
+import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
+import dev.ikm.komet.amplify.mvvm.loader.Config;
+import dev.ikm.komet.amplify.mvvm.loader.FXMLMvvmLoader;
+import dev.ikm.komet.amplify.mvvm.loader.JFXNode;
+import dev.ikm.komet.amplify.mvvm.loader.NamedVm;
+import dev.ikm.komet.amplify.viewmodels.StampViewModel;
 import dev.ikm.komet.amplify.window.WindowSupport;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -78,8 +86,11 @@ import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.setupSlideOutTray
 import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
 import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.amplify.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.*;
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.amplify.viewmodels.FormViewModel.CREATE;
 import static dev.ikm.komet.amplify.viewmodels.FormViewModel.MODE;
+import static dev.ikm.komet.amplify.viewmodels.StampViewModel.PATHS_PROPERTY;
 import static dev.ikm.komet.preferences.ConceptWindowPreferences.*;
 import static dev.ikm.komet.preferences.ConceptWindowSettings.*;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
@@ -470,7 +481,74 @@ public class JournalController {
             kometNodePanel.setLayoutY((Double)conceptWindowSettingsMap.get(CONCEPT_YPOS));
         }
     }
+    private void makeCreateLidrWindow(ObservableViewNoOverride windowView, NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
+        // create a unique topic for each concept detail instance
+        UUID conceptTopic = UUID.randomUUID();
 
+        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
+
+        // Prefetch modules and paths for controller to populate radio buttons in form. Populate from database
+        StampViewModel stampViewModel = new StampViewModel();
+        stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
+                .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
+
+        // In create mode setup lidrViewModel for injection
+        ValidationViewModel lidrViewModel = new LidrViewModel()
+                .setPropertyValue(CONCEPT_TOPIC, conceptTopic)
+                .setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                .setPropertyValue(MODE, CREATE)
+                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel);
+        lidrViewModel.save(true); // xfer to model values.
+
+        Config lidrConfig = new Config(LidrDetailsController.class.getResource("lidr-details.fxml"))
+                .addNamedViewModel(new NamedVm("lidrViewModel", lidrViewModel));
+
+        // create lidr window
+        JFXNode<Pane, LidrDetailsController> lidrJFXNode = FXMLMvvmLoader.make(lidrConfig);
+        lidrJFXNode.controller().updateView();
+
+        //Getting the concept window pane
+        Pane kometNodePanel = lidrJFXNode.node();
+        //Appling the CSS from draggable-region to the panel (makes it movable/sizable).
+        Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
+        Node[] draggables = new Node[draggableToolbar.size()];
+
+        WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
+        //Adding the concept window panel as a child to the desktop pane.
+        desktopSurfacePane.getChildren().add(kometNodePanel);
+
+        // This will refresh the Concept details, history, timeline
+        //detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
+
+        // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
+        Optional<String> conceptFolderName;
+        if (conceptWindowSettingsMap != null){
+            conceptFolderName = (Optional<String>) conceptWindowSettingsMap.getOrDefault(CONCEPT_PREF_NAME, CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
+        } else {
+            conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
+            // create a conceptWindowSettingsMap
+            Map<ConceptWindowSettings, Object> conceptWindowSettingsObjectMap = createConceptPrefMap(conceptFolderName.get(), kometNodePanel);
+            kometNodePanel.setUserData(conceptWindowSettingsObjectMap);
+        }
+
+        // add to the list of concept windows
+        final String finalConceptFolderName = conceptFolderName.get();
+        conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, -1, kometNodePanel));
+
+        //Calls the remove method to remove and concepts that were closed by the user.
+        lidrJFXNode.controller().setOnCloseConceptWindow(windowEvent -> {
+            // TODO more clean up such as view models and listeners just in case (memory).
+            removeLidrSetting(finalConceptFolderName);
+        });
+        //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
+        if (conceptWindowSettingsMap != null) {
+            kometNodePanel.setPrefHeight((Double)conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
+            kometNodePanel.setPrefWidth((Double)conceptWindowSettingsMap.get(CONCEPT_WIDTH));
+            kometNodePanel.setLayoutX((Double)conceptWindowSettingsMap.get(CONCEPT_XPOS));
+            kometNodePanel.setLayoutY((Double)conceptWindowSettingsMap.get(CONCEPT_YPOS));
+        }
+
+    }
     /**
      * Creates a map containing the current concept panel (window's) preferences.
      * @param conceptPrefDirName - Unique name used in preferences as a directory name but also a way to remove a card.
@@ -496,6 +574,11 @@ public class JournalController {
         // locate concept by unique directory name and remove from list.
         conceptWindows.removeIf(c -> c.getDirectoryName().equals(conceptDirectoryName));
         detailsNode.close();
+        removeConceptPreferences(conceptDirectoryName);
+    }
+    private void removeLidrSetting(String conceptDirectoryName) {
+        // locate concept by unique directory name and remove from list.
+        conceptWindows.removeIf(c -> c.getDirectoryName().equals(conceptDirectoryName));
         removeConceptPreferences(conceptDirectoryName);
     }
 
@@ -792,6 +875,15 @@ public class JournalController {
 
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
         makeCreateConceptWindow(windowSettings.getView(), NID_TEXT, null);
+
+    }
+    @FXML
+    public void newCreateLidrWindow(ActionEvent actionEvent) {
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
+
+        WindowSettings windowSettings = new WindowSettings(windowPreferences);
+        makeCreateLidrWindow(windowSettings.getView(), NID_TEXT, null);
 
     }
 }

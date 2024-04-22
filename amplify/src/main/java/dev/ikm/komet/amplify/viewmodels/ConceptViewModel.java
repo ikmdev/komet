@@ -163,18 +163,19 @@ public class ConceptViewModel extends FormViewModel {
         // determine sufficient or necessary
         if (NECESSARY_SET.equals(getValue(AXIOM))) {
             ab.withNecessarySet(
-                    ab.makeConceptReference(TinkarTerm.LANGUAGE),
-                    ab.makeConceptReference(TinkarTerm.DESCRIPTION_ASSEMBLAGE),
+//                    ab.makeConceptReference(TinkarTerm.LANGUAGE),
+//                    ab.makeConceptReference(TinkarTerm.DESCRIPTION_ASSEMBLAGE),
                     ab.makeRoleGroup(
-                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.UNMODELED_ROLE_CONCEPT),
-                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.LANGUAGE)));
+                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.ANONYMOUS_CONCEPT)
+                            /*ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.LANGUAGE)*/)
+            );
         } else if (SUFFICIENT_SET.equals(getValue(AXIOM))) {
             ab.withSufficientSet(
-                    ab.makeConceptReference(TinkarTerm.LANGUAGE),
-                    ab.makeConceptReference(TinkarTerm.DESCRIPTION_ASSEMBLAGE),
+//                    ab.makeConceptReference(TinkarTerm.LANGUAGE),
+//                    ab.makeConceptReference(TinkarTerm.DESCRIPTION_ASSEMBLAGE),
                     ab.makeRoleGroup(
-                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.UNMODELED_ROLE_CONCEPT),
-                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.LANGUAGE)));
+                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.ANONYMOUS_CONCEPT)
+                            /*ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.LANGUAGE)*/));
         }
 
         // add the axiom

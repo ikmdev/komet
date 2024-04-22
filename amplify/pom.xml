@@ -26,6 +26,54 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>classification</artifactId>
         </dependency>
+
+<!--        testing -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>executor</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>${tinkar-core.groupId}</groupId>-->
+<!--            <artifactId>entity</artifactId>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
+
+<!--        <dependency>-->
+<!--            <groupId>${tinkar-core.groupId}</groupId>-->
+<!--            <artifactId>coordinate</artifactId>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>executor-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>entity-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>data-mvstore-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>data-spinedarray-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>data-ephemeral-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
 

@@ -21,6 +21,7 @@ import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
 import dev.ikm.komet.amplify.mvvm.ViewModel;
 import dev.ikm.komet.amplify.mvvm.loader.*;
 import dev.ikm.komet.amplify.om.DescrName;
+import dev.ikm.komet.amplify.stamp.StampEditController;
 import dev.ikm.komet.amplify.viewmodels.ConceptViewModel;
 import dev.ikm.komet.amplify.viewmodels.StampViewModel;
 import dev.ikm.komet.framework.Identicon;
@@ -649,9 +650,9 @@ public class DetailsController  {
         latestFqnText.setText(fullyQualifiedName);
 
         latestFqnText.setOnMouseClicked(event -> {
-//            eventBus.publish(conceptTopic,
-//                    new EditConceptFullyQualifiedNameEvent(latestFqnText,
-//                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId));
+            eventBus.publish(conceptTopic,
+                    new EditConceptFullyQualifiedNameEvent(latestFqnText,
+                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId));
         });
 
         fqnDescriptionSemanticText.setText("");
@@ -669,9 +670,9 @@ public class DetailsController  {
             List<TextFlow> rows = generateOtherNameRow(otherName);
             rows.forEach(textFlowPane -> {
                 textFlowPane.setOnMouseClicked(event -> {
-//                eventBus.publish(conceptTopic,
-//                        new EditOtherNameConceptEvent(textFlowPane,
-//                                EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId));
+                eventBus.publish(conceptTopic,
+                        new EditOtherNameConceptEvent(textFlowPane,
+                                EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId));
                 });
             });
             otherNamesVBox.getChildren().addAll(rows);
@@ -1101,7 +1102,7 @@ public class DetailsController  {
         getConceptViewModel().setPropertyValue(CONCEPT_STAMP_VIEW_MODEL, stampViewModel);
 
         // Inject Stamp view model into form.
-        Config stampConfig = new Config(getClass().getResource(EDIT_STAMP_OPTIONS_FXML))
+        Config stampConfig = new Config(StampEditController.class.getResource(EDIT_STAMP_OPTIONS_FXML))
                 .addNamedViewModel(new NamedVm("stampViewModel", stampViewModel));
         JFXNode<Pane, StampEditController> stampJFXNode = FXMLMvvmLoader.make(stampConfig);
 
