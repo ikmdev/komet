@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+
+<BorderPane styleClass="lidr-device" stylesheets="@../../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.lidr.results.ResultsController">
+   <center>
+      <VBox BorderPane.alignment="CENTER">
+         <children>
+            <Label styleClass="lidr-device-label" text="Name">
+               <VBox.margin>
+                  <Insets bottom="8.0" />
+               </VBox.margin>
+            </Label>
+            <TextField promptText="Enter Name" styleClass="lidr-text-field">
+               <VBox.margin>
+                  <Insets bottom="8.0" />
+               </VBox.margin>
+            </TextField>
+            <Label layoutX="10.0" layoutY="10.0" styleClass="lidr-device-label" text="Scale Type">
+               <VBox.margin>
+                  <Insets bottom="8.0" />
+               </VBox.margin></Label>
+            <ComboBox maxWidth="1.7976931348623157E308" promptText="Select Scale Type" styleClass="lidr-combo-box">
+               <VBox.margin>
+                  <Insets bottom="8.0" />
+               </VBox.margin>
+            </ComboBox>
+            <Label styleClass="lidr-device-label" text="Data Results Type">
+               <VBox.margin>
+                  <Insets bottom="8.0" />
+               </VBox.margin></Label>
+            <HBox alignment="CENTER_LEFT" styleClass="lidr-results-type-hbox">
+               <VBox.margin>
+                  <Insets bottom="8.0" />
+               </VBox.margin>
+               <children>
+                  <Label styleClass="lidr-results-type-label" text="Qualitative">
+                     <HBox.margin>
+                        <Insets left="8.0" />
+                     </HBox.margin>
+                  </Label>
+                  <HBox alignment="CENTER_RIGHT" styleClass="lidr-results-type-hbox-radio" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets right="8.0" />
+                     </HBox.margin>
+                     <children>
+                        <RadioButton mnemonicParsing="false" textAlignment="RIGHT" />
+                     </children>
+                  </HBox>
+               </children>
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="174.0" styleClass="lidr-results-type-hbox">
+               <children>
+                  <Label styleClass="lidr-results-type-label" text="Qualitative">
+                     <HBox.margin>
+                        <Insets left="8.0" />
+                     </HBox.margin>
+                  </Label>
+                  <HBox alignment="CENTER_RIGHT" styleClass="lidr-results-type-hbox-radio" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets right="8.0" />
+                     </HBox.margin>
+                     <children>
+                        <RadioButton mnemonicParsing="false" textAlignment="RIGHT" />
+                     </children>
+                  </HBox>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="8.0" />
+               </VBox.margin>
+            </HBox>
+            <Label styleClass="lidr-device-label" text="Allowable Result">
+               <VBox.margin>
+                  <Insets bottom="8.0" />
+               </VBox.margin>
+            </Label>
+            <HBox>
+               <children>
+                  <TextField alignment="TOP_CENTER" promptText="🔍  Search Allowable Results" styleClass="lidr-search-device-text-input" HBox.hgrow="ALWAYS">
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                  </TextField>
+                  <Button mnemonicParsing="false" styleClass="lidr-search-button">
+                     <graphic>
+                        <Region focusTraversable="true">
+                           <styleClass>
+                              <String fx:value="lidr-search-button-region" />
+                              <String fx:value="icon" />
+                           </styleClass>
+                        </Region>
+                     </graphic>
+                  </Button>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="8.0" />
+               </VBox.margin>
+            </HBox>
+            <Label styleClass="lidr-device-label" text="Example Units">
+               <VBox.margin>
+                  <Insets bottom="8.0" />
+               </VBox.margin>
+            </Label>
+            <HBox>
+               <children>
+                  <TextField alignment="TOP_CENTER" promptText="🔍  Search Example Units" styleClass="lidr-search-device-text-input" HBox.hgrow="ALWAYS">
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                  </TextField>
+                  <Button mnemonicParsing="false" styleClass="lidr-search-button">
+                     <graphic>
+                        <Region focusTraversable="true">
+                           <styleClass>
+                              <String fx:value="lidr-search-button-region" />
+                              <String fx:value="icon" />
+                           </styleClass>
+                        </Region>
+                     </graphic>
+                  </Button>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="8.0" />
+               </VBox.margin>
+            </HBox>
+            <Label styleClass="lidr-device-label" text="Reference Ranges">
+               <VBox.margin>
+                  <Insets bottom="8.0" />
+               </VBox.margin>
+            </Label>
+            <TextField promptText="Enter Reference Ranges" styleClass="lidr-text-field">
+               <VBox.margin>
+                  <Insets bottom="69.0" />
+               </VBox.margin>
+            </TextField>
+         </children>
+         <BorderPane.margin>
+            <Insets bottom="12.0" left="12.0" right="12.0" top="12.0" />
+         </BorderPane.margin>
+      </VBox>
+   </center>
+   <top>
+      <GridPane BorderPane.alignment="CENTER">
+         <columnConstraints>
+            <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" minWidth="10.0" prefWidth="392.0" />
+            <ColumnConstraints halignment="RIGHT" hgrow="NEVER" maxWidth="95.0" minWidth="10.0" prefWidth="56.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <Label alignment="TOP_CENTER" styleClass="lidr-device-title-label" text="Manual Entry: Results" textAlignment="CENTER">
+               <GridPane.margin>
+                  <Insets left="28.0" />
+               </GridPane.margin>
+            </Label>
+            <StackPane GridPane.columnIndex="1" GridPane.halignment="RIGHT">
+               <children>
+                  <Circle fill="#4a7ad2" radius="10.0" stroke="BLACK" strokeType="INSIDE" styleClass="edit-concept-about-circle-icon" />
+                  <Region maxHeight="105.0" maxWidth="20.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" styleClass="lidr-device-about-icon" StackPane.alignment="CENTER">
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                  </Region>
+               </children>
+            </StackPane>
+         </children>
+      </GridPane>
+   </top>
+   <bottom>
+      <GridPane BorderPane.alignment="CENTER">
+         <columnConstraints>
+            <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="ALWAYS" maxWidth="245.0" minWidth="10.0" prefWidth="230.0" />
+            <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="75.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <Button fx:id="clearButton" mnemonicParsing="false" onAction="#clearView" styleClass="lidr-cancel-clear-button" text="CLEAR FORM" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
+               <padding>
+                  <Insets bottom="4.0" left="16.0" right="16.0" top="4.0" />
+               </padding></Button>
+            <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#cancel" styleClass="lidr-cancel-clear-button" text="CANCEL">
+               <GridPane.margin>
+                  <Insets left="28.0" />
+               </GridPane.margin>
+               <padding>
+                  <Insets bottom="4.0" left="16.0" right="16.0" top="7.0" />
+               </padding>
+            </Button>
+            <Button fx:id="addButton" mnemonicParsing="false" onAction="#createOneResult" styleClass="lidr-add-button" text="ADD" GridPane.columnIndex="2" GridPane.halignment="RIGHT">
+               <GridPane.margin>
+                  <Insets right="12.0" />
+               </GridPane.margin>
+               <padding>
+                  <Insets bottom="4.0" left="16.0" right="16.0" top="4.0" />
+               </padding>
+            </Button>
+         </children>
+         <BorderPane.margin>
+            <Insets bottom="12.0" top="12.0" />
+         </BorderPane.margin>
+      </GridPane>
+   </bottom>
+</BorderPane>

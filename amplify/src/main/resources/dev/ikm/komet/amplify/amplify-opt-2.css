@@ -33,6 +33,7 @@
     -Grey-2: #F1F3F8;
     -Grey-1: #FBFBFC;
     -Grey-White: #FFF;
+    -Natural-Grey-Main: #5E5E5E;
 
     -Accent-color-yellow: #F3BE00;
     -Accent-color-orange: #FDAD15;
@@ -47,14 +48,24 @@
 
     -fx-font-family: "Noto Sans";
 }
+.titled-pane > *.content .scroll-pane .viewport {
+    -fx-background-color: transparent;
+    -fx-border-insets: 1;
+    -fx-background-radius: 0 0 10 10;
+}
 
+.rounded-upper-right-only {
+    /*-fx-background-color: -Grey-3;*/
+    -fx-background-radius: 0 10 0 0;
+    -fx-border-radius: 0 10 0 0;
+}
 .rounded-top {
-    -fx-background-color: -Grey-3;
+    /*-fx-background-color: -Grey-3;*/
     -fx-background-radius: 10 10 0 0;
     -fx-border-radius: 10 10 0 0;
 }
 .rounded-bottom {
-    -fx-background-color: -Grey-3;
+    /*-fx-background-color: -Grey-3;*/
     -fx-background-radius: 0 0 10 10;
     -fx-border-radius: 0 0 10 10;
 }
@@ -1771,6 +1782,324 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-size: 1em;
     -fx-text-fill: -Grey-White;
 }
+/********************************************************************************
+* Start of LIDR Record Details Window                                           *
+ ********************************************************************************/
+.lidr-rounded-tab {
+    -fx-background-color: -Natural-Grey-Main;
+    -fx-background-radius: 4 4 0 0;
+    -fx-border-radius: 4 4 0 0;
+    -fx-padding: 2 16 0 16;
+}
+.lidr-tab-icon {
+    -fx-background-color: -Grey-White;
+    -fx-shape: "M4.2 12C3.37 12 2.6626 11.7076 2.0778 11.1228C1.4926 10.5376 1.2 9.83 1.2 9V3.6C0.87 3.6 0.5876 3.4824 0.3528 3.2472C0.1176 3.0124 0 2.73 0 2.4V1.2C0 0.87 0.1176 0.5874 0.3528 0.3522C0.5876 0.1174 0.87 0 1.2 0H7.2C7.53 0 7.8126 0.1174 8.0478 0.3522C8.2826 0.5874 8.4 0.87 8.4 1.2V2.4C8.4 2.73 8.2826 3.0124 8.0478 3.2472C7.8126 3.4824 7.53 3.6 7.2 3.6V9C7.2 9.83 6.9076 10.5376 6.3228 11.1228C5.7376 11.7076 5.03 12 4.2 12ZM1.2 2.4H7.2V1.2H1.2V2.4ZM4.2 10.8C4.59 10.8 4.94 10.6876 5.25 10.4628C5.56 10.2376 5.775 9.95 5.895 9.6H4.2V8.4H6V7.8H4.2V6.6H6V6H4.2V4.8H6V3.6H2.4V9C2.4 9.5 2.575 9.925 2.925 10.275C3.275 10.625 3.7 10.8 4.2 10.8Z";
+}
+.lidr-tab-text {
+    -fx-text-alignment: center;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 11px;
+    -fx-font-style: normal;
+    -fx-fill: -Grey-White;
+    -fx-text-fill: -Grey-White;
+    -fx-font-weight: 700;
+}
+
+.lidr-detail-pane {
+    -fx-padding: 0 4 4 4;
+    -fx-border-insets: 0;
+    -fx-background-color: -Grey-3;
+    -fx-background-radius: 0 0 10 10;
+    -fx-border-radius: 0 0 10 10;
+}
+
+/* Result(s) added accordions */
+.titled-pane.lidr-result-titled-pane > .title{
+    -fx-background-color: -Natural-Grey-Main;
+}
+.titled-pane.lidr-result-titled-pane > .title > .text {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-fill: -Grey-White;
+    -fx-text-fill: -Grey-White;
+    -fx-font-weight: 400;
+}
+
+.titled-pane.lidr-result-titled-pane > .title > .arrow-button > .arrow {
+    -fx-background-color: -Grey-White;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-scale-shape: false;
+    -fx-shape: "M6.175 6.91289L5 8.08789L10 13.0879L15 8.08789L13.825 6.91289L10 10.7296L6.175 6.91289Z";
+}
+
+.result-field-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-fill: -Grey-White;
+    -fx-text-fill: -Grey-8;
+    -fx-font-weight: 700;
+}
+.result-field-value {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-fill: -Grey-Black;
+    -fx-font-weight: 500;
+}
+/********************************************************************************
+* Start of LIDR > Device UI elements                                            *
+ ********************************************************************************/
+
+.lidr-device {
+    -fx-background-color: -Grey-3;
+}
+
+.lidr-device-title-label {    
+    -fx-text-alignment: center;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 13px;
+    -fx-font-style: normal;
+    -fx-text-fill: -Grey-12;
+    -fx-font-weight: 500;
+}
+
+.lidr-device-label {    
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-text-fill: -Grey-11;
+    -fx-font-weight: 500;
+}
+
+.lidr-search-device-text-input {
+    -fx-border-radius: 4;
+    -fx-border-width: 1px;
+    -fx-border-color: -Grey-5;
+    -fx-pref-width: 396.0;    
+    -fx-pref-height: 24.0;
+    -fx-alignment: center; 
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-text-fill: -Grey-8;
+}
+
+.lidr-search-button {
+    -fx-background-color: white;
+}
+
+.lidr-search-button-region {
+    -width-size: 20;
+    -height-size: 20;
+    -fx-background-color: -Secondary-05;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M7.50004 4.16871C7.27903 4.16871 7.06707 4.25651 6.91079 4.41279C6.7545 4.56907 6.66671 4.78103 6.66671 5.00204C6.66671 5.22306 6.7545 5.43502 6.91079 5.5913C7.06707 5.74758 7.27903 5.83538 7.50004 5.83538C7.72105 5.83538 7.93302 5.74758 8.0893 5.5913C8.24558 5.43502 8.33337 5.22306 8.33337 5.00204C8.33337 4.78103 8.24558 4.56907 8.0893 4.41279C7.93302 4.25651 7.72105 4.16871 7.50004 4.16871ZM5.14171 4.16871C5.31388 3.68076 5.63316 3.25824 6.05554 2.95937C6.47792 2.6605 6.98261 2.5 7.50004 2.5C8.01747 2.5 8.52216 2.6605 8.94454 2.95937C9.36692 3.25824 9.68621 3.68076 9.85837 4.16871H15.8334C16.0544 4.16871 16.2663 4.25651 16.4226 4.41279C16.5789 4.56907 16.6667 4.78103 16.6667 5.00204C16.6667 5.22306 16.5789 5.43502 16.4226 5.5913C16.2663 5.74758 16.0544 5.83538 15.8334 5.83538H9.85837C9.68621 6.32332 9.36692 6.74585 8.94454 7.04472C8.52216 7.34359 8.01747 7.50408 7.50004 7.50408C6.98261 7.50408 6.47792 7.34359 6.05554 7.04472C5.63316 6.74585 5.31388 6.32332 5.14171 5.83538H4.16671C3.94569 5.83538 3.73373 5.74758 3.57745 5.5913C3.42117 5.43502 3.33337 5.22306 3.33337 5.00204C3.33337 4.78103 3.42117 4.56907 3.57745 4.41279C3.73373 4.25651 3.94569 4.16871 4.16671 4.16871H5.14171ZM12.5 9.16871C12.279 9.16871 12.0671 9.25651 11.9108 9.41279C11.7545 9.56907 11.6667 9.78103 11.6667 10.002C11.6667 10.2231 11.7545 10.435 11.9108 10.5913C12.0671 10.7476 12.279 10.8354 12.5 10.8354C12.7211 10.8354 12.933 10.7476 13.0893 10.5913C13.2456 10.435 13.3334 10.2231 13.3334 10.002C13.3334 9.78103 13.2456 9.56907 13.0893 9.41279C12.933 9.25651 12.7211 9.16871 12.5 9.16871ZM10.1417 9.16871C10.3139 8.68077 10.6332 8.25824 11.0555 7.95937C11.4779 7.6605 11.9826 7.5 12.5 7.5C13.0175 7.5 13.5222 7.6605 13.9445 7.95937C14.3669 8.25824 14.6862 8.68077 14.8584 9.16871H15.8334C16.0544 9.16871 16.2663 9.25651 16.4226 9.41279C16.5789 9.56907 16.6667 9.78103 16.6667 10.002C16.6667 10.2231 16.5789 10.435 16.4226 10.5913C16.2663 10.7476 16.0544 10.8354 15.8334 10.8354H14.8584C14.6862 11.3233 14.3669 11.7458 13.9445 12.0447C13.5222 12.3436 13.0175 12.5041 12.5 12.5041C11.9826 12.5041 11.4779 12.3436 11.0555 12.0447C10.6332 11.7458 10.3139 11.3233 10.1417 10.8354H4.16671C3.94569 10.8354 3.73373 10.7476 3.57745 10.5913C3.42117 10.435 3.33337 10.2231 3.33337 10.002C3.33337 9.78103 3.42117 9.56907 3.57745 9.41279C3.73373 9.25651 3.94569 9.16871 4.16671 9.16871H10.1417ZM7.50004 14.1687C7.27903 14.1687 7.06707 14.2565 6.91079 14.4128C6.7545 14.5691 6.66671 14.781 6.66671 15.002C6.66671 15.2231 6.7545 15.435 6.91079 15.5913C7.06707 15.7476 7.27903 15.8354 7.50004 15.8354C7.72105 15.8354 7.93302 15.7476 8.0893 15.5913C8.24558 15.435 8.33337 15.2231 8.33337 15.002C8.33337 14.781 8.24558 14.5691 8.0893 14.4128C7.93302 14.2565 7.72105 14.1687 7.50004 14.1687ZM5.14171 14.1687C5.31388 13.6808 5.63316 13.2582 6.05554 12.9594C6.47792 12.6605 6.98261 12.5 7.50004 12.5C8.01747 12.5 8.52216 12.6605 8.94454 12.9594C9.36692 13.2582 9.68621 13.6808 9.85837 14.1687H15.8334C16.0544 14.1687 16.2663 14.2565 16.4226 14.4128C16.5789 14.5691 16.6667 14.781 16.6667 15.002C16.6667 15.2231 16.5789 15.435 16.4226 15.5913C16.2663 15.7476 16.0544 15.8354 15.8334 15.8354H9.85837C9.68621 16.3233 9.36692 16.7458 8.94454 17.0447C8.52216 17.3436 8.01747 17.5041 7.50004 17.5041C6.98261 17.5041 6.47792 17.3436 6.05554 17.0447C5.63316 16.7458 5.31388 16.3233 5.14171 15.8354H4.16671C3.94569 15.8354 3.73373 15.7476 3.57745 15.5913C3.42117 15.435 3.33337 15.2231 3.33337 15.002C3.33337 14.781 3.42117 14.5691 3.57745 14.4128C3.73373 14.2565 3.94569 14.1687 4.16671 14.1687H5.14171Z";
+}
+
+.lidr-device-about-icon {
+    -fx-background-color: white;
+    -width-size: 30;
+    -height-size: 30;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+    -fx-scale-shape: false;
+    -fx-shape: "M9.20592 13.0307V12.6742C9.21032 11.9788 9.28735 11.4132 9.437 10.9775C9.58664 10.5417 9.80671 10.1742 10.0972 9.87493C10.3921 9.57123 10.7574 9.28074 11.1932 9.00345C11.5189 8.79218 11.7918 8.56991 12.0118 8.33664C12.2363 8.09896 12.4057 7.83928 12.5202 7.55759C12.639 7.2715 12.6984 6.9612 12.6984 6.62669C12.6984 6.15134 12.5862 5.73541 12.3617 5.37889C12.1417 5.02238 11.8424 4.74729 11.4638 4.55363C11.0853 4.35557 10.665 4.25653 10.2028 4.25653C9.7627 4.25653 9.35117 4.35336 8.96825 4.54703C8.58973 4.73629 8.27943 5.01798 8.03735 5.3921C7.79967 5.76182 7.66983 6.21956 7.64782 6.76534H6.40002C6.42203 6.0391 6.60249 5.4097 6.9414 4.87713C7.28031 4.34456 7.73365 3.93303 8.30143 3.64254C8.86921 3.34764 9.50302 3.2002 10.2028 3.2002C10.9335 3.2002 11.5761 3.35204 12.1307 3.65574C12.6852 3.95504 13.1188 4.36657 13.4313 4.89034C13.7438 5.4097 13.9 6.00609 13.9 6.67951C13.9 7.12405 13.8296 7.52898 13.6888 7.8943C13.5479 8.25961 13.3366 8.59632 13.055 8.90442C12.7777 9.21252 12.43 9.50301 12.0118 9.7759C11.6157 10.04 11.301 10.3019 11.0677 10.5616C10.8344 10.8212 10.6672 11.1183 10.566 11.4528C10.4647 11.7829 10.4097 12.1901 10.4009 12.6742V13.0307H9.20592ZM9.83973 17.0052C9.58004 17.0052 9.35557 16.9128 9.16631 16.7279C8.98145 16.5387 8.88902 16.3142 8.88902 16.0545C8.88902 15.7904 8.98145 15.566 9.16631 15.3811C9.35557 15.1962 9.58004 15.1038 9.83973 15.1038C10.0994 15.1038 10.3217 15.1962 10.5065 15.3811C10.6958 15.566 10.7904 15.7904 10.7904 16.0545C10.7904 16.2262 10.7464 16.3846 10.6584 16.5299C10.5748 16.6751 10.4603 16.7917 10.3151 16.8798C10.1742 16.9634 10.0158 17.0052 9.83973 17.0052Z"
+}
+
+.lidr-device-drag-and-drop {
+    -width-size: 274px;
+    -height-size: 32px;
+    -fx-pref-width: -width-size;
+    /*-fx-max-width: -width-size;*/
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+    -fx-background-color: -Grey-2;
+    -fx-border-color: -Grey-5;
+
+    -fx-text-fill: -Grey-8;
+    -fx-text-align: center;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-text-alignment: center;
+
+    -fx-background-image:url('images/drag-drop.png');
+    -fx-background-repeat: no-repeat;
+    -fx-background-position:left center;
+}
+
+.lidr-device-drag-and-drop-hbox {
+    -width-size: 274px;
+    -height-size: 32px;
+    -fx-pref-width: -width-size;    
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+    -fx-background-color: -Grey-2;
+    -fx-border-color: -Grey-5;
+
+}
+
+.lidr-device-drag-and-drop-label {
+    -fx-text-fill: -Grey-8;
+    -fx-text-align: center;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-text-alignment: center;
+
+}
+
+.lidr-device-drag-and-drop-icon {
+    -fx-background-color: -Grey-8;
+    -width-size: 20;
+    -height-size: 20;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M18.5 15V18H6.5V15H4.5V18C4.5 19.1 5.4 20 6.5 20H18.5C19.6 20 20.5 19.1 20.5 18V15H18.5ZM17.5 11L16.09 9.59L13.5 12.17V4H11.5V12.17L8.91 9.59L7.5 11L12.5 16L17.5 11Z"
+}
+
+
+.lidr-device-manual-entry-button {
+    -fx-border-color: -Secondary-05;
+    -fx-background-color: -Grey-1;
+    -fx-text-fill: -Secondary-05;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4 4 4 4;
+    -height-size: 32px;
+    -width-size: 122px;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+}
+
+.lidr-rounded-region {
+    -fx-background-radius: 8px;
+    -fx-background-color: -Grey-4;
+}
+
+.lidr-cancel-clear-button {
+    -fx-border-radius: 4 4 4 4;
+    -fx-border-color: -Secondary-05;
+    -fx-border-width: 1px;
+    -fx-background-color: -Grey-2;    
+    -fx-text-fill: -Secondary-05;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+    /* there is no letter-spacing in javafx... possibly work around this */
+    
+}
+
+.lidr-done-button {
+    -fx-border-radius: 4 4 4 4;
+    -fx-border-width: 1px;
+    -fx-text-fill: -Grey-2;
+    -fx-background-color: -Grey-7;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+}
+
+.lidr-separator {    
+    -fx-text-fill: -Grey-7;
+    -fx-background-color: -Grey-7;
+    -fx-border-color: -Grey-7;
+    -fx-pref-height: 1px;
+    -fx-border-style: solid;
+    -fx-border-width: 0.5px;
+}
+
+.lidr-text-field {
+    -fx-pref-height: 32px;
+    -fx-pref-width: 416px;
+    -fx-text-fill: -Grey-8;    
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+}
+
+.lidr-combo-box {
+    -fx-pref-height: 32px;
+    -fx-pref-width: 416px;
+    -fx-border-radius: 4;
+    -fx-border-width: 1px;
+    -fx-border-color: -Grey-5;
+    -fx-background-color: -Grey-1;     
+}
+
+.lidr-combo-box .list-cell {
+    -fx-text-fill: -Grey-8;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;   
+}
+
+.lidr-combo-box.combo-box-base > .arrow-button > .arrow {    
+    -fx-background-color: -Secondary-05;
+    -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
+}
+
+.lidr-add-button {
+    -fx-pref-height: 32px;
+    -fx-border-radius: 4;
+    -fx-background-color: -Secondary-05;
+    -fx-text-fill: white;    
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+}
+
+.lidr-results-type-hbox {
+    -fx-pref-height: 32px;
+    -fx-pref-width: 404px;
+    -fx-background-color: -Grey-1;
+}
+
+.lidr-results-type-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+}
+
+
+.lidr-results-type-hbox-radio > .radio-button > .radio {
+    -fx-background-color: -Secondary-05;
+    -fx-pref-height: 16px;
+    -fx-pref-width: 16px;
+    -fx-shape: "M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z";
+}
+
+.lidr-results-type-hbox-radio > .radio-button:selected > .radio > .dot{
+    -fx-background-color: -Secondary-05;
+    -fx-shape: "M12 17C14.7614 17 17 14.7614 17 12C17 9.23858 14.7614 7 12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17Z";
+}
+
+ /*********************************************************************************
+ * End of LIDR > Device UI elements                                               *
+ *********************************************************************************/
 
 /********************************************************************************
  * Start of Journal > Edit Concept UI elements                                  *
@@ -1910,6 +2239,7 @@ Timeline Year line segment (will overlay change circles)
 /********************************************************************************
  * End of Journal > Edit Concept UI elements                                    *
  ********************************************************************************/
+
 
 
 /*
@@ -2309,7 +2639,7 @@ Styling a context menu for amplify ui/ux controls
     -fx-background-color: transparent;
 }
 
-
+.add-icon-menu-graphic,
 .concept-edit-description-menu-icon {
     -fx-background-color: white;    
     -width-size: 18px;
@@ -2631,6 +2961,8 @@ Styling a context menu for amplify ui/ux controls
 
 
 /* The main scrollbar **track** CSS class  */
+.lidr-container .scroll-bar:horizontal .track,
+.lidr-container .scroll-bar:vertical .track,
 .popup-container .scroll-bar:horizontal .track,
 .popup-container .scroll-bar:vertical .track,
 .landing-container .scroll-bar:horizontal .track,
@@ -2642,6 +2974,8 @@ Styling a context menu for amplify ui/ux controls
 }
 
 /* The increment and decrement button CSS class of scrollbar */
+.lidr-container .scroll-bar:horizontal .increment-button ,
+.lidr-container .scroll-bar:horizontal .decrement-button ,
 .popup-container .scroll-bar:horizontal .increment-button ,
 .popup-container .scroll-bar:horizontal .decrement-button ,
 .landing-container .scroll-bar:horizontal .increment-button ,
@@ -2653,6 +2987,8 @@ Styling a context menu for amplify ui/ux controls
 }
 
 /* The increment and decrement button CSS class of scrollbar */
+.lidr-container .scroll-bar:vertical .increment-button,
+.lidr-container .scroll-bar:vertical .decrement-button,
 .popup-container .scroll-bar:vertical .increment-button,
 .popup-container .scroll-bar:vertical .decrement-button,
 .landing-container .scroll-bar:vertical .increment-button ,
@@ -2664,6 +3000,8 @@ Styling a context menu for amplify ui/ux controls
 
 }
 
+.lidr-container  .scroll-bar .increment-arrow,
+.lidr-container  .scroll-bar .decrement-arrow,
 .popup-container  .scroll-bar .increment-arrow,
 .popup-container  .scroll-bar .decrement-arrow,
 .landing-container  .scroll-bar .increment-arrow,
@@ -2674,6 +3012,8 @@ Styling a context menu for amplify ui/ux controls
 }
 
 /* The main scrollbar **thumb** CSS class which we drag every time (movable) */
+.lidr-container .scroll-bar:horizontal .thumb,
+.lidr-container .scroll-bar:vertical .thumb,
 .popup-container .scroll-bar:horizontal .thumb,
 .popup-container .scroll-bar:vertical .thumb,
 .landing-container .scroll-bar:horizontal .thumb,
@@ -2852,3 +3192,4 @@ Styling a context menu for amplify ui/ux controls
 .popup-container .titled-pane > *.content .scroll-pane .viewport {
     -fx-background-color: transparent;
 }
+

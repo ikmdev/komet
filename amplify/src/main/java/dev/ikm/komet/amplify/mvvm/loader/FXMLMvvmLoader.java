@@ -44,6 +44,9 @@ import java.util.*;
  */
 public class FXMLMvvmLoader {
     private static final Logger LOG = LoggerFactory.getLogger(FXMLMvvmLoader.class);
+    public static JFXNode make(URL fxml, NamedVm ...namedViewModels) {
+        return make(new Config(fxml), namedViewModels);
+    }
     public static JFXNode make(URL fxml, Class controllerClass, NamedVm ...namedViewModels) {
         return make(new Config(fxml, controllerClass), namedViewModels);
     }
