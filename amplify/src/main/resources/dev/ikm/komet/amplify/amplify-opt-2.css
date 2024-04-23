@@ -1878,7 +1878,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-radius: 4;
     -fx-border-width: 1px;
     -fx-border-color: -Grey-5;
-    -fx-pref-width: 396.0;    
+    -fx-pref-width: 340.0;    
     -fx-pref-height: 24.0;
     -fx-alignment: center; 
     -fx-font-family: "Noto Sans";
@@ -2095,6 +2095,30 @@ Timeline Year line segment (will overlay change circles)
 .lidr-results-type-hbox-radio > .radio-button:selected > .radio > .dot{
     -fx-background-color: -Secondary-05;
     -fx-shape: "M12 17C14.7614 17 17 14.7614 17 12C17 9.23858 14.7614 7 12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17Z";
+}
+
+.lidr-device-entry {
+    -fx-border-radius: 2;
+    -fx-border-width: 1px;
+    -fx-border-color: -Grey-6;
+    -fx-background-color: white;
+    -fx-pref-width: 475px;
+}
+
+.lidr-device-entry-label {
+    -fx-text-fill: -Grey-11;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-pref-width: 400px;
+}
+
+.lidr-device-entry-close-button {
+    -fx-pref-width: 16px;
+    -fx-pref-height: 16px;
+    -fx-background-color: -Secondary-05;
+    -fx-shape: "M15.8337 5.34199L14.6587 4.16699L10.0003 8.82533L5.34199 4.16699L4.16699 5.34199L8.82533 10.0003L4.16699 14.6587L5.34199 15.8337L10.0003 11.1753L14.6587 15.8337L15.8337 14.6587L11.1753 10.0003L15.8337 5.34199Z";
 }
 
  /*********************************************************************************
