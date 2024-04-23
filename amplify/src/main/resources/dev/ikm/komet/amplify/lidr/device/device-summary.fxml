@@ -15,11 +15,31 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<BorderPane styleClass="lidr-device" stylesheets="@../../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.lidr.device.DeviceController">
+<BorderPane styleClass="lidr-device" stylesheets="@../../amplify-opt-2.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.lidr.device.DeviceController">
    <center>
       <VBox BorderPane.alignment="CENTER">
          <children>
             <Label styleClass="lidr-device-label" text="Device" />
+            <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="424.0">
+               <children>
+                  <StackPane fx:id="selectedDeviceStackPane" alignment="TOP_CENTER">
+                     <children>
+                        <Region styleClass="lidr-rounded-region" />
+                        <HBox fx:id="selectedConcept">
+                           <children>
+                              <VBox fx:id="selectedDeviceContainer" />
+                           </children>
+                        </HBox>
+                     </children>
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </StackPane>
+               </children>
+            </VBox>
             <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="88.0" prefWidth="424.0">
                <children>
                   <StackPane alignment="TOP_CENTER">
