@@ -29,9 +29,18 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.slf4j.Logger;
@@ -60,6 +69,15 @@ public class ResultsController extends AbstractBasicController implements BasicC
     @FXML
     private Button addButton;
 
+    @FXML
+    private RadioButton qualitativeRadioButton;
+
+    @FXML
+    private RadioButton quantitativeRadioButton;
+
+    @FXML
+    private VBox resultsFormContainer;
+
 
     @InjectViewModel
     private ResultsViewModel resultsViewModel;
@@ -69,6 +87,28 @@ public class ResultsController extends AbstractBasicController implements BasicC
     @FXML
     public void initialize() {
         clearView();
+
+        // put the two radio buttons in a toggle group
+        ToggleGroup toggleGroup = new ToggleGroup();
+        qualitativeRadioButton.setToggleGroup(toggleGroup);
+        quantitativeRadioButton.setToggleGroup(toggleGroup);
+
+        qualitativeRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            LOG.info("old value = " + oldValue + ", new value = " + newValue);
+            if (newValue) {
+                removeAmendedForm();
+                showQualitativeForm();
+            }
+        });
+
+        quantitativeRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            LOG.info("old value = " + oldValue + ", new value = " + newValue);
+            if (newValue) {
+                removeAmendedForm();
+                showQuantitativeForm();
+            }
+        });
+
 
         // register listeners
         InvalidationListener formValid = (obs) -> {
@@ -81,6 +121,97 @@ public class ResultsController extends AbstractBasicController implements BasicC
         };
 
     }
+
+    private void removeAmendedForm() {
+        resultsFormContainer.getChildren().clear();
+    }
+
+    /**
+     * when the user clicks quantitative,
+     * they will then see:
+     *      Example Units
+     *      Reference Ranges
+     */
+    private void showQuantitativeForm() {
+        // create an allowable result form entry
+
+        // create the label
+        Label exampleUnitsLabel = new Label("Example Units");
+        exampleUnitsLabel.getStyleClass().add("lidr-device-label");
+
+        VBox.setMargin(exampleUnitsLabel, new Insets(0,0, 8,0));
+
+        // create the container for the search box and the search button
+        HBox exampleUnitsSearchContainer = new HBox();
+        TextField exampleUnitsTextField = new TextField();
+        // below is a magnifying glass icon inside the prompt text
+        exampleUnitsTextField.setPromptText("\uD83D\uDD0D  Search Example Units");
+        exampleUnitsTextField.getStyleClass().add("lidr-search-device-text-input");
+        HBox.setHgrow(exampleUnitsTextField, Priority.ALWAYS);
+        Button exampleUnitsSearchButton = new Button();
+        exampleUnitsSearchButton.getStyleClass().add("lidr-search-button");
+        Region buttonRegion = new Region();
+        buttonRegion.getStyleClass().addAll("lidr-search-button-region", "icon");
+        exampleUnitsSearchButton.setGraphic(buttonRegion);
+
+        // put the text field and the button in the HBox
+        exampleUnitsSearchContainer.getChildren().addAll(exampleUnitsTextField, exampleUnitsSearchButton);
+        VBox.setMargin(exampleUnitsSearchContainer, new Insets(0,0, 8,0));
+
+        // add the reference ranges
+
+        // create the reference ranges label
+        Label referenceRangesLabel = new Label("Reference Ranges");
+        referenceRangesLabel.getStyleClass().add("lidr-device-label");
+        VBox.setMargin(referenceRangesLabel, new Insets(0,0, 8,0));
+
+        // create the reference ranges combobox
+        ComboBox referenceRangesComboBox = new ComboBox<>();
+        referenceRangesComboBox.getStyleClass().add("lidr-combo-box");
+        referenceRangesComboBox.setMaxWidth(Double.MAX_VALUE);
+        referenceRangesComboBox.setPromptText("Enter Reference Ranges");
+
+        // put the label and the hbox in the VBox container
+        resultsFormContainer.getChildren().addAll(exampleUnitsLabel, exampleUnitsSearchContainer,
+                // add the reference range label and combobox
+                referenceRangesLabel, referenceRangesComboBox);
+    }
+
+    /**
+     * when the user clicks qualitative,
+     * they will then see:
+     *      Allowable Result
+     */
+    private void showQualitativeForm() {
+        // create an allowable result form entry
+
+        // create the label
+        Label allowableResultLabel = new Label("Allowable Result");
+        allowableResultLabel.getStyleClass().add("lidr-device-label");
+
+        VBox.setMargin(allowableResultLabel, new Insets(0,0, 8,0));
+
+        // create the container for the search box and the search button
+        HBox allowableSearchContainer = new HBox();
+        TextField allowableResultTextField = new TextField();
+        // below is a magnifying glass icon inside the prompt text
+        allowableResultTextField.setPromptText("\uD83D\uDD0D  Search Allowable Results");
+        allowableResultTextField.getStyleClass().add("lidr-search-device-text-input");
+        HBox.setHgrow(allowableResultTextField, Priority.ALWAYS);
+        Button allowableResultSearchButton = new Button();
+        allowableResultSearchButton.getStyleClass().add("lidr-search-button");
+        Region buttonRegion = new Region();
+        buttonRegion.getStyleClass().addAll("lidr-search-button-region", "icon");
+        allowableResultSearchButton.setGraphic(buttonRegion);
+
+        // put the text field and the button in the HBox
+        allowableSearchContainer.getChildren().addAll(allowableResultTextField, allowableResultSearchButton);
+
+        // put the label and the hbox in the VBox container
+        resultsFormContainer.getChildren().addAll(allowableResultLabel, allowableSearchContainer);
+
+    }
+
     public ViewProperties getViewProperties() {
         return resultsViewModel.getPropertyValue(VIEW_PROPERTIES);
     }

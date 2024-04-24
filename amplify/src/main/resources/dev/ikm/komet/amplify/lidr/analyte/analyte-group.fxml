@@ -16,11 +16,31 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<BorderPane styleClass="lidr-device" stylesheets="@../../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.lidr.analyte.AnalyteGroupController">
+<BorderPane styleClass="lidr-device" stylesheets="@../../amplify-opt-2.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.lidr.analyte.AnalyteGroupController">
    <center>
       <VBox BorderPane.alignment="CENTER">
          <children>
             <Label styleClass="lidr-device-label" text="Analyte" />
+            <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="424.0">
+               <children>
+                  <StackPane fx:id="selectedAnalyteStackPane" alignment="TOP_CENTER">
+                     <children>
+                        <Region styleClass="lidr-rounded-region" />
+                        <HBox>
+                           <children>
+                              <VBox fx:id="selectedAnalyteContainer" />
+                           </children>
+                        </HBox>
+                     </children>
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </StackPane>
+               </children>
+            </VBox>
             <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="88.0" prefWidth="424.0">
                <children>
                   <StackPane alignment="TOP_CENTER">
@@ -110,6 +130,26 @@
                </padding>
             </Separator>
             <Label layoutX="10.0" layoutY="10.0" styleClass="lidr-device-label" text="Allowable Results" />
+            <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="424.0">
+               <children>
+                  <StackPane fx:id="selectedResultStackPane" alignment="TOP_CENTER">
+                     <children>
+                        <Region styleClass="lidr-rounded-region" />
+                        <HBox>
+                           <children>
+                              <VBox fx:id="selectedResultContainer" />
+                           </children>
+                        </HBox>
+                     </children>
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </StackPane>
+               </children>
+            </VBox>
             <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="88.0" prefWidth="424.0">
                <children>
                   <StackPane alignment="TOP_CENTER">
@@ -193,6 +233,26 @@
                </padding>
             </Separator>
             <Label styleClass="lidr-device-label" text="Specimen(s)" />
+            <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="424.0">
+               <children>
+                  <StackPane fx:id="selectedSpecimenStackPane" alignment="TOP_CENTER">
+                     <children>
+                        <Region styleClass="lidr-rounded-region" />
+                        <HBox>
+                           <children>
+                              <VBox fx:id="selectedSpecimenContainer" />
+                           </children>
+                        </HBox>
+                     </children>
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </StackPane>
+               </children>
+            </VBox>
             <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="88.0" prefWidth="424.0">
                <children>
                   <StackPane alignment="TOP_CENTER">
