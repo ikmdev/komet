@@ -39,11 +39,13 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -103,6 +105,9 @@ public class AnalyteGroupController implements BasicController {
     @FXML
     private StackPane selectedSpecimenStackPane;
 
+    @FXML
+    private VBox analyteGroupVbox;
+
     @InjectViewModel
     private AnalyteViewModel analyteViewModel;
 
@@ -119,41 +124,34 @@ public class AnalyteGroupController implements BasicController {
 
         // setup drag n drop
         setupDragNDrop(analyteDragNDropArea, (publicId) -> {
-            // query public Id to get entity.
-            // Entity e = ...;
-            // analyteViewModel.setPropertyValue(ANALYTE_ENTITY, e);
+            // check to see if an analyte was already dragged into the analyte section before saving
+            // to the view model
             if (analyteViewModel.getPropertyValue(ANALYTE_ENTITY) == null) {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
                 analyteViewModel.setPropertyValue(ANALYTE_ENTITY, entity);
                 analyteViewModel.save();
                 // update the UI with the new analyte
-                addToForm(entity, selectedAnalyteContainer, selectedAnalyteStackPane, ANALYTE_ENTITY);
+                addToForm(entity, selectedAnalyteContainer, selectedAnalyteStackPane, ANALYTE_ENTITY, false);
             }
         });
         setupDragNDrop(resultsDragNDropArea, (publicId) -> {
-            // check to see if a result was already dragged into allowable results before saving
-            // to the view model
-            if (analyteViewModel.getPropertyValue(RESULTS_ENTITY) == null) {
-                // query public Id to get entity.
-                Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-                analyteViewModel.setPropertyValue(RESULTS_ENTITY, entity);
-                analyteViewModel.save();
-                // update the UI with the new allowable result
-                addToForm(entity, selectedResultContainer, selectedResultStackPane, RESULTS_ENTITY);
-            }
+            // query public Id to get entity.
+            Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+            // there can be one to many results
+            analyteViewModel.getObservableList(RESULTS_ENTITY).add(entity);
+            analyteViewModel.save();
+            // update the UI with the new allowable result
+            addToForm(entity, selectedResultContainer, selectedResultStackPane, RESULTS_ENTITY, true);
         });
         setupDragNDrop(specimensDragNDropArea, (publicId) -> {
-            // check to see if a result was already dragged into allowable results before saving
-            // to the view model
-            if (analyteViewModel.getPropertyValue(SPECIMEN_ENTITY) == null) {
-                // query public Id to get entity.
-                Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-                analyteViewModel.setPropertyValue(SPECIMEN_ENTITY, entity);
-                analyteViewModel.save();
-                // update the UI with the new specimen
-                addToForm(entity, selectedSpecimenContainer, selectedSpecimenStackPane, SPECIMEN_ENTITY);
-            }
+            // query public Id to get entity.
+            Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+            // there can be one to many specimens
+            analyteViewModel.getObservableList(SPECIMEN_ENTITY).add(entity);
+            analyteViewModel.save();
+            // update the UI with the new specimen
+            addToForm(entity, selectedSpecimenContainer, selectedSpecimenStackPane, SPECIMEN_ENTITY, true);
         });
 
         // When user created a manual result entry to be added to analyte view model.
@@ -165,7 +163,7 @@ public class AnalyteGroupController implements BasicController {
         EvtBusFactory.getDefaultEvtBus().subscribe(getConceptTopic(), AddResultEvent.class, manualAddResultSubscriber);
     }
 
-    private void addToForm(Entity entity, VBox selectedVBoxContainer, StackPane selectedStackPane, String propertyName) {
+    private void addToForm(Entity entity, VBox selectedVBoxContainer, StackPane selectedStackPane, String propertyName, boolean collectionBased) {
         // container for the selected (aka recently dragged and dropped) item
         HBox selectedHbox = new HBox();
 
@@ -201,18 +199,117 @@ public class AnalyteGroupController implements BasicController {
         closeButton.setGraphic(buttonRegion);
         closeButton.setAlignment(Pos.CENTER_RIGHT);
         selectedHbox.getChildren().add(closeButton);
-        closeButton.setOnMouseClicked(event -> removeSelection(selectedHbox, propertyName, selectedVBoxContainer, selectedStackPane));
+        if (collectionBased) {
+            // when you can have more than once selected concept dragged to a selection
+            closeButton.setOnMouseClicked(event -> removeSelectionCollectionBased(entity, selectedHbox, propertyName, selectedVBoxContainer, selectedStackPane));
+        } else {
+            // when you can have only one selected concept dragged to a selection
+            closeButton.setOnMouseClicked(event -> removeAnalyte(selectedHbox, propertyName, selectedVBoxContainer, selectedStackPane));
+            // remove the search and drag and drop when they have just one selection
+            removeAnalyteForm();
+        }
 
         selectedVBoxContainer.getChildren().add(selectedHbox);
 
         VBox.setMargin(selectedStackPane, new Insets(0,0, 8,0));
     }
 
-    private void removeSelection(HBox selectedConcept, String propertyName, VBox containerVbox, StackPane containerStackPane) {
+    private void removeAnalyte(HBox selectedConcept, String propertyName, VBox containerVbox, StackPane containerStackPane) {
         analyteViewModel.setPropertyValue(propertyName, null);
         containerVbox.getChildren().remove(selectedConcept);
         HBox.setMargin(containerVbox, new Insets(0));
         VBox.setMargin(containerStackPane, new Insets(0));
+
+        // put the search and drag and drop back when they remove the one selection
+        analyteGroupVbox.getChildren().add(2, generateAnalyteSearchControls());
+    }
+
+    private Node generateAnalyteSearchControls() {
+        // containers
+        VBox analyteVbox = new VBox();
+        VBox.setMargin(analyteVbox, new Insets(0, 0, 16, 0));
+        StackPane analyteStackPane = new StackPane();
+        Region analyteRegion = new Region();
+        analyteRegion.getStyleClass().add("lidr-rounded-region");
+        VBox searchAndDragDropVbox = new VBox();
+        StackPane.setMargin(searchAndDragDropVbox, new Insets(8));
+
+        // search with button
+        HBox searchHbox = new HBox();
+        TextField searchTextField = new TextField();
+        HBox.setHgrow(searchTextField, Priority.ALWAYS);
+        // magnifying glass character
+        searchTextField.setPromptText("\uD83D\uDD0D  Search Analyte");
+        searchTextField.getStyleClass().add("lidr-search-device-text-input");
+        Button searchButton = new Button();
+        searchButton.getStyleClass().add("lidr-search-button");
+        Region buttonRegion = new Region();
+        buttonRegion.getStyleClass().addAll("lidr-search-button-region", "icon");
+        searchButton.setGraphic(buttonRegion);
+
+        searchHbox.getChildren().addAll(searchTextField, searchButton);
+
+        // drag and drop
+        HBox dragDropOuterHbox = new HBox();
+        VBox.setMargin(dragDropOuterHbox, new Insets(8, 0, 0, 0));
+        HBox dragDropInnerHbox = new HBox();
+        dragDropInnerHbox.setId("analyteDragNDropArea");
+        HBox.setHgrow(dragDropInnerHbox, Priority.ALWAYS);
+        dragDropInnerHbox.setAlignment(Pos.CENTER);
+        dragDropInnerHbox.getStyleClass().add("lidr-device-drag-and-drop-hbox");
+        dragDropInnerHbox.setPrefWidth(200);
+        dragDropInnerHbox.setPrefHeight(100);
+        StackPane dragIconStack = new StackPane();
+        Region dragIcon = new Region();
+        dragIcon.getStyleClass().add("lidr-device-drag-and-drop-icon");
+        Label dragLabel = new Label("Drag and drop concept(s) here");
+        HBox.setMargin(dragLabel, new Insets(0, 0, 0, 10));
+
+        dragIconStack.getChildren().add(dragIcon);
+        dragIconStack.setAlignment(Pos.CENTER);
+        dragDropInnerHbox.getChildren().addAll(dragIconStack, dragLabel);
+
+        Button manualEntryButton = new Button("MANUAL ENTRY");
+        manualEntryButton.getStyleClass().add("lidr-device-manual-entry-button");
+        HBox.setMargin(manualEntryButton, new Insets(0, 0, 0, 16));
+
+        dragDropOuterHbox.getChildren().addAll(dragDropInnerHbox, manualEntryButton);
+
+        // add search and drag and drop
+        searchAndDragDropVbox.getChildren().addAll(searchHbox, dragDropOuterHbox);
+
+        // roll up outer containers
+        analyteStackPane.getChildren().addAll(analyteRegion, searchAndDragDropVbox);
+        analyteVbox.getChildren().add(analyteStackPane);
+
+        // re-attach the drag and drop capability
+        setupDragNDrop(dragDropInnerHbox, (publicId) -> {
+            // check to see if an analyte was already dragged into the analyte section before saving
+            // to the view model
+            if (analyteViewModel.getPropertyValue(ANALYTE_ENTITY) == null) {
+                // query public Id to get entity.
+                Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+                analyteViewModel.setPropertyValue(ANALYTE_ENTITY, entity);
+                analyteViewModel.save();
+                // update the UI with the new analyte
+                addToForm(entity, selectedAnalyteContainer, selectedAnalyteStackPane, ANALYTE_ENTITY, false);
+            }
+        });
+
+        return analyteVbox;
+    }
+
+    private void removeAnalyteForm() {
+        analyteGroupVbox.getChildren().remove(2,3);
+    }
+
+    private void removeSelectionCollectionBased(Entity entity, HBox selectedConcept, String propertyName, VBox containerVbox, StackPane containerStackPane) {
+        analyteViewModel.getObservableList(propertyName).remove(entity);
+        containerVbox.getChildren().remove(selectedConcept);
+        if (analyteViewModel.getObservableList(propertyName).isEmpty()) {
+            HBox.setMargin(containerVbox, new Insets(0));
+            VBox.setMargin(containerStackPane, new Insets(0));
+        }
     }
 
     private ViewProperties getViewProperties() {

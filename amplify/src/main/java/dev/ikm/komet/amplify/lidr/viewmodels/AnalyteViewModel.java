@@ -36,6 +36,8 @@ import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.UUID;
 
 public class AnalyteViewModel extends FormViewModel {
@@ -55,8 +57,8 @@ public class AnalyteViewModel extends FormViewModel {
         addProperty(CONCEPT_TOPIC, (UUID) null)
                 .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
                 .addProperty(ANALYTE_ENTITY, (EntityFacade) null) // this is an analyte as a concept
-                .addProperty(RESULTS_ENTITY, (EntityFacade) null) // this represents the results as a concept
-                .addProperty(SPECIMEN_ENTITY, (EntityFacade) null); // this is the specimen as a concept
+                .addProperty(RESULTS_ENTITY, (Collection) new ArrayList<>()) // this represents the results as a concept
+                .addProperty(SPECIMEN_ENTITY, (Collection) new ArrayList<>()); // this is the specimen as a concept
 
         //TODO add validations
 
