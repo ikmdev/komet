@@ -24,6 +24,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>progress</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>classification</artifactId>
         </dependency>
 
@@ -34,17 +39,6 @@
             <scope>test</scope>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>${tinkar-core.groupId}</groupId>-->
-<!--            <artifactId>entity</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-
-<!--        <dependency>-->
-<!--            <groupId>${tinkar-core.groupId}</groupId>-->
-<!--            <artifactId>coordinate</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>executor-provider</artifactId>

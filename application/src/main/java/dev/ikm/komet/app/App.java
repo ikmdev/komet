@@ -21,10 +21,13 @@ import dev.ikm.komet.amplify.commons.CssHelper;
 import dev.ikm.komet.amplify.commons.ResourceHelper;
 import dev.ikm.komet.amplify.events.CreateJournalEvent;
 import dev.ikm.komet.amplify.events.JournalTileEvent;
+import dev.ikm.komet.amplify.export.ArtifactExportController2;
 import dev.ikm.komet.amplify.journal.JournalController;
 import dev.ikm.komet.amplify.journal.JournalViewFactory;
 import dev.ikm.komet.amplify.landingpage.LandingPageController;
 import dev.ikm.komet.amplify.landingpage.LandingPageViewFactory;
+import dev.ikm.komet.amplify.mvvm.loader.FXMLMvvmLoader;
+import dev.ikm.komet.amplify.mvvm.loader.JFXNode;
 import dev.ikm.komet.details.DetailsNodeFactory;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
@@ -72,8 +75,12 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -269,6 +276,17 @@ public class App extends Application {
         amplifyEventBus.subscribe(JOURNAL_TOPIC, CreateJournalEvent.class, detailsSubscriber);
     }
 
+    private MenuItem createExportChangesetMenuItem() {
+        MenuItem exportMenuItem = new MenuItem("_Export Changesets...");
+        exportMenuItem.setOnAction(event -> {
+            Stage stage = new Stage();
+            JFXNode<Pane, ArtifactExportController2> jfxNode = FXMLMvvmLoader.make(
+                    ArtifactExportController2.class.getResource("artifact-export2.fxml"));
+            stage.setScene(new Scene(jfxNode.node()));
+            stage.show();
+        });
+        return exportMenuItem;
+    }
     @Override
     public void start(Stage stage) {
 
@@ -292,9 +310,15 @@ public class App extends Application {
 
             // File Menu
             Menu fileMenu = new Menu("File");
-            MenuItem newItem = new MenuItem("New...");
-            fileMenu.getItems().addAll(newItem, new SeparatorMenuItem(), tk.createCloseWindowMenuItem(),
-                    new SeparatorMenuItem(), new MenuItem("TBD"));
+            // Todo: import dataset
+            MenuItem newItem = new MenuItem("Import Dataset");
+
+            // Exporting data
+            Menu exportMenu = new Menu("Export Dataset");
+            MenuItem fhirMenuItem = new MenuItem("FHIR");
+            exportMenu.getItems().addAll(createExportChangesetMenuItem(), fhirMenuItem);
+
+            fileMenu.getItems().addAll(newItem, exportMenu, new SeparatorMenuItem(), tk.createCloseWindowMenuItem());
 
             // Edit
             Menu editMenu = new Menu("Edit");
@@ -776,6 +800,16 @@ public class App extends Application {
         MenuItem about = new MenuItem("About");
         about.setOnAction(actionEvent -> showWindowsAboutScreen());
         fileMenu.getItems().add(about);
+
+        // Todo: import dataset
+        MenuItem importMenuItem = new MenuItem("Import Dataset");
+
+        // Exporting data
+        Menu exportMenu = new Menu("Export Dataset");
+        MenuItem fhirMenuItem = new MenuItem("FHIR");
+        exportMenu.getItems().addAll(createExportChangesetMenuItem(), fhirMenuItem);
+
+        fileMenu.getItems().addAll(importMenuItem, exportMenu);
 
         MenuItem menuItemQuit = new MenuItem("Quit");
         KeyCombination quitKeyCombo = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
