@@ -123,7 +123,7 @@ public class FXMLMvvmLoader {
             return new JFXNode(node, controller, namedVms);
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error unable to load %s.".formatted(config.fxml().toString()),e);
         }
 
     }

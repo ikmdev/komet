@@ -277,6 +277,8 @@ public class JournalController {
 
         loadSearchPanel(searchActivityStreamKey, windowView, searchFactory);
         loadReasonerPanel(ActivityStreams.REASONER, windowView, reasonerFactory);
+
+
         isSlideOutOpen = false;
     }
 
@@ -636,6 +638,72 @@ public class JournalController {
 
         navigatorNodePanel = (Pane) navigatorNode.getNode();
         setupSlideOutTrayPane(navigatorNodePanel, navSlideoutTrayPane);
+    }
+    private  void loadActivityPanel() {
+        // Create reasoner panel and publish on the search activity stream
+//        ProgressNodeFactory progressNodeFactory = new ProgressNodeFactory();
+//        KometNode kometNode = progressNodeFactory.create(windowView,
+//                null, null, AlertStreams.ROOT_ALERT_STREAM_KEY);
+//        ProgressNode progressNode = (ProgressNode) nodeFactory.create(windowView,
+//                activityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
+//
+//        reasonerNodePanel = (Pane) reasonerNode.getNode();
+//        ReasonerResultsController controller = reasonerNode.getResultsController();
+//
+//        // display a concept window
+//        AtomicInteger staggerWindowsX = new AtomicInteger(0);
+//        AtomicInteger staggerWindowsY = new AtomicInteger(0);
+//        Consumer<StringWithOptionalConceptFacade> displayInDetailsView = (treeItem) -> {
+//            treeItem.getOptionalConceptSpecification().ifPresent((conceptFacade -> {
+//                // each detail window will publish on their own activity stream.
+//                String uniqueDetailsTopic = "details-%s".formatted(conceptFacade.nid());
+//                UUID uuid = UuidT5Generator.get(uniqueDetailsTopic);
+//                final PublicIdStringKey<ActivityStream> detailsActivityStreamKey = new PublicIdStringKey(PublicIds.of(uuid.toString()), uniqueDetailsTopic);
+//                ActivityStream detailActivityStream = ActivityStreams.create(detailsActivityStreamKey);
+//                activityStreams.add(detailsActivityStreamKey);
+//                KometNodeFactory detailsNodeFactory = new DetailsNodeFactory();
+//                DetailsNode detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
+//                        detailsActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY, true);
+//                detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
+//                Pane kometNodePanel = (Pane) detailsNode.getNode();
+//
+//                // Make the window compact sized.
+//                detailsNode.getDetailsViewController().compactSizeWindow();
+//
+//                Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
+//                Node[] draggables = new Node[draggableToolbar.size()];
+//                double x = kometNodePanel.getPrefWidth() * (staggerWindowsX.getAndAdd(1) % 3) + 5; // stagger windows
+//                double y = kometNodePanel.getPrefHeight() * (staggerWindowsY.get()) + 5; // stagger windows
+//
+//                kometNodePanel.setLayoutX(x);
+//                kometNodePanel.setLayoutY(y);
+//
+//                WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
+//                if (staggerWindowsX.get() % 3 == 0) {
+//                    staggerWindowsY.incrementAndGet();
+//                }
+//                desktopSurfacePane.getChildren().add(kometNodePanel);
+//                // This will refresh the Concept details, history, timeline
+//                detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
+//            }));
+//        };
+//
+//        // create a function to handle a context menu of one option to compare concepts (launching windows)
+//        Function<TreeView<StringWithOptionalConceptFacade>, ContextMenu> contextMenuConsumer = (treeView) -> {
+//            ContextMenu contextMenu = new ContextMenu();
+//            MenuItem openNewWindows = new MenuItem("Compare Concepts");
+//            openNewWindows.setOnAction(actionEvent -> {
+//                treeView.getSelectionModel().getSelectedItems()
+//                        .forEach(treeItem -> displayInDetailsView.accept(treeItem.getValue()));
+//                staggerWindowsX.set(0);
+//                staggerWindowsY.set(0);
+//            });
+//            contextMenu.getItems().add(openNewWindows);
+//            return contextMenu;
+//        };
+//        controller.setOnContextMenuForEquiv(contextMenuConsumer);
+//        setupSlideOutTrayPane(reasonerNodePanel, reasonerSlideoutTrayPane);
+
     }
     private  void loadReasonerPanel(PublicIdStringKey<ActivityStream> activityStreamKey,
                                     ObservableViewNoOverride windowView,
