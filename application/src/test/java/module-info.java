@@ -56,6 +56,7 @@ module dev.ikm.komet.application.test {
     requires org.kordamp.ikonli.javafx;
     requires jdk.jdwp.agent;
     requires transitive dev.ikm.komet.rules;
+    requires org.junit.jupiter.api;
 
     uses DataServiceController;
     uses DefaultDescriptionForNidService;
