@@ -18,7 +18,7 @@
 
 <BorderPane styleClass="lidr-device" stylesheets="@../../amplify-opt-2.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.lidr.analyte.AnalyteGroupController">
    <center>
-      <VBox BorderPane.alignment="CENTER">
+      <VBox fx:id="analyteGroupVbox" BorderPane.alignment="CENTER">
          <children>
             <Label styleClass="lidr-device-label" text="Analyte" />
             <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="424.0">
