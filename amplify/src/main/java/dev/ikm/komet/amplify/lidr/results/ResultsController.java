@@ -22,14 +22,22 @@ import dev.ikm.komet.amplify.lidr.events.ShowPanelEvent;
 import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
 import dev.ikm.komet.amplify.viewmodels.FormViewModel;
 import dev.ikm.komet.amplify.lidr.viewmodels.ResultsViewModel;
+import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
+import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -37,9 +45,15 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.TreeCell;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
@@ -50,15 +64,20 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static dev.ikm.komet.amplify.lidr.events.AddResultEvent.ADD_RESULT_TO_ANALYTE_GROUP;
 import static dev.ikm.komet.amplify.lidr.events.ShowPanelEvent.SHOW_ADD_ANALYTE_GROUP;
+import static dev.ikm.komet.amplify.lidr.viewmodels.ResultsViewModel.ALLOWABLE_RESULT;
 import static dev.ikm.komet.amplify.viewmodels.FormViewModel.CONCEPT_TOPIC;
 import static dev.ikm.komet.amplify.viewmodels.FormViewModel.VIEW_PROPERTIES;
 
 public class ResultsController extends AbstractBasicController implements BasicController {
 
     private static final Logger LOG = LoggerFactory.getLogger(ResultsController.class);
+
+    @FXML
+    private TextField resultName;
 
     @FXML
     private Button cancelButton;
@@ -78,11 +97,18 @@ public class ResultsController extends AbstractBasicController implements BasicC
     @FXML
     private VBox resultsFormContainer;
 
+    @FXML
+    private VBox selectedAllowableResultContainer;
+
+    @FXML
+    private StackPane selectedAllowableResultStackPane;
+
 
     @InjectViewModel
     private ResultsViewModel resultsViewModel;
 
     EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
+
     @Override
     @FXML
     public void initialize() {
@@ -94,15 +120,33 @@ public class ResultsController extends AbstractBasicController implements BasicC
         quantitativeRadioButton.setToggleGroup(toggleGroup);
 
         qualitativeRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            LOG.info("old value = " + oldValue + ", new value = " + newValue);
+            // if newValue is true then the qualitativeRadioButton was pressed
             if (newValue) {
                 removeAmendedForm();
-                showQualitativeForm();
+                if (resultsViewModel.getPropertyValue(ALLOWABLE_RESULT) == null) {
+                    // when we already have a selected allowable result then display it
+                    showQualitativeForm(true);
+                } else {
+                    // otherwise show the drag and drop form
+                    VBox droppedAreaVbox = new VBox();
+                    StackPane dropStackPane = new StackPane();
+                    Region dropRegion = new Region();
+                    dropRegion.getStyleClass().add("lidr-rounded-region");
+                    HBox dropHbox = new HBox();
+                    VBox innerDropVbox = new VBox();
+                    dropHbox.getChildren().add(innerDropVbox);
+                    dropStackPane.getChildren().addAll(dropRegion, dropHbox);
+                    droppedAreaVbox.getChildren().add(dropStackPane);
+                    resultsFormContainer.getChildren().add(droppedAreaVbox);
+
+                    showSelectedAllowableResult(resultsViewModel.getPropertyValue(ALLOWABLE_RESULT),
+                            innerDropVbox, dropStackPane, ALLOWABLE_RESULT);
+                }
             }
         });
 
         quantitativeRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            LOG.info("old value = " + oldValue + ", new value = " + newValue);
+            // if newValue is true then the quantitativeRadioButton was pressed
             if (newValue) {
                 removeAmendedForm();
                 showQuantitativeForm();
@@ -182,17 +226,17 @@ public class ResultsController extends AbstractBasicController implements BasicC
      * they will then see:
      *      Allowable Result
      */
-    private void showQualitativeForm() {
-        // create an allowable result form entry
+    private void showQualitativeForm(boolean includeLabel) {
 
-        // create the label
-        Label allowableResultLabel = new Label("Allowable Result");
-        allowableResultLabel.getStyleClass().add("lidr-device-label");
-
-        VBox.setMargin(allowableResultLabel, new Insets(0,0, 8,0));
+        // create a stack pane fo the drop shadow region, the search input and the drag
+        // and drop box below the search
+        StackPane stackPane = new StackPane();
+        Region dropShadow = new Region();
+        dropShadow.getStyleClass().add("lidr-rounded-region");
+        VBox containerVbox = new VBox();
 
         // create the container for the search box and the search button
-        HBox allowableSearchContainer = new HBox();
+        HBox allowableSearchHbox = new HBox();
         TextField allowableResultTextField = new TextField();
         // below is a magnifying glass icon inside the prompt text
         allowableResultTextField.setPromptText("\uD83D\uDD0D  Search Allowable Results");
@@ -205,12 +249,197 @@ public class ResultsController extends AbstractBasicController implements BasicC
         allowableResultSearchButton.setGraphic(buttonRegion);
 
         // put the text field and the button in the HBox
-        allowableSearchContainer.getChildren().addAll(allowableResultTextField, allowableResultSearchButton);
+        allowableSearchHbox.getChildren().addAll(allowableResultTextField, allowableResultSearchButton);
+        StackPane.setMargin(allowableSearchHbox, new Insets(8));
 
-        // put the label and the hbox in the VBox container
-        resultsFormContainer.getChildren().addAll(allowableResultLabel, allowableSearchContainer);
+        // HBox to contain the drag and drop
+        HBox dragDropHboxOuter = new HBox();
+        HBox dragDropHboxInner = new HBox();
+        dragDropHboxInner.getStyleClass().add("lidr-device-drag-and-drop-hbox");
+        StackPane stackPaneDragDropIcon = new StackPane();
+        Region dragDropRegion = new Region();
+        dragDropRegion.getStyleClass().add("lidr-device-drag-and-drop-icon");
+        dragDropRegion.setPrefHeight(20);
+        dragDropRegion.setPrefWidth(20);
+        Label dragDropLabel = new Label("Drag and drop concept(s) here");
+        dragDropLabel.getStyleClass().add("lidr-device-drag-and-drop-label");
+        HBox.setMargin(dragDropLabel, new Insets(0, 0, 0, 10));
 
+        stackPaneDragDropIcon.getChildren().add(dragDropRegion);
+        dragDropHboxInner.getChildren().addAll(stackPaneDragDropIcon, dragDropLabel);
+        dragDropHboxInner.setAlignment(Pos.CENTER);
+        HBox.setHgrow(dragDropHboxInner, Priority.ALWAYS);
+
+        dragDropHboxOuter.getChildren().add(dragDropHboxInner);
+        VBox.setMargin(allowableSearchHbox, new Insets(0, 0, 8, 0));
+        containerVbox.getChildren().addAll(allowableSearchHbox, dragDropHboxOuter);
+        StackPane.setMargin(containerVbox, new Insets(8));
+
+        // add the drop shadow region and the search hbox to the stack pane
+        stackPane.getChildren().addAll(dropShadow, containerVbox);
+
+        // create the vbox area where the draggable concept will be dropped into
+        VBox droppedAreaVbox = new VBox();
+        StackPane dropStackPane = new StackPane();
+        Region dropRegion = new Region();
+        dropRegion.getStyleClass().add("lidr-rounded-region");
+        HBox dropHbox = new HBox();
+        VBox innerDropVbox = new VBox();
+        dropHbox.getChildren().add(innerDropVbox);
+        dropStackPane.getChildren().addAll(dropRegion, dropHbox);
+        droppedAreaVbox.getChildren().add(dropStackPane);
+        // create an allowable result form entry
+
+
+        if (includeLabel) {
+            // create the label
+            Label allowableResultLabel = new Label("Allowable Result");
+            allowableResultLabel.getStyleClass().add("lidr-device-label");
+            VBox.setMargin(allowableResultLabel, new Insets(0, 0, 8, 0));
+            resultsFormContainer.getChildren().addAll(allowableResultLabel, droppedAreaVbox, stackPane);
+        } else {
+            resultsFormContainer.getChildren().addAll(droppedAreaVbox, stackPane);
+        }
+
+        setupDragNDrop(dragDropHboxInner, (publicId) -> {
+            if (resultsViewModel.getPropertyValue(ALLOWABLE_RESULT) == null) {
+                // query public Id to get entity.
+                Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+                // there can be one to many results
+                resultsViewModel.setPropertyValue(ALLOWABLE_RESULT, entity);
+                resultsViewModel.save();
+                // update the UI with the new allowable result
+
+                addConceptAndRemoveForm(entity, innerDropVbox, dropStackPane, ALLOWABLE_RESULT);
+            }
+        });
     }
+
+    private void setupDragNDrop(Node node, Consumer<PublicId> consumer) {
+
+        // when gesture is dragged over node
+        node.setOnDragOver(event -> {
+            /* data is dragged over the target */
+            /* accept it only if it is not dragged from the same node
+             * and if it has a string data */
+            if (event.getGestureSource() != node &&
+                    event.getDragboard().hasString()) {
+                /* allow for both copying and moving, whatever user chooses */
+                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+            }
+
+            event.consume();
+        });
+
+        // visual feedback to user
+        node.setOnDragEntered(event -> {
+            /* the drag-and-drop gesture entered the target */
+            /* show to the user that it is an actual gesture target */
+            if (event.getGestureSource() != node &&
+                    event.getDragboard().hasString()) {
+                node.setOpacity(.90);
+            }
+
+            event.consume();
+        });
+
+        // restore change
+        node.setOnDragExited(event -> {
+            /* mouse moved away, remove the graphical cues */
+            node.setOpacity(1);
+            event.consume();
+        });
+
+        node.setOnDragDropped(event -> {
+            /* data dropped */
+            /* if there is a string data on dragboard, read it and use it */
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+            if (db.hasString()) {
+                ConceptFacade conceptFacade = (ConceptFacade) ((TreeCell) event.getGestureSource()).getItem();
+                PublicId publicId = conceptFacade.publicId();
+                consumer.accept(publicId);
+                success = true;
+            }
+            /* let the source know whether the string was successfully
+             * transferred and used */
+            event.setDropCompleted(success);
+
+            event.consume();
+        });
+    }
+
+    public void showSelectedAllowableResult(Entity entity, VBox selectedVBoxContainer, StackPane selectedStackPane, String propertyName) {
+        // container for the selected (aka recently dragged and dropped) item
+        HBox selectedHbox = new HBox();
+
+        // create identicon for the concept and add it to the left hbox
+        Image identicon = Identicon.generateIdenticonImage(entity.publicId());
+        ImageView imageView = new ImageView();
+        imageView.setFitWidth(20);
+        imageView.setFitHeight(20);
+        imageView.setImage(identicon);
+        HBox imageViewWrapper = new HBox();
+        imageViewWrapper.setAlignment(Pos.CENTER);
+        HBox.setMargin(imageView, new Insets(0, 8, 0 ,8));
+        imageViewWrapper.getChildren().add(imageView);
+        selectedHbox.getChildren().add(imageViewWrapper);
+
+        // create the label
+        String conceptName = entity.description();
+        Label conceptNameLabel = new Label(conceptName);
+        conceptNameLabel.getStyleClass().add("lidr-device-entry-label");
+        selectedHbox.getChildren().add(conceptNameLabel);
+
+        // format the device HBox
+        selectedHbox.getStyleClass().add("lidr-device-entry");
+        selectedHbox.setAlignment(Pos.CENTER_LEFT);
+        selectedHbox.setPadding(new Insets(4, 0, 4, 0));
+        HBox.setMargin(selectedVBoxContainer, new Insets(8));
+
+        // add the close 'X' button to the right side of the device container
+        Button closeButton = new Button();
+        closeButton.getStyleClass().add("lidr-search-button");
+        Region buttonRegion = new Region();
+        buttonRegion.getStyleClass().add("lidr-device-entry-close-button");
+        closeButton.setGraphic(buttonRegion);
+        closeButton.setAlignment(Pos.CENTER_RIGHT);
+        selectedHbox.getChildren().add(closeButton);
+
+
+        closeButton.setOnMouseClicked(event -> removeAllowableResult(selectedHbox, propertyName, selectedVBoxContainer, selectedStackPane, entity));
+        // remove the search and drag and drop when they have just one selection
+
+        selectedVBoxContainer.getChildren().add(selectedHbox);
+
+        VBox.setMargin(selectedStackPane, new Insets(0,0, 8,0));
+    }
+
+    private void addConceptAndRemoveForm(Entity entity, VBox selectedVBoxContainer, StackPane selectedStackPane, String propertyName) {
+        showSelectedAllowableResult(entity, selectedVBoxContainer, selectedStackPane, propertyName);
+        removeAllowableResultForm();
+    }
+
+    private void removeAllowableResult(HBox selectedConcept, String propertyName, VBox containerVbox, StackPane containerStackPane, Entity entity) {
+        resultsViewModel.setPropertyValue(propertyName, null);
+        containerVbox.getChildren().remove(selectedConcept);
+        HBox.setMargin(containerVbox, new Insets(0));
+        VBox.setMargin(containerStackPane, new Insets(0));
+
+        // put the search and drag and drop back when they remove the one selection
+        showQualitativeForm(false);
+    }
+
+    private void removeAllowableResultForm() {
+        int lastIndex = resultsFormContainer.getChildren().size();
+        resultsFormContainer.getChildren().remove((lastIndex-1), lastIndex);
+        // we are orphaning an extra, empty VBox on the 2nd+ drag and drop.
+        // This cleans it up before the collection grows unbounded.
+        if (lastIndex == 4) {
+            resultsFormContainer.getChildren().remove(1, 2);
+        }
+    }
+
 
     public ViewProperties getViewProperties() {
         return resultsViewModel.getPropertyValue(VIEW_PROPERTIES);
@@ -267,8 +496,7 @@ public class ResultsController extends AbstractBasicController implements BasicC
 
     private boolean isFormPopulated() {
         return true;
-     //          (dataResultsTypeComboBox.getSelectionModel().getSelectedItem() != null)
-
+        //TODO call viewModel's validate()
     }
 
     @FXML
