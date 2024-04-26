@@ -25,7 +25,7 @@
                   <Insets bottom="8.0" />
                </VBox.margin>
             </Label>
-            <TextField promptText="Enter Name" styleClass="lidr-text-field">
+            <TextField fx:id="resultName" promptText="Enter Name" styleClass="lidr-text-field">
                <VBox.margin>
                   <Insets bottom="8.0" />
                </VBox.margin>
