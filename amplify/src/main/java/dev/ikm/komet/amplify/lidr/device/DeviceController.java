@@ -23,9 +23,16 @@ import dev.ikm.komet.amplify.lidr.viewmodels.DeviceViewModel;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -46,6 +53,7 @@ import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static dev.ikm.komet.amplify.lidr.events.AddDeviceEvent.ADD_DEVICE;
@@ -74,6 +82,8 @@ public class DeviceController implements BasicController {
 
     @FXML
     private StackPane selectedDeviceStackPane;
+
+    private HBox selectedConcept;
 
 
     @InjectViewModel
@@ -144,9 +154,14 @@ public class DeviceController implements BasicController {
             boolean success = false;
             if (db.hasString()) {
                 String publicId = db.getString(); // TODO find entity by public id.
-
+                ConceptFacade conceptFacade = null;
+                if (event.getGestureSource() instanceof SearchResultCell) {
+                    SearchPanelController.NidTextRecord nidTextRecord = (SearchPanelController.NidTextRecord) ((SearchResultCell) event.getGestureSource()).getItem();
+                    conceptFacade = ConceptFacade.make(nidTextRecord.nid());
+                } else if (event.getGestureSource() instanceof MultiParentGraphCell) {
+                    conceptFacade = ((MultiParentGraphCell) event.getGestureSource()).getItem();
+                }
                 // add the component to the device view model
-                ConceptFacade conceptFacade = ((MultiParentGraphCell) event.getGestureSource()).getItem();
                 if (conceptFacade != null && deviceViewModel.getPropertyValue(DEVICE_ENTITY) == null) {
                     addDeviceToForm(conceptFacade);
                 }
@@ -171,7 +186,7 @@ public class DeviceController implements BasicController {
         deviceViewModel.setPropertyValue(DEVICE_ENTITY, conceptFacade);
 
         // update the UI to show the device that the user just dragged (or searched or manually entered)
-        HBox selectedConcept = new HBox();
+        selectedConcept = new HBox();
 
         // create identicon for the concept and add it to the left hbox
         Image identicon = Identicon.generateIdenticonImage(conceptFacade.publicId());
@@ -205,18 +220,20 @@ public class DeviceController implements BasicController {
         closeButton.setGraphic(buttonRegion);
         closeButton.setAlignment(Pos.CENTER_RIGHT);
         selectedConcept.getChildren().add(closeButton);
-        closeButton.setOnMouseClicked(event -> removeDevice(selectedConcept));
+        closeButton.setOnMouseClicked(event -> removeDevice());
 
         selectedDeviceContainer.getChildren().add(selectedConcept);
 
         VBox.setMargin(selectedDeviceStackPane, new Insets(0,0, 8,0));
+        doneButton.setDisable(false);
     }
 
-    private void removeDevice(HBox selectedConcept) {
+    private void removeDevice() {
         deviceViewModel.setPropertyValue(DEVICE_ENTITY, null);
         selectedDeviceContainer.getChildren().remove(selectedConcept);
         HBox.setMargin(selectedDeviceContainer, new Insets(0));
         VBox.setMargin(selectedDeviceStackPane, new Insets(0));
+        doneButton.setDisable(true);
     }
 
     @FXML
@@ -232,10 +249,11 @@ public class DeviceController implements BasicController {
         // TODO put a real entity or public id as the payload.
         evtBus.publish(getConceptTopic(), new AddDeviceEvent(event.getSource(), ADD_DEVICE, null));
     }
+
     @FXML
     public void cancel(ActionEvent event) {
         // close properties bump out via event bus
-        deviceViewModel.reset(); // clear view model?
+        clearView();
         EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
         evtBus.publish(getConceptTopic(), new LidrPropertyPanelEvent(event.getSource(), CLOSE_PANEL));
     }
@@ -249,7 +267,7 @@ public class DeviceController implements BasicController {
     @Override
     @FXML
     public void clearView() {
-
+        removeDevice();
     }
 
     @Override
