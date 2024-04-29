@@ -2012,11 +2012,15 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-radius: 4 4 4 4;
     -fx-border-width: 1px;
     -fx-text-fill: -Grey-2;
-    -fx-background-color: -Grey-7;
+    -fx-background-color: -Secondary-05;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
     -fx-font-weight: 600;
+}
+
+.lidr-done-button:disabled {
+    -fx-background-color: -Grey-7;
 }
 
 .lidr-separator {    

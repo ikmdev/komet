@@ -26,6 +26,8 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -212,6 +214,9 @@ public class AnalyteGroupController implements BasicController {
         selectedVBoxContainer.getChildren().add(selectedHbox);
 
         VBox.setMargin(selectedStackPane, new Insets(0,0, 8,0));
+
+        // when the form is populated, then enable the done button
+        doneButton.setDisable(!isFormPopulated());
     }
 
     private void removeAnalyte(HBox selectedConcept, String propertyName, VBox containerVbox, StackPane containerStackPane) {
@@ -222,6 +227,9 @@ public class AnalyteGroupController implements BasicController {
 
         // put the search and drag and drop back when they remove the one selection
         analyteGroupVbox.getChildren().add(2, generateAnalyteSearchControls());
+
+        // when the form is populated, then enable the done button
+        doneButton.setDisable(!isFormPopulated());
     }
 
     private Node generateAnalyteSearchControls() {
@@ -310,6 +318,8 @@ public class AnalyteGroupController implements BasicController {
             HBox.setMargin(containerVbox, new Insets(0));
             VBox.setMargin(containerStackPane, new Insets(0));
         }
+        // when the form is populated, then enable the done button
+        doneButton.setDisable(!isFormPopulated());
     }
 
     private ViewProperties getViewProperties() {
@@ -359,7 +369,13 @@ public class AnalyteGroupController implements BasicController {
             Dragboard db = event.getDragboard();
             boolean success = false;
             if (db.hasString()) {
-                ConceptFacade conceptFacade = ((MultiParentGraphCell) event.getGestureSource()).getItem();
+                ConceptFacade conceptFacade = null;
+                if (event.getGestureSource() instanceof SearchResultCell) {
+                    SearchPanelController.NidTextRecord nidTextRecord = (SearchPanelController.NidTextRecord) ((SearchResultCell) event.getGestureSource()).getItem();
+                    conceptFacade = ConceptFacade.make(nidTextRecord.nid());
+                } else if (event.getGestureSource() instanceof MultiParentGraphCell) {
+                    conceptFacade = ((MultiParentGraphCell) event.getGestureSource()).getItem();
+                }
                 PublicId publicId = conceptFacade.publicId();
                 consumer.accept(publicId);
                 success = true;
@@ -401,7 +417,7 @@ public class AnalyteGroupController implements BasicController {
     @FXML
     public void cancel(ActionEvent event) {
         // close properties bump out via event bus
-        analyteViewModel.reset();
+        clearView();
         EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
         evtBus.publish(getConceptTopic(), new LidrPropertyPanelEvent(event.getSource(), CLOSE_PANEL));
     }
@@ -411,15 +427,40 @@ public class AnalyteGroupController implements BasicController {
 
     }
 
-    @FXML
-    public void clearForm(ActionEvent event) {
-        clearView();
-        // TODO update UI with new prop values
+    private boolean isFormPopulated() {
+        return selectedAnalyteContainer.getChildren().size() > 0
+                && selectedResultContainer.getChildren().size() > 0
+                && selectedSpecimenContainer.getChildren().size() > 0;
     }
+
     @Override
     public void clearView() {
-        // reset view model
-        analyteViewModel.reset();
+
+        // remove analyte and add the search controls back
+        if (selectedAnalyteContainer.getChildren().size() > 0) {
+            analyteViewModel.setPropertyValue(ANALYTE_ENTITY, null);
+            selectedAnalyteContainer.getChildren().clear();
+            HBox.setMargin(selectedAnalyteContainer, new Insets(0));
+            VBox.setMargin(selectedAnalyteStackPane, new Insets(0));
+            analyteGroupVbox.getChildren().add(2, generateAnalyteSearchControls());
+        }
+
+        // remove all selected allowable results
+        if (selectedResultContainer.getChildren().size() > 0) {
+            analyteViewModel.getObservableList(RESULTS_ENTITY).clear();
+            selectedResultContainer.getChildren().clear();
+            HBox.setMargin(selectedResultContainer, new Insets(0));
+            VBox.setMargin(selectedResultStackPane, new Insets(0));
+        }
+
+        // remove all selected specimens
+        if (selectedSpecimenContainer.getChildren().size() > 0) {
+            analyteViewModel.getObservableList(SPECIMEN_ENTITY).clear();
+            selectedSpecimenContainer.getChildren().clear();
+            HBox.setMargin(selectedSpecimenContainer, new Insets(0));
+            VBox.setMargin(selectedSpecimenStackPane, new Insets(0));
+        }
+        doneButton.setDisable(true);
     }
 
     @Override

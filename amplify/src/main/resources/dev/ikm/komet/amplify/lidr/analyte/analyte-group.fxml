@@ -129,7 +129,7 @@
                   <Insets bottom="-2.0" top="-2.0" />
                </padding>
             </Separator>
-            <Label layoutX="10.0" layoutY="10.0" styleClass="lidr-device-label" text="Allowable Results" />
+            <Label layoutX="10.0" layoutY="10.0" styleClass="lidr-device-label" text="Results" />
             <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="424.0">
                <children>
                   <StackPane fx:id="selectedResultStackPane" alignment="TOP_CENTER">
