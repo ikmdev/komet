@@ -17,7 +17,7 @@
 
 <BorderPane styleClass="lidr-device" stylesheets="@../../amplify-opt-2.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.lidr.device.DeviceController">
    <center>
-      <VBox BorderPane.alignment="CENTER">
+      <VBox fx:id="deviceSectionVBox" BorderPane.alignment="CENTER">
          <children>
             <Label styleClass="lidr-device-label" text="Device" />
             <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="424.0">
