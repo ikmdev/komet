@@ -41,12 +41,14 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -55,9 +57,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static dev.ikm.komet.amplify.lidr.events.AddDeviceEvent.ADD_DEVICE;
 import static dev.ikm.komet.amplify.lidr.events.LidrPropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.amplify.lidr.viewmodels.AnalyteViewModel.ANALYTE_ENTITY;
 import static dev.ikm.komet.amplify.lidr.viewmodels.DeviceViewModel.DEVICE_ENTITY;
 import static dev.ikm.komet.amplify.viewmodels.FormViewModel.CONCEPT_TOPIC;
 import static dev.ikm.komet.amplify.viewmodels.FormViewModel.VIEW_PROPERTIES;
@@ -85,9 +89,13 @@ public class DeviceController implements BasicController {
 
     private HBox selectedConcept;
 
+    @FXML
+    private VBox deviceSectionVBox;
+
 
     @InjectViewModel
     private DeviceViewModel deviceViewModel;
+
     EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
 
     @Override
@@ -101,7 +109,18 @@ public class DeviceController implements BasicController {
         clearView();
 
         // setup drag n drop
-        setupDragNDrop(deviceDragAndDropArea);
+        setupDragNDrop(deviceDragAndDropArea, (publicId) -> {
+            // check to see if an analyte was already dragged into the analyte section before saving
+            // to the view model
+            if (deviceViewModel.getPropertyValue(DEVICE_ENTITY) == null) {
+                // query public Id to get entity.
+                Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+                deviceViewModel.setPropertyValue(DEVICE_ENTITY, entity);
+                deviceViewModel.validate();
+                deviceViewModel.save();
+                addDeviceToForm(entity, selectedDeviceContainer, selectedDeviceStackPane);
+            }
+        });
     }
 
     public ViewProperties getViewProperties() {
@@ -112,7 +131,7 @@ public class DeviceController implements BasicController {
         return deviceViewModel.getPropertyValue(CONCEPT_TOPIC);
     }
 
-    private void setupDragNDrop(Node node) {
+    private void setupDragNDrop(Node node, Consumer<PublicId> consumer) {
 
         // when gesture is dragged over node
         node.setOnDragOver(event -> {
@@ -153,7 +172,6 @@ public class DeviceController implements BasicController {
             Dragboard db = event.getDragboard();
             boolean success = false;
             if (db.hasString()) {
-                String publicId = db.getString(); // TODO find entity by public id.
                 ConceptFacade conceptFacade = null;
                 if (event.getGestureSource() instanceof SearchResultCell) {
                     SearchPanelController.NidTextRecord nidTextRecord = (SearchPanelController.NidTextRecord) ((SearchResultCell) event.getGestureSource()).getItem();
@@ -161,10 +179,8 @@ public class DeviceController implements BasicController {
                 } else if (event.getGestureSource() instanceof MultiParentGraphCell) {
                     conceptFacade = ((MultiParentGraphCell) event.getGestureSource()).getItem();
                 }
-                // add the component to the device view model
-                if (conceptFacade != null && deviceViewModel.getPropertyValue(DEVICE_ENTITY) == null) {
-                    addDeviceToForm(conceptFacade);
-                }
+                PublicId publicId = conceptFacade.publicId();
+                consumer.accept(publicId);
                 success = true;
             }
             /* let the source know whether the string was successfully
@@ -179,17 +195,17 @@ public class DeviceController implements BasicController {
      * create a JavaFX node for the device concept and add it to
      * above the search form
      *
-     * @param conceptFacade
+     * @param entity
+     * @param selectedVBoxContainer
+     * @param selectedStackPane
      */
-    private void addDeviceToForm(ConceptFacade conceptFacade) {
-        // add the device to the view model
-        deviceViewModel.setPropertyValue(DEVICE_ENTITY, conceptFacade);
+    private void addDeviceToForm(Entity entity, VBox selectedVBoxContainer, StackPane selectedStackPane) {
 
         // update the UI to show the device that the user just dragged (or searched or manually entered)
         selectedConcept = new HBox();
 
         // create identicon for the concept and add it to the left hbox
-        Image identicon = Identicon.generateIdenticonImage(conceptFacade.publicId());
+        Image identicon = Identicon.generateIdenticonImage(entity.publicId());
         ImageView imageView = new ImageView();
         imageView.setFitWidth(20);
         imageView.setFitHeight(20);
@@ -201,7 +217,7 @@ public class DeviceController implements BasicController {
         selectedConcept.getChildren().add(imageViewWrapper);
 
         // create the label
-        String conceptName = conceptFacade.description();
+        String conceptName = entity.description();
         Label conceptNameLabel = new Label(conceptName);
         conceptNameLabel.getStyleClass().add("lidr-device-entry-label");
         selectedConcept.getChildren().add(conceptNameLabel);
@@ -226,14 +242,98 @@ public class DeviceController implements BasicController {
 
         VBox.setMargin(selectedDeviceStackPane, new Insets(0,0, 8,0));
         doneButton.setDisable(false);
+
+        removeDeviceForm();
+    }
+
+    private void removeDeviceForm() {
+        deviceSectionVBox.getChildren().remove(2,3);
     }
 
     private void removeDevice() {
-        deviceViewModel.setPropertyValue(DEVICE_ENTITY, null);
-        selectedDeviceContainer.getChildren().remove(selectedConcept);
-        HBox.setMargin(selectedDeviceContainer, new Insets(0));
-        VBox.setMargin(selectedDeviceStackPane, new Insets(0));
-        doneButton.setDisable(true);
+        if (selectedDeviceContainer.getChildren().size() > 0) {
+            deviceViewModel.setPropertyValue(DEVICE_ENTITY, null);
+            selectedDeviceContainer.getChildren().remove(selectedConcept);
+            HBox.setMargin(selectedDeviceContainer, new Insets(0));
+            VBox.setMargin(selectedDeviceStackPane, new Insets(0));
+            doneButton.setDisable(true);
+            deviceSectionVBox.getChildren().add(2, generateDeviceSearchControls());
+        }
+    }
+
+    private Node generateDeviceSearchControls() {
+        // containers
+        VBox deviceVbox = new VBox();
+        VBox.setMargin(deviceVbox, new Insets(0, 0, 16, 0));
+        StackPane deviceStackPane = new StackPane();
+        Region deviceRegion = new Region();
+        deviceRegion.getStyleClass().add("lidr-rounded-region");
+        VBox searchAndDragDropVbox = new VBox();
+        StackPane.setMargin(searchAndDragDropVbox, new Insets(8));
+
+        // search with button
+        HBox searchHbox = new HBox();
+        TextField searchTextField = new TextField();
+        HBox.setHgrow(searchTextField, Priority.ALWAYS);
+        // magnifying glass character
+        searchTextField.setPromptText("\uD83D\uDD0D  Search Devices");
+        searchTextField.getStyleClass().add("lidr-search-device-text-input");
+        Button searchButton = new Button();
+        searchButton.getStyleClass().add("lidr-search-button");
+        Region buttonRegion = new Region();
+        buttonRegion.getStyleClass().addAll("lidr-search-button-region", "icon");
+        searchButton.setGraphic(buttonRegion);
+
+        searchHbox.getChildren().addAll(searchTextField, searchButton);
+
+        // drag and drop
+        HBox dragDropOuterHbox = new HBox();
+        VBox.setMargin(dragDropOuterHbox, new Insets(8, 0, 0, 0));
+        HBox dragDropInnerHbox = new HBox();
+        dragDropInnerHbox.setId("deviceDragAndDropArea");
+        HBox.setHgrow(dragDropInnerHbox, Priority.ALWAYS);
+        dragDropInnerHbox.setAlignment(Pos.CENTER);
+        dragDropInnerHbox.getStyleClass().add("lidr-device-drag-and-drop-hbox");
+        dragDropInnerHbox.setPrefWidth(200);
+        dragDropInnerHbox.setPrefHeight(100);
+        StackPane dragIconStack = new StackPane();
+        Region dragIcon = new Region();
+        dragIcon.getStyleClass().add("lidr-device-drag-and-drop-icon");
+        Label dragLabel = new Label("Drag and drop concept(s) here");
+        HBox.setMargin(dragLabel, new Insets(0, 0, 0, 10));
+
+        dragIconStack.getChildren().add(dragIcon);
+        dragIconStack.setAlignment(Pos.CENTER);
+        dragDropInnerHbox.getChildren().addAll(dragIconStack, dragLabel);
+
+        Button manualEntryButton = new Button("MANUAL ENTRY");
+        manualEntryButton.getStyleClass().add("lidr-device-manual-entry-button");
+        HBox.setMargin(manualEntryButton, new Insets(0, 0, 0, 16));
+
+        dragDropOuterHbox.getChildren().addAll(dragDropInnerHbox, manualEntryButton);
+
+        // add search and drag and drop
+        searchAndDragDropVbox.getChildren().addAll(searchHbox, dragDropOuterHbox);
+
+        // roll up outer containers
+        deviceStackPane.getChildren().addAll(deviceRegion, searchAndDragDropVbox);
+        deviceVbox.getChildren().add(deviceStackPane);
+
+        // re-attach the drag and drop capability
+        setupDragNDrop(dragDropInnerHbox, (publicId) -> {
+            // check to see if an analyte was already dragged into the analyte section before saving
+            // to the view model
+            if (deviceViewModel.getPropertyValue(DEVICE_ENTITY) == null) {
+                // query public Id to get entity.
+                Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+                deviceViewModel.setPropertyValue(DEVICE_ENTITY, entity);
+                deviceViewModel.save();
+                // update the UI with the new analyte
+                addDeviceToForm(entity, selectedDeviceContainer, selectedDeviceStackPane);
+            }
+        });
+
+        return deviceVbox;
     }
 
     @FXML
