@@ -133,7 +133,14 @@ public class ClauseView {
         switch (vertexLogicalOperator) {
             case CONCEPT -> setupForConcept();
             case FEATURE -> setupForFeature();
-            case ROLE -> setupForRoleSome();
+            case ROLE -> {
+                ConceptFacade roleOperator = axiomVertex.propertyFast(TinkarTerm.ROLE_OPERATOR);
+                if (roleOperator.nid() == TinkarTerm.EXISTENTIAL_RESTRICTION.nid()) {
+                    setupForRoleSome();
+                } else if (roleOperator.nid() == TinkarTerm.UNIVERSAL_RESTRICTION.nid()) {
+                    setupForRoleAll();
+                }
+            }
             case NECESSARY_SET -> setupForNecessarySet();
             case SUFFICIENT_SET -> setupForSufficientSet();
             case DEFINITION_ROOT -> setupForDefinitionRoot();
@@ -301,7 +308,7 @@ public class ClauseView {
 
     private void setupForRoleSome() {
         int column = 0;
-        ConceptFacade roleType = ROLE.getPropertyFast(axiomVertex);
+        ConceptFacade roleType = axiomVertex.propertyFast(TinkarTerm.ROLE_TYPE);
         if (roleType.nid() == TinkarTerm.ROLE_GROUP.nid()) {
             expanded.set(true);
             rootBorderPane.getStyleClass().add(StyleClasses.DEF_ROLE_GROUP.toString());
@@ -378,6 +385,11 @@ public class ClauseView {
         if (this.axiomView.premiseType == STATED) {
             this.axiomView.addToGridPaneNoGrow(rootGridPane, editButton, column++);
         }
+    }
+
+    private void setupForRoleAll() {
+        // TODO: Support Universal Restriction
+        throw new UnsupportedOperationException();
     }
 
     private void setupForFeature() {
@@ -484,7 +496,7 @@ public class ClauseView {
             case DEFINITION_ROOT -> axiomView.getEntityBeingDefinedNid();
 
             case ROLE -> {
-                ConceptFacade roleTypeForVertex = ROLE.getPropertyFast(axiomVertex);
+                ConceptFacade roleTypeForVertex = axiomVertex.propertyFast(TinkarTerm.ROLE_TYPE);
                 yield roleTypeForVertex.nid();
             }
             case FEATURE -> {
@@ -627,7 +639,7 @@ public class ClauseView {
 
     private void handleShowRoleNodeClick(MouseEvent mouseEvent) {
         if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
-            ConceptFacade typeFacade = ROLE.getPropertyFast(axiomVertex);
+            ConceptFacade typeFacade = axiomVertex.propertyFast(TinkarTerm.ROLE_TYPE);
             showPopup(typeFacade, mouseEvent);
         }
     }
@@ -782,7 +794,7 @@ public class ClauseView {
                     builder.append("\" transform=\"scale(.03) \"/>");
                     break;
                 case ROLE:
-                    ConceptFacade roleTypeForVertex = ROLE.getPropertyFast(axiomVertex);
+                    ConceptFacade roleTypeForVertex = axiomVertex.propertyFast(TinkarTerm.ROLE_TYPE);
                     if (roleTypeForVertex.nid() == TinkarTerm.ROLE_GROUP.nid()) {
                         leftStroke = "stroke: #009bff;";
                         nodeText = "Role group";
