@@ -24,7 +24,11 @@ import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.ServiceKeys;
 import dev.ikm.tinkar.common.service.ServiceProperties;
+import dev.ikm.tinkar.component.graph.DiTree;
+import dev.ikm.tinkar.component.graph.Vertex;
+import dev.ikm.tinkar.provider.search.Searcher;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +49,7 @@ public class LidrViewModelTest {
     //@BeforeAll
     public static void setUpBefore() {
         LOG.info("Clear caches");
-        File dataStore = new File(System.getProperty("user.home") + "/Solor/snomedLidrLoinc-data-4-22-2024");
+        File dataStore = new File(System.getProperty("user.home") + "/Solor/lidr-data-starterdataV3-2024-05-01");
         CachingService.clearAll();
         LOG.info("Setup Ephemeral Suite: " + LOG.getName());
         LOG.info(ServiceProperties.jvmUuid());
@@ -81,6 +85,21 @@ public class LidrViewModelTest {
     public void displayManufacturer() {
         LidrViewModel lidrViewModel = new LidrViewModel();
         PublicId deviceId = PublicIds.of(UUID.fromString("ca616ab7-3f96-3d3f-90cf-f8b97351e884"));
+        Searcher.getLidrRecordSemanticsFromTestKit(deviceId).forEach(System.out::println);
+        Searcher.getResultConformanceFromTestKit(deviceId).forEach(System.out::println);
+
+        PublicId covidAnalyteId = PublicIds.of(UUID.fromString("b8963659-ca41-30e1-8580-aefb70052104"));
+        PublicId targetMatrixM1Id = PublicIds.of(UUID.fromString("1d9ab589-2fd1-331e-a79d-e9190c415d36"));
+        PublicId resultConformanceId = PublicIds.of(UUID.fromString("bec2eb34-753c-3ed3-8f5f-99205d8447bc"));
+        DiTree logicalDefinition = ViewModelHelper.findLatestLogicalDefinition(targetMatrixM1Id).get();
+        System.out.println(logicalDefinition);
+        for (Object o : logicalDefinition.vertexMap()) {
+            if (o instanceof Vertex v) {
+                if (v.meaning().equals(TinkarTerm.ROLE_TYPE)) {
+                    System.out.println(v.propertyAsConcept(TinkarTerm.ROLE_TYPE));
+                }
+            }
+        }
 
         EntityFacade manufacturerEntity = (EntityFacade) ViewModelHelper.findDeviceManufacturer(deviceId).get();
         System.out.println("### MANUFACTURER ENTITY: " + manufacturerEntity);

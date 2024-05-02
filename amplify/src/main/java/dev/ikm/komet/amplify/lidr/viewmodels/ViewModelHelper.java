@@ -45,43 +45,55 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ViewModelHelper {
     private static final Logger LOG = LoggerFactory.getLogger(ViewModelHelper.class);
+    // TODO: Access LIDR PublicIds in a more maintainable way
+    private static final PublicId MANUFACTURED_BY = PublicIds.of(UUID.fromString("505db286-0c93-3b5e-bc89-ec5182280656"));
 
     public static Optional<Concept> findDeviceManufacturer(PublicId pubId) {
         return findDeviceManufacturer(viewPropertiesNode().calculator().navigationCalculator(), pubId);
     }
 
     public static Optional<Concept> findDeviceManufacturer(NavigationCalculator navCalc, PublicId pubId) {
-        // TODO: Access Manufacturer PublicId in a more maintainable way
-        PublicId manufacturerId = PublicIds.of(UUID.nameUUIDFromBytes("Manufactured By".getBytes()));
+        AtomicReference<Optional<Concept>> deviceManufacturer = new AtomicReference<>(Optional.empty());
+        findLatestLogicalDefinition(navCalc, pubId).ifPresent((latestLogicalDefinition) -> {
+            deviceManufacturer.set(findConceptReferenceForRoleType(latestLogicalDefinition, MANUFACTURED_BY));
+        });
+        return deviceManufacturer.get();
+    }
+
+    public static Optional<DiTree<Vertex>> findLatestLogicalDefinition(PublicId pubId) {
+        return findLatestLogicalDefinition(viewPropertiesNode().calculator().navigationCalculator(), pubId);
+    }
+
+    public static Optional<DiTree<Vertex>> findLatestLogicalDefinition(NavigationCalculator navCalc, PublicId pubId) {
         int componentNid = EntityService.get().nidForPublicId(pubId);
         StampCalculator stampCalculator = navCalc.stampCalculator();
         AtomicReference<StampEntity<StampEntityVersion>> latestStamp = new AtomicReference<>();
-        AtomicReference<DiTree<Vertex>> latestInferredDefinitionSemanticVersion = new AtomicReference<>();
+        AtomicReference<DiTree<Vertex>> latestLogicalDefinitionSemanticVersion = new AtomicReference<>();
 
         for (int navigationPatternNid : navCalc.navigationCoordinate().navigationPatternNids().toArray()) {
             int logicalDefintionPatternNid =
-                    navigationPatternNid != TinkarTerm.STATED_NAVIGATION.nid() ?
-                    TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
+                    navigationPatternNid != TinkarTerm.STATED_NAVIGATION_PATTERN.nid() ?
+                            TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
 
             EntityService.get().forEachSemanticForComponentOfPattern(componentNid, logicalDefintionPatternNid, (semanticEntity) -> {
                 stampCalculator.latest(semanticEntity)
                         .ifPresent((semanticEntityVersion) -> {
                             if (latestStamp.get() == null) {
                                 latestStamp.set(semanticEntityVersion.stamp());
-                                latestInferredDefinitionSemanticVersion.set((DiTree) semanticEntityVersion.fieldValues().get(0));
+                                latestLogicalDefinitionSemanticVersion.set((DiTree) semanticEntityVersion.fieldValues().get(0));
                             } else {
                                 if (RelativePosition.AFTER == stampCalculator.relativePosition(semanticEntityVersion.stampNid(), latestStamp.get().nid())) {
                                     latestStamp.set(semanticEntityVersion.stamp());
-                                    latestInferredDefinitionSemanticVersion.set((DiTree) semanticEntityVersion.fieldValues().get(0));
+                                    latestLogicalDefinitionSemanticVersion.set((DiTree) semanticEntityVersion.fieldValues().get(0));
                                 }
                             }
                         });
             });
         }
-        return findConceptReferenceForRoleType(latestInferredDefinitionSemanticVersion.get(), manufacturerId);
+        return Optional.ofNullable(latestLogicalDefinitionSemanticVersion.get());
     }
 
-    private static Optional<Concept> findConceptReferenceForRoleType(DiTree<Vertex> logicalDefinition, PublicId roleTypeToFind) {
+    public static Optional<Concept> findConceptReferenceForRoleType(DiTree<Vertex> logicalDefinition, PublicId roleTypeToFind) {
         ImmutableList<Vertex> vertexList = logicalDefinition.vertexMap();
         for (Vertex vertex : vertexList) {
             if (LogicalOperatorsForVertex.ROLE.semanticallyEqual((EntityFacade) vertex.meaning())) {
@@ -93,6 +105,27 @@ public class ViewModelHelper {
             }
         }
         return Optional.empty();
+    }
+
+    public static boolean isSubtype(PublicId pubId, PublicId superTypeId) {
+        return isSubtype(viewPropertiesNode().calculator().navigationCalculator(), pubId, superTypeId);
+    }
+
+    public static boolean isSubtype(NavigationCalculator navCalc, PublicId pubId, PublicId superTypeId) {
+        int deviceComponentNid = EntityService.get().nidForPublicId(superTypeId);
+
+        AtomicReference<DiTree<Vertex>> logicalDefinition = new AtomicReference<>();
+        findLatestLogicalDefinition(navCalc, pubId).ifPresent(logicalDefinition::set);
+        ImmutableList<Vertex> vertexList = logicalDefinition.get().vertexMap();
+        for (Vertex vertex : vertexList) {
+            if (LogicalOperatorsForVertex.CONCEPT.semanticallyEqual((EntityFacade) vertex.meaning())) {
+                EntityFacade refConcept = (EntityFacade) vertex.propertyAsConcept(TinkarTerm.CONCEPT_REFERENCE).get();
+                if (refConcept.nid() == deviceComponentNid) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static ObservableView viewPropertiesNode() {
