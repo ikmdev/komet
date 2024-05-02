@@ -73,10 +73,10 @@ public class AxiomComparator implements Comparator<ClauseView> {
             if (vertex2.getMeaningNid() == TinkarTerm.CONCEPT_REFERENCE.nid()) {
                 return 1;
             }
-            if (vertex1.getMeaningNid() == TinkarTerm.ROLE_TYPE.nid()) {
+            if (vertex1.getMeaningNid() == TinkarTerm.ROLE.nid()) {
                 return -1;
             }
-            if (vertex2.getMeaningNid() == TinkarTerm.ROLE_TYPE.nid()) {
+            if (vertex2.getMeaningNid() == TinkarTerm.ROLE.nid()) {
                 return 1;
             }
             if (vertex1.getMeaningNid() == TinkarTerm.FEATURE.nid()) {
@@ -118,8 +118,8 @@ public class AxiomComparator implements Comparator<ClauseView> {
 
 
             // Node is a role of some type...
-            if (vertex1.getMeaningNid() == TinkarTerm.ROLE_TYPE.nid() &&
-                    vertex2.getMeaningNid() == TinkarTerm.ROLE_TYPE.nid()) {
+            if (vertex1.getMeaningNid() == TinkarTerm.ROLE.nid() &&
+                    vertex2.getMeaningNid() == TinkarTerm.ROLE.nid()) {
                 ConceptFacade roleOperator1 = vertex1.propertyFast(TinkarTerm.ROLE_OPERATOR);
                 ConceptFacade roleType1 = vertex1.propertyFast(TinkarTerm.ROLE_TYPE);
                 ConceptFacade roleOperator2 = vertex2.propertyFast(TinkarTerm.ROLE_OPERATOR);

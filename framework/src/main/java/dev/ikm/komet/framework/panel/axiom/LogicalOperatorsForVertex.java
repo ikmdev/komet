@@ -57,8 +57,7 @@ public enum LogicalOperatorsForVertex {
     /**
      * The role all.
      */
-    ROLE(TinkarTerm.ROLE_TYPE),
-
+    ROLE(TinkarTerm.ROLE),
 
     /**
      * The concept.
