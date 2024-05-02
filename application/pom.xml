@@ -86,6 +86,11 @@
 
         <dependency>
             <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>search-provider</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>data-mvstore-provider</artifactId>
         </dependency>
 

@@ -70,7 +70,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
-        <tinkar-core.version>1.37.0</tinkar-core.version>
+        <tinkar-core.version>1.46.0</tinkar-core.version>
 
         <owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
         <owlapi.version>4.5.25-ikm-r3</owlapi.version>
@@ -228,6 +228,12 @@
             <dependency>
                 <groupId>${tinkar-core.groupId}</groupId>
                 <artifactId>entity-provider</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>search-provider</artifactId>
                 <version>${tinkar-core.version}</version>
             </dependency>
 

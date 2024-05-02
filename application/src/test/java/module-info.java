@@ -52,6 +52,7 @@ module dev.ikm.komet.application.test {
     requires dev.ikm.tinkar.common;
     requires dev.ikm.tinkar.entity;
     requires dev.ikm.tinkar.provider.entity;
+    requires dev.ikm.tinkar.provider.search;
     requires dev.ikm.tinkar.terms;
     requires org.kordamp.ikonli.javafx;
     requires jdk.jdwp.agent;
