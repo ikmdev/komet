@@ -43,7 +43,7 @@
             </VBox>
             <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="88.0" prefWidth="424.0">
                <children>
-                  <StackPane alignment="TOP_CENTER">
+                  <StackPane fx:id="analyteSearchStackPane" alignment="TOP_CENTER">
                      <children>
                         <Region prefHeight="200.0" prefWidth="200.0" styleClass="lidr-rounded-region" />
                         <VBox>
@@ -152,7 +152,7 @@
             </VBox>
             <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="88.0" prefWidth="424.0">
                <children>
-                  <StackPane alignment="TOP_CENTER">
+                  <StackPane fx:id="resultSearchStackPane" alignment="TOP_CENTER">
                      <children>
                         <Region prefHeight="200.0" prefWidth="200.0" styleClass="lidr-rounded-region" />
                         <VBox>
@@ -255,7 +255,7 @@
             </VBox>
             <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="88.0" prefWidth="424.0">
                <children>
-                  <StackPane alignment="TOP_CENTER">
+                  <StackPane fx:id="specimenSearchStackPane" alignment="TOP_CENTER">
                      <children>
                         <Region prefHeight="200.0" prefWidth="200.0" styleClass="lidr-rounded-region" />
                         <VBox>

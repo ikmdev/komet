@@ -70,10 +70,15 @@ import static dev.ikm.komet.amplify.viewmodels.FormViewModel.VIEW_PROPERTIES;
 public class AnalyteGroupController implements BasicController {
 
     private static final Logger LOG = LoggerFactory.getLogger(AnalyteGroupController.class);
+
+    public static final String DRAG_AND_DROP_CONCEPT_S_HERE = "Drag and drop concept(s) here";
+
     @FXML
     private HBox analyteDragNDropArea;
+
     @FXML
     private HBox resultsDragNDropArea;
+
     @FXML
     private HBox specimensDragNDropArea;
 
@@ -110,6 +115,15 @@ public class AnalyteGroupController implements BasicController {
     @FXML
     private VBox analyteGroupVbox;
 
+    @FXML
+    private StackPane analyteSearchStackPane;
+
+    @FXML
+    private StackPane resultSearchStackPane;
+
+    @FXML
+    private StackPane specimenSearchStackPane;
+
     @InjectViewModel
     private AnalyteViewModel analyteViewModel;
 
@@ -125,7 +139,7 @@ public class AnalyteGroupController implements BasicController {
         clearView();
 
         // setup drag n drop
-        setupDragNDrop(analyteDragNDropArea, (publicId) -> {
+        setupDragNDrop(analyteSearchStackPane, (publicId) -> {
             // check to see if an analyte was already dragged into the analyte section before saving
             // to the view model
             if (analyteViewModel.getPropertyValue(ANALYTE_ENTITY) == null) {
@@ -137,7 +151,7 @@ public class AnalyteGroupController implements BasicController {
                 addToForm(entity, selectedAnalyteContainer, selectedAnalyteStackPane, ANALYTE_ENTITY, false);
             }
         });
-        setupDragNDrop(resultsDragNDropArea, (publicId) -> {
+        setupDragNDrop(resultSearchStackPane, (publicId) -> {
             // query public Id to get entity.
             Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
             // there can be one to many results
@@ -146,7 +160,7 @@ public class AnalyteGroupController implements BasicController {
             // update the UI with the new allowable result
             addToForm(entity, selectedResultContainer, selectedResultStackPane, RESULTS_ENTITY, true);
         });
-        setupDragNDrop(specimensDragNDropArea, (publicId) -> {
+        setupDragNDrop(specimenSearchStackPane, (publicId) -> {
             // query public Id to get entity.
             Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
             // there can be one to many specimens
@@ -219,6 +233,24 @@ public class AnalyteGroupController implements BasicController {
         doneButton.setDisable(!isFormPopulated());
     }
 
+    /**
+     * create the animation of the drop location with the outline having a dashed green line
+     * @return
+     */
+    private HBox createDragOverAnimation() {
+        HBox aboutToDropHBox = new HBox();
+        aboutToDropHBox.setAlignment(Pos.CENTER);
+        aboutToDropHBox.getStyleClass().add("lidr-drop-area");
+        StackPane stackPane = new StackPane();
+        Region iconRegion = new Region();
+        StackPane.setMargin(iconRegion, new Insets(0, 4, 0, 0));
+        iconRegion.getStyleClass().add("lidr-drag-and-drop-icon-while-dragging");
+        stackPane.getChildren().add(iconRegion);
+        Label dragAndDropLabel = new Label(DRAG_AND_DROP_CONCEPT_S_HERE);
+        aboutToDropHBox.getChildren().addAll(stackPane, dragAndDropLabel);
+        return aboutToDropHBox;
+    }
+
     private void removeAnalyte(HBox selectedConcept, String propertyName, VBox containerVbox, StackPane containerStackPane) {
         analyteViewModel.setPropertyValue(propertyName, null);
         containerVbox.getChildren().remove(selectedConcept);
@@ -236,7 +268,8 @@ public class AnalyteGroupController implements BasicController {
         // containers
         VBox analyteVbox = new VBox();
         VBox.setMargin(analyteVbox, new Insets(0, 0, 16, 0));
-        StackPane analyteStackPane = new StackPane();
+        analyteSearchStackPane = new StackPane();
+        analyteSearchStackPane.setId("analyteSearchStackPane");
         Region analyteRegion = new Region();
         analyteRegion.getStyleClass().add("lidr-rounded-region");
         VBox searchAndDragDropVbox = new VBox();
@@ -287,11 +320,11 @@ public class AnalyteGroupController implements BasicController {
         searchAndDragDropVbox.getChildren().addAll(searchHbox, dragDropOuterHbox);
 
         // roll up outer containers
-        analyteStackPane.getChildren().addAll(analyteRegion, searchAndDragDropVbox);
-        analyteVbox.getChildren().add(analyteStackPane);
+        analyteSearchStackPane.getChildren().addAll(analyteRegion, searchAndDragDropVbox);
+        analyteVbox.getChildren().add(analyteSearchStackPane);
 
         // re-attach the drag and drop capability
-        setupDragNDrop(dragDropInnerHbox, (publicId) -> {
+        setupDragNDrop(analyteSearchStackPane, (publicId) -> {
             // check to see if an analyte was already dragged into the analyte section before saving
             // to the view model
             if (analyteViewModel.getPropertyValue(ANALYTE_ENTITY) == null) {
@@ -352,7 +385,10 @@ public class AnalyteGroupController implements BasicController {
                     event.getDragboard().hasString()) {
                 node.setOpacity(.90);
             }
-
+            if (node != null && node instanceof StackPane stackPane && stackPane.getChildren().size() > 0) {
+                int lastIndex = stackPane.getChildren().size();
+                stackPane.getChildren().add(lastIndex, createDragOverAnimation());
+            }
             event.consume();
         });
 
@@ -360,6 +396,10 @@ public class AnalyteGroupController implements BasicController {
         node.setOnDragExited(event -> {
             /* mouse moved away, remove the graphical cues */
             node.setOpacity(1);
+            if (node != null && node instanceof StackPane stackPane && stackPane.getChildren().size() > 0) {
+                int lastIndex = stackPane.getChildren().size();
+                stackPane.getChildren().remove(lastIndex - 1, lastIndex);
+            }
             event.consume();
         });
 

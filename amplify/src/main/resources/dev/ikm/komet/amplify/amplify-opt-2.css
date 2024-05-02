@@ -1957,7 +1957,6 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-alignment: center;
-
 }
 
 .lidr-device-drag-and-drop-icon {
@@ -2123,6 +2122,37 @@ Timeline Year line segment (will overlay change circles)
     -fx-pref-height: 16px;
     -fx-background-color: -Secondary-05;
     -fx-shape: "M15.8337 5.34199L14.6587 4.16699L10.0003 8.82533L5.34199 4.16699L4.16699 5.34199L8.82533 10.0003L4.16699 14.6587L5.34199 15.8337L10.0003 11.1753L14.6587 15.8337L15.8337 14.6587L11.1753 10.0003L15.8337 5.34199Z";
+}
+
+.lidr-drag-and-drop-icon-while-dragging {
+    -fx-background-color: -Grey-8;
+    -width-size: 36;
+    -height-size: 36;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M27 22.5V27H9V22.5H6V27C6 28.65 7.35 30 9 30H27C28.65 30 30 28.65 30 27V22.5H27ZM25.5 16.5L23.385 14.385L19.5 18.255V6H16.5V18.255L12.615 14.385L10.5 16.5L18 24L25.5 16.5Z";
+}
+
+.lidr-drag-and-drop-label-while-dragging {
+    -fx-text-fill: -Grey-8;
+    -fx-text-align: center;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-text-alignment: center;
+}
+
+.lidr-drop-area {
+    -fx-background-color: -Grey-2;
+    -fx-text-fill: -Grey-8;
+    -fx-border-width: 3;
+    -fx-border-radius: 4;
+    -fx-border-style: dashed;
+    -fx-border-color: -Primary-04;
+
 }
 
  /*********************************************************************************

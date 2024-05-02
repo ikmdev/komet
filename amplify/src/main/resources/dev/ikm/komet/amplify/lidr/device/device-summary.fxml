@@ -17,7 +17,7 @@
 
 <BorderPane styleClass="lidr-device" stylesheets="@../../amplify-opt-2.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.lidr.device.DeviceController">
    <center>
-      <VBox fx:id="deviceSectionVBox" BorderPane.alignment="CENTER">
+      <VBox fx:id="deviceOuterVBox" BorderPane.alignment="CENTER">
          <children>
             <Label styleClass="lidr-device-label" text="Device" />
             <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="424.0">
@@ -40,9 +40,9 @@
                   </StackPane>
                </children>
             </VBox>
-            <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="88.0" prefWidth="424.0">
+            <VBox fx:id="searchFormVBox" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="88.0" prefWidth="424.0">
                <children>
-                  <StackPane alignment="TOP_CENTER">
+                  <StackPane fx:id="outerSearchStackPane" alignment="TOP_CENTER">
                      <children>
                         <Region prefHeight="200.0" prefWidth="200.0" styleClass="lidr-rounded-region" />
                         <VBox>
