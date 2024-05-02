@@ -1025,6 +1025,7 @@ public class DetailsController  {
         authorTooltip.setText("");
         inferredAxiomScrollPane.setContent(notAvailInferredAxiomLabel);
         statedAxiomScrollPane.setContent(notAvailStatedAxiomLabel);
+        otherNamesVBox.getChildren().clear();
     }
     @FXML
     private void displayEditConceptView(ActionEvent event) {
