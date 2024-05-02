@@ -524,12 +524,12 @@ public class DetailsController  {
 
     public void updateView() {
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
-        if (entityFacade != null) {
+        StampViewModel stampViewModel = new StampViewModel();
+        if (entityFacade != null) { // edit concept
             getConceptViewModel().setPropertyValue(MODE, EDIT);
             if (conceptViewModel.getPropertyValue(CONCEPT_STAMP_VIEW_MODEL) == null) {
 
                 // add a new stamp view model to the concept view model
-                StampViewModel stampViewModel = new StampViewModel();
                 stampViewModel.setPropertyValue(MODE, EDIT)
                         .setPropertyValues(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true)
                         .setPropertyValues(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true);
@@ -541,7 +541,12 @@ public class DetailsController  {
             EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
             StampEntity stamp = latestVersion.stamp();
             updateStampViewModel(EDIT, stamp);
+        } else { // create concept
+            getConceptViewModel().setPropertyValue(MODE, CREATE);
+            stampViewModel.setPropertyValue(MODE, CREATE);
         }
+        conceptViewModel.setPropertyValue(CONCEPT_STAMP_VIEW_MODEL,stampViewModel);
+
 
         // Display info for top banner area
         updateConceptBanner();
@@ -656,12 +661,6 @@ public class DetailsController  {
         });
 
         fqnDescriptionSemanticText.setText("");
-
-        // update date
-        Instant stampInstance = Instant.ofEpochSecond((long)getStampViewModel().getPropertyValue(TIME_PROPERTY)/1000);
-        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-        String time = DATE_TIME_FORMATTER.format(stampTime);
-        fqnAddDateLabel.setText(time);
     }
     public void updateOtherNamesDescription(List<DescrName> descrNameViewModels) {
         otherNamesVBox.getChildren().clear();
