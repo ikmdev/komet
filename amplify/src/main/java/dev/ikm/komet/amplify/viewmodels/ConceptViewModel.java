@@ -76,6 +76,8 @@ public class ConceptViewModel extends FormViewModel {
                 .addProperty(CONCEPT_STAMP_VIEW_MODEL, (ViewModel) null)
                 .addProperty(AXIOM, (String) null);
 
+        //FIXME add a STAMP validator
+
         // In Create Mode the fqn is required.
         addValidator(FULLY_QUALIFIED_NAME, "Fully Qualified Name",(ReadOnlyObjectProperty prop, ViewModel vm) -> {
             if (prop.isNull().get()
