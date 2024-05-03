@@ -70,7 +70,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
-        <tinkar-core.version>1.47.0</tinkar-core.version>
+        <tinkar-core.version>1.48.0</tinkar-core.version>
 
         <owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
         <owlapi.version>4.5.25-ikm-r3</owlapi.version>
@@ -126,6 +126,12 @@
             <dependency>
                 <groupId>${tinkar-core.groupId}</groupId>
                 <artifactId>reasoner-service</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dev.ikm.tinkar.fhir</groupId>
+                <artifactId>fhir-extension</artifactId>
                 <version>${tinkar-core.version}</version>
             </dependency>
 
