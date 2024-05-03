@@ -80,6 +80,7 @@ open module dev.ikm.komet.framework {
     requires transitive org.eclipse.collections;
     requires transitive org.eclipse.collections.api;
     requires transitive dev.ikm.tinkar.entity;
+    requires transitive dev.ikm.tinkar.fhir.transformers;
     requires transitive dev.ikm.tinkar.terms;
     requires transitive org.kordamp.ikonli.javafx;
     requires transitive org.slf4j;

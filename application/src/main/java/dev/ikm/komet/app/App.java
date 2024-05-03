@@ -22,6 +22,8 @@ import dev.ikm.komet.amplify.commons.ResourceHelper;
 import dev.ikm.komet.amplify.events.CreateJournalEvent;
 import dev.ikm.komet.amplify.events.JournalTileEvent;
 import dev.ikm.komet.amplify.export.ArtifactExportController2;
+import dev.ikm.komet.amplify.export.ExportDatasetController;
+import dev.ikm.komet.amplify.export.ExportDatasetViewFactory;
 import dev.ikm.komet.amplify.journal.JournalController;
 import dev.ikm.komet.amplify.journal.JournalViewFactory;
 import dev.ikm.komet.amplify.landingpage.LandingPageController;
@@ -790,10 +792,27 @@ public class App extends Application {
         }
     }
 
-    private void generateMsWindowsMenu(BorderPane kometRoot) {
-//        VBox vBox = (VBox) kometRoot.getTop();
-//        HBox hBox = (HBox) vBox.getChildren().get(0);
+    public void openDatasetPage(){
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
 
+        WindowSettings windowSettings = new WindowSettings(windowPreferences);
+        Stage datasetStage = new Stage();
+        FXMLLoader datasetPageLoader = ExportDatasetViewFactory.createFXMLLoaderForExportDataset();
+        try {
+            Pane datasetBorderPane = datasetPageLoader.load();
+            ExportDatasetController datasetPageController = datasetPageLoader.getController();
+            datasetPageController.setViewProperties(windowSettings.getView().makeOverridableViewProperties());
+            Scene sourceScene = new Scene(datasetBorderPane, 550, 700);
+            datasetStage.setScene(sourceScene);
+            datasetStage.setTitle("Export Dataset");
+            datasetStage.show();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void generateMsWindowsMenu(BorderPane kometRoot) {
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("File");
 
@@ -807,6 +826,7 @@ public class App extends Application {
         // Exporting data
         Menu exportMenu = new Menu("Export Dataset");
         MenuItem fhirMenuItem = new MenuItem("FHIR");
+        fhirMenuItem.setOnAction(actionEvent -> openDatasetPage());
         exportMenu.getItems().addAll(createExportChangesetMenuItem(), fhirMenuItem);
 
         fileMenu.getItems().addAll(importMenuItem, exportMenu);
