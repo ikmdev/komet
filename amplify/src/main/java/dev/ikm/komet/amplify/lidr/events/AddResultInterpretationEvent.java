@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.amplify.lidr.events;
 
+import dev.ikm.komet.amplify.lidr.om.LidrRecord;
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
 
@@ -22,19 +23,19 @@ public class AddResultInterpretationEvent extends Evt {
 
     public static final EvtType<AddResultInterpretationEvent> ADD_ANALYTE_GROUP = new EvtType<>(Evt.ANY, "ADD_ANALYTE_GROUP");
 
-    private final Object oneResult;
+    private final LidrRecord lidrRecord;
     /**
      * Constructs a prototypical Event.
      *
      * @param source         the object on which the Event initially occurred
      * @param eventType
      */
-    public AddResultInterpretationEvent(Object source, EvtType eventType, Object oneResult) {
+    public AddResultInterpretationEvent(Object source, EvtType eventType, LidrRecord lidrRecord) {
         super(source, eventType);
-        this.oneResult = oneResult;
+        this.lidrRecord = lidrRecord;
     }
 
-    public Object getOneResult() {
-        return oneResult;
+    public LidrRecord getLidrRecord() {
+        return lidrRecord;
     }
 }

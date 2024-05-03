@@ -15,35 +15,42 @@
  */
 package dev.ikm.komet.amplify.lidr.details;
 
-import dev.ikm.komet.amplify.events.*;
 import dev.ikm.komet.amplify.lidr.events.AddDeviceEvent;
 import dev.ikm.komet.amplify.lidr.events.AddResultInterpretationEvent;
 import dev.ikm.komet.amplify.lidr.events.LidrPropertyPanelEvent;
 import dev.ikm.komet.amplify.lidr.events.ShowPanelEvent;
+import dev.ikm.komet.amplify.lidr.om.LidrRecord;
 import dev.ikm.komet.amplify.lidr.properties.PropertiesController;
+import dev.ikm.komet.amplify.lidr.viewmodels.AnalyteGroupViewModel;
 import dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel;
+import dev.ikm.komet.amplify.lidr.viewmodels.ViewModelHelper;
 import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
 import dev.ikm.komet.amplify.mvvm.ViewModel;
 import dev.ikm.komet.amplify.mvvm.loader.*;
 import dev.ikm.komet.amplify.om.DescrName;
 import dev.ikm.komet.amplify.stamp.StampEditController;
+import dev.ikm.komet.amplify.timeline.TimelineController;
 import dev.ikm.komet.amplify.viewmodels.StampViewModel;
+import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.component.Concept;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.State;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
@@ -51,24 +58,29 @@ import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
 import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.*;
 import static dev.ikm.komet.amplify.commons.ViewportHelper.clipChildren;
+import static dev.ikm.komet.amplify.lidr.details.LidrRecordDetailsController.LIDR_RECORD_FXML;
 import static dev.ikm.komet.amplify.lidr.events.LidrPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.amplify.lidr.events.LidrPropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.amplify.lidr.events.ShowPanelEvent.SHOW_ADD_ANALYTE_GROUP;
 import static dev.ikm.komet.amplify.lidr.events.ShowPanelEvent.SHOW_ADD_DEVICE;
+import static dev.ikm.komet.amplify.lidr.viewmodels.AnalyteGroupViewModel.LIDR_RECORD;
 import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.CONCEPT_TOPIC;
 import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.CREATE;
 import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.EDIT;
+import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.VIEW;
 import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.*;
 import static dev.ikm.komet.amplify.viewmodels.FormViewModel.MODE;
@@ -78,6 +90,8 @@ public class LidrDetailsController {
     private static final Logger LOG = LoggerFactory.getLogger(LidrDetailsController.class);
     public static final String EDIT_STAMP_OPTIONS_FXML = "edit-stamp.fxml";
     public static final String LIDR_PROPERTIES_VIEW_FXML_FILE = "lidr-properties.fxml";
+    protected static final String CONCEPT_TIMELINE_VIEW_FXML_FILE = "amplify-timeline.fxml";
+
     @FXML
     private Button closeConceptButton;
 
@@ -148,12 +162,6 @@ public class LidrDetailsController {
     @FXML
     private Text mfgSummaryText;
 
-    /**
-     * Responsible for holding rows of other names (regular) description semantics.
-     */
-    @FXML
-    private VBox otherNamesVBox;
-
     ///// Results Section    ///////////////////
     @FXML
     private Button addAnalyteGroupButton; // see action showAnalyteGroupPanel() method.
@@ -161,7 +169,7 @@ public class LidrDetailsController {
     @FXML
     private TitledPane lidrRecordDetailsTitledPane;
     @FXML
-    private VBox resultsVBox;
+    private VBox lidrRecordsVBox;
 
     @FXML
     private Button elppSemanticCountButton;
@@ -198,23 +206,6 @@ public class LidrDetailsController {
     
     private UUID conceptTopic;
 
-    private Subscriber<EditConceptFullyQualifiedNameEvent> fqnSubscriber;
-
-    private Subscriber<AddFullyQualifiedNameEvent> addFqnSubscriber;
-
-    private Subscriber<EditOtherNameConceptEvent> editOtherNameConceptEventSubscriber;
-    private Subscriber<EditConceptEvent> editConceptEventSubscriber;
-
-    private Subscriber<AddOtherNameToConceptEvent> addOtherNameToConceptEventSubscriber;
-
-    private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
-
-    private Subscriber<CreateConceptEvent> createConceptEventSubscriber;
-
-    private PublicId fqnPublicId;
-
-    private PublicId otherNamePublicId;
-
     /**
      * Stamp Edit
      */
@@ -223,13 +214,11 @@ public class LidrDetailsController {
 
     private PropertiesController propertiesViewController;
     private BorderPane propertiesViewBorderPane;
+    private BorderPane timelineViewBorderPane;
+    private TimelineController timelineViewController;
     // style the same as the details view
 
     public LidrDetailsController() {
-    }
-
-    public LidrDetailsController(UUID conceptTopic) {
-        this.conceptTopic = conceptTopic;
     }
 
     @FXML
@@ -272,9 +261,14 @@ public class LidrDetailsController {
             LOG.info("addDeviceEventSubscriber -> TODO Update the UI and add a new device.");
 
             lidrViewModel.setPropertyValue(DEVICE_ENTITY, evt.deviceEntity);
-            // Update the ui
-            // SemanticEntity sEntity = ...
-            // semanticEntities.add(sEntity)
+            EntityFacade entityFacade = lidrViewModel.getPropertyValue(DEVICE_ENTITY);
+            updateDeviceBanner();
+            updateDeviceAndMfg();
+
+            this.propertiesViewController.updateModel(getViewProperties(), entityFacade);
+            this.propertiesViewController.updateView();
+            this.timelineViewController.updateModel(getViewProperties(), entityFacade);
+            this.timelineViewController.updateView();
         };
         eventBus.subscribe(conceptTopic, AddDeviceEvent.class, addDeviceEventSubscriber);
 
@@ -282,15 +276,21 @@ public class LidrDetailsController {
         Subscriber<AddResultInterpretationEvent> addResultInterpretationEventSubscriber = (evt) -> {
             // TODO Update the UI and add result interpretations.
             LOG.info("addResultInterpretationEventSubscriber -> TODO Update the UI and add result interpretations.");
-            Object payload = evt.getOneResult();
-            List<SemanticEntity> semanticEntities = lidrViewModel.getList(RESULT_INTERPRETATIONS);
-            // SemanticEntity sEntity = ...
-            // semanticEntities.add(sEntity)
+            LidrRecord lidrRecord = evt.getLidrRecord();
+
+            AnalyteGroupViewModel analyteGroupViewModel = new AnalyteGroupViewModel();
+            analyteGroupViewModel.setPropertyValue(CONCEPT_TOPIC, conceptTopic)
+                    .addProperty(LIDR_RECORD, lidrRecord)
+                    .save(true);
+           NamedVm analyteViewModel = new NamedVm("analyteGroupViewModel", analyteGroupViewModel);
+            JFXNode<TilePane, LidrRecordDetailsController> lidrNodeController = FXMLMvvmLoader.make(this.getClass().getResource(LIDR_RECORD_FXML), analyteViewModel);
+            lidrNodeController.controller().updateView();
+            lidrRecordsVBox.getChildren().add(lidrNodeController.node());
         };
         eventBus.subscribe(conceptTopic, AddResultInterpretationEvent.class, addResultInterpretationEventSubscriber);
         // Setup Properties
         setupProperties();
-
+        setupTimelineBumpOut();
         // When a new Analyte Group was added to this device (lidr record)
 
     }
@@ -308,6 +308,39 @@ public class LidrDetailsController {
 
         // setup view and controller into details controller
         attachPropertiesViewSlideoutTray(this.propertiesViewBorderPane);
+    }
+
+    private void setupTimelineBumpOut() {
+        // Load Timeline View Panel (FXML & Controller)
+        FXMLLoader timelineFXMLLoader = new FXMLLoader(TimelineController.class.getResource(CONCEPT_TIMELINE_VIEW_FXML_FILE));
+        try {
+            this.timelineViewBorderPane = timelineFXMLLoader.load();
+            this.timelineViewController = timelineFXMLLoader.getController();
+
+            // This will highlight with green around the pane when the user selects a date point in the timeline.
+            timelineViewController.onDatePointSelected((changeCoordinate) ->{
+                propertiesViewController.getHistoryChangeController().highlightListItemByChangeCoordinate(changeCoordinate);
+            });
+            // When Date points are in range (range slider)
+            timelineViewController.onDatePointInRange((rangeToggleOn, changeCoordinates) -> {
+                if (rangeToggleOn) {
+                    propertiesViewController.getHistoryChangeController().filterByRange(changeCoordinates);
+                    propertiesViewController.getHierarchyController().diffNavigationGraph(changeCoordinates);
+                } else {
+                    propertiesViewController.getHistoryChangeController().unfilterByRange();
+                    propertiesViewController.getHierarchyController().diffNavigationGraph(Set.of());
+                }
+            });
+
+            // style the same as the details view
+            this.timelineViewBorderPane.getStylesheets().add(defaultStyleSheet());
+
+            // setup view and controller into details controller
+            attachTimelineViewSlideoutTray(this.timelineViewBorderPane);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     public ViewProperties getViewProperties() {
@@ -429,53 +462,61 @@ public class LidrDetailsController {
      * Responsible for populating the top banner area of the concept view panel.
      */
     public void updateDeviceBanner() {
-        // do not update ui should be blank
-        if (getLidrViewModel().getPropertyValue(MODE) == CREATE) {
+        EntityFacade entityFacade = getLidrViewModel().getPropertyValue(DEVICE_ENTITY);
+        if (entityFacade == null) {
+            identiconImageView.setImage(null);
+            snomedIdentifierText.setText("");
+            identifierText.setText("");
+            deviceSummaryText.setText("");
+            conceptNameTooltip.setText("");
+            deviceTitleText.setText("");
             return;
         }
 
-        EntityFacade entityFacade = getLidrViewModel().getPropertyValue(DEVICE_ENTITY);
-        // TODO do a null check on the entityFacade
-//        // Title (FQN of concept)
-//        final ViewCalculator viewCalculator = viewProperties.calculator();
-//        String conceptNameStr = viewCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade);
-//        fqnTitleText.setText(conceptNameStr);
-//        conceptNameTooltip.setText(conceptNameStr);
-//
-//        // Public ID (UUID)
-//        String uuidStr = entityFacade.publicId() != null ? entityFacade.publicId().asUuidArray()[0].toString(): "";
-//        identifierText.setText(uuidStr);
-//        identifierTooltip.setText(uuidStr);
-//
-//        // Identicon
-//        Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
-//        identiconImageView.setImage(identicon);
-//
-//        // Obtain STAMP info
-//        EntityVersion latestVersion = viewCalculator.latest(entityFacade).get();
-//        StampEntity stamp = latestVersion.stamp();
+        deviceTitleText.setText(entityFacade.description());
+        conceptNameTooltip.setText(entityFacade.description());
 
-//        // Status
-//        String status = stamp.state() != null && State.ACTIVE == stamp.state() ? "Active" : "Inactive";
-//        statusText.setText(status);
-//
-//        // Module
-//        String module = stamp.module().description();
-//        moduleText.setText(module);
-//
-//        // Path
-//        String path = stamp.path().description();
-//        pathText.setText(path);
-//
-//        // Latest update time
-//        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
-//        Instant stampInstance = Instant.ofEpochSecond(stamp.time()/1000);
-//        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-//        String time = DATE_TIME_FORMATTER.format(stampTime);
-//        lastUpdatedText.setText(time);
-//
-//        // Author tooltip
-//        authorTooltip.setText(stamp.author().description());
+        // TODO do a null check on the entityFacade
+        final ViewCalculator viewCalculator = getViewProperties().calculator();
+
+        // Public ID (UUID)
+        String uuidStr = entityFacade.publicId() != null ? entityFacade.publicId().asUuidArray()[0].toString(): "";
+        identifierText.setText(uuidStr);
+        identifierTooltip.setText(uuidStr);
+
+        // Identicon
+        Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
+        identiconImageView.setImage(identicon);
+
+        if (VIEW.equals(getLidrViewModel().getPropertyValue(MODE))) {
+            // Obtain STAMP info
+            EntityVersion latestVersion = viewCalculator.latest(entityFacade).get();
+            StampEntity stamp = latestVersion.stamp();
+
+            // Status
+            String status = stamp.state() != null && State.ACTIVE == stamp.state() ? "Active" : "Inactive";
+            statusText.setText(status);
+
+            // Module
+            String module = stamp.module().description();
+            moduleText.setText(module);
+
+            // Path
+            String path = stamp.path().description();
+            pathText.setText(path);
+
+            // Latest update time
+            DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
+            Instant stampInstance = Instant.ofEpochSecond(stamp.time() / 1000);
+            ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
+            String time = DATE_TIME_FORMATTER.format(stampTime);
+            lastUpdatedText.setText(time);
+
+            // Author tooltip
+            authorTooltip.setText(stamp.author().description());
+
+            updateStampViewModel(EDIT, stamp);
+        }
 
     }
 
@@ -484,31 +525,11 @@ public class LidrDetailsController {
         if (getLidrViewModel().getPropertyValue(STAMP_VIEW_MODEL) != null) {
             stampViewModel.setPropertyValue(MODE, mode)
                     .setPropertyValue(STATUS_PROPERTY, stamp.state().toString())
-                    .setPropertyValue(MODULE_PROPERTY, stamp.moduleNid())
-                    .setPropertyValue(PATH_PROPERTY, stamp.pathNid())
+                    .setPropertyValue(MODULE_PROPERTY, stamp.module())
+                    .setPropertyValue(PATH_PROPERTY, stamp.path())
                     .setPropertyValue(TIME_PROPERTY, stamp.time())
                     .save(true);
         }
-    }
-
-    public void updateDeviceDescription(DescrName descrName) {
-        // Latest FQN
-        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-        // Latest FQN
-        String fullyQualifiedName = descrName.nameText();
-        deviceTitleText.setText(fullyQualifiedName);
-
-        deviceTitleText.setOnMouseClicked(event -> {
-//            eventBus.publish(conceptTopic,
-//                    new EditConceptFullyQualifiedNameEvent(latestFqnText,
-//                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId));
-        });
-
-        // update date
-        Instant stampInstance = Instant.ofEpochSecond((long)getStampViewModel().getPropertyValue(TIME_PROPERTY)/1000);
-        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-        String time = DATE_TIME_FORMATTER.format(stampTime);
-
     }
 
     /**
@@ -517,13 +538,22 @@ public class LidrDetailsController {
      */
     public void updateDeviceAndMfg() {
         // do not update ui should be blank
-        if (getLidrViewModel().getPropertyValue(MODE) == CREATE) {
+        EntityFacade entityFacade = getLidrViewModel().getPropertyValue(DEVICE_ENTITY);
+        if (entityFacade == null) {
+            deviceSummaryText.setText("");
+            mfgSummaryText.setText("");
             return;
         }
 
-        final ViewCalculator viewCalculator = getViewProperties().calculator();
-        EntityFacade entityFacade = getLidrViewModel().getPropertyValue(DEVICE_ENTITY);
-        // Todo populate description titled pane:
+        // Display the name of the device
+        deviceSummaryText.setText(entityFacade.description());
+
+        // Update manufacturer if one exists
+        Optional<Concept> mfg = ViewModelHelper.findDeviceManufacturer(entityFacade.publicId());
+        mfg.ifPresentOrElse(concept -> mfgSummaryText.setText(
+                ((ConceptFacade) concept).description()),
+                ()-> mfgSummaryText.setText("")
+        );
     }
 
     /**
@@ -539,6 +569,7 @@ public class LidrDetailsController {
 
     public void clearView() {
         identiconImageView.setImage(null);
+        snomedIdentifierText.setText("");
         identifierText.setText("");
         lastUpdatedText.setText("");
         moduleText.setText("");
@@ -546,6 +577,7 @@ public class LidrDetailsController {
         originationText.setText("");
         statusText.setText("");
         authorTooltip.setText("");
+        lidrRecordsVBox.getChildren().clear();
     }
 
     @FXML
@@ -597,13 +629,11 @@ public class LidrDetailsController {
         StampEditController stampEditController = stampJFXNode.controller();
 
         stampEditController.updateModel(getViewProperties());
-
         popOver.setOnHidden(windowEvent -> {
             // set Stamp info into Details form
             getStampViewModel().save();
             updateUIStamp(getStampViewModel());
         });
-
         popOver.show((Node) event.getSource());
 
         // store and use later.

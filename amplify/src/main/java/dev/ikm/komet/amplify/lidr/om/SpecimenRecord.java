@@ -23,13 +23,14 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
 
 import java.util.Optional;
-import java.util.UUID;
 
 public record SpecimenRecord(PublicId specimenId, PublicId systemId, PublicId methodTypeId) {
 public static final EntityProxy.Pattern METHOD_TYPE_ROLETYPE = EntityProxy.Pattern.make(null, UuidUtil.fromSNOMED("260686004"));
     public static final EntityProxy.Pattern SYSTEM_ROLETYPE = EntityProxy.Pattern.make(null, UuidUtil.fromSNOMED("704327008"));
 
-
+    public SpecimenRecord (PublicId specimenId) {
+        this(specimenId, null, null);
+    }
     public static SpecimenRecord make(PublicId specimenId) {
         Optional<Entity> specimenEntity = EntityService.get().getEntity(specimenId.asUuidArray());
         if (specimenEntity.isEmpty()) {

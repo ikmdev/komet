@@ -35,21 +35,19 @@ public class Config {
     public Config() {
 
     }
-    public Config(URL fxml, NamedVm ...namedViewModels) {
+    public Config(URL fxml) {
         this.fxml = fxml;
-        if (namedViewModels != null && namedViewModels.length > 0) {
-            for(NamedVm namedVm:namedViewModels) {
-                addNamedViewModel(namedVm);
-            }
-        }
     }
     public Config(URL fxml, Class controllerClass) {
         this.fxml = fxml;
         this.controllerClass = controllerClass;
     }
-    public Config(URL fxml, Object controllerClass) {
+    public Config(URL fxml, Object controllerClassInstance) {
+        if (controllerClassInstance instanceof NamedVm) {
+            throw new RuntimeException("Not a JavaFX Controller class");
+        }
         this.fxml = fxml;
-        this.controller = controllerClass;
+        this.controller = controllerClassInstance;
     }
 
     public Config fxml(URL fxml) {

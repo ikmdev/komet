@@ -29,6 +29,9 @@ public record AnalyteRecord(PublicId analyteId, PublicId componentId, PublicId t
     public static final EntityProxy.Pattern TIME_ASPECT_ROLETYPE = EntityProxy.Pattern.make(null, UuidUtil.fromSNOMED("370134009"));
     public static final EntityProxy.Pattern METHOD_TYPE_ROLETYPE = EntityProxy.Pattern.make(null, UuidUtil.fromSNOMED("260686004"));
 
+    public AnalyteRecord(PublicId analyteId){
+        this(analyteId, null, null, null);
+    }
     public static AnalyteRecord make(PublicId analyteId) {
         Optional<Entity> analyteEntity = EntityService.get().getEntity(analyteId.asUuidArray());
         if (analyteEntity.isEmpty()) {

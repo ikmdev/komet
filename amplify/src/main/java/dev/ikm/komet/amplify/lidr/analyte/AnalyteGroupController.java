@@ -20,8 +20,12 @@ import dev.ikm.komet.amplify.lidr.events.AddResultEvent;
 import dev.ikm.komet.amplify.lidr.events.AddResultInterpretationEvent;
 import dev.ikm.komet.amplify.lidr.events.LidrPropertyPanelEvent;
 import dev.ikm.komet.amplify.lidr.events.ShowPanelEvent;
+import dev.ikm.komet.amplify.lidr.om.AnalyteRecord;
+import dev.ikm.komet.amplify.lidr.om.LidrRecord;
+import dev.ikm.komet.amplify.lidr.om.ResultConformanceRecord;
+import dev.ikm.komet.amplify.lidr.om.SpecimenRecord;
+import dev.ikm.komet.amplify.lidr.viewmodels.AnalyteGroupViewModel;
 import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
-import dev.ikm.komet.amplify.lidr.viewmodels.AnalyteViewModel;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -34,6 +38,7 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -46,24 +51,20 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static dev.ikm.komet.amplify.lidr.events.AddResultEvent.ADD_RESULT_TO_ANALYTE_GROUP;
 import static dev.ikm.komet.amplify.lidr.events.LidrPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.amplify.lidr.events.ShowPanelEvent.SHOW_MANUAL_ADD_RESULTS;
-import static dev.ikm.komet.amplify.lidr.viewmodels.AnalyteViewModel.ANALYTE_ENTITY;
-import static dev.ikm.komet.amplify.lidr.viewmodels.AnalyteViewModel.RESULTS_ENTITY;
-import static dev.ikm.komet.amplify.lidr.viewmodels.AnalyteViewModel.SPECIMEN_ENTITY;
+import static dev.ikm.komet.amplify.lidr.viewmodels.AnalyteGroupViewModel.*;
 import static dev.ikm.komet.amplify.viewmodels.FormViewModel.CONCEPT_TOPIC;
 import static dev.ikm.komet.amplify.viewmodels.FormViewModel.VIEW_PROPERTIES;
 
@@ -125,7 +126,7 @@ public class AnalyteGroupController implements BasicController {
     private StackPane specimenSearchStackPane;
 
     @InjectViewModel
-    private AnalyteViewModel analyteViewModel;
+    private AnalyteGroupViewModel analyteGroupViewModel;
 
 
     @Override
@@ -142,11 +143,11 @@ public class AnalyteGroupController implements BasicController {
         setupDragNDrop(analyteSearchStackPane, (publicId) -> {
             // check to see if an analyte was already dragged into the analyte section before saving
             // to the view model
-            if (analyteViewModel.getPropertyValue(ANALYTE_ENTITY) == null) {
+            if (analyteGroupViewModel.getPropertyValue(ANALYTE_ENTITY) == null) {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-                analyteViewModel.setPropertyValue(ANALYTE_ENTITY, entity);
-                analyteViewModel.save();
+                analyteGroupViewModel.setPropertyValue(ANALYTE_ENTITY, entity);
+                analyteGroupViewModel.save();
                 // update the UI with the new analyte
                 addToForm(entity, selectedAnalyteContainer, selectedAnalyteStackPane, ANALYTE_ENTITY, false);
             }
@@ -155,25 +156,25 @@ public class AnalyteGroupController implements BasicController {
             // query public Id to get entity.
             Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
             // there can be one to many results
-            analyteViewModel.getObservableList(RESULTS_ENTITY).add(entity);
-            analyteViewModel.save();
+            analyteGroupViewModel.getObservableList(RESULT_ENTITIES).add(entity);
+            analyteGroupViewModel.save();
             // update the UI with the new allowable result
-            addToForm(entity, selectedResultContainer, selectedResultStackPane, RESULTS_ENTITY, true);
+            addToForm(entity, selectedResultContainer, selectedResultStackPane, RESULT_ENTITIES, true);
         });
         setupDragNDrop(specimenSearchStackPane, (publicId) -> {
             // query public Id to get entity.
             Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
             // there can be one to many specimens
-            analyteViewModel.getObservableList(SPECIMEN_ENTITY).add(entity);
-            analyteViewModel.save();
+            analyteGroupViewModel.getObservableList(SPECIMEN_ENTITIES).add(entity);
+            analyteGroupViewModel.save();
             // update the UI with the new specimen
-            addToForm(entity, selectedSpecimenContainer, selectedSpecimenStackPane, SPECIMEN_ENTITY, true);
+            addToForm(entity, selectedSpecimenContainer, selectedSpecimenStackPane, SPECIMEN_ENTITIES, true);
         });
 
         // When user created a manual result entry to be added to analyte view model.
         Subscriber<AddResultEvent> manualAddResultSubscriber = (evt -> {
             if (evt.getEventType() == ADD_RESULT_TO_ANALYTE_GROUP) {
-                analyteViewModel.setPropertyValue(RESULTS_ENTITY, evt.getOneResult());
+                analyteGroupViewModel.setPropertyValue(RESULT_ENTITIES, evt.getOneResult());
             }
         });
         EvtBusFactory.getDefaultEvtBus().subscribe(getConceptTopic(), AddResultEvent.class, manualAddResultSubscriber);
@@ -252,7 +253,7 @@ public class AnalyteGroupController implements BasicController {
     }
 
     private void removeAnalyte(HBox selectedConcept, String propertyName, VBox containerVbox, StackPane containerStackPane) {
-        analyteViewModel.setPropertyValue(propertyName, null);
+        analyteGroupViewModel.setPropertyValue(propertyName, null);
         containerVbox.getChildren().remove(selectedConcept);
         HBox.setMargin(containerVbox, new Insets(0));
         VBox.setMargin(containerStackPane, new Insets(0));
@@ -327,11 +328,11 @@ public class AnalyteGroupController implements BasicController {
         setupDragNDrop(analyteSearchStackPane, (publicId) -> {
             // check to see if an analyte was already dragged into the analyte section before saving
             // to the view model
-            if (analyteViewModel.getPropertyValue(ANALYTE_ENTITY) == null) {
+            if (analyteGroupViewModel.getPropertyValue(ANALYTE_ENTITY) == null) {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-                analyteViewModel.setPropertyValue(ANALYTE_ENTITY, entity);
-                analyteViewModel.save();
+                analyteGroupViewModel.setPropertyValue(ANALYTE_ENTITY, entity);
+                analyteGroupViewModel.save();
                 // update the UI with the new analyte
                 addToForm(entity, selectedAnalyteContainer, selectedAnalyteStackPane, ANALYTE_ENTITY, false);
             }
@@ -345,9 +346,9 @@ public class AnalyteGroupController implements BasicController {
     }
 
     private void removeSelectionCollectionBased(Entity entity, HBox selectedConcept, String propertyName, VBox containerVbox, StackPane containerStackPane) {
-        analyteViewModel.getObservableList(propertyName).remove(entity);
+        analyteGroupViewModel.getObservableList(propertyName).remove(entity);
         containerVbox.getChildren().remove(selectedConcept);
-        if (analyteViewModel.getObservableList(propertyName).isEmpty()) {
+        if (analyteGroupViewModel.getObservableList(propertyName).isEmpty()) {
             HBox.setMargin(containerVbox, new Insets(0));
             VBox.setMargin(containerStackPane, new Insets(0));
         }
@@ -356,10 +357,10 @@ public class AnalyteGroupController implements BasicController {
     }
 
     private ViewProperties getViewProperties() {
-        return analyteViewModel.getPropertyValue(VIEW_PROPERTIES);
+        return analyteGroupViewModel.getPropertyValue(VIEW_PROPERTIES);
     }
     private UUID getConceptTopic() {
-        return analyteViewModel.getPropertyValue(CONCEPT_TOPIC);
+        return analyteGroupViewModel.getPropertyValue(CONCEPT_TOPIC);
     }
     private void setupDragNDrop(Node node, Consumer<PublicId> consumer) {
 
@@ -438,15 +439,36 @@ public class AnalyteGroupController implements BasicController {
     void addResultInterpretation(ActionEvent event) {
         // TODO gather all data from view model after save. To be added to the details controller. One result interpretation is an object as a payload.
 
-        //analyteViewModel.reset();
+        //analyteGroupViewModel.reset();
         EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
-        evtBus.publish(getConceptTopic(), new AddResultInterpretationEvent(event.getSource(), AddResultInterpretationEvent.ADD_ANALYTE_GROUP, new Object(){
-            @Override
-            public String toString() {
-                return "One ADD_ANALYTE_GROUP added to device " + new Date();
-            }
-        }));
+        analyteGroupViewModel.save();
+        // if there are errors.
+        if (analyteGroupViewModel.hasErrorMsgs()) {
+            analyteGroupViewModel.getValidationMessages().forEach(vMsg -> {
+                LOG.error("Error: msg Type: %s errorcode: %s, msg: %s".formatted(vMsg.messageType(), vMsg.errorCode(), vMsg.interpolate(analyteGroupViewModel)) );
+            });
+            return;
+        }
+        EntityFacade analyte = analyteGroupViewModel.getValue(ANALYTE_ENTITY);
+        List<EntityFacade> resultConformances = analyteGroupViewModel.getValue(RESULT_ENTITIES);
+        Set<ResultConformanceRecord> resultConformanceSet = resultConformances.stream().map(s -> new ResultConformanceRecord(s.publicId())).collect(Collectors.toSet());
+        List<EntityFacade> specimens = analyteGroupViewModel.getValue(SPECIMEN_ENTITIES);
+        Set<SpecimenRecord> specimensSet = specimens.stream().map(s -> new SpecimenRecord(s.publicId())).collect(Collectors.toSet());
+        /*
+        PublicId lidrRecordId,
+                         PublicId testPerformedId,
+                         PublicId dataResultsTypeId,
+                         AnalyteRecord analyte,
+                         Set<TargetRecord> targets,
+                         Set<SpecimenRecord> specimens,
+                         Set<ResultConformanceRecord> resultConformances) {
+         */
+        AnalyteRecord analyteRecord = new AnalyteRecord(analyte.publicId());
+        LidrRecord lidrRecord = new LidrRecord(null, null, null, analyteRecord, null, specimensSet, resultConformanceSet);
+        evtBus.publish(getConceptTopic(), new AddResultInterpretationEvent(event.getSource(), AddResultInterpretationEvent.ADD_ANALYTE_GROUP, lidrRecord));
         evtBus.publish(getConceptTopic(), new LidrPropertyPanelEvent(event.getSource(), CLOSE_PANEL));
+
+        clearView();
     }
 
     @FXML
@@ -478,7 +500,7 @@ public class AnalyteGroupController implements BasicController {
 
         // remove analyte and add the search controls back
         if (selectedAnalyteContainer.getChildren().size() > 0) {
-            analyteViewModel.setPropertyValue(ANALYTE_ENTITY, null);
+            analyteGroupViewModel.setPropertyValue(ANALYTE_ENTITY, null);
             selectedAnalyteContainer.getChildren().clear();
             HBox.setMargin(selectedAnalyteContainer, new Insets(0));
             VBox.setMargin(selectedAnalyteStackPane, new Insets(0));
@@ -487,7 +509,7 @@ public class AnalyteGroupController implements BasicController {
 
         // remove all selected allowable results
         if (selectedResultContainer.getChildren().size() > 0) {
-            analyteViewModel.getObservableList(RESULTS_ENTITY).clear();
+            analyteGroupViewModel.getObservableList(RESULT_ENTITIES).clear();
             selectedResultContainer.getChildren().clear();
             HBox.setMargin(selectedResultContainer, new Insets(0));
             VBox.setMargin(selectedResultStackPane, new Insets(0));
@@ -495,11 +517,14 @@ public class AnalyteGroupController implements BasicController {
 
         // remove all selected specimens
         if (selectedSpecimenContainer.getChildren().size() > 0) {
-            analyteViewModel.getObservableList(SPECIMEN_ENTITY).clear();
+            analyteGroupViewModel.getObservableList(SPECIMEN_ENTITIES).clear();
             selectedSpecimenContainer.getChildren().clear();
             HBox.setMargin(selectedSpecimenContainer, new Insets(0));
             VBox.setMargin(selectedSpecimenStackPane, new Insets(0));
         }
+
+        // cancel means to clear properties and the model values.
+        analyteGroupViewModel.save(true);
         doneButton.setDisable(true);
     }
 

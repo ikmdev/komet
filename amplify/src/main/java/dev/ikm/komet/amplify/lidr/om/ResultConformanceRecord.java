@@ -28,6 +28,9 @@ public record ResultConformanceRecord(PublicId resultConformanceId, PublicId sca
     public static final EntityProxy.Pattern SCALE_ROLETYPE = EntityProxy.Pattern.make(null, UuidUtil.fromSNOMED("370132008"));
     public static final EntityProxy.Pattern PROPERTY_ROLETYPE = EntityProxy.Pattern.make(null, UuidUtil.fromSNOMED("370130000"));
 
+    public ResultConformanceRecord(PublicId resultConformanceId) {
+        this(resultConformanceId, null, null);
+    }
     public static ResultConformanceRecord make(PublicId resultConformanceId) {
         Optional<Entity> resultConformanceEntity = EntityService.get().getEntity(resultConformanceId.asUuidArray());
         if (resultConformanceEntity.isEmpty()) {
