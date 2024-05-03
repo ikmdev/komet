@@ -18,6 +18,7 @@ package dev.ikm.komet.amplify.lidr.properties;
 import dev.ikm.komet.amplify.lidr.analyte.AnalyteGroupController;
 import dev.ikm.komet.amplify.lidr.device.DeviceController;
 import dev.ikm.komet.amplify.lidr.events.ShowPanelEvent;
+import dev.ikm.komet.amplify.lidr.viewmodels.AnalyteGroupViewModel;
 import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
 import dev.ikm.komet.amplify.mvvm.loader.Config;
 import dev.ikm.komet.amplify.mvvm.loader.FXMLMvvmLoader;
@@ -26,7 +27,6 @@ import dev.ikm.komet.amplify.mvvm.loader.NamedVm;
 import dev.ikm.komet.amplify.properties.HierarchyController;
 import dev.ikm.komet.amplify.properties.HistoryChangeController;
 import dev.ikm.komet.amplify.lidr.results.ResultsController;
-import dev.ikm.komet.amplify.lidr.viewmodels.AnalyteViewModel;
 import dev.ikm.komet.amplify.lidr.viewmodels.DeviceViewModel;
 import dev.ikm.komet.amplify.lidr.viewmodels.ResultsViewModel;
 import dev.ikm.komet.framework.events.EvtBus;
@@ -139,7 +139,8 @@ public class PropertiesController {
         FXMLLoader loader2 = new FXMLLoader(HierarchyController.class.getResource(HIERARCHY_VIEW_FXML_FILE));
         hierarchyTabBorderPane = loader2.load();
         hierarchyController = loader2.getController();
-
+        // updateModel() TODO we may avoid this call
+        updateModel(getViewProperties(), null);
 
         // +-----------------------------------
         // ! Add a Device and MFG
@@ -158,14 +159,14 @@ public class PropertiesController {
         // +-----------------------------------
         // ! Analyte Group
         // +------------------------------------
-        ValidationViewModel analyteViewModel = new AnalyteViewModel()
+        ValidationViewModel analyteGroupViewModel = new AnalyteGroupViewModel()
                 .setPropertyValue(MODE, CREATE)
                 .setPropertyValue(VIEW_PROPERTIES, viewProperties)
                 .setPropertyValue(CONCEPT_TOPIC, conceptTopic)
                 .save(true);
 
         Config analyteGroupConfig = new Config(AnalyteGroupController.class.getResource(ANALYTE_GROUP_FXML_FILE));
-        analyteGroupConfig.namedViewModels(new NamedVm("analyteViewModel", analyteViewModel));
+        analyteGroupConfig.namedViewModels(new NamedVm("analyteGroupViewModel", analyteGroupViewModel));
         JFXNode<Pane, AnalyteGroupController> analyteControllerJFXNode = FXMLMvvmLoader.make(analyteGroupConfig);
         analyteGroupController = analyteControllerJFXNode.controller();
         analyteGroupPane = analyteControllerJFXNode.node();
@@ -238,17 +239,6 @@ public class PropertiesController {
         this.entityFacade = entityFacade;
         this.historyChangeController.updateModel(viewProperties, entityFacade);
         this.hierarchyController.updateModel(viewProperties, entityFacade);
-
-//        this.editDescriptionsController.updateModel(viewProperties);
-//
-//        this.editDescriptionFormController.updateModel(viewProperties, entityFacade);
-//        this.editFullyQualifiedNameController.updateModel(viewProperties, entityFacade);
-//
-//        // Create a new DescrNameViewModel for the otherNameViewModel.
-//        this.addOtherNameController.updateModel(viewProperties);
-//
-//        // Create a new DescrNameViewModel for the addfqncontroller.
-//        this.addFullyQualifiedNameController.updateModel(viewProperties);
     }
 
     public void updateView() {

@@ -20,12 +20,7 @@ import dev.ikm.komet.amplify.viewmodels.FormViewModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.RecordListBuilder;
-import dev.ikm.tinkar.entity.SemanticRecord;
-import dev.ikm.tinkar.entity.SemanticRecordBuilder;
-import dev.ikm.tinkar.entity.SemanticVersionRecordBuilder;
-import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -37,28 +32,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.UUID;
 
-public class AnalyteViewModel extends FormViewModel {
-    private static final Logger LOG = LoggerFactory.getLogger(AnalyteViewModel.class);
+public class AnalyteGroupViewModel extends FormViewModel {
+    private static final Logger LOG = LoggerFactory.getLogger(AnalyteGroupViewModel.class);
 
 
     public static String LIDR_RECORD = "lidrRecord";
 
     public static String ANALYTE_ENTITY = "analyteEntity";
 
-    public static String RESULTS_ENTITY = "resultsEntity";
+    public static String RESULT_ENTITIES = "resultEntities";
 
-    public static String SPECIMEN_ENTITY = "specimenEntity";
+    public static String SPECIMEN_ENTITIES = "specimenEntities";
 
-    public AnalyteViewModel() {
+    public AnalyteGroupViewModel() {
         super();
         addProperty(CONCEPT_TOPIC, (UUID) null)
                 .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
                 .addProperty(ANALYTE_ENTITY, (EntityFacade) null) // this is an analyte as a concept
-                .addProperty(RESULTS_ENTITY, (Collection) new ArrayList<>()) // this represents the results as a concept
-                .addProperty(SPECIMEN_ENTITY, (Collection) new ArrayList<>()); // this is the specimen as a concept
+                .addProperty(RESULT_ENTITIES, new ArrayList<>()) // this represents the results as a concept
+                .addProperty(SPECIMEN_ENTITIES, new ArrayList<>()); // this is the specimen as a concept
 
         //TODO add validations
 
@@ -76,6 +70,7 @@ public class AnalyteViewModel extends FormViewModel {
         }
         Transaction transaction = Transaction.make();
 
+        // TODO LIDR_RECORD is not a semantic record, it is a LidrRecord object.
         SemanticRecord lidrRecord = getPropertyValue(LIDR_RECORD);
 
         StampEntity stampEntity = transaction.getStamp(
@@ -87,8 +82,8 @@ public class AnalyteViewModel extends FormViewModel {
 
         MutableList<Object> descriptionFields = Lists.mutable.empty();
         descriptionFields.add(getPropertyValue(ANALYTE_ENTITY));
-        descriptionFields.add(getPropertyValue(RESULTS_ENTITY));
-        descriptionFields.add(getPropertyValue(SPECIMEN_ENTITY));
+        descriptionFields.add(getPropertyValue(RESULT_ENTITIES));
+        descriptionFields.add(getPropertyValue(SPECIMEN_ENTITIES));
 
         RecordListBuilder versions = RecordListBuilder.make();
         lidrRecord.versions().forEach(version -> versions.add(version));

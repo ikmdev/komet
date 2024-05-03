@@ -28,6 +28,7 @@ public class FormViewModel extends ValidationViewModel {
     // Create or Edit mode value
     public static String CREATE = "CREATE";
     public static String EDIT = "EDIT";
+    public static String VIEW = "VIEW";
 
     public FormViewModel() {
         // Default Form View

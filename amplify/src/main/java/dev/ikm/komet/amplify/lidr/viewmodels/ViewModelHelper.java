@@ -29,9 +29,7 @@ import dev.ikm.tinkar.component.graph.Vertex;
 import dev.ikm.tinkar.coordinate.navigation.calculator.NavigationCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.RelativePosition;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.entity.StampEntityVersion;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -44,6 +42,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 
 public class ViewModelHelper {
+    public static final String VIEW_PROPERTIES = "viewProperties";
+
     private static final Logger LOG = LoggerFactory.getLogger(ViewModelHelper.class);
     // TODO: Access LIDR PublicIds in a more maintainable way
     private static final PublicId MANUFACTURED_BY = PublicIds.of(UUID.fromString("505db286-0c93-3b5e-bc89-ec5182280656"));
@@ -106,6 +106,51 @@ public class ViewModelHelper {
         }
         return Optional.empty();
     }
+    public static boolean isDevice(NavigationCalculator navCalc, PublicId pubId) {
+        PublicId deviceConceptPublicId = PublicIds.of(UUID.fromString("e0ac20ad-ce6f-3ee4-8c71-51b070aa5737"));
+        int deviceComponentNid = EntityService.get().nidForPublicId(deviceConceptPublicId);
+
+
+        // possible concept having device as a parent
+        int componentNid = EntityService.get().nidForPublicId(pubId);
+
+        StampCalculator stampCalculator = navCalc.stampCalculator();
+        AtomicReference<StampEntity<StampEntityVersion>> latestStamp = new AtomicReference<>();
+        AtomicReference<DiTree<Vertex>> latestInferredDefinitionSemanticVersion = new AtomicReference<>();
+
+        for (int navigationPatternNid : navCalc.navigationCoordinate().navigationPatternNids().toArray()) {
+            int logicalDefintionPatternNid =
+                    navigationPatternNid != TinkarTerm.STATED_NAVIGATION.nid() ?
+                            TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
+
+            EntityService.get().forEachSemanticForComponentOfPattern(componentNid, logicalDefintionPatternNid, (semanticEntity) -> {
+                stampCalculator.latest(semanticEntity)
+                        .ifPresent((semanticEntityVersion) -> {
+                            if (latestStamp.get() == null) {
+                                latestStamp.set(semanticEntityVersion.stamp());
+                                latestInferredDefinitionSemanticVersion.set((DiTree) semanticEntityVersion.fieldValues().get(0));
+                            } else {
+                                if (RelativePosition.AFTER == stampCalculator.relativePosition(semanticEntityVersion.stampNid(), latestStamp.get().nid())) {
+                                    latestStamp.set(semanticEntityVersion.stamp());
+                                    latestInferredDefinitionSemanticVersion.set((DiTree) semanticEntityVersion.fieldValues().get(0));
+                                }
+                            }
+                        });
+            });
+        }
+        DiTree<Vertex> logicalDefinition = latestInferredDefinitionSemanticVersion.get();
+        ImmutableList<Vertex> vertexList = logicalDefinition.vertexMap();
+        for (Vertex vertex : vertexList) {
+            if (LogicalOperatorsForVertex.CONCEPT.semanticallyEqual((EntityFacade) vertex.meaning())) {
+                EntityFacade refConcept = (EntityFacade) vertex.propertyAsConcept(TinkarTerm.CONCEPT_REFERENCE).get();
+                if (refConcept.nid() == deviceComponentNid) {
+                    //Vertex manufacturerVertex = logicalDefinition.successors(vertex).get(0);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     public static boolean isSubtype(PublicId pubId, PublicId superTypeId) {
         return isSubtype(viewPropertiesNode().calculator().navigationCalculator(), pubId, superTypeId);
@@ -135,6 +180,16 @@ public class ViewModelHelper {
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
         ViewProperties viewProperties = windowSettings.getView().makeOverridableViewProperties();
         return viewProperties.nodeView();
+    }
+
+    public static String findDescrNameText(PublicId publicId) {
+        return findDescrNameText(publicId, "");
+    }
+    public static String findDescrNameText(PublicId publicId, String defaultValue) {
+        if (publicId == null) return defaultValue;
+        Optional<Entity> entity = EntityService.get().getEntity(publicId.asUuidArray());
+        Optional<String> stringOptional = viewPropertiesNode().calculator().getRegularDescriptionText(entity.get().nid());
+        return stringOptional.orElse(defaultValue);
     }
 
 }

@@ -233,7 +233,7 @@
                                  <content>
                                     <ScrollPane fitToWidth="true" styleClass="lidr-container">
                                        <content>
-                                          <VBox fx:id="resultsVBox">
+                                          <VBox fx:id="lidrRecordsVBox">
                                              <children>
                                                 <TitledPane maxHeight="1.7976931348623157E308" minHeight="0.0" styleClass="lidr-result-titled-pane" stylesheets="@../../amplify-opt-2.css" text="SARS-CoV-2 Result Interpretation 1">
                                                    <content>
@@ -593,15 +593,15 @@
                <top>
                   <BorderPane prefHeight="103.0" prefWidth="894.0" styleClass="concept-detail-banner-background" BorderPane.alignment="CENTER">
                      <center>
-                        <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="84.0" prefWidth="458.0" styleClass="concept-detail-banner-background">
+                        <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="84.0" prefWidth="510.0" styleClass="concept-detail-banner-background">
                            <columnConstraints>
-                              <ColumnConstraints halignment="LEFT" maxWidth="586.0" minWidth="10.0" prefWidth="42.0" />
+                              <ColumnConstraints halignment="LEFT" maxWidth="586.0" minWidth="-Infinity" prefWidth="42.0" />
                               <ColumnConstraints halignment="LEFT" maxWidth="586.0" minWidth="234.0" prefWidth="416.0" />
                            </columnConstraints>
                            <rowConstraints>
                               <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="ALWAYS" />
                               <RowConstraints maxHeight="77.0" minHeight="0.0" prefHeight="0.0" vgrow="SOMETIMES" />
-                              <RowConstraints maxHeight="65.0" minHeight="4.0" prefHeight="8.0" vgrow="SOMETIMES" />
+                              <RowConstraints maxHeight="65.0" minHeight="-Infinity" prefHeight="12.0" vgrow="SOMETIMES" />
                               <RowConstraints minHeight="9.0" prefHeight="22.0" vgrow="NEVER" />
                            </rowConstraints>
                            <children>
@@ -612,7 +612,7 @@
                                           <Font name="Open Sans Bold" size="10.0" />
                                        </font>
                                     </Label>
-                                    <TextField fx:id="snomedIdentifierText" alignment="TOP_LEFT" editable="false" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="251.0" styleClass="copyable-label" text="3478031274">
+                                    <TextField fx:id="snomedIdentifierText" alignment="TOP_LEFT" editable="false" maxWidth="1.7976931348623157E308" prefWidth="251.0" styleClass="copyable-label" text="3478031274">
                                        <font>
                                           <Font name="Open Sans Regular" size="10.0" />
                                        </font>
@@ -653,7 +653,7 @@
                                     <Tooltip fx:id="conceptNameTooltip" text="Empty Tooltip" />
                                  </tooltip>
                               </Label>
-                              <ImageView fx:id="identiconImageView" fitHeight="36.0" fitWidth="36.0" pickOnBounds="true" preserveRatio="true" />
+                              <ImageView fx:id="identiconImageView" fitHeight="36.0" fitWidth="36.0" pickOnBounds="true" preserveRatio="true" GridPane.valignment="TOP" />
                            </children>
                            <padding>
                               <Insets bottom="8.0" left="12.0" right="8.0" top="8.0" />

@@ -24,7 +24,6 @@ import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.ServiceKeys;
 import dev.ikm.tinkar.common.service.ServiceProperties;
-import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.component.graph.Vertex;
 import dev.ikm.tinkar.provider.search.Searcher;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -49,7 +48,7 @@ public class LidrViewModelTest {
     //@BeforeAll
     public static void setUpBefore() {
         LOG.info("Clear caches");
-        File dataStore = new File(System.getProperty("user.home") + "/Solor/lidr-data-starterdataV3-2024-05-01");
+        File dataStore = new File(System.getProperty("user.home") + "/Solor/snomed+loinc+lidr_int_2024-05-02");
         CachingService.clearAll();
         LOG.info("Setup Ephemeral Suite: " + LOG.getName());
         LOG.info(ServiceProperties.jvmUuid());
@@ -91,15 +90,25 @@ public class LidrViewModelTest {
         PublicId covidAnalyteId = PublicIds.of(UUID.fromString("b8963659-ca41-30e1-8580-aefb70052104"));
         PublicId targetMatrixM1Id = PublicIds.of(UUID.fromString("1d9ab589-2fd1-331e-a79d-e9190c415d36"));
         PublicId resultConformanceId = PublicIds.of(UUID.fromString("bec2eb34-753c-3ed3-8f5f-99205d8447bc"));
-        DiTree logicalDefinition = ViewModelHelper.findLatestLogicalDefinition(targetMatrixM1Id).get();
-        System.out.println(logicalDefinition);
-        for (Object o : logicalDefinition.vertexMap()) {
-            if (o instanceof Vertex v) {
-                if (v.meaning().equals(TinkarTerm.ROLE_TYPE)) {
-                    System.out.println(v.propertyAsConcept(TinkarTerm.ROLE_TYPE));
-                }
-            }
-        }
+        PublicId testLogicalDef = deviceId;
+
+        ViewModelHelper
+                .findLatestLogicalDefinition(testLogicalDef)
+                .ifPresentOrElse(logicalDefinition -> {
+                    /* is Present */
+                        System.out.println(logicalDefinition);
+                        for (Object o : logicalDefinition.vertexMap()) {
+                            if (o instanceof Vertex v) {
+                                if (v.meaning().equals(TinkarTerm.ROLE_TYPE)) {
+                                    System.out.println(v.propertyAsConcept(TinkarTerm.ROLE_TYPE));
+                                }
+                            }
+                        }
+                    },
+                    /* Not Present */
+                    ()-> System.err.println("Error: could not find %s".formatted(testLogicalDef))
+                );
+
 
         EntityFacade manufacturerEntity = (EntityFacade) ViewModelHelper.findDeviceManufacturer(deviceId).get();
         System.out.println("### MANUFACTURER ENTITY: " + manufacturerEntity);

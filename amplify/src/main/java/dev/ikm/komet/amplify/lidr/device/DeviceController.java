@@ -18,8 +18,8 @@ package dev.ikm.komet.amplify.lidr.device;
 import dev.ikm.komet.amplify.commons.BasicController;
 import dev.ikm.komet.amplify.lidr.events.AddDeviceEvent;
 import dev.ikm.komet.amplify.lidr.events.LidrPropertyPanelEvent;
-import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
 import dev.ikm.komet.amplify.lidr.viewmodels.DeviceViewModel;
+import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -366,16 +366,16 @@ public class DeviceController implements BasicController {
 
     @FXML
     public void createDevice(ActionEvent event) {
-        // TODO create device and publish to lidr details controller.
         LOG.info("createDevice -> Todo publish event containing the device record to be added to lidr details controller.");
-        // 1. publish
-        // 2. reset screen for next entry
-        // 3. publish
-        Object device = new Object();
-        evtBus.publish(getConceptTopic(), new LidrPropertyPanelEvent(event.getSource(), CLOSE_PANEL));
-
-        // TODO put a real entity or public id as the payload.
-        evtBus.publish(getConceptTopic(), new AddDeviceEvent(event.getSource(), ADD_DEVICE, null));
+        deviceViewModel.save();
+        if (!deviceViewModel.hasErrorMsgs()) {
+            // 1. publish
+            // 2. reset screen for next entry
+            // 3. publish
+            evtBus.publish(getConceptTopic(), new LidrPropertyPanelEvent(event.getSource(), CLOSE_PANEL));
+            evtBus.publish(getConceptTopic(), new AddDeviceEvent(event.getSource(), ADD_DEVICE, deviceViewModel.getValue(DEVICE_ENTITY)));
+            clearView();
+        }
     }
 
     @FXML
