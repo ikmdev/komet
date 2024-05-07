@@ -39,6 +39,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.InvalidationListener;
@@ -399,7 +400,12 @@ public class DetailsController  {
                     {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
                     {MenuHelper.SEPARATOR},
                     {"Add Other Name", true, null, (EventHandler<ActionEvent>) actionEvent -> {
-                        ConceptEntity currentConcept = getConceptViewModel().getPropertyValue(CURRENT_ENTITY);
+                        ConceptEntity currentConcept = null;
+                        if (getConceptViewModel().getPropertyValue(CURRENT_ENTITY) instanceof EntityProxy.Concept concept) {
+                            currentConcept = (ConceptEntity) EntityService.get().getEntity(concept.nid()).get();
+                        } else {
+                            currentConcept = getConceptViewModel().getPropertyValue(CURRENT_ENTITY);
+                        }
                         eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(this,
                                 // pass the publicId of the Concept
                                 AddOtherNameToConceptEvent.ADD_DESCRIPTION, currentConcept.publicId())); // concept's publicId
