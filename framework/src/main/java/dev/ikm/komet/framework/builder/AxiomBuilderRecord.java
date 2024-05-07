@@ -121,7 +121,7 @@ public record AxiomBuilderRecord(ConceptFacade axiomMeaning, MutableList<AxiomPr
         AxiomPropertyRecord roleTypeRecord = new AxiomPropertyRecord(TinkarTerm.ROLE_TYPE, roleType);
         AxiomPropertyRecord roleOperatorRecord = new AxiomPropertyRecord(TinkarTerm.ROLE_OPERATOR, TinkarTerm.EXISTENTIAL_RESTRICTION);
         MutableList<AxiomPropertyRecord> properties = Lists.mutable.of(roleTypeRecord, roleOperatorRecord);
-        AxiomBuilderRecord some = new AxiomBuilderRecord(TinkarTerm.ROLE_TYPE, properties, Lists.mutable.empty(),
+        AxiomBuilderRecord some = new AxiomBuilderRecord(TinkarTerm.ROLE, properties, Lists.mutable.empty(),
                 UUID.randomUUID(), nextAxiomIndex.getAndIncrement(), nextAxiomIndex);
         some.children.add(makeConceptReference(roleRestriction));
         return some;
@@ -176,7 +176,7 @@ public record AxiomBuilderRecord(ConceptFacade axiomMeaning, MutableList<AxiomPr
         AxiomPropertyRecord roleTypeRecord = new AxiomPropertyRecord(TinkarTerm.ROLE_TYPE, TinkarTerm.ROLE_GROUP);
         AxiomPropertyRecord roleOperatorRecord = new AxiomPropertyRecord(TinkarTerm.ROLE_OPERATOR, TinkarTerm.EXISTENTIAL_RESTRICTION);
         MutableList<AxiomPropertyRecord> properties = Lists.mutable.of(roleTypeRecord, roleOperatorRecord);
-        AxiomBuilderRecord group = new AxiomBuilderRecord(TinkarTerm.ROLE_TYPE, properties, Lists.mutable.empty(),
+        AxiomBuilderRecord group = new AxiomBuilderRecord(TinkarTerm.ROLE, properties, Lists.mutable.empty(),
                 UUID.randomUUID(), nextAxiomIndex.getAndIncrement(), nextAxiomIndex);
 
         MutableList<AxiomBuilderRecord> andChildrenList = Lists.mutable.of(groupElements);
