@@ -15,10 +15,16 @@
  */
 package dev.ikm.komet.framework.panel.axiom;
 
-import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.Dialogs;
+import dev.ikm.komet.framework.MenuItemWithText;
+import dev.ikm.komet.framework.StyleClasses;
+import dev.ikm.komet.framework.controls.EntityLabel;
+import dev.ikm.komet.framework.dnd.DragImageMaker;
+import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.docbook.DocBook;
+import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
-import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.performance.Measures;
 import dev.ikm.komet.framework.performance.Topic;
 import dev.ikm.komet.framework.performance.impl.ObservationRecord;
@@ -26,9 +32,26 @@ import dev.ikm.komet.framework.rulebase.Consequence;
 import dev.ikm.komet.framework.rulebase.ConsequenceAction;
 import dev.ikm.komet.framework.rulebase.ConsequenceMenu;
 import dev.ikm.komet.framework.rulebase.RuleService;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.util.text.NaturalOrder;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.component.Concept;
+import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.coordinate.Coordinates;
+import dev.ikm.tinkar.coordinate.logic.PremiseType;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.graph.DiTreeEntity;
+import dev.ikm.tinkar.entity.graph.EntityVertex;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.Event;
 import javafx.geometry.Bounds;
@@ -44,30 +67,6 @@ import org.controlsfx.control.action.ActionUtils;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
-import dev.ikm.komet.framework.Dialogs;
-import dev.ikm.komet.framework.MenuItemWithText;
-import dev.ikm.komet.framework.StyleClasses;
-import dev.ikm.komet.framework.controls.EntityLabel;
-import dev.ikm.komet.framework.dnd.DragImageMaker;
-import dev.ikm.komet.framework.dnd.KometClipboard;
-import dev.ikm.komet.framework.docbook.DocBook;
-import dev.ikm.komet.framework.graphics.Icon;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.util.text.NaturalOrder;
-import dev.ikm.tinkar.common.util.time.DateTimeUtil;
-import dev.ikm.tinkar.component.graph.DiTree;
-import dev.ikm.tinkar.coordinate.logic.PremiseType;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.graph.DiTreeEntity;
-import dev.ikm.tinkar.entity.graph.EntityVertex;
-import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +78,8 @@ import java.util.Set;
 
 import static dev.ikm.komet.framework.PseudoClasses.INACTIVE_PSEUDO_CLASS;
 import static dev.ikm.komet.framework.panel.axiom.AxiomView.*;
-import static dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex.*;
+import static dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex.CONCEPT;
+import static dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex.FEATURE;
 import static dev.ikm.tinkar.coordinate.logic.PremiseType.STATED;
 import static dev.ikm.tinkar.terms.TinkarTerm.CONCEPT_REFERENCE;
 
@@ -309,7 +309,7 @@ public class ClauseView {
     private void setupForRoleSome() {
         int column = 0;
         ConceptFacade roleType = axiomVertex.propertyFast(TinkarTerm.ROLE_TYPE);
-        if (roleType.nid() == TinkarTerm.ROLE_GROUP.nid()) {
+        if (PublicId.equals(roleType.publicId(), TinkarTerm.ROLE_GROUP)) {
             expanded.set(true);
             rootBorderPane.getStyleClass().add(StyleClasses.DEF_ROLE_GROUP.toString());
             titleLabel.setGraphic(Icon.ROLE_GROUP.makeIcon());
