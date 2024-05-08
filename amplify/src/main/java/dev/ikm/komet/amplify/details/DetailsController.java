@@ -697,6 +697,7 @@ public class DetailsController  {
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
         // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
         Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(viewCalculator, entityFacade);
+        otherNamesVBox.getChildren().clear();
         descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
 
             PatternEntity<PatternEntityVersion> patternEntity = semanticEntityVersion.pattern();
@@ -715,8 +716,6 @@ public class DetailsController  {
                 updateFQNSemantics(semanticEntityVersion, fieldDescriptions);
                 LOG.debug("FQN Name = " + semanticEntityVersion + " " + fieldDescriptions);
             } else {
-                otherNamesVBox.getChildren().clear();
-
                 // start adding a row
                 List<TextFlow> rows = generateOtherNameRow(semanticEntityVersion, fieldDescriptions);
                 rows.forEach(textFlowPane -> {
