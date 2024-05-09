@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.amplify.events;
 
-import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
+import dev.ikm.komet.amplify.om.DescrName;
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
 
@@ -24,25 +24,28 @@ public class EditConceptEvent extends Evt  {
     public static final EvtType<EditConceptEvent> ADD_FQN = new EvtType<>(Evt.ANY, "ADD_FQN");
     public static final EvtType<EditConceptEvent> ADD_OTHER_NAME = new EvtType<>(Evt.ANY, "ADD_OTHER_NAME");
 
+    public static final EvtType<EditConceptEvent> EDIT_FQN = new EvtType<>(Evt.ANY, "EDIT_FQN");
 
-    private ValidationViewModel viewModel;
+
+    private DescrName model;
 
     /**
      * Constructs a prototypical Event.
      *
-     * @param source         the object on which the Event initially occurred
-     * @param eventType
+     * @param source        the object on which the Event initially occurred
+     * @param eventType     the event type
+     * @param model         the event payload: a record of type DescrName
      */
-    public EditConceptEvent(Object source, EvtType eventType, ValidationViewModel viewModel) {
+    public EditConceptEvent(Object source, EvtType eventType, DescrName model) {
         super(source, eventType);
-        this.viewModel = viewModel;
+        this.model = model;
     }
 
-    public ValidationViewModel getViewModel() {
-        return viewModel;
+    public DescrName getModel() {
+        return model;
     }
 
-    public void setViewModel(ValidationViewModel viewModel) {
-        this.viewModel = viewModel;
+    public void setModel(DescrName model) {
+        this.model = model;
     }
 }

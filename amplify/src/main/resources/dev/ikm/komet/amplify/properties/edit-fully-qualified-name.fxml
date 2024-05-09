@@ -35,7 +35,7 @@
                         <ButtonBar prefHeight="75.0" prefWidth="200.0">
                             <buttons>
                                 <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#handleCancelButtonEvent" styleClass="edit-concept-cancel-button" text="CANCEL" />
-                                <Button fx:id="submitButton" layoutX="135.0" layoutY="47.0" minWidth="63.0" mnemonicParsing="false" onAction="#saveOtherName" styleClass="edit-concept-submit-button" text="SUBMIT" />
+                                <Button fx:id="submitButton" layoutX="135.0" layoutY="47.0" minWidth="63.0" mnemonicParsing="false" onAction="#updateFQN" styleClass="edit-concept-submit-button" text="SUBMIT" />
                             </buttons>
                         </ButtonBar>
                     </children>
