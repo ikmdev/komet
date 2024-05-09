@@ -13,12 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.amplify.lidr.om;
+package dev.ikm.komet.amplify.data.om;
 
 import dev.ikm.tinkar.common.id.PublicId;
 
-public record SpecimenRecord(PublicId specimenId, PublicId systemId, PublicId methodTypeId) {
-    public SpecimenRecord (PublicId specimenId) {
-        this(specimenId, null, null);
-    }
+public record STAMPDetail(PublicId status, long time, PublicId author, PublicId module, PublicId path) {
 }

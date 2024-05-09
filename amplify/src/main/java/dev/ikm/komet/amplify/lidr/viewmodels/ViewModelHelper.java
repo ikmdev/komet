@@ -15,30 +15,25 @@
  */
 package dev.ikm.komet.amplify.lidr.viewmodels;
 
-import dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex;
-import dev.ikm.komet.framework.view.ObservableView;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.framework.window.WindowSettings;
-import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.komet.preferences.KometPreferencesImpl;
+import dev.ikm.komet.amplify.data.om.STAMPDetail;
+import dev.ikm.komet.amplify.data.persistence.STAMPWriter;
+import dev.ikm.komet.amplify.lidr.om.LidrRecord;
+import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
+import dev.ikm.komet.amplify.mvvm.validator.ValidationMessage;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.component.Concept;
-import dev.ikm.tinkar.component.graph.DiTree;
-import dev.ikm.tinkar.component.graph.Vertex;
-import dev.ikm.tinkar.coordinate.navigation.calculator.NavigationCalculator;
-import dev.ikm.tinkar.coordinate.stamp.calculator.RelativePosition;
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
-import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
+
+import static dev.ikm.komet.amplify.lidr.om.DataModelHelper.*;
+import static dev.ikm.komet.amplify.viewmodels.StampViewModel.*;
 
 
 public class ViewModelHelper {
@@ -46,141 +41,8 @@ public class ViewModelHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(ViewModelHelper.class);
     // TODO: Access LIDR PublicIds in a more maintainable way
-    private static final PublicId MANUFACTURED_BY = PublicIds.of(UUID.fromString("505db286-0c93-3b5e-bc89-ec5182280656"));
-
-    public static Optional<Concept> findDeviceManufacturer(PublicId pubId) {
-        return findDeviceManufacturer(viewPropertiesNode().calculator().navigationCalculator(), pubId);
-    }
-
-    public static Optional<Concept> findDeviceManufacturer(NavigationCalculator navCalc, PublicId pubId) {
-        AtomicReference<Optional<Concept>> deviceManufacturer = new AtomicReference<>(Optional.empty());
-        findLatestLogicalDefinition(navCalc, pubId).ifPresent((latestLogicalDefinition) -> {
-            deviceManufacturer.set(findConceptReferenceForRoleType(latestLogicalDefinition, MANUFACTURED_BY));
-        });
-        return deviceManufacturer.get();
-    }
-
-    public static Optional<DiTree<Vertex>> findLatestLogicalDefinition(PublicId pubId) {
-        return findLatestLogicalDefinition(viewPropertiesNode().calculator().navigationCalculator(), pubId);
-    }
-
-    public static Optional<DiTree<Vertex>> findLatestLogicalDefinition(NavigationCalculator navCalc, PublicId pubId) {
-        int componentNid = EntityService.get().nidForPublicId(pubId);
-        StampCalculator stampCalculator = navCalc.stampCalculator();
-        AtomicReference<StampEntity<StampEntityVersion>> latestStamp = new AtomicReference<>();
-        AtomicReference<DiTree<Vertex>> latestLogicalDefinitionSemanticVersion = new AtomicReference<>();
-
-        for (int navigationPatternNid : navCalc.navigationCoordinate().navigationPatternNids().toArray()) {
-            int logicalDefintionPatternNid =
-                    navigationPatternNid != TinkarTerm.STATED_NAVIGATION_PATTERN.nid() ?
-                            TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
-
-            EntityService.get().forEachSemanticForComponentOfPattern(componentNid, logicalDefintionPatternNid, (semanticEntity) -> {
-                stampCalculator.latest(semanticEntity)
-                        .ifPresent((semanticEntityVersion) -> {
-                            if (latestStamp.get() == null) {
-                                latestStamp.set(semanticEntityVersion.stamp());
-                                latestLogicalDefinitionSemanticVersion.set((DiTree) semanticEntityVersion.fieldValues().get(0));
-                            } else {
-                                if (RelativePosition.AFTER == stampCalculator.relativePosition(semanticEntityVersion.stampNid(), latestStamp.get().nid())) {
-                                    latestStamp.set(semanticEntityVersion.stamp());
-                                    latestLogicalDefinitionSemanticVersion.set((DiTree) semanticEntityVersion.fieldValues().get(0));
-                                }
-                            }
-                        });
-            });
-        }
-        return Optional.ofNullable(latestLogicalDefinitionSemanticVersion.get());
-    }
-
-    public static Optional<Concept> findConceptReferenceForRoleType(DiTree<Vertex> logicalDefinition, PublicId roleTypeToFind) {
-        ImmutableList<Vertex> vertexList = logicalDefinition.vertexMap();
-        for (Vertex vertex : vertexList) {
-            if (LogicalOperatorsForVertex.ROLE.semanticallyEqual((EntityFacade) vertex.meaning())) {
-                Concept roleTypeProperty = vertex.propertyAsConcept(TinkarTerm.ROLE_TYPE).get();
-                if (roleTypeProperty.equals(roleTypeToFind)) {
-                    Vertex manufacturerVertex = logicalDefinition.successors(vertex).get(0);
-                    return manufacturerVertex.propertyAsConcept(TinkarTerm.CONCEPT_REFERENCE);
-                }
-            }
-        }
-        return Optional.empty();
-    }
-    public static boolean isDevice(NavigationCalculator navCalc, PublicId pubId) {
-        PublicId deviceConceptPublicId = PublicIds.of(UUID.fromString("e0ac20ad-ce6f-3ee4-8c71-51b070aa5737"));
-        int deviceComponentNid = EntityService.get().nidForPublicId(deviceConceptPublicId);
 
 
-        // possible concept having device as a parent
-        int componentNid = EntityService.get().nidForPublicId(pubId);
-
-        StampCalculator stampCalculator = navCalc.stampCalculator();
-        AtomicReference<StampEntity<StampEntityVersion>> latestStamp = new AtomicReference<>();
-        AtomicReference<DiTree<Vertex>> latestInferredDefinitionSemanticVersion = new AtomicReference<>();
-
-        for (int navigationPatternNid : navCalc.navigationCoordinate().navigationPatternNids().toArray()) {
-            int logicalDefintionPatternNid =
-                    navigationPatternNid != TinkarTerm.STATED_NAVIGATION.nid() ?
-                            TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
-
-            EntityService.get().forEachSemanticForComponentOfPattern(componentNid, logicalDefintionPatternNid, (semanticEntity) -> {
-                stampCalculator.latest(semanticEntity)
-                        .ifPresent((semanticEntityVersion) -> {
-                            if (latestStamp.get() == null) {
-                                latestStamp.set(semanticEntityVersion.stamp());
-                                latestInferredDefinitionSemanticVersion.set((DiTree) semanticEntityVersion.fieldValues().get(0));
-                            } else {
-                                if (RelativePosition.AFTER == stampCalculator.relativePosition(semanticEntityVersion.stampNid(), latestStamp.get().nid())) {
-                                    latestStamp.set(semanticEntityVersion.stamp());
-                                    latestInferredDefinitionSemanticVersion.set((DiTree) semanticEntityVersion.fieldValues().get(0));
-                                }
-                            }
-                        });
-            });
-        }
-        DiTree<Vertex> logicalDefinition = latestInferredDefinitionSemanticVersion.get();
-        ImmutableList<Vertex> vertexList = logicalDefinition.vertexMap();
-        for (Vertex vertex : vertexList) {
-            if (LogicalOperatorsForVertex.CONCEPT.semanticallyEqual((EntityFacade) vertex.meaning())) {
-                EntityFacade refConcept = (EntityFacade) vertex.propertyAsConcept(TinkarTerm.CONCEPT_REFERENCE).get();
-                if (refConcept.nid() == deviceComponentNid) {
-                    //Vertex manufacturerVertex = logicalDefinition.successors(vertex).get(0);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public static boolean isSubtype(PublicId pubId, PublicId superTypeId) {
-        return isSubtype(viewPropertiesNode().calculator().navigationCalculator(), pubId, superTypeId);
-    }
-
-    public static boolean isSubtype(NavigationCalculator navCalc, PublicId pubId, PublicId superTypeId) {
-        int deviceComponentNid = EntityService.get().nidForPublicId(superTypeId);
-
-        AtomicReference<DiTree<Vertex>> logicalDefinition = new AtomicReference<>();
-        findLatestLogicalDefinition(navCalc, pubId).ifPresent(logicalDefinition::set);
-        ImmutableList<Vertex> vertexList = logicalDefinition.get().vertexMap();
-        for (Vertex vertex : vertexList) {
-            if (LogicalOperatorsForVertex.CONCEPT.semanticallyEqual((EntityFacade) vertex.meaning())) {
-                EntityFacade refConcept = (EntityFacade) vertex.propertyAsConcept(TinkarTerm.CONCEPT_REFERENCE).get();
-                if (refConcept.nid() == deviceComponentNid) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public static ObservableView viewPropertiesNode() {
-        // TODO how do we get a viewProperties?
-        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        KometPreferences windowPreferences = appPreferences.node("main-komet-window");
-        WindowSettings windowSettings = new WindowSettings(windowPreferences);
-        ViewProperties viewProperties = windowSettings.getView().makeOverridableViewProperties();
-        return viewProperties.nodeView();
-    }
 
     public static String findDescrNameText(PublicId publicId) {
         return findDescrNameText(publicId, "");
@@ -190,6 +52,46 @@ public class ViewModelHelper {
         Optional<Entity> entity = EntityService.get().getEntity(publicId.asUuidArray());
         Optional<String> stringOptional = viewPropertiesNode().calculator().getRegularDescriptionText(entity.get().nid());
         return stringOptional.orElse(defaultValue);
+    }
+
+    public static PublicId addNewLidrRecord(LidrRecord lidrRecord, PublicId device, ValidationViewModel stampViewModel) {
+        if (device == null || lidrRecord == null || stampViewModel == null) {
+            throw new RuntimeException("Error Unable to create a LIDR record to the database. lidr record = " + lidrRecord);
+        }
+        // Generate a new Stamp
+        STAMPDetail stampDetail = toStampDetail(stampViewModel);
+
+        // Create a stamp into the database.
+        PublicId newStampPublicId = PublicIds.newRandom();
+        STAMPWriter stampWriter = new STAMPWriter(newStampPublicId);
+        stampWriter.write(stampDetail);
+
+        // Lidr record is written to database. It needs a device and stamp entity.
+        return write(lidrRecord, device, newStampPublicId);
+    }
+
+    public static STAMPDetail toStampDetail(ValidationViewModel stampViewModel) {
+        stampViewModel.save();
+        if (stampViewModel.hasErrorMsgs()) {
+            StringBuilder sb = new StringBuilder();
+            for(ValidationMessage message: stampViewModel.getValidationMessages()) {
+                sb.append(message.interpolate(stampViewModel) + "\n");
+            }
+            throw new RuntimeException("Error(s) with validation message(s)\n" + sb);
+        }
+        State status = stampViewModel.getValue(STATUS_PROPERTY);
+        PublicId statusPublicId = status != null ? status.publicId() : TinkarTerm.ACTIVE_STATE.publicId();
+        Concept author = stampViewModel.getValue(AUTHOR_PROPERTY);
+        PublicId authorPublicId = author != null ? author.publicId() : TinkarTerm.USER.publicId();
+        Long time = stampViewModel.getValue(TIME_PROPERTY);
+        long epochMillis = time == null ? System.currentTimeMillis() : time;
+        Concept module = stampViewModel.getValue(MODULE_PROPERTY);
+        PublicId modulePublicId = module != null ? module.publicId() : TinkarTerm.DEVELOPMENT_MODULE.publicId();
+        Concept path = stampViewModel.getValue(PATH_PROPERTY);
+        PublicId pathPublicId = path != null ? path.publicId() : TinkarTerm.DEVELOPMENT_PATH.publicId();
+
+        return new STAMPDetail(statusPublicId, epochMillis, authorPublicId, modulePublicId, pathPublicId);
+
     }
 
 }

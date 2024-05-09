@@ -22,6 +22,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
+import dev.ikm.tinkar.terms.State;
 
 import static dev.ikm.komet.amplify.viewmodels.StampViewModel.*;
 import static dev.ikm.komet.amplify.viewmodels.StampViewModel.PATHS_PROPERTY;
@@ -42,7 +43,7 @@ public class ConceptViewModelTest {
 
         StampViewModel stampViewModel = new StampViewModel();
         stampViewModel
-                .setPropertyValue(STATUS_PROPERTY, "Incomplete")
+                .setPropertyValue(STATUS_PROPERTY, State.ACTIVE)
                 .setPropertyValue(TIME_PROPERTY, System.currentTimeMillis())
                 .setPropertyValue(MODULE_PROPERTY, 0)
                 .setPropertyValue(PATH_PROPERTY, 0)

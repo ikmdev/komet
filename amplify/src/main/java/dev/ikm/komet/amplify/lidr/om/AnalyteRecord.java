@@ -15,37 +15,12 @@
  */
 package dev.ikm.komet.amplify.lidr.om;
 
-import dev.ikm.komet.amplify.lidr.viewmodels.ViewModelHelper;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.common.util.uuid.UuidUtil;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.terms.EntityProxy;
-
-import java.util.Optional;
 
 public record AnalyteRecord(PublicId analyteId, PublicId componentId, PublicId timeAspectId, PublicId methodTypeId) {
-    public static final EntityProxy.Pattern COMPONENT_ROLETYPE = EntityProxy.Pattern.make(null, UuidUtil.fromSNOMED("246093002"));
-    public static final EntityProxy.Pattern TIME_ASPECT_ROLETYPE = EntityProxy.Pattern.make(null, UuidUtil.fromSNOMED("370134009"));
-    public static final EntityProxy.Pattern METHOD_TYPE_ROLETYPE = EntityProxy.Pattern.make(null, UuidUtil.fromSNOMED("260686004"));
 
     public AnalyteRecord(PublicId analyteId){
         this(analyteId, null, null, null);
     }
-    public static AnalyteRecord make(PublicId analyteId) {
-        Optional<Entity> analyteEntity = EntityService.get().getEntity(analyteId.asUuidArray());
-        if (analyteEntity.isEmpty()) {
-            throw new IllegalArgumentException("PublicId " + analyteId + " is not in database.");
-        }
-        return make(analyteEntity.get());
-    }
 
-    public static AnalyteRecord make(Entity analyteEntity) {
-        return new AnalyteRecord(
-                analyteEntity.publicId(),
-               ViewModelHelper.findConceptReferenceForRoleType(ViewModelHelper.findLatestLogicalDefinition(analyteEntity).get(), COMPONENT_ROLETYPE).get().publicId(),
-               ViewModelHelper.findConceptReferenceForRoleType(ViewModelHelper.findLatestLogicalDefinition(analyteEntity).get(), TIME_ASPECT_ROLETYPE).get().publicId(),
-               ViewModelHelper.findConceptReferenceForRoleType(ViewModelHelper.findLatestLogicalDefinition(analyteEntity).get(), METHOD_TYPE_ROLETYPE).get().publicId()
-        );
-    }
 }

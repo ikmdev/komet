@@ -15,30 +15,7 @@
  */
 package dev.ikm.komet.amplify.lidr.om;
 
-import dev.ikm.komet.amplify.lidr.viewmodels.ViewModelHelper;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.terms.EntityProxy;
-
-import java.util.Optional;
-import java.util.UUID;
 
 public record TargetRecord(PublicId targetId, PublicId targetAnalyteId) {
-    public static final EntityProxy.Concept ANALYTE_ROLETYPE = EntityProxy.Concept.make(null, UUID.fromString("8c9214df-511c-36ba-bd5d-f4d38ce25f2f"));
-
-    public static TargetRecord make(PublicId targetId) {
-        Optional<Entity> targetEntity = EntityService.get().getEntity(targetId.asUuidArray());
-        if (targetEntity.isEmpty()) {
-            throw new IllegalArgumentException("PublicId " + targetId + " is not in database.");
-        }
-        return make(targetEntity.get());
-    }
-
-    public static TargetRecord make(Entity targetEntity) {
-        return new TargetRecord(
-                targetEntity.publicId(),
-               ViewModelHelper.findConceptReferenceForRoleType(ViewModelHelper.findLatestLogicalDefinition(targetEntity).get(), ANALYTE_ROLETYPE).get().publicId()
-        );
-    }
 }

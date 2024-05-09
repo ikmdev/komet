@@ -13,12 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.amplify.lidr.om;
+package dev.ikm.komet.amplify.data.persistence;
 
 import dev.ikm.tinkar.common.id.PublicId;
 
-public record SpecimenRecord(PublicId specimenId, PublicId systemId, PublicId methodTypeId) {
-    public SpecimenRecord (PublicId specimenId) {
-        this(specimenId, null, null);
+import java.util.UUID;
+
+public interface Writer {
+
+    default long[] createAdditionalLongs(PublicId publicId) {
+        long[] additionalLongs = new long[(publicId.uuidCount() * 2) - 2];
+        int index = 0;
+        for (int i = 1; i < publicId.uuidCount(); i++) {
+            UUID uuid = publicId.asUuidArray()[i];
+            additionalLongs[index++] = uuid.getMostSignificantBits();
+            additionalLongs[index++] = uuid.getLeastSignificantBits();
+        }
+        return additionalLongs.length == 0 ? null : additionalLongs;
     }
 }

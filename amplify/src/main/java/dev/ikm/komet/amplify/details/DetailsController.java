@@ -660,7 +660,7 @@ public class DetailsController  {
         ValidationViewModel stampViewModel = conceptViewModel.getPropertyValue(CONCEPT_STAMP_VIEW_MODEL);
         if (conceptViewModel.getPropertyValue(CONCEPT_STAMP_VIEW_MODEL) != null) {
             stampViewModel.setPropertyValue(MODE, mode)
-                    .setPropertyValue(STATUS_PROPERTY, stamp.state().toString())
+                    .setPropertyValue(STATUS_PROPERTY, stamp.state())
                     .setPropertyValue(MODULE_PROPERTY, stamp.moduleNid())
                     .setPropertyValue(PATH_PROPERTY, stamp.pathNid())
                     .setPropertyValue(TIME_PROPERTY, stamp.time())
@@ -1165,7 +1165,9 @@ public class DetailsController  {
         ConceptEntity pathEntity = stampViewModel.getValue(PATH_PROPERTY);
         String pathDescr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
         pathText.setText(pathDescr);
-        statusText.setText(stampViewModel.getValue(STATUS_PROPERTY));
+        State status = stampViewModel.getValue(STATUS_PROPERTY);
+        String statusMsg = status == null ? "Active" : viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
+        statusText.setText(statusMsg);
     }
 
     public void compactSizeWindow() {

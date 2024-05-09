@@ -24,6 +24,7 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import javafx.fxml.FXML;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +67,7 @@ public class ResultConformanceDetailsController extends AbstractBasicController 
         clearView();
         resultsConformanceRecord = resultDetailsViewModel.getPropertyValue(RESULT_CONFORMANCE_RECORD);
 
+
     }
 
     private UUID getConceptTopic() {
@@ -88,7 +90,11 @@ public class ResultConformanceDetailsController extends AbstractBasicController 
         nameValueText.setText("");
         scaleTypeValueText.setText("");
     }
-
+    private TextFlow createResultsTextFlow(String resultText) {
+        Text text = new Text(resultText);
+        text.getStyleClass().add("result-field-value");
+        return new TextFlow(text);
+    }
     @Override
     public void cleanup() {
 
