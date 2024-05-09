@@ -525,14 +525,12 @@ public class App extends Application {
             //TODO: Refactor factory constructor calls below to use ServiceLoader (make constructors private)
             KometNodeFactory navigatorNodeFactory = new GraphNavigatorNodeFactory();
             KometNodeFactory searchNodeFactory = new SearchNodeFactory();
-            KometNodeFactory reasonerNodeFactory = new ReasonerResultsNodeFactory();
 
             journalController.launchKometFactoryNodes(
                     journalWindowSettings.getValue(JOURNAL_TITLE),
                     windowSettings.getView(),
                     navigatorNodeFactory,
-                    searchNodeFactory,
-                    reasonerNodeFactory);
+                    searchNodeFactory);
         });
         // disable the delete menu option for a Journal Card.
         journalWindowSettings.setValue(CAN_DELETE, false);
