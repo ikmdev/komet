@@ -31,6 +31,7 @@ import dev.ikm.komet.amplify.mvvm.loader.JFXNode;
 import dev.ikm.komet.amplify.mvvm.loader.NamedVm;
 import dev.ikm.komet.amplify.viewmodels.StampViewModel;
 import dev.ikm.komet.amplify.window.WindowSupport;
+import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
@@ -39,15 +40,21 @@ import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.framework.tabs.DetachableTab;
+import dev.ikm.komet.framework.tabs.TabGroup;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
 import dev.ikm.komet.preferences.*;
+import dev.ikm.komet.progress.CompletionNodeFactory;
+import dev.ikm.komet.progress.ProgressNodeFactory;
 import dev.ikm.komet.reasoner.ReasonerResultsController;
 import dev.ikm.komet.reasoner.ReasonerResultsNode;
+import dev.ikm.komet.reasoner.ReasonerResultsNodeFactory;
 import dev.ikm.komet.reasoner.StringWithOptionalConceptFacade;
 import dev.ikm.komet.search.SearchNode;
+import dev.ikm.komet.search.SearchNodeFactory;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
@@ -73,6 +80,7 @@ import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -161,7 +169,7 @@ public class JournalController {
     /////////////////////////////////////////////////////////////////
     private Pane navigatorNodePanel;
     private Pane searchNodePanel;
-    private Pane reasonerNodePanel;
+    private BorderPane reasonerNodePanel;
 
     private ActivityStream navigatorActivityStream;
     private ActivityStream searchActivityStream;
@@ -189,6 +197,8 @@ public class JournalController {
     public void initialize() {
         // According to the JavaFX docs an ordinary Pane does not clip region. TODO infinite workspace
         clipChildren(desktopSurfacePane, 0);
+
+        reasonerNodePanel = new BorderPane();
 
         // When user clicks on sidebar tray's toggle buttons.
         sidebarToggleGroup.selectedToggleProperty().addListener((observableValue, oldValue, newValue) -> {
@@ -259,8 +269,7 @@ public class JournalController {
     public void launchKometFactoryNodes(String journalName,
                                         ObservableViewNoOverride windowView,
                                         KometNodeFactory navigationFactory,
-                                        KometNodeFactory searchFactory,
-                                        KometNodeFactory reasonerFactory) {
+                                        KometNodeFactory searchFactory) {
         // Generate a unique activity stream for a navigator for each journal launched. Children (window Panels will subscribe to them).
         String uniqueNavigatorTopic = "navigation-%s".formatted(journalName);
         UUID uuid = UuidT5Generator.get(uniqueNavigatorTopic);
@@ -276,7 +285,7 @@ public class JournalController {
         searchActivityStream = ActivityStreams.create(searchActivityStreamKey);
 
         loadSearchPanel(searchActivityStreamKey, windowView, searchFactory);
-        loadReasonerPanel(ActivityStreams.REASONER, windowView, reasonerFactory);
+        loadReasonerPanel(ActivityStreams.REASONER, windowView);
 
 
         isSlideOutOpen = false;
@@ -752,13 +761,36 @@ public class JournalController {
     }
 
     private  void loadReasonerPanel(PublicIdStringKey<ActivityStream> activityStreamKey,
-                                    ObservableViewNoOverride windowView,
-                                    KometNodeFactory nodeFactory) {
-        // Create reasoner panel and publish on the search activity stream
-        ReasonerResultsNode reasonerNode = (ReasonerResultsNode) nodeFactory.create(windowView,
-                activityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
+                                    ObservableViewNoOverride windowView) {
+        // set up a tab group to hold 3 tabs for the reasoner bump out
+        TabGroup reasonerTabGroup = TabGroup.create(windowView, TabGroup.REMOVAL.DISALLOW);
 
-        reasonerNodePanel = (Pane) reasonerNode.getNode();
+        // set up the 3 tabs nodes for the reasoner bump out
+        // 1) reasoner results; to run the reasoner
+        ReasonerResultsNodeFactory reasonerResultsNodeFactory = new ReasonerResultsNodeFactory();
+        ReasonerResultsNode reasonerNode = (ReasonerResultsNode) reasonerResultsNodeFactory.create(windowView,
+                null, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
+        DetachableTab resonerResultsTab = new DetachableTab(reasonerNode);
+
+        // 2) progress bar / activity tab
+        ProgressNodeFactory progressNodeFactory = new ProgressNodeFactory();
+        KometNode kometNode = progressNodeFactory.create(windowView,
+                null, null, AlertStreams.ROOT_ALERT_STREAM_KEY);
+        DetachableTab progressTab = new DetachableTab(kometNode);
+
+        // 3) completion tab
+        CompletionNodeFactory completionNodeFactory = new CompletionNodeFactory();
+        KometNode completionNode = completionNodeFactory.create(windowView,
+                null, null, AlertStreams.ROOT_ALERT_STREAM_KEY);
+        DetachableTab completionTab = new DetachableTab(completionNode);
+
+        // collect the 3 tabs and add them to the reasoner panel
+        ImmutableList<DetachableTab> detachableTabs = Lists.immutable.of(resonerResultsTab, progressTab, completionTab);
+        for (DetachableTab tab : detachableTabs) {
+            reasonerTabGroup.getTabs().add(tab);
+        }
+        reasonerNodePanel.setCenter(reasonerTabGroup);
+
         ReasonerResultsController controller = reasonerNode.getResultsController();
 
         // display a concept window
@@ -816,6 +848,7 @@ public class JournalController {
         setupSlideOutTrayPane(reasonerNodePanel, reasonerSlideoutTrayPane);
 
     }
+
     private Consumer<ToggleButton> createReasonerToggleConsumer() {
         return (detailToggleReasonerButton) -> {
             if (detailToggleReasonerButton.isSelected() && reasonerToggleButton.isSelected()) {
