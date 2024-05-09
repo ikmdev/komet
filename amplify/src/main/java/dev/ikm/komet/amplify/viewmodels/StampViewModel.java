@@ -21,6 +21,7 @@ import dev.ikm.komet.amplify.mvvm.validator.ValidationMessage;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ReadOnlyObjectProperty;
 
@@ -31,6 +32,7 @@ import java.util.List;
 public class StampViewModel extends FormViewModel {
     public final static String STATUS_PROPERTY = "status";
     public final static String TIME_PROPERTY = "time";
+    public final static String AUTHOR_PROPERTY = "author";
     public final static String MODULE_PROPERTY = "module";
     public final static String PATH_PROPERTY = "path";
     public final static String MODULES_PROPERTY = "modules";
@@ -38,7 +40,8 @@ public class StampViewModel extends FormViewModel {
     public final static String INCOMPLETE = "Incomplete";
     public StampViewModel() {
         super(); // Default to ViewMode
-        addProperty(STATUS_PROPERTY, INCOMPLETE)
+        addProperty(STATUS_PROPERTY, State.ACTIVE)
+                .addProperty(AUTHOR_PROPERTY, TinkarTerm.USER)
                 .addProperty(TIME_PROPERTY, System.currentTimeMillis())
                 .addProperty(MODULE_PROPERTY, (ConceptEntity) null)
                 .addProperty(PATH_PROPERTY, (ConceptEntity) null)

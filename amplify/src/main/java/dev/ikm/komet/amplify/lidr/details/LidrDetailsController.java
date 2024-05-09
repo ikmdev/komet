@@ -19,11 +19,11 @@ import dev.ikm.komet.amplify.lidr.events.AddDeviceEvent;
 import dev.ikm.komet.amplify.lidr.events.AddResultInterpretationEvent;
 import dev.ikm.komet.amplify.lidr.events.LidrPropertyPanelEvent;
 import dev.ikm.komet.amplify.lidr.events.ShowPanelEvent;
+import dev.ikm.komet.amplify.lidr.om.DataModelHelper;
 import dev.ikm.komet.amplify.lidr.om.LidrRecord;
 import dev.ikm.komet.amplify.lidr.properties.PropertiesController;
 import dev.ikm.komet.amplify.lidr.viewmodels.AnalyteGroupViewModel;
 import dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel;
-import dev.ikm.komet.amplify.lidr.viewmodels.ViewModelHelper;
 import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
 import dev.ikm.komet.amplify.mvvm.ViewModel;
 import dev.ikm.komet.amplify.mvvm.loader.*;
@@ -37,14 +37,18 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.component.Concept;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.provider.search.Searcher;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -63,9 +67,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
@@ -76,6 +78,7 @@ import static dev.ikm.komet.amplify.lidr.events.LidrPropertyPanelEvent.CLOSE_PAN
 import static dev.ikm.komet.amplify.lidr.events.LidrPropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.amplify.lidr.events.ShowPanelEvent.SHOW_ADD_ANALYTE_GROUP;
 import static dev.ikm.komet.amplify.lidr.events.ShowPanelEvent.SHOW_ADD_DEVICE;
+import static dev.ikm.komet.amplify.lidr.om.DataModelHelper.findDeviceManufacturer;
 import static dev.ikm.komet.amplify.lidr.viewmodels.AnalyteGroupViewModel.LIDR_RECORD;
 import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.CONCEPT_TOPIC;
 import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.CREATE;
@@ -83,6 +86,7 @@ import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.EDIT;
 import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.VIEW;
 import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.*;
+import static dev.ikm.komet.amplify.lidr.viewmodels.ViewModelHelper.addNewLidrRecord;
 import static dev.ikm.komet.amplify.viewmodels.FormViewModel.MODE;
 import static dev.ikm.komet.amplify.viewmodels.StampViewModel.*;
 
@@ -259,40 +263,75 @@ public class LidrDetailsController {
         Subscriber<AddDeviceEvent> addDeviceEventSubscriber = (evt) -> {
             // TODO Update the UI and add device.
             LOG.info("addDeviceEventSubscriber -> TODO Update the UI and add a new device.");
-
-            lidrViewModel.setPropertyValue(DEVICE_ENTITY, evt.deviceEntity);
-            EntityFacade entityFacade = lidrViewModel.getPropertyValue(DEVICE_ENTITY);
-            updateDeviceBanner();
-            updateDeviceAndMfg();
-
-            this.propertiesViewController.updateModel(getViewProperties(), entityFacade);
-            this.propertiesViewController.updateView();
-            this.timelineViewController.updateModel(getViewProperties(), entityFacade);
-            this.timelineViewController.updateView();
+            EntityFacade currentDevice = getLidrViewModel().getPropertyValue(DEVICE_ENTITY);
+            boolean sameDevice = currentDevice == null ? false : PublicId.equals(evt.deviceEntity.publicId(), currentDevice.publicId());
+            // if it's a different device than clear details and
+            if (sameDevice) {
+                return;
+            }
+            getLidrViewModel().setPropertyValue(DEVICE_ENTITY, evt.deviceEntity);
+            clearView();
+            updateView();
         };
         eventBus.subscribe(conceptTopic, AddDeviceEvent.class, addDeviceEventSubscriber);
 
-        // Listen when a new analyte group is added to this device
+        // Listen when a new analyte group is added to this device. Will write to db and add to Lidr record details
         Subscriber<AddResultInterpretationEvent> addResultInterpretationEventSubscriber = (evt) -> {
-            // TODO Update the UI and add result interpretations.
-            LOG.info("addResultInterpretationEventSubscriber -> TODO Update the UI and add result interpretations.");
-            LidrRecord lidrRecord = evt.getLidrRecord();
 
-            AnalyteGroupViewModel analyteGroupViewModel = new AnalyteGroupViewModel();
-            analyteGroupViewModel.setPropertyValue(CONCEPT_TOPIC, conceptTopic)
-                    .addProperty(LIDR_RECORD, lidrRecord)
-                    .save(true);
-           NamedVm analyteViewModel = new NamedVm("analyteGroupViewModel", analyteGroupViewModel);
-            JFXNode<TilePane, LidrRecordDetailsController> lidrNodeController = FXMLMvvmLoader.make(this.getClass().getResource(LIDR_RECORD_FXML), analyteViewModel);
-            lidrNodeController.controller().updateView();
-            lidrRecordsVBox.getChildren().add(lidrNodeController.node());
+            LOG.info("addResultInterpretationEventSubscriber -> Lidr created and details displayed");
+            LidrRecord lidrRecord = evt.getLidrRecord();
+            // Create a lidr record in the database.
+            Concept device = getLidrViewModel().getPropertyValue(DEVICE_ENTITY);
+
+            // TODO Database will need to have the following targets, and resultsDataType:
+            PublicId targetMatrixM1Id = PublicIds.of("1d9ab589-2fd1-331e-a79d-e9190c415d36");
+            PublicId resultOrdinalId = PublicIds.of("3bf24a2e-7c1d-3cad-84e9-bdda58df5905");
+
+            PublicId testPerformedId = lidrRecord.testPerformedId() == null ? targetMatrixM1Id : lidrRecord.testPerformedId();
+            LidrRecord newLidrRecord = new LidrRecord(
+                    lidrRecord.lidrRecordId(),
+                    testPerformedId,  /* todo use dummy data */
+                    resultOrdinalId,  /* todo use dummy data */
+                    lidrRecord.analyte(),
+                    lidrRecord.targets(),
+                    lidrRecord.specimens(),
+                    lidrRecord.resultConformances());
+            PublicId lidrPublicId = addNewLidrRecord(newLidrRecord, device.publicId(), getStampViewModel());
+
+            // Populate with the Accordion containing one Analyte Group (aka LIDR record semantic record)
+            addLidrRecordDetailsAccordion(lidrPublicId);
         };
         eventBus.subscribe(conceptTopic, AddResultInterpretationEvent.class, addResultInterpretationEventSubscriber);
+
         // Setup Properties
         setupProperties();
         setupTimelineBumpOut();
-        // When a new Analyte Group was added to this device (lidr record)
+    }
 
+    /**
+     * Adds an accordion of a lidr record details.
+     * @param lidrRecordPublicId public id of existing lidr record details
+     */
+    private void addLidrRecordDetailsAccordion(PublicId lidrRecordPublicId) {
+        LidrRecord lidrRecord = null;
+        try {
+            lidrRecord = DataModelHelper.makeLidrRecord(lidrRecordPublicId);
+        } catch (NoSuchElementException ex) {
+            // TODO data is bad. Not able to get Stated or Inferred discription logic in axioms.
+            LOG.error("Error Not able to get Stated or Inferred description logic in axioms.", ex);
+            return; // eat exception
+        }
+        // Populate with the Accordion containing one Analyte Group (aka LIDR record semantic record)
+        AnalyteGroupViewModel analyteGroupViewModel = new AnalyteGroupViewModel();
+        analyteGroupViewModel.setPropertyValue(CONCEPT_TOPIC, conceptTopic)
+                .addProperty(LIDR_RECORD, lidrRecord)
+                .save(true);
+        NamedVm analyteViewModel = new NamedVm("analyteGroupViewModel", analyteGroupViewModel);
+        JFXNode<TilePane, LidrRecordDetailsController> lidrNodeController = FXMLMvvmLoader.make(this.getClass().getResource(LIDR_RECORD_FXML), analyteViewModel);
+        Platform.runLater(()-> {
+            lidrRecordsVBox.getChildren().add(lidrNodeController.node());
+            lidrNodeController.controller().updateView();
+        });
     }
     private void setupProperties() {
         // Setup Property screen bump out
@@ -418,12 +457,19 @@ public class LidrDetailsController {
     public void updateView() {
         EntityFacade entityFacade = lidrViewModel.getPropertyValue(DEVICE_ENTITY);
         if (entityFacade != null) {
+            EntityVersion latestVersion = getViewProperties().calculator().latest(entityFacade).get();
+            StampEntity stamp = latestVersion.stamp();
+
             getLidrViewModel().setPropertyValue(MODE, EDIT);
             if (getLidrViewModel().getPropertyValue(STAMP_VIEW_MODEL) == null) {
 
                 // add a new stamp view model to the concept view model
                 StampViewModel stampViewModel = new StampViewModel();
                 stampViewModel.setPropertyValue(MODE, EDIT)
+                        .setPropertyValue(STATUS_PROPERTY, stamp.state())
+                        .setPropertyValue(AUTHOR_PROPERTY, stamp.author())
+                        .setPropertyValue(MODULE_PROPERTY, stamp.module())
+                        .setPropertyValue(PATH_PROPERTY, stamp.path())
                         .setPropertyValues(MODULES_PROPERTY, stampViewModel.findAllModules(getViewProperties()), true)
                         .setPropertyValues(PATHS_PROPERTY, stampViewModel.findAllPaths(getViewProperties()), true);
 
@@ -431,8 +477,6 @@ public class LidrDetailsController {
             }
 
             // TODO: Ability to change Concept record. but for now user can edit stamp but not affect Concept version.
-            EntityVersion latestVersion = getViewProperties().calculator().latest(entityFacade).get();
-            StampEntity stamp = latestVersion.stamp();
             updateStampViewModel(EDIT, stamp);
         }
 
@@ -442,8 +486,8 @@ public class LidrDetailsController {
         // Display Description info area
         updateDeviceAndMfg();
 
-        // Update Results
-        updateResults();
+        // Update Lidr Record Details
+        refreshLidrRecordDetails();
 
     }
     public void onReasonerSlideoutTray(Consumer<ToggleButton> reasonerResultsControllerConsumer) {
@@ -487,8 +531,8 @@ public class LidrDetailsController {
         // Identicon
         Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
         identiconImageView.setImage(identicon);
-
-        if (VIEW.equals(getLidrViewModel().getPropertyValue(MODE))) {
+        String formMode = getLidrViewModel().getPropertyValue(MODE);
+        if (VIEW.equals(formMode) || EDIT.equals(formMode)) {
             // Obtain STAMP info
             EntityVersion latestVersion = viewCalculator.latest(entityFacade).get();
             StampEntity stamp = latestVersion.stamp();
@@ -524,7 +568,7 @@ public class LidrDetailsController {
         ValidationViewModel stampViewModel = getLidrViewModel().getPropertyValue(STAMP_VIEW_MODEL);
         if (getLidrViewModel().getPropertyValue(STAMP_VIEW_MODEL) != null) {
             stampViewModel.setPropertyValue(MODE, mode)
-                    .setPropertyValue(STATUS_PROPERTY, stamp.state().toString())
+                    .setPropertyValue(STATUS_PROPERTY, stamp.state())
                     .setPropertyValue(MODULE_PROPERTY, stamp.module())
                     .setPropertyValue(PATH_PROPERTY, stamp.path())
                     .setPropertyValue(TIME_PROPERTY, stamp.time())
@@ -549,7 +593,7 @@ public class LidrDetailsController {
         deviceSummaryText.setText(entityFacade.description());
 
         // Update manufacturer if one exists
-        Optional<Concept> mfg = ViewModelHelper.findDeviceManufacturer(entityFacade.publicId());
+        Optional<Concept> mfg = findDeviceManufacturer(entityFacade.publicId());
         mfg.ifPresentOrElse(concept -> mfgSummaryText.setText(
                 ((ConceptFacade) concept).description()),
                 ()-> mfgSummaryText.setText("")
@@ -557,13 +601,20 @@ public class LidrDetailsController {
     }
 
     /**
-     * This will update the EL++ inferred and stated terminological axioms
+     * Refresh the Lidr Record Details (Accordions). Clears VBox and populates each lidr record.
      */
-    private void updateResults() {
+    private void refreshLidrRecordDetails() {
         // do not update ui should be blank
         if (getLidrViewModel().getPropertyValue(MODE) == CREATE) {
             return;
         }
+        // populate the lidr record details
+        EntityFacade entityFacade = getLidrViewModel().getPropertyValue(DEVICE_ENTITY);
+        List<PublicId> lidrRecordIds = Searcher.getLidrRecordSemanticsFromTestKit(entityFacade.publicId());
+        lidrRecordIds.forEach(lidrRecordPublicId -> {
+            // Populate with the Accordion containing one Analyte Group (aka LIDR record semantic record)
+            addLidrRecordDetailsAccordion(lidrRecordPublicId);
+        });
     }
 
 
@@ -659,7 +710,7 @@ public class LidrDetailsController {
         ConceptEntity pathEntity = stampViewModel.getValue(PATH_PROPERTY);
         String pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
         pathText.setText(pathDescr);
-        statusText.setText(stampViewModel.getValue(STATUS_PROPERTY));
+        statusText.setText(stampViewModel.getValue(STATUS_PROPERTY).toString());
     }
 
     public void compactSizeWindow() {

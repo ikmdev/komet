@@ -22,8 +22,8 @@ import dev.ikm.komet.amplify.details.DetailsNode;
 import dev.ikm.komet.amplify.details.DetailsNodeFactory;
 import dev.ikm.komet.amplify.events.JournalTileEvent;
 import dev.ikm.komet.amplify.lidr.details.LidrDetailsController;
+import dev.ikm.komet.amplify.lidr.om.DataModelHelper;
 import dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel;
-import dev.ikm.komet.amplify.lidr.viewmodels.ViewModelHelper;
 import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
 import dev.ikm.komet.amplify.mvvm.loader.Config;
 import dev.ikm.komet.amplify.mvvm.loader.FXMLMvvmLoader;
@@ -264,7 +264,7 @@ public class JournalController {
      * Note: Each journal will have a unique navigation activity stream.
      * @param windowView The window view properties
      * @param navigationFactory A factory to create navigation view.
-     * @param reasonerFactory A factory to create reasoner results view.
+     * @param searchFactory A factory to create a search bump out view.
      */
     public void launchKometFactoryNodes(String journalName,
                                         ObservableViewNoOverride windowView,
@@ -729,7 +729,7 @@ public class JournalController {
             ConceptFacade conceptFacade = item.getValue();
 
             // add menu item if it's a device, otherwise remove from context menu
-            boolean isLidrDevice = ViewModelHelper.isDevice(viewProperties.calculator().navigationCalculator(), conceptFacade.publicId());
+            boolean isLidrDevice = DataModelHelper.isDevice(viewProperties.calculator().navigationCalculator(), conceptFacade.publicId());
             if (isLidrDevice) {
                 launchLidrRecord.setDisable(false);
             } else {

@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.amplify.lidr.om;
+package dev.ikm.komet.amplify.data.om;
 
 import dev.ikm.tinkar.common.id.PublicId;
+import org.eclipse.collections.api.list.MutableList;
 
-public record SpecimenRecord(PublicId specimenId, PublicId systemId, PublicId methodTypeId) {
-    public SpecimenRecord (PublicId specimenId) {
-        this(specimenId, null, null);
-    }
-}
+import java.util.function.Supplier;
+
+public record SemanticDetail(PublicId pattern, PublicId referencedComponent, Supplier<MutableList<Object>> fieldsSupplier) { }

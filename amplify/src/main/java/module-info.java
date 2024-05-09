@@ -21,6 +21,7 @@ import dev.ikm.komet.framework.KometNodeFactory;
 module dev.ikm.komet.amplify {
     requires transitive dev.ikm.komet.framework;
     requires dev.ikm.komet.search;
+    requires dev.ikm.tinkar.provider.search;
     requires dev.ikm.komet.navigator;
     requires dev.ikm.komet.classification;
     requires dev.ikm.komet.progress;
@@ -64,6 +65,13 @@ module dev.ikm.komet.amplify {
     opens dev.ikm.komet.amplify.lidr.viewmodels to javafx.fxml;
     exports dev.ikm.komet.amplify.lidr.viewmodels;
 
+    opens dev.ikm.komet.amplify.lidr.om;
+    exports dev.ikm.komet.amplify.lidr.om;
+    opens dev.ikm.komet.amplify.data.om;
+    exports dev.ikm.komet.amplify.data.om;
+    opens dev.ikm.komet.amplify.data.persistence;
+    exports dev.ikm.komet.amplify.data.persistence;
+
     opens dev.ikm.komet.amplify.lidr.details to javafx.fxml;
     exports dev.ikm.komet.amplify.lidr.details;
     opens dev.ikm.komet.amplify.lidr.properties to javafx.fxml;
@@ -74,6 +82,7 @@ module dev.ikm.komet.amplify {
     exports dev.ikm.komet.amplify.lidr.analyte;
     opens dev.ikm.komet.amplify.lidr.results to javafx.fxml;
     exports dev.ikm.komet.amplify.lidr.results;
+
 
     // TODO a temporary export screen for next gen ui.
     opens dev.ikm.komet.amplify.export;

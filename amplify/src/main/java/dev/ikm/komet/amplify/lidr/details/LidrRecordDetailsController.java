@@ -16,10 +16,7 @@
 package dev.ikm.komet.amplify.lidr.details;
 
 import dev.ikm.komet.amplify.commons.AbstractBasicController;
-import dev.ikm.komet.amplify.lidr.om.AnalyteRecord;
-import dev.ikm.komet.amplify.lidr.om.LidrRecord;
-import dev.ikm.komet.amplify.lidr.om.ResultConformanceRecord;
-import dev.ikm.komet.amplify.lidr.om.SpecimenRecord;
+import dev.ikm.komet.amplify.lidr.om.*;
 import dev.ikm.komet.amplify.lidr.viewmodels.AnalyteGroupViewModel;
 import dev.ikm.komet.amplify.mvvm.SimpleViewModel;
 import dev.ikm.komet.amplify.mvvm.loader.*;
@@ -54,13 +51,13 @@ public class LidrRecordDetailsController extends AbstractBasicController {
     public static final String NOT_APPLICABLE = "N/A";
 
     @FXML
+    private TitledPane lidrRecordTitledPane;
+
+    @FXML
     private TitledPane analyteTitledPane;
 
     @FXML
     private Text componentValueText;
-
-    @FXML
-    private Text dataResultTypeValueText;
 
     @FXML
     private Text dataResultsTypeValueText;
@@ -164,9 +161,9 @@ public class LidrRecordDetailsController extends AbstractBasicController {
 
     @Override
     public void updateView() {
-        AnalyteRecord analyteRecord = AnalyteRecord.make(lidrRecord.analyte().analyteId());
+        AnalyteRecord analyteRecord = DataModelHelper.makeAnalyteRecord(lidrRecord.analyte().analyteId());
+        lidrRecordTitledPane.setText(findDescrNameText(analyteRecord.componentId(), "Unknown Result Interpretation") + " Result Interpretation");
         componentValueText.setText(findDescrNameText(analyteRecord.componentId(), NOT_APPLICABLE));
-        dataResultTypeValueText.setText(NOT_APPLICABLE);
         dataResultsTypeValueText.setText(NOT_APPLICABLE);
         detectionLimitValueText.setText(NOT_APPLICABLE);
         exampleUnitsValueText.setText(NOT_APPLICABLE);
@@ -179,8 +176,9 @@ public class LidrRecordDetailsController extends AbstractBasicController {
 
     @Override
     public void clearView() {
+        specimentsVBox.getChildren().clear();
+        resultsConformanceVBox.getChildren().clear();
         componentValueText.setText("");
-        dataResultTypeValueText.setText("");
         dataResultsTypeValueText.setText("");
         detectionLimitValueText.setText("");
         exampleUnitsValueText.setText("");

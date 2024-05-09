@@ -15,35 +15,11 @@
  */
 package dev.ikm.komet.amplify.lidr.om;
 
-import dev.ikm.komet.amplify.lidr.viewmodels.ViewModelHelper;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.common.util.uuid.UuidUtil;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.terms.EntityProxy;
-
-import java.util.Optional;
 
 public record ResultConformanceRecord(PublicId resultConformanceId, PublicId scaleId, PublicId propertyId) {
-    public static final EntityProxy.Pattern SCALE_ROLETYPE = EntityProxy.Pattern.make(null, UuidUtil.fromSNOMED("370132008"));
-    public static final EntityProxy.Pattern PROPERTY_ROLETYPE = EntityProxy.Pattern.make(null, UuidUtil.fromSNOMED("370130000"));
-
     public ResultConformanceRecord(PublicId resultConformanceId) {
         this(resultConformanceId, null, null);
     }
-    public static ResultConformanceRecord make(PublicId resultConformanceId) {
-        Optional<Entity> resultConformanceEntity = EntityService.get().getEntity(resultConformanceId.asUuidArray());
-        if (resultConformanceEntity.isEmpty()) {
-            throw new IllegalArgumentException("PublicId " + resultConformanceId + " is not in database.");
-        }
-        return make(resultConformanceEntity.get());
-    }
 
-    public static ResultConformanceRecord make(Entity resultConformanceEntity) {
-        return new ResultConformanceRecord(
-                resultConformanceEntity.publicId(),
-               ViewModelHelper.findConceptReferenceForRoleType(ViewModelHelper.findLatestLogicalDefinition(resultConformanceEntity).get(), SCALE_ROLETYPE).get().publicId(),
-               ViewModelHelper.findConceptReferenceForRoleType(ViewModelHelper.findLatestLogicalDefinition(resultConformanceEntity).get(), PROPERTY_ROLETYPE).get().publicId()
-        );
-    }
 }
