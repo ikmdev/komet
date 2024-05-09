@@ -331,6 +331,7 @@ public class DetailsController  {
                     updateModel(getViewProperties());
                     updateView();
                 }
+                //TODO revisit: why should the mode ever be edit inside a create event?
             } else if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))){
                 conceptViewModel.addOtherName(viewProperties.calculator().viewCoordinateRecord().editCoordinate(), descrName);
             }
@@ -338,7 +339,22 @@ public class DetailsController  {
         };
         eventBus.subscribe(conceptTopic, CreateConceptEvent.class, createConceptEventSubscriber);
 
+        // set up the event handler for editing a concept
+        editConceptEventSubscriber = evt -> {
+            DescrName descrName = evt.getModel();
 
+            if (getConceptViewModel() == null || descrName == null) {
+                LOG.warn("ViewModel should not be null. Event type:" + evt.getEventType());
+                return;
+            }
+            if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))) {
+                if (evt.getEventType() == EditConceptEvent.EDIT_FQN) {
+                    // the listener will fire on the FQN when we update this
+                    getConceptViewModel().setPropertyValue(FULLY_QUALIFIED_NAME, descrName);
+                }
+            }
+        };
+        eventBus.subscribe(conceptTopic, EditConceptEvent.class, editConceptEventSubscriber);
 
     }
 

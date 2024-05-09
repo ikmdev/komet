@@ -15,24 +15,26 @@
  */
 package dev.ikm.komet.amplify.properties;
 
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.CASE_SIGNIFICANCE;
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.IS_SUBMITTED;
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.LANGUAGE;
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.MODULE;
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.NAME_TEXT;
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.NAME_TYPE;
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.STATUS;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
 import dev.ikm.komet.amplify.commons.BasicController;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.amplify.events.EditConceptEvent;
+import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
+import dev.ikm.komet.amplify.om.DescrName;
+import dev.ikm.komet.amplify.viewmodels.DescrNameViewModel;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
@@ -41,18 +43,10 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.RecordListBuilder;
-import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.SemanticRecord;
-import dev.ikm.tinkar.entity.SemanticRecordBuilder;
-import dev.ikm.tinkar.entity.SemanticVersionRecordBuilder;
 import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
-import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
@@ -64,10 +58,15 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class EditFullyQualifiedNameController implements BasicController {
 
@@ -125,6 +124,9 @@ public class EditFullyQualifiedNameController implements BasicController {
 
     private EvtBus eventBus;
 
+    @InjectViewModel
+    private DescrNameViewModel fqnViewModel;
+
     public EditFullyQualifiedNameController() { }
 
     public EditFullyQualifiedNameController(UUID conceptTopic) {
@@ -138,6 +140,9 @@ public class EditFullyQualifiedNameController implements BasicController {
         setEditFullyQualifiedNameTitleLabel("Edit Description: Fully Qualified Name");
         populateDialectComboBoxes();
 
+        // initialize the view model with values in the existing FQN
+        copyUIToViewModelProperties();
+
         InvalidationListener invalidationListener = obs -> validateForm();
 
         fqnText.textProperty().addListener(invalidationListener);
@@ -147,7 +152,7 @@ public class EditFullyQualifiedNameController implements BasicController {
         languageComboBox.valueProperty().addListener(invalidationListener);
 
         validateForm();
-        submitButton.setOnAction(this::saveOtherName);
+        submitButton.setOnAction(this::updateFQN);
 
     }
 
@@ -168,6 +173,17 @@ public class EditFullyQualifiedNameController implements BasicController {
                 isFqnTextEmpty || !isModuleComboBoxSelected
                         || !isCaseSignificanceComboBoxSelected || !isLanguageComboBoxComboBoxSelected
                         || !isStatusComboBoxComboBoxSelected);
+    }
+
+    private void copyUIToViewModelProperties() {
+        if (fqnViewModel != null) {
+            fqnViewModel.setPropertyValue(NAME_TEXT, fqnText.getText())
+                    .setPropertyValue(NAME_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
+                    .setPropertyValue(CASE_SIGNIFICANCE, caseSignificanceComboBox.getSelectionModel().getSelectedItem())
+                    .setPropertyValue(STATUS, statusComboBox.getSelectionModel().getSelectedItem())
+                    .setPropertyValue(MODULE, moduleComboBox.getSelectionModel().getSelectedItem())
+                    .setPropertyValue(LANGUAGE, languageComboBox.getSelectionModel().getSelectedItem());
+        }
     }
 
     private void populateDialectComboBoxes() {
@@ -322,60 +338,31 @@ public class EditFullyQualifiedNameController implements BasicController {
     }
 
     @FXML
-    private void saveOtherName(ActionEvent actionEvent) {
-        Transaction transaction = Transaction.make();
+    private void updateFQN(ActionEvent actionEvent) {
+        actionEvent.consume();
 
-        StampEntity stampEntity = transaction.getStamp(
-                State.fromConcept(statusComboBox.getValue()), // active, inactive, etc
-                System.currentTimeMillis(),
-                TinkarTerm.USER.nid(),
-                moduleComboBox.getValue().nid(), // SNOMED CT, LOINC, etc
-                TinkarTerm.DEVELOPMENT_PATH.nid());
+        copyUIToViewModelProperties();
+        fqnViewModel.save();
+        // validate
+        if (fqnViewModel.hasErrorMsgs()) {
+            fqnViewModel.getValidationMessages().stream().forEach(msg -> LOG.error("Validation error " + msg));
+            return;
+        }
+        fqnViewModel.setPropertyValue(IS_SUBMITTED, true);
 
+        DescrName fqnDescrName = fqnViewModel.create();
 
-        // existing semantic
-        SemanticEntity theSemantic = EntityService.get().getEntityFast(publicId.asUuidList());
-
-
-        // the versions that we will first populate with the existing versions of the semantic
-        RecordListBuilder versions = RecordListBuilder.make();
-
-        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(publicId, TinkarTerm.DESCRIPTION_PATTERN.nid(),
-                theSemantic.referencedComponentNid(), versions);
-
-        // we grabbing the form data
-        // populating the field values for the new version we are writing
-        MutableList<Object> descriptionFields = Lists.mutable.empty();
-        descriptionFields.add(languageComboBox.getValue());
-        descriptionFields.add(fqnText.getText());
-        descriptionFields.add(caseSignificanceComboBox.getValue());
-        descriptionFields.add(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
-
-        // iterating over the existing versions and adding them to a new record list builder
-        theSemantic.versions().forEach(version -> versions.add(version));
-
-        // adding the new (edit form) version here
-        versions.add(SemanticVersionRecordBuilder.builder()
-                .chronology(descriptionSemantic)
-                .stampNid(stampEntity.nid())
-                .fieldValues(descriptionFields.toImmutable())
-                .build());
-
-        // apply the updated versions to the new semantic record
-        SemanticRecord newSemanticRecord = SemanticRecordBuilder.builder(descriptionSemantic).versions(versions.toImmutable()).build();
-
-        // put the new semantic record in the transaction
-        transaction.addComponent(newSemanticRecord);
-
-        // perform the save
-        Entity.provider().putEntity(newSemanticRecord);
-
-        // commit the transaction
-        CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        TinkExecutor.threadPool().submit(commitTransactionTask);
+        // delegate the transaction logic to the view model
+        fqnViewModel.updateFullyQualifiedName(this.publicId);
 
         LOG.info("transaction complete");
         clearView();
+
+        // publish the event of the updated FQN
+        eventBus.publish(conceptTopic, new EditConceptEvent(submitButton,
+                EditConceptEvent.EDIT_FQN, fqnDescrName));
+
+        // close the property bump out panel
         eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(submitButton,
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
     }
@@ -386,10 +373,11 @@ public class EditFullyQualifiedNameController implements BasicController {
 
     @Override
     public void clearView() {
-        caseSignificanceComboBox.getItems().clear();
-        statusComboBox.getItems().clear();
-        moduleComboBox.getItems().clear();
-        languageComboBox.getItems().clear();
+        fqnText.setText("");
+        caseSignificanceComboBox.getSelectionModel().clearSelection();
+        statusComboBox.getSelectionModel().clearSelection();
+        moduleComboBox.getSelectionModel().clearSelection();
+        languageComboBox.getSelectionModel().clearSelection();
     }
 
     @Override

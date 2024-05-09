@@ -22,8 +22,14 @@ import dev.ikm.komet.amplify.om.DescrName;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
+import dev.ikm.tinkar.entity.transaction.Transaction;
+import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -115,6 +121,60 @@ public class DescrNameViewModel extends FormViewModel {
             return List.of();
         }
     }
+
+    public void updateFullyQualifiedName(PublicId publicId) {
+        Transaction transaction = Transaction.make();
+
+        StampEntity stampEntity = transaction.getStamp(
+                State.fromConcept(getValue(STATUS)), // active, inactive, etc
+                System.currentTimeMillis(),
+                TinkarTerm.USER.nid(),
+                ((ConceptEntity)getValue(MODULE)).nid(), // SNOMED CT, LOINC, etc
+                TinkarTerm.DEVELOPMENT_PATH.nid()); //TODO should this path come from the parent concept's path?
+
+
+        // existing semantic
+        SemanticEntity theSemantic = EntityService.get().getEntityFast(publicId.asUuidList());
+
+
+        // the versions that we will first populate with the existing versions of the semantic
+        RecordListBuilder versions = RecordListBuilder.make();
+
+        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(publicId, TinkarTerm.DESCRIPTION_PATTERN.nid(),
+                theSemantic.referencedComponentNid(), versions);
+
+        // we are grabbing the form data
+        // populating the field values for the new version we are writing
+        MutableList<Object> descriptionFields = Lists.mutable.empty();
+        descriptionFields.add(getValue(LANGUAGE));
+        descriptionFields.add(getValue(NAME_TEXT));
+        descriptionFields.add(getValue(CASE_SIGNIFICANCE));
+        descriptionFields.add(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+
+        // iterating over the existing versions and adding them to a new record list builder
+        theSemantic.versions().forEach(version -> versions.add(version));
+
+        // adding the new (edit form) version here
+        versions.add(SemanticVersionRecordBuilder.builder()
+                .chronology(descriptionSemantic)
+                .stampNid(stampEntity.nid())
+                .fieldValues(descriptionFields.toImmutable())
+                .build());
+
+        // apply the updated versions to the new semantic record
+        SemanticRecord newSemanticRecord = SemanticRecordBuilder.builder(descriptionSemantic).versions(versions.toImmutable()).build();
+
+        // put the new semantic record in the transaction
+        transaction.addComponent(newSemanticRecord);
+
+        // perform the save
+        Entity.provider().putEntity(newSemanticRecord);
+
+        // commit the transaction
+        CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
+        TinkExecutor.threadPool().submit(commitTransactionTask);
+    }
+
     public DescrName create() {
         return new DescrName(getValue(PUBLIC_ID),
                 getValue(NAME_TEXT),

@@ -193,10 +193,12 @@ public class PropertiesController implements Serializable {
 
         //TODO for future there will be an edit axiom form
 
-        FXMLLoader loaderEditFqn= new FXMLLoader(getClass().getResource(EDIT_FQN_FXML_FILE));
-        loaderEditFqn.setController(new EditFullyQualifiedNameController(conceptTopic));
-        editFqnPane = loaderEditFqn.load();
-        editFullyQualifiedNameController = loaderEditFqn.getController();
+        JFXNode<Pane, EditFullyQualifiedNameController> editFqnControllerNode = FXMLMvvmLoader.make(
+                getClass().getResource(EDIT_FQN_FXML_FILE),
+                new EditFullyQualifiedNameController(conceptTopic)
+        );
+        editFqnPane = editFqnControllerNode.node();
+        editFullyQualifiedNameController = editFqnControllerNode.controller();
 
         // NOTE: New way of using injected View Models inside of Controllers.
         JFXNode<Pane, AddFullyQualifiedNameController> addFqnControllerNode = FXMLMvvmLoader.make(
