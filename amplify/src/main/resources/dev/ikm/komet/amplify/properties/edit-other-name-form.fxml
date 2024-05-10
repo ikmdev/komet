@@ -79,7 +79,7 @@
                                     <Insets />
                                  </opaqueInsets>
                               </Label>
-                              <ComboBox fx:id="dialectComboBox1" prefHeight="28.0" prefWidth="173.0">
+                              <ComboBox fx:id="dialectComboBox1" disable="true" prefHeight="28.0" prefWidth="173.0">
                                  <HBox.margin>
                                     <Insets bottom="8.0" />
                                  </HBox.margin>
@@ -102,7 +102,7 @@
                                     <Insets />
                                  </opaqueInsets>
                               </Label>
-                              <ComboBox fx:id="dialectComboBox2" prefHeight="28.0" prefWidth="173.0">
+                              <ComboBox fx:id="dialectComboBox2" disable="true" prefHeight="28.0" prefWidth="173.0">
                                  <HBox.margin>
                                     <Insets bottom="8.0" />
                                  </HBox.margin>
@@ -125,7 +125,7 @@
                                     <Insets />
                                  </opaqueInsets>
                               </Label>
-                              <ComboBox fx:id="dialectComboBox3" prefHeight="28.0" prefWidth="173.0">
+                              <ComboBox fx:id="dialectComboBox3" disable="true" prefHeight="28.0" prefWidth="173.0">
                                  <HBox.margin>
                                     <Insets bottom="8.0" />
                                  </HBox.margin>
