@@ -135,9 +135,7 @@ public class EditDescriptionFormController implements BasicController {
         caseSignificanceComboBox.valueProperty().addListener(invalidationListener);
         statusComboBox.valueProperty().addListener(invalidationListener);
         languageComboBox.valueProperty().addListener(invalidationListener);
-
         validateForm();
-
         submitButton.setOnAction(this::saveOtherName);
     }
     @FXML
