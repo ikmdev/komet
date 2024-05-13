@@ -153,8 +153,12 @@ public class SimpleViewModel implements ViewModel {
             //throw new RuntimeException("Setting property:%s value cannot be a Collection. Try calling setPropertyValues().".formatted(name));
             return this;
         }
-
-        getProperty(name).setValue(value);
+        // If a Property doesn't exist Just create it. TODO: Let's verify whether this should be so strict.
+        Property property = getProperty(name);
+        if (property == null) {
+            property = addProperty(name, value).getProperty(name);
+        }
+        property.setValue(value);
         return this;
     }
     public SimpleViewModel setPropertyValues(String name, Collection values, boolean skip) {

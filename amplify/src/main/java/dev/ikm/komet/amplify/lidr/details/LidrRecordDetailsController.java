@@ -27,7 +27,9 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import javafx.fxml.FXML;
 import javafx.scene.control.TitledPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import org.slf4j.Logger;
@@ -35,8 +37,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-import static dev.ikm.komet.amplify.lidr.details.ResultConformanceDetailsController.*;
+import static dev.ikm.komet.amplify.lidr.details.ResultConformanceDetailsController.RESULT_CONFORMANCE_DETAIL_FXML;
+import static dev.ikm.komet.amplify.lidr.details.ResultConformanceDetailsController.RESULT_CONFORMANCE_RECORD;
 import static dev.ikm.komet.amplify.lidr.details.SpecimenDetailsController.SPECIMEN_DETAIL_FXML;
 import static dev.ikm.komet.amplify.lidr.details.SpecimenDetailsController.SPECIMEN_RECORD;
 import static dev.ikm.komet.amplify.lidr.viewmodels.AnalyteGroupViewModel.LIDR_RECORD;
@@ -57,6 +61,9 @@ public class LidrRecordDetailsController extends AbstractBasicController {
     private TitledPane analyteTitledPane;
 
     @FXML
+    private GridPane analyteDetailsGridPane;
+
+    @FXML
     private Text componentValueText;
 
     @FXML
@@ -66,22 +73,15 @@ public class LidrRecordDetailsController extends AbstractBasicController {
     private VBox dataResultsTypesVBox;
 
     @FXML
-    private Text detectionLimitValueText;
-
-    @FXML
-    private Text exampleUnitsValueText;
-
-    @FXML
     private Text methodValueText;
-
-    @FXML
-    private Text referenceRangesValueText;
 
     @FXML
     private VBox resultsConformanceVBox;
 
     @FXML
     private TitledPane resultsTitledPane;
+    @FXML
+    private TitledPane specimenTitledPane;
 
     @FXML
     private VBox specimentsVBox;
@@ -92,16 +92,35 @@ public class LidrRecordDetailsController extends AbstractBasicController {
     @FXML
     private Text timeAspectValueText;
 
+    @FXML
+    private RowConstraints referenceRangesGridRow;
+    @FXML
+    private RowConstraints detectionLimitRowConstraints;
+
+    @FXML
+    private RowConstraints exampleUnitsRowConstraints;
+
     @InjectViewModel
     AnalyteGroupViewModel analyteGroupViewModel;
 
     /////////////////////////// other private variables ///////////////////////
     private EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
     private LidrRecord lidrRecord;
+
+    private void closeAllTitledPanes() {
+        lidrRecordTitledPane.setExpanded(false);
+        analyteTitledPane.setExpanded(false);
+        resultsTitledPane.setExpanded(false);
+        specimenTitledPane.setExpanded(false);
+    }
+
     @Override
     @FXML
     public void initialize() {
         clearView();
+
+        closeAllTitledPanes();
+
         lidrRecord = analyteGroupViewModel.getPropertyValue(LIDR_RECORD);
         if (lidrRecord != null) {
             // populate analyte fields
@@ -164,12 +183,14 @@ public class LidrRecordDetailsController extends AbstractBasicController {
         AnalyteRecord analyteRecord = DataModelHelper.makeAnalyteRecord(lidrRecord.analyte().analyteId());
         lidrRecordTitledPane.setText(findDescrNameText(analyteRecord.componentId(), "Unknown Result Interpretation") + " Result Interpretation");
         componentValueText.setText(findDescrNameText(analyteRecord.componentId(), NOT_APPLICABLE));
-        dataResultsTypeValueText.setText(NOT_APPLICABLE);
-        detectionLimitValueText.setText(NOT_APPLICABLE);
-        exampleUnitsValueText.setText(NOT_APPLICABLE);
+        dataResultsTypeValueText.setText(findDescrNameText(lidrRecord.dataResultsTypeId()));
         methodValueText.setText(findDescrNameText(analyteRecord.methodTypeId(), NOT_APPLICABLE));
-        referenceRangesValueText.setText(NOT_APPLICABLE);
-        targetsValueText.setText(NOT_APPLICABLE);
+        if (lidrRecord.targets().size() > 0) {
+            String targetsValue = lidrRecord.targets().stream().map(targetRecord -> findDescrNameText(targetRecord.targetId())).collect(Collectors.joining(", "));
+            targetsValueText.setText(targetsValue);
+        } else {
+            targetsValueText.setText(NOT_APPLICABLE);
+        }
         timeAspectValueText.setText(findDescrNameText(analyteRecord.timeAspectId(), NOT_APPLICABLE));
 
     }
@@ -180,10 +201,7 @@ public class LidrRecordDetailsController extends AbstractBasicController {
         resultsConformanceVBox.getChildren().clear();
         componentValueText.setText("");
         dataResultsTypeValueText.setText("");
-        detectionLimitValueText.setText("");
-        exampleUnitsValueText.setText("");
         methodValueText.setText("");
-        referenceRangesValueText.setText("");
         targetsValueText.setText("");
         timeAspectValueText.setText("");
     }

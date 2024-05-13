@@ -16,23 +16,34 @@
 package dev.ikm.komet.amplify.lidr.viewmodels;
 
 import dev.ikm.komet.amplify.data.om.STAMPDetail;
+import dev.ikm.komet.amplify.data.om.SemanticDetail;
+import dev.ikm.komet.amplify.data.persistence.ConceptWriter;
 import dev.ikm.komet.amplify.data.persistence.STAMPWriter;
+import dev.ikm.komet.amplify.data.persistence.SemanticWriter;
 import dev.ikm.komet.amplify.lidr.om.LidrRecord;
 import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
 import dev.ikm.komet.amplify.mvvm.validator.ValidationMessage;
+import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.component.Concept;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static dev.ikm.komet.amplify.lidr.om.DataModelHelper.*;
+import static dev.ikm.komet.amplify.lidr.viewmodels.ResultsViewModel.*;
 import static dev.ikm.komet.amplify.viewmodels.StampViewModel.*;
 
 
@@ -94,4 +105,72 @@ public class ViewModelHelper {
 
     }
 
+    public static PublicId createQualitativeResultConcept(ResultsViewModel resultsViewModel, STAMPDetail stampDetail) {
+
+        String resultName = resultsViewModel.getValue(RESULTS_NAME);
+        EntityFacade scaleType = resultsViewModel.getValue(SCALE_TYPE);
+        EntityFacade dataResultType = resultsViewModel.getValue(DATA_RESULTS_TYPE);
+        List<EntityFacade> allowableResults = resultsViewModel.getList(ALLOWABLE_RESULTS);
+        //Creating a Result conformance (Concept)
+        // 1. descrip Semantic (done), identifier
+        // 2. result conformance semantic.
+        //   a. qualitative pattern
+        //   b. quantitative pattern
+        // 3. property and scale Axiom section.
+
+        // Create a stamp into the database.
+        PublicId newStampPublicId = PublicIds.newRandom();
+        STAMPWriter stampWriter = new STAMPWriter(newStampPublicId);
+        stampWriter.write(stampDetail);
+
+        // Create Concept
+        PublicId resultPublicId = PublicIds.newRandom();
+        ConceptWriter conceptWriter = new ConceptWriter(newStampPublicId);
+        conceptWriter.write(resultPublicId);
+
+        // Create Fully q name semantic
+        PublicId fqnDescrSemantic = PublicIds.newRandom();
+        SemanticWriter descrSemantic = new SemanticWriter(newStampPublicId);
+        descrSemantic.description(fqnDescrSemantic, resultPublicId, FQN_DESCR_CONCEPT.publicId(), resultName);
+
+        // Identifier
+        PublicId identifierUUID = PublicIds.newRandom();
+        descrSemantic.identifier(identifierUUID, resultPublicId, UUID_CONCEPT.publicId(), resultPublicId.asUuidArray()[0].toString());
+
+        // Result Conformance Semantic has pattern of
+        SemanticWriter resultConformanceSemantic = new SemanticWriter(newStampPublicId);
+        PublicId resultConformanceSemanticId = PublicIds.newRandom();
+
+
+        Supplier<MutableList<Object>> fieldsSupplier = () -> {
+            // Allowable Results. Such as detected or not detected
+            IntIdSet allowableResultsNids = allowableResults.size() == 0 ? IntIds.set.empty() : IntIds.set.of(allowableResults,
+                    (entityFacade) -> entityFacade.nid());
+
+            // Create pattern's field definitions
+            MutableList<Object> allowableFields = Lists.mutable.empty();
+            allowableFields.add(allowableResultsNids);
+            return allowableFields;
+        };
+        resultConformanceSemantic.semantic(resultConformanceSemanticId, new SemanticDetail(ALLOWED_RESULTS_PATTERN.publicId(), resultPublicId, fieldsSupplier));
+
+        //////////////// TODO Fix issue getting a null pointer exception
+        // Create a stated Axiom description logic
+//        PublicId statedAxiomId = PublicIds.newRandom();
+//        resultConformanceSemantic.statedAxiom(statedAxiomId, resultPublicId, List.of());
+//
+
+        return resultPublicId;
+    }
+
+    public static PublicId createQuanitativeResultConcept(ResultsViewModel resultsViewModel, STAMPDetail stampDetail) {
+        PublicId resultPublicId = PublicIds.newRandom();
+
+        String resultName = resultsViewModel.getValue(RESULTS_NAME);
+        EntityFacade scaleType = resultsViewModel.getValue(SCALE_TYPE);
+        EntityFacade dataResultType = resultsViewModel.getValue(DATA_RESULTS_TYPE);
+
+        return resultPublicId;
+
+    }
 }

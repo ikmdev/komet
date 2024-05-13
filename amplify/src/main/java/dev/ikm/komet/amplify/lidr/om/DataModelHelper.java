@@ -49,6 +49,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -71,6 +72,20 @@ public class DataModelHelper {
     public static final EntityProxy.Pattern MANUFACTURED_BY = EntityProxy.Pattern.make(PublicIds.of("505db286-0c93-3b5e-bc89-ec5182280656"));
     public static final EntityProxy.Pattern DIAGNOSTIC_DEVICE_PATTERN = EntityProxy.Pattern.make(PublicIds.of("a507b3c7-eadb-5d54-84c0-c44f3155d0bc"));
     public static final EntityProxy.Pattern INSTRUMENT_EQUIPMENT_PATTERN = EntityProxy.Pattern.make(PublicIds.of("d7e1e67b-7ab6-5275-ae20-5412cd2d4731"));
+
+    //Qualitative Allowed Result Set Pattern
+    public static final EntityProxy.Pattern ALLOWED_RESULTS_PATTERN = EntityProxy.Pattern.make(PublicIds.of("9d40d06b-7776-5a56-97e4-0c27f5d574c7"));
+    public static final EntityProxy.Concept ORDINAL_CONCEPT = EntityProxy.Concept.make(PublicIds.of("3bf24a2e-7c1d-3cad-84e9-bdda58df5905"));
+    public static final EntityProxy.Concept QUALITATIVE_CONCEPT = EntityProxy.Concept.make(PublicIds.of("0633dda7-342f-3df8-ab82-6ac43995b017"));// 9d40d06b-7776-5a56-97e4-0c27f5d574c7
+
+    public static final EntityProxy.Concept QUANTITATIVE_CONCEPT = EntityProxy.Concept.make(PublicIds.of("d52a147e-1428-3725-abdd-96202ad1ee6a"));
+    public static final EntityProxy.Concept FQN_DESCR_CONCEPT = EntityProxy.Concept.make(PublicIds.of("00791270-77c9-32b6-b34f-d932569bd2bf"));
+    public static final EntityProxy.Concept UUID_CONCEPT = EntityProxy.Concept.make(PublicIds.of("845274b5-9644-3799-94c6-e0ea37e7d1a4"));
+    public static final EntityProxy.Concept DETECTED_CONCEPT = EntityProxy.Concept.make(PublicIds.of("97b0fbff-cd01-3018-9f72-03ffc7c9027c"));
+    public static final EntityProxy.Concept NOT_DETECTED_CONCEPT = EntityProxy.Concept.make(PublicIds.of("cff1d554-6d56-33f3-bf5d-9d5a6e231128"));
+    public static final EntityProxy.Concept BORRELIA_AFZELII_CONCEPT = EntityProxy.Concept.make(PublicIds.of("bec2eb34-753c-3ed3-8f5f-99205d8447bc"));
+
+
 
     public static ObservableView viewPropertiesNode() {
         // TODO how do we get a viewProperties?
@@ -313,6 +328,7 @@ public class DataModelHelper {
         }
         return false;
     }
+
     public static PublicId write(LidrRecord lidrRecord, PublicId referencedComponentPublicId, PublicId stampEntity){
         // LIDR Record must be a Semantic referencing (pointing to) a Diagnostic Device Semantic
         // Diagnostic Device Semantics are expected to have 2 "child" semantics and therefore the structure will be like below:
@@ -407,5 +423,29 @@ public class DataModelHelper {
         };
         // Diagnostic Device semantic referencing device concept.
         diagDeviceWriter.semantic(instrumentEquipmentSemanticId, new SemanticDetail(INSTRUMENT_EQUIPMENT_PATTERN.publicId(), referencedComponentId, diagFieldsSupplier));
+    }
+
+
+    public static PublicId writeAllowedResultsSemantic(List<PublicId> allowedResultsList, PublicId resultConformanceReferencedComponentId, PublicId stampId){
+        PublicId allowedResultsSemanticId = PublicIds.newRandom();
+        writeAllowedResultsSemantic(allowedResultsSemanticId, allowedResultsList, resultConformanceReferencedComponentId, stampId);
+        return allowedResultsSemanticId;
+    }
+
+    public static void writeAllowedResultsSemantic(PublicId allowedResultsSemanticId, List<PublicId> allowedResultsList, PublicId resultConformanceReferencedComponentId, PublicId stampId) {
+        // Create a semantic record representing an allowed results pattern
+        // Allowed Results Semantic references (points to) the Result Conformance Concept
+        SemanticWriter allowedResultsWriter = new SemanticWriter(stampId);
+        Supplier<MutableList<Object>> allowedResultsFieldsSupplier = () -> {
+            // Allowed Results into IntLists
+            IntIdSet allowedResultsIds = allowedResultsList == null ?
+                    IntIds.set.empty() : IntIds.set.of(allowedResultsList, (pubId) -> EntityService.get().nidForPublicId(pubId));
+
+            return Lists.mutable.of(allowedResultsIds);
+        };
+
+        // Allowed Results semantic referencing Result Conformance Concept
+        allowedResultsWriter.semantic(allowedResultsSemanticId,
+                new SemanticDetail(ALLOWED_RESULTS_PATTERN.publicId(), resultConformanceReferencedComponentId, allowedResultsFieldsSupplier));
     }
 }

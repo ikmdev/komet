@@ -15,7 +15,14 @@
  */
 package dev.ikm.komet.amplify.mvvm.loader;
 
+import dev.ikm.komet.amplify.mvvm.ViewModel;
+
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * A Config represents an FXML URL, controller class, controller object, zero to many NamedVm objects.
@@ -28,6 +35,8 @@ public class Config {
 
     private NamedVm[] namedViewModels;
 
+    // New support to update view models that already exist.
+    private Map<String, List<Consumer<ViewModel>>> viewModelUpdaterMap;
     public URL fxml() {
         return fxml;
     }
@@ -96,6 +105,46 @@ public class Config {
             this.namedViewModels = new NamedVm[1];
             this.namedViewModels[0] = namedVm;
         }
+        return this;
+    }
+
+    /**
+     * Returns a map of variable names to a list of updaters (Consumer objects). The caller will be able to update view models inside of controllers.
+     * e.g. A developer wants to update a view model that is injected into a controller class.
+     * The controller class contains the following:
+     * <code>
+     *    @InjectViewModel
+     *    private SimpleViewModel myViewModel;
+     *
+     * </code>
+     * Since the ViewModel isn't created outside the FXMLMvvm.make(config) will allow the caller to create a config object to update the view model.
+     * <pre>
+     *     Config config = new Config();
+     *     config.updateViewModel("myViewModel", (viewModel) -> {
+     *         viewModel.setPropertyValue("XYZ", 12345)
+     *                  .setPropertyValue("ABC", "Hello");
+     *     });
+     *
+     * </pre>
+     *
+     * @return
+     */
+    public Map<String, List<Consumer<ViewModel>>> getViewModelUpdaterMap() {
+        if (viewModelUpdaterMap == null) {
+            viewModelUpdaterMap = new HashMap<>();
+        }
+        return viewModelUpdaterMap;
+    }
+    private List<Consumer<ViewModel>> getUpdaterConsumers(String variableName) {
+        if (!getViewModelUpdaterMap().containsKey(variableName)) {
+            getViewModelUpdaterMap().put(variableName, new ArrayList<>());
+        }
+        return getViewModelUpdaterMap().get(variableName);
+    }
+
+    public Config updateViewModel(String variableName, Consumer<ViewModel> viewModelConsumer) {
+        // if variable found grab it and give it to caller.
+        getUpdaterConsumers(variableName).add(viewModelConsumer);
         return this;
     }
 }

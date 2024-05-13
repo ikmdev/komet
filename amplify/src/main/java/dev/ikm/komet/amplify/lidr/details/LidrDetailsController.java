@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.amplify.lidr.details;
 
+import dev.ikm.komet.amplify.data.om.STAMPDetail;
+import dev.ikm.komet.amplify.events.StampModifiedEvent;
 import dev.ikm.komet.amplify.lidr.events.AddDeviceEvent;
 import dev.ikm.komet.amplify.lidr.events.AddResultInterpretationEvent;
 import dev.ikm.komet.amplify.lidr.events.LidrPropertyPanelEvent;
@@ -63,6 +65,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URL;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -87,13 +90,15 @@ import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.VIEW;
 import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.*;
 import static dev.ikm.komet.amplify.lidr.viewmodels.ViewModelHelper.addNewLidrRecord;
+import static dev.ikm.komet.amplify.lidr.viewmodels.ViewModelHelper.toStampDetail;
 import static dev.ikm.komet.amplify.viewmodels.FormViewModel.MODE;
 import static dev.ikm.komet.amplify.viewmodels.StampViewModel.*;
 
 public class LidrDetailsController {
     private static final Logger LOG = LoggerFactory.getLogger(LidrDetailsController.class);
     public static final String EDIT_STAMP_OPTIONS_FXML = "edit-stamp.fxml";
-    public static final String LIDR_PROPERTIES_VIEW_FXML_FILE = "lidr-properties.fxml";
+    public static final URL LIDR_PROPERTIES_VIEW_FXML_URL = PropertiesController.class.getResource("lidr-properties.fxml");
+
     protected static final String CONCEPT_TIMELINE_VIEW_FXML_FILE = "amplify-timeline.fxml";
 
     @FXML
@@ -259,7 +264,7 @@ public class LidrDetailsController {
         };
         eventBus.subscribe(conceptTopic, LidrPropertyPanelEvent.class, propBumpOutListener);
 
-        // Listen when a new device is being added to this lidr details
+        // Listen when a new device is being added to this lidr details populates mfg
         Subscriber<AddDeviceEvent> addDeviceEventSubscriber = (evt) -> {
             // TODO Update the UI and add device.
             LOG.info("addDeviceEventSubscriber -> TODO Update the UI and add a new device.");
@@ -270,12 +275,14 @@ public class LidrDetailsController {
                 return;
             }
             getLidrViewModel().setPropertyValue(DEVICE_ENTITY, evt.deviceEntity);
+            propertiesViewController.updateModel(getViewProperties(), evt.deviceEntity);
+            propertiesViewController.updateView();
             clearView();
             updateView();
         };
         eventBus.subscribe(conceptTopic, AddDeviceEvent.class, addDeviceEventSubscriber);
 
-        // Listen when a new analyte group is added to this device. Will write to db and add to Lidr record details
+        // (Transaction) Listen when a new analyte group is added to this device. Will write to db and add to Lidr record details
         Subscriber<AddResultInterpretationEvent> addResultInterpretationEventSubscriber = (evt) -> {
 
             LOG.info("addResultInterpretationEventSubscriber -> Lidr created and details displayed");
@@ -336,14 +343,16 @@ public class LidrDetailsController {
     private void setupProperties() {
         // Setup Property screen bump out
         // Load Concept Properties View Panel (FXML & Controller)
-        JFXNode<BorderPane, PropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(PropertiesController.class.getResource(LIDR_PROPERTIES_VIEW_FXML_FILE),
-                new PropertiesController(conceptTopic));
+        Config config = new Config(LIDR_PROPERTIES_VIEW_FXML_URL)
+                .updateViewModel("propertiesViewModel", (propertiesViewModel) ->
+                        propertiesViewModel
+                                .setPropertyValue(VIEW_PROPERTIES, getViewProperties())
+                                .setPropertyValue(CONCEPT_TOPIC, conceptTopic)
+                                .setPropertyValue(DEVICE_ENTITY, getLidrViewModel().getPropertyValue(DEVICE_ENTITY)));
+
+        JFXNode<BorderPane, PropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(config);
         this.propertiesViewBorderPane = propsFXMLLoader.node();
         this.propertiesViewController = propsFXMLLoader.controller();
-        // style the same as the details view
-        String styleSheet = defaultStyleSheet();
-        this.propertiesViewBorderPane.getStylesheets().add(styleSheet);
-        this.propertiesViewController.updateModel(getViewProperties(), null);
 
         // setup view and controller into details controller
         attachPropertiesViewSlideoutTray(this.propertiesViewBorderPane);
@@ -461,7 +470,7 @@ public class LidrDetailsController {
             StampEntity stamp = latestVersion.stamp();
 
             getLidrViewModel().setPropertyValue(MODE, EDIT);
-            if (getLidrViewModel().getPropertyValue(STAMP_VIEW_MODEL) == null) {
+            if (getStampViewModel() == null) {
 
                 // add a new stamp view model to the concept view model
                 StampViewModel stampViewModel = new StampViewModel();
@@ -474,7 +483,16 @@ public class LidrDetailsController {
                         .setPropertyValues(PATHS_PROPERTY, stampViewModel.findAllPaths(getViewProperties()), true);
 
                 getLidrViewModel().setPropertyValue(STAMP_VIEW_MODEL,stampViewModel);
+            } else {
+                getStampViewModel()
+                        .setPropertyValue(STATUS_PROPERTY, stamp.state())
+                        .setPropertyValue(AUTHOR_PROPERTY, stamp.author())
+                        .setPropertyValue(MODULE_PROPERTY, stamp.module())
+                        .setPropertyValue(PATH_PROPERTY, stamp.path());
             }
+
+            STAMPDetail stampDetail = toStampDetail(getStampViewModel());
+            eventBus.publish(conceptTopic, new StampModifiedEvent("no source", StampModifiedEvent.UPDATED, stampDetail));
 
             // TODO: Ability to change Concept record. but for now user can edit stamp but not affect Concept version.
             updateStampViewModel(EDIT, stamp);
@@ -488,7 +506,6 @@ public class LidrDetailsController {
 
         // Update Lidr Record Details
         refreshLidrRecordDetails();
-
     }
     public void onReasonerSlideoutTray(Consumer<ToggleButton> reasonerResultsControllerConsumer) {
         this.reasonerResultsControllerConsumer = reasonerResultsControllerConsumer;
@@ -684,6 +701,8 @@ public class LidrDetailsController {
             // set Stamp info into Details form
             getStampViewModel().save();
             updateUIStamp(getStampViewModel());
+            STAMPDetail stampDetail = toStampDetail(getStampViewModel());
+            eventBus.publish(conceptTopic, new StampModifiedEvent(popOver, StampModifiedEvent.UPDATED, stampDetail));
         });
         popOver.show((Node) event.getSource());
 
