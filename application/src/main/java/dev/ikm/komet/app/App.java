@@ -124,6 +124,8 @@ public class App extends Application {
     public static final String CSS_LOCATION = "dev/ikm/komet/framework/graphics/komet.css";
     public static final SimpleObjectProperty<AppState> state = new SimpleObjectProperty<>(STARTING);
     private static Stage primaryStage;
+
+    private static Stage classicKometStage;
     private static Module graphicsModule;
     private static long windowCount = 1;
     private static KometPreferencesStage kometPreferencesStage;
@@ -407,8 +409,10 @@ public class App extends Application {
 
     private void launchLandingPage() {
         if (landingPageWindow != null) {
+            App.primaryStage = landingPageWindow;
             landingPageWindow.show();
             landingPageWindow.toFront();
+            landingPageWindow.setMaximized(true);
             return;
         }
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
@@ -456,8 +460,9 @@ public class App extends Application {
 
         landingPageWindow = amplifyStage;
         amplifyStage.show();
-
+        amplifyStage.setMaximized(true);
     }
+
     /**
      * When a user selects the menu option View/New Journal a new Stage Window is launched.
      * This method will load a navigation panel to be a publisher and windows will be connected (subscribed) to the activity stream.
@@ -716,11 +721,12 @@ public class App extends Application {
 
     private void launchClassicKomet() throws IOException, BackingStoreException {
         // If already launched bring to the front
-        if (primaryStage != null && primaryStage.isShowing()) {
-            primaryStage.show();
-            primaryStage.toFront();
+        if (classicKometStage != null && classicKometStage.isShowing()) {
+            classicKometStage.show();
+            classicKometStage.toFront();
             return;
         }
+        classicKometStage = new Stage();
         //Starting up preferences and getting configurations
         Preferences.start();
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
@@ -746,12 +752,12 @@ public class App extends Application {
             generateMsWindowsMenu(kometRoot);
         }
 
-        primaryStage.setScene(kometScene);
+        classicKometStage.setScene(kometScene);
 
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
         boolean mainWindowInitialized = windowPreferences.getBoolean(KometStageController.WindowKeys.WINDOW_INITIALIZED, false);
         controller.setup(windowPreferences);
-        primaryStage.setTitle("Komet");
+        classicKometStage.setTitle("Komet");
 
         if (!mainWindowInitialized) {
             controller.setLeftTabs(makeDefaultLeftTabs(controller.windowView()), 0);
@@ -772,11 +778,11 @@ public class App extends Application {
             });
         }
         //Setting X and Y coordinates for location of the Komet stage
-        primaryStage.setX(controller.windowSettings().xLocationProperty().get());
-        primaryStage.setY(controller.windowSettings().yLocationProperty().get());
-        primaryStage.setHeight(controller.windowSettings().heightProperty().get());
-        primaryStage.setWidth(controller.windowSettings().widthProperty().get());
-        primaryStage.show();
+        classicKometStage.setX(controller.windowSettings().xLocationProperty().get());
+        classicKometStage.setY(controller.windowSettings().yLocationProperty().get());
+        classicKometStage.setHeight(controller.windowSettings().heightProperty().get());
+        classicKometStage.setWidth(controller.windowSettings().widthProperty().get());
+        classicKometStage.show();
 
         App.kometPreferencesStage = new KometPreferencesStage(controller.windowView().makeOverridableViewProperties());
 
