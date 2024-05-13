@@ -18,17 +18,15 @@ package dev.ikm.komet.amplify.lidr.properties;
 import dev.ikm.komet.amplify.lidr.analyte.AnalyteGroupController;
 import dev.ikm.komet.amplify.lidr.device.DeviceController;
 import dev.ikm.komet.amplify.lidr.events.ShowPanelEvent;
-import dev.ikm.komet.amplify.lidr.viewmodels.AnalyteGroupViewModel;
-import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
+import dev.ikm.komet.amplify.lidr.results.ResultsController;
+import dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel;
+import dev.ikm.komet.amplify.mvvm.SimpleViewModel;
 import dev.ikm.komet.amplify.mvvm.loader.Config;
 import dev.ikm.komet.amplify.mvvm.loader.FXMLMvvmLoader;
+import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
 import dev.ikm.komet.amplify.mvvm.loader.JFXNode;
-import dev.ikm.komet.amplify.mvvm.loader.NamedVm;
 import dev.ikm.komet.amplify.properties.HierarchyController;
 import dev.ikm.komet.amplify.properties.HistoryChangeController;
-import dev.ikm.komet.amplify.lidr.results.ResultsController;
-import dev.ikm.komet.amplify.lidr.viewmodels.DeviceViewModel;
-import dev.ikm.komet.amplify.lidr.viewmodels.ResultsViewModel;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -48,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.UUID;
 
 import static dev.ikm.komet.amplify.commons.CssHelper.genText;
@@ -62,11 +61,9 @@ public class PropertiesController {
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesController.class);
     protected static final String HISTORY_CHANGE_FXML_FILE = "history-change-selection.fxml";
     protected static final String HIERARCHY_VIEW_FXML_FILE = "hierarchy-view.fxml";
-    protected static final String DEVICE_FXML_FILE = "device-summary.fxml";
-    protected static final String ANALYTE_GROUP_FXML_FILE = "analyte-group.fxml";
-    protected static final String MANUAL_ENTRY_RESULTS_FXML_FILE = "manual-entry-results.fxml";
-
-
+    protected static final URL DEVICE_FXML_URL = DeviceController.class.getResource("device-summary.fxml");
+    protected static final URL ANALYTE_GROUP_FXML_URL = AnalyteGroupController.class.getResource("analyte-group.fxml");
+    protected static final URL MANUAL_ENTRY_RESULTS_FXML_URL = ResultsController.class.getResource("manual-entry-results.fxml");
 
     @FXML
     private SVGPath commentsButton;
@@ -85,6 +82,9 @@ public class PropertiesController {
 
     @FXML
     private BorderPane contentBorderPane;
+
+    @InjectViewModel
+    private SimpleViewModel propertiesViewModel;
 
     private Pane historyTabsBorderPane;
     private HistoryChangeController historyChangeController;
@@ -106,21 +106,17 @@ public class PropertiesController {
 
     private Pane currentAddEditPane;
     private Pane commentsPane = new StackPane(genText("Comments Pane"));
-    private ViewProperties viewProperties;
     private EntityFacade entityFacade;
 
     private EvtBus eventBus;
-
-    private UUID conceptTopic;
 
 
     public PropertiesController() {
     }
 
-    public PropertiesController(UUID conceptTopic) {
-        this.conceptTopic = conceptTopic;
+    public UUID getConceptTopic() {
+        return propertiesViewModel.getPropertyValue(CONCEPT_TOPIC);
     }
-
     /**
      * This is called after dependency injection has occurred to the JavaFX controls above.
      */
@@ -139,19 +135,21 @@ public class PropertiesController {
         FXMLLoader loader2 = new FXMLLoader(HierarchyController.class.getResource(HIERARCHY_VIEW_FXML_FILE));
         hierarchyTabBorderPane = loader2.load();
         hierarchyController = loader2.getController();
-        // updateModel() TODO we may avoid this call
-        updateModel(getViewProperties(), null);
+
+        // updates both history and hierarchy controllers. If create Mode the device is null.
+        updateModel(getViewProperties(), propertiesViewModel.getPropertyValue(LidrViewModel.DEVICE_ENTITY));
+        updateView();
 
         // +-----------------------------------
         // ! Add a Device and MFG
         // +------------------------------------
-        ValidationViewModel deviceViewModel = new DeviceViewModel().setPropertyValue(MODE, CREATE)
-                .setPropertyValue(VIEW_PROPERTIES, viewProperties)
-                .setPropertyValue(CONCEPT_TOPIC, conceptTopic)
-                .save(true);
+        Config deviceConfig = new Config(DEVICE_FXML_URL)
+                .updateViewModel("deviceViewModel", (deviceViewModel) ->
+                        deviceViewModel
+                                .setPropertyValue(MODE, CREATE)
+                                .setPropertyValue(VIEW_PROPERTIES, getViewProperties())
+                                .setPropertyValue(CONCEPT_TOPIC, getConceptTopic()));
 
-        Config deviceConfig = new Config(DeviceController.class.getResource(DEVICE_FXML_FILE));
-        deviceConfig.namedViewModels(new NamedVm("deviceViewModel", deviceViewModel));
         JFXNode<Pane, DeviceController> deviceControllerJFXNode = FXMLMvvmLoader.make(deviceConfig);
         addDeviceController = deviceControllerJFXNode.controller();
         addDevicePane = deviceControllerJFXNode.node();
@@ -159,28 +157,27 @@ public class PropertiesController {
         // +-----------------------------------
         // ! Analyte Group
         // +------------------------------------
-        ValidationViewModel analyteGroupViewModel = new AnalyteGroupViewModel()
-                .setPropertyValue(MODE, CREATE)
-                .setPropertyValue(VIEW_PROPERTIES, viewProperties)
-                .setPropertyValue(CONCEPT_TOPIC, conceptTopic)
-                .save(true);
+        Config analyteGroupConfig = new Config(ANALYTE_GROUP_FXML_URL)
+                .updateViewModel("analyteGroupViewModel", (analyteGroupViewModel) ->
+                        analyteGroupViewModel
+                                .setPropertyValue(MODE, CREATE)
+                                .setPropertyValue(VIEW_PROPERTIES, getViewProperties())
+                                .setPropertyValue(CONCEPT_TOPIC, getConceptTopic()));
 
-        Config analyteGroupConfig = new Config(AnalyteGroupController.class.getResource(ANALYTE_GROUP_FXML_FILE));
-        analyteGroupConfig.namedViewModels(new NamedVm("analyteGroupViewModel", analyteGroupViewModel));
         JFXNode<Pane, AnalyteGroupController> analyteControllerJFXNode = FXMLMvvmLoader.make(analyteGroupConfig);
         analyteGroupController = analyteControllerJFXNode.controller();
         analyteGroupPane = analyteControllerJFXNode.node();
 
         // +-----------------------------------
-        // ! Results Manual
+        // ! Results Manual Entry
         // +------------------------------------
-        ValidationViewModel resultsViewModel = new ResultsViewModel()
-                .setPropertyValue(MODE, CREATE)
-                .setPropertyValue(VIEW_PROPERTIES, viewProperties)
-                .setPropertyValue(CONCEPT_TOPIC, conceptTopic)
-                .save(true);
-        Config resultsConfig = new Config(ResultsController.class.getResource(MANUAL_ENTRY_RESULTS_FXML_FILE));
-        resultsConfig.namedViewModels(new NamedVm("resultsViewModel", resultsViewModel));
+        Config resultsConfig = new Config(MANUAL_ENTRY_RESULTS_FXML_URL)
+                .updateViewModel("resultsViewModel", (resultsViewModel) ->
+                        resultsViewModel
+                                .setPropertyValue(MODE, CREATE)
+                                .setPropertyValue(VIEW_PROPERTIES, getViewProperties())
+                                .setPropertyValue(CONCEPT_TOPIC, getConceptTopic()));
+
         JFXNode<Pane, ResultsController> resultsControllerJFXNode = FXMLMvvmLoader.make(resultsConfig);
         manualResultsController = resultsControllerJFXNode.controller();
         manualResultsPane = resultsControllerJFXNode.node();
@@ -203,7 +200,7 @@ public class PropertiesController {
             }
             updateAddEditPane();
         });
-        eventBus.subscribe(conceptTopic, ShowPanelEvent.class, showPanelEventSubscriber);
+        eventBus.subscribe(getConceptTopic(), ShowPanelEvent.class, showPanelEventSubscriber);
     }
 
     /**
@@ -213,12 +210,9 @@ public class PropertiesController {
         contentBorderPane.setCenter(currentAddEditPane);
     }
     public ViewProperties getViewProperties() {
-        return viewProperties;
+        return propertiesViewModel.getPropertyValue(VIEW_PROPERTIES);
     }
 
-    public void setConceptTopic(UUID conceptTopic) {
-        this.conceptTopic = conceptTopic;
-    }
 
     private void updateDefaultSelectedViews() {
         // default to selected tab (History)
@@ -235,7 +229,6 @@ public class PropertiesController {
     }
 
     public void updateModel(final ViewProperties viewProperties, EntityFacade entityFacade){
-        this.viewProperties = viewProperties;
         this.entityFacade = entityFacade;
         this.historyChangeController.updateModel(viewProperties, entityFacade);
         this.hierarchyController.updateModel(viewProperties, entityFacade);

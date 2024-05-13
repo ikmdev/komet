@@ -13,29 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.amplify.lidr.events;
+package dev.ikm.komet.amplify.events;
 
+import dev.ikm.komet.amplify.data.om.STAMPDetail;
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
-import dev.ikm.tinkar.entity.Entity;
 
-public class AddResultEvent extends Evt {
+public class StampModifiedEvent extends Evt {
+    public static final EvtType<StampModifiedEvent> UPDATED = new EvtType<>(Evt.ANY, "UPDATED");
 
-    public static final EvtType<AddResultEvent> ADD_RESULT_TO_ANALYTE_GROUP = new EvtType<>(Evt.ANY, "ADD_RESULT_TO_ANALYTE_GROUP");
+    private STAMPDetail stampDetail;
 
-    private final Entity oneResult;
-    /**
-     * Constructs a prototypical Event.
-     *
-     * @param source         the object on which the Event initially occurred
-     * @param eventType
-     */
-    public AddResultEvent(Object source, EvtType eventType, Entity oneResult) {
-        super(source, eventType);
-        this.oneResult = oneResult;
+    public StampModifiedEvent(Object source, EvtType<? extends Evt> evtType, STAMPDetail stampDetail) {
+        super(source, evtType);
+        this.stampDetail = stampDetail;
     }
 
-    public Entity getOneResult() {
-        return oneResult;
+    public STAMPDetail getStampDetail() {
+        return stampDetail;
     }
 }

@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.amplify.lidr.viewmodels;
 
+import dev.ikm.komet.amplify.mvvm.ViewModel;
+import dev.ikm.komet.amplify.mvvm.validator.MessageType;
 import dev.ikm.komet.amplify.mvvm.validator.ValidationMessage;
 import dev.ikm.komet.amplify.viewmodels.FormViewModel;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -41,21 +43,42 @@ public class AnalyteGroupViewModel extends FormViewModel {
     public static String LIDR_RECORD = "lidrRecord";
 
     public static String ANALYTE_ENTITY = "analyteEntity";
+    public static String TARGET_ENTITIES = "targetEntities";
 
     public static String RESULT_ENTITIES = "resultEntities";
 
     public static String SPECIMEN_ENTITIES = "specimenEntities";
 
+    public static String IS_POPULATED = "isPopulated";
+    public static String SAVE_BUTTON_STATE = "buttonState";
+
     public AnalyteGroupViewModel() {
         super();
         addProperty(CONCEPT_TOPIC, (UUID) null)
                 .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
-                .addProperty(ANALYTE_ENTITY, (EntityFacade) null) // this is an analyte as a concept
-                .addProperty(RESULT_ENTITIES, new ArrayList<>()) // this represents the results as a concept
+                .addProperty(SAVE_BUTTON_STATE, true)        // disable property (true) by default
+                .addProperty(ANALYTE_ENTITY, (EntityFacade) null)   // this is an analyte as a concept
+                .addProperty(TARGET_ENTITIES, new ArrayList<>())    // analytes have targets
+                .addProperty(RESULT_ENTITIES, new ArrayList<>())    // this represents the results as a concept
                 .addProperty(SPECIMEN_ENTITIES, new ArrayList<>()); // this is the specimen as a concept
 
-        //TODO add validations
+        // Is Analyte Group valid? Custom validator will alter button state.
+        addValidator(IS_POPULATED, "Is Populated", (Void prop, ViewModel vm) -> {
+            // if any fields are empty then it is not populated (invalid)
+            if (getPropertyValue(ANALYTE_ENTITY) == null
+                    || getObservableList(TARGET_ENTITIES).size() == 0
+                    || getObservableList(RESULT_ENTITIES).size() == 0
+                    || getObservableList(SPECIMEN_ENTITIES).size() == 0) {
 
+                // update is populated
+                setPropertyValue(SAVE_BUTTON_STATE, true); // disable is true
+                // let caller know why it is not valid
+                return new ValidationMessage(SAVE_BUTTON_STATE, MessageType.ERROR, "Analyte Group is not populated");
+            }
+            // update is populated
+            setPropertyValue(SAVE_BUTTON_STATE, false); // disable is false (enabled)
+            return VALID;
+        });
         //TODO figure out when to set the mode to CREATE | EDIT; possibly set by the controller?
         //setValue(MODE, CREATE);
     }
@@ -82,6 +105,7 @@ public class AnalyteGroupViewModel extends FormViewModel {
 
         MutableList<Object> descriptionFields = Lists.mutable.empty();
         descriptionFields.add(getPropertyValue(ANALYTE_ENTITY));
+        descriptionFields.add(getPropertyValue(TARGET_ENTITIES));
         descriptionFields.add(getPropertyValue(RESULT_ENTITIES));
         descriptionFields.add(getPropertyValue(SPECIMEN_ENTITIES));
 

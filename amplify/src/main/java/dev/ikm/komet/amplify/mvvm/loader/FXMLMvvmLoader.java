@@ -26,6 +26,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * An FXML loader capable of injecting ViewModels into Controller classes.
@@ -76,16 +77,17 @@ public class FXMLMvvmLoader {
 
         Object controller = null;
         if (config.controllerClass() != null && config.controller() == null) {
+            // When caller specifies an instance of the javafx controller.
             try {
                 controller = config.controllerClass().getDeclaredConstructor().newInstance();
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
         } else if (config.controller() != null) {
+            // When caller specifies the javafx controller class
             controller = config.controller();
         } else {
-            // TODO: FXML may have an associated controllerClass. TODO look at ControllerFactory in fxmlloader.
-
+            // TODO: verify the code below is able to grab the controller from the FXML file
         }
 
         Node node = null;
@@ -99,7 +101,7 @@ public class FXMLMvvmLoader {
                     try {
                         if (aClass != null) {
                             Object controllerInFxml = aClass.getDeclaredConstructor().newInstance();
-                            namedVms.addAll(injectViewModels(controllerInFxml, namedViewModelMap));
+                            namedVms.addAll(injectViewModels(controllerInFxml, namedViewModelMap, config.getViewModelUpdaterMap()));
                             return controllerInFxml;
                         }
                         return null;
@@ -111,7 +113,7 @@ public class FXMLMvvmLoader {
                 // When caller is supplying a controller class or controller instance.
                 if (controller != null) {
                     // also get a list of ViewModels
-                    namedVms.addAll(injectViewModels(controller, namedViewModelMap));
+                    namedVms.addAll(injectViewModels(controller, namedViewModelMap, config.getViewModelUpdaterMap()));
                     LOG.info("Injecting ViewModels into controller class %s with the following fields: %s".formatted(controller.getClass().getName(), namedVms));
                     loader.setController(controller);
                 }
@@ -127,7 +129,7 @@ public class FXMLMvvmLoader {
         }
 
     }
-    protected static List<NamedVm> injectViewModels(Object controller, Map<String, NamedVm> namedViewModelMap) {
+    protected static List<NamedVm> injectViewModels(Object controller, Map<String, NamedVm> namedViewModelMap, Map<String, List<Consumer<ViewModel>>> updateConsumerMap) {
         List<NamedVm> names = new ArrayList<>();
         for (Field field : controller.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(InjectViewModel.class)) {
@@ -155,6 +157,15 @@ public class FXMLMvvmLoader {
                          InvocationTargetException e) {
                     throw new RuntimeException("%s class field %s".formatted(),e);
                 }
+            }
+        }
+        // Iterate through the available injected view models to run the consumer updaters (callers will update the view model)
+        for(NamedVm namedVm:names) {
+            if (updateConsumerMap.containsKey(namedVm.variableName())) {
+                updateConsumerMap
+                        .get(namedVm.variableName()) /* get updaters */
+                        .forEach(viewModelConsumer ->
+                                viewModelConsumer.accept(namedVm.viewModel())); /* view model set ViewModel properties */
             }
         }
         return names;

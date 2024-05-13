@@ -305,13 +305,16 @@
     -fx-background-radius: 2;
 
 }
-
+.lidr-sub-container .scroll-pane,
+.analyte-group-container .scroll-pane,
 .scroll-pane.axiom-container {
     -fx-background-color: transparent;
     -fx-border-insets: 1;
     -fx-background-radius: 0 0 10 10;
 }
 
+.lidr-sub-container .scroll-pane > .viewport,
+.analyte-group-container .scroll-pane > .viewport,
 .scroll-pane.axiom-container > .viewport {
     -fx-background-color: transparent;
     -fx-background-radius: 0 0 10 10;

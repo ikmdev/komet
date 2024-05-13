@@ -17,65 +17,67 @@ package dev.ikm.komet.amplify.lidr.results;
 
 import dev.ikm.komet.amplify.commons.AbstractBasicController;
 import dev.ikm.komet.amplify.commons.BasicController;
+import dev.ikm.komet.amplify.commons.ComboBoxHelper;
+import dev.ikm.komet.amplify.data.om.STAMPDetail;
+import dev.ikm.komet.amplify.events.StampModifiedEvent;
 import dev.ikm.komet.amplify.lidr.events.AddResultEvent;
 import dev.ikm.komet.amplify.lidr.events.ShowPanelEvent;
+import dev.ikm.komet.amplify.lidr.viewmodels.ResultsViewModel;
+import dev.ikm.komet.amplify.lidr.viewmodels.ViewModelHelper;
 import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
 import dev.ikm.komet.amplify.viewmodels.FormViewModel;
-import dev.ikm.komet.amplify.lidr.viewmodels.ResultsViewModel;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.terms.ComponentWithNid;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import javafx.beans.InvalidationListener;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.TreeCell;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.util.Callback;
-import javafx.util.StringConverter;
+import javafx.scene.layout.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.amplify.lidr.events.AddResultEvent.ADD_RESULT_TO_ANALYTE_GROUP;
 import static dev.ikm.komet.amplify.lidr.events.ShowPanelEvent.SHOW_ADD_ANALYTE_GROUP;
-import static dev.ikm.komet.amplify.lidr.viewmodels.ResultsViewModel.ALLOWABLE_RESULT;
+import static dev.ikm.komet.amplify.lidr.om.DataModelHelper.*;
+import static dev.ikm.komet.amplify.lidr.viewmodels.ResultsViewModel.*;
 import static dev.ikm.komet.amplify.viewmodels.FormViewModel.CONCEPT_TOPIC;
 import static dev.ikm.komet.amplify.viewmodels.FormViewModel.VIEW_PROPERTIES;
 
+/**
+ * Manual Entry for Results Conformance Panel.
+ * This screen has a toggle between Qualitative and Quantitative results. When the user selects Qualitative
+ * the following fields are shown:
+ * <pre>
+ *     Name - Result name
+ *     Scale Type - Ordinal (enumeration), units. Think of Ordinal as enumerated values such as DETECTED, NOT_DETECTED, UNKNOWN.
+ *     Allowable Results - Ordinal values (concepts). If using units, values are numeric.
+ * </pre>
+ */
 public class ResultsController extends AbstractBasicController implements BasicController {
 
     private static final Logger LOG = LoggerFactory.getLogger(ResultsController.class);
-
+    public static final String DRAG_AND_DROP_CONCEPT_S_HERE = "Drag and drop concept(s) here";
     @FXML
     private TextField resultName;
 
@@ -95,75 +97,103 @@ public class ResultsController extends AbstractBasicController implements BasicC
     private RadioButton quantitativeRadioButton;
 
     @FXML
+    private ToggleGroup dataResultTypeGroup;
+
+    @FXML
     private VBox resultsFormContainer;
 
     @FXML
-    private VBox selectedAllowableResultContainer;
-
-    @FXML
-    private StackPane selectedAllowableResultStackPane;
-
+    private ComboBox<EntityFacade> scaleTypeComboBox;
 
     @InjectViewModel
     private ResultsViewModel resultsViewModel;
 
-    EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
+
+
+    private STAMPDetail stampDetail;
+
+    ///////////////////////////////////////////////////
+    private VBox generatedResultsFormContainer;
+
+    private List<Node> qualitativeFields = new ArrayList<>();
+    private List<Node> quantitativeFields = new ArrayList<>();
+
+    private EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
 
     @Override
     @FXML
     public void initialize() {
+        // The caller updated the view model's view properties object. This class extends from AbstractBasicController having updateModel() method.
+        updateModel(resultsViewModel.getPropertyValue(VIEW_PROPERTIES));
+
         clearView();
-
-        // put the two radio buttons in a toggle group
-        ToggleGroup toggleGroup = new ToggleGroup();
-        qualitativeRadioButton.setToggleGroup(toggleGroup);
-        quantitativeRadioButton.setToggleGroup(toggleGroup);
-
-        qualitativeRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            // if newValue is true then the qualitativeRadioButton was pressed
-            if (newValue) {
-                removeAmendedForm();
-                if (resultsViewModel.getPropertyValue(ALLOWABLE_RESULT) == null) {
-                    // when we already have a selected allowable result then display it
-                    showQualitativeForm(true);
-                } else {
-                    // otherwise show the drag and drop form
-                    VBox droppedAreaVbox = new VBox();
-                    StackPane dropStackPane = new StackPane();
-                    Region dropRegion = new Region();
-                    dropRegion.getStyleClass().add("lidr-rounded-region");
-                    HBox dropHbox = new HBox();
-                    VBox innerDropVbox = new VBox();
-                    dropHbox.getChildren().add(innerDropVbox);
-                    dropStackPane.getChildren().addAll(dropRegion, dropHbox);
-                    droppedAreaVbox.getChildren().add(dropStackPane);
-                    resultsFormContainer.getChildren().add(droppedAreaVbox);
-
-                    showSelectedAllowableResult(resultsViewModel.getPropertyValue(ALLOWABLE_RESULT),
-                            innerDropVbox, dropStackPane, ALLOWABLE_RESULT);
-                }
-            }
-        });
-
-        quantitativeRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            // if newValue is true then the quantitativeRadioButton was pressed
-            if (newValue) {
-                removeAmendedForm();
-                showQuantitativeForm();
-            }
-        });
-
-
-        // register listeners
-        InvalidationListener formValid = (obs) -> {
-            boolean isFormValid = isFormPopulated();
-            if (isFormValid) {
-                //FIXME
-                //copyUIToViewModelProperties();
-            }
-            addButton.setDisable(!isFormValid);
+        // Create subscriber to listen to when lidr details stamp changes
+        Subscriber<StampModifiedEvent> stampModifiedEventSubscriber = (event) -> {
+            setStampDetail(event.getStampDetail());
         };
+        evtBus.subscribe(getConceptTopic(), StampModifiedEvent.class, stampModifiedEventSubscriber);
+        addButton.disableProperty().bind(resultsViewModel.getProperty(ADD_BUTTON_STATE));
 
+        // TODO: Add the additional Scale types to populate the dropdown (combobox). For now we just add Ordinal as a valid Scale Type.
+        scaleTypeComboBox.getItems().add(ORDINAL_CONCEPT);
+        resultsViewModel.setPropertyValue(SCALE_TYPE, ORDINAL_CONCEPT);
+
+        // adds a listener when user changes value & code that displays a combobox cell.
+        // params are: combobox, listener, and cellFactory.
+        ComboBoxHelper.setupComboBox(scaleTypeComboBox, (observable ->
+            // when chosen add new item to view model and validate
+            resultsViewModel
+                    .setPropertyValue(SCALE_TYPE, scaleTypeComboBox.getSelectionModel().getSelectedItem())
+                    .validate()),
+
+                // how to display text in a combo box cell.
+                (EntityFacade entity) ->
+                    getViewProperties()
+                            .calculator()
+                            .getRegularDescriptionText(entity.nid())
+                            .orElse("")
+        );
+
+        // As user types text the view model is updated.
+        resultName.textProperty().addListener((observableValue, s, t1) -> {
+            resultsViewModel.setPropertyValue(RESULTS_NAME, t1);
+            resultsViewModel.validate();
+        });
+
+        // By default select Qualitative
+        dataResultTypeGroup
+                .selectedToggleProperty()
+                .addListener((obs, oldValue, newValue) -> {
+                    removeAmendedForm();
+                    // if qualitative, show allowable results
+                    // if quantitative show fields for quantitative
+                    if (dataResultTypeGroup.getSelectedToggle().equals(qualitativeRadioButton)) {
+                        // set data result
+                        resultsViewModel.setPropertyValue(DATA_RESULTS_TYPE, QUALITATIVE_CONCEPT);
+                        showQualitativeForm(true);
+                    } else if (dataResultTypeGroup.getSelectedToggle().equals(quantitativeRadioButton)) {
+                        resultsViewModel.setPropertyValue(DATA_RESULTS_TYPE, QUANTITATIVE_CONCEPT);
+                        showQuantitativeForm();
+                    }
+                    resultsViewModel.validate();
+                });
+        // Default to showing the qualitative fields.
+        resultsViewModel.setPropertyValue(DATA_RESULTS_TYPE, QUALITATIVE_CONCEPT);
+        showQualitativeForm(true);
+    }
+
+    private void setStampDetail(STAMPDetail stampDetail) {
+        this.stampDetail = stampDetail;
+    }
+    public STAMPDetail getStampDetail() {
+        return stampDetail;
+    }
+    private VBox getGeneratedResultsFormContainer() {
+        return generatedResultsFormContainer;
+    }
+
+    private void setGeneratedResultsFormContainer(VBox generatedResultsFormContainer) {
+        this.generatedResultsFormContainer = generatedResultsFormContainer;
     }
 
     private void removeAmendedForm() {
@@ -177,7 +207,10 @@ public class ResultsController extends AbstractBasicController implements BasicC
      *      Reference Ranges
      */
     private void showQuantitativeForm() {
-        // create an allowable result form entry
+        if (quantitativeFields.size() > 0) {
+            resultsFormContainer.getChildren().addAll(quantitativeFields);
+            return;
+        }
 
         // create the label
         Label exampleUnitsLabel = new Label("Example Units");
@@ -219,6 +252,7 @@ public class ResultsController extends AbstractBasicController implements BasicC
         resultsFormContainer.getChildren().addAll(exampleUnitsLabel, exampleUnitsSearchContainer,
                 // add the reference range label and combobox
                 referenceRangesLabel, referenceRangesComboBox);
+        quantitativeFields.addAll(resultsFormContainer.getChildren());
     }
 
     /**
@@ -227,6 +261,10 @@ public class ResultsController extends AbstractBasicController implements BasicC
      *      Allowable Result
      */
     private void showQualitativeForm(boolean includeLabel) {
+        if (qualitativeFields.size() > 0) {
+            resultsFormContainer.getChildren().addAll(qualitativeFields);
+            return;
+        }
 
         // create a stack pane fo the drop shadow region, the search input and the drag
         // and drop box below the search
@@ -239,7 +277,7 @@ public class ResultsController extends AbstractBasicController implements BasicC
         HBox allowableSearchHbox = new HBox();
         TextField allowableResultTextField = new TextField();
         // below is a magnifying glass icon inside the prompt text
-        allowableResultTextField.setPromptText("\uD83D\uDD0D  Search Allowable Results");
+        allowableResultTextField.setPromptText("\uD83D\uDD0D  Search ");
         allowableResultTextField.getStyleClass().add("lidr-search-device-text-input");
         HBox.setHgrow(allowableResultTextField, Priority.ALWAYS);
         Button allowableResultSearchButton = new Button();
@@ -300,18 +338,19 @@ public class ResultsController extends AbstractBasicController implements BasicC
         } else {
             resultsFormContainer.getChildren().addAll(droppedAreaVbox, stackPane);
         }
+        qualitativeFields.addAll(resultsFormContainer.getChildren());
 
-        setupDragNDrop(dragDropHboxInner, (publicId) -> {
-            if (resultsViewModel.getPropertyValue(ALLOWABLE_RESULT) == null) {
-                // query public Id to get entity.
-                Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-                // there can be one to many results
-                resultsViewModel.setPropertyValue(ALLOWABLE_RESULT, entity);
-                resultsViewModel.save();
-                // update the UI with the new allowable result
+        setupDragNDrop(stackPane, (chosenAllowResultPublicId) -> {
+            List<EntityFacade> allowableResults = resultsViewModel.getObservableList(ALLOWABLE_RESULTS);
 
-                addConceptAndRemoveForm(entity, innerDropVbox, dropStackPane, ALLOWABLE_RESULT);
-            }
+            // query public Id to get entity.
+            Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(chosenAllowResultPublicId));
+            // there can be one to many results
+            allowableResults.add(entity);
+            resultsViewModel.validate();
+            setGeneratedResultsFormContainer(innerDropVbox);
+            // update the UI with the new allowable result
+            addConceptAndRemoveForm(entity, innerDropVbox, dropStackPane, ALLOWABLE_RESULTS);
         });
     }
 
@@ -339,6 +378,10 @@ public class ResultsController extends AbstractBasicController implements BasicC
                     event.getDragboard().hasString()) {
                 node.setOpacity(.90);
             }
+            if (node != null && node instanceof StackPane stackPane && stackPane.getChildren().size() > 0) {
+                int lastIndex = stackPane.getChildren().size();
+                stackPane.getChildren().add(lastIndex, createDragOverAnimation());
+            }
 
             event.consume();
         });
@@ -347,6 +390,10 @@ public class ResultsController extends AbstractBasicController implements BasicC
         node.setOnDragExited(event -> {
             /* mouse moved away, remove the graphical cues */
             node.setOpacity(1);
+            if (node != null && node instanceof StackPane stackPane && stackPane.getChildren().size() > 0) {
+                int lastIndex = stackPane.getChildren().size();
+                stackPane.getChildren().remove(lastIndex - 1, lastIndex);
+            }
             event.consume();
         });
 
@@ -356,7 +403,13 @@ public class ResultsController extends AbstractBasicController implements BasicC
             Dragboard db = event.getDragboard();
             boolean success = false;
             if (db.hasString()) {
-                ConceptFacade conceptFacade = (ConceptFacade) ((TreeCell) event.getGestureSource()).getItem();
+                ConceptFacade conceptFacade = null;
+                if (event.getGestureSource() instanceof SearchResultCell) {
+                    SearchPanelController.NidTextRecord nidTextRecord = (SearchPanelController.NidTextRecord) ((SearchResultCell) event.getGestureSource()).getItem();
+                    conceptFacade = ConceptFacade.make(nidTextRecord.nid());
+                } else if (event.getGestureSource() instanceof MultiParentGraphCell) {
+                    conceptFacade = ((MultiParentGraphCell) event.getGestureSource()).getItem();
+                }
                 PublicId publicId = conceptFacade.publicId();
                 consumer.accept(publicId);
                 success = true;
@@ -407,9 +460,12 @@ public class ResultsController extends AbstractBasicController implements BasicC
         selectedHbox.getChildren().add(closeButton);
 
 
-        closeButton.setOnMouseClicked(event -> removeAllowableResult(selectedHbox, propertyName, selectedVBoxContainer, selectedStackPane, entity));
-        // remove the search and drag and drop when they have just one selection
+        closeButton.setOnMouseClicked(event -> {
+            removeAllowableResult(selectedHbox, propertyName, selectedVBoxContainer, selectedStackPane, entity);
+            resultsViewModel.validate();
+        });
 
+        // remove the search and drag and drop when they have just one selection
         selectedVBoxContainer.getChildren().add(selectedHbox);
 
         VBox.setMargin(selectedStackPane, new Insets(0,0, 8,0));
@@ -417,17 +473,35 @@ public class ResultsController extends AbstractBasicController implements BasicC
 
     private void addConceptAndRemoveForm(Entity entity, VBox selectedVBoxContainer, StackPane selectedStackPane, String propertyName) {
         showSelectedAllowableResult(entity, selectedVBoxContainer, selectedStackPane, propertyName);
-        removeAllowableResultForm();
+    }
+
+    /**
+     * create the animation of the drop location with the outline having a dashed green line
+     * @return
+     */
+    private HBox createDragOverAnimation() {
+        HBox aboutToDropHBox = new HBox();
+        aboutToDropHBox.setAlignment(Pos.CENTER);
+        aboutToDropHBox.getStyleClass().add("lidr-drop-area");
+        StackPane stackPane = new StackPane();
+        Region iconRegion = new Region();
+        StackPane.setMargin(iconRegion, new Insets(0, 4, 0, 0));
+        iconRegion.getStyleClass().add("lidr-drag-and-drop-icon-while-dragging");
+        stackPane.getChildren().add(iconRegion);
+        Label dragAndDropLabel = new Label(DRAG_AND_DROP_CONCEPT_S_HERE);
+        aboutToDropHBox.getChildren().addAll(stackPane, dragAndDropLabel);
+        return aboutToDropHBox;
     }
 
     private void removeAllowableResult(HBox selectedConcept, String propertyName, VBox containerVbox, StackPane containerStackPane, Entity entity) {
-        resultsViewModel.setPropertyValue(propertyName, null);
+        List<EntityFacade> list = resultsViewModel.getObservableList(propertyName);
+        list.remove(entity);
         containerVbox.getChildren().remove(selectedConcept);
         HBox.setMargin(containerVbox, new Insets(0));
         VBox.setMargin(containerStackPane, new Insets(0));
 
         // put the search and drag and drop back when they remove the one selection
-        showQualitativeForm(false);
+        // showQualitativeForm(false);
     }
 
     private void removeAllowableResultForm() {
@@ -440,92 +514,62 @@ public class ResultsController extends AbstractBasicController implements BasicC
         }
     }
 
-
-    public ViewProperties getViewProperties() {
-        return resultsViewModel.getPropertyValue(VIEW_PROPERTIES);
-    }
     private UUID getConceptTopic() {
         return resultsViewModel.getPropertyValue(CONCEPT_TOPIC);
     }
-    private String getDisplayText(ConceptEntity conceptEntity) {
+    private String getDisplayText(ComponentWithNid conceptEntity) {
         Optional<String> stringOptional = getViewProperties().calculator().getRegularDescriptionText(conceptEntity.nid());
         return stringOptional.orElse("");
     }
 
-    private void setupComboBox(ComboBox comboBox, InvalidationListener listener) {
-        comboBox.setConverter(new StringConverter<ConceptEntity>() {
-
-            @Override
-            public String toString(ConceptEntity conceptEntity) {
-                return getDisplayText(conceptEntity);
-            }
-
-            @Override
-            public ConceptEntity fromString(String string) {
-                return null;
-            }
-        });
-
-        comboBox.setCellFactory(new Callback<>() {
-
-            /**
-             * @param param The single argument upon which the returned value should be
-             *              determined.
-             * @return
-             */
-            @Override
-            public ListCell<ConceptEntity> call(Object param) {
-                return new ListCell<>(){
-                    @Override
-                    protected void updateItem(ConceptEntity conceptEntity, boolean b) {
-                        super.updateItem(conceptEntity, b);
-                        if (conceptEntity != null) {
-                            setText(getDisplayText(conceptEntity));
-                        } else {
-                            setText(null);
-                        }
-
-                    }
-                };
-            }
-        });
-
-        // register invalidation listener
-        comboBox.getSelectionModel().selectedItemProperty().addListener(listener);
-    }
-
-    private boolean isFormPopulated() {
-        return true;
-        //TODO call viewModel's validate()
-    }
-
     @FXML
     void cancel(ActionEvent event) {
-
+        clearView();
+        evtBus.publish(getConceptTopic(), new ShowPanelEvent(event.getSource(), SHOW_ADD_ANALYTE_GROUP));
     }
 
     @FXML
     void clearView(ActionEvent event) {
-
+        clearView();
     }
 
     @FXML
-    void createOneResult(ActionEvent event) {
+    private void createOneResult(ActionEvent event) {
         LOG.info("createOneResult -> Todo publish event containing the result record to be added to analyte group controller.");
         // Todo publish event containing the result record to be added to the listener inside the Analyte group controller. payload is an object (not a view model).
         // 1. publish
         // 2. reset screen for next entry
         // 3. publish
+        resultsViewModel.save();
+        // if there are errors.
+        if (resultsViewModel.hasErrorMsgs()) {
+            resultsViewModel.getValidationMessages().forEach(vMsg -> {
+                LOG.error("Error: msg Type: %s errorcode: %s, msg: %s".formatted(vMsg.messageType(), vMsg.errorCode(), vMsg.interpolate(resultsViewModel)) );
+            });
+            return;
+        }
 
+        EntityFacade dataResultType = resultsViewModel.getValue(DATA_RESULTS_TYPE);
+        PublicId resultConformanceRecordPublicId = null;
+        if (PublicId.equals(dataResultType.publicId(), QUALITATIVE_CONCEPT)) {
+            // Create a qualtitative semantic
+            resultConformanceRecordPublicId = ViewModelHelper.createQualitativeResultConcept(resultsViewModel, getStampDetail());
+        } else if (PublicId.equals(dataResultType.publicId(), QUANTITATIVE_CONCEPT)) {
+            // create a quantitative semantic
+            resultConformanceRecordPublicId = ViewModelHelper.createQuanitativeResultConcept(resultsViewModel, getStampDetail());
+        }
+
+        //////////////////TODO: Fix transaction //////////////////////////////
+//        ResultConformanceRecord resultConformanceRecord = DataModelHelper.makeResultConformanceRecord(resultConformanceRecordPublicId);
+        resultConformanceRecordPublicId = BORRELIA_AFZELII_CONCEPT.publicId();
+
+
+        Optional<Entity> entityOptional = EntityService.get().getEntity(resultConformanceRecordPublicId.asUuidArray());
+        Entity entity = entityOptional.get();
         evtBus.publish(getConceptTopic(), new ShowPanelEvent(event.getSource(), SHOW_ADD_ANALYTE_GROUP));
+        evtBus.publish(getConceptTopic(), new AddResultEvent(event.getSource(), ADD_RESULT_TO_ANALYTE_GROUP, entity));
 
-        // TODO put a real entity or public id as the payload.
-        evtBus.publish(getConceptTopic(), new AddResultEvent(event.getSource(), ADD_RESULT_TO_ANALYTE_GROUP, new Object(){
-            @Override
-            public String toString() {
-                return "OneResult " + new Date();
-            }
-        }));
+        clearView();
     }
 
     @Override
@@ -540,7 +584,31 @@ public class ResultsController extends AbstractBasicController implements BasicC
 
     @Override
     public void clearView() {
+        resultName.setText("");
+        EntityFacade scaleType = scaleTypeComboBox.getSelectionModel().getSelectedItem();
+        if (scaleType == null) {
+            scaleType = ORDINAL_CONCEPT;
+        }
+        scaleTypeComboBox.getSelectionModel().select(scaleType);
 
+        // Clear common related items.
+        resultsViewModel.setPropertyValue(ADD_BUTTON_STATE, false)
+                .setPropertyValue(RESULTS_NAME, null)
+                .setPropertyValue(SCALE_TYPE, scaleType)
+                .setPropertyValue(DATA_RESULTS_TYPE, QUALITATIVE_CONCEPT);
+
+        // Clear Qualitative fields
+        resultsViewModel.getObservableList(ALLOWABLE_RESULTS).clear();
+
+        // Clear Qualitative fields
+        resultsViewModel.setPropertyValue(EXAMPLE_UNITS, null)
+                        .setPropertyValue(REFERENCE_RANGES, null);
+
+       // remove all selected results conformences
+       clearDragNDropZones(getGeneratedResultsFormContainer(), () ->
+                resultsViewModel.getObservableList(ALLOWABLE_RESULTS).clear());
+
+        resultsViewModel.validate();
     }
 
     @Override
@@ -551,5 +619,15 @@ public class ResultsController extends AbstractBasicController implements BasicC
     @Override
     public FormViewModel getViewModel() {
         return resultsViewModel;
+    }
+
+    private void clearDragNDropZones(Pane selectedContainer, Runnable task) {
+        // remove all selected items
+        if (selectedContainer != null && selectedContainer.getChildren().size() > 0) {
+            selectedContainer.getChildren().clear();
+            HBox.setMargin(selectedContainer, new Insets(0));
+            VBox.setMargin(selectedContainer, new Insets(0));
+            task.run();
+        }
     }
 }

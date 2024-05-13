@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.amplify.lidr.viewmodels;
 
+import dev.ikm.komet.amplify.mvvm.ViewModel;
+import dev.ikm.komet.amplify.mvvm.validator.MessageType;
 import dev.ikm.komet.amplify.mvvm.validator.ValidationMessage;
 import dev.ikm.komet.amplify.om.DescrName;
 import dev.ikm.komet.amplify.viewmodels.FormViewModel;
@@ -25,7 +27,6 @@ import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.entity.ConceptRecord;
-import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
@@ -36,7 +37,11 @@ import dev.ikm.tinkar.terms.TinkarTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.UUID;
+
+import static dev.ikm.komet.amplify.lidr.om.DataModelHelper.QUALITATIVE_CONCEPT;
 
 public class ResultsViewModel extends FormViewModel {
 
@@ -44,9 +49,10 @@ public class ResultsViewModel extends FormViewModel {
 
     public static String RESULTS_NAME = "resultsName";
 
-    public static String ALLOWABLE_RESULT = "allowableResult";
+    public static String ALLOWABLE_RESULTS = "allowableResults";
 
     public static String SCALE_TYPE = "scaleType";
+    public static String AVAILABLE_SCALE_TYPES = "availableScaleTypes";
 
     public static String DATA_RESULTS_TYPE = "dataResultsType";
 
@@ -55,21 +61,49 @@ public class ResultsViewModel extends FormViewModel {
     public static String EXAMPLE_UNITS = "exampleUnits";
 
     public static String REFERENCE_RANGES = "referenceRanges";
+    public static String IS_POPULATED = "isPopulated";
+    public static String ADD_BUTTON_STATE = "buttonState";
 
 
     public ResultsViewModel() {
         super();
         addProperty(CONCEPT_TOPIC, (UUID) null)
                 .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
-                .addProperty(RESULTS_NAME, (SemanticRecord) null)
-                .addProperty(ALLOWABLE_RESULT, (EntityFacade) null)
+                .addProperty(ADD_BUTTON_STATE, true)        // disable property (true) by default
+                .addProperty(RESULTS_NAME, (String) null)
+                .addProperty(ALLOWABLE_RESULTS, new ArrayList<EntityFacade>())
                 .addProperty(SCALE_TYPE, (EntityFacade) null)
+                .addProperty(AVAILABLE_SCALE_TYPES, (Collection<EntityFacade>) null)
                 .addProperty(DATA_RESULTS_TYPE, (EntityFacade) null)
                 .addProperty(RESULTS_PROPERTY, (EntityFacade) null)
                 .addProperty(EXAMPLE_UNITS, (EntityFacade) null)
                 .addProperty(REFERENCE_RANGES, (EntityFacade) null);
 
-        //TODO add validations
+        // Is Analyte Group valid? Custom validator will alter button state.
+        addValidator(IS_POPULATED, "Is Populated", (Void prop, ViewModel vm) -> {
+            // check if it's qualitative vs quantitative.
+            EntityFacade selectedDataResultType = getPropertyValue(DATA_RESULTS_TYPE);
+            if (PublicId.equals(selectedDataResultType.publicId(), QUALITATIVE_CONCEPT.publicId())) {
+                // if any fields are empty then it is not populated (invalid)
+                if (getPropertyValue(RESULTS_NAME) == null
+                        || getPropertyValue(RESULTS_NAME).toString().trim().isEmpty()
+                        || getPropertyValue(SCALE_TYPE) == null
+                        || getObservableList(ALLOWABLE_RESULTS).size() == 0) {
+
+                    // update is populated
+                    setPropertyValue(ADD_BUTTON_STATE, true); // disable is true
+                    // let caller know why it is not valid
+                    return new ValidationMessage(ADD_BUTTON_STATE, MessageType.ERROR, "Qualitative Results Conformance is not populated");
+                }
+                // update is populated
+                setPropertyValue(ADD_BUTTON_STATE, false); // disable is false (enabled)
+            } else {
+                // TODO: Validate when it is quantitative
+                setPropertyValue(ADD_BUTTON_STATE, true); // disable is true
+            }
+
+            return VALID;
+        });
     }
 
     public boolean createResult(EditCoordinateRecord editCoordinateRecord) {

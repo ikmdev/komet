@@ -43,10 +43,10 @@ public class ResultConformanceDetailsController extends AbstractBasicController 
     private Text commentsValueText;
 
     @FXML
-    private VBox dataResultsTypesVBox;
+    private Text dateResultTypeValueText;
 
     @FXML
-    private Text detectionLimitValueText;
+    private VBox allowableResultsVBox;
 
     @FXML
     private Text nameValueText;
@@ -77,16 +77,15 @@ public class ResultConformanceDetailsController extends AbstractBasicController 
     @Override
     public void updateView() {
         commentsValueText.setText("");
-        detectionLimitValueText.setText(findDescrNameText(resultsConformanceRecord.propertyId()));
         nameValueText.setText(findDescrNameText(resultsConformanceRecord.resultConformanceId()));
         scaleTypeValueText.setText(findDescrNameText(resultsConformanceRecord.scaleId()));
+        // Todo: populate allowable results
     }
 
     @Override
     public void clearView() {
         commentsValueText.setText("");
-        dataResultsTypesVBox.getChildren().clear();
-        detectionLimitValueText.setText("");
+        allowableResultsVBox.getChildren().clear();
         nameValueText.setText("");
         scaleTypeValueText.setText("");
     }
