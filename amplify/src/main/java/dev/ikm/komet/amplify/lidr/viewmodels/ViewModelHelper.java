@@ -30,6 +30,8 @@ import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.component.Concept;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpression;
+import dev.ikm.tinkar.ext.lang.owl.SctOwlUtilities;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -38,9 +40,12 @@ import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Optional;
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static dev.ikm.komet.amplify.lidr.om.DataModelHelper.*;
 import static dev.ikm.komet.amplify.lidr.viewmodels.ResultsViewModel.*;
@@ -53,6 +58,13 @@ public class ViewModelHelper {
     private static final Logger LOG = LoggerFactory.getLogger(ViewModelHelper.class);
     // TODO: Access LIDR PublicIds in a more maintainable way
 
+    // Result conformance & OWL Expression values;
+    public static final String ROLE_GROUP_PUBLICID_STRING   = "[" + TinkarTerm.ROLE_GROUP.publicId().asUuidArray()[0] + "]";
+    public static final String LOINC_PROPERTY_UUID          = "[066462e2-f926-35d5-884a-4e276dad4c2c]";
+    public static final String LOINC_SCALE_UUID             = "[087afdd2-23cd-34c3-93a4-09088dfd480c]";
+    public static final String LOINC_ACNC_UUID              = "[7de8ef7f-6287-396e-88fb-d675937923e2]";
+    public static final String LOINC_QN_UUID                = "[6b8c30c5-63d7-3614-a675-2b5d03c541f4]";
+
 
 
     public static String findDescrNameText(PublicId publicId) {
@@ -61,10 +73,17 @@ public class ViewModelHelper {
     public static String findDescrNameText(PublicId publicId, String defaultValue) {
         if (publicId == null) return defaultValue;
         Optional<Entity> entity = EntityService.get().getEntity(publicId.asUuidArray());
-        Optional<String> stringOptional = viewPropertiesNode().calculator().getRegularDescriptionText(entity.get().nid());
+        Optional<String> stringOptional = viewPropertiesNode().calculator().getFullyQualifiedNameText(entity.get().nid());
         return stringOptional.orElse(defaultValue);
     }
 
+    /**
+     * Creates Semantic record into the database.
+     * @param lidrRecord
+     * @param device
+     * @param stampViewModel
+     * @return
+     */
     public static PublicId addNewLidrRecord(LidrRecord lidrRecord, PublicId device, ValidationViewModel stampViewModel) {
         if (device == null || lidrRecord == null || stampViewModel == null) {
             throw new RuntimeException("Error Unable to create a LIDR record to the database. lidr record = " + lidrRecord);
@@ -106,7 +125,6 @@ public class ViewModelHelper {
     }
 
     public static PublicId createQualitativeResultConcept(ResultsViewModel resultsViewModel, STAMPDetail stampDetail) {
-
         String resultName = resultsViewModel.getValue(RESULTS_NAME);
         EntityFacade scaleType = resultsViewModel.getValue(SCALE_TYPE);
         EntityFacade dataResultType = resultsViewModel.getValue(DATA_RESULTS_TYPE);
@@ -123,7 +141,7 @@ public class ViewModelHelper {
         STAMPWriter stampWriter = new STAMPWriter(newStampPublicId);
         stampWriter.write(stampDetail);
 
-        // Create Concept
+        // Create Result Concept
         PublicId resultPublicId = PublicIds.newRandom();
         ConceptWriter conceptWriter = new ConceptWriter(newStampPublicId);
         conceptWriter.write(resultPublicId);
@@ -154,15 +172,82 @@ public class ViewModelHelper {
         };
         resultConformanceSemantic.semantic(resultConformanceSemanticId, new SemanticDetail(ALLOWED_RESULTS_PATTERN.publicId(), resultPublicId, fieldsSupplier));
 
-        //////////////// TODO Fix issue getting a null pointer exception
-        // Create a stated Axiom description logic
-//        PublicId statedAxiomId = PublicIds.newRandom();
-//        resultConformanceSemantic.statedAxiom(statedAxiomId, resultPublicId, List.of());
-//
-
+        // Add Axiom Semantic
+        SemanticWriter axiomSemantic = new SemanticWriter(newStampPublicId);
+        PublicId newAxiomId = PublicIds.newRandom();
+        axiomSemantic.semantic(newAxiomId,
+                new SemanticDetail(
+                        TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
+                        resultPublicId,
+                        () -> {
+                            MutableList<Object> semanticFields = Lists.mutable.empty();
+                            String owlExpression = generateOwlResultConformanceExpression(generateResultConformanceValueMap(resultPublicId, scaleType.publicId()));
+                            //Build DiTree
+                            try {
+                                LogicalExpression expression = SctOwlUtilities.sctToLogicalExpression(owlExpression, "");
+                                semanticFields.add(expression.sourceGraph());
+                                System.out.println(expression);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            return semanticFields;
+                        })
+        );
         return resultPublicId;
     }
+    static Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{([a-zA-Z\\d\\_]+)\\}");
 
+
+    public static String interpolateTemplate(String template, Map<String, String> map) {
+        Matcher matcher = VARIABLE_PATTERN.matcher(template);
+        List<String> props = new ArrayList<>();
+        String newMessage = template;
+        while (matcher.find()) {
+            String subPropName = matcher.group();
+            String propName = matcher.group(1);
+            props.add(matcher.group());
+            String friendlyName = map.get(propName);
+            if (friendlyName != null) {
+                newMessage = newMessage.replace(subPropName, friendlyName);
+            }
+        }
+        return newMessage!= null ? newMessage : "";
+    }
+    public static Map<String, String> generateResultConformanceValueMap(PublicId createdConceptID, PublicId scaleTypeId) {
+        Map<String, String> valueMap = new HashMap<>();
+        Function<String, String>  removeQuotationMarks = (conceptID) -> conceptID.replaceAll("\"","");
+
+        valueMap.put("createdConceptID",            removeQuotationMarks.apply(createdConceptID.idString())); // :[uuid]
+        valueMap.put("resultConformancePublicId",   removeQuotationMarks.apply(RESULT_CONFORMANCE_CONCEPT.publicId().idString())); // conceptTypeToPublicIdMap.get("Result Conformance Concept")
+        valueMap.put("roleGroupPublicIDstring",     ROLE_GROUP_PUBLICID_STRING);          //
+        valueMap.put("loincPropertyUuid",           LOINC_PROPERTY_UUID);                 // LOINC_PROPERTY_UUID
+        valueMap.put("propertyPublicId",            LOINC_ACNC_UUID); // conceptTypeToPublicIdMap.get("Property")
+        valueMap.put("loincScaleUuid",              LOINC_SCALE_UUID);                    // LOINC_SCALE_UUID
+        valueMap.put("scalePublicId",               removeQuotationMarks.apply(scaleTypeId.idString()));
+        return valueMap;
+    }
+    public static String generateOwlResultConformanceExpression(Map<String, String> valueMap) {
+        String owlExpressionString = """
+                EquivalentClasses(:${createdConceptID} 
+                   ObjectIntersectionOf(:${resultConformancePublicId} 
+                      ObjectSomeValuesFrom(:${roleGroupPublicIDstring}
+                         ObjectSomeValuesFrom(
+                            :${loincPropertyUuid} 
+                            :${propertyPublicId}
+                         )
+                      )
+                      ObjectSomeValuesFrom(:${roleGroupPublicIDstring}
+                         ObjectSomeValuesFrom(
+                            :${loincScaleUuid}
+                            :${scalePublicId}
+                         )
+                      )
+                   )
+                )
+                ))))
+                """;
+        return interpolateTemplate(owlExpressionString, valueMap);
+    }
     public static PublicId createQuanitativeResultConcept(ResultsViewModel resultsViewModel, STAMPDetail stampDetail) {
         PublicId resultPublicId = PublicIds.newRandom();
 

@@ -21,6 +21,8 @@ import dev.ikm.komet.amplify.mvvm.SimpleViewModel;
 import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.provider.search.Searcher;
 import javafx.fxml.FXML;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -28,8 +30,10 @@ import javafx.scene.text.TextFlow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.UUID;
 
+import static dev.ikm.komet.amplify.lidr.om.DataModelHelper.QUALITATIVE_CONCEPT;
 import static dev.ikm.komet.amplify.lidr.viewmodels.ViewModelHelper.findDescrNameText;
 import static dev.ikm.komet.amplify.viewmodels.FormViewModel.CONCEPT_TOPIC;
 
@@ -66,8 +70,16 @@ public class ResultConformanceDetailsController extends AbstractBasicController 
     public void initialize() {
         clearView();
         resultsConformanceRecord = resultDetailsViewModel.getPropertyValue(RESULT_CONFORMANCE_RECORD);
-
-
+        updateView();
+        // populate allowed results
+        List<PublicId> allowableResultIds = Searcher.getAllowedResultsFromResultConformance(resultsConformanceRecord.resultConformanceId());
+        allowableResultIds.forEach(allowableResultId -> {
+            Text allowableText = new Text(findDescrNameText(allowableResultId));
+            allowableText.getStyleClass().add("result-field-value");
+            allowableResultsVBox.getChildren().add(new TextFlow(allowableText));
+        });
+        // TODO hard code for now to be qualitative.
+        dateResultTypeValueText.setText(findDescrNameText(QUALITATIVE_CONCEPT.publicId()));
     }
 
     private UUID getConceptTopic() {

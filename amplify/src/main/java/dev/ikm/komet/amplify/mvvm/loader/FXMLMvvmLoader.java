@@ -114,7 +114,7 @@ public class FXMLMvvmLoader {
                 if (controller != null) {
                     // also get a list of ViewModels
                     namedVms.addAll(injectViewModels(controller, namedViewModelMap, config.getViewModelUpdaterMap()));
-                    LOG.info("Injecting ViewModels into controller class %s with the following fields: %s".formatted(controller.getClass().getName(), namedVms));
+                    LOG.debug("Injecting ViewModels into controller class %s with the following fields: %s".formatted(controller.getClass().getName(), namedVms));
                     loader.setController(controller);
                 }
             }

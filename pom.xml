@@ -106,6 +106,12 @@
         <dependencies>
             <!--Module Dependencies -->
             <dependency>
+                <groupId>dev.ikm.tinkar.ext.owl</groupId>
+                <artifactId>owl-extension</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>artifact</artifactId>
                 <version>${project.version}</version>
