@@ -15,6 +15,10 @@
  */
 package dev.ikm.komet.rules.actions.axiom;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.RULES_TOPIC;
+import dev.ikm.komet.framework.events.ChangeSetTypeEvent;
+import dev.ikm.komet.framework.events.EvtBus;
+import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
@@ -27,6 +31,8 @@ import javafx.event.ActionEvent;
 public class ChangeSetType extends AbstractAxiomAction {
 
     private final ConceptFacade newMeaning;
+
+
     public ChangeSetType(ConceptFacade newMeaning, String text, AxiomSubjectRecord axiomSubjectRecord, ViewCalculator viewCalculator, EditCoordinate editCoordinate) {
         super(text, axiomSubjectRecord, viewCalculator, editCoordinate);
         this.newMeaning = newMeaning;
@@ -42,5 +48,7 @@ public class ChangeSetType extends AbstractAxiomAction {
             default -> throw new IllegalStateException("Unexpected value: " + leb.get(axiomSubjectRecord.axiomIndex()));
         }
         putUpdatedLogicalExpression(editCoordinate, leb.build());
+
+        EvtBusFactory.getDefaultEvtBus().publish(RULES_TOPIC, new ChangeSetTypeEvent(ChangeSetType.class, ChangeSetTypeEvent.ANY_CHANGE));
     }
 }
