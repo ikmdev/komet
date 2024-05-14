@@ -139,7 +139,7 @@
          <children>
             <HBox alignment="CENTER" layoutX="353.0" layoutY="145.0" prefHeight="55.0" prefWidth="179.0" spacing="10.0">
                <children>
-                  <Button fx:id="cancelButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#handleCancelButtonEvent" prefHeight="24.0" prefWidth="72.0" text="CANCEL" textFill="#000000f5">
+                  <Button fx:id="cancelButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#handleCancelButtonEvent" prefHeight="24.0" prefWidth="72.0" text="CANCEL" textFill="#0f43d3f5">
                      <font>
                         <Font size="13.0" />
                      </font>
@@ -147,7 +147,7 @@
                         <Insets bottom="4.0" left="16.0" right="16.0" top="4.0" />
                      </opaqueInsets>
                   </Button>
-                  <Button fx:id="exportButton" mnemonicParsing="false" onAction="#handleExport" prefHeight="25.0" prefWidth="76.0" style="-fx-background-color: #9CAABF;" text="EXPORT" textFill="#f1f3f8">
+                  <Button fx:id="exportButton" mnemonicParsing="false" onAction="#handleExport" prefHeight="25.0" prefWidth="76.0" style="-fx-background-color: #4A7AD2;" text="EXPORT" textFill="#e1e6f8">
                      <font>
                         <Font size="13.0" />
                      </font>

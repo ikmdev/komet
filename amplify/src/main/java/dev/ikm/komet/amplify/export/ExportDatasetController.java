@@ -45,10 +45,7 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -369,15 +366,14 @@ public class ExportDatasetController implements BasicController {
         toDateTimePopOver.show((Node) event.getSource());
     }
 
-    private static List<ConceptEntity<? extends ConceptEntityVersion>> getConceptEntities(long fromTimeStamp, long toTimeStamp) {
-        AtomicInteger counter = new AtomicInteger(0);
-        List<ConceptEntity<? extends ConceptEntityVersion>> concepts = new ArrayList<>();
+    private static Set<ConceptEntity<? extends ConceptEntityVersion>> getConceptEntities(long fromTimeStamp, long toTimeStamp) {
+        Set <ConceptEntity<? extends  ConceptEntityVersion>> concepts = new HashSet<>();
         TemporalEntityAggregator temporalEntityAggregator = new TemporalEntityAggregator(fromTimeStamp, toTimeStamp);
         temporalEntityAggregator.aggregate(nid -> {
             Entity<EntityVersion> entity = EntityService.get().getEntityFast(nid);
             if (entity instanceof ConceptEntity conceptEntity) {
                 concepts.add(conceptEntity);
-            } else if (entity instanceof SemanticEntity semanticEntity) {
+            }else if(entity instanceof SemanticEntity semanticEntity){
                 Entity<EntityVersion> referencedConcept = semanticEntity.referencedComponent();
                 if (referencedConcept instanceof ConceptEntity concept) {
                     concepts.add(concept);
@@ -403,9 +399,9 @@ public class ExportDatasetController implements BasicController {
     }
 
     private FhirCodeSystemTransform queryAndGetConceptInFhirFormat(long dateRangeFrom, long dateRangeTo, StampCalculator stampCalculator, File exportFile) {
-        List<ConceptEntity<? extends ConceptEntityVersion>> concepts = getConceptEntities(dateRangeFrom, dateRangeTo);
+        Set<ConceptEntity<? extends ConceptEntityVersion>> concepts = getConceptEntities(dateRangeFrom, dateRangeTo);
 
-        return new FhirCodeSystemTransform(stampCalculator, concepts, (fhirString) -> {
+        return new FhirCodeSystemTransform(dateRangeFrom, dateRangeTo, stampCalculator, concepts.stream(), (fhirString) -> {
             try {
                 saveFhirFormatToDisk(fhirString, exportFile);
             } catch (IOException e) {
