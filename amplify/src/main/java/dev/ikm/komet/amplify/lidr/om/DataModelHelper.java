@@ -89,7 +89,13 @@ public class DataModelHelper {
     public static final EntityProxy.Concept BORRELIA_AFZELII_CONCEPT = EntityProxy.Concept.make(PublicIds.of("bec2eb34-753c-3ed3-8f5f-99205d8447bc"));
     public static final EntityProxy.Concept RESULT_CONFORMANCE_CONCEPT = EntityProxy.Concept.make(PublicIds.of("fd96a273-e8ca-39e9-b108-0badee545906"));
 
-
+    //FIXME this is just a work around for the May 2024 Connect-A-Thon
+    public static final Set<ConceptEntity> CASE_SIGNIFICANCE_OPTIONS = Set.of(
+            Entity.getFast(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE.nid()),
+            Entity.getFast(TinkarTerm.NOT_APPLICABLE.nid()),
+            Entity.getFast(TinkarTerm.DESCRIPTION_CASE_SENSITIVE.nid()),
+            Entity.getFast(TinkarTerm.DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE.nid())
+    );
 
     public static ObservableView viewPropertiesNode() {
         // TODO how do we get a viewProperties?
