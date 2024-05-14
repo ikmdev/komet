@@ -75,8 +75,6 @@ public class AddOtherNameController extends AbstractBasicController {
 
     private EntityFacade entityFacade;
 
-    private PublicId publicId;
-
     @InjectViewModel
     private DescrNameViewModel otherNameViewModel;
 
@@ -133,10 +131,6 @@ public class AddOtherNameController extends AbstractBasicController {
 
     public void populate(ComboBox comboBox, Collection<ConceptEntity> entities) {
         comboBox.getItems().addAll(entities);
-    }
-
-    public void setPublicId(PublicId publicId) {
-        this.publicId = publicId;
     }
 
 
@@ -216,7 +210,8 @@ public class AddOtherNameController extends AbstractBasicController {
             // publish event with the otherNameViewModel.
             // ...
             LOG.info("Ready to add to the concept view model: " + otherNameViewModel);
-            eventBus.publish(conceptTopic, new CreateConceptEvent(this, CreateConceptEvent.ADD_OTHER_NAME, otherNameViewModel.create()));
+            eventBus.publish(conceptTopic, new CreateConceptEvent(this, CreateConceptEvent.ADD_OTHER_NAME,
+                    otherNameViewModel.create()));
             clearView();
             close();
         }

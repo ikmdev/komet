@@ -19,6 +19,7 @@ import dev.ikm.komet.amplify.mvvm.ViewModel;
 import dev.ikm.komet.amplify.mvvm.validator.MessageType;
 import dev.ikm.komet.amplify.mvvm.validator.ValidationMessage;
 import dev.ikm.komet.amplify.om.DescrName;
+import dev.ikm.komet.amplify.properties.AddOtherNameController;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -30,6 +31,8 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +40,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DescrNameViewModel extends FormViewModel {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DescrNameViewModel.class);
+
     public static final String NAME_TEXT = "nameText";
     public static final String NAME_TYPE = "nameType";
     public static final String CASE_SIGNIFICANCE = "caseSignificance";
@@ -47,7 +53,9 @@ public class DescrNameViewModel extends FormViewModel {
     public static final String  MODULES_PROPERTY = "modules";
     public static final String  PATHS_PROPERTY = "paths";
 
-    public static final String PUBLIC_ID = "publidId";
+    public static final String PARENT_PUBLIC_ID = "parentPublidId";
+
+    public static final String SEMANTIC_PUBLIC_ID = "semanticPublidId";
 
 
     public DescrNameViewModel() {
@@ -59,7 +67,8 @@ public class DescrNameViewModel extends FormViewModel {
                 .addProperty(MODULE, (ConceptEntity) null)
                 .addProperty(LANGUAGE, (ConceptEntity) null)
                 .addProperty(IS_SUBMITTED, false)
-                .addProperty(PUBLIC_ID, (PublicId) null);
+                .addProperty(PARENT_PUBLIC_ID, (PublicId) null)
+                .addProperty(SEMANTIC_PUBLIC_ID, (PublicId) null);;
     }
 
     public Set<ConceptEntity> findAllLanguages(ViewProperties viewProperties) {
@@ -176,13 +185,68 @@ public class DescrNameViewModel extends FormViewModel {
     }
 
     public DescrName create() {
-        return new DescrName(getValue(PUBLIC_ID),
+        return new DescrName(getValue(PARENT_PUBLIC_ID),
                 getValue(NAME_TEXT),
                 getValue(NAME_TYPE),
                 getValue(CASE_SIGNIFICANCE),
                 getValue(STATUS),
                 getValue(MODULE),
-                getValue(LANGUAGE)
+                getValue(LANGUAGE),
+                getValue(SEMANTIC_PUBLIC_ID)
         );
+    }
+
+    public void updateOtherName(PublicId publicId) {
+        Transaction transaction = Transaction.make();
+
+        StampEntity stampEntity = transaction.getStamp(
+                State.fromConcept(getValue(STATUS)), // active, inactive, etc
+                System.currentTimeMillis(),
+                TinkarTerm.USER.nid(),
+                ((ConceptEntity)getValue(MODULE)).nid(), // SNOMED CT, LOINC, etc
+                TinkarTerm.DEVELOPMENT_PATH.nid()); //TODO should this path come from the parent concept's path?
+
+        // existing semantic
+        SemanticEntity theSemantic = EntityService.get().getEntityFast(publicId.asUuidList());
+
+
+        // the versions that we will first populate with the existing versions of the semantic
+        RecordListBuilder versions = RecordListBuilder.make();
+
+        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(publicId, TinkarTerm.DESCRIPTION_PATTERN.nid(),
+                theSemantic.referencedComponentNid(), versions);
+
+        // we grabbing the form data
+        // populating the field values for the new version we are writing
+        MutableList<Object> descriptionFields = Lists.mutable.empty();
+        descriptionFields.add(getValue(LANGUAGE));
+        descriptionFields.add(getValue(NAME_TEXT));
+        descriptionFields.add(getValue(CASE_SIGNIFICANCE));
+        descriptionFields.add(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
+
+        // iterating over the existing versions and adding them to a new record list builder
+        theSemantic.versions().forEach(version -> versions.add(version));
+
+        // adding the new (edit form) version here
+        versions.add(SemanticVersionRecordBuilder.builder()
+                .chronology(descriptionSemantic)
+                .stampNid(stampEntity.nid())
+                .fieldValues(descriptionFields.toImmutable())
+                .build());
+
+        // apply the updated versions to the new semantic record
+        SemanticRecord newSemanticRecord = SemanticRecordBuilder.builder(descriptionSemantic).versions(versions.toImmutable()).build();
+
+        // put the new semantic record in the transaction
+        transaction.addComponent(newSemanticRecord);
+
+        // perform the save
+        Entity.provider().putEntity(newSemanticRecord);
+
+        // commit the transaction
+        CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
+        TinkExecutor.threadPool().submit(commitTransactionTask);
+
+        LOG.info("transaction complete");
     }
 }
