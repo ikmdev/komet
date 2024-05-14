@@ -58,7 +58,6 @@ import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.Preferences;
 import dev.ikm.komet.progress.CompletionNodeFactory;
 import dev.ikm.komet.progress.ProgressNodeFactory;
-import dev.ikm.komet.reasoner.ReasonerResultsNodeFactory;
 import dev.ikm.komet.search.SearchNodeFactory;
 import dev.ikm.komet.table.TableNodeFactory;
 import dev.ikm.tinkar.common.alert.AlertObject;
@@ -320,6 +319,7 @@ public class App extends Application {
             // Exporting data
             Menu exportMenu = new Menu("Export Dataset");
             MenuItem fhirMenuItem = new MenuItem("FHIR");
+            fhirMenuItem.setOnAction(actionEvent -> openDatasetPage());
             exportMenu.getItems().addAll(createExportChangesetMenuItem(), fhirMenuItem);
 
             fileMenu.getItems().addAll(newItem, exportMenu, new SeparatorMenuItem(), tk.createCloseWindowMenuItem());
