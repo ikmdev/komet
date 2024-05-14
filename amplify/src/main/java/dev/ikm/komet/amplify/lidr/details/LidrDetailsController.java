@@ -40,7 +40,6 @@ import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.component.Concept;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
@@ -291,15 +290,12 @@ public class LidrDetailsController {
             // Create a lidr record in the database.
             Concept device = getLidrViewModel().getPropertyValue(DEVICE_ENTITY);
 
-            // TODO Database will need to have the following targets, and resultsDataType:
-            PublicId targetMatrixM1Id = PublicIds.of("1d9ab589-2fd1-331e-a79d-e9190c415d36");
+            PublicId testPerformedId = DataModelHelper.findTestPerformed(device.publicId());
             PublicId resultOrdinalId = ORDINAL_CONCEPT.publicId();
-
-            PublicId testPerformedId = lidrRecord.testPerformedId() == null ? targetMatrixM1Id : lidrRecord.testPerformedId();
             LidrRecord newLidrRecord = new LidrRecord(
                     lidrRecord.lidrRecordId(),
-                    testPerformedId,  /* todo use dummy data */
-                    resultOrdinalId,  /* todo use dummy data */
+                    testPerformedId,
+                    resultOrdinalId,
                     lidrRecord.analyte(),
                     lidrRecord.targets(),
                     lidrRecord.specimens(),
