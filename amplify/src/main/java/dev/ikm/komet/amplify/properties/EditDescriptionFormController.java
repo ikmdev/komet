@@ -15,11 +15,21 @@
  */
 package dev.ikm.komet.amplify.properties;
 
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.CASE_SIGNIFICANCE;
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.IS_SUBMITTED;
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.LANGUAGE;
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.MODULE;
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.NAME_TEXT;
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.NAME_TYPE;
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.STATUS;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
 
 import dev.ikm.komet.amplify.commons.BasicController;
 import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.amplify.events.UpdateSemanticEvent;
+import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
+import dev.ikm.komet.amplify.viewmodels.DescrNameViewModel;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -114,6 +124,9 @@ public class EditDescriptionFormController implements BasicController {
 
     private EvtBus eventBus;
 
+    @InjectViewModel
+    private DescrNameViewModel otherNameViewModel;
+
     public EditDescriptionFormController() { }
 
     public EditDescriptionFormController(UUID conceptTopic) {
@@ -126,6 +139,11 @@ public class EditDescriptionFormController implements BasicController {
         eventBus = EvtBusFactory.getDefaultEvtBus();
         clearView();
         setEditDescriptionTitleLabel("Edit Description: Other Name");
+
+        otherNameViewModel
+                .setPropertyValue(NAME_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE)
+                .setPropertyValue(STATUS, TinkarTerm.ACTIVE_STATE);
+
         populateDialectComboBoxes();
 
         InvalidationListener invalidationListener = obs -> validateForm();
@@ -136,12 +154,20 @@ public class EditDescriptionFormController implements BasicController {
         statusComboBox.valueProperty().addListener(invalidationListener);
         languageComboBox.valueProperty().addListener(invalidationListener);
         validateForm();
-        submitButton.setOnAction(this::saveOtherName);
     }
+
     @FXML
     private void handleCancelButtonEvent() {
         eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(cancelButton,
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
+    }
+
+    private boolean isFormPopulated() {
+        return (otherNameTextField.getText() != null && !otherNameTextField.getText().toString().isEmpty())
+                && (moduleComboBox.getSelectionModel().getSelectedItem() != null)
+                && (statusComboBox.getSelectionModel().getSelectedItem() != null)
+                && (caseSignificanceComboBox.getSelectionModel().getSelectedItem() != null)
+                && (languageComboBox.getSelectionModel().getSelectedItem() != null);
     }
 
     private void validateForm() {
@@ -326,58 +352,37 @@ public class EditDescriptionFormController implements BasicController {
 
         LOG.info(publicId.toString());
     }
-    private void saveOtherName(ActionEvent actionEvent) {
-        Transaction transaction = Transaction.make();
 
-        StampEntity stampEntity = transaction.getStamp(
-                State.fromConcept(statusComboBox.getValue()), // active, inactive, etc
-                System.currentTimeMillis(),
-                TinkarTerm.USER.nid(),
-                moduleComboBox.getValue().nid(), // SNOMED CT, LOINC, etc
-                TinkarTerm.DEVELOPMENT_PATH.nid());
+    private void copyUIToViewModelProperties() {
+        if (otherNameViewModel != null) {
+            otherNameViewModel.setPropertyValue(NAME_TEXT, otherNameTextField.getText())
+                    .setPropertyValue(NAME_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE)
+                    .setPropertyValue(CASE_SIGNIFICANCE, caseSignificanceComboBox.getSelectionModel().getSelectedItem())
+                    .setPropertyValue(STATUS, statusComboBox.getSelectionModel().getSelectedItem())
+                    .setPropertyValue(MODULE, moduleComboBox.getSelectionModel().getSelectedItem())
+                    .setPropertyValue(LANGUAGE, languageComboBox.getSelectionModel().getSelectedItem());
+        }
+    }
 
-        // existing semantic
-        SemanticEntity theSemantic = EntityService.get().getEntityFast(publicId.asUuidList());
+    @FXML
+    private void updateOtherName(ActionEvent actionEvent) {
+        actionEvent.consume();
+        otherNameViewModel.setPropertyValue(IS_SUBMITTED, true);
+        copyUIToViewModelProperties();
+        otherNameViewModel.save();
+
+        if (!otherNameViewModel.hasNoErrorMsgs()) {
+            // publish event with the otherNameViewModel.
+            return;
+        }
+        LOG.info("Ready to update to the concept view model: " + otherNameViewModel);
+
+        otherNameViewModel.updateOtherName(this.publicId);
+
+        eventBus.publish(conceptTopic, new UpdateSemanticEvent(submitButton, UpdateSemanticEvent.UPDATE_OTHER_NAME,
+                otherNameViewModel.create()));
 
 
-        // the versions that we will first populate with the existing versions of the semantic
-        RecordListBuilder versions = RecordListBuilder.make();
-
-        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(publicId, TinkarTerm.DESCRIPTION_PATTERN.nid(),
-                theSemantic.referencedComponentNid(), versions);
-
-        // we grabbing the form data
-        // populating the field values for the new version we are writing
-        MutableList<Object> descriptionFields = Lists.mutable.empty();
-        descriptionFields.add(languageComboBox.getValue());
-        descriptionFields.add(otherNameTextField.getText());
-        descriptionFields.add(caseSignificanceComboBox.getValue());
-        descriptionFields.add(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
-
-        // iterating over the existing versions and adding them to a new record list builder
-        theSemantic.versions().forEach(version -> versions.add(version));
-
-        // adding the new (edit form) version here
-        versions.add(SemanticVersionRecordBuilder.builder()
-                .chronology(descriptionSemantic)
-                .stampNid(stampEntity.nid())
-                .fieldValues(descriptionFields.toImmutable())
-                .build());
-
-        // apply the updated versions to the new semantic record
-        SemanticRecord newSemanticRecord = SemanticRecordBuilder.builder(descriptionSemantic).versions(versions.toImmutable()).build();
-
-        // put the new semantic record in the transaction
-        transaction.addComponent(newSemanticRecord);
-
-        // perform the save
-        Entity.provider().putEntity(newSemanticRecord);
-
-        // commit the transaction
-        CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        TinkExecutor.threadPool().submit(commitTransactionTask);
-
-        LOG.info("transaction complete");
         eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(submitButton,
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
     }

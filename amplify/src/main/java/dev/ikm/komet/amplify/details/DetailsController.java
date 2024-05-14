@@ -68,6 +68,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static dev.ikm.komet.amplify.commons.MenuHelper.fireContextMenuEvent;
 import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideIn;
@@ -234,9 +235,10 @@ public class DetailsController  {
 
     private Subscriber<CreateConceptEvent> createConceptEventSubscriber;
 
+    private Subscriber<UpdateSemanticEvent> updateSemanticEventSubscriber;
+
     private PublicId fqnPublicId;
 
-    private PublicId otherNamePublicId;
 
     /**
      * Stamp Edit
@@ -334,6 +336,7 @@ public class DetailsController  {
                 //TODO revisit: why should the mode ever be edit inside a create event?
             } else if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))){
                 conceptViewModel.addOtherName(viewProperties.calculator().viewCoordinateRecord().editCoordinate(), descrName);
+                getConceptViewModel().getObservableList(OTHER_NAMES).add(descrName);
             }
 
         };
@@ -355,6 +358,11 @@ public class DetailsController  {
             }
         };
         eventBus.subscribe(conceptTopic, EditConceptEvent.class, editConceptEventSubscriber);
+
+        updateSemanticEventSubscriber = evt -> {
+            updateConceptDescription();
+        };
+        eventBus.subscribe(conceptTopic, UpdateSemanticEvent.class, updateSemanticEventSubscriber);
 
     }
 
@@ -591,7 +599,7 @@ public class DetailsController  {
         if (fqnDescrName == null) return;
 
         // Title (FQN of concept)
-        String conceptNameStr = fqnDescrName.nameText();
+        String conceptNameStr = fqnDescrName.getNameText();
         fqnTitleText.setText(conceptNameStr);
         conceptNameTooltip.setText(conceptNameStr);
 
@@ -673,7 +681,7 @@ public class DetailsController  {
         // Latest FQN
         DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
         // Latest FQN
-        String fullyQualifiedName = fqnDescrName.nameText();
+        String fullyQualifiedName = fqnDescrName.getNameText();
         latestFqnText.setText(fullyQualifiedName);
 
         latestFqnText.setOnMouseClicked(event -> {
@@ -681,9 +689,17 @@ public class DetailsController  {
                     new EditConceptFullyQualifiedNameEvent(latestFqnText,
                             EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId));
         });
-
-        fqnDescriptionSemanticText.setText("");
+        // these should never be null, if the drop-downs are populated then the
+        // submit button will not be enabled on the Add FQN form
+        if (fqnDescrName.getCaseSignificance() != null && fqnDescrName.getLanguage() != null) {
+            fqnDescriptionSemanticText.setText(" (" + fqnDescrName.getCaseSignificance().description()
+                    + " | " + fqnDescrName.getLanguage().description() + ")");
+        } else {
+            LOG.error("missing case sensitivity and language when adding a fully qualified name");
+            fqnDescriptionSemanticText.setText("");
+        }
     }
+
     public void updateOtherNamesDescription(List<DescrName> descrNameViewModels) {
         otherNamesVBox.getChildren().clear();
         descrNameViewModels.stream().forEach( otherName -> {
@@ -693,7 +709,7 @@ public class DetailsController  {
                 textFlowPane.setOnMouseClicked(event -> {
                 eventBus.publish(conceptTopic,
                         new EditOtherNameConceptEvent(textFlowPane,
-                                EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId));
+                                EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherName.getSemanticPublicId()));
                 });
             });
             otherNamesVBox.getChildren().addAll(rows);
@@ -734,6 +750,7 @@ public class DetailsController  {
             } else {
                 // start adding a row
                 List<TextFlow> rows = generateOtherNameRow(semanticEntityVersion, fieldDescriptions);
+                PublicId otherNamePublicId = (PublicId) rows.get(0).getUserData();
                 rows.forEach(textFlowPane -> {
                     textFlowPane.setOnMouseClicked(event -> {
                         eventBus.publish(conceptTopic,
@@ -785,8 +802,7 @@ public class DetailsController  {
         // store the public id of this semantic entity version
         // so that when clicked the event bus can pass it to the form
         // and the form can populate the data from the publicId
-        this.otherNamePublicId = semanticEntityVersion.publicId();
-
+        row1.setUserData(semanticEntityVersion.publicId());
         row1.getChildren().addAll(otherNameLabel);
 
         TextFlow row2 = new TextFlow();
@@ -814,10 +830,10 @@ public class DetailsController  {
         List<TextFlow> textFlows = new ArrayList<>();
         DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
         ViewCalculator viewCalculator = getViewProperties().calculator();
-        ConceptEntity caseSigConcept = otherName.caseSignificance();
+        ConceptEntity caseSigConcept = otherName.getCaseSignificance();
         String casSigText = viewCalculator.getRegularDescriptionText(caseSigConcept.nid())
                 .orElse(caseSigConcept.nid()+"");
-        ConceptEntity langConcept = otherName.language();
+        ConceptEntity langConcept = otherName.getLanguage();
 
         String langText = viewCalculator.getRegularDescriptionText(langConcept.nid())
                 .orElse(String.valueOf(langConcept.nid()));
@@ -832,7 +848,7 @@ public class DetailsController  {
 
         // create textflow to hold regular name label
         TextFlow row1 = new TextFlow();
-        Object obj = otherName.nameText();
+        Object obj = otherName.getNameText();
         String nameLabel = String.valueOf(obj);
         Text otherNameLabel = new Text(nameLabel);
         otherNameLabel.getStyleClass().add("descr-concept-name");
@@ -1068,8 +1084,16 @@ public class DetailsController  {
         if (propertyToggle.isSelected()) {
             LOG.info("Opening slideout of properties");
             slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
-            eventBus.publish(conceptTopic, new OpenPropertiesPanelEvent(propertyToggle,
-                    OpenPropertiesPanelEvent.OPEN_PROPERTIES_PANEL, fqnPublicId, otherNamePublicId, fqnTitleText.getText()));
+
+            if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
+                // show the Add FQN
+                eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(propertyToggle,
+                        AddFullyQualifiedNameEvent.ADD_FQN, getViewProperties()));
+            } else if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))){
+                // show the button form
+                eventBus.publish(conceptTopic, new OpenPropertiesPanelEvent(propertyToggle,
+                        OpenPropertiesPanelEvent.OPEN_PROPERTIES_PANEL, fqnPublicId, fqnTitleText.getText()));
+            }
         } else {
             LOG.info("Close Properties slideout");
             slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);

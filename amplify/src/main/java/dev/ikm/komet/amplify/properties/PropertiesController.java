@@ -186,10 +186,11 @@ public class PropertiesController implements Serializable {
         addOtherNamePane = addOtherNameControllerNode.node();
         addOtherNameController = addOtherNameControllerNode.controller();
 
-        FXMLLoader loaderEditOtherName = new FXMLLoader(getClass().getResource(EDIT_OTHER_NAME_FXML_FILE));
-        loaderEditOtherName.setController(new EditDescriptionFormController(conceptTopic));
-        editOtherNamePane = loaderEditOtherName.load();
-        editDescriptionFormController = loaderEditOtherName.getController();
+        JFXNode<Pane, EditDescriptionFormController> editDescriptionFormControllerNode = FXMLMvvmLoader.make(
+                getClass().getResource(EDIT_OTHER_NAME_FXML_FILE),
+                new EditDescriptionFormController(conceptTopic));
+        editOtherNamePane = editDescriptionFormControllerNode.node();
+        editDescriptionFormController = editDescriptionFormControllerNode.controller();
 
         //TODO for future there will be an edit axiom form
 
@@ -239,8 +240,7 @@ public class PropertiesController implements Serializable {
                     // if in edit mode and navigating from the properties > edit > add other name
                     // then the public id will be set
                     if (evt.getPublicId() != null) {
-                        addOtherNameController.setPublicId(evt.getPublicId());
-                        viewModel.setValue(PUBLIC_ID, evt.getPublicId());
+                        viewModel.setValue(PARENT_PUBLIC_ID, evt.getPublicId());
                     }
                     viewModel.reset(); // copy model values into property values
                     // update the UI form
@@ -256,13 +256,11 @@ public class PropertiesController implements Serializable {
         // Edit Concept bump out to be the Add Axiom form
 
         editOtherNameSubscriber = evt -> {
-            if (!contentBorderPane.getCenter().equals(editOtherNamePane)) {
-                contentBorderPane.setCenter(editOtherNamePane);
-                editButton.setSelected(true);
-                editButton.setText("EDIT");
-                if (evt.getPublicId() != null) {
-                    editDescriptionFormController.setConceptAndPopulateForm(evt.getPublicId());
-                }
+            contentBorderPane.setCenter(editOtherNamePane);
+            editButton.setSelected(true);
+            editButton.setText("EDIT");
+            if (evt.getPublicId() != null) {
+                editDescriptionFormController.setConceptAndPopulateForm(evt.getPublicId());
             }
         };
         eventBus.subscribe(conceptTopic, EditOtherNameConceptEvent.class, editOtherNameSubscriber);
@@ -272,6 +270,13 @@ public class PropertiesController implements Serializable {
         // Fully Qualified Name in the Concept, we want to change the Pane in the
         // Edit Concept bump out to be the Edit Fully Qualified Name form
         fqnSubscriber = evt -> {
+            // don't go into edit mode if there is no FQN yet
+            if (evt.getPublicId() == null) {
+                // default to adding an FQN is there isn't one
+                eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(evt,
+                        AddFullyQualifiedNameEvent.ADD_FQN, getViewProperties()));
+                return;
+            }
             // check if the center pane is already showing, we don't want duplicate entries in the dropdowns
             if (!contentBorderPane.getCenter().equals(editFqnPane)) {
                 contentBorderPane.setCenter(editFqnPane);

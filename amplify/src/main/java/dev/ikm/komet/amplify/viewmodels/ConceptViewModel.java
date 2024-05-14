@@ -139,7 +139,7 @@ public class ConceptViewModel extends FormViewModel {
 
         // Create concept
         DescrName fqnDescrName = getPropertyValue(FULLY_QUALIFIED_NAME);
-        Transaction transaction = Transaction.make("New concept for: " + fqnDescrName.nameText());
+        Transaction transaction = Transaction.make("New concept for: " + fqnDescrName.getNameText());
 
         // Copy STAMP info
         ConceptEntity module = stampViewModel.getValue(MODULE_PROPERTY);
@@ -241,9 +241,9 @@ public class ConceptViewModel extends FormViewModel {
         MutableList<Object> descriptionFields = Lists.mutable.empty();
 
         // get these from the view model
-        descriptionFields.add(fqnNameDescr.language());
-        descriptionFields.add(fqnNameDescr.nameText());
-        descriptionFields.add(fqnNameDescr.caseSignificance());
+        descriptionFields.add(fqnNameDescr.getLanguage());
+        descriptionFields.add(fqnNameDescr.getNameText());
+        descriptionFields.add(fqnNameDescr.getCaseSignificance());
         descriptionFields.add(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
 
 
@@ -264,12 +264,16 @@ public class ConceptViewModel extends FormViewModel {
         Entity.provider().putEntity(newSemanticRecord);
     }
 
-    private void saveOtherNameWithinCreateConcept(Transaction transaction, StampEntity stampEntity, List<DescrName> otherNameViewModels, ConceptFacade conceptFacade) {
+    private void saveOtherNameWithinCreateConcept(Transaction transaction, StampEntity stampEntity, List<DescrName> otherNames, ConceptFacade conceptFacade) {
 
-        otherNameViewModels.forEach(descrName -> {
+        otherNames.forEach(descrName -> {
             //vm.save();
 
-            PublicId otherNamePublicId = PublicIds.of(UUID.randomUUID());
+            descrName.setParentConcept(conceptFacade.publicId());
+
+            PublicId otherNamePublicId = PublicIds.of(UUID.randomUUID()); /////  update the VM with our new public ID
+            descrName.setSemanticPublicId(otherNamePublicId);
+
             // the versions that we will first populate with the existing versions of the semantic
             RecordListBuilder versions = RecordListBuilder.make();
 
@@ -279,9 +283,9 @@ public class ConceptViewModel extends FormViewModel {
             // we are grabbing the form data
             // populating the field values for the new version we are writing
             MutableList<Object> descriptionFields = Lists.mutable.empty();
-            descriptionFields.add(descrName.language());
-            descriptionFields.add(descrName.nameText());
-            descriptionFields.add(descrName.caseSignificance());
+            descriptionFields.add(descrName.getLanguage());
+            descriptionFields.add(descrName.getNameText());
+            descriptionFields.add(descrName.getCaseSignificance());
             descriptionFields.add(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
 
             // iterating over the existing versions and adding them to a new record list builder
@@ -310,14 +314,14 @@ public class ConceptViewModel extends FormViewModel {
         Transaction transaction = Transaction.make();
 
         StampEntity stampEntity = transaction.getStamp(
-                State.fromConcept(otherName.status()), // active, inactive, etc
+                State.fromConcept(otherName.getStatus()), // active, inactive, etc
                 System.currentTimeMillis(),
                 TinkarTerm.USER.nid(),
-                otherName.module().nid(), // SNOMED CT, LOINC, etc
+                otherName.getModule().nid(), // SNOMED CT, LOINC, etc
                 TinkarTerm.DEVELOPMENT_PATH.nid()); // Should this be defaulted???
 
         // get the public id of the referenced concept
-        PublicId conceptRecordPublicId =  otherName.parentConcept();
+        PublicId conceptRecordPublicId =  otherName.getParentConcept();
 
         int conceptNid = EntityService.get().nidForPublicId(conceptRecordPublicId);
 
@@ -333,9 +337,9 @@ public class ConceptViewModel extends FormViewModel {
         // we are grabbing the form data
         // populating the field values for the new version we are writing
         MutableList<Object> descriptionFields = Lists.mutable.empty();
-        descriptionFields.add(otherName.language());
-        descriptionFields.add(otherName.nameText());
-        descriptionFields.add(otherName.caseSignificance());
+        descriptionFields.add(otherName.getLanguage());
+        descriptionFields.add(otherName.getNameText());
+        descriptionFields.add(otherName.getCaseSignificance());
         descriptionFields.add(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
 
         // iterating over the existing versions and adding them to a new record list builder
@@ -351,6 +355,7 @@ public class ConceptViewModel extends FormViewModel {
         // apply the updated versions to the new semantic record
         SemanticRecord newSemanticRecord = SemanticRecordBuilder.builder(descriptionSemantic).versions(versions.toImmutable()).build();
 
+        otherName.setSemanticPublicId(newSemanticRecord.publicId());
         // put the new semantic record in the transaction
         transaction.addComponent(newSemanticRecord);
 
@@ -362,8 +367,5 @@ public class ConceptViewModel extends FormViewModel {
         TinkExecutor.threadPool().submit(commitTransactionTask);
 
         LOG.info("transaction complete");
-//        eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(submitButton,
-//                ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
-
     }
 }

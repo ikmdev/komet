@@ -78,7 +78,6 @@ public class EditDescriptionsController implements BasicController {
         // appropriate PublicId through the event bus
         propsPanelOpen = evt -> {
             fqnPublicId.set(evt.getFqnPublicId());
-            otherNamePublicId.set(evt.getOtherNamePublicId());
         };
         eventBus.subscribe(conceptTopic, OpenPropertiesPanelEvent.class, propsPanelOpen);
 

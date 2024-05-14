@@ -514,7 +514,7 @@ public class LidrDetailsController {
         if (fqnDescrName == null) return;
 
         // Title (FQN of concept)
-        String conceptNameStr = fqnDescrName.nameText();
+        String conceptNameStr = fqnDescrName.getNameText();
         deviceTitleText.setText(conceptNameStr);
         conceptNameTooltip.setText(conceptNameStr);
 

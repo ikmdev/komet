@@ -26,8 +26,6 @@ public class OpenPropertiesPanelEvent extends Evt {
 
     private PublicId fqnPublicId;
 
-    private PublicId otherNamePublicId;
-
     private String conceptFQName;
 
     /**
@@ -40,21 +38,16 @@ public class OpenPropertiesPanelEvent extends Evt {
         super(source, eventType);
     }
 
-    public OpenPropertiesPanelEvent(Object source, EvtType eventType, PublicId fqnPublicId, PublicId otherNamePublicId,
+    public OpenPropertiesPanelEvent(Object source, EvtType eventType, PublicId fqnPublicId,
                                     String conceptFQName) {
         super(source, eventType);
         this.fqnPublicId = fqnPublicId;
-        this.otherNamePublicId = otherNamePublicId;
         this.conceptFQName = conceptFQName;
     }
 
 
     public PublicId getFqnPublicId() {
         return fqnPublicId;
-    }
-
-    public PublicId getOtherNamePublicId() {
-        return otherNamePublicId;
     }
 
     public String getConceptFQName() {

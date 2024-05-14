@@ -123,7 +123,7 @@ public class ResultsViewModel extends FormViewModel {
         // Create concept for the Result
         DescrName resultsName = getPropertyValue(RESULTS_NAME);
 
-        Transaction transaction = Transaction.make("New concept for: " + resultsName.nameText());
+        Transaction transaction = Transaction.make("New concept for: " + resultsName.getNameText());
 
         //FIXME is there default stamp info for a Result entity?
         StampEntity stampEntity = transaction.getStamp(
