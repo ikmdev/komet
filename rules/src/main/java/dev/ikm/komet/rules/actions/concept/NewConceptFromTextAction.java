@@ -67,20 +67,25 @@ public class NewConceptFromTextAction extends AbstractActionImmediate implements
 
             AxiomBuilderRecord ab = newConceptBuilder.axiomBuilder();
             ab.withNecessarySet(
-                    ab.makeConceptReference(TinkarTerm.LANGUAGE),
-                    ab.makeConceptReference(TinkarTerm.DESCRIPTION_ASSEMBLAGE),
+//                    ab.makeConceptReference(TinkarTerm.LANGUAGE),
+//                    ab.makeConceptReference(TinkarTerm.DESCRIPTION_ASSEMBLAGE),
                     ab.makeRoleGroup(
-                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.UNMODELED_ROLE_CONCEPT),
-                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.LANGUAGE)));
+                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.ANONYMOUS_CONCEPT)
+//                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.UNMODELED_ROLE_CONCEPT),
+//                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.LANGUAGE)
+                    )
+            );
 
 
             ab.withSufficientSet(
-                    ab.makeConceptReference(TinkarTerm.LANGUAGE),
-                    ab.makeConceptReference(TinkarTerm.DESCRIPTION_ASSEMBLAGE),
-                    ab.makeSome(TinkarTerm.ROLE_TYPE, TinkarTerm.GB_ENGLISH_DIALECT),
+//                    ab.makeConceptReference(TinkarTerm.LANGUAGE),
+//                    ab.makeConceptReference(TinkarTerm.DESCRIPTION_ASSEMBLAGE),
+//                    ab.makeSome(TinkarTerm.ROLE_TYPE, TinkarTerm.GB_ENGLISH_DIALECT),
                     ab.makeRoleGroup(
-                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.DYNAMIC_REFERENCED_COMPONENT_RESTRICTION),
-                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.INTRINSIC_ROLE)));
+                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.ANONYMOUS_CONCEPT)
+//                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.DYNAMIC_REFERENCED_COMPONENT_RESTRICTION),
+//                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.INTRINSIC_ROLE)
+                    ));
 
             // Build turns into EntityRecords, which get written, added to transaction, but not committed.
             // Have build return a list of entity records, with the top component returned first.
