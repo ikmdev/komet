@@ -25,6 +25,7 @@ import dev.ikm.komet.amplify.stamp.StampEditController;
 import dev.ikm.komet.amplify.viewmodels.ConceptViewModel;
 import dev.ikm.komet.amplify.viewmodels.StampViewModel;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.events.ChangeSetTypeEvent;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -79,6 +80,7 @@ import static dev.ikm.komet.amplify.viewmodels.ConceptViewModel.EDIT;
 import static dev.ikm.komet.amplify.viewmodels.ConceptViewModel.*;
 import static dev.ikm.komet.amplify.viewmodels.FormViewModel.MODE;
 import static dev.ikm.komet.amplify.viewmodels.StampViewModel.*;
+import static dev.ikm.komet.framework.events.FrameworkTopics.RULES_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 public class DetailsController  {
@@ -235,7 +237,9 @@ public class DetailsController  {
 
     private Subscriber<CreateConceptEvent> createConceptEventSubscriber;
 
-    private Subscriber<UpdateSemanticEvent> updateSemanticEventSubscriber;
+
+    private Subscriber<ChangeSetTypeEvent> changeSetTypeEventSubscriber;
+
 
     private PublicId fqnPublicId;
 
@@ -359,10 +363,10 @@ public class DetailsController  {
         };
         eventBus.subscribe(conceptTopic, EditConceptEvent.class, editConceptEventSubscriber);
 
-        updateSemanticEventSubscriber = evt -> {
-            updateConceptDescription();
-        };
-        eventBus.subscribe(conceptTopic, UpdateSemanticEvent.class, updateSemanticEventSubscriber);
+
+        // listen to rules changes to update the axioms
+        changeSetTypeEventSubscriber = evt -> updateAxioms();
+        eventBus.subscribe(RULES_TOPIC, ChangeSetTypeEvent.class, changeSetTypeEventSubscriber);
 
     }
 
