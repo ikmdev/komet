@@ -15,11 +15,11 @@
  */
 package dev.ikm.komet.amplify.viewmodels;
 
+import dev.ikm.komet.amplify.lidr.om.DataModelHelper;
 import dev.ikm.komet.amplify.mvvm.ViewModel;
 import dev.ikm.komet.amplify.mvvm.validator.MessageType;
 import dev.ikm.komet.amplify.mvvm.validator.ValidationMessage;
 import dev.ikm.komet.amplify.om.DescrName;
-import dev.ikm.komet.amplify.properties.AddOtherNameController;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -89,12 +89,15 @@ public class DescrNameViewModel extends FormViewModel {
     }
 
     public Set<ConceptEntity> findAllCaseSignificants(ViewProperties viewProperties) {
-        IntIdSet caseSenseDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
-        Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
-                .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
-                .collect(Collectors.toSet());
 
-        return allCaseDescendents;
+
+        //FIXME after connect-a-thon put this query back
+//        IntIdSet caseSenseDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
+//        Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
+//                .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
+//                .collect(Collectors.toSet());
+
+        return DataModelHelper.CASE_SIGNIFICANCE_OPTIONS;
     }
     public List<ConceptEntity> findAllModules(ViewProperties viewProperties) {
         try {
