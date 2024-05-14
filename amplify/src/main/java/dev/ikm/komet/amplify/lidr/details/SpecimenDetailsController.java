@@ -36,14 +36,15 @@ public class SpecimenDetailsController extends AbstractBasicController {
     private static final Logger LOG = LoggerFactory.getLogger(SpecimenDetailsController.class);
     public static final String SPECIMEN_DETAIL_FXML = "specimen-detail.fxml"; // grid pane
     public static final String SPECIMEN_RECORD = "resultsConformanceRecord";
+
     @FXML
-    private Text directSiteValueText;
+    private Text systemValueText;
 
     @FXML
     private Text nameValueText;
 
     @FXML
-    private Text snomedCTSpecimenValueText;
+    private Text specimentCollectionMethodValueText;
 
     @InjectViewModel
     SimpleViewModel specimenDetailsViewModel;
@@ -66,8 +67,8 @@ public class SpecimenDetailsController extends AbstractBasicController {
 
     @Override
     public void updateView() {
-        directSiteValueText.setText(findDescrNameText(specimenRecord.methodTypeId()));
-        snomedCTSpecimenValueText.setText(findDescrNameText(specimenRecord.systemId()));
+        systemValueText.setText(findDescrNameText(specimenRecord.systemId()));
+        specimentCollectionMethodValueText.setText(findDescrNameText(specimenRecord.methodTypeId()));
         // Name of specimen
         nameValueText.setText(findDescrNameText(specimenRecord.specimenId()));
 
@@ -75,9 +76,9 @@ public class SpecimenDetailsController extends AbstractBasicController {
 
     @Override
     public void clearView() {
-        directSiteValueText.setText("");
+        systemValueText.setText("");
         nameValueText.setText("");
-        snomedCTSpecimenValueText.setText("");
+        specimentCollectionMethodValueText.setText("");
     }
 
     @Override

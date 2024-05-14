@@ -9,8 +9,8 @@
 
 <GridPane stylesheets="@../../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.lidr.details.SpecimenDetailsController">
    <columnConstraints>
-      <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" prefWidth="120.0" />
-      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="404.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="165.0" minWidth="100.0" prefWidth="155.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="400.0" minWidth="10.0" prefWidth="369.0" />
    </columnConstraints>
    <rowConstraints>
       <RowConstraints maxHeight="-Infinity" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
@@ -27,9 +27,9 @@
          </opaqueInsets>
       </Label>
       <Text fx:id="nameValueText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="Nasopharyngeal swabs" GridPane.columnIndex="1" />
-      <Label styleClass="result-field-label" text="Direct Site" GridPane.rowIndex="2" />
-      <Label styleClass="result-field-label" text="SNOMED CT Specimen" GridPane.rowIndex="4" />
-      <Text fx:id="directSiteValueText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="Respiratory" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-      <Text fx:id="snomedCTSpecimenValueText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="Respiratory" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+      <Label styleClass="result-field-label" text="System" GridPane.rowIndex="2" />
+      <Label styleClass="result-field-label" text="Specimen Collection Method" GridPane.rowIndex="4" />
+      <Text fx:id="systemValueText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="Respiratory" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+      <Text fx:id="specimentCollectionMethodValueText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="Respiratory" GridPane.columnIndex="1" GridPane.rowIndex="4" />
    </children>
 </GridPane>

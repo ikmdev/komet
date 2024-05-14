@@ -44,10 +44,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
-import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.*;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -218,6 +215,23 @@ public class DataModelHelper {
         return findDeviceManufacturer(viewPropertiesNode().calculator().navigationCalculator(), pubId);
     }
 
+    public static PublicId findTestPerformed(PublicId deviceId){
+        final AtomicReference<PublicId> publicIdAtomicReference = new AtomicReference<>();
+
+        int deviceNid = EntityService.get().nidForPublicId(deviceId);
+        int diagnosticDevicePatternNid = EntityService.get().nidForPublicId(PublicIds.of(UUID.fromString("a507b3c7-eadb-5d54-84c0-c44f3155d0bc")));
+
+        EntityService.get().forEachSemanticForComponentOfPattern(deviceNid, diagnosticDevicePatternNid, semanticEntityVersionSemanticEntity -> {
+            publicIdAtomicReference.set( ((ConceptFacade) semanticEntityVersionSemanticEntity.versions().get(0).fieldValues().get(0)).publicId() );
+        });
+        // TODO: for now add a dummy concept if the code above does not find the LOINC concept
+        if (publicIdAtomicReference.get() == null) {
+            PublicId targetMatrixM1Id = PublicIds.of("1d9ab589-2fd1-331e-a79d-e9190c415d36");
+            return targetMatrixM1Id;
+        }
+        return publicIdAtomicReference.get();
+    }
+
     public static Optional<Concept> findDeviceManufacturer(NavigationCalculator navCalc, PublicId pubId) {
         AtomicReference<Optional<Concept>> deviceManufacturer = new AtomicReference<>(Optional.empty());
         findLatestLogicalDefinition(navCalc, pubId).ifPresent((latestLogicalDefinition) -> {
@@ -354,8 +368,17 @@ public class DataModelHelper {
             throw new RuntimeException("Error reference component does not exist in database: " + referencedComponentPublicId);
         }
         PublicId lidrPublicId = lidrRecord.lidrRecordId()== null ? PublicIds.newRandom() : lidrRecord.lidrRecordId();
-        PublicId diagDeviceSemanticId = writeDiagnosticDeviceSemantic(PublicIds.of("f8886532-38cf-3981-a4cd-a63fbec88c06"), referencedComponentPublicId, stampEntity);
-        PublicId instrumentEquipmentSemanticId = writeInstrumentEquipmentSemantic(referencedComponentPublicId, diagDeviceSemanticId, stampEntity);
+//        PublicId diagDeviceSemanticId = writeDiagnosticDeviceSemantic(findTestPerformed(referencedComponentPublicId), referencedComponentPublicId, stampEntity);
+//        PublicId instrumentEquipmentSemanticId = writeInstrumentEquipmentSemantic(referencedComponentPublicId, diagDeviceSemanticId, stampEntity);
+
+        //Get existing Diagnostic Device Semantic
+        final AtomicReference<PublicId> diagDeviceSemanticIdReference = new AtomicReference<>();
+
+        int referencedComponentNid = EntityService.get().nidForPublicId(referencedComponentPublicId);
+
+        EntityService.get().forEachSemanticForComponentOfPattern(referencedComponentNid, DIAGNOSTIC_DEVICE_PATTERN.nid(), semanticEntity -> {
+            diagDeviceSemanticIdReference.set(semanticEntity.publicId());
+        });
 
         // Create a semantic record representing a LIDR Record pattern
         // LIDR Record Semantic references (points to) the Diagnostic Device Semantic
@@ -393,7 +416,7 @@ public class DataModelHelper {
         };
 
         // Lidr Record semantic referencing the Diagnostic Device Semantic.
-        writer.semantic(lidrPublicId, new SemanticDetail(LIDR_RECORD_PATTERN.publicId(), diagDeviceSemanticId, fieldsSupplier));
+        writer.semantic(lidrPublicId, new SemanticDetail(LIDR_RECORD_PATTERN.publicId(), diagDeviceSemanticIdReference.get(), fieldsSupplier));
         return lidrPublicId;
     }
 
