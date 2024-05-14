@@ -559,11 +559,6 @@ public class ResultsController extends AbstractBasicController implements BasicC
             resultConformanceRecordPublicId = ViewModelHelper.createQuanitativeResultConcept(resultsViewModel, getStampDetail());
         }
 
-        //////////////////TODO: Fix transaction //////////////////////////////
-//        ResultConformanceRecord resultConformanceRecord = DataModelHelper.makeResultConformanceRecord(resultConformanceRecordPublicId);
-        resultConformanceRecordPublicId = BORRELIA_AFZELII_CONCEPT.publicId();
-
-
         Optional<Entity> entityOptional = EntityService.get().getEntity(resultConformanceRecordPublicId.asUuidArray());
         Entity entity = entityOptional.get();
         evtBus.publish(getConceptTopic(), new ShowPanelEvent(event.getSource(), SHOW_ADD_ANALYTE_GROUP));

@@ -33,7 +33,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="456.0" prefWidth="727.0" style="-fx-background-color: transparent;" stylesheets="@../../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.lidr.details.LidrDetailsController">
+<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="456.0" prefHeight="560.0" prefWidth="727.0" style="-fx-background-color: transparent;" stylesheets="@../../amplify-opt-2.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.amplify.lidr.details.LidrDetailsController">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0" style="-fx-background-color: transparent;">
          <top>

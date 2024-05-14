@@ -13,6 +13,11 @@
     <dependencies>
         <!-- Module dependencies -->
         <dependency>
+            <groupId>dev.ikm.tinkar.ext.owl</groupId>
+            <artifactId>owl-extension</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>komet-terms</artifactId>
         </dependency>

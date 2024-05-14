@@ -81,6 +81,7 @@ import static dev.ikm.komet.amplify.lidr.events.LidrPropertyPanelEvent.CLOSE_PAN
 import static dev.ikm.komet.amplify.lidr.events.LidrPropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.amplify.lidr.events.ShowPanelEvent.SHOW_ADD_ANALYTE_GROUP;
 import static dev.ikm.komet.amplify.lidr.events.ShowPanelEvent.SHOW_ADD_DEVICE;
+import static dev.ikm.komet.amplify.lidr.om.DataModelHelper.ORDINAL_CONCEPT;
 import static dev.ikm.komet.amplify.lidr.om.DataModelHelper.findDeviceManufacturer;
 import static dev.ikm.komet.amplify.lidr.viewmodels.AnalyteGroupViewModel.LIDR_RECORD;
 import static dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel.CONCEPT_TOPIC;
@@ -292,7 +293,7 @@ public class LidrDetailsController {
 
             // TODO Database will need to have the following targets, and resultsDataType:
             PublicId targetMatrixM1Id = PublicIds.of("1d9ab589-2fd1-331e-a79d-e9190c415d36");
-            PublicId resultOrdinalId = PublicIds.of("3bf24a2e-7c1d-3cad-84e9-bdda58df5905");
+            PublicId resultOrdinalId = ORDINAL_CONCEPT.publicId();
 
             PublicId testPerformedId = lidrRecord.testPerformedId() == null ? targetMatrixM1Id : lidrRecord.testPerformedId();
             LidrRecord newLidrRecord = new LidrRecord(

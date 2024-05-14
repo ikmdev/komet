@@ -22,7 +22,6 @@ import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import javafx.fxml.FXML;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,9 +45,6 @@ public class SpecimenDetailsController extends AbstractBasicController {
     @FXML
     private Text snomedCTSpecimenValueText;
 
-    @FXML
-    private VBox specimenVBox;
-
     @InjectViewModel
     SimpleViewModel specimenDetailsViewModel;
 
@@ -61,7 +57,6 @@ public class SpecimenDetailsController extends AbstractBasicController {
     public void initialize() {
         clearView();
         specimenRecord = specimenDetailsViewModel.getPropertyValue(SPECIMEN_RECORD);
-        // TODO populate details
         updateView();
     }
 
@@ -71,16 +66,15 @@ public class SpecimenDetailsController extends AbstractBasicController {
 
     @Override
     public void updateView() {
-        // TODO direct site
-        // TODO snomedCTSpecimen
-
+        directSiteValueText.setText(findDescrNameText(specimenRecord.methodTypeId()));
+        snomedCTSpecimenValueText.setText(findDescrNameText(specimenRecord.systemId()));
         // Name of specimen
         nameValueText.setText(findDescrNameText(specimenRecord.specimenId()));
+
     }
 
     @Override
     public void clearView() {
-        specimenVBox.getChildren().clear();
         directSiteValueText.setText("");
         nameValueText.setText("");
         snomedCTSpecimenValueText.setText("");

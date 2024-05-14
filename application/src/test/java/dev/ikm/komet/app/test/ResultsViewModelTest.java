@@ -63,6 +63,9 @@ public class ResultsViewModelTest {
     }
 
     public static void main(String[] args) {
+        PublicId createdPublicId = PublicIds.newRandom();
+        String owlExpression = ViewModelHelper.generateOwlResultConformanceExpression(ViewModelHelper.generateResultConformanceValueMap(createdPublicId, ORDINAL_CONCEPT.publicId()));
+        System.out.println(owlExpression);
 
         Platform.startup(() ->{
             setUpBefore();
@@ -98,7 +101,13 @@ public class ResultsViewModelTest {
                 TinkarTerm.USER.publicId(),
                 TinkarTerm.DEVELOPMENT_MODULE.publicId(),
                 TinkarTerm.DEVELOPMENT_PATH.publicId());
-
+        resultsViewModel.save();
+        if (resultsViewModel.hasErrorMsgs()) {
+            resultsViewModel.getValidationMessages().forEach(vMsg -> {
+                LOG.error("Error: msg Type: %s errorcode: %s, msg: %s".formatted(vMsg.messageType(), vMsg.errorCode(), vMsg.interpolate(resultsViewModel)) );
+            });
+            throw new RuntimeException("Missing fields");
+        }
         PublicId resultConformanceId = ViewModelHelper.createQualitativeResultConcept(resultsViewModel, stampDetail);
 
         System.out.println("Created a ResultConformance record " + resultConformanceId);
@@ -106,8 +115,6 @@ public class ResultsViewModelTest {
     }
 
     public void displayResultConformanceQualitative(PublicId resultConformanceId) {
-        //1868cec8-600a-3e4c-a27a-f7819b87aadd
-        PublicId deviceId = PublicIds.of("1868cec8-600a-3e4c-a27a-f7819b87aadd"); // BD Max System
         List<PublicId> allowedResultIds = Searcher.getAllowedResultsFromResultConformance(resultConformanceId);
 
         allowedResultIds.forEach(publicId -> {

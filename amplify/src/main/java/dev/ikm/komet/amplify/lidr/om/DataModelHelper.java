@@ -17,6 +17,7 @@ package dev.ikm.komet.amplify.lidr.om;
 
 import dev.ikm.komet.amplify.data.om.SemanticDetail;
 import dev.ikm.komet.amplify.data.persistence.SemanticWriter;
+import dev.ikm.komet.framework.builder.AxiomBuilderRecord;
 import dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -41,6 +42,8 @@ import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.calculator.RelativePosition;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.graph.DiTreeEntity;
+import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -84,6 +87,7 @@ public class DataModelHelper {
     public static final EntityProxy.Concept DETECTED_CONCEPT = EntityProxy.Concept.make(PublicIds.of("97b0fbff-cd01-3018-9f72-03ffc7c9027c"));
     public static final EntityProxy.Concept NOT_DETECTED_CONCEPT = EntityProxy.Concept.make(PublicIds.of("cff1d554-6d56-33f3-bf5d-9d5a6e231128"));
     public static final EntityProxy.Concept BORRELIA_AFZELII_CONCEPT = EntityProxy.Concept.make(PublicIds.of("bec2eb34-753c-3ed3-8f5f-99205d8447bc"));
+    public static final EntityProxy.Concept RESULT_CONFORMANCE_CONCEPT = EntityProxy.Concept.make(PublicIds.of("fd96a273-e8ca-39e9-b108-0badee545906"));
 
 
 
@@ -136,6 +140,7 @@ public class DataModelHelper {
     public static ResultConformanceRecord makeResultConformanceRecord(Entity resultConformanceEntity) {
         return new ResultConformanceRecord(
                 resultConformanceEntity.publicId(),
+                // Should we add the data results type to the result conformance object
                 findConceptReferenceForRoleType(findLatestLogicalDefinition(resultConformanceEntity).get(), SCALE_ROLETYPE).get().publicId(),
                 findConceptReferenceForRoleType(findLatestLogicalDefinition(resultConformanceEntity).get(), PROPERTY_ROLETYPE).get().publicId()
         );
@@ -447,5 +452,29 @@ public class DataModelHelper {
         // Allowed Results semantic referencing Result Conformance Concept
         allowedResultsWriter.semantic(allowedResultsSemanticId,
                 new SemanticDetail(ALLOWED_RESULTS_PATTERN.publicId(), resultConformanceReferencedComponentId, allowedResultsFieldsSupplier));
+    }
+
+    public static void writeAxiom(AxiomBuilderRecord axiomBuilder, ConceptRecord conceptRecord, StampEntity stampEntity) {
+        DiTreeEntity.Builder axiomTreeEntityBuilder = DiTreeEntity.builder();
+        EntityVertex rootVertex = EntityVertex.make(axiomBuilder);
+        axiomTreeEntityBuilder.setRoot(rootVertex);
+        recursiveAddChildren(axiomTreeEntityBuilder, rootVertex, axiomBuilder);
+
+        ImmutableList<Object> axiomField = Lists.immutable.of(axiomTreeEntityBuilder.build());
+        SemanticRecord statedAxioms = SemanticRecord.build(UUID.randomUUID(),
+                TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid(),
+                conceptRecord.nid(),
+                stampEntity.lastVersion(),
+                axiomField);
+        Entity.provider().putEntity(statedAxioms);
+    }
+
+    public static void recursiveAddChildren(DiTreeEntity.Builder axiomTreeBuilder, EntityVertex parentVertex, AxiomBuilderRecord parentAxiom) {
+        for (AxiomBuilderRecord child : parentAxiom.children()) {
+            EntityVertex childVertex = EntityVertex.make(child);
+            axiomTreeBuilder.addVertex(childVertex);
+            axiomTreeBuilder.addEdge(childVertex, parentVertex);
+            recursiveAddChildren(axiomTreeBuilder, childVertex, child);
+        }
     }
 }
