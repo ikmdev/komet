@@ -48,7 +48,7 @@
                            </styleClass>
                            <children>
                               <Region prefHeight="12.0" prefWidth="8.4" styleClass="lidr-tab-icon" />
-                              <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="lidr-tab-text" text="LIDR Record" />
+                              <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="lidr-tab-text" text="LIDR Viewer" />
                            </children>
                            <cursor>
                               <Cursor fx:constant="CLOSED_HAND" />

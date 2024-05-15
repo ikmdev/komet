@@ -78,18 +78,21 @@ public class ViewModelHelper {
     }
 
     /**
-     * Creates Semantic record into the database.
-     * @param lidrRecord
-     * @param device
-     * @param stampViewModel
+     * Creates Semantic record as a LIDR Record into the database. If user doesn't specify a module or path the code will
+     * use default values. Also, the time will be the current time.
+     *
+     * Note: Stamp Values will be altered depending on defaults and current time.
+     * @param lidrRecord valid Lidr information to be written as a semantic record
+     * @param device device concept's public id
+     * @param stampViewModel the
      * @return
      */
     public static PublicId addNewLidrRecord(LidrRecord lidrRecord, PublicId device, ValidationViewModel stampViewModel) {
         if (device == null || lidrRecord == null || stampViewModel == null) {
             throw new RuntimeException("Error Unable to create a LIDR record to the database. lidr record = " + lidrRecord);
         }
-        // Generate a new Stamp
-        STAMPDetail stampDetail = toStampDetail(stampViewModel);
+        // Generate a new Stamp / with a new time.
+        STAMPDetail stampDetail = toStampDetail(stampViewModel).with(System.currentTimeMillis());
 
         // Create a stamp into the database.
         PublicId newStampPublicId = PublicIds.newRandom();
@@ -100,6 +103,12 @@ public class ViewModelHelper {
         return write(lidrRecord, device, newStampPublicId);
     }
 
+    /**
+     * Copy validate StampViewModel model values and create a STAMPDetail object ready for writers.
+     * Note: Validation occurs but will only log the errors.
+     * @param stampViewModel Lidr viewer and Concept windows has StampViewModels to accept input from the user.
+     * @return STAMPDetail object containing a long for time (epoch millis) and public ids of Status, Author, Module, Path.
+     */
     public static STAMPDetail toStampDetail(ValidationViewModel stampViewModel) {
         stampViewModel.save();
         if (stampViewModel.hasErrorMsgs()) {
@@ -107,14 +116,14 @@ public class ViewModelHelper {
             for(ValidationMessage message: stampViewModel.getValidationMessages()) {
                 sb.append(message.interpolate(stampViewModel) + "\n");
             }
-            throw new RuntimeException("Error(s) with validation message(s)\n" + sb);
+            LOG.error("Error(s) with validation message(s)\n" + sb);
         }
         State status = stampViewModel.getValue(STATUS_PROPERTY);
         PublicId statusPublicId = status != null ? status.publicId() : TinkarTerm.ACTIVE_STATE.publicId();
         Concept author = stampViewModel.getValue(AUTHOR_PROPERTY);
         PublicId authorPublicId = author != null ? author.publicId() : TinkarTerm.USER.publicId();
         Long time = stampViewModel.getValue(TIME_PROPERTY);
-        long epochMillis = time == null ? System.currentTimeMillis() : time;
+        long epochMillis = time == null ? System.currentTimeMillis() : time; // This may change due to when the actual record is written.
         Concept module = stampViewModel.getValue(MODULE_PROPERTY);
         PublicId modulePublicId = module != null ? module.publicId() : TinkarTerm.DEVELOPMENT_MODULE.publicId();
         Concept path = stampViewModel.getValue(PATH_PROPERTY);

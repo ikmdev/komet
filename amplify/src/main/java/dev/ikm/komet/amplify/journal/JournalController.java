@@ -46,7 +46,10 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
-import dev.ikm.komet.preferences.*;
+import dev.ikm.komet.preferences.ConceptWindowSettings;
+import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.komet.preferences.KometPreferencesImpl;
+import dev.ikm.komet.preferences.NidTextEnum;
 import dev.ikm.komet.progress.CompletionNodeFactory;
 import dev.ikm.komet.progress.ProgressNodeFactory;
 import dev.ikm.komet.reasoner.ReasonerResultsController;
@@ -54,7 +57,6 @@ import dev.ikm.komet.reasoner.ReasonerResultsNode;
 import dev.ikm.komet.reasoner.ReasonerResultsNodeFactory;
 import dev.ikm.komet.reasoner.StringWithOptionalConceptFacade;
 import dev.ikm.komet.search.SearchNode;
-import dev.ikm.komet.search.SearchNodeFactory;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
@@ -714,7 +716,7 @@ public class JournalController {
         // set as new context menu
         treeView.setContextMenu(contextMenu2);
 
-        MenuItem launchLidrRecord = new MenuItem("LIDR Record Viewer");
+        MenuItem launchLidrRecord = new MenuItem("LIDR Viewer");
         launchLidrRecord.setOnAction(event -> {
             TreeItem<ConceptFacade> item = treeView.getSelectionModel().getSelectedItem();
             makeViewEditLidrWindow(windowView, item.getValue(), null,null);
