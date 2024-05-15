@@ -128,7 +128,7 @@
                         </VBox>
                      </content>
                   </TitledPane>
-                  <TitledPane fx:id="specimenTitledPane" text="SPECIMENTS">
+                  <TitledPane fx:id="specimenTitledPane" text="SPECIMENS">
                      <content>
                         <VBox fx:id="specimentsVBox">
                            <children>

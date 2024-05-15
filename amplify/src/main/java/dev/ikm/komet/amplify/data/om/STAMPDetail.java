@@ -18,4 +18,7 @@ package dev.ikm.komet.amplify.data.om;
 import dev.ikm.tinkar.common.id.PublicId;
 
 public record STAMPDetail(PublicId status, long time, PublicId author, PublicId module, PublicId path) {
+    public STAMPDetail with(long time) {
+        return new STAMPDetail(status, time, author, module, path);
+    }
 }
