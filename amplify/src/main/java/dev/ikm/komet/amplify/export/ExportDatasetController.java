@@ -47,7 +47,6 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -131,6 +130,9 @@ public class ExportDatasetController implements BasicController {
 
     protected static final String FHIR_TIME_EXPORT_PICKER_FXML_FILE = "fhir-time-export-picker.fxml";
 
+    private static final String CURRENT_DATE_TIME_RANGE_FROM = "01/01/2022, 12:00 AM";
+
+
     public ExportDatasetController() {
     }
 
@@ -148,13 +150,13 @@ public class ExportDatasetController implements BasicController {
         // Create PopOver for From Date
         fromDateTimePopOver = createPopover(exportTopic, FROM_DATE, (epochTime) -> {
             this.customFromEpochMillis = epochTime;
-            dateTimeFromLabel.setText(transformLocalDateTimeToStr(transformEpochMillistoLocalDateTime(epochTime)));
+            dateTimeFromLabel.setText(transformLocalDateTimeToStr(transformEpochMillisToLocalDateTime(epochTime)));
         });
 
         // Create PopOver for To Date
         toDateTimePopOver = createPopover(exportTopic, TO_DATE, (epochTime) -> {
             this.customToEpochMillis = epochTime;
-            dateTimeToLabel.setText(transformLocalDateTimeToStr(transformEpochMillistoLocalDateTime(epochTime)));
+            dateTimeToLabel.setText(transformLocalDateTimeToStr(transformEpochMillisToLocalDateTime(epochTime)));
         });
 
         tagsFlowpane.setDisable(true);
@@ -198,7 +200,7 @@ public class ExportDatasetController implements BasicController {
 
     }
 
-    public void setupCustomDateRangeLabel(){
+    public void setupCustomDateRangeLabel() {
         LocalDate today = LocalDate.now();
         LocalDateTime startOfDay = today.atStartOfDay();
         String customDateRangeFrom = transformLocalDateTimeToStr(startOfDay);
@@ -255,12 +257,22 @@ public class ExportDatasetController implements BasicController {
                 FhirCodeSystemTransform fhirCodeSystemTransform = null;
                 String dateChoice = timePeriodComboBox.getSelectionModel().getSelectedItem();
                 if (CUSTOM_RANGE.equals(dateChoice)) {
-                    fhirCodeSystemTransform = queryAndGetConceptInFhirFormat(this.customFromEpochMillis, this.customToEpochMillis, stampCalculator, exportFile);
+                    if (this.customFromEpochMillis == 0 && this.customToEpochMillis == 0) {
+                        fhirCodeSystemTransform = queryAndGetConceptInFhirFormat(transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()),
+                                transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()), stampCalculator, exportFile);
+                    } else if (this.customFromEpochMillis == 0) {
+                        fhirCodeSystemTransform = queryAndGetConceptInFhirFormat(transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()),
+                                this.customToEpochMillis, stampCalculator, exportFile);
+                    } else if (customToEpochMillis == 0) {
+                        fhirCodeSystemTransform = queryAndGetConceptInFhirFormat(this.customFromEpochMillis,
+                                transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()), stampCalculator, exportFile);
+                    } else {
+                        fhirCodeSystemTransform = queryAndGetConceptInFhirFormat(this.customFromEpochMillis, this.customToEpochMillis, stampCalculator, exportFile);
+                    }
 
                 } else if (CURRENT_DATE.equals(dateChoice)) {
-                    LocalDateTime currentDateStartOfDatetime = LocalDateTime.of(2022,1,10,11,15);
-                    fhirCodeSystemTransform = queryAndGetConceptInFhirFormat(transformLocalDateTimeToEpochMillis(currentDateStartOfDatetime),  System.currentTimeMillis(), stampCalculator, exportFile);
-
+                    fhirCodeSystemTransform = queryAndGetConceptInFhirFormat(transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM),
+                            System.currentTimeMillis(), stampCalculator, exportFile);
                 }
                 // compute()
                 try {
@@ -274,7 +286,7 @@ public class ExportDatasetController implements BasicController {
                 if (throwable != null) {
                     LOG.error("Fhir Json File Export failed to complete");
                     exportButton.setDisable(false);
-                }else {
+                } else {
                     LOG.info("Fhir Json File Export Completed");
                     exportButton.setDisable(false);
                 }
@@ -367,13 +379,13 @@ public class ExportDatasetController implements BasicController {
     }
 
     private static Set<ConceptEntity<? extends ConceptEntityVersion>> getConceptEntities(long fromTimeStamp, long toTimeStamp) {
-        Set <ConceptEntity<? extends  ConceptEntityVersion>> concepts = new HashSet<>();
+        Set<ConceptEntity<? extends ConceptEntityVersion>> concepts = new HashSet<>();
         TemporalEntityAggregator temporalEntityAggregator = new TemporalEntityAggregator(fromTimeStamp, toTimeStamp);
         temporalEntityAggregator.aggregate(nid -> {
             Entity<EntityVersion> entity = EntityService.get().getEntityFast(nid);
             if (entity instanceof ConceptEntity conceptEntity) {
                 concepts.add(conceptEntity);
-            }else if(entity instanceof SemanticEntity semanticEntity){
+            } else if (entity instanceof SemanticEntity semanticEntity) {
                 Entity<EntityVersion> referencedConcept = semanticEntity.referencedComponent();
                 if (referencedConcept instanceof ConceptEntity concept) {
                     concepts.add(concept);
@@ -417,11 +429,18 @@ public class ExportDatasetController implements BasicController {
         }
     }
 
-    private LocalDateTime transformEpochMillistoLocalDateTime(long epochMillis) {
+    private LocalDateTime transformEpochMillisToLocalDateTime(long epochMillis) {
         Instant instant = Instant.ofEpochMilli(epochMillis);
         ZoneId zoneId = ZoneId.of("America/New_York");
         ZonedDateTime zonedDateTime = instant.atZone(zoneId);
         return zonedDateTime.toLocalDateTime();
+    }
+
+    private long transformStringInLocalDateTimeToEpochMillis(String localDateTimeFormat) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy, hh:mm a");
+        LocalDateTime localDateTime = LocalDateTime.parse(localDateTimeFormat, formatter);
+        ZoneId zoneId = ZoneId.of("America/New_York");
+        return localDateTime.atZone(zoneId).toInstant().toEpochMilli();
     }
 
 }
