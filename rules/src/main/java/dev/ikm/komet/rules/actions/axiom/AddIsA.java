@@ -34,7 +34,7 @@ public class AddIsA extends AbstractAxiomAction {
         LogicalExpressionBuilder leb = new LogicalExpressionBuilder(axiomSubjectRecord.axiomTree());
         switch (leb.get(axiomSubjectRecord.axiomIndex())) {
             case LogicalAxiom.LogicalSet set -> {
-                LogicalAxiom.Atom.ConceptAxiom conceptAxiom = leb.ConceptAxiom(TinkarTerm.UNMODELED_CONCEPT);
+                LogicalAxiom.Atom.ConceptAxiom conceptAxiom = leb.ConceptAxiom(TinkarTerm.ANONYMOUS_CONCEPT);
                 leb.addToSet(set, conceptAxiom);
             }
             default -> throw new IllegalStateException("Unexpected value: " + leb.get(axiomSubjectRecord.axiomIndex()));
