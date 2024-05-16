@@ -155,7 +155,7 @@ public class AxiomFocusedRules {
     @Where(value = {"$observation.topic() == Topic.AXIOM_FOCUSED",
             """
                      $observation.subject() instanceof AxiomSubjectRecord axiomSubject && 
-                     axiomSubject.axiomMeaningNid() == TinkarTerm.ROLE_TYPE.nid() &&
+                     axiomSubject.axiomMeaningNid() == TinkarTerm.ROLE.nid() &&
                      axiomSubject.vertexPropertyEquals(TinkarTerm.ROLE_TYPE, TinkarTerm.ROLE_GROUP)
                     """
     })
@@ -176,7 +176,7 @@ public class AxiomFocusedRules {
     @Where(value = {"$observation.topic() == Topic.AXIOM_FOCUSED",
             """
                      $observation.subject() instanceof AxiomSubjectRecord axiomSubject && 
-                     axiomSubject.axiomMeaningNid() == TinkarTerm.ROLE_TYPE.nid() &&
+                     axiomSubject.axiomMeaningNid() == TinkarTerm.ROLE.nid() &&
                      !axiomSubject.vertexPropertyEquals(TinkarTerm.ROLE_TYPE, TinkarTerm.ROLE_GROUP)
                     """
     })
