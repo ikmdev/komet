@@ -96,6 +96,10 @@
         <scenic-view.version>11.0.2</scenic-view.version>
         <slf4j.version>2.0.7</slf4j.version>
         <log4j.version>3.0.0-alpha1</log4j.version>
+
+        <!-- Utilize for Binding to SLF4J -->
+        <bind-to-slf4j.version>2.0.13</bind-to-slf4j.version>
+
         <mockito.version>5.6.0</mockito.version>
         <common-java5.version>3.0.0-M9</common-java5.version>
 
@@ -453,6 +457,15 @@
                 <version>${slf4j.version}</version>
             </dependency>
 
+            <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>${bind-to-slf4j.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-slf4j2-impl</artifactId>
@@ -501,6 +514,31 @@
                 <artifactId>owlapi-parsers</artifactId>
                 <version>${owlapi.version}</version>
             </dependency>
+
+            <!--- Bind To SLF4J Dependencies (Start) -->
+
+            <!-- Binding log4j to slf4j -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>log4j-over-slf4j</artifactId>
+                <version>${bind-to-slf4j.version}</version>
+            </dependency>
+
+            <!-- Binding commons-logging to slf4j -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${bind-to-slf4j.version}</version>
+            </dependency>
+
+            <!-- Binding commons-logging to slf4j -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-jdk14</artifactId>
+                <version>${bind-to-slf4j.version}</version>
+            </dependency>
+
+            <!-- Bind To SLF4J Dependencies (End) -->
         </dependencies>
     </dependencyManagement>
 
@@ -516,6 +554,34 @@
             <artifactId>log4j-slf4j2-impl</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+         </dependency>
+
+        <!--- Bind To SLF4J Dependencies (Start) -->
+
+        <!-- Binding log4j to slf4j -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
+        </dependency>
+
+        <!-- Binding commons-logging to slf4j -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+        </dependency>
+
+        <!-- Binding commons-logging to slf4j -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+        </dependency>
+
+        <!-- Bind To SLF4J Dependencies (End) -->
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
