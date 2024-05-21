@@ -507,9 +507,9 @@ public class App extends Application {
                     journalStageWindow.setX(journalWindowSettings.getValue(JOURNAL_XPOS));
                     journalStageWindow.setY(journalWindowSettings.getValue(JOURNAL_YPOS));
                     journalController.recreateConceptWindows(journalWindowSettings);
+                }else{
+                    journalStageWindow.setMaximized(true);
                 }
-            } else {
-                journalStageWindow.setMaximized(true);
             }
 
             journalStageWindow.setOnCloseRequest(windowEvent -> {
