@@ -15,10 +15,6 @@
  */
 package dev.ikm.komet.rules.actions.axiom;
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.RULES_TOPIC;
-import dev.ikm.komet.framework.events.ChangeSetTypeEvent;
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
@@ -49,6 +45,5 @@ public class ChangeSetType extends AbstractAxiomAction {
         }
         putUpdatedLogicalExpression(editCoordinate, leb.build());
 
-        EvtBusFactory.getDefaultEvtBus().publish(RULES_TOPIC, new ChangeSetTypeEvent(ChangeSetType.class, ChangeSetTypeEvent.ANY_CHANGE));
     }
 }

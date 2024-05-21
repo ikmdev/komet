@@ -25,7 +25,7 @@ import dev.ikm.komet.amplify.stamp.StampEditController;
 import dev.ikm.komet.amplify.viewmodels.ConceptViewModel;
 import dev.ikm.komet.amplify.viewmodels.StampViewModel;
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.events.ChangeSetTypeEvent;
+import dev.ikm.komet.framework.events.AxiomChangeEvent;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -69,7 +69,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static dev.ikm.komet.amplify.commons.MenuHelper.fireContextMenuEvent;
 import static dev.ikm.komet.amplify.commons.SlideOutTrayHelper.slideIn;
@@ -238,7 +237,7 @@ public class DetailsController  {
     private Subscriber<CreateConceptEvent> createConceptEventSubscriber;
 
 
-    private Subscriber<ChangeSetTypeEvent> changeSetTypeEventSubscriber;
+    private Subscriber<AxiomChangeEvent> changeSetTypeEventSubscriber;
 
 
     private PublicId fqnPublicId;
@@ -366,7 +365,7 @@ public class DetailsController  {
 
         // listen to rules changes to update the axioms
         changeSetTypeEventSubscriber = evt -> updateAxioms();
-        eventBus.subscribe(RULES_TOPIC, ChangeSetTypeEvent.class, changeSetTypeEventSubscriber);
+        eventBus.subscribe(RULES_TOPIC, AxiomChangeEvent.class, changeSetTypeEventSubscriber);
 
     }
 

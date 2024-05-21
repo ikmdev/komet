@@ -16,6 +16,8 @@
 package dev.ikm.komet.rules.actions.axiom;
 
 import dev.ikm.komet.framework.EditedConceptTracker;
+import dev.ikm.komet.framework.events.AxiomChangeEvent;
+import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpression;
 import dev.ikm.komet.rules.actions.AbstractActionSuggested;
@@ -34,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.RULES_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
 
 public abstract class AbstractAxiomAction extends AbstractActionSuggested {
@@ -51,6 +54,7 @@ public abstract class AbstractAxiomAction extends AbstractActionSuggested {
     @Override
     public final void doAction(ActionEvent t, EditCoordinateRecord editCoordinate) {
         doAction(t, axiomSubjectRecord, editCoordinate);
+        EvtBusFactory.getDefaultEvtBus().publish(RULES_TOPIC, new AxiomChangeEvent(ChangeSetType.class, AxiomChangeEvent.ANY_CHANGE));
     }
 
     public abstract void doAction(ActionEvent t, AxiomSubjectRecord axiomSubjectRecord, EditCoordinateRecord editCoordinate);

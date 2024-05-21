@@ -15,14 +15,10 @@
  */
 package dev.ikm.komet.framework.events;
 
-public class ChangeSetTypeEvent extends Evt {
-
-    public static final EvtType<ChangeSetTypeEvent> CHANGE_NECESSARY_SET = new EvtType<>(Evt.ANY, "CHANGE_NECESSARY_SET");
-
-    public static final EvtType<ChangeSetTypeEvent> CHANGE_SUFFICIENT_SET = new EvtType<>(Evt.ANY, "CHANGE_SUFFICIENT_SET");
+public class AxiomChangeEvent extends Evt {
 
     // this is if we don't care what we are changing from or to
-    public static final EvtType<ChangeSetTypeEvent> ANY_CHANGE = new EvtType<>(Evt.ANY, "ANY_CHANGE");
+    public static final EvtType<AxiomChangeEvent> ANY_CHANGE = new EvtType<>(Evt.ANY, "ANY_CHANGE");
 
     /**
      * Constructs a prototypical Event.
@@ -31,7 +27,7 @@ public class ChangeSetTypeEvent extends Evt {
      * @param eventType
      * @throws IllegalArgumentException if source is null
      */
-    public ChangeSetTypeEvent(Object source, EvtType eventType) {
+    public AxiomChangeEvent(Object source, EvtType eventType) {
         super(source, eventType);
     }
 }
