@@ -336,6 +336,8 @@ public class DetailsController  {
                     updateModel(getViewProperties());
                     updateView();
                 }
+                // remove 'Add Fully Qualified Name' from the menu
+                setUpDescriptionContextMenu(addDescriptionButton);
                 //TODO revisit: why should the mode ever be edit inside a create event?
             } else if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))){
                 conceptViewModel.addOtherName(viewProperties.calculator().viewCoordinateRecord().editCoordinate(), descrName);
@@ -406,7 +408,8 @@ public class DetailsController  {
         // if there is a fully qualified name, then do not give the option Add Fully Qualified
         Object[][] menuItems;
         // show the 'Add Fully Qualified' option when it is a new concept in create mode and there is no fully qualified name
-        if (this.conceptViewModel.getPropertyValue(MODE).equals(CREATE)) {
+        if (this.conceptViewModel.getPropertyValue(MODE).equals(CREATE) &&
+            (getConceptViewModel().getPropertyValue(FULLY_QUALIFIED_NAME) == null)) {
             menuItems = new Object[][]{
                     {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
                     {MenuHelper.SEPARATOR},
@@ -422,7 +425,7 @@ public class DetailsController  {
                             createConceptEditDescrIcon()},
                     {MenuHelper.SEPARATOR},
             };
-        } else { // EDIT mode
+        } else { // EDIT mode OR Create Mode after FQN has been added
             menuItems = new Object[][]{
                     {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
                     {MenuHelper.SEPARATOR},
@@ -433,9 +436,16 @@ public class DetailsController  {
                         } else {
                             currentConcept = getConceptViewModel().getPropertyValue(CURRENT_ENTITY);
                         }
-                        eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(this,
-                                // pass the publicId of the Concept
-                                AddOtherNameToConceptEvent.ADD_DESCRIPTION, currentConcept.publicId())); // concept's publicId
+                        if (currentConcept != null) {
+                            // in edit mode, will have a concept and public id
+                            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(this,
+                                    // pass the publicId of the Concept
+                                    AddOtherNameToConceptEvent.ADD_DESCRIPTION, currentConcept.publicId())); // concept's publicId
+                        } else {
+                            // in create mode, we won't have a concept and public id yet
+                            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(this,
+                                    AddOtherNameToConceptEvent.ADD_DESCRIPTION));
+                        }
                     },
                             createConceptEditDescrIcon()},
                     {MenuHelper.SEPARATOR},
