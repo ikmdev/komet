@@ -78,7 +78,7 @@
         <jpackage.version>1.6.0</jpackage.version>
         <record-builder-processor.version>34</record-builder-processor.version>
         <scenic-view.version>11.0.2</scenic-view.version>
-        <slf4j.version>2.0.7</slf4j.version>
+        <slf4j.version>2.0.13</slf4j.version>
         <log4j.version>3.0.0-alpha1</log4j.version>
         <!-- Utilize for Binding to SLF4J -->
         <bind-to-slf4j.version>2.0.13</bind-to-slf4j.version>
