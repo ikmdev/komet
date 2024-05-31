@@ -15,19 +15,9 @@
  */
 package dev.ikm.komet.amplify.properties;
 
-import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.CASE_SIGNIFICANCE;
-import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.IS_SUBMITTED;
-import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.LANGUAGE;
-import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.MODULE;
-import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.NAME_TEXT;
-import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.NAME_TYPE;
-import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.STATUS;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
 import dev.ikm.komet.amplify.commons.BasicController;
 import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.amplify.events.EditConceptEvent;
-import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
 import dev.ikm.komet.amplify.om.DescrName;
 import dev.ikm.komet.amplify.viewmodels.DescrNameViewModel;
 import dev.ikm.komet.framework.events.EvtBus;
@@ -37,36 +27,26 @@ import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.PatternEntity;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
+import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.*;
+import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
+import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
 
 public class EditFullyQualifiedNameController implements BasicController {
 

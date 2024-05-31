@@ -16,8 +16,6 @@
 package dev.ikm.komet.amplify.properties;
 
 import dev.ikm.komet.amplify.events.*;
-import dev.ikm.komet.amplify.mvvm.loader.FXMLMvvmLoader;
-import dev.ikm.komet.amplify.mvvm.loader.JFXNode;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -35,6 +33,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.SVGPath;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.JFXNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

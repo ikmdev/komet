@@ -14,7 +14,10 @@
             <groupId>de.jangassen</groupId>
             <artifactId>nsmenufx</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.carlfx</groupId>
+            <artifactId>cognitive</artifactId>
+        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>amplify</artifactId>

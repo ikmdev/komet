@@ -16,8 +16,6 @@
 package dev.ikm.komet.amplify.stamp;
 
 import dev.ikm.komet.amplify.commons.AbstractBasicController;
-import dev.ikm.komet.amplify.mvvm.ViewModel;
-import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
 import dev.ikm.komet.amplify.viewmodels.DescrNameViewModel;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import javafx.beans.property.ObjectProperty;
@@ -27,6 +25,8 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
+import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.viewmodel.ViewModel;
 
 import java.util.List;
 

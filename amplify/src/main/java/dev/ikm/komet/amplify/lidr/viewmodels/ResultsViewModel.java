@@ -15,9 +15,6 @@
  */
 package dev.ikm.komet.amplify.lidr.viewmodels;
 
-import dev.ikm.komet.amplify.mvvm.ViewModel;
-import dev.ikm.komet.amplify.mvvm.validator.MessageType;
-import dev.ikm.komet.amplify.mvvm.validator.ValidationMessage;
 import dev.ikm.komet.amplify.om.DescrName;
 import dev.ikm.komet.amplify.viewmodels.FormViewModel;
 import dev.ikm.komet.framework.builder.ConceptEntityBuilder;
@@ -34,6 +31,9 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import org.carlfx.cognitive.validator.MessageType;
+import org.carlfx.cognitive.validator.ValidationMessage;
+import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -15,13 +15,13 @@
  */
 package dev.ikm.komet.amplify.lidr.viewmodels;
 
-import dev.ikm.komet.amplify.mvvm.ViewModel;
 import dev.ikm.komet.amplify.viewmodels.FormViewModel;
 import dev.ikm.komet.amplify.viewmodels.StampViewModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
+import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

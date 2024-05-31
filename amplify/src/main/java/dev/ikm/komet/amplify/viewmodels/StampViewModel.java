@@ -15,15 +15,15 @@
  */
 package dev.ikm.komet.amplify.viewmodels;
 
-import dev.ikm.komet.amplify.mvvm.ViewModel;
-import dev.ikm.komet.amplify.mvvm.validator.MessageType;
-import dev.ikm.komet.amplify.mvvm.validator.ValidationMessage;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ReadOnlyObjectProperty;
+import org.carlfx.cognitive.validator.MessageType;
+import org.carlfx.cognitive.validator.ValidationMessage;
+import org.carlfx.cognitive.viewmodel.ViewModel;
 
 import java.util.ArrayList;
 import java.util.Collections;

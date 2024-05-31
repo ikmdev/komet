@@ -37,6 +37,7 @@ module dev.ikm.komet.application {
     requires javafx.controls;
     requires javafx.fxml;
     requires nsmenufx;
+    requires org.carlfx.cognitive;
     requires org.controlsfx.controls;
     requires dev.ikm.komet.classification;
     requires dev.ikm.komet.details;

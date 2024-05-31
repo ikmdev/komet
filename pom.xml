@@ -73,9 +73,11 @@
         <controlsfx.version>11.1.0</controlsfx.version>
         <ikonli.version>12.2.0</ikonli.version>
         <nsmenufx.version>3.1.0</nsmenufx.version>
+        <cognitive.version>1.0.0</cognitive.version>
         <openjfx.version>21</openjfx.version>
         <javafx.version>0.0.8</javafx.version>
         <jpackage.version>1.6.0</jpackage.version>
+        <maven.compiler.version>3.13.0</maven.compiler.version>
         <record-builder-processor.version>34</record-builder-processor.version>
         <scenic-view.version>11.0.2</scenic-view.version>
         <slf4j.version>2.0.13</slf4j.version>
@@ -272,6 +274,13 @@
                 <artifactId>controlsfx</artifactId>
                 <version>${controlsfx.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.carlfx</groupId>
+                <artifactId>cognitive</artifactId>
+                <version>${cognitive.version}</version>
+            </dependency>
+
             <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-fxml -->
             <dependency>
                 <groupId>org.openjfx</groupId>
@@ -512,6 +521,11 @@
                     <groupId>org.panteleyev</groupId>
                     <artifactId>jpackage-maven-plugin</artifactId>
                     <version>${jpackage.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven.compiler.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

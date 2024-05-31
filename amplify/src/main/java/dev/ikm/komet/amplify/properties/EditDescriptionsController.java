@@ -20,8 +20,6 @@ import dev.ikm.komet.amplify.events.AddOtherNameToConceptEvent;
 import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.amplify.events.EditConceptFullyQualifiedNameEvent;
 import dev.ikm.komet.amplify.events.OpenPropertiesPanelEvent;
-import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
-import dev.ikm.komet.amplify.viewmodels.DescrNameViewModel;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
