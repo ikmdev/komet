@@ -18,7 +18,6 @@ package dev.ikm.komet.amplify.properties;
 import dev.ikm.komet.amplify.commons.AbstractBasicController;
 import dev.ikm.komet.amplify.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.amplify.events.CreateConceptEvent;
-import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
 import dev.ikm.komet.amplify.om.DescrName;
 import dev.ikm.komet.amplify.viewmodels.DescrNameViewModel;
 import dev.ikm.komet.framework.events.EvtBus;
@@ -33,6 +32,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
+import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

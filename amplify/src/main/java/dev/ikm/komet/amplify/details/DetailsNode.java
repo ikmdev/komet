@@ -15,9 +15,6 @@
  */
 package dev.ikm.komet.amplify.details;
 
-import dev.ikm.komet.amplify.mvvm.loader.Config;
-import dev.ikm.komet.amplify.mvvm.loader.FXMLMvvmLoader;
-import dev.ikm.komet.amplify.mvvm.loader.JFXNode;
 import dev.ikm.komet.amplify.properties.PropertiesController;
 import dev.ikm.komet.amplify.timeline.TimelineController;
 import dev.ikm.komet.framework.ExplorationNodeAbstract;
@@ -35,6 +32,9 @@ import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.layout.BorderPane;
+import org.carlfx.cognitive.loader.Config;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

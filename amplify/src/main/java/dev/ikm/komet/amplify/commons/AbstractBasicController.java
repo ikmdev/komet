@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.amplify.commons;
 
-import dev.ikm.komet.amplify.mvvm.ViewModel;
 import dev.ikm.komet.framework.view.ViewProperties;
+import org.carlfx.cognitive.viewmodel.ViewModel;
 
 import java.util.function.BiConsumer;
 
@@ -32,12 +32,12 @@ public abstract class AbstractBasicController implements BasicController {
     public <T extends ViewModel, U extends BasicController> void updateModel(ViewProperties viewProperties, BiConsumer<T, U> viewModelControllerConsumer) {
         this.viewProperties = viewProperties;
         if (viewModelControllerConsumer != null) {
-            viewModelControllerConsumer.accept((T) getViewModel(), (U) this);
+            viewModelControllerConsumer.accept(getViewModel(), (U) this);
         }
     }
     public <T extends ViewModel, U extends BasicController> void updateViewModel(BiConsumer<T, U> viewModelControllerConsumer) {
         if (viewModelControllerConsumer != null) {
-            viewModelControllerConsumer.accept((T) getViewModel(), (U) this);
+            viewModelControllerConsumer.accept(getViewModel(), (U) this);
         }
     }
 

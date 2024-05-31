@@ -17,8 +17,6 @@ package dev.ikm.komet.amplify.lidr.details;
 
 import dev.ikm.komet.amplify.commons.AbstractBasicController;
 import dev.ikm.komet.amplify.lidr.om.ResultConformanceRecord;
-import dev.ikm.komet.amplify.mvvm.SimpleViewModel;
-import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -27,6 +25,8 @@ import javafx.fxml.FXML;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

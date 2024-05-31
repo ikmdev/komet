@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.amplify.viewmodels;
 
-import dev.ikm.komet.amplify.mvvm.ValidationViewModel;
 import dev.ikm.komet.framework.view.ViewProperties;
+import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 
 import java.util.UUID;
 

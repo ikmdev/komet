@@ -24,7 +24,6 @@ import dev.ikm.komet.amplify.lidr.events.AddResultEvent;
 import dev.ikm.komet.amplify.lidr.events.ShowPanelEvent;
 import dev.ikm.komet.amplify.lidr.viewmodels.ResultsViewModel;
 import dev.ikm.komet.amplify.lidr.viewmodels.ViewModelHelper;
-import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
 import dev.ikm.komet.amplify.viewmodels.FormViewModel;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
@@ -51,6 +50,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
+import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -26,14 +26,14 @@ import dev.ikm.tinkar.entity.StampService;
 module dev.ikm.komet.application.test {
 
     exports dev.ikm.komet.app.test to javafx.graphics;
-    opens dev.ikm.komet.app.test to javafx.fxml;
+    opens dev.ikm.komet.app.test to javafx.fxml, org.carlfx.cognitive;
 
     // TODO Not happy that I have to specify these here... Can't dynamically add modules?
     requires dev.ikm.tinkar.provider.spinedarray;
     requires dev.ikm.tinkar.provider.mvstore;
     requires dev.ikm.tinkar.provider.ephemeral;
     // End not happy...
-
+    requires org.carlfx.cognitive;
     requires javafx.controls;
     requires javafx.fxml;
     requires nsmenufx;

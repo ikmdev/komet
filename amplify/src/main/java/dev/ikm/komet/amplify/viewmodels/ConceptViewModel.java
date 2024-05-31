@@ -15,9 +15,6 @@
  */
 package dev.ikm.komet.amplify.viewmodels;
 
-import dev.ikm.komet.amplify.mvvm.ViewModel;
-import dev.ikm.komet.amplify.mvvm.validator.MessageType;
-import dev.ikm.komet.amplify.mvvm.validator.ValidationMessage;
 import dev.ikm.komet.amplify.om.DescrName;
 import dev.ikm.komet.framework.builder.AxiomBuilderRecord;
 import dev.ikm.komet.framework.builder.ConceptEntityBuilder;
@@ -36,6 +33,9 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
+import org.carlfx.cognitive.validator.MessageType;
+import org.carlfx.cognitive.validator.ValidationMessage;
+import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -47,7 +47,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.*;
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.NAME_TEXT;
+import static dev.ikm.komet.amplify.viewmodels.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.komet.amplify.viewmodels.StampViewModel.MODULE_PROPERTY;
 import static dev.ikm.komet.amplify.viewmodels.StampViewModel.PATH_PROPERTY;
 

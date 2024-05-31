@@ -17,12 +17,12 @@ package dev.ikm.komet.amplify.lidr.details;
 
 import dev.ikm.komet.amplify.commons.AbstractBasicController;
 import dev.ikm.komet.amplify.lidr.om.SpecimenRecord;
-import dev.ikm.komet.amplify.mvvm.SimpleViewModel;
-import dev.ikm.komet.amplify.mvvm.loader.InjectViewModel;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import javafx.fxml.FXML;
 import javafx.scene.text.Text;
+import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

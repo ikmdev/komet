@@ -16,12 +16,12 @@
 package dev.ikm.komet.app.test;
 
 import dev.ikm.komet.amplify.viewmodels.StampViewModel;
-import dev.ikm.komet.amplify.mvvm.validator.ValidationMessage;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.terms.State;
+import org.carlfx.cognitive.validator.ValidationMessage;
 
 import static dev.ikm.komet.amplify.viewmodels.StampViewModel.*;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;

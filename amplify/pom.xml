@@ -11,6 +11,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.carlfx</groupId>
+            <artifactId>cognitive</artifactId>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>framework</artifactId>
         </dependency>
