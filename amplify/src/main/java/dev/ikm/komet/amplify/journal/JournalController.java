@@ -24,6 +24,8 @@ import dev.ikm.komet.amplify.events.JournalTileEvent;
 import dev.ikm.komet.amplify.lidr.details.LidrDetailsController;
 import dev.ikm.komet.amplify.lidr.om.DataModelHelper;
 import dev.ikm.komet.amplify.lidr.viewmodels.LidrViewModel;
+import dev.ikm.komet.amplify.search.NextGenSearchController;
+import dev.ikm.komet.amplify.viewmodels.NextGenSearchViewModel;
 import dev.ikm.komet.amplify.viewmodels.StampViewModel;
 import dev.ikm.komet.amplify.window.WindowSupport;
 import dev.ikm.komet.framework.KometNode;
@@ -78,6 +80,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
@@ -150,15 +153,22 @@ public class JournalController {
     private Pane reasonerSlideoutTrayPane;
 
     @FXML
+    private Pane nexGenSearchSlideoutTrayPane;
+
+    @FXML
     private ToggleButton reasonerToggleButton;
 
     @FXML
     private ToggleButton navigatorToggleButton;
+
     @FXML
     private ToggleButton searchToggleButton;
 
     @FXML
     private ToggleButton settingsToggleButton;
+
+    @FXML
+    private ToggleButton nextGenSearchToggleButton;
 
     @FXML
     private Button addButton;
@@ -170,7 +180,11 @@ public class JournalController {
     // Private Data
     /////////////////////////////////////////////////////////////////
     private Pane navigatorNodePanel;
+
     private Pane searchNodePanel;
+
+    private Pane nextGenSearchPanel;
+
     private BorderPane reasonerNodePanel;
 
     private ActivityStream navigatorActivityStream;
@@ -187,6 +201,13 @@ public class JournalController {
     private GraphNavigatorNode navigatorNode;
     private ObservableList<ConceptPreference> conceptWindows = FXCollections.observableArrayList();
 
+
+    protected static final String NEXT_GEN_SEARCH_FXML_URL = "next-gen-search.fxml";
+
+    private NextGenSearchController nextGenSearchController;
+
+    @InjectViewModel
+    private NextGenSearchViewModel nextGenSearchViewModel;
 
     public JournalController(){
         journalTopic = UUID.randomUUID();;
@@ -243,6 +264,8 @@ public class JournalController {
             return searchSlideoutTrayPane;
         } else if (reasonerToggleButton.equals(selectedToggleButton)) {
             return reasonerSlideoutTrayPane;
+        } else if (nextGenSearchToggleButton.equals(selectedToggleButton)) {
+            return nexGenSearchSlideoutTrayPane;
         }
         return null;
     }
@@ -295,6 +318,23 @@ public class JournalController {
 
     public GraphNavigatorNode getNavigatorNode() {
         return navigatorNode;
+    }
+
+    public void loadNextGenSearchPanel() {
+        // +-----------------------------------
+        // ! Add a Next Gen Search
+        // +------------------------------------
+        Config nextGenSearchConfig = new Config(NextGenSearchController.class.getResource(NEXT_GEN_SEARCH_FXML_URL))
+                .updateViewModel("nextGenSearchViewModel", (nextGenSearchViewModel) ->
+                                nextGenSearchViewModel
+                                        .setPropertyValue(MODE, CREATE)
+                );
+
+        JFXNode<Pane, NextGenSearchController> nextGenSearchJFXNode = FXMLMvvmLoader.make(nextGenSearchConfig);
+        nextGenSearchController = nextGenSearchJFXNode.controller();
+        nextGenSearchPanel = nextGenSearchJFXNode.node();
+
+        setupSlideOutTrayPane(nextGenSearchPanel, nexGenSearchSlideoutTrayPane);
     }
 
     private void loadSearchPanel(PublicIdStringKey<ActivityStream> searchActivityStreamKey,

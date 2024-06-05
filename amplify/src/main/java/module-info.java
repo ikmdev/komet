@@ -60,6 +60,9 @@ module dev.ikm.komet.amplify {
     opens dev.ikm.komet.amplify.lidr.viewmodels to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.amplify.lidr.viewmodels;
 
+    opens dev.ikm.komet.amplify.search to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.amplify.search;
+
     opens dev.ikm.komet.amplify.lidr.om;
     exports dev.ikm.komet.amplify.lidr.om;
     opens dev.ikm.komet.amplify.data.om;
