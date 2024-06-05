@@ -147,6 +147,7 @@
                   <Pane fx:id="navSlideoutTrayPane" styleClass="slideout-tray-pane" />
                   <Pane fx:id="searchSlideoutTrayPane" styleClass="slideout-tray-pane" />
                   <Pane fx:id="reasonerSlideoutTrayPane" styleClass="slideout-tray-pane" />
+                  <Pane fx:id="nexGenSearchSlideoutTrayPane" layoutX="10.0" layoutY="10.0" maxHeight="1.7976931348623157E308" styleClass="slideout-tray-pane" />
                </children>
             </StackPane>
          </left>
@@ -211,7 +212,7 @@
                </graphic>
             </ToggleButton>
             <Rectangle fill="DODGERBLUE" height="1.0" stroke="BLACK" strokeType="INSIDE" styleClass="divider" width="36.0" />
-            <ToggleButton mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+            <ToggleButton fx:id="nextGenSearchToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
                   <Region prefHeight="200.0" prefWidth="200.0">
                      <styleClass>
