@@ -4,50 +4,82 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.ToggleGroup?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 
-<VBox maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.search.SortOptionsController">
+
+<GridPane prefHeight="135.0" prefWidth="375.0" styleClass="search-option-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.search.SortOptionsController">
+    <columnConstraints>
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="427.0" minWidth="10.0" prefWidth="320.0" />
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="164.0" minWidth="10.0" prefWidth="41.0" />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints minHeight="10.0" prefHeight="32.0" vgrow="SOMETIMES" />
+        <RowConstraints minHeight="10.0" prefHeight="32.0" vgrow="SOMETIMES" />
+        <RowConstraints minHeight="10.0" prefHeight="32.0" vgrow="SOMETIMES" />
+        <RowConstraints minHeight="10.0" prefHeight="32.0" vgrow="SOMETIMES" />
+    </rowConstraints>
     <children>
-        <Label contentDisplay="RIGHT" minWidth="339.0" styleClass="search-option-label" text="MATCHED DESCRIPTION SEMANTIC (ALPHABETICAL)">
-            <graphic>
-                <RadioButton alignment="CENTER_RIGHT" contentDisplay="RIGHT" mnemonicParsing="false" styleClass="search-option-radio">
+        <Label contentDisplay="RIGHT" styleClass="search-option-label" text="MATCHED DESCRIPTION SEMANTIC (ALPHABETICAL)">
+            <padding>
+                <Insets bottom="2.0" left="8.0" right="4.0" top="2.0" />
+            </padding>
+        </Label>
+        <HBox alignment="CENTER" GridPane.columnIndex="1">
+            <children>
+                <RadioButton contentDisplay="RIGHT" mnemonicParsing="false" styleClass="search-option-radio" textAlignment="CENTER">
                     <toggleGroup>
                         <ToggleGroup fx:id="sortToggleGroup" />
                     </toggleGroup>
+                    <HBox.margin>
+                        <Insets />
+                    </HBox.margin>
                 </RadioButton>
-            </graphic>
-            <VBox.margin>
-                <Insets />
-            </VBox.margin>
+            </children>
+        </HBox>
+        <Label contentDisplay="RIGHT" styleClass="search-option-label" text="MATCHED DESCRIPTION SEMANTIC" GridPane.rowIndex="1">
             <padding>
                 <Insets bottom="2.0" left="8.0" right="4.0" top="2.0" />
             </padding>
         </Label>
-        <Label contentDisplay="RIGHT" layoutX="10.0" layoutY="10.0" minWidth="339.0" styleClass="search-option-label" text="MATCHED DESCRIPTION SEMANTIC">
-            <graphic>
-                <RadioButton contentDisplay="RIGHT" mnemonicParsing="false" styleClass="search-option-radio" toggleGroup="$sortToggleGroup" />
-            </graphic>
+        <HBox alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <children>
+                <RadioButton alignment="CENTER_RIGHT" contentDisplay="RIGHT" mnemonicParsing="false" styleClass="search-option-radio" toggleGroup="$sortToggleGroup">
+                    <HBox.margin>
+                        <Insets />
+                    </HBox.margin>
+                </RadioButton>
+            </children>
+        </HBox>
+        <Label contentDisplay="RIGHT" styleClass="search-option-label" text="TOP COMPONENT (ALPHABETICAL)" GridPane.rowIndex="2">
             <padding>
                 <Insets bottom="2.0" left="8.0" right="4.0" top="2.0" />
             </padding>
         </Label>
-        <Label contentDisplay="RIGHT" layoutX="10.0" layoutY="61.0" styleClass="search-option-label" text="TOP COMPONENT (ALPHABETICAL)">
-            <graphic>
-                <RadioButton alignment="CENTER_RIGHT" contentDisplay="RIGHT" mnemonicParsing="false" styleClass="search-option-radio" toggleGroup="$sortToggleGroup" />
-            </graphic>
+        <HBox alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="2">
+            <children>
+                <RadioButton contentDisplay="RIGHT" mnemonicParsing="false" styleClass="search-option-radio" toggleGroup="$sortToggleGroup">
+                    <HBox.margin>
+                        <Insets />
+                    </HBox.margin>
+                </RadioButton>
+            </children>
+        </HBox>
+        <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" styleClass="search-option-label" text="TOP COMPONENT" GridPane.rowIndex="3">
             <padding>
                 <Insets bottom="2.0" left="8.0" right="4.0" top="2.0" />
             </padding>
         </Label>
-        <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="10.0" layoutY="61.0" styleClass="search-option-label" text="TOP COMPONENT">
-            <graphic>
-                <RadioButton contentDisplay="RIGHT" mnemonicParsing="false" styleClass="search-option-radio" toggleGroup="$sortToggleGroup" />
-            </graphic>
-            <padding>
-                <Insets bottom="2.0" left="8.0" right="4.0" top="2.0" />
-            </padding>
-        </Label>
+        <HBox alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="3">
+            <children>
+                <RadioButton alignment="CENTER_RIGHT" contentDisplay="RIGHT" mnemonicParsing="false" styleClass="search-option-radio" toggleGroup="$sortToggleGroup">
+                    <HBox.margin>
+                        <Insets />
+                    </HBox.margin>
+                </RadioButton>
+            </children>
+        </HBox>
     </children>
-</VBox>
-
-
+</GridPane>
