@@ -16,9 +16,9 @@
 package dev.ikm.komet.app.test;
 
 
-import dev.ikm.komet.amplify.data.om.STAMPDetail;
-import dev.ikm.komet.amplify.lidr.viewmodels.ResultsViewModel;
-import dev.ikm.komet.amplify.lidr.viewmodels.ViewModelHelper;
+import dev.ikm.komet.kview.data.schema.STAMPDetail;
+import dev.ikm.komet.kview.lidr.mvvm.viewmodel.ResultsViewModel;
+import dev.ikm.komet.kview.lidr.mvvm.viewmodel.ViewModelHelper;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.CachingService;
@@ -36,8 +36,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.List;
 
-import static dev.ikm.komet.amplify.lidr.om.DataModelHelper.*;
-import static dev.ikm.komet.amplify.lidr.viewmodels.ResultsViewModel.*;
+import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.*;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ResultsViewModel.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ResultsViewModelTest {

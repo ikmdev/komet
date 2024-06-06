@@ -16,9 +16,9 @@
 package dev.ikm.komet.app.test;
 
 
-import dev.ikm.komet.amplify.lidr.om.*;
-import dev.ikm.komet.amplify.lidr.viewmodels.ViewModelHelper;
-import dev.ikm.komet.amplify.viewmodels.StampViewModel;
+import dev.ikm.komet.kview.lidr.mvvm.model.*;
+import dev.ikm.komet.kview.lidr.mvvm.viewmodel.ViewModelHelper;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.CachingService;
@@ -44,8 +44,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import static dev.ikm.komet.amplify.lidr.om.DataModelHelper.*;
-import static dev.ikm.komet.amplify.viewmodels.StampViewModel.*;
+import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LidrViewModelTest {

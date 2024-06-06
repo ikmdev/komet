@@ -17,17 +17,6 @@ package dev.ikm.komet.app;
 
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
-import dev.ikm.komet.amplify.commons.CssHelper;
-import dev.ikm.komet.amplify.commons.ResourceHelper;
-import dev.ikm.komet.amplify.events.CreateJournalEvent;
-import dev.ikm.komet.amplify.events.JournalTileEvent;
-import dev.ikm.komet.amplify.export.ArtifactExportController2;
-import dev.ikm.komet.amplify.export.ExportDatasetController;
-import dev.ikm.komet.amplify.export.ExportDatasetViewFactory;
-import dev.ikm.komet.amplify.journal.JournalController;
-import dev.ikm.komet.amplify.journal.JournalViewFactory;
-import dev.ikm.komet.amplify.landingpage.LandingPageController;
-import dev.ikm.komet.amplify.landingpage.LandingPageViewFactory;
 import dev.ikm.komet.details.DetailsNodeFactory;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
@@ -48,6 +37,17 @@ import dev.ikm.komet.framework.window.KometStageController;
 import dev.ikm.komet.framework.window.MainWindowRecord;
 import dev.ikm.komet.framework.window.WindowComponent;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.mvvm.view.export.ArtifactExportController2;
+import dev.ikm.komet.kview.mvvm.view.export.ExportDatasetController;
+import dev.ikm.komet.kview.mvvm.view.export.ExportDatasetViewFactory;
+import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
+import dev.ikm.komet.kview.mvvm.view.journal.JournalViewFactory;
+import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
+import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
+import dev.ikm.komet.kview.events.CreateJournalEvent;
+import dev.ikm.komet.kview.events.JournalTileEvent;
+import dev.ikm.komet.kview.fxutils.CssHelper;
+import dev.ikm.komet.kview.fxutils.ResourceHelper;
 import dev.ikm.komet.list.ListNodeFactory;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNodeFactory;
 import dev.ikm.komet.navigator.pattern.PatternNavigatorFactory;
@@ -102,13 +102,13 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 
-import static dev.ikm.komet.amplify.commons.CssHelper.defaultStyleSheet;
-import static dev.ikm.komet.amplify.commons.CssHelper.refreshPanes;
-import static dev.ikm.komet.amplify.events.AmplifyTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.amplify.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.app.AppState.*;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.fxutils.CssHelper.defaultStyleSheet;
+import static dev.ikm.komet.kview.fxutils.CssHelper.refreshPanes;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
@@ -140,7 +140,7 @@ public class App extends Application {
     private static Stage landingPageWindow;
     private List<JournalController> journalControllersList = new ArrayList<>();
 
-    private EvtBus amplifyEventBus;
+    private EvtBus kViewEventBus;
 
     public static void main(String[] args) {
         System.setProperty("apple.laf.useScreenMenuBar", "false");
@@ -261,7 +261,7 @@ public class App extends Application {
                 .orElseThrow();
 
         // get the instance of the event bus
-        amplifyEventBus = EvtBusFactory.getInstance(EvtBus.class);
+        kViewEventBus = EvtBusFactory.getInstance(EvtBus.class);
         Subscriber<CreateJournalEvent> detailsSubscriber = evt -> {
 
             String journalName = evt.getWindowSettingsObjectMap().getValue(JOURNAL_TITLE);
@@ -276,7 +276,7 @@ public class App extends Application {
                     );
         };
         // subscribe to the topic
-        amplifyEventBus.subscribe(JOURNAL_TOPIC, CreateJournalEvent.class, detailsSubscriber);
+        kViewEventBus.subscribe(JOURNAL_TOPIC, CreateJournalEvent.class, detailsSubscriber);
     }
 
     private MenuItem createExportChangesetMenuItem() {
@@ -419,31 +419,31 @@ public class App extends Application {
         KometPreferences windowPreferences = appPreferences.node("main-komet-window");
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
 
-        Stage amplifyStage = new Stage();
-        FXMLLoader landingPageLoader = LandingPageViewFactory.createFXMLLoader();
+        Stage kViewStage = new Stage();
 
         try {
-            BorderPane amplifyLandingPageBorderPane = landingPageLoader.load();
+            FXMLLoader landingPageLoader = LandingPageViewFactory.createFXMLLoader();
+            BorderPane landingPageBorderPane = landingPageLoader.load();
             // if NOT on Mac OS
             if(System.getProperty("os.name")!=null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
-                createMenuOptions(amplifyLandingPageBorderPane);
+                createMenuOptions(landingPageBorderPane);
             }
             LandingPageController landingPageController = landingPageLoader.getController();
-            Scene sourceScene = new Scene(amplifyLandingPageBorderPane, 1200, 800);
+            Scene sourceScene = new Scene(landingPageBorderPane, 1200, 800);
 
-            // Add Komet.css and amplify css
+            // Add Komet.css and kview css
             sourceScene.getStylesheets().addAll(
                     graphicsModule.getClassLoader().getResource(CSS_LOCATION).toString(), CssHelper.defaultStyleSheet());
 
             // Attach a listener to provide a CSS refresher ability for each Journal window. Right double click settings button (gear)
-            attachCSSRefresher(landingPageController.getSettingsToggleButton(), amplifyLandingPageBorderPane);
+            attachCSSRefresher(landingPageController.getSettingsToggleButton(), landingPageBorderPane);
 
-            amplifyStage.setScene(sourceScene);
-            amplifyStage.setTitle("Landing Page");
+            kViewStage.setScene(sourceScene);
+            kViewStage.setTitle("Landing Page");
 
-            amplifyStage.setMaximized(true);
-            amplifyStage.setOnCloseRequest(windowEvent -> {
-                // call shutdown method on the controller
+            kViewStage.setMaximized(true);
+            kViewStage.setOnCloseRequest(windowEvent -> {
+                // call shutdown method on the view
                 state.set(SHUTDOWN);
                 landingPageController.cleanup();
                 landingPageWindow.close();
@@ -454,13 +454,13 @@ public class App extends Application {
         }
 
         // Launch windows window pane inside journal view
-        amplifyStage.setOnShown(windowEvent -> {
+        kViewStage.setOnShown(windowEvent -> {
             // do stuff when shown.
         });
 
-        landingPageWindow = amplifyStage;
-        amplifyStage.show();
-        amplifyStage.setMaximized(true);
+        landingPageWindow = kViewStage;
+        kViewStage.show();
+        kViewStage.setMaximized(true);
     }
 
     /**
@@ -475,14 +475,14 @@ public class App extends Application {
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
 
         Stage journalStageWindow = new Stage();
-        FXMLLoader amplifyJournalLoader = JournalViewFactory.createFXMLLoader();
+        FXMLLoader journalLoader = JournalViewFactory.createFXMLLoader();
         JournalController journalController;
         try {
-            BorderPane amplifyJournalBorderPane = amplifyJournalLoader.load();
-            journalController = amplifyJournalLoader.getController();
-            Scene sourceScene = new Scene(amplifyJournalBorderPane, 1200, 800);
+            BorderPane journalBorderPane = journalLoader.load();
+            journalController = journalLoader.getController();
+            Scene sourceScene = new Scene(journalBorderPane, 1200, 800);
 
-            // Add Komet.css and amplify css
+            // Add Komet.css and kview css
             sourceScene.getStylesheets().addAll(
                     graphicsModule.getClassLoader().getResource(CSS_LOCATION).toString(), CssHelper.defaultStyleSheet());
 
@@ -493,7 +493,7 @@ public class App extends Application {
 
             // if NOT on Mac OS
             if(System.getProperty("os.name")!=null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
-                generateMsWindowsMenu(amplifyJournalBorderPane);
+                generateMsWindowsMenu(journalBorderPane);
             }
 
             String journalName;
@@ -514,12 +514,12 @@ public class App extends Application {
 
             journalStageWindow.setOnCloseRequest(windowEvent -> {
                     saveJournalWindowsToPreferences();
-                    // call shutdown method on the controller
+                    // call shutdown method on the view
                     journalController.shutdown();
                     journalControllersList.remove(journalController);
                     // enable Delete menu option
                     journalWindowSettings.setValue(CAN_DELETE, true);
-                    amplifyEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
+                    kViewEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -540,7 +540,7 @@ public class App extends Application {
         });
         // disable the delete menu option for a Journal Card.
         journalWindowSettings.setValue(CAN_DELETE, false);
-        amplifyEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
+        kViewEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
         journalControllersList.add(journalController);
         journalStageWindow.show();
     }
@@ -611,7 +611,7 @@ public class App extends Application {
 
     /**
      * Will refresh a parent root node and all children that have CSS stylesheets.
-     * Komet.css and amplify-opt2.css files are updated dynamically.
+     * Komet.css and kview-opt2.css files are updated dynamically.
      * @param root Parent node to be traversed to refresh all stylesheets.
      */
     private void handleRefreshUserCss(Parent root) {
@@ -622,26 +622,26 @@ public class App extends Application {
             String kometCssSourcePath = currentDir + ResourceHelper.toAbsolutePath("komet.css", Icon.class);
             File kometCssSourceFile = new File(kometCssSourcePath);
 
-            // Amplify CSS file
-            String amplifyCssPath = defaultStyleSheet().replace("target/classes", "src/main/resources");
-            File amplifyCssFile = new File(amplifyCssPath.replace("file:", ""));
+            // kView CSS file
+            String kViewCssPath = defaultStyleSheet().replace("target/classes", "src/main/resources");
+            File kViewCssFile = new File(kViewCssPath.replace("file:", ""));
 
             LOG.info("File exists? %s komet css path = %s".formatted(kometCssSourceFile.exists(), kometCssSourceFile));
-            LOG.info("File exists? %s amplify css path = %s".formatted(amplifyCssFile.exists(), amplifyCssFile));
+            LOG.info("File exists? %s kview css path = %s".formatted(kViewCssFile.exists(), kViewCssFile));
 
             // ensure both exist on the development environment path
-            if (kometCssSourceFile.exists() && amplifyCssFile.exists()) {
+            if (kometCssSourceFile.exists() && kViewCssFile.exists()) {
                 Scene scene = root.getScene();
 
                 // Apply Komet css
                 scene.getStylesheets().clear();
                 scene.getStylesheets().add(kometCssSourceFile.toURI().toURL().toString());
 
-                // Recursively refresh any children using the Amplify css files.
-                refreshPanes(root, amplifyCssPath);
+                // Recursively refresh any children using the kView css files.
+                refreshPanes(root, kViewCssPath);
 
                 LOG.info("       Updated komet.css: " + kometCssSourceFile.getAbsolutePath());
-                LOG.info("Updated amplify css file: " + amplifyCssFile.getAbsolutePath());
+                LOG.info("Updated kview css file: " + kViewCssFile.getAbsolutePath());
             } else {
                 LOG.info("File not found for komet.css: " + kometCssSourceFile.getAbsolutePath());
             }

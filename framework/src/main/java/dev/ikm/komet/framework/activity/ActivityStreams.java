@@ -33,7 +33,7 @@ public class ActivityStreams {
     public static final PublicIdStringKey<ActivityStream> UNLINKED = new PublicIdStringKey(PublicIds.of("2b6a31af-4023-4129-a3f5-7f99ef958c4a"), "unlinked");
     public static final PublicIdStringKey<ActivityStream> SEARCH = new PublicIdStringKey(PublicIds.of("b4289694-c8be-45c8-9a59-9834f3a3c647"), "search");
     public static final PublicIdStringKey<ActivityStream> NAVIGATION = new PublicIdStringKey(PublicIds.of("9775b416-f6f9-469d-b14f-a1bced986fec"), "navigation");
-    public static final PublicIdStringKey<ActivityStream> AMPLIFY_NAVIGATION = new PublicIdStringKey(PublicIds.of("8f15fb22-80ce-51d0-9244-ba5a15688e08"), "amplify-navigation");
+    public static final PublicIdStringKey<ActivityStream> KVIEW_NAVIGATION = new PublicIdStringKey(PublicIds.of("8f15fb22-80ce-51d0-9244-ba5a15688e08"), "kview-navigation");
     public static final PublicIdStringKey<ActivityStream> REASONER = new PublicIdStringKey(PublicIds.of("9575ae84-c36a-4c7d-9b10-1c7e581ca9e1"), "reasoner");
     public static final PublicIdStringKey<ActivityStream> CORRELATION = new PublicIdStringKey(PublicIds.of("aef2bd4e-e270-4824-8d39-401b714d1a33"), "correlation");
     public static final PublicIdStringKey<ActivityStream> LIST = new PublicIdStringKey(PublicIds.of("26b42c6d-b9ea-4a20-9446-c283a2d5383c"), "collection");
@@ -52,7 +52,7 @@ public class ActivityStreams {
         tempMap.put(UNLINKED, new ActivityStream(UNLINKED_ACTIVITY_STREAM.styleId(), UNLINKED));
         tempMap.put(SEARCH, new ActivityStream(SEARCH_ACTIVITY_STREAM.styleId(), SEARCH));
         tempMap.put(NAVIGATION, new ActivityStream(NAVIGATION_ACTIVITY_STREAM.styleId(), NAVIGATION));
-        tempMap.put(AMPLIFY_NAVIGATION, new ActivityStream(NAVIGATION_ACTIVITY_STREAM.styleId(), AMPLIFY_NAVIGATION));
+        tempMap.put(KVIEW_NAVIGATION, new ActivityStream(NAVIGATION_ACTIVITY_STREAM.styleId(), KVIEW_NAVIGATION));
         tempMap.put(REASONER, new ActivityStream(CLASSIFICATION_ACTIVITY_STREAM.styleId(), REASONER));
         tempMap.put(CORRELATION, new ActivityStream(CORRELATION_ACTIVITY_STREAM.styleId(), CORRELATION));
         tempMap.put(LIST, new ActivityStream(LIST_ACTIVITY_STREAM.styleId(), LIST));

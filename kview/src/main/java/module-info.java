@@ -1,0 +1,93 @@
+/*
+ * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
+import dev.ikm.komet.kview.mvvm.view.properties.PropertiesNodeFactory;
+import dev.ikm.komet.framework.KometNodeFactory;
+
+module dev.ikm.komet.kview {
+    requires transitive dev.ikm.komet.framework;
+    requires dev.ikm.komet.search;
+    requires dev.ikm.tinkar.provider.search;
+    requires dev.ikm.komet.navigator;
+    requires dev.ikm.komet.classification;
+    requires dev.ikm.komet.progress;
+    requires org.carlfx.cognitive;
+
+    opens dev.ikm.komet.kview.mvvm.view.details to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.details;
+
+    opens dev.ikm.komet.kview.mvvm.view.properties to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.properties;
+
+    opens dev.ikm.komet.kview.mvvm.view.timeline to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.timeline;
+
+    opens dev.ikm.komet.kview.mvvm.view.journal to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.journal;
+
+    opens dev.ikm.komet.kview.mvvm.view.landingpage to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.landingpage;
+
+    opens dev.ikm.komet.kview.mvvm.view.search to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.search;
+
+    opens dev.ikm.komet.kview.fxutils.window to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.fxutils.window;
+
+    exports dev.ikm.komet.kview.mvvm.model;
+    exports dev.ikm.komet.kview.fxutils;
+
+    opens dev.ikm.komet.kview.mvvm.model to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.events;
+
+    exports dev.ikm.komet.kview.mvvm.view.stamp;
+    opens dev.ikm.komet.kview.mvvm.view.stamp to javafx.fxml, org.carlfx.cognitive;
+
+    opens dev.ikm.komet.kview.mvvm.viewmodel to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.viewmodel;
+
+    opens dev.ikm.komet.kview.lidr.mvvm.viewmodel to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.lidr.mvvm.viewmodel;
+
+    opens dev.ikm.komet.kview.lidr.mvvm.model;
+    exports dev.ikm.komet.kview.lidr.mvvm.model;
+    opens dev.ikm.komet.kview.data.schema;
+    exports dev.ikm.komet.kview.data.schema;
+    opens dev.ikm.komet.kview.data.persistence;
+    exports dev.ikm.komet.kview.data.persistence;
+
+    opens dev.ikm.komet.kview.lidr.mvvm.view.details to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.lidr.mvvm.view.details;
+    opens dev.ikm.komet.kview.lidr.mvvm.view.properties to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.lidr.mvvm.view.properties;
+    opens dev.ikm.komet.kview.lidr.mvvm.view.device to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.lidr.mvvm.view.device;
+    opens dev.ikm.komet.kview.lidr.mvvm.view.analyte to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.lidr.mvvm.view.analyte;
+    opens dev.ikm.komet.kview.lidr.mvvm.view.results to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.lidr.mvvm.view.results;
+
+
+    // TODO a temporary export screen for next gen ui.
+    opens dev.ikm.komet.kview.mvvm.view.export;
+    exports dev.ikm.komet.kview.mvvm.view.export;
+    exports dev.ikm.komet.kview.mvvm.view;
+
+    provides KometNodeFactory with DetailsNodeFactory, PropertiesNodeFactory;
+
+    uses dev.ikm.komet.framework.events.EvtBus;
+}

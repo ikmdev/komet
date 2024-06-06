@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="popup-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.stamp.StampEditController">
+   <children>
+      <Label maxWidth="1.7976931348623157E308" text="EDIT STAMP" VBox.vgrow="SOMETIMES">
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
+         <padding>
+            <Insets left="8.0" />
+         </padding>
+      </Label>
+      <StackPane styleClass="horizontal-separator">
+         <children>
+            <Region prefHeight="1.0" styleClass="line" />
+         </children>
+      </StackPane>
+      <TitledPane fx:id="statusTitledPane" alignment="CENTER_RIGHT" animated="false" maxWidth="1.7976931348623157E308" minHeight="-Infinity" nodeOrientation="RIGHT_TO_LEFT" text="Status: Incomplete" VBox.vgrow="ALWAYS">
+        <content>
+            <VBox fx:id="statusVBox" alignment="TOP_RIGHT" styleClass="option-container">
+               <children>
+                  <RadioButton alignment="CENTER_RIGHT" contentDisplay="TOP" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" text="Active" VBox.vgrow="NEVER">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="statusToggleGroup" />
+                     </toggleGroup>
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </RadioButton>
+                  <RadioButton alignment="CENTER_RIGHT" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" text="Inactive" toggleGroup="$statusToggleGroup" VBox.vgrow="NEVER">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </RadioButton>
+               </children>
+            </VBox>
+        </content>
+      </TitledPane>
+      <TitledPane fx:id="moduleTitledPane" alignment="CENTER_RIGHT" animated="false" maxWidth="1.7976931348623157E308" minHeight="-Infinity" nodeOrientation="RIGHT_TO_LEFT" text="Module: SNOMED CT Core">
+        <content>
+            <ScrollPane hbarPolicy="NEVER" maxHeight="150.0" nodeOrientation="LEFT_TO_RIGHT">
+               <content>
+                  <VBox fx:id="moduleVBox" alignment="CENTER_LEFT" styleClass="option-container">
+                     <children>
+                        <RadioButton alignment="CENTER_LEFT" contentDisplay="TOP" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" text="SNOMED CT Core" VBox.vgrow="SOMETIMES">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="moduleToggleGroup" />
+                           </toggleGroup>
+                        </RadioButton>
+                        <RadioButton mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" text="SNOMED CT International" toggleGroup="$moduleToggleGroup" />
+                     </children>
+                     <padding>
+                        <Insets left="8.0" />
+                     </padding>
+                  </VBox>
+               </content>
+               <padding>
+                  <Insets top="5.0" />
+               </padding>
+            </ScrollPane>
+        </content>
+      </TitledPane>
+      <TitledPane fx:id="pathTitledPane" alignment="CENTER_RIGHT" animated="false" maxWidth="1.7976931348623157E308" minHeight="-Infinity" nodeOrientation="RIGHT_TO_LEFT" text="Path: Developmental">
+        <content>
+            <ScrollPane maxHeight="150.0" nodeOrientation="LEFT_TO_RIGHT">
+               <content>
+                  <VBox fx:id="pathVBox" styleClass="option-container">
+                     <children>
+                        <RadioButton alignment="CENTER_RIGHT" contentDisplay="TOP" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" text="Developmental" wrapText="true">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="pathToggleGroup" />
+                           </toggleGroup>
+                        </RadioButton>
+                        <RadioButton contentDisplay="BOTTOM" graphicTextGap="10.0" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" text="Primortial" toggleGroup="$pathToggleGroup" />
+                     </children>
+                     <padding>
+                        <Insets left="8.0" />
+                     </padding>
+                  </VBox>
+               </content>
+               <padding>
+                  <Insets top="5.0" />
+               </padding>
+            </ScrollPane>
+        </content>
+      </TitledPane>
+      <StackPane styleClass="horizontal-separator">
+         <children>
+            <Region prefHeight="1.0" styleClass="line" />
+         </children>
+      </StackPane>
+   </children>
+</VBox>

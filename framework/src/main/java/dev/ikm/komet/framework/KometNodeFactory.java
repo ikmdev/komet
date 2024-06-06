@@ -102,7 +102,7 @@ public interface KometNodeFactory {
     String getStyleId();
 
     /**
-     * Getting available service providers using <code>java.util.ServiceLoader</code> utility class.
+     * Getting available service providers using <code>java.tools.ServiceLoader</code> utility class.
      * @return Iterable list of KometNodeFactory classes
      */
     static ServiceLoader<KometNodeFactory> getKometNodeFactories() {

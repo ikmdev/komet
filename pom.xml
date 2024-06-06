@@ -54,7 +54,7 @@
         <module>progress</module>
         <module>rules</module>
         <module>search</module>
-        <module>amplify</module>
+        <module>kview</module>
         <module>application</module>
     </modules>
     <properties>
@@ -133,7 +133,7 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>amplify</artifactId>
+                <artifactId>kview</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -274,13 +274,11 @@
                 <artifactId>controlsfx</artifactId>
                 <version>${controlsfx.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.carlfx</groupId>
                 <artifactId>cognitive</artifactId>
                 <version>${cognitive.version}</version>
             </dependency>
-
             <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-fxml -->
             <dependency>
                 <groupId>org.openjfx</groupId>
@@ -445,13 +443,13 @@
                 <artifactId>log4j-over-slf4j</artifactId>
                 <version>${bind-to-slf4j.version}</version>
             </dependency>
-            <!-- Binding commons-logging to slf4j -->
+            <!-- Binding tools-logging to slf4j -->
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>jcl-over-slf4j</artifactId>
                 <version>${bind-to-slf4j.version}</version>
             </dependency>
-            <!-- Binding commons-logging to slf4j -->
+            <!-- Binding tools-logging to slf4j -->
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-jdk14</artifactId>
@@ -482,12 +480,12 @@
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
         </dependency>
-        <!-- Binding commons-logging to slf4j -->
+        <!-- Binding tools-logging to slf4j -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
         </dependency>
-        <!-- Binding commons-logging to slf4j -->
+        <!-- Binding tools-logging to slf4j -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
