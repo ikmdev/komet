@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.app.test;
 
-import dev.ikm.komet.amplify.viewmodels.ConceptViewModel;
-import dev.ikm.komet.amplify.viewmodels.StampViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -24,10 +24,10 @@ import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.terms.State;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 
-import static dev.ikm.komet.amplify.viewmodels.ConceptViewModel.*;
-import static dev.ikm.komet.amplify.viewmodels.StampViewModel.CREATE;
-import static dev.ikm.komet.amplify.viewmodels.StampViewModel.MODE;
-import static dev.ikm.komet.amplify.viewmodels.StampViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
 
 public class ConceptViewModelTest {

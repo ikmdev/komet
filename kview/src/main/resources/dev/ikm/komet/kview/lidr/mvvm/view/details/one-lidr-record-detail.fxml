@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<TitledPane fx:id="lidrRecordTitledPane" animated="false" maxHeight="1.7976931348623157E308" minHeight="0.0" styleClass="lidr-result-titled-pane" stylesheets="@../../../view/kview.css" text="SARS-CoV-2 Result Interpretation" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.lidr.mvvm.view.details.LidrRecordDetailsController">
+  <content>
+      <BorderPane maxHeight="1.7976931348623157E308">
+         <center>
+            <VBox>
+               <children>
+                  <TitledPane fx:id="analyteTitledPane" text="ANALYTE">
+                    <content>
+                        <GridPane fx:id="analyteDetailsGridPane" prefWidth="224.0">
+                           <columnConstraints>
+                              <ColumnConstraints hgrow="NEVER" maxWidth="-Infinity" minWidth="100.0" prefWidth="120.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="543.0" minWidth="10.0" prefWidth="539.0" />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+                              <RowConstraints maxHeight="1.7976931348623157E308" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+                              <RowConstraints maxHeight="1.7976931348623157E308" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+                           </rowConstraints>
+                           <children>
+                              <Label styleClass="result-field-label" text="Component" />
+                              <Text fx:id="componentValueText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="SARS coronavirus 2 RNA" GridPane.columnIndex="1" />
+                              <Label styleClass="result-field-label" text="Time Aspect" GridPane.rowIndex="1" />
+                              <Label styleClass="result-field-label" text="Method" GridPane.rowIndex="2" />
+                              <Label styleClass="result-field-label" text="Data Results Type" GridPane.rowIndex="3" />
+                              <Label styleClass="result-field-label" text="Target(s)" GridPane.rowIndex="4" />
+                              <Text fx:id="timeAspectValueText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="PT" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <Text fx:id="methodValueText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="Probe.amp.tar" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <Text fx:id="dataResultsTypeValueText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="Ord" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                              <TextFlow GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                 <children>
+                                    <Text fx:id="targetsValueText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="Matrix (M1) gene, Hemagglutinin (HA) gene" />
+                                 </children>
+                              </TextFlow>
+                           </children>
+                        </GridPane>
+                    </content>
+                  </TitledPane>
+                  <TitledPane fx:id="resultsTitledPane" prefWidth="665.0" text="RESULTS">
+                     <content>
+                        <VBox fx:id="resultsConformanceVBox">
+                           <children>
+                              <GridPane stylesheets="@../../../view/kview.css">
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="100.0" prefWidth="120.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="423.0" minWidth="10.0" prefWidth="423.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints maxHeight="-Infinity" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+                                    <RowConstraints maxHeight="-Infinity" minHeight="12.0" prefHeight="12.0" vgrow="SOMETIMES" />
+                                    <RowConstraints maxHeight="-Infinity" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+                                    <RowConstraints maxHeight="-Infinity" minHeight="12.0" prefHeight="12.0" vgrow="SOMETIMES" />
+                                    <RowConstraints maxHeight="-Infinity" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="12.0" prefHeight="12.0" vgrow="NEVER" />
+                                    <RowConstraints fillHeight="false" minHeight="10.0" prefHeight="16.0" valignment="TOP" />
+                                    <RowConstraints fillHeight="false" valignment="TOP" />
+                                    <RowConstraints maxHeight="27.0" minHeight="0.0" prefHeight="0.0" vgrow="SOMETIMES" />
+                                    <RowConstraints maxHeight="16.0" minHeight="-Infinity" prefHeight="16.0" vgrow="SOMETIMES" />
+                                    <RowConstraints maxHeight="-Infinity" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+                                    <RowConstraints maxHeight="-Infinity" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+                                    <RowConstraints maxHeight="-Infinity" minHeight="12.0" prefHeight="12.0" vgrow="SOMETIMES" />
+                                 </rowConstraints>
+                                 <children>
+                                    <Label styleClass="result-field-label" text="Name">
+                                       <opaqueInsets>
+                                          <Insets />
+                                       </opaqueInsets>
+                                    </Label>
+                                    <Text fx:id="nameValueText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="Influenza A Result Interpretation" GridPane.columnIndex="1" />
+                                    <Label styleClass="result-field-label" text="Scale Type" GridPane.rowIndex="2" />
+                                    <Label styleClass="result-field-label" text="Data Results Type" GridPane.rowIndex="4" />
+                                    <Label styleClass="result-field-label" text="Allowable Results" GridPane.rowIndex="6" />
+                                    <Label styleClass="result-field-label" text="Comments" GridPane.rowIndex="10" />
+                                    <Text fx:id="scaleTypeValueText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="Ord" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <VBox fx:id="allowableResultsVBox" GridPane.columnSpan="2147483647" GridPane.rowIndex="7" GridPane.vgrow="NEVER">
+                                       <children>
+                                          <TextFlow>
+                                             <children>
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="POS(260373001^Detected^SCT)" />
+                                             </children>
+                                          </TextFlow>
+                                          <TextFlow>
+                                             <children>
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="NEG (260415000^Not detected^SCT)" />
+                                             </children>
+                                          </TextFlow>
+                                          <TextFlow>
+                                             <children>
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="UNR (unresolved)," />
+                                             </children>
+                                          </TextFlow>
+                                          <TextFlow>
+                                             <children>
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="IND (Indeterminate)," />
+                                             </children>
+                                          </TextFlow>
+                                          <TextFlow>
+                                             <children>
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="(455371000124106^Invalid result^SCT or 125154007^Specimen unsatisfactory for evaluation^SCT)" />
+                                             </children>
+                                          </TextFlow>
+                                       </children>
+                                    </VBox>
+                                    <TextFlow prefHeight="30.0" prefWidth="643.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="11" GridPane.valignment="TOP" GridPane.vgrow="ALWAYS">
+                                       <children>
+                                          <Text fx:id="commentsValueText" strokeType="OUTSIDE" strokeWidth="0.0" text="asdfasfd asdfasdfaf asfdasdf asdfasdfsaf asdfasdf" wrappingWidth="186.798828125" />
+                                       </children>
+                                    </TextFlow>
+                                    <Text fx:id="dateResultTypeValueText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="Ord" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                 </children>
+                              </GridPane>
+                           </children>
+                        </VBox>
+                     </content>
+                  </TitledPane>
+                  <TitledPane fx:id="specimenTitledPane" text="SPECIMENS">
+                     <content>
+                        <VBox fx:id="specimentsVBox">
+                           <children>
+                              <GridPane>
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" prefWidth="120.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="404.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints maxHeight="-Infinity" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+                                    <RowConstraints maxHeight="-Infinity" minHeight="12.0" prefHeight="12.0" vgrow="SOMETIMES" />
+                                    <RowConstraints maxHeight="-Infinity" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+                                    <RowConstraints maxHeight="-Infinity" minHeight="12.0" prefHeight="12.0" vgrow="SOMETIMES" />
+                                    <RowConstraints maxHeight="-Infinity" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+                                    <RowConstraints fillHeight="false" minHeight="16.0" valignment="TOP" />
+                                    <RowConstraints maxHeight="-Infinity" minHeight="12.0" prefHeight="12.0" vgrow="SOMETIMES" />
+                                 </rowConstraints>
+                                 <children>
+                                    <Label styleClass="result-field-label" text="Name">
+                                       <opaqueInsets>
+                                          <Insets />
+                                       </opaqueInsets>
+                                    </Label>
+                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="Nasopharyngeal swabs" GridPane.columnIndex="1" />
+                                    <Label styleClass="result-field-label" text="Direct Site" GridPane.rowIndex="2" />
+                                    <Label styleClass="result-field-label" text="SNOMED CT Specimen" GridPane.rowIndex="4" />
+                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="Respiratory" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <TextFlow prefHeight="30.0" prefWidth="643.0" GridPane.columnSpan="2147483647" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" GridPane.valignment="TOP" GridPane.vgrow="ALWAYS">
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="258500001^Nasopharyngeal swab^SCT" wrappingWidth="186.798828125" />
+                                       </children>
+                                    </TextFlow>
+                                 </children>
+                              </GridPane>
+                           </children>
+                        </VBox>
+                     </content>
+                  </TitledPane>
+               </children>
+            </VBox>
+         </center>
+      </BorderPane>
+  </content>
+</TitledPane>

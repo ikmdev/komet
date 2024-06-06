@@ -42,7 +42,7 @@ module dev.ikm.komet.application {
     requires dev.ikm.komet.classification;
     requires dev.ikm.komet.details;
     requires dev.ikm.komet.builder;
-    requires dev.ikm.komet.amplify;
+    requires dev.ikm.komet.kview;
     requires dev.ikm.komet.artifact;
     requires dev.ikm.komet.executor;
     requires dev.ikm.komet.list;

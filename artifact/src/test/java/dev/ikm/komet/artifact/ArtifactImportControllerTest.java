@@ -60,7 +60,7 @@ public class ArtifactImportControllerTest{
     public void artifactImportControllerToString() {
         // Given a sample title name
         String sampleTitle = "sampleTitle";
-        // When we spy on artifact import controller
+        // When we spy on artifact import view
         //    ArtifactImportController artifactImportController = spy(ArtifactImportController.class);
 
         when(artifactImportController.toString()).thenReturn(sampleTitle);

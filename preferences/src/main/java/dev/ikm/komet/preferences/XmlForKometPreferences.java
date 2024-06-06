@@ -49,7 +49,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
- * TODO: Copied XmlSupport content from java.util.prefs because they where package private.
+ * TODO: Copied XmlSupport content from java.tools.prefs because they where package private.
  * Consider relicensing this module under standard java classpath exception clause, or replace
  * XmlSupport with newly developed content.
  * 

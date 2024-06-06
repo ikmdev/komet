@@ -16,7 +16,7 @@
 package dev.ikm.komet.app.test;
 
 
-import dev.ikm.komet.amplify.lidr.viewmodels.DeviceViewModel;
+import dev.ikm.komet.kview.lidr.mvvm.viewmodel.DeviceViewModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 
-import static dev.ikm.komet.amplify.lidr.viewmodels.DeviceViewModel.*;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.DeviceViewModel.*;
 
 public class DeviceViewModelTest {
 

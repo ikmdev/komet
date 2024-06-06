@@ -46,7 +46,7 @@ public class KometPreferencesController implements Initializable {
     private BorderPane detailBorderPane; // Value injected by FXMLLoader
 
     /**
-     * Initializes the controller class.
+     * Initializes the view class.
      */
     @FXML // This method is called by the FXMLLoader when initialization is complete
     @Override

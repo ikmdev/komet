@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<GridPane stylesheets="@../../../view/kview.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.lidr.mvvm.view.details.ResultConformanceDetailsController">
+   <columnConstraints>
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="100.0" prefWidth="120.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="423.0" minWidth="10.0" prefWidth="423.0" />
+   </columnConstraints>
+   <rowConstraints>
+      <RowConstraints maxHeight="-Infinity" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="-Infinity" minHeight="12.0" prefHeight="12.0" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="-Infinity" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="-Infinity" minHeight="12.0" prefHeight="12.0" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="-Infinity" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="12.0" prefHeight="12.0" vgrow="NEVER" />
+      <RowConstraints fillHeight="false" minHeight="10.0" prefHeight="16.0" valignment="TOP" />
+      <RowConstraints fillHeight="false" valignment="TOP" />
+      <RowConstraints maxHeight="27.0" minHeight="0.0" prefHeight="0.0" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="16.0" minHeight="-Infinity" prefHeight="16.0" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="-Infinity" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="-Infinity" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="-Infinity" minHeight="12.0" prefHeight="12.0" vgrow="SOMETIMES" />
+   </rowConstraints>
+   <children>
+      <Label styleClass="result-field-label" text="Name">
+         <opaqueInsets>
+            <Insets />
+         </opaqueInsets>
+      </Label>
+      <Text fx:id="nameValueText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="Influenza A Result Interpretation" GridPane.columnIndex="1" />
+      <Label styleClass="result-field-label" text="Scale Type" GridPane.rowIndex="2" />
+      <Label styleClass="result-field-label" text="Data Results Type" GridPane.rowIndex="4" />
+      <Label styleClass="result-field-label" text="Allowable Results" GridPane.rowIndex="6" />
+      <Label styleClass="result-field-label" text="Comments" GridPane.rowIndex="10" />
+      <Text fx:id="scaleTypeValueText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="Ord" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+      <VBox fx:id="allowableResultsVBox" GridPane.columnSpan="2147483647" GridPane.rowIndex="7" GridPane.vgrow="NEVER">
+         <children>
+            <TextFlow>
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="POS(260373001^Detected^SCT)" />
+               </children>
+            </TextFlow>
+            <TextFlow>
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="NEG (260415000^Not detected^SCT)" />
+               </children>
+            </TextFlow>
+            <TextFlow>
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="UNR (unresolved)," />
+               </children>
+            </TextFlow>
+            <TextFlow>
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="IND (Indeterminate)," />
+               </children>
+            </TextFlow>
+            <TextFlow>
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="(455371000124106^Invalid result^SCT or 125154007^Specimen unsatisfactory for evaluation^SCT)" />
+               </children>
+            </TextFlow>
+         </children>
+      </VBox>
+      <TextFlow prefHeight="30.0" prefWidth="643.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="11" GridPane.valignment="TOP" GridPane.vgrow="ALWAYS">
+         <children>
+            <Text fx:id="commentsValueText" strokeType="OUTSIDE" strokeWidth="0.0" text="asdfasfd asdfasdfaf asfdasdf asdfasdfsaf asdfasdf" wrappingWidth="186.798828125" />
+         </children>
+      </TextFlow>
+      <Text fx:id="dateResultTypeValueText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="result-field-value" text="Ord" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+   </children>
+</GridPane>

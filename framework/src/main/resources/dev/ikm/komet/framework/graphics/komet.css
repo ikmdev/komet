@@ -201,26 +201,26 @@ modena.css is the default css.
     -fx-icon-size: 20;
 }
 
-#amplify-details-node .ikonli-font-icon {
+#kview-details-node .ikonli-font-icon {
     -fx-icon-code: "mdi2f-focus-field";
     -fx-icon-color: #5dcf16ff; /* Amplify Primary 04 green */
     -fx-icon-size: 20;
 }
 
-.add-tab-menu-item:focused #amplify-details-node .ikonli-font-icon,
-.tab #amplify-details-node .ikonli-font-icon {
+.add-tab-menu-item:focused #kview-details-node .ikonli-font-icon,
+.tab #kview-details-node .ikonli-font-icon {
     -fx-icon-color: #5dcf16ff;
     -fx-icon-size: 20;
 }
 
-#amplify-properties-node .ikonli-font-icon {
+#kview-properties-node .ikonli-font-icon {
     -fx-icon-code: "mdi2h-history";
     -fx-icon-color: #5dcf16ff; /* Amplify Primary 04 green */
     -fx-icon-size: 20;
 }
 
-.add-tab-menu-item:focused #amplify-properties-node .ikonli-font-icon,
-.tab #amplify-properties-node .ikonli-font-icon {
+.add-tab-menu-item:focused #kview-properties-node .ikonli-font-icon,
+.tab #kview-properties-node .ikonli-font-icon {
     -fx-icon-color: #5dcf16ff;
     -fx-icon-size: 20;
 }

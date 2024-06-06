@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.shape.SVGPath?>
+
+<BorderPane fx:id="journalBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="546.0" prefWidth="600.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.journal.JournalController">
+   <center>
+      <BorderPane prefHeight="485.0" prefWidth="544.0" BorderPane.alignment="CENTER">
+         <top>
+            <HBox fx:id="projectBarHBox" prefHeight="100.0" prefWidth="200.0" styleClass="project-bar" BorderPane.alignment="CENTER">
+               <children>
+                  <Button mnemonicParsing="false" text="Button">
+                     <graphic>
+                        <Region prefHeight="200.0" prefWidth="200.0">
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="coordinate-project-bar" />
+                           </styleClass>
+                        </Region>
+                     </graphic>
+                  </Button>
+                  <Button fx:id="addButton" mnemonicParsing="false" onAction="#popupAddContextMenu" text="Button">
+                     <graphic>
+                        <Region focusTraversable="true">
+                           <styleClass>
+                              <String fx:value="plus-symbol" />
+                              <String fx:value="icon" />
+                           </styleClass>
+                        </Region>
+                     </graphic>
+                     <contextMenu>
+                        <ContextMenu fx:id="addContextMenu" opacity="0.99" styleClass="kview-context-menu">
+                          <items>
+                            <MenuItem mnemonicParsing="false" onAction="#newCreateConceptWindow" text="New Concept">
+                                 <graphic>
+                                    <Region styleClass="add-notepad" />
+                                 </graphic></MenuItem>
+                              <MenuItem mnemonicParsing="false" onAction="#newCreateLidrWindow" text="New LIDR Record">
+                                 <graphic>
+                                    <SVGPath content="M9.00002 0.666748C4.40002 0.666748 0.666687 4.40008 0.666687 9.00008C0.666687 13.6001 4.40002 17.3334 9.00002 17.3334C13.6 17.3334 17.3334 13.6001 17.3334 9.00008C17.3334 4.40008 13.6 0.666748 9.00002 0.666748ZM8.16669 13.1667V11.5001H9.83335V13.1667H8.16669ZM8.16669 4.83342V9.83342H9.83335V4.83342H8.16669Z" fill="WHITE" fillRule="EVEN_ODD" />
+                                 </graphic>
+                              </MenuItem>
+                              <MenuItem mnemonicParsing="false" text="New Chapter">
+                                 <graphic>
+                                    <SVGPath content="M9.00002 0.666748C4.40002 0.666748 0.666687 4.40008 0.666687 9.00008C0.666687 13.6001 4.40002 17.3334 9.00002 17.3334C13.6 17.3334 17.3334 13.6001 17.3334 9.00008C17.3334 4.40008 13.6 0.666748 9.00002 0.666748ZM8.16669 13.1667V11.5001H9.83335V13.1667H8.16669ZM8.16669 4.83342V9.83342H9.83335V4.83342H8.16669Z" fill="WHITE" fillRule="EVEN_ODD" />
+                                 </graphic></MenuItem>
+                          </items>
+                        </ContextMenu>
+                     </contextMenu>
+                  </Button>
+                  <Rectangle fill="DODGERBLUE" height="32.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
+                  <ComboBox prefWidth="150.0" promptText="Project Journal #1" styleClass="combo-box-drop">
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets></ComboBox>
+                  <Rectangle fill="DODGERBLUE" height="32.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
+                  <Button mnemonicParsing="false" text="Button">
+                     <graphic>
+                        <Region prefHeight="200.0" prefWidth="200.0">
+                           <styleClass>
+                              <String fx:value="notepad-symbol" />
+                              <String fx:value="icon" />
+                           </styleClass>
+                        </Region>
+                     </graphic>
+                  </Button>
+                  <Button mnemonicParsing="false" text="Button">
+                     <graphic>
+                        <Region prefHeight="200.0" prefWidth="200.0">
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="comment" />
+                           </styleClass>
+                        </Region>
+                     </graphic>
+                  </Button>
+               </children>
+            </HBox>
+         </top>
+         <center>
+            <BorderPane BorderPane.alignment="CENTER">
+               <center>
+                  <BorderPane prefHeight="200.0" prefWidth="200.0">
+                     <top>
+                        <HBox fx:id="chapterHeaderbarHBox" alignment="CENTER" prefHeight="100.0" prefWidth="200.0" styleClass="chapter-header-bar" BorderPane.alignment="CENTER">
+                           <children>
+                              <Button mnemonicParsing="false" text="Button">
+                                 <graphic>
+                                    <Region prefHeight="200.0" prefWidth="200.0">
+                                       <styleClass>
+                                          <String fx:value="icon" />
+                                          <String fx:value="left-arrow" />
+                                       </styleClass>
+                                    </Region>
+                                 </graphic>
+                              </Button>
+                              <Label fx:id="chaptertitleLabel" alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="Chapter #1" HBox.hgrow="ALWAYS" />
+                              <Button mnemonicParsing="false" text="Button">
+                                 <graphic>
+                                    <Region prefHeight="200.0" prefWidth="200.0" styleClass="hamburger" />
+                                 </graphic>
+                              </Button>
+                              <Button mnemonicParsing="false" prefWidth="44.0" text="Button">
+                                 <graphic>
+                                    <Region prefHeight="200.0" prefWidth="200.0" styleClass="collapse" />
+                                 </graphic>
+                              </Button>
+                           </children>
+                        </HBox>
+                     </top>
+                     <center>
+                        <Pane fx:id="desktopSurfacePane" prefHeight="200.0" prefWidth="200.0" styleClass="desktop-area" />
+                     </center>
+                  </BorderPane>
+               </center>
+               <right>
+                  <HBox prefHeight="100.0" prefWidth="200.0" styleClass="chapter-block-bar-stack" BorderPane.alignment="CENTER">
+                     <children>
+                        <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0" styleClass="chapter-block-bar">
+                           <children>
+                              <Label alignment="BOTTOM_CENTER" minWidth="-Infinity" rotate="-90.0" text="Chapter #2" textFill="WHITE" VBox.vgrow="ALWAYS" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </right>
+            </BorderPane>
+         </center>
+         <left>
+            <StackPane BorderPane.alignment="CENTER">
+               <children>
+                  <Pane fx:id="navSlideoutTrayPane" styleClass="slideout-tray-pane" />
+                  <Pane fx:id="searchSlideoutTrayPane" styleClass="slideout-tray-pane" />
+                  <Pane fx:id="reasonerSlideoutTrayPane" styleClass="slideout-tray-pane" />
+                  <Pane fx:id="nexGenSearchSlideoutTrayPane" layoutX="10.0" layoutY="10.0" maxHeight="1.7976931348623157E308" styleClass="slideout-tray-pane" />
+               </children>
+            </StackPane>
+         </left>
+      </BorderPane>
+   </center>
+   <left>
+      <VBox maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minWidth="-Infinity" styleClass="side-bar" BorderPane.alignment="CENTER">
+         <children>
+            <Button mnemonicParsing="false" styleClass="home-button" text="Button">
+               <graphic>
+                  <Region>
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="home" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </Button>
+            <Rectangle fill="DODGERBLUE" height="1.0" stroke="BLACK" strokeType="INSIDE" styleClass="divider" width="36.0" />
+            <ToggleButton fx:id="searchToggleButton" mnemonicParsing="false" text="ToggleButton">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="search" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+               <toggleGroup>
+                  <ToggleGroup fx:id="sidebarToggleGroup" />
+               </toggleGroup>
+            </ToggleButton>
+            <ToggleButton fx:id="navigatorToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="navigator" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </ToggleButton>
+            <ToggleButton fx:id="reasonerToggleButton" mnemonicParsing="false" styleClass="reasoner" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="reasoner-icon" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </ToggleButton>
+            <Rectangle fill="DODGERBLUE" height="1.0" stroke="BLACK" strokeType="INSIDE" styleClass="divider" width="36.0" />
+            <ToggleButton mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="heart" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </ToggleButton>
+            <Rectangle fill="DODGERBLUE" height="1.0" stroke="BLACK" strokeType="INSIDE" styleClass="divider" width="36.0" />
+            <ToggleButton fx:id="nextGenSearchToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="comment" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </ToggleButton>
+            <ToggleButton mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="notification" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </ToggleButton>
+            <Region styleClass="flex-space" VBox.vgrow="ALWAYS" />
+            <ToggleButton fx:id="settingsToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="settings" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </ToggleButton>
+            <ToggleButton mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <Region prefHeight="200.0" prefWidth="200.0">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="avatar" />
+                     </styleClass>
+                  </Region>
+               </graphic>
+            </ToggleButton>
+         </children>
+      </VBox>
+   </left>
+</BorderPane>
