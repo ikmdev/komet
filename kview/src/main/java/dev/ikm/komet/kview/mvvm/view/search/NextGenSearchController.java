@@ -18,6 +18,7 @@ package dev.ikm.komet.kview.mvvm.view.search;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -52,32 +53,32 @@ public class NextGenSearchController {
     @FXML
     public void initialize() {
         populateSearchResults();
+        setUpSearchOptionsPopOver();
     }
 
-    @FXML
-    private void showSearchOptions(ActionEvent event) {
-        if (sortOptions != null && sortOptionsController != null) {
-            sortOptions.show((Node) event.getSource());
-            return;
-        }
-        Node node = (Node) event.getSource();
-
+    private void setUpSearchOptionsPopOver() {
         JFXNode<Pane, SortOptionsController> sortJFXNode = FXMLMvvmLoader
                 .make(SortOptionsController.class.getResource(SORT_OPTIONS_FXML));
 
         Pane sortOptionsPane = sortJFXNode.node();
         PopOver popOver = new PopOver(sortOptionsPane);
-        //FIXME: add styles?
         SortOptionsController sortOptionsController = sortJFXNode.controller();
-
+        popOver.setArrowSize(0);
+        popOver.setDetachable(false);
+        popOver.setArrowLocation(PopOver.ArrowLocation.TOP_CENTER);
         popOver.setOnHidden(windowEvent -> {
             //TODO save vm?, get values and publish to the eventbus?
         });
 
-        //popOver.show((Node) event.getSource());
-
         sortOptions = popOver;
         this.sortOptionsController = sortOptionsController;
+    }
+
+
+    @FXML
+    private void showSearchOptions(ActionEvent event) {
+        Button button = (Button) event.getSource();
+        sortOptions.show(button, -12);
     }
 
 
