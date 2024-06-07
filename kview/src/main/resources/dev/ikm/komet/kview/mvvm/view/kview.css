@@ -2273,8 +2273,8 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-2;
 }
 
-.search-entry-title-pane > .title > .text {
-    -fx-text-fill: -Secondary-05;
+.titled-pane.search-entry-title-pane > .title > .text {
+    -fx-fill: -Secondary-05;
     -fx-background-color: -Grey-2;
 }
 
