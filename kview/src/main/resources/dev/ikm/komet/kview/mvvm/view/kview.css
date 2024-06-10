@@ -2289,6 +2289,14 @@ Timeline Year line segment (will overlay change circles)
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 1, 1, 1, 1);
 }
 
+.search-semantic-entry-text {
+    -fx-fill: -Grey-11;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: 400;
+}
+
 .search-option-container {
     -fx-border-radius: 4px;
     -fx-background-color: -Grey-11;

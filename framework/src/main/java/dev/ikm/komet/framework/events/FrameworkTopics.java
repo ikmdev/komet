@@ -16,5 +16,7 @@
 package dev.ikm.komet.framework.events;
 
 public enum FrameworkTopics {
-    RULES_TOPIC
+    RULES_TOPIC,
+
+    SEARCH_SORT_TOPIC
 }

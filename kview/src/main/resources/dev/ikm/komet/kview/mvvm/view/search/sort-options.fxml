@@ -9,7 +9,6 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-
 <GridPane prefHeight="135.0" prefWidth="375.0" styleClass="search-option-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.search.SortOptionsController">
     <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" maxWidth="427.0" minWidth="10.0" prefWidth="320.0" />
@@ -29,7 +28,7 @@
         </Label>
         <HBox alignment="CENTER" GridPane.columnIndex="1">
             <children>
-                <RadioButton contentDisplay="RIGHT" mnemonicParsing="false" styleClass="search-option-radio" textAlignment="CENTER">
+                <RadioButton fx:id="radioSemanticAlpha" contentDisplay="RIGHT" mnemonicParsing="false" styleClass="search-option-radio" textAlignment="CENTER">
                     <toggleGroup>
                         <ToggleGroup fx:id="sortToggleGroup" />
                     </toggleGroup>
@@ -46,7 +45,7 @@
         </Label>
         <HBox alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="1">
             <children>
-                <RadioButton alignment="CENTER_RIGHT" contentDisplay="RIGHT" mnemonicParsing="false" styleClass="search-option-radio" toggleGroup="$sortToggleGroup">
+                <RadioButton fx:id="radioSemantic" alignment="CENTER_RIGHT" contentDisplay="RIGHT" mnemonicParsing="false" styleClass="search-option-radio" toggleGroup="$sortToggleGroup">
                     <HBox.margin>
                         <Insets />
                     </HBox.margin>
@@ -60,7 +59,7 @@
         </Label>
         <HBox alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="2">
             <children>
-                <RadioButton contentDisplay="RIGHT" mnemonicParsing="false" styleClass="search-option-radio" toggleGroup="$sortToggleGroup">
+                <RadioButton fx:id="radioComponentAlpha" contentDisplay="RIGHT" mnemonicParsing="false" styleClass="search-option-radio" toggleGroup="$sortToggleGroup">
                     <HBox.margin>
                         <Insets />
                     </HBox.margin>
@@ -74,7 +73,7 @@
         </Label>
         <HBox alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="3">
             <children>
-                <RadioButton alignment="CENTER_RIGHT" contentDisplay="RIGHT" mnemonicParsing="false" styleClass="search-option-radio" toggleGroup="$sortToggleGroup">
+                <RadioButton fx:id="radioComponent" alignment="CENTER_RIGHT" contentDisplay="RIGHT" mnemonicParsing="false" styleClass="search-option-radio" toggleGroup="$sortToggleGroup">
                     <HBox.margin>
                         <Insets />
                     </HBox.margin>

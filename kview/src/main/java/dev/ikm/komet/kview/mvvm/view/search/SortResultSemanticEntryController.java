@@ -17,36 +17,14 @@ package dev.ikm.komet.kview.mvvm.view.search;
 
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import javafx.fxml.FXML;
-import javafx.scene.control.ToggleGroup;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 
-
-public class SortResultConceptEntryController extends AbstractBasicController {
-
+public class SortResultSemanticEntryController   {
 
 
-    public <T extends ViewModel> T getViewModel() {
-        return null;
-    }
-
-
-    @Override
+    @FXML
     public void initialize() {
 
     }
 
-    @Override
-    public void updateView() {
-
-    }
-
-    @Override
-    public void clearView() {
-
-    }
-
-    @Override
-    public void cleanup() {
-
-    }
 }
