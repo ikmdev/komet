@@ -15,6 +15,16 @@
  */
 package dev.ikm.komet.kview.mvvm.view.search;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.SEARCH_SORT_TOPIC;
+import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT;
+import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT_ALPHA;
+import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC;
+import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC_ALPHA;
+import dev.ikm.komet.framework.events.EvtBus;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.kview.events.SearchSortOptionEvent;
+import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -25,36 +35,72 @@ import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 
-public class NextGenSearchController {
+public class NextGenSearchController extends AbstractBasicController {
 
     private static final Logger LOG = LoggerFactory.getLogger(NextGenSearchController.class);
 
     public static final String SORT_OPTIONS_FXML = "sort-options.fxml";
 
-    public static final String SORT_RESULT_CONCEPT_FXML = "search-result-concept-entry.fxml";
+    public static final String SORT_CONCEPT_RESULT_CONCEPT_FXML = "search-result-concept-entry.fxml";
+
+    public static final String SORT_SEMANTIC_RESULT_CONCEPT_FXML = "search-result-semantic-entry.fxml";
+
+    public static final String BUTTON_TEXT_TOP_COMPONENT = "SORT BY: TOP COMPONENT";
+
+    public static final String BUTTON_TEXT_TOP_COMPONENT_ALPHA = "SORT BY: TOP COMPONENT (ALPHABETICAL)";
+
+    public static final String BUTTON_TEXT_DESCRIPTION_SEMANTIC = "SORT BY: MATCHED DESCRIPTION SEMANTIC";
+
+    public static final String BUTTON_TEXT_DESCRIPTION_SEMANTIC_ALPHA = "SORT BY: MATCHED DESCRIPTION SEMANTIC (ALPHABETICAL)";
 
     @FXML
     private VBox resultsVBox;
 
     @FXML
-    private ToggleGroup sortToggleGroup;
+    private Button sortByButton;
 
     private PopOver sortOptions;
 
     private SortOptionsController sortOptionsController;
 
+    private EvtBus eventBus;
+
+
 
     @FXML
     public void initialize() {
-        populateSearchResults();
-        setUpSearchOptionsPopOver();
+        eventBus = EvtBusFactory.getDefaultEvtBus();
+        clearView();
+
+        populateComponentSearchResults();
+        setUpSearchOptionsPopOver(); // FIXME set a component radio as the default selected
+
+        Subscriber<SearchSortOptionEvent> searchSortOptionListener = (evt -> {
+            if (evt.getEventType() == SORT_BY_COMPONENT) {
+                populateComponentSearchResults();
+                sortByButton.setText(BUTTON_TEXT_TOP_COMPONENT);
+            } else if (evt.getEventType() == SORT_BY_COMPONENT_ALPHA) {
+                populateComponentSearchResults();
+                sortByButton.setText(BUTTON_TEXT_TOP_COMPONENT_ALPHA);
+            } else if (evt.getEventType() == SORT_BY_SEMANTIC) {
+                popuplateSemanticSearchResults();
+                sortByButton.setText(BUTTON_TEXT_DESCRIPTION_SEMANTIC);
+            } else if (evt.getEventType() == SORT_BY_SEMANTIC_ALPHA) {
+                popuplateSemanticSearchResults();
+                sortByButton.setText(BUTTON_TEXT_DESCRIPTION_SEMANTIC_ALPHA);
+            }
+            sortOptions.hide();
+        });
+        eventBus.subscribe(SEARCH_SORT_TOPIC, SearchSortOptionEvent.class, searchSortOptionListener);
     }
+
 
     private void setUpSearchOptionsPopOver() {
         JFXNode<Pane, SortOptionsController> sortJFXNode = FXMLMvvmLoader
@@ -82,15 +128,42 @@ public class NextGenSearchController {
     }
 
 
-    private void populateSearchResults() {
-        Config searchEntryConfig = new Config()
-                .fxml(SortResultConceptEntryController.class.getResource(SORT_RESULT_CONCEPT_FXML))
-                //.addNamedViewModel(new NamedVm())
-                ;
-        JFXNode<Pane, SortResultConceptEntryController> searchEntryJFXNode = FXMLMvvmLoader.make(searchEntryConfig);
+    private void populateComponentSearchResults() {
+        resultsVBox.getChildren().clear();
+        JFXNode<Pane, SortResultConceptEntryController> searchConceptEntryJFXNode = FXMLMvvmLoader
+                .make(SortResultConceptEntryController.class.getResource(SORT_CONCEPT_RESULT_CONCEPT_FXML));
 
-        Node entry = searchEntryJFXNode.node();
+        Node entry = searchConceptEntryJFXNode.node();
         resultsVBox.getChildren().addAll(entry);
+    }
+
+    private void popuplateSemanticSearchResults() {
+        resultsVBox.getChildren().clear();
+        JFXNode<Pane, SortResultSemanticEntryController> searchSemanticEntryJFXNode = FXMLMvvmLoader
+                .make(SortResultSemanticEntryController.class.getResource(SORT_SEMANTIC_RESULT_CONCEPT_FXML));
+
+        Node entry = searchSemanticEntryJFXNode.node();
+        resultsVBox.getChildren().addAll(entry);
+    }
+
+    @Override
+    public void updateView() {
+
+    }
+
+    @Override
+    public void clearView() {
+
+    }
+
+    @Override
+    public void cleanup() {
+
+    }
+
+    @Override
+    public <T extends ViewModel> T getViewModel() {
+        return null;
     }
 }
 

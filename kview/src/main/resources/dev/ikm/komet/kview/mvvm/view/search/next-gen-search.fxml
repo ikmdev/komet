@@ -45,7 +45,7 @@
                                                 <Insets bottom="12.0" />
                                             </padding>
                                         </HBox>
-                                        <Button mnemonicParsing="false" onAction="#showSearchOptions" prefHeight="25.0" prefWidth="345.0" styleClass="search-sort-button" text="SORT BY: TOP COMPONENT" />
+                                        <Button fx:id="sortByButton" mnemonicParsing="false" onAction="#showSearchOptions" prefHeight="25.0" prefWidth="345.0" styleClass="search-sort-button" text="SORT BY: TOP COMPONENT" />
                                     </children>
                                 </VBox>
                             </children>
