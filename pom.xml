@@ -63,8 +63,8 @@
         <tinkar-core.version>1.51.0</tinkar-core.version>
         <owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
         <owlapi.version>4.7.0</owlapi.version>
-        <ikm-evrete.groupId>dev.ikm.evrete</ikm-evrete.groupId>
-        <ikm-evrete.version>3.0.04-ikm-r3</ikm-evrete.version>
+        <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
+        <ikm-evrete.version>3.2.01</ikm-evrete.version>
         <tinkar-jpms-deps.groupId>dev.ikm.jpms</tinkar-jpms-deps.groupId>
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
         <jpms-record-builder-core.version>36-r3</jpms-record-builder-core.version>

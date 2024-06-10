@@ -15,12 +15,7 @@
  */
 package dev.ikm.komet.rules.evrete;
 
-import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
-import dev.ikm.komet.framework.performance.Request;
 import dev.ikm.komet.framework.performance.Statement;
-import dev.ikm.komet.framework.performance.Topic;
-import dev.ikm.komet.framework.performance.impl.ObservationRecord;
-import dev.ikm.komet.framework.performance.impl.RequestRecord;
 import dev.ikm.komet.framework.rulebase.Consequence;
 import dev.ikm.komet.framework.rulebase.RuleService;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -30,29 +25,25 @@ import dev.ikm.komet.rules.annotated.NewConceptRules;
 import dev.ikm.komet.rules.annotated.NewPatternRules;
 import dev.ikm.tinkar.common.sets.ConcurrentHashSet;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
-import dev.ikm.tinkar.entity.ConceptEntityVersion;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.PatternRecord;
-import dev.ikm.tinkar.entity.graph.EntityVertex;
-import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
-import java.io.IOException;
-import java.lang.invoke.MethodHandles;
-import java.util.Map;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.evrete.Configuration;
 import org.evrete.KnowledgeService;
 import org.evrete.api.ActivationMode;
-import org.evrete.api.FactHandle;
 import org.evrete.api.Knowledge;
 import org.evrete.api.StatelessSession;
-import org.evrete.dsl.AbstractDSLProvider;
+import org.evrete.dsl.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.Map;
+
 public class EvreteRulesService implements RuleService {
+    public static final String ENV_CONSEQUENCES = "ENV_CONSEQUENCES";
+    public static final String ENV_VIEW_PROPERTIES = "ENV_VIEW_PROPERTIES";
+    public static final String ENV_EDIT_COORDINATE = "ENV_EDIT_COORDINATE";
 
     private static final Logger LOG = LoggerFactory.getLogger(EvreteRulesService.class);
 
@@ -62,26 +53,18 @@ public class EvreteRulesService implements RuleService {
     private Knowledge knowledge;
 
     public EvreteRulesService() throws IOException {
-        conf.addImport(Topic.class);
-        conf.addImport(ConceptFacade.class);
-        conf.addImport(ConceptEntityVersion.class);
-        conf.addImport(EntityVersion.class);
-        conf.addImport(EntityVertex.class);
-        conf.addImport(TinkarTerm.class);
-        conf.addImport(Request.class);
-        conf.addImport(RequestRecord.class);
-        conf.addImport(ObservationRecord.class);
-        conf.addImport(Statement.class);
-        conf.addImport(AxiomSubjectRecord.class);
-        conf.addImport(PatternRecord.class);
 
         for (Map.Entry<Object, Object> confEntry: conf.entrySet()) {
             LOG.info(confEntry.toString());
         }
 
-        this.service = new KnowledgeService(this.conf, MethodHandles.lookup());
-        this.knowledge = service.newKnowledge(AbstractDSLProvider.PROVIDER_JAVA_C,
-                ComponentFocusRules.class, NewConceptRules.class, AxiomFocusedRules.class, NewPatternRules.class);
+        this.service = new KnowledgeService(this.conf);
+        this.knowledge = service.newKnowledge(Constants.PROVIDER_JAVA_CLASS,
+                ComponentFocusRules.class,
+                NewConceptRules.class,
+                AxiomFocusedRules.class,
+                NewPatternRules.class
+        );
         LOG.info("Constructed EvreteRulesService");
     }
 
@@ -91,22 +74,27 @@ public class EvreteRulesService implements RuleService {
                                                  ViewProperties viewProperties, EditCoordinate editCoordinate) {
 
         StatelessSession session = this.knowledge.newStatelessSession(ActivationMode.CONTINUOUS);
-        ConcurrentHashSet<Consequence<?>> globalActionSet = new ConcurrentHashSet<>();
-        FactHandle globalActionListHandle = session.insert0(globalActionSet, false);
 
+        // Create a collector for resulting consequences
+        ConcurrentHashSet<Consequence<?>> globalActionSet = new ConcurrentHashSet<>();
+
+        // Set the collector and other necessary objects as session's environment variables
+        session.set(ENV_CONSEQUENCES, globalActionSet);
+        session.set(ENV_VIEW_PROPERTIES, viewProperties);
+        session.set(ENV_EDIT_COORDINATE, editCoordinate);
+
+        // Insert the statements
         session.insert(statements.castToList());
-        session.insert(viewProperties);
-        session.insert(editCoordinate);
 
         session.fire((handle, object) -> {
             // Inspect memory objects
             LOG.atDebug().log("handle: " + handle + " object: " + object);
-            if (object instanceof ConcurrentHashSet<?> set) {
-                LOG.atDebug().log("Set items: " + set.stream().toList());
-            }
         });
+
+        LOG.atDebug().log("Set items: " + globalActionSet.stream().toList());
+
         MutableList<Consequence<?>> globalActionList = Lists.mutable.ofAll(globalActionSet);
-        globalActionList.sort((o1, o2) -> o1.compareTo(o2));
+        globalActionList.sort(Comparable::compareTo);
         return globalActionList.toImmutableList();
     }
 }

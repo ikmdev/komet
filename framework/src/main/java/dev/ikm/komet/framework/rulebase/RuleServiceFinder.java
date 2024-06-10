@@ -26,17 +26,6 @@ public enum RuleServiceFinder {
     RuleService service;
 
     RuleServiceFinder() {
-        System.setProperty("org.evrete.runtime.compiler.Options",
-                "--release|21|--add-modules|dev.ikm.komet.framework,dev.ikm.komet.rules");
-
-        // TODO Developer documentation and cookbook need to describe why this inclusion of jars is done
-        // TODO Find alternatives, including pre-compilation of rules.
-        if (System.getProperty("jdk.module.path") == null) {
-            Path javaHome = FileSystems.getDefault().getPath(System.getProperty("java.home"));
-            Path thisModules = javaHome.resolve("module-jars");
-            System.setProperty("jdk.module.path", thisModules.toAbsolutePath().toString());
-        }
-
         ServiceLoader<RuleService> serviceLoader = ServiceLoader.load(RuleService.class);
         Optional<RuleService> optionalService = serviceLoader.findFirst();
         if (optionalService.isPresent()) {
@@ -45,7 +34,6 @@ public enum RuleServiceFinder {
             throw new NoSuchElementException("No " + RuleService.class.getName() +
                     " found by ServiceLoader...");
         }
-
     }
 
     public RuleService get() {
