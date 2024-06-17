@@ -17,13 +17,34 @@ package dev.ikm.komet.kview.mvvm.view.search;
 
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import javafx.fxml.FXML;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 
 
 public class SortResultConceptEntryController extends AbstractBasicController {
 
 
+    @FXML
+    private ImageView identicon;
+
+    @FXML
+    private Text componentText;
+
+    @FXML
+    private HBox retiredHBox;
+
+    @FXML
+    private Label retiredLabel;
+
+    @FXML
+    private VBox descriptionsVBox;
+
+    private boolean retired;
 
     public <T extends ViewModel> T getViewModel() {
         return null;
@@ -33,6 +54,34 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     @Override
     public void initialize() {
 
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public HBox getRetiredHBox() {
+        return this.retiredHBox;
+    }
+
+    public Label getRetiredLabel() {
+        return this.retiredLabel;
+    }
+
+    public void setIdenticon(Image identiconImage) {
+        this.identicon.setImage(identiconImage);
+    }
+
+    public void setComponentText(String topText) {
+        this.componentText.setText(topText);
+    }
+
+    public VBox getDescriptionsVBox() {
+        return this.descriptionsVBox;
     }
 
     @Override

@@ -25,7 +25,7 @@
                                     <children>
                                         <HBox prefHeight="100.0" prefWidth="200.0">
                                             <children>
-                                                <TextField prefWidth="424.0" promptText="🔍  Search" styleClass="search-text-field">
+                                                <TextField onAction="#doSearch" prefWidth="424.0" promptText="🔍  Search" styleClass="search-text-field">
                                                     <opaqueInsets>
                                                         <Insets />
                                                     </opaqueInsets>

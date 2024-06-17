@@ -11,63 +11,74 @@
 <?import javafx.scene.text.TextFlow?>
 
 <HBox prefHeight="100.0" prefWidth="332.0" styleClass="search-entry-hbox" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.search.SortResultConceptEntryController">
-    <children>
-        <VBox HBox.hgrow="ALWAYS">
-            <children>
-                <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="346.0" VBox.vgrow="NEVER">
-                    <children>
-                        <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
-                            <HBox.margin>
-                                <Insets left="8.0" top="8.0" />
-                            </HBox.margin>
+   <children>
+      <VBox HBox.hgrow="ALWAYS">
+         <children>
+            <HBox fx:id="retiredHBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="346.0" spacing="11.0" VBox.vgrow="NEVER">
+               <children>
+                  <ImageView fx:id="identicon" fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
                      <image>
                         <Image url="@../images/heart-placeholder.png" />
                      </image>
-                        </ImageView>
-                        <TextFlow>
-                            <children>
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="search-entry-text" text="Tetralogy of Fallot with pulmonary atresia co-occurrent with systemic-to-pulmonary collateral artery (disorder)" />
-                            </children>
-                            <HBox.margin>
-                                <Insets bottom="12.0" left="11.0" right="36.0" top="8.0" />
-                            </HBox.margin>
-                        </TextFlow>
-                    </children>
-                    <VBox.margin>
-                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                    </VBox.margin>
-                </HBox>
-                <TitledPane animated="false" expanded="false" styleClass="search-entry-title-pane" text="DESCRIPTION SEMANTICS" VBox.vgrow="ALWAYS">
-                    <content>
-                        <VBox prefWidth="100.0">
-                            <children>
-                                <Label prefHeight="30.0" prefWidth="302.0" styleClass="search-entry-description-label" text="Tetralogy of Fallot (disorder)">
-                                    <VBox.margin>
-                                        <Insets bottom="7.0" left="7.0" right="7.0" />
-                                    </VBox.margin>
-                                    <padding>
-                                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                                    </padding>
-                                </Label>
-                                <Label layoutX="28.0" layoutY="28.0" prefHeight="30.0" prefWidth="302.0" styleClass="search-entry-description-label" text="Tetralogy of Fallot (disorder)">
-                                    <VBox.margin>
-                                        <Insets bottom="7.0" left="7.0" right="7.0" />
-                                    </VBox.margin>
-                                    <padding>
-                                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                                    </padding>
-                                </Label>
-                            </children>
-                        </VBox>
-                    </content>
-                    <VBox.margin>
-                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                    </VBox.margin>
-                </TitledPane>
-            </children>
-        </VBox>
-    </children>
-    <opaqueInsets>
-        <Insets bottom="4.0" />
-    </opaqueInsets>
+                  </ImageView>
+                  <Label id="retiredLabelId" fx:id="retiredLabel" minWidth="-Infinity" styleClass="search-retired-label" text="Retired">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                     <padding>
+                        <Insets bottom="6.0" left="3.0" right="3.0" top="6.0" />
+                     </padding>
+                  </Label>
+                  <TextFlow prefWidth="253.0">
+                     <children>
+                        <Text fx:id="componentText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="search-entry-text" text="Chronic nonspecific lung disease (disorder)" />
+                     </children>
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </TextFlow>
+               </children>
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
+               <padding>
+                  <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+               </padding>
+            </HBox>
+            <TitledPane animated="false" expanded="false" styleClass="search-entry-title-pane" text="DESCRIPTION SEMANTICS" VBox.vgrow="ALWAYS">
+               <content>
+                  <VBox fx:id="descriptionsVBox" prefWidth="100.0">
+                     <children>
+                        <Label prefHeight="30.0" prefWidth="302.0" styleClass="search-entry-description-label" text="Tetralogy of Fallot (disorder)">
+                           <VBox.margin>
+                              <Insets bottom="7.0" left="7.0" right="7.0" />
+                           </VBox.margin>
+                           <padding>
+                              <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                           </padding>
+                        </Label>
+                        <Label layoutX="28.0" layoutY="28.0" prefHeight="30.0" prefWidth="302.0" styleClass="search-entry-description-label" text="Tetralogy of Fallot (disorder)">
+                           <VBox.margin>
+                              <Insets bottom="7.0" left="7.0" right="7.0" />
+                           </VBox.margin>
+                           <padding>
+                              <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                           </padding>
+                        </Label>
+                     </children>
+                  </VBox>
+               </content>
+               <VBox.margin>
+                  <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+               </VBox.margin>
+            </TitledPane>
+         </children>
+      </VBox>
+   </children>
+   <opaqueInsets>
+      <Insets bottom="4.0" />
+   </opaqueInsets>
 </HBox>
