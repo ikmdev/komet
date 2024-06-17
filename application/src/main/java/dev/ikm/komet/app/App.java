@@ -536,7 +536,7 @@ public class App extends Application {
                     windowSettings.getView(),
                     navigatorNodeFactory,
                     searchNodeFactory);
-            journalController.loadNextGenSearchPanel();
+            journalController.loadNextGenSearchPanel(windowSettings.getView().makeOverridableViewProperties());
         });
         // disable the delete menu option for a Journal Card.
         journalWindowSettings.setValue(CAN_DELETE, false);

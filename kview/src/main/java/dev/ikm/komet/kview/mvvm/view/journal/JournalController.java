@@ -316,7 +316,7 @@ public class JournalController {
         return navigatorNode;
     }
 
-    public void loadNextGenSearchPanel() {
+    public void loadNextGenSearchPanel(ViewProperties viewProperties) {
         // +-----------------------------------
         // ! Add a Next Gen Search
         // +------------------------------------
@@ -328,6 +328,7 @@ public class JournalController {
 
         JFXNode<Pane, NextGenSearchController> nextGenSearchJFXNode = FXMLMvvmLoader.make(nextGenSearchConfig);
         nextGenSearchController = nextGenSearchJFXNode.controller();
+        nextGenSearchController.updateModel(viewProperties);
         nextGenSearchPanel = nextGenSearchJFXNode.node();
 
         setupSlideOutTrayPane(nextGenSearchPanel, nexGenSearchSlideoutTrayPane);
