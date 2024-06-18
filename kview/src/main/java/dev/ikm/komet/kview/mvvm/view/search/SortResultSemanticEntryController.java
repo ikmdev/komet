@@ -17,14 +17,56 @@ package dev.ikm.komet.kview.mvvm.view.search;
 
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.scene.text.Text;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 
-public class SortResultSemanticEntryController   {
+public class SortResultSemanticEntryController  {
 
+
+    @FXML
+    private ImageView identicon;
+
+    @FXML
+    private Text semanticText;
+
+    @FXML
+    private HBox retiredHBox;
+
+    @FXML
+    private Label retiredLabel;
+
+    private boolean retired;
 
     @FXML
     public void initialize() {
 
     }
 
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public HBox getRetiredHBox() {
+        return this.retiredHBox;
+    }
+
+    public Label getRetiredLabel() {
+        return this.retiredLabel;
+    }
+
+    public void setIdenticon(Image identiconImage) {
+        this.identicon.setImage(identiconImage);
+    }
+
+    public void setSemanticText(String text) {
+        this.semanticText.setText(text);
+    }
 }
