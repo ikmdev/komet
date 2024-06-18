@@ -27,9 +27,15 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.kview.events.SearchSortOptionEvent;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
+import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.util.text.NaturalOrder;
+import dev.ikm.tinkar.common.util.uuid.UuidUtil;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -37,21 +43,16 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TreeItem;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
-import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,9 +61,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 
 public class NextGenSearchController extends AbstractBasicController {
@@ -154,55 +155,158 @@ public class NextGenSearchController extends AbstractBasicController {
         String queryText = ((TextField) actionEvent.getSource()).getText().strip();
 
         try {
-            List<LatestVersionSearchResult> results = getViewProperties().calculator().search(queryText, MAX_RESULT_SIZE).toList();
-            LOG.info(String.valueOf(results.size()));
-
-            switch (sortByButton.getText()) {
-                case BUTTON_TEXT_TOP_COMPONENT -> {
-                    // sort by top component score order
-                    results.sort((o1, o2) -> Float.compare(o2.score(), o1.score()));
-
-                    MutableIntObjectMap<MutableList<LatestVersionSearchResult>> topNidMatchMap = IntObjectMaps.mutable.empty();
-                    for (LatestVersionSearchResult result : results) {
-                        topNidMatchMap.getIfAbsentPut(result.latestVersion().get().chronology().topEnclosingComponentNid(),
-                                () -> Lists.mutable.empty()).add(result);
-                    }
-                    // topItems is similar to tempRoot
-                    Map<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> topItems = new HashMap<>();
-                    for (int topNid : topNidMatchMap.keySet().toArray()) {
-                        String topText = getViewProperties().nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(topNid);
-                        Latest<EntityVersion> latestTopVersion = getViewProperties().nodeView().calculator().latest(topNid);
-                        latestTopVersion.ifPresent(entityVersion -> {
-                            topItems.put(new SearchPanelController.NidTextRecord(topNid, topText, entityVersion.active()),
-                                    topNidMatchMap.get(topNid));
-                        });
-                    }
-                    // sort topItems by the sort o
-                    topItems.forEach((k, v) -> Collections.sort(v, (o1,o2) -> Float.compare(o1.score(), o2.score())));
-
-                    List<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>> myList = new ArrayList<>(topItems.entrySet());
-
-
-                    Collections.sort(myList, (m1, m2) -> Float.compare(m2.getValue().get(0).score(), m1.getValue().get(0).score()));
-
-                    for (Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> entry: myList) {
-                        resultsVBox.getChildren().addAll(buildResultEntry(entry.getKey(), entry.getValue()));
-                    }
-
+            if (queryText.startsWith("-") && parseInt(queryText).isPresent()) {
+                addComponentFromNid(queryText);
+            } else if (queryText.startsWith("[") && queryText.endsWith("]")) {
+                queryText = queryText.replace("[", "").replace("]", "");
+                String[] nidStrings = queryText.split(",");
+                for (String nidString : nidStrings) {
+                    addComponentFromNid(nidString.strip());
                 }
-                //FIXME implement the other searches
-                case BUTTON_TEXT_TOP_COMPONENT_ALPHA -> {
-                    LOG.info(queryText);
-                    LOG.info(String.valueOf(resultsVBox.getChildren().size()));
-                }
+            } else if (queryText.length() == 36 && UuidUtil.isUUID(queryText)) {
+                UuidUtil.getUUID(queryText).ifPresent(uuid -> {
+                    addComponentFromNid(PrimitiveData.nid(PublicIds.of(uuid)));
+                });
+            } else {
+                List<LatestVersionSearchResult> results = getViewProperties().calculator().search(queryText, MAX_RESULT_SIZE).toList();
+                LOG.info(String.valueOf(results.size()));
+                Map<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> topItems = null;
+                switch (sortByButton.getText()) {
+                    case BUTTON_TEXT_TOP_COMPONENT -> {
+                        // sort by top component score order
+                        topItems = new HashMap<>();
+                        results.sort((o1, o2) -> Float.compare(o2.score(), o1.score()));
 
+
+                        createMapOfEntries(topItems, results);
+
+                        // sort topItems by the sort o
+                        topItems.forEach((k, v) -> Collections.sort(v, (o1, o2) -> Float.compare(o1.score(), o2.score())));
+
+                        List<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>> myList = new ArrayList<>(topItems.entrySet());
+
+                        Collections.sort(myList, (m1, m2) -> Float.compare(m2.getValue().get(0).score(), m1.getValue().get(0).score()));
+
+                        renderResultsFromMap(myList);
+                    }
+                    case BUTTON_TEXT_TOP_COMPONENT_ALPHA -> {
+                        // sort by natural order
+                        results.sort((o1, o2) -> NaturalOrder.compareStrings(o1.latestVersion().get().fieldValues().get(o1.fieldIndex()).toString(),
+                                o2.latestVersion().get().fieldValues().get(o2.fieldIndex()).toString()));
+
+                        // create the sort order for the topItems map collection
+                        topItems = new TreeMap<>((o1, o2) -> NaturalOrder.compareStrings(o1.text(), o2.text()));
+
+                        createMapOfEntries(topItems, results);
+
+                        List<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>> myList = new ArrayList<>(topItems.entrySet());
+
+                        // sort the children
+                        myList.forEach(m -> Collections.sort(m.getValue(), (e1, e2) ->
+                                NaturalOrder.compareStrings(formatHighlightedString(e1.highlightedString()), formatHighlightedString(e2.highlightedString()))
+                        ));
+
+                        renderResultsFromMap(myList);
+                    }
+                    case BUTTON_TEXT_DESCRIPTION_SEMANTIC -> {
+                        results.sort((o1, o2) -> Float.compare(o2.score(), o1.score()));
+
+                        renderResultsFromList(results);
+                    }
+                    case BUTTON_TEXT_DESCRIPTION_SEMANTIC_ALPHA -> {
+                        results.sort((o1, o2) -> NaturalOrder.compareStrings(formatHighlightedString(o1.highlightedString()),
+                                formatHighlightedString(o2.highlightedString())));
+
+                        renderResultsFromList(results);
+                    }
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private Node buildResultEntry(SearchPanelController.NidTextRecord nidTextRecord, List<LatestVersionSearchResult> latestVersionSearchResults) {
+    private void addComponentFromNid(String queryText) {
+        int nid = parseInt(queryText).getAsInt();
+        addComponentFromNid(nid);
+    }
+
+    private void addComponentFromNid(int nid) {
+        String topText = getViewProperties().nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(nid);
+        Latest<EntityVersion> latestTopVersion = getViewProperties().nodeView().calculator().latest(nid);
+
+        latestTopVersion.ifPresent(entityVersion -> {
+
+            JFXNode<Pane, SortResultSemanticEntryController> searchSemanticEntryJFXNode = FXMLMvvmLoader
+                    .make(SortResultSemanticEntryController.class.getResource(SORT_SEMANTIC_RESULT_CONCEPT_FXML));
+            Node node = searchSemanticEntryJFXNode.node();
+            SortResultSemanticEntryController controller = searchSemanticEntryJFXNode.controller();
+            controller.setIdenticon(Identicon.generateIdenticonImage(entityVersion.publicId()));
+            controller.setSemanticText(topText);
+            if (entityVersion.active()) {
+                controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
+            }
+            VBox.setMargin(node, new Insets(2, 0, 2, 0));
+
+            resultsVBox.getChildren().add(node);
+        });
+
+    }
+
+    private OptionalInt parseInt(String possibleInt) {
+        try {
+            return OptionalInt.of(Integer.parseInt(possibleInt));
+        } catch (NumberFormatException e) {
+            return OptionalInt.empty();
+        }
+    }
+
+    private void renderResultsFromList(List<LatestVersionSearchResult> results) {
+        Platform.runLater(() -> results.forEach(e -> resultsVBox.getChildren().addAll(buildResultEntryFromList(e))));
+    }
+
+    private void renderResultsFromMap(List<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>> myList) {
+        Platform.runLater(() -> {
+            for (Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> entry : myList) {
+                resultsVBox.getChildren().addAll(buildResultEntryFromMap(entry.getKey(), entry.getValue()));
+            }
+        });
+    }
+
+    private void createMapOfEntries(Map<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> topItems,
+                                    List<LatestVersionSearchResult> results) {
+        MutableIntObjectMap<MutableList<LatestVersionSearchResult>> topNidMatchMap = IntObjectMaps.mutable.empty();
+        for (LatestVersionSearchResult result : results) {
+            topNidMatchMap.getIfAbsentPut(result.latestVersion().get().chronology().topEnclosingComponentNid(),
+                    () -> Lists.mutable.empty()).add(result);
+        }
+        // topItems is similar to tempRoot
+        for (int topNid : topNidMatchMap.keySet().toArray()) {
+            String topText = getViewProperties().nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(topNid);
+            Latest<EntityVersion> latestTopVersion = getViewProperties().nodeView().calculator().latest(topNid);
+            latestTopVersion.ifPresent(entityVersion -> {
+                topItems.put(new SearchPanelController.NidTextRecord(topNid, topText, entityVersion.active()),
+                        topNidMatchMap.get(topNid));
+            });
+        }
+    }
+
+    private Node buildResultEntryFromList(LatestVersionSearchResult latestVersionSearchResult) {
+        JFXNode<Pane, SortResultSemanticEntryController> searchSemanticEntryJFXNode = FXMLMvvmLoader
+                .make(SortResultSemanticEntryController.class.getResource(SORT_SEMANTIC_RESULT_CONCEPT_FXML));
+        Node node = searchSemanticEntryJFXNode.node();
+        SortResultSemanticEntryController controller = searchSemanticEntryJFXNode.controller();
+        SemanticEntityVersion semantic = latestVersionSearchResult.latestVersion().get();
+        controller.setIdenticon(Identicon.generateIdenticonImage(semantic.publicId()));
+        controller.setSemanticText(formatHighlightedString(latestVersionSearchResult.highlightedString()));
+        if (semantic.active()) {
+            controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
+        }
+        VBox.setMargin(node, new Insets(2, 0, 2, 0));
+        return node;
+    }
+
+    private Node buildResultEntryFromMap(SearchPanelController.NidTextRecord nidTextRecord, List<LatestVersionSearchResult> latestVersionSearchResults) {
         int topNid = nidTextRecord.nid();
         String topText = getViewProperties().nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(topNid); // top text I assume is the title text
         Latest<EntityVersion> latestTopVersion = getViewProperties().nodeView().calculator().latest(topNid);

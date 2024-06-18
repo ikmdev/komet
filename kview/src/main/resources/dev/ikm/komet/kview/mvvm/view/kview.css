@@ -2251,7 +2251,8 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .search-entry-hbox {
-    -fx-border-radius: 2;
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
     -fx-background-color: white;
 }
 
