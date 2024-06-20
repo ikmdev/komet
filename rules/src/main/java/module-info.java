@@ -25,7 +25,7 @@ open module dev.ikm.komet.rules {
     requires dev.ikm.komet.classification;
 
     //exports dev.ikm.komet.rules.evrete;
-    //exports dev.ikm.komet.rules.annotated;
+    exports dev.ikm.komet.rules.annotated;
 
     provides RuleService with EvreteRulesService;
 }
