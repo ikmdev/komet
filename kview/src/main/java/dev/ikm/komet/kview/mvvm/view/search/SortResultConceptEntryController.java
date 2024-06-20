@@ -16,7 +16,11 @@
 package dev.ikm.komet.kview.mvvm.view.search;
 
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Side;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -28,6 +32,8 @@ import org.carlfx.cognitive.viewmodel.ViewModel;
 
 public class SortResultConceptEntryController extends AbstractBasicController {
 
+    @FXML
+    private HBox searchEntryHBox;
 
     @FXML
     private ImageView identicon;
@@ -44,6 +50,12 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     @FXML
     private VBox descriptionsVBox;
 
+    @FXML
+    private Button showContextButton;
+
+    @FXML
+    private ContextMenu contextMenu;
+
     private boolean retired;
 
     public <T extends ViewModel> T getViewModel() {
@@ -53,8 +65,22 @@ public class SortResultConceptEntryController extends AbstractBasicController {
 
     @Override
     public void initialize() {
-
+        showContextButton.setVisible(false);
+        contextMenu.setHideOnEscape(true);
+        searchEntryHBox.setOnMouseEntered(mouseEvent -> {
+            showContextButton.setVisible(true);
+        });
+        searchEntryHBox.setOnMouseExited(mouseEvent -> {
+            if (!contextMenu.isShowing()) {
+                showContextButton.setVisible(false);
+            }
+        });
+        showContextButton.setOnAction(event -> {
+            contextMenu.show(showContextButton, Side.BOTTOM, 0, 0);
+        });
     }
+
+
 
     public boolean isRetired() {
         return retired;
