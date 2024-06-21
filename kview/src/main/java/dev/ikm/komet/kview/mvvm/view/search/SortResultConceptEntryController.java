@@ -63,21 +63,18 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     }
 
 
+    @FXML
     @Override
     public void initialize() {
         showContextButton.setVisible(false);
         contextMenu.setHideOnEscape(true);
-        searchEntryHBox.setOnMouseEntered(mouseEvent -> {
-            showContextButton.setVisible(true);
-        });
+        searchEntryHBox.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(true));
         searchEntryHBox.setOnMouseExited(mouseEvent -> {
             if (!contextMenu.isShowing()) {
                 showContextButton.setVisible(false);
             }
         });
-        showContextButton.setOnAction(event -> {
-            contextMenu.show(showContextButton, Side.BOTTOM, 0, 0);
-        });
+        showContextButton.setOnAction(event -> contextMenu.show(showContextButton, Side.BOTTOM, 0, 0));
     }
 
 

@@ -17,18 +17,27 @@ package dev.ikm.komet.kview.mvvm.view.search;
 
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import javafx.fxml.FXML;
+import javafx.geometry.Side;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 
 public class SortResultSemanticEntryController  {
 
+    @FXML
+    private HBox searchEntryHBox;
 
     @FXML
     private ImageView identicon;
+
+    @FXML
+    private TextFlow textFlow;
 
     @FXML
     private Text semanticText;
@@ -39,11 +48,27 @@ public class SortResultSemanticEntryController  {
     @FXML
     private Label retiredLabel;
 
+    @FXML
+    private Button showContextButton;
+
+    @FXML
+    private ContextMenu contextMenu;
+
     private boolean retired;
+
+    private static final int WIDTH_WITHOUT_RETIRED_LABEL = 212;
 
     @FXML
     public void initialize() {
-
+        showContextButton.setVisible(false);
+        contextMenu.setHideOnEscape(true);
+        searchEntryHBox.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(true));
+        searchEntryHBox.setOnMouseExited(mouseEvent -> {
+            if (!contextMenu.isShowing()) {
+                showContextButton.setVisible(false);
+            }
+        });
+        showContextButton.setOnAction(event -> contextMenu.show(showContextButton, Side.BOTTOM, 0, 0));
     }
 
     public boolean isRetired() {
@@ -51,7 +76,9 @@ public class SortResultSemanticEntryController  {
     }
 
     public void setRetired(boolean retired) {
+
         this.retired = retired;
+
     }
 
     public HBox getRetiredHBox() {
@@ -68,5 +95,9 @@ public class SortResultSemanticEntryController  {
 
     public void setSemanticText(String text) {
         this.semanticText.setText(text);
+    }
+
+    public void increaseTextFlowWidth() {
+        textFlow.setMinWidth(WIDTH_WITHOUT_RETIRED_LABEL);
     }
 }
