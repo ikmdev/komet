@@ -301,6 +301,7 @@ public class NextGenSearchController extends AbstractBasicController {
         controller.setSemanticText(formatHighlightedString(latestVersionSearchResult.highlightedString()));
         if (semantic.active()) {
             controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
+            controller.increaseTextFlowWidth();
         }
         VBox.setMargin(node, new Insets(2, 0, 2, 0));
         return node;
