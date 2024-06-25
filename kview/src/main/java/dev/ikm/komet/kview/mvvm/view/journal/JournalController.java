@@ -15,6 +15,42 @@
  */
 package dev.ikm.komet.kview.mvvm.view.journal;
 
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
+import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
+import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CONCEPT_TOPIC;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.DEVICE_ENTITY;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.STAMP_VIEW_MODEL;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.CONCEPT_FOLDER_PREFIX;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_HEIGHT;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_XPOS;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_YPOS;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_HEIGHT;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_PREF_NAME;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_WIDTH;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_XPOS;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_YPOS;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_TYPE;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_VALUE;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_FOLDER_PREFIX;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_COUNT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_NAMES;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
+import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
+import static java.io.File.separator;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -22,6 +58,7 @@ import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.tabs.DetachableTab;
@@ -30,6 +67,7 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
+import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.fxutils.window.WindowSupport;
@@ -71,42 +109,42 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import org.carlfx.cognitive.loader.*;
+import org.carlfx.cognitive.loader.Config;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.prefs.BackingStoreException;
-
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.*;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.*;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
-import static dev.ikm.komet.preferences.JournalWindowSettings.*;
-import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
-import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
-import static java.io.File.separator;
 
 /**
  * This view is responsible for updating the kView journal window by loading a navigation panel
@@ -202,6 +240,8 @@ public class JournalController {
 
     private NextGenSearchController nextGenSearchController;
 
+    private Subscriber<MakeConceptWindowEvent> makeConceptWindowEventSubscriber;
+
     @InjectViewModel
     private NextGenSearchViewModel nextGenSearchViewModel;
 
@@ -237,6 +277,16 @@ public class JournalController {
                     new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowPref));
         });
         reasonerToggleConsumer = createReasonerToggleConsumer();
+
+        makeConceptWindowEventSubscriber = evt -> {
+            ConceptFacade conceptFacade = evt.getConceptFacade();
+            if (evt.getEventType().equals(OPEN_CONCEPT_FROM_SEMANTIC)) {
+                makeConceptWindow(evt.getWindowView(), conceptFacade, SEMANTIC_ENTITY, null);
+            } else if (evt.getEventType().equals(OPEN_CONCEPT_FROM_CONCEPT)) {
+                makeConceptWindow(evt.getWindowView(), conceptFacade, NID_TEXT, null);
+            }
+        };
+        journalEventBus.subscribe(JOURNAL_TOPIC, MakeConceptWindowEvent.class, makeConceptWindowEventSubscriber);
     }
 
     public ToggleButton getSettingsToggleButton() {
@@ -316,7 +366,7 @@ public class JournalController {
         return navigatorNode;
     }
 
-    public void loadNextGenSearchPanel(ViewProperties viewProperties) {
+    public void loadNextGenSearchPanel(ObservableViewNoOverride windowView) {
         // +-----------------------------------
         // ! Add a Next Gen Search
         // +------------------------------------
@@ -328,7 +378,8 @@ public class JournalController {
 
         JFXNode<Pane, NextGenSearchController> nextGenSearchJFXNode = FXMLMvvmLoader.make(nextGenSearchConfig);
         nextGenSearchController = nextGenSearchJFXNode.controller();
-        nextGenSearchController.updateModel(viewProperties);
+        nextGenSearchController.updateModel(windowView.makeOverridableViewProperties());
+        nextGenSearchController.setWindowView(windowView);
         nextGenSearchPanel = nextGenSearchJFXNode.node();
 
         setupSlideOutTrayPane(nextGenSearchPanel, nexGenSearchSlideoutTrayPane);
