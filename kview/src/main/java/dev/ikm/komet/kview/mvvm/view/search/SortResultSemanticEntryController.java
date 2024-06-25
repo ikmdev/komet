@@ -15,7 +15,12 @@
  */
 package dev.ikm.komet.kview.mvvm.view.search;
 
-import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import dev.ikm.komet.framework.events.EvtBus;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
+import dev.ikm.tinkar.entity.ConceptEntity;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
@@ -23,10 +28,10 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import org.carlfx.cognitive.viewmodel.ViewModel;
 
 public class SortResultSemanticEntryController  {
 
@@ -54,12 +59,20 @@ public class SortResultSemanticEntryController  {
     @FXML
     private ContextMenu contextMenu;
 
+    // data fields to populate the concept details window
+
+    private ConceptEntity conceptEntity;
+
+    private EvtBus eventBus;
+
     private boolean retired;
 
-    private static final int WIDTH_WITHOUT_RETIRED_LABEL = 212;
+
+    private ObservableViewNoOverride windowView;
 
     @FXML
     public void initialize() {
+        eventBus = EvtBusFactory.getDefaultEvtBus();
         showContextButton.setVisible(false);
         contextMenu.setHideOnEscape(true);
         searchEntryHBox.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(true));
@@ -69,6 +82,14 @@ public class SortResultSemanticEntryController  {
             }
         });
         showContextButton.setOnAction(event -> contextMenu.show(showContextButton, Side.BOTTOM, 0, 0));
+
+        searchEntryHBox.setOnMouseClicked(mouseEvent -> {
+            if (mouseEvent.getButton().equals(MouseButton.PRIMARY)){
+                if (mouseEvent.getClickCount() == 2) {
+                    eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC, conceptEntity, windowView));
+                }
+            }
+        });
     }
 
     public boolean isRetired() {
@@ -98,6 +119,14 @@ public class SortResultSemanticEntryController  {
     }
 
     public void increaseTextFlowWidth() {
-        textFlow.setMinWidth(WIDTH_WITHOUT_RETIRED_LABEL);
+        textFlow.getStyleClass().add("search-semantic-active");
+    }
+
+    public void setData(ConceptEntity conceptEntity) {
+        this.conceptEntity = conceptEntity;
+    }
+
+    public void setWindowView(ObservableViewNoOverride windowView) {
+        this.windowView = windowView;
     }
 }

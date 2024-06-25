@@ -25,6 +25,7 @@ import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.events.SearchSortOptionEvent;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.tinkar.common.id.PublicIds;
@@ -33,6 +34,8 @@ import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.uuid.UuidUtil;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import javafx.application.Platform;
@@ -95,6 +98,8 @@ public class NextGenSearchController extends AbstractBasicController {
     private PopOver sortOptions;
 
     private SortOptionsController sortOptionsController;
+
+    private ObservableViewNoOverride windowView;
 
     private EvtBus eventBus;
 
@@ -243,6 +248,8 @@ public class NextGenSearchController extends AbstractBasicController {
             SortResultSemanticEntryController controller = searchSemanticEntryJFXNode.controller();
             controller.setIdenticon(Identicon.generateIdenticonImage(entityVersion.publicId()));
             controller.setSemanticText(topText);
+            controller.setWindowView(windowView);
+            controller.setData(Entity.getConceptForSemantic(entityVersion.nid()).get());
             if (entityVersion.active()) {
                 controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
             }
@@ -299,10 +306,12 @@ public class NextGenSearchController extends AbstractBasicController {
         SemanticEntityVersion semantic = latestVersionSearchResult.latestVersion().get();
         controller.setIdenticon(Identicon.generateIdenticonImage(semantic.publicId()));
         controller.setSemanticText(formatHighlightedString(latestVersionSearchResult.highlightedString()));
+        controller.setData(Entity.getConceptForSemantic(semantic.nid()).get());
         if (semantic.active()) {
             controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
             controller.increaseTextFlowWidth();
         }
+        controller.setWindowView(windowView);
         VBox.setMargin(node, new Insets(2, 0, 2, 0));
         return node;
     }
@@ -321,7 +330,8 @@ public class NextGenSearchController extends AbstractBasicController {
             SortResultConceptEntryController controller = searchConceptEntryJFXNode.controller();
 
             controller.setIdenticon(Identicon.generateIdenticonImage(entityVersion.publicId()));
-
+            controller.setWindowView(windowView);
+            controller.setData((ConceptEntity) Entity.get(entityVersion.nid()).get());
             controller.setComponentText(topText);
 
             // add the custom descriptions
@@ -374,6 +384,10 @@ public class NextGenSearchController extends AbstractBasicController {
     @Override
     public <T extends ViewModel> T getViewModel() {
         return null;
+    }
+
+    public void setWindowView(ObservableViewNoOverride windowView) {
+        this.windowView = windowView;
     }
 }
 

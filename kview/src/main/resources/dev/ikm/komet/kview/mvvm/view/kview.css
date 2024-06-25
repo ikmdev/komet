@@ -2439,6 +2439,11 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-insets: 0 6 0 6;
 }
 
+/* this is for the text flow when we remove the retired label */
+.search-semantic-active {
+    -fx-min-width: 212px;
+}
+
 
 
 /********************************************************************************

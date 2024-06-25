@@ -15,8 +15,13 @@
  */
 package dev.ikm.komet.kview.mvvm.view.search;
 
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import dev.ikm.komet.framework.events.EvtBus;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
-import javafx.event.ActionEvent;
+import dev.ikm.tinkar.entity.ConceptEntity;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
@@ -24,6 +29,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -62,10 +68,16 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         return null;
     }
 
+    private EvtBus eventBus;
+
+    private ConceptEntity conceptEntity;
+
+    private ObservableViewNoOverride windowView;
 
     @FXML
     @Override
     public void initialize() {
+        eventBus = EvtBusFactory.getDefaultEvtBus();
         showContextButton.setVisible(false);
         contextMenu.setHideOnEscape(true);
         searchEntryHBox.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(true));
@@ -75,6 +87,14 @@ public class SortResultConceptEntryController extends AbstractBasicController {
             }
         });
         showContextButton.setOnAction(event -> contextMenu.show(showContextButton, Side.BOTTOM, 0, 0));
+
+        searchEntryHBox.setOnMouseClicked(mouseEvent -> {
+            if (mouseEvent.getButton().equals(MouseButton.PRIMARY)){
+                if (mouseEvent.getClickCount() == 2) {
+                    eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity, windowView));
+                }
+            }
+        });
     }
 
 
@@ -121,4 +141,13 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     public void cleanup() {
 
     }
+
+    public void setData(ConceptEntity conceptEntity) {
+        this.conceptEntity = conceptEntity;
+    }
+
+    public void setWindowView(ObservableViewNoOverride windowView) {
+        this.windowView = windowView;
+    }
+
 }
