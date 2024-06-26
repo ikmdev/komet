@@ -95,6 +95,9 @@ public class NextGenSearchController extends AbstractBasicController {
     @FXML
     private Button sortByButton;
 
+    @FXML
+    private TextField searchField;
+
     private PopOver sortOptions;
 
     private SortOptionsController sortOptionsController;
@@ -155,9 +158,11 @@ public class NextGenSearchController extends AbstractBasicController {
 
     @FXML
     private void doSearch(ActionEvent actionEvent) {
+        actionEvent.consume();
+
         clearView();
 
-        String queryText = ((TextField) actionEvent.getSource()).getText().strip();
+        String queryText = searchField.getText().strip();
 
         try {
             if (queryText.startsWith("-") && parseInt(queryText).isPresent()) {
