@@ -21,6 +21,7 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
@@ -90,6 +91,12 @@ public class SortResultSemanticEntryController  {
                 }
             }
         });
+    }
+
+    @FXML
+    private void populateConcept(ActionEvent actionEvent) {
+        actionEvent.consume();
+        eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity, windowView));
     }
 
     public boolean isRetired() {

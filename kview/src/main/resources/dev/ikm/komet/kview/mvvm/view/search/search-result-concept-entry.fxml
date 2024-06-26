@@ -53,7 +53,7 @@
                      <contextMenu>
                         <ContextMenu fx:id="contextMenu" styleClass="search-context-menu-container">
                           <items>
-                            <MenuItem mnemonicParsing="false" styleClass="search-context-menu-item" text="Populate concept">
+                            <MenuItem mnemonicParsing="false" styleClass="search-context-menu-item" text="Populate concept" onAction="#populateConcept">
                                  <graphic>
                                     <Region styleClass="populate-icon">
                                        <padding>
