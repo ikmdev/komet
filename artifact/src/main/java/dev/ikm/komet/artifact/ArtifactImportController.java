@@ -16,6 +16,7 @@
 package dev.ikm.komet.artifact;
 
 
+import dev.ikm.komet.framework.fileimport.ImportViewModel;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -104,7 +105,7 @@ public class ArtifactImportController {
         importProgressBar.setVisible(true);
         importButton.setDisable(true);
         File selectedFile = new File(choosenFileLabel.getText());
-        Task<Boolean> importTask = createWorker(selectedFile);
+        Task<Boolean> importTask = ImportViewModel.createWorker(selectedFile);
 
         importProgressBar.progressProperty().unbind();
         importProgressBar.progressProperty().bind(importTask.progressProperty());
@@ -116,26 +117,6 @@ public class ArtifactImportController {
     @FXML
     void cancelImport(ActionEvent event) {
         importProgressBar.setProgress(0);
-    }
-
-    Task<Boolean> createWorker(File selectedFile) {
-        return new Task<Boolean>() {
-
-            @Override
-            protected Boolean call() throws Exception {
-                try{
-                    LoadEntitiesFromProtobufFile loadEntities = new LoadEntitiesFromProtobufFile(selectedFile);
-                    loadEntities.compute();
-                }
-                catch(Exception e){
-                    LOG.error("Exception has been thrown, see below:", e);
-                }
-                updateProgress(100, 100);
-                importButton.setDisable(false);
-                cancelButton.setDisable(true);
-                return true;
-            }
-        };
     }
 
     protected Label getChoosenFileLabel() {

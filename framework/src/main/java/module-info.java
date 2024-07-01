@@ -65,6 +65,7 @@ open module dev.ikm.komet.framework {
     requires org.kordamp.ikonli.octicons;
     requires org.kordamp.ikonli.runestroicons;
     requires org.kordamp.ikonli.unicons;
+    requires org.carlfx.cognitive;
     requires static java.compiler;
     requires static io.soabase.recordbuilder.core;
     requires transitive javafx.base;
@@ -96,4 +97,6 @@ open module dev.ikm.komet.framework {
             with DefaultEvtBus;
 
     uses dev.ikm.komet.framework.events.EvtBus;
+    
+    exports dev.ikm.komet.framework.fileimport;
 }
