@@ -48,6 +48,7 @@ import dev.ikm.komet.framework.activity.ActivityStreams;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.fileimport.ImportViewModel;
 import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.KometPreferencesStage;
@@ -89,6 +90,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -429,9 +431,12 @@ public class App extends Application {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Resource File");
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"),
+                new FileChooser.ExtensionFilter("Zip Files", "*.zip"),
                 new FileChooser.ExtensionFilter("All Files", "*.*"));
-        fileChooser.showOpenDialog(landingPageWindow);
+        File selectedFile = fileChooser.showOpenDialog(landingPageWindow);
+        Task<Boolean> importTask = ImportViewModel.createWorker(selectedFile);
+        Thread thread = new Thread(importTask);
+        thread.start();
     }
 
     private void launchLandingPage() {
