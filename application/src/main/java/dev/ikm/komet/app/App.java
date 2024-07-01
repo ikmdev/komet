@@ -110,6 +110,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.stage.FileChooser;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.factory.Lists;
@@ -329,8 +330,9 @@ public class App extends Application {
 
             // File Menu
             Menu fileMenu = new Menu("File");
-            // Todo: import dataset
-            MenuItem newItem = new MenuItem("Import Dataset");
+
+            MenuItem importDatasetMenuItem = new MenuItem("Import Dataset");
+            importDatasetMenuItem.setOnAction(actionEvent -> doImportDataSet());
 
             // Exporting data
             Menu exportMenu = new Menu("Export Dataset");
@@ -338,7 +340,7 @@ public class App extends Application {
             fhirMenuItem.setOnAction(actionEvent -> openDatasetPage());
             exportMenu.getItems().addAll(createExportChangesetMenuItem(), fhirMenuItem);
 
-            fileMenu.getItems().addAll(newItem, exportMenu, new SeparatorMenuItem(), tk.createCloseWindowMenuItem());
+            fileMenu.getItems().addAll(importDatasetMenuItem, exportMenu, new SeparatorMenuItem(), tk.createCloseWindowMenuItem());
 
             // Edit
             Menu editMenu = new Menu("Edit");
@@ -421,6 +423,15 @@ public class App extends Application {
             LOG.error(e.getLocalizedMessage(), e);
             Platform.exit();
         }
+    }
+
+    private void doImportDataSet() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open Resource File");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"),
+                new FileChooser.ExtensionFilter("All Files", "*.*"));
+        fileChooser.showOpenDialog(landingPageWindow);
     }
 
     private void launchLandingPage() {
@@ -841,8 +852,8 @@ public class App extends Application {
         about.setOnAction(actionEvent -> showWindowsAboutScreen());
         fileMenu.getItems().add(about);
 
-        // Todo: import dataset
         MenuItem importMenuItem = new MenuItem("Import Dataset");
+        importMenuItem.setOnAction(actionEvent -> doImportDataSet());
 
         // Exporting data
         Menu exportMenu = new Menu("Export Dataset");
