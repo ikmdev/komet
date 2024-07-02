@@ -91,10 +91,15 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         showContextButton.setOnAction(event -> contextMenu.show(showContextButton, Side.BOTTOM, 0, 0));
 
         searchEntryHBox.setOnMouseClicked(mouseEvent -> {
-            if (mouseEvent.getButton().equals(MouseButton.PRIMARY)){
+            // double left click creates the concept window
+            if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                 if (mouseEvent.getClickCount() == 2) {
                     eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity, windowView));
                 }
+            }
+            // right click shows the context menu
+            if (mouseEvent.getButton().equals(MouseButton.SECONDARY)) {
+                contextMenu.show(showContextButton, Side.BOTTOM, 0, 0);
             }
         });
     }
