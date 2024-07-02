@@ -1123,4 +1123,9 @@ public class JournalController {
         makeCreateLidrWindow(windowSettings.getView(), null, null);
 
     }
+
+    @FXML
+    public void newCreatePatternWindow(ActionEvent actionEvent) {
+        LOG.info("new pattern");
+    }
 }
