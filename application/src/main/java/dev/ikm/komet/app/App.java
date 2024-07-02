@@ -334,7 +334,7 @@ public class App extends Application {
             Menu fileMenu = new Menu("File");
 
             MenuItem importDatasetMenuItem = new MenuItem("Import Dataset");
-            importDatasetMenuItem.setOnAction(actionEvent -> doImportDataSet());
+            importDatasetMenuItem.setOnAction(actionEvent -> doImportDataSet(primaryStage));
 
             // Exporting data
             Menu exportMenu = new Menu("Export Dataset");
@@ -427,16 +427,19 @@ public class App extends Application {
         }
     }
 
-    private void doImportDataSet() {
+    private void doImportDataSet(Stage stage) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Resource File");
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Zip Files", "*.zip"),
                 new FileChooser.ExtensionFilter("All Files", "*.*"));
-        File selectedFile = fileChooser.showOpenDialog(landingPageWindow);
-        Task<Boolean> importTask = ImportViewModel.createWorker(selectedFile);
-        Thread thread = new Thread(importTask);
-        thread.start();
+        File selectedFile = fileChooser.showOpenDialog(stage);
+        // selectedFile is null if the user clicks cancel
+        if (selectedFile != null) {
+            Task<Boolean> importTask = ImportViewModel.createWorker(selectedFile);
+            Thread thread = new Thread(importTask);
+            thread.start();
+        }
     }
 
     private void launchLandingPage() {
@@ -525,7 +528,7 @@ public class App extends Application {
 
             // if NOT on Mac OS
             if(System.getProperty("os.name")!=null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
-                generateMsWindowsMenu(journalBorderPane);
+                generateMsWindowsMenu(journalBorderPane, journalStageWindow);
             }
 
             String journalName;
@@ -782,7 +785,7 @@ public class App extends Application {
 
         // if NOT on Mac OS
         if(System.getProperty("os.name")!=null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
-            generateMsWindowsMenu(kometRoot);
+            generateMsWindowsMenu(kometRoot, classicKometStage);
         }
 
         classicKometStage.setScene(kometScene);
@@ -849,7 +852,7 @@ public class App extends Application {
         }
     }
 
-    private void generateMsWindowsMenu(BorderPane kometRoot) {
+    private void generateMsWindowsMenu(BorderPane kometRoot, Stage stage) {
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("File");
 
@@ -858,7 +861,7 @@ public class App extends Application {
         fileMenu.getItems().add(about);
 
         MenuItem importMenuItem = new MenuItem("Import Dataset");
-        importMenuItem.setOnAction(actionEvent -> doImportDataSet());
+        importMenuItem.setOnAction(actionEvent -> doImportDataSet(stage));
 
         // Exporting data
         Menu exportMenu = new Menu("Export Dataset");
