@@ -18,28 +18,13 @@ package dev.ikm.komet.kview.data.persistence;
 import dev.ikm.komet.kview.data.schema.SemanticDetail;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.dto.ConceptDTO;
-import dev.ikm.tinkar.dto.graph.VertexDTO;
 import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.entity.graph.DiTreeEntity;
-import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.factory.primitive.IntIntMaps;
-import org.eclipse.collections.api.factory.primitive.IntLists;
-import org.eclipse.collections.api.factory.primitive.IntObjectMaps;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.list.primitive.ImmutableIntList;
-import org.eclipse.collections.api.list.primitive.MutableIntList;
-import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
-import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
-
-import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
+
 
 public class SemanticWriter implements Writer {
 
@@ -173,93 +158,93 @@ public class SemanticWriter implements Writer {
         semantic(semantic, semanticDetail);
     }
 
-    public void statedAxiom(PublicId semantic, PublicId referencedComponent, List<PublicId> origins){
-        //Create Semantic Detail
-        SemanticDetail semanticDetail = new SemanticDetail(TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, referencedComponent, () -> {
-            //Semantic Field Object values
-            MutableList<Object> statedAxiomFields = Lists.mutable.empty();
-            MutableList<EntityVertex> vertexMap = Lists.mutable.empty();
-            MutableIntObjectMap<ImmutableIntList> succesorMap = IntObjectMaps.mutable.empty();
-            MutableIntIntMap predecessorMap = IntIntMaps.mutable.empty();
-            final AtomicInteger vertexIdx = new AtomicInteger(0);
-
-            //Definition Root
-            UUID definitionRootUUID = UUID.randomUUID();
-            MutableMap<ConceptDTO, Object> definitionRootProperty = Maps.mutable.empty();
-            VertexDTO definitionVertexDTO = new VertexDTO(
-                    definitionRootUUID.getMostSignificantBits(),
-                    definitionRootUUID.getLeastSignificantBits(),
-                    vertexIdx.getAndIncrement(),
-                    ConceptDTO.make(TinkarTerm.DEFINITION_ROOT.idString()),
-                    definitionRootProperty.toImmutable());
-            EntityVertex definitionRootVertex = EntityVertex.make(definitionVertexDTO);
-            vertexMap.add(definitionRootVertex);
-
-            //Reference(s)
-            MutableIntList referenceVeterxIdxList = IntLists.mutable.empty();
-            origins.stream()
-                    .map(publicId -> EntityService.get().nidForPublicId(publicId))
-                    .map(ConceptFacade::make)
-                    .forEach(conceptFacade -> {
-                        int referenceIdx = vertexIdx.getAndIncrement();
-                        referenceVeterxIdxList.add(referenceIdx);
-
-                        UUID referenceUUID = UUID.randomUUID();
-                        MutableMap<ConceptDTO, Object> referenceProperty = Maps.mutable.empty();
-                        referenceProperty.put(ConceptDTO.make(TinkarTerm.CONCEPT_REFERENCE.idString()),conceptFacade);
-                        EntityVertex referenceVertex = EntityVertex.make(new VertexDTO(
-                                referenceUUID.getMostSignificantBits(),
-                                referenceUUID.getLeastSignificantBits(),
-                                referenceIdx,
-                                ConceptDTO.make(TinkarTerm.CONCEPT_REFERENCE.idString()),
-                                referenceProperty.toImmutable()));
-                        vertexMap.add(referenceVertex);
-                    });
-
-            //AND
-            UUID andUUID = UUID.randomUUID();
-            MutableMap<ConceptDTO, Object> andProperty = Maps.mutable.empty();
-            EntityVertex andVertex = EntityVertex.make(new VertexDTO(
-                    andUUID.getMostSignificantBits(),
-                    andUUID.getLeastSignificantBits(),
-                    vertexIdx.getAndIncrement(),
-                    ConceptDTO.make(TinkarTerm.AND.idString()),
-                    andProperty.toImmutable()));
-            vertexMap.add(andVertex);
-
-            //Necessary Set
-            UUID necessarySetUUID = UUID.randomUUID();
-            MutableMap<ConceptDTO, Object> necessarySetProperty = Maps.mutable.empty();
-            EntityVertex necessarySetVertex = EntityVertex.make(new VertexDTO(
-                    necessarySetUUID.getMostSignificantBits(),
-                    necessarySetUUID.getLeastSignificantBits(),
-                    vertexIdx.get(),
-                    ConceptDTO.make(TinkarTerm.NECESSARY_SET.idString()),
-                    necessarySetProperty.toImmutable()));
-            vertexMap.add(necessarySetVertex);
-
-            int necessarySetIdx = vertexIdx.get();
-            int andIdx = vertexIdx.get() - 1;
-
-            //Successor Map
-            succesorMap.put(0, IntLists.immutable.of(necessarySetIdx).toImmutable());
-            succesorMap.put(andIdx, referenceVeterxIdxList.toImmutable());
-            succesorMap.put(necessarySetIdx, IntLists.immutable.of(andIdx).toImmutable());
-
-            //Predecessor Map
-            for (int referenceIdx : referenceVeterxIdxList.toArray()) {
-                predecessorMap.put(referenceIdx, andIdx);
-            }
-            predecessorMap.put(andIdx, necessarySetIdx);
-            predecessorMap.put(necessarySetIdx, 0);
-
-            statedAxiomFields.add(new DiTreeEntity(definitionRootVertex, vertexMap.toImmutable(), succesorMap.toImmutable(), predecessorMap.toImmutable()));
-            return statedAxiomFields;
-        });
-
-        //Write Semantic
-        semantic(semantic, semanticDetail);
-    }
+//    public void statedAxiom(PublicId semantic, PublicId referencedComponent, List<PublicId> origins){
+//        //Create Semantic Detail
+//        SemanticDetail semanticDetail = new SemanticDetail(TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, referencedComponent, () -> {
+//            //Semantic Field Object values
+//            MutableList<Object> statedAxiomFields = Lists.mutable.empty();
+//            MutableList<EntityVertex> vertexMap = Lists.mutable.empty();
+//            MutableIntObjectMap<ImmutableIntList> succesorMap = IntObjectMaps.mutable.empty();
+//            MutableIntIntMap predecessorMap = IntIntMaps.mutable.empty();
+//            final AtomicInteger vertexIdx = new AtomicInteger(0);
+//
+//            //Definition Root
+//            UUID definitionRootUUID = UUID.randomUUID();
+//            MutableMap<ConceptDTO, Object> definitionRootProperty = Maps.mutable.empty();
+//            VertexDTO definitionVertexDTO = new VertexDTO(
+//                    definitionRootUUID.getMostSignificantBits(),
+//                    definitionRootUUID.getLeastSignificantBits(),
+//                    vertexIdx.getAndIncrement(),
+//                    ConceptDTO.make(TinkarTerm.DEFINITION_ROOT.idString()),
+//                    definitionRootProperty.toImmutable());
+//            EntityVertex definitionRootVertex = EntityVertex.make(definitionVertexDTO);
+//            vertexMap.add(definitionRootVertex);
+//
+//            //Reference(s)
+//            MutableIntList referenceVeterxIdxList = IntLists.mutable.empty();
+//            origins.stream()
+//                    .map(publicId -> EntityService.get().nidForPublicId(publicId))
+//                    .map(ConceptFacade::make)
+//                    .forEach(conceptFacade -> {
+//                        int referenceIdx = vertexIdx.getAndIncrement();
+//                        referenceVeterxIdxList.add(referenceIdx);
+//
+//                        UUID referenceUUID = UUID.randomUUID();
+//                        MutableMap<ConceptDTO, Object> referenceProperty = Maps.mutable.empty();
+//                        referenceProperty.put(ConceptDTO.make(TinkarTerm.CONCEPT_REFERENCE.idString()),conceptFacade);
+//                        EntityVertex referenceVertex = EntityVertex.make(new VertexDTO(
+//                                referenceUUID.getMostSignificantBits(),
+//                                referenceUUID.getLeastSignificantBits(),
+//                                referenceIdx,
+//                                ConceptDTO.make(TinkarTerm.CONCEPT_REFERENCE.idString()),
+//                                referenceProperty.toImmutable()));
+//                        vertexMap.add(referenceVertex);
+//                    });
+//
+//            //AND
+//            UUID andUUID = UUID.randomUUID();
+//            MutableMap<ConceptDTO, Object> andProperty = Maps.mutable.empty();
+//            EntityVertex andVertex = EntityVertex.make(new VertexDTO(
+//                    andUUID.getMostSignificantBits(),
+//                    andUUID.getLeastSignificantBits(),
+//                    vertexIdx.getAndIncrement(),
+//                    ConceptDTO.make(TinkarTerm.AND.idString()),
+//                    andProperty.toImmutable()));
+//            vertexMap.add(andVertex);
+//
+//            //Necessary Set
+//            UUID necessarySetUUID = UUID.randomUUID();
+//            MutableMap<ConceptDTO, Object> necessarySetProperty = Maps.mutable.empty();
+//            EntityVertex necessarySetVertex = EntityVertex.make(new VertexDTO(
+//                    necessarySetUUID.getMostSignificantBits(),
+//                    necessarySetUUID.getLeastSignificantBits(),
+//                    vertexIdx.get(),
+//                    ConceptDTO.make(TinkarTerm.NECESSARY_SET.idString()),
+//                    necessarySetProperty.toImmutable()));
+//            vertexMap.add(necessarySetVertex);
+//
+//            int necessarySetIdx = vertexIdx.get();
+//            int andIdx = vertexIdx.get() - 1;
+//
+//            //Successor Map
+//            succesorMap.put(0, IntLists.immutable.of(necessarySetIdx).toImmutable());
+//            succesorMap.put(andIdx, referenceVeterxIdxList.toImmutable());
+//            succesorMap.put(necessarySetIdx, IntLists.immutable.of(andIdx).toImmutable());
+//
+//            //Predecessor Map
+//            for (int referenceIdx : referenceVeterxIdxList.toArray()) {
+//                predecessorMap.put(referenceIdx, andIdx);
+//            }
+//            predecessorMap.put(andIdx, necessarySetIdx);
+//            predecessorMap.put(necessarySetIdx, 0);
+//
+//            statedAxiomFields.add(new DiTreeEntity(definitionRootVertex, vertexMap.toImmutable(), succesorMap.toImmutable(), predecessorMap.toImmutable()));
+//            return statedAxiomFields;
+//        });
+//
+//        //Write Semantic
+//        semantic(semantic, semanticDetail);
+//    }
 
     private void write(PublicId semantic, SemanticDetail semanticDetail){
         //Assign primordial UUID from PublicId
