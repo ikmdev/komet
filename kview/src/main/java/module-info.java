@@ -86,6 +86,8 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.export;
     exports dev.ikm.komet.kview.mvvm.view.export;
     exports dev.ikm.komet.kview.mvvm.view;
+    exports dev.ikm.komet.kview.mvvm.view.pattern;
+    opens dev.ikm.komet.kview.mvvm.view.pattern to javafx.fxml, org.carlfx.cognitive;
 
     provides KometNodeFactory with DetailsNodeFactory, PropertiesNodeFactory;
 

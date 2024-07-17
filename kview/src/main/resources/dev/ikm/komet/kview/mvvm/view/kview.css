@@ -2441,7 +2441,34 @@ Timeline Year line segment (will overlay change circles)
     -fx-min-width: 212px;
 }
 
+.pattern-titled-pane {
+    -fx-border-width: 1 0 0 0;
+    -fx-border-color: -Grey-10;
+}
 
+.pattern-vertical-separator {
+    -fx-color-fill: -Grey-5;
+}
+
+.pattern-titled-pane > .title {
+    -fx-background-color: -Grey-2;    
+    -fx-pref-height: 32;
+    -fx-padding: 8 4 4 4;
+}
+
+.pattern-titled-pane > .title > .arrow-button .arrow {
+    -width-size: 15px;
+    -height-size: 9px;
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+
+    -fx-min-height: -height-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+    -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
+    -fx-background-color: -Secondary-05;    
+}
 
 /********************************************************************************
  * End of Journal > Search Concept UI elements                                  *
