@@ -15,29 +15,19 @@
  */
 package dev.ikm.komet.reasoner;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.ServiceLoader;
-import java.util.ServiceLoader.Provider;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
-import org.eclipse.collections.api.list.ImmutableList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import dev.ikm.komet.framework.ExplorationNodeAbstract;
 import dev.ikm.komet.framework.TopPanelFactory;
 import dev.ikm.komet.framework.activity.ActivityStreams;
+import dev.ikm.komet.framework.concurrent.TaskWrapper;
+import dev.ikm.komet.framework.events.*;
+import dev.ikm.komet.framework.events.appevents.ProgressEvent;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.reasoner.service.ReasonerService;
 import dev.ikm.komet.reasoner.ui.RunElkOwlReasonerIncrementalTask;
 import dev.ikm.komet.reasoner.ui.RunElkOwlReasonerTask;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.reasoner.service.ReasonerService;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
@@ -50,6 +40,18 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.ServiceLoader.Provider;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 
 public class ReasonerResultsNode extends ExplorationNodeAbstract {
 
@@ -143,18 +145,34 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 	}
 
 	private void fullReasoner() {
+
 		TinkExecutor.threadPool().execute(() -> {
 			// TODO use a factory for the service and then create here
 			reasonerService.init(getViewProperties().calculator(), TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
 					TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
 			RunElkOwlReasonerTask task = new RunElkOwlReasonerTask(reasonerService, resultsController::setResults);
-			Future<ReasonerService> reasonerFuture = TinkExecutor.threadPool().submit(task);
+
+			// publish event of task
+			TaskWrapper<ReasonerService> javafxTask = TaskWrapper.make(task);
+
+			EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
+			evtBus.publish(PROGRESS_TOPIC, new ProgressEvent<>(this, ProgressEvent.SUMMON, javafxTask));
+
+			Future reasonerFuture = TinkExecutor.threadPool().submit(javafxTask);
 			int conceptCount = 0;
 			try {
 				reasonerFuture.get();
 				conceptCount = reasonerService.getConceptCount();
-			} catch (InterruptedException | ExecutionException e) {
+			} catch (ExecutionException e) {
 				AlertStreams.dispatchToRoot(e);
+			} catch (InterruptedException ie) {
+				LOG.info(ie.getMessage(), ie);
+			} catch (CancellationException ce) {
+				LOG.info(ce.getMessage(), ce);
+				task.updateMessage("Cancelled by user");
+				javafxTask.updateProgress(-1, 1);
+				LOG.info("task is cancelled? " + task.isCancelled() );
+				LOG.info("javafxTask is cancelled? " + javafxTask.isCancelled() );
 			}
 
 			LOG.info("Concept count: " + conceptCount + " " + task.durationString());
@@ -166,13 +184,29 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 		TinkExecutor.threadPool().execute(() -> {
 			RunElkOwlReasonerIncrementalTask task = new RunElkOwlReasonerIncrementalTask(reasonerService,
 					resultsController::setResults);
-			Future<ReasonerService> reasonerFuture = TinkExecutor.threadPool().submit(task);
+			// publish event of task
+			TaskWrapper<ReasonerService> javafxTask = TaskWrapper.make(task);
+
+			EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
+			evtBus.publish(PROGRESS_TOPIC, new ProgressEvent<>(this, ProgressEvent.SUMMON, javafxTask));
+
+			Future reasonerFuture = TinkExecutor.threadPool().submit(javafxTask);
 			int conceptCount = 0;
 			try {
 				reasonerFuture.get();
 				conceptCount = reasonerService.getConceptCount();
-			} catch (InterruptedException | ExecutionException e) {
+			} catch (ExecutionException e) {
 				AlertStreams.dispatchToRoot(e);
+			} catch (InterruptedException ie) {
+				LOG.info(ie.getMessage(), ie);
+				task.updateMessage(ie.getMessage());
+				javafxTask.updateProgress(0, 1);
+			} catch (CancellationException ce) {
+				LOG.info(ce.getMessage(), ce);
+				task.updateMessage("Cancelled by user");
+				javafxTask.updateProgress(0, 1);
+				LOG.info("task is cancelled? " + task.isCancelled() );
+				LOG.info("javafxTask is cancelled? " + javafxTask.isCancelled() );
 			}
 
 			LOG.info("Concept count: " + conceptCount + " " + task.durationString());

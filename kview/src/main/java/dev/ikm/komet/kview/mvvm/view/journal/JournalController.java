@@ -15,42 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.journal;
 
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
-import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
-import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CONCEPT_TOPIC;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.DEVICE_ENTITY;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.STAMP_VIEW_MODEL;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.CONCEPT_FOLDER_PREFIX;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_HEIGHT;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_XPOS;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_YPOS;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_HEIGHT;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_PREF_NAME;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_WIDTH;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_XPOS;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_YPOS;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_TYPE;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_VALUE;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_FOLDER_PREFIX;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_COUNT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_NAMES;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
-import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
-import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
-import static java.io.File.separator;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -59,6 +23,7 @@ import dev.ikm.komet.framework.activity.ActivityStreams;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.events.appevents.ProgressEvent;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.tabs.DetachableTab;
@@ -77,6 +42,7 @@ import dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel;
 import dev.ikm.komet.kview.mvvm.view.details.ConceptPreference;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
+import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
 import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -103,50 +69,55 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import org.carlfx.cognitive.loader.Config;
-import org.carlfx.cognitive.loader.FXMLMvvmLoader;
-import org.carlfx.cognitive.loader.InjectViewModel;
-import org.carlfx.cognitive.loader.JFXNode;
-import org.carlfx.cognitive.loader.NamedVm;
+import org.carlfx.cognitive.loader.*;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
+import org.controlsfx.control.PopOver;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.prefs.BackingStoreException;
+
+import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
+import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
+import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
+import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.*;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.*;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
+import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
+import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
+import static java.io.File.separator;
 
 /**
  * This view is responsible for updating the kView journal window by loading a navigation panel
@@ -176,6 +147,10 @@ public class JournalController {
 
     @FXML
     private HBox projectBarHBox;
+
+    @FXML
+    private VBox sidebarVBox;
+
     @FXML
     private ToggleGroup sidebarToggleGroup;
 
@@ -192,6 +167,9 @@ public class JournalController {
     private Pane nexGenSearchSlideoutTrayPane;
 
     @FXML
+    private Pane progressSlideoutTrayPane;
+
+    @FXML
     private ToggleButton reasonerToggleButton;
 
     @FXML
@@ -199,6 +177,9 @@ public class JournalController {
 
     @FXML
     private ToggleButton searchToggleButton;
+
+    @FXML
+    private ToggleButton progressToggleButton;
 
     @FXML
     private ToggleButton settingsToggleButton;
@@ -215,6 +196,7 @@ public class JournalController {
     /////////////////////////////////////////////////////////////////
     // Private Data
     /////////////////////////////////////////////////////////////////
+    private VBox progressListVBox = new VBox();
     private Pane navigatorNodePanel;
 
     private Pane searchNodePanel;
@@ -263,6 +245,7 @@ public class JournalController {
 
         // When user clicks on sidebar tray's toggle buttons.
         sidebarToggleGroup.selectedToggleProperty().addListener((observableValue, oldValue, newValue) -> {
+
             // slide in previous panel
             slideIn(oldValue);
 
@@ -289,6 +272,66 @@ public class JournalController {
             }
         };
         journalEventBus.subscribe(JOURNAL_TOPIC, MakeConceptWindowEvent.class, makeConceptWindowEventSubscriber);
+
+        // by default hide progress toggle button
+        progressToggleButton.setVisible(false);
+        // Listen for progress tasks
+        setupProgressListener();
+
+        // add a vbox list for progress popups.
+        setupSlideOutTrayPane(progressListVBox, progressSlideoutTrayPane);
+        SlideOutTrayHelper.slideIn(progressSlideoutTrayPane);
+    }
+    private void setupProgressListener() {
+        Subscriber<ProgressEvent> progressPopupSubscriber = evt -> {
+            // if summon event type, load stuff and reference task to progress popup
+            if (evt.getEventType() == SUMMON) {
+                progressToggleButton.setVisible(true);
+                Task<Void> task = (Task<Void>) evt.getTask();
+                JFXNode<Pane, ProgressController> progressJFXNode = createProgressBox(task);
+                ProgressController progressController = progressJFXNode.controller();
+
+                Pane progressPane = progressJFXNode.node();
+                PopOver popOver = new PopOver(progressPane);
+
+                // setup close button
+                progressController.getCloseProgressButton().setOnAction(actionEvent -> {
+                    popOver.hide();
+                    progressController.cleanup();
+                });
+
+                popOver.setOnHidden(windowEvent -> {
+                    progressController.cleanup();
+                });
+
+                popOver.setArrowLocation(PopOver.ArrowLocation.LEFT_TOP);
+                Platform.runLater(() -> popOver.show(progressToggleButton));
+
+                // Create one inside the list for bump out
+                JFXNode<Pane, ProgressController> progressJFXNode2 = createProgressBox(task);
+                ProgressController progressController2 = progressJFXNode2.controller();
+                Pane progressBox2 = progressJFXNode2.node();
+                progressController2.getCloseProgressButton().setOnAction(actionEvent -> {
+                    progressController2.cleanup();
+                    Platform.runLater(()->  progressListVBox.getChildren().remove(progressBox2));
+                });
+                Platform.runLater(()->  progressListVBox.getChildren().add(0, progressBox2));
+            }
+        };
+        journalEventBus.subscribe(PROGRESS_TOPIC, ProgressEvent.class, progressPopupSubscriber);
+
+
+
+    }
+
+    private JFXNode<Pane, ProgressController> createProgressBox(Task<Void> task) {
+        // Create one inside the list for bump out
+        // Inject Stamp view model into form.
+        Config config = new Config(ProgressController.class.getResource("progress.fxml"));
+        config.updateViewModel("progressViewModel",
+                (viewModel -> viewModel.setPropertyValue(TASK_PROPERTY, task)));
+        JFXNode<Pane, ProgressController> progressJFXNode = FXMLMvvmLoader.make(config);
+        return progressJFXNode;
     }
 
     public ToggleButton getSettingsToggleButton() {
@@ -314,6 +357,8 @@ public class JournalController {
             return reasonerSlideoutTrayPane;
         } else if (nextGenSearchToggleButton.equals(selectedToggleButton)) {
             return nexGenSearchSlideoutTrayPane;
+        } else if (progressToggleButton.equals(selectedToggleButton)) {
+            return progressSlideoutTrayPane;
         }
         return null;
     }
@@ -473,7 +518,11 @@ public class JournalController {
         activityStreams.add(detailsActivityStreamKey);
         KometNodeFactory detailsNodeFactory = new DetailsNodeFactory();
         DetailsNode detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
-                detailsActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY, true);
+                detailsActivityStreamKey,
+                ActivityStreamOption.PUBLISH.keyForOption(),
+                AlertStreams.ROOT_ALERT_STREAM_KEY,
+                true,
+                journalTopic);
         detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
 
         //Getting the concept window pane
@@ -533,7 +582,11 @@ public class JournalController {
         activityStreams.add(detailsActivityStreamKey);
         KometNodeFactory detailsNodeFactory = new DetailsNodeFactory();
         DetailsNode detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
-                detailsActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY, true);
+                detailsActivityStreamKey,
+                ActivityStreamOption.PUBLISH.keyForOption(),
+                AlertStreams.ROOT_ALERT_STREAM_KEY,
+                true,
+                journalTopic);
         detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
         // For Create mode for Creating a concept.
@@ -898,7 +951,11 @@ public class JournalController {
                 activityStreams.add(detailsActivityStreamKey);
                 KometNodeFactory detailsNodeFactory = new DetailsNodeFactory();
                 DetailsNode detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
-                        detailsActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY, true);
+                        detailsActivityStreamKey,
+                        ActivityStreamOption.PUBLISH.keyForOption(),
+                        AlertStreams.ROOT_ALERT_STREAM_KEY,
+                        true,
+                        journalTopic);
                 detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
                 Pane kometNodePanel = (Pane) detailsNode.getNode();
 

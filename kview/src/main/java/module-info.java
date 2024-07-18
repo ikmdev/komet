@@ -80,6 +80,8 @@ module dev.ikm.komet.kview {
     exports dev.ikm.komet.kview.lidr.mvvm.view.analyte;
     opens dev.ikm.komet.kview.lidr.mvvm.view.results to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.lidr.mvvm.view.results;
+    opens dev.ikm.komet.kview.mvvm.view.progress to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.progress;
 
 
     // TODO a temporary export screen for next gen ui.

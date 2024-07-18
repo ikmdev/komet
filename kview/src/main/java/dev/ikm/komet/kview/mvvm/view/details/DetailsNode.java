@@ -47,6 +47,7 @@ import static dev.ikm.komet.kview.fxutils.CssHelper.defaultStyleSheet;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
 import static dev.ikm.komet.framework.activity.ActivityStreamOption.PUBLISH;
 import static dev.ikm.komet.framework.activity.ActivityStreamOption.SYNCHRONIZE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 
 public class DetailsNode extends ExplorationNodeAbstract {
     private static final Logger LOG = LoggerFactory.getLogger(DetailsNode.class);
@@ -87,6 +88,10 @@ public class DetailsNode extends ExplorationNodeAbstract {
      */
     private void init(boolean displayOnJournalView) {
         try {
+            // Let's grab what's inside the properties. Should be the journal window's event topic.
+            // This details concept window can message events to the current journal window. E.g. progress popup window.
+            UUID journalWindowTopic = nodePreferences().getUuid(PreferenceKey.CURRENT_JOURNAL_WINDOW_TOPIC).get();
+
             // create a unique topic for each concept detail instance
             UUID conceptTopic = UUID.randomUUID();
 
@@ -95,7 +100,9 @@ public class DetailsNode extends ExplorationNodeAbstract {
             // 2) not in fxml view class    - apply(file, view, ...view models)
             // 3) not in fxml view instance - apply(file, view instance, ...view models)
             Config config = new Config(getClass().getResource(CONCEPT_DETAILS_VIEW_FXML_FILE))
-                    .controller(new DetailsController(conceptTopic));
+                    .controller(new DetailsController(conceptTopic))
+                    .updateViewModel("conceptViewModel", viewModel ->
+                        viewModel.setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalWindowTopic));
             JFXNode<BorderPane, DetailsController> jfxNode = FXMLMvvmLoader.make(config);
 
             this.detailsViewBorderPane = jfxNode.node();

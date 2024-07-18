@@ -73,7 +73,7 @@
         <controlsfx.version>11.1.0</controlsfx.version>
         <ikonli.version>12.2.0</ikonli.version>
         <nsmenufx.version>3.1.0</nsmenufx.version>
-        <cognitive.version>1.0.0</cognitive.version>
+        <cognitive.version>1.1.0</cognitive.version>
         <openjfx.version>21</openjfx.version>
         <javafx.version>0.0.8</javafx.version>
         <jpackage.version>1.6.0</jpackage.version>

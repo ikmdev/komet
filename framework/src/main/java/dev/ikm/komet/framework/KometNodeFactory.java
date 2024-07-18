@@ -44,7 +44,9 @@ public interface KometNodeFactory {
                              PublicIdStringKey<ActivityStream> activityStreamKey,
                              PublicIdStringKey<ActivityStreamOption> activityStreamOption,
                              PublicIdStringKey<Broadcaster<AlertObject>> parentAlertStreamKey,
-                             boolean displayOnJournalView) {
+                             boolean displayOnJournalView,
+                             UUID journalTopic
+    ) {
         KometPreferences nodePreferences = KometPreferencesImpl.getConfigurationRootPreferences().node(newPreferenceNodeName());
         // Add activity stream key
         if (activityStreamKey != null) {
@@ -52,6 +54,11 @@ public interface KometNodeFactory {
         }
         if (activityStreamOption != null) {
             nodePreferences.putObject(KometNode.PreferenceKey.ACTIVITY_STREAM_OPTION_KEY, activityStreamOption);
+        }
+
+        // Add the journal window's event topic
+        if (displayOnJournalView && journalTopic != null) {
+            nodePreferences.putUuid(KometNode.PreferenceKey.CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic);
         }
 
         try{
@@ -70,9 +77,17 @@ public interface KometNodeFactory {
     default KometNode create(ObservableViewNoOverride windowView,
                              PublicIdStringKey<ActivityStream> activityStreamKey,
                              PublicIdStringKey<ActivityStreamOption> activityStreamOption,
+                             PublicIdStringKey<Broadcaster<AlertObject>> parentAlertStreamKey,
+                             boolean displayOnJournalView
+    ) {
+        return create(windowView, activityStreamKey, activityStreamOption, parentAlertStreamKey, displayOnJournalView, null);
+    }
+    default KometNode create(ObservableViewNoOverride windowView,
+                             PublicIdStringKey<ActivityStream> activityStreamKey,
+                             PublicIdStringKey<ActivityStreamOption> activityStreamOption,
                              PublicIdStringKey<Broadcaster<AlertObject>> parentAlertStreamKey) {
 
-        return create(windowView, activityStreamKey, activityStreamOption, parentAlertStreamKey, false);
+        return create(windowView, activityStreamKey, activityStreamOption, parentAlertStreamKey, false, null);
     }
 
     default String newPreferenceNodeName() {
