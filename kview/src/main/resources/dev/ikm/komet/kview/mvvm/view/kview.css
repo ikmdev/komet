@@ -3572,3 +3572,56 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: transparent;
 }
 
+/* kview Progress bar popup */
+.kview-progress-container {
+    -fx-background-insets: 0;
+    -fx-background-radius: 6;
+    -fx-background-color: transparent;
+}
+.kview-progress {
+    -fx-background-insets: 0;
+    -fx-background-radius: 6;
+    -fx-background-color: #2E3240;
+    -fx-border-color: #44495E;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6;
+    -fx-padding: 14px 20px;
+    -fx-effect: dropshadow(one-pass-box, rgba(0, 0, 0, 0.20), 10, 0.01, 4, 4);
+}
+
+.kview-progress-container .button.close-button,
+.kview-progress-container .toggle-button {
+    /* defaults for buttons */
+    -default-width: 21px;
+    -default-height: 21px;
+    -fx-background-color: transparent;
+    -fx-min-height: -default-height;
+    -fx-pref-height: -default-height;
+    -fx-max-height: -default-height;
+    -fx-content-display: graphic-only;
+    -fx-min-width: -default-width;
+    -fx-pref-width: -default-width;
+    -fx-max-width: -default-width;
+}
+
+.kview-progress .progress-bar {
+    -fx-indeterminate-bar-length: 60;
+    -fx-indeterminate-bar-escape: true;
+    -fx-indeterminate-bar-flip: true;
+    -fx-indeterminate-bar-animation-time: 2;
+}
+.kview-progress .progress-bar > .bar {
+    -fx-background-color: #00BC62;
+    -fx-background-insets: 3 3 4 3;
+    /*-fx-background-radius: 0.583em; *//* 7 */
+    -fx-background-radius: 6;
+    -fx-padding: 0.75em;
+}
+.kview-progress .progress-bar:indeterminate > .bar {
+    -fx-background-color: linear-gradient(to left, transparent, -fx-accent);
+}
+.kview-progress .progress-bar > .track {
+    -fx-background-color: #545D72;
+    -fx-background-insets: 0;
+    -fx-background-radius: 6;
+}

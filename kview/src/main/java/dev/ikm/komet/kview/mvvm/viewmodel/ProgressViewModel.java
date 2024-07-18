@@ -13,12 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.framework.events;
+package dev.ikm.komet.kview.mvvm.viewmodel;
 
-public enum FrameworkTopics {
-    RULES_TOPIC,
+import javafx.concurrent.Task;
+import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 
-    SEARCH_SORT_TOPIC,
+public class ProgressViewModel extends ValidationViewModel {
+    public static String TASK_PROPERTY = "taskProperty";
+    public static String IS_CANCELLED_PROP = "cancelState";
+    public static String CANCEL_BUTTON_TEXT_PROP = "cancelButtonText";
 
-    PROGRESS_TOPIC
+
+
+    public ProgressViewModel(){
+        super();
+        addProperty(TASK_PROPERTY, (Task<Void>) null);
+        addProperty(IS_CANCELLED_PROP, false);
+        addProperty(CANCEL_BUTTON_TEXT_PROP, "Cancel");
+    }
 }

@@ -15,8 +15,12 @@
  */
 package dev.ikm.komet.kview.mvvm.view.export;
 
+import dev.ikm.komet.framework.events.EvtBus;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.appevents.ProgressEvent;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -26,6 +30,7 @@ import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -43,8 +48,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 
 /**
  * ArtifactExportController is responsible for triggering an export class in Tinkar-Core. This class
@@ -266,7 +274,7 @@ public class ArtifactExportController2 {
     private void exportAll(File exportFile) {
         updateProgressBar(true);
         hideProgressStatusMessage();
-        EntityService.get()
+        CompletableFuture<EntityCountSummary> completableFuture = EntityService.get()
                 .fullExport(exportFile).whenComplete((entityCountSummary, th) -> {
                     updateProgressBar(false);
                     if (th != null) {
@@ -279,6 +287,7 @@ public class ArtifactExportController2 {
                         updateProgressStatusMessage(true, "Export Completed!");
                     }
                 });
+        notifyProgressIndicator(completableFuture, "Export all data");
     }
 
     private void exportTimeFilteredSelection(File exportFile) {
@@ -298,7 +307,7 @@ public class ArtifactExportController2 {
         //Calls a tinkar-core class that is responsible for transforming entities from the database to
         updateProgressBar(true);
         hideProgressStatusMessage();
-        EntityService.get().temporalExport(exportFile, selectedEpochMillisFrom, selectedEpocMillisTo)
+        CompletableFuture<EntityCountSummary> completableFuture = EntityService.get().temporalExport(exportFile, selectedEpochMillisFrom, selectedEpocMillisTo)
                 .whenComplete((entityCountSummary, th) -> {
                     updateProgressBar(false);
                     if (th != null) {
@@ -312,6 +321,8 @@ public class ArtifactExportController2 {
                     }
 
                 });
+        notifyProgressIndicator(completableFuture, "Export time filtered data");
+
     }
 
     private void exportTagFilteredSelection(File exportFile) {
@@ -323,7 +334,7 @@ public class ArtifactExportController2 {
                 .getSelectedItems().stream().map(EntityFacade::description).toList());
         updateProgressBar(true);
         hideProgressStatusMessage();
-        EntityService.get().membershipExport(exportFile, selectedTagIds)
+        CompletableFuture<EntityCountSummary> completableFuture = EntityService.get().membershipExport(exportFile, selectedTagIds)
                 .whenComplete((entityCountSummary, th) -> {
                     updateProgressBar(false);
                     if (th != null) {
@@ -336,8 +347,34 @@ public class ArtifactExportController2 {
                         updateProgressStatusMessage(true, "Export Completed!");
                     }
                 });
+        notifyProgressIndicator(completableFuture, "Export tag filtered");
     }
 
+    private void notifyProgressIndicator(CompletableFuture<EntityCountSummary> completableFuture, String title) {
+        Task<EntityCountSummary> javafxTask = new Task() {
+            @Override
+            protected EntityCountSummary call() throws Exception {
+                updateTitle(title);
+                updateProgress(-1, 1);
+                completableFuture.whenComplete((entityCountSummary, th) -> {
+                    if (th != null) {
+                        updateMessage( "Export failed to complete");
+                        updateProgress(0.0, 0.0);
+                    }else {
+                        updateMessage("Export Completed!");
+                        updateProgress(0.0, 1.0);
+                    }
+                });
+                EntityCountSummary entityCountSummary = completableFuture.get();
+
+                return entityCountSummary;
+            }
+        };
+        TinkExecutor.threadPool().execute(javafxTask);
+        EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
+        evtBus.publish(PROGRESS_TOPIC, new ProgressEvent<>(this, ProgressEvent.SUMMON, javafxTask));
+
+    }
     public void handleSelectivePathExport(ActionEvent event) {
         //Getting selected item from the combobox
         LOG.info("Path Id: " + handlePathComboBox.getSelectionModel().getSelectedItem().nid());

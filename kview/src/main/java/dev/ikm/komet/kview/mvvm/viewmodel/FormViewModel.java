@@ -21,6 +21,7 @@ import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import java.util.UUID;
 
 public class FormViewModel extends ValidationViewModel {
+    public static String CURRENT_JOURNAL_WINDOW_TOPIC = "CURRENT_JOURNAL_WINDOW_TOPIC";
     public static String CONCEPT_TOPIC = "conceptTopic";
     public static String VIEW_PROPERTIES = "viewProperties";
     public static String MODE = "mode";
@@ -34,7 +35,8 @@ public class FormViewModel extends ValidationViewModel {
         // Default Form View
         addProperty(MODE, EDIT);
 
-        addProperty(CONCEPT_TOPIC, (UUID) null);
+        addProperty(CURRENT_JOURNAL_WINDOW_TOPIC, (UUID) null); // events within the current journal window's scope
+        addProperty(CONCEPT_TOPIC, (UUID) null);                // events within the concept window's scope
         addProperty(VIEW_PROPERTIES, (ViewProperties) null);
     }
 }

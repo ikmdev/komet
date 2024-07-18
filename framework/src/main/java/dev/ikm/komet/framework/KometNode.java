@@ -131,6 +131,7 @@ public interface KometNode extends WindowComponent {
     enum PreferenceKey {
         ACTIVITY_STREAM_KEY,
         ACTIVITY_STREAM_OPTION_KEY,
-        PARENT_ALERT_STREAM_KEY
+        PARENT_ALERT_STREAM_KEY,
+        CURRENT_JOURNAL_WINDOW_TOPIC
     }
 }
