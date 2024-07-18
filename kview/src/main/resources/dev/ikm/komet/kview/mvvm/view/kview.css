@@ -2441,6 +2441,22 @@ Timeline Year line segment (will overlay change circles)
     -fx-min-width: 212px;
 }
 
+.search-drop-region {
+    -height: 840px;
+    -width: 672px;
+    -fx-min-height: -height;
+    -fx-pref-height: -height;
+    -fx-min-width: -width;
+    -fx-pref-width: -width;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-stroke: -Primary-04;
+    -fx-border-color: -Primary-04;
+    -fx-border-width: 4;
+    -fx-border-style: dashed;
+    -fx-background-color: rgba(255, 255, 255, 0.50);    
+}
+
 .pattern-titled-pane {
     -fx-border-width: 1 0 0 0;
     -fx-border-color: -Grey-10;
