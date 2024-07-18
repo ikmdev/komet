@@ -560,6 +560,8 @@ public class App extends Application {
             throw new RuntimeException(e);
         }
 
+        journalController.setWindowView(windowSettings.getView());
+
         // Launch windows window pane inside journal view
         journalStageWindow.setOnShown(windowEvent -> {
             //TODO: Refactor factory constructor calls below to use ServiceLoader (make constructors private)
@@ -568,10 +570,9 @@ public class App extends Application {
 
             journalController.launchKometFactoryNodes(
                     journalWindowSettings.getValue(JOURNAL_TITLE),
-                    windowSettings.getView(),
                     navigatorNodeFactory,
                     searchNodeFactory);
-            journalController.loadNextGenSearchPanel(windowSettings.getView());
+            journalController.loadNextGenSearchPanel();
         });
         // disable the delete menu option for a Journal Card.
         journalWindowSettings.setValue(CAN_DELETE, false);

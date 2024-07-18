@@ -28,6 +28,7 @@ import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.events.SearchSortOptionEvent;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
+import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
@@ -46,6 +47,9 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -254,13 +258,33 @@ public class NextGenSearchController extends AbstractBasicController {
             controller.setIdenticon(Identicon.generateIdenticonImage(entityVersion.publicId()));
             controller.setSemanticText(topText);
             controller.setWindowView(windowView);
-            controller.setData(Entity.getConceptForSemantic(entityVersion.nid()).get());
+            Entity entity = Entity.get(entityVersion.nid()).get();
+            controller.setData((ConceptEntity) entity);
             if (entityVersion.active()) {
                 controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
             }
             VBox.setMargin(node, new Insets(2, 0, 2, 0));
 
+            setUpDraggable(node, entity);
+
             resultsVBox.getChildren().add(node);
+        });
+
+    }
+
+    private void setUpDraggable(Node node, Entity entity) {
+        node.setUserData(entity.publicId());
+
+        node.setOnDragDetected(mouseEvent -> {
+            Dragboard dragboard = node.startDragAndDrop(TransferMode.COPY_OR_MOVE);
+
+            // put the nid on the dragboard
+            ClipboardContent content = new ClipboardContent();
+            content.putString(entity.publicId().toString());
+
+            dragboard.setContent(content);
+            LOG.info(mouseEvent.toString());
+            mouseEvent.consume();
         });
 
     }
@@ -311,13 +335,15 @@ public class NextGenSearchController extends AbstractBasicController {
         SemanticEntityVersion semantic = latestVersionSearchResult.latestVersion().get();
         controller.setIdenticon(Identicon.generateIdenticonImage(semantic.publicId()));
         controller.setSemanticText(formatHighlightedString(latestVersionSearchResult.highlightedString()));
-        controller.setData(Entity.getConceptForSemantic(semantic.nid()).get());
+        Entity entity = Entity.getConceptForSemantic(semantic.nid()).get();
+        controller.setData((ConceptEntity) entity);
         if (semantic.active()) {
             controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
             controller.increaseTextFlowWidth();
         }
         controller.setWindowView(windowView);
         VBox.setMargin(node, new Insets(2, 0, 2, 0));
+        setUpDraggable(node, entity);
         return node;
     }
 
@@ -336,7 +362,8 @@ public class NextGenSearchController extends AbstractBasicController {
 
             controller.setIdenticon(Identicon.generateIdenticonImage(entityVersion.publicId()));
             controller.setWindowView(windowView);
-            controller.setData((ConceptEntity) Entity.get(entityVersion.nid()).get());
+            Entity entity = Entity.get(entityVersion.nid()).get();
+            controller.setData((ConceptEntity) entity);
             controller.setComponentText(topText);
 
             // add the custom descriptions
@@ -350,14 +377,14 @@ public class NextGenSearchController extends AbstractBasicController {
                 descrLabel.setPadding(new Insets(8));
             });
 
-            entry.get().setUserData(topNid);
-
             if (entityVersion.active()) {
                 controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
             }
             controller.setRetired(!entityVersion.active());
             VBox.setMargin(entry.get(), new Insets(8, 0, 8, 0));
 
+
+            setUpDraggable(entry.get(), entity);
         });
 
         return entry.get();

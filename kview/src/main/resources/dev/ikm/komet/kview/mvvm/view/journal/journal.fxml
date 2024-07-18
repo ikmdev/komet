@@ -134,7 +134,11 @@
                         </HBox>
                      </top>
                      <center>
-                        <Pane fx:id="desktopSurfacePane" prefHeight="200.0" prefWidth="200.0" styleClass="desktop-area" />
+                        <Pane fx:id="desktopSurfacePane" prefHeight="200.0" prefWidth="200.0" styleClass="desktop-area">
+                           <children>
+                              <Region fx:id="dropAnimationRegion" layoutX="32.0" layoutY="30.0" mouseTransparent="true" prefHeight="200.0" prefWidth="200.0" styleClass="search-drop-region" />
+                           </children>
+                        </Pane>
                      </center>
                   </BorderPane>
                </center>
