@@ -98,6 +98,4 @@ open module dev.ikm.komet.framework {
             with DefaultEvtBus;
 
     uses dev.ikm.komet.framework.events.EvtBus;
-    
-    exports dev.ikm.komet.framework.fileimport;
 }

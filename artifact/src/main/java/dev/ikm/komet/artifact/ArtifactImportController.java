@@ -16,7 +16,12 @@
 package dev.ikm.komet.artifact;
 
 
-import dev.ikm.komet.framework.fileimport.ImportViewModel;
+import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
+import dev.ikm.komet.framework.concurrent.TaskWrapper;
+import dev.ikm.komet.framework.events.EvtBus;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.appevents.ProgressEvent;
+import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -29,8 +34,6 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
-
-import static dev.ikm.tinkar.common.service.CachingService.LOG;
 
 public class ArtifactImportController {
     @FXML
@@ -105,13 +108,29 @@ public class ArtifactImportController {
         importProgressBar.setVisible(true);
         importButton.setDisable(true);
         File selectedFile = new File(choosenFileLabel.getText());
-        Task<Boolean> importTask = ImportViewModel.createWorker(selectedFile);
+        Task<Boolean> importTask = createWorker(selectedFile);
 
         importProgressBar.progressProperty().unbind();
         importProgressBar.progressProperty().bind(importTask.progressProperty());
 
         Thread thread = new Thread(importTask);
         thread.start();
+    }
+
+    private Task createWorker(File selectedFile) {
+        LoadEntitiesFromProtobufFile loadEntities = new LoadEntitiesFromProtobufFile(selectedFile);
+
+        // create the JavaFX task
+        TaskWrapper javafxTask = TaskWrapper.make(loadEntities);
+
+        // publish event of task
+        EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
+
+        evtBus.publish(PROGRESS_TOPIC, new ProgressEvent<>(this, ProgressEvent.SUMMON, javafxTask));
+
+        // execute the task
+        TinkExecutor.threadPool().execute(javafxTask);
+        return javafxTask;
     }
 
     @FXML

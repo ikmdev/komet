@@ -19,6 +19,7 @@ import static dev.ikm.komet.app.AppState.LOADING_DATA_SOURCE;
 import static dev.ikm.komet.app.AppState.SHUTDOWN;
 import static dev.ikm.komet.app.AppState.STARTING;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
+import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.CENTER_TAB_PREFERENCES;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.LEFT_TAB_PREFERENCES;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.RIGHT_TAB_PREFERENCES;
@@ -45,10 +46,11 @@ import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.ScreenInfo;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
+import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
-import dev.ikm.komet.framework.fileimport.ImportViewModel;
+import dev.ikm.komet.framework.events.appevents.ProgressEvent;
 import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.KometPreferencesStage;
@@ -86,6 +88,7 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -111,8 +114,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import javafx.stage.Stage;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.factory.Lists;
@@ -436,10 +439,24 @@ public class App extends Application {
         File selectedFile = fileChooser.showOpenDialog(stage);
         // selectedFile is null if the user clicks cancel
         if (selectedFile != null) {
-            Task<Boolean> importTask = ImportViewModel.createWorker(selectedFile);
-            Thread thread = new Thread(importTask);
-            thread.start();
+            createWorker(selectedFile);
         }
+    }
+
+    private Task createWorker(File selectedFile) {
+        LoadEntitiesFromProtobufFile loadEntities = new LoadEntitiesFromProtobufFile(selectedFile);
+
+        // create the JavaFX task
+        TaskWrapper javafxTask = TaskWrapper.make(loadEntities);
+
+        // publish event of task
+        EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
+
+        evtBus.publish(PROGRESS_TOPIC, new ProgressEvent<>(this, ProgressEvent.SUMMON, javafxTask));
+
+        // execute the task
+        TinkExecutor.threadPool().execute(javafxTask);
+        return javafxTask;
     }
 
     private void launchLandingPage() {
