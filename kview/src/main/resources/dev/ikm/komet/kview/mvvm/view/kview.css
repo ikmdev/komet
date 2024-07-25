@@ -2191,6 +2191,40 @@ Timeline Year line segment (will overlay change circles)
  * End of LIDR > Device UI elements                                               *
  *********************************************************************************/
 
+/*********************************************************************************
+ * Start of Pattern UI elements                                                  *
+ *********************************************************************************/
+
+.pattern-region-add {
+    -width-size: 24;
+    -height-size: 24;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-background-color: -Secondary-05;
+    -fx-shape: "M20 13H13V20H11V13H4V11H11V4H13V11H20V13Z";    
+}
+
+.membership-tag-combo-box {
+    -fx-background-color: -Grey-1;
+    -fx-color: -Grey-8;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+}
+
+.membership-tag-combo-box.combo-box-base > .arrow-button > .arrow {
+    -fx-background-color: -Secondary-05;
+    -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
+
+}
+
+/*********************************************************************************
+ * End of Pattern UI elements                                                    *
+ *********************************************************************************/
+
 
 /********************************************************************************
  * Start of Journal > Search Concept UI elements                                *

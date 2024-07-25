@@ -42,7 +42,7 @@ public class PropertiesNode extends ExplorationNodeAbstract {
 
     protected final SimpleObjectProperty<EntityFacade> entityFocusProperty = new SimpleObjectProperty<>();
     protected FlowSubscriber<Integer> invalidationSubscriber;
-    protected static final String CONCEPT_PROPERTIES_VIEW_FXML_FILE = "properties.fxml";
+    protected static final String CONCEPT_PROPERTIES_VIEW_FXML_FILE = "pattern-properties.fxml";
     protected static final String STYLE_ID = "kview-properties-node";
     protected static final String TITLE = "Knowledge View Properties";
     private BorderPane propertiesViewBorderPane;
