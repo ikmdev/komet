@@ -235,7 +235,7 @@
                                        <content>
                                           <VBox fx:id="lidrRecordsVBox">
                                              <children>
-                                                <TitledPane maxHeight="1.7976931348623157E308" minHeight="0.0" styleClass="lidr-result-titled-pane" stylesheets="@../../../view/kview.css" text="SARS-CoV-2 Result Interpretation 1">
+                                                <TitledPane maxHeight="1.7976931348623157E308" minHeight="0.0" styleClass="lidr-result-titled-pane" stylesheets="@../../../../mvvm/view/kview.css" text="SARS-CoV-2 Result Interpretation 1">
                                                    <content>
                                                       <BorderPane maxHeight="1.7976931348623157E308">
                                                          <center>
@@ -401,7 +401,7 @@
                                                       </BorderPane>
                                                    </content>
                                                 </TitledPane>
-                                                <TitledPane maxHeight="1.7976931348623157E308" minHeight="0.0" styleClass="lidr-result-titled-pane" stylesheets="@../../../view/kview.css" text="SARS-CoV-2 Result Interpretation 2">
+                                                <TitledPane maxHeight="1.7976931348623157E308" minHeight="0.0" styleClass="lidr-result-titled-pane" stylesheets="@../../../../mvvm/view/kview.css" text="SARS-CoV-2 Result Interpretation 2">
                                                    <content>
                                                       <BorderPane maxHeight="1.7976931348623157E308">
                                                          <center>
