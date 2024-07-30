@@ -17,7 +17,7 @@ package dev.ikm.komet.kview.mvvm.view.pattern;
 
 import static dev.ikm.komet.kview.events.PatternPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.PatternPropertyPanelEvent.OPEN_PANEL;
-import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_ADD_DESCRIPTION;
+import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_ADD_DEFINITION;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
@@ -34,7 +34,6 @@ import dev.ikm.komet.kview.events.PatternPropertyPanelEvent;
 
 
 import dev.ikm.komet.kview.events.ShowPatternPanelEvent;
-import dev.ikm.komet.kview.lidr.events.LidrPropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
@@ -116,7 +115,7 @@ public class PatternDetailsController {
     public PatternDetailsController() {}
 
     @FXML
-    public void initialize() {
+    private void initialize() {
         // event bus will listen on this topic.
         if (conceptTopic == null) {
             // if not set caller used the one set inside the view model.
@@ -200,7 +199,7 @@ public class PatternDetailsController {
         // Todo show bump out and display Edit Description panel
         LOG.info("Todo show bump out and display Edit Description panel \n" + actionEvent);
         // publish property open.
-        eventBus.publish(conceptTopic, new ShowPatternPanelEvent(actionEvent.getSource(), SHOW_ADD_DESCRIPTION));
+        eventBus.publish(conceptTopic, new ShowPatternPanelEvent(actionEvent.getSource(), SHOW_ADD_DEFINITION));
 
         eventBus.publish(conceptTopic, new PatternPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }

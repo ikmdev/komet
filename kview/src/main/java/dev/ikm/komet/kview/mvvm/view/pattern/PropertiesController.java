@@ -15,8 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
-import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_ADD_DESCRIPTION;
-import static dev.ikm.komet.kview.lidr.events.ShowPanelEvent.SHOW_ADD_DEVICE;
+import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_ADD_DEFINITION;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CONCEPT_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
@@ -50,7 +49,7 @@ public class PropertiesController {
 
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesController.class);
 
-    private static final URL PATTERN_DESCRIPTION_FXML_URL = PatternDescriptionController.class.getResource("pattern-description.fxml");
+    private static final URL PATTERN_DEFINITION_FXML_URL = PatternDefinitionController.class.getResource("pattern-definition.fxml");
 
     private EvtBus eventBus;
 
@@ -77,29 +76,29 @@ public class PropertiesController {
 
     private Pane currentEditPane;
 
-    private PatternDescriptionController patternDescriptionController;
+    private PatternDefinitionController patternDescriptionController;
 
     private Pane patternDescriptionPane;
 
     private Subscriber<ShowPatternPanelEvent> showPatternPanelEventSubscriber;
 
     @FXML
-    public void initialize() throws IOException {
+    private void initialize() {
         clearView();
 
         eventBus = EvtBusFactory.getDefaultEvtBus();
 
         // +-----------------------------------
-        // ! Add description(s) to a Pattern
+        // ! Add definition(s) to a Pattern
         // +------------------------------------
-        Config descriptionConfig = new Config(PATTERN_DESCRIPTION_FXML_URL)
+        Config definitionConfig = new Config(PATTERN_DEFINITION_FXML_URL)
                 .updateViewModel("patternViewModel", (patternViewModel) ->
                                 patternViewModel
                                 .setPropertyValue(MODE, CREATE)
                                 .setPropertyValue(VIEW_PROPERTIES, getViewProperties())
                                 );
 
-        JFXNode<Pane, PatternDescriptionController> patternDescriptionControllerJFXNode = FXMLMvvmLoader.make(descriptionConfig);
+        JFXNode<Pane, PatternDefinitionController> patternDescriptionControllerJFXNode = FXMLMvvmLoader.make(definitionConfig);
         patternDescriptionController = patternDescriptionControllerJFXNode.controller();
         patternDescriptionPane = patternDescriptionControllerJFXNode.node();
 
@@ -110,8 +109,8 @@ public class PropertiesController {
             LOG.info("Show Edit View " + evt.getEventType());
             this.editButton.setSelected(true);
 
-            // TODO swap based on state (edit description, ).
-            if (evt.getEventType() == SHOW_ADD_DESCRIPTION) {
+            // TODO swap based on state (edit definition, ).
+            if (evt.getEventType() == SHOW_ADD_DEFINITION) {
                 currentEditPane = patternDescriptionPane; // must be available.
             }
             updateEditPane();
