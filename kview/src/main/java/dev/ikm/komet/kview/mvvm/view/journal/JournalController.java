@@ -286,10 +286,6 @@ public class JournalController {
      */
     @FXML
     public void initialize() {
-        //FIXME why can't I make this initially invisible, then visible later when dragging starts?
-        //searchDropRegion.setVisible(false);
-        //searchDropRegion.setDisable(true);
-
         // According to the JavaFX docs an ordinary Pane does not clip region. TODO infinite workspace
         clipChildren(desktopSurfacePane, 0);
 

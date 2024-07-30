@@ -20,7 +20,7 @@ import dev.ikm.komet.framework.events.EvtType;
 
 public class ShowPatternPanelEvent extends Evt {
 
-    public static final EvtType<ShowPatternPanelEvent> SHOW_ADD_DESCRIPTION = new EvtType<>(Evt.ANY, "SHOW_ADD_DESCRIPTION");
+    public static final EvtType<ShowPatternPanelEvent> SHOW_ADD_DEFINITION = new EvtType<>(Evt.ANY, "SHOW_ADD_DEFINITION");
 
     //TODO future: other EvtTypes like show History, show Timeline etc
 

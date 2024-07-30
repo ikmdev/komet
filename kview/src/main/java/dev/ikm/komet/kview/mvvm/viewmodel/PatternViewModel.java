@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.terms.EntityFacade;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,10 +33,13 @@ public class PatternViewModel extends FormViewModel {
     // --------------------------------------------
     public static String STAMP_VIEW_MODEL = "stampViewModel";
 
+    public static String DEFINITION_VIEW_MODEL = "definitionViewModel";
+
     public PatternViewModel() {
         super();
             addProperty(CONCEPT_TOPIC, (UUID) null)
-                .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
-                .addProperty(STAMP_VIEW_MODEL, (ViewModel) null);
+                    .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+                    .addProperty(STAMP_VIEW_MODEL, (ViewModel) null)
+                    .addProperty(DEFINITION_VIEW_MODEL, (ViewModel) null);
     }
 }
