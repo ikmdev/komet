@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 
+import dev.ikm.tinkar.common.service.PluggableService;
+
 /**
  * Factory class to create and return an Event Bus implementation
  */
@@ -53,7 +55,7 @@ public class EvtBusFactory {
      */
     public static EvtBus getInstance(String name) {
         if (null == evtBusMap.get(name)) {
-            Optional<EvtBus> optBus = ServiceLoader.load(EvtBus.class)
+            Optional<EvtBus> optBus = PluggableService.load(EvtBus.class)
                     .stream()
                     .filter(evtBusProvider ->
                             evtBusProvider.type().isAnnotationPresent(EvtBusName.class)

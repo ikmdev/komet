@@ -30,6 +30,7 @@ import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
+import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -88,7 +89,7 @@ public class TabGroup extends StackPane implements WindowComponent {
             KometPreferences childPreferences = nodePreferences.node(KOMET_NODES + preferencesNode);
             childPreferences.get(WindowComponentKeys.FACTORY_CLASS).ifPresent(factoryClassName -> {
                 try {
-                    Class<?> objectClass = Class.forName(factoryClassName);
+                    Class<?> objectClass = PluggableService.forName(factoryClassName);
                     Class<? extends Annotation> annotationClass = Reconstructor.class;
                     Object[] parameters = new Object[]{windowView, childPreferences};
                     KometNode kometNode = (KometNode) Encodable.decode(objectClass, annotationClass, parameters);
@@ -98,6 +99,9 @@ public class TabGroup extends StackPane implements WindowComponent {
                     AlertStreams.getRoot().dispatch(AlertObject.makeError(e));
                 }
             });
+        }
+        if (detachableTabPane.getTabs().isEmpty()) {
+            selectedIndex = -1;
         }
         detachableTabPane.getSelectionModel().select(selectedIndex);
         return make(detachableTabPane, allowRemoval, windowView, nodePreferences);

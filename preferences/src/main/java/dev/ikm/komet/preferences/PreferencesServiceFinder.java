@@ -19,6 +19,8 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.ServiceLoader;
 
+import dev.ikm.tinkar.common.service.PluggableService;
+
 public enum PreferencesServiceFinder {
     INSTANCE;
 
@@ -26,13 +28,13 @@ public enum PreferencesServiceFinder {
 
     PreferencesServiceFinder() {
         Class serviceClass = PreferencesService.class;
-        ServiceLoader<PreferencesService> serviceLoader = ServiceLoader.load(serviceClass);
+        ServiceLoader<PreferencesService> serviceLoader = PluggableService.load(serviceClass);
         Optional<PreferencesService> optionalService = serviceLoader.findFirst();
         if (optionalService.isPresent()) {
             this.service = optionalService.get();
         } else {
             throw new NoSuchElementException("No " + serviceClass.getName() +
-                    " found by ServiceLoader...");
+                    " found by PluggableService...");
         }
     }
 

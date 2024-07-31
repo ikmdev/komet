@@ -75,7 +75,8 @@ public class AxiomFocusedRules extends RulesBase {
             "$observation.isAxiomFocused",
             "$observation.isDefinitionRoot"
     })
-    public void axiomIsDefinitionRoot(ObservationRecord $observation) {
+    public void axiomIsDefinitionRoot(ObservationRecord $observation,
+                                      RhsContext ctx) {
         if ($observation.subject() instanceof AxiomSubjectRecord axiomSubjectRecord) {
             if (!axiomSubjectRecord.axiomTree().containsVertexWithMeaning(TinkarTerm.NECESSARY_SET)) {
                 // allow addition of necessary set

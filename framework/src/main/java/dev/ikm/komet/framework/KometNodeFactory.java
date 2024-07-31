@@ -24,6 +24,7 @@ import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertReportingService;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
+import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.util.broadcast.Broadcaster;
 import javafx.scene.control.Label;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -69,7 +70,7 @@ public interface KometNodeFactory {
         }catch(UnsupportedOperationException e){
             AlertObject alertObject = new AlertObject(UNSUPPORTED_OPERATION, e.getMessage(),
                     INFORMATION, TAXONOMY);
-            ServiceLoader<AlertReportingService> loader = ServiceLoader.load(AlertReportingService.class);
+            ServiceLoader<AlertReportingService> loader = PluggableService.load(AlertReportingService.class);
             StreamSupport.stream(loader.spliterator(), false).forEach(alertReportingService -> alertReportingService.onNext(alertObject));
         }
         return null;
@@ -117,10 +118,10 @@ public interface KometNodeFactory {
     String getStyleId();
 
     /**
-     * Getting available service providers using <code>java.tools.ServiceLoader</code> utility class.
+     * Getting available service providers using <code>dev.ikm.tinkar.common.service.PluggableService</code> utility class.
      * @return Iterable list of KometNodeFactory classes
      */
     static ServiceLoader<KometNodeFactory> getKometNodeFactories() {
-        return ServiceLoader.load(KometNodeFactory.class);
+        return PluggableService.load(KometNodeFactory.class);
     }
 }

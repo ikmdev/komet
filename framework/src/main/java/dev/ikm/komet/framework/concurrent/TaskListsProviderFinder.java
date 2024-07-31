@@ -19,6 +19,8 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.ServiceLoader;
 
+import dev.ikm.tinkar.common.service.PluggableService;
+
 public enum TaskListsProviderFinder {
     INSTANCE;
 
@@ -26,13 +28,13 @@ public enum TaskListsProviderFinder {
 
     TaskListsProviderFinder() {
         Class serviceClass = TaskListsService.class;
-        ServiceLoader<TaskListsService> serviceLoader = ServiceLoader.load(serviceClass);
+        ServiceLoader<TaskListsService> serviceLoader = PluggableService.load(serviceClass);
         Optional<TaskListsService> optionalService = serviceLoader.findFirst();
         if (optionalService.isPresent()) {
             this.service = optionalService.get();
         } else {
             throw new NoSuchElementException("No " + serviceClass.getName() +
-                    " found by ServiceLoader...");
+                    " found by PluggableService...");
         }
     }
 
