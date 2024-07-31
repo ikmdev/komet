@@ -60,7 +60,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
-        <tinkar-core.version>1.53.0</tinkar-core.version>
+        <tinkar-core.version>1.57.0</tinkar-core.version>
         <owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
         <owlapi.version>4.7.0</owlapi.version>
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
@@ -84,7 +84,7 @@
         <log4j.version>3.0.0-alpha1</log4j.version>
         <!-- Utilize for Binding to SLF4J -->
         <bind-to-slf4j.version>2.0.13</bind-to-slf4j.version>
-        <mockito.version>5.6.0</mockito.version>
+        <mockito.version>5.7.0</mockito.version>
         <common-java5.version>3.0.0-M9</common-java5.version>
         <maven.assembly-plugin.version>3.6.0</maven.assembly-plugin.version>
     </properties>

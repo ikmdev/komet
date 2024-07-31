@@ -19,20 +19,20 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.ServiceLoader;
+
+import dev.ikm.tinkar.common.service.PluggableService;
 
 public enum RuleServiceFinder {
     INSTANCE;
     RuleService service;
 
     RuleServiceFinder() {
-        ServiceLoader<RuleService> serviceLoader = ServiceLoader.load(RuleService.class);
-        Optional<RuleService> optionalService = serviceLoader.findFirst();
+        Optional<RuleService> optionalService = PluggableService.load(RuleService.class).findFirst();
         if (optionalService.isPresent()) {
             this.service = optionalService.get();
         } else {
             throw new NoSuchElementException("No " + RuleService.class.getName() +
-                    " found by ServiceLoader...");
+                    " found by PluggableService...");
         }
     }
 

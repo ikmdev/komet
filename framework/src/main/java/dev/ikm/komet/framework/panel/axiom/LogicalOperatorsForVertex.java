@@ -23,6 +23,7 @@ import dev.ikm.tinkar.terms.TinkarTerm;
 
 import java.util.Optional;
 
+// TODO: can this class be replaced with LogicalAxiomSemantic?
 public enum LogicalOperatorsForVertex {
     /**
      * The necessary set.
@@ -55,7 +56,7 @@ public enum LogicalOperatorsForVertex {
     DEFINITION_ROOT(TinkarTerm.DEFINITION_ROOT),
 
     /**
-     * The role all.
+     * A role
      */
     ROLE(TinkarTerm.ROLE),
 
@@ -71,7 +72,9 @@ public enum LogicalOperatorsForVertex {
 
     PROPERTY_SET(TinkarTerm.PROPERTY_SET),
 
-    PROPERTY_PATTERN_IMPLICATION(TinkarTerm.PROPERTY_PATTERN_IMPLICATION);
+    PROPERTY_PATTERN_IMPLICATION(TinkarTerm.PROPERTY_PATTERN_IMPLICATION),
+
+    IMPLICATION_SET(TinkarTerm.IMPLICATION_SET);
 
     final ConceptFacade logicalMeaning;
 

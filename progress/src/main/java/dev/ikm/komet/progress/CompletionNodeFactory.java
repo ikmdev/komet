@@ -76,4 +76,9 @@ public class CompletionNodeFactory implements KometNodeFactory {
     public String getStyleId() {
         return CompletionNode.STYLE_ID;
     }
+
+    public KometNode create() {
+        return new CompletionNode();
+    }
+
 }

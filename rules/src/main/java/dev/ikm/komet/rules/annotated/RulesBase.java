@@ -79,15 +79,15 @@ public abstract class RulesBase {
         this.viewProperties = viewProperties;
     }
 
-    protected EditCoordinate editCoordinate() {
+    public EditCoordinate editCoordinate() {
         return Objects.requireNonNull(editCoordinate);
     }
 
-    protected ViewProperties viewProperties() {
+    public ViewProperties viewProperties() {
         return Objects.requireNonNull(viewProperties);
     }
 
-    protected ViewCalculator calculator() {
+    public ViewCalculator calculator() {
         return viewProperties().calculator();
     }
 
