@@ -6,6 +6,7 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -17,7 +18,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox prefHeight="690.0" prefWidth="506.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.export.ExportDatasetController">
+<VBox prefHeight="690.0" prefWidth="506.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.export.ExportDatasetController">
    <children>
       <AnchorPane prefHeight="486.0" prefWidth="570.0">
          <children>
@@ -137,24 +138,44 @@
       </AnchorPane>
       <Pane prefHeight="205.0" prefWidth="540.0">
          <children>
-            <HBox alignment="CENTER" layoutX="353.0" layoutY="145.0" prefHeight="55.0" prefWidth="179.0" spacing="10.0">
+            <VBox>
                <children>
-                  <Button fx:id="cancelButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#handleCancelButtonEvent" prefHeight="24.0" prefWidth="72.0" text="CANCEL" textFill="#0f43d3f5">
-                     <font>
-                        <Font size="13.0" />
-                     </font>
-                     <opaqueInsets>
-                        <Insets bottom="4.0" left="16.0" right="16.0" top="4.0" />
-                     </opaqueInsets>
-                  </Button>
-                  <Button fx:id="exportButton" mnemonicParsing="false" onAction="#handleExport" prefHeight="25.0" prefWidth="76.0" style="-fx-background-color: #4A7AD2;" text="EXPORT" textFill="#e1e6f8">
-                     <font>
-                        <Font size="13.0" />
-                     </font>
-                  </Button>
+                  <TextField fx:id="commentTextField" alignment="TOP_LEFT" prefHeight="131.0" prefWidth="510.0" promptText="       Add comment here........" />
+                  <Label fx:id="exportStatusMessage" text="Export Status" visible="false">
+                     <VBox.margin>
+                        <Insets left="50.0" top="5.0" />
+                     </VBox.margin>
+                  </Label>
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                     <children>
+                        <ProgressBar fx:id="exportProgressBar" prefWidth="200.0" progress="0.0">
+                           <HBox.margin>
+                              <Insets right="100.0" />
+                           </HBox.margin>
+                        </ProgressBar>
+                        <Button fx:id="cancelButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#handleCancelButtonEvent" prefHeight="24.0" prefWidth="72.0" text="CANCEL" textFill="#0f43d3f5">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                           <opaqueInsets>
+                              <Insets bottom="4.0" left="16.0" right="16.0" top="4.0" />
+                           </opaqueInsets>
+                        </Button>
+                        <Button fx:id="exportButton" mnemonicParsing="false" onAction="#handleExport" prefHeight="25.0" prefWidth="76.0" style="-fx-background-color: #4A7AD2;" text="EXPORT" textFill="#e1e6f8">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Button>
+                     </children>
+                     <padding>
+                        <Insets left="20.0" top="20.0" />
+                     </padding>
+                  </HBox>
                </children>
-            </HBox>
-            <TextField fx:id="commentTextField" alignment="TOP_LEFT" layoutX="15.0" layoutY="4.0" prefHeight="131.0" prefWidth="510.0" promptText="       Add comment here........" />
+               <padding>
+                  <Insets left="10.0" right="10.0" />
+               </padding>
+            </VBox>
          </children>
          <cursor>
             <Cursor fx:constant="MOVE" />

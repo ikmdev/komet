@@ -15,16 +15,21 @@
  */
 package dev.ikm.komet.kview.mvvm.view.export;
 
-import dev.ikm.komet.kview.mvvm.view.BasicController;
-import dev.ikm.komet.kview.events.ExportDateTimePopOverEvent;
+import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.events.appevents.ProgressEvent;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.events.ExportDateTimePopOverEvent;
+import dev.ikm.komet.kview.mvvm.view.BasicController;
+import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.aggregator.TemporalEntityAggregator;
 import dev.ikm.tinkar.fhir.transformers.FhirCodeSystemTransform;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -41,7 +46,10 @@ import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -49,11 +57,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 import static dev.ikm.komet.kview.events.ExportDateTimePopOverEvent.*;
 
 public class ExportDatasetController implements BasicController {
@@ -115,6 +121,11 @@ public class ExportDatasetController implements BasicController {
     private Label dateTimeFromLabel;
     @FXML
     private Label dateTimeToLabel;
+
+    @FXML
+    ProgressBar exportProgressBar;
+    @FXML
+    Label exportStatusMessage;
 
     //////////////////////// private variables /////////////////////////////
     private ViewProperties viewProperties;
@@ -235,7 +246,7 @@ public class ExportDatasetController implements BasicController {
     }
 
     @FXML
-    void handleExport(ActionEvent event) throws IOException {
+    void handleExport(ActionEvent event){
 
         //Creating a file chooser so the user can choose a location for the outputted data
         FileChooser fileChooser = new FileChooser();
@@ -255,67 +266,60 @@ public class ExportDatasetController implements BasicController {
         File exportFile = fileChooser.showSaveDialog(exportButton.getScene().getWindow());
         if (exportFile != null) {
             exportButton.setDisable(true);
-            CompletableFuture.runAsync(() -> {
-                StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
-                FhirCodeSystemTransform fhirCodeSystemTransform = null;
-                String dateChoice = timePeriodComboBox.getSelectionModel().getSelectedItem();
-                if (CUSTOM_RANGE.equals(dateChoice)) {
-                    if (this.customFromEpochMillis == 0 && this.customToEpochMillis == 0) {
-                        fhirCodeSystemTransform = queryAndGetConceptInFhirFormat(transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()),
-                                transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()), stampCalculator, exportFile);
-                    } else if (this.customFromEpochMillis == 0) {
-                        fhirCodeSystemTransform = queryAndGetConceptInFhirFormat(transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()),
-                                this.customToEpochMillis, stampCalculator, exportFile);
-                    } else if (customToEpochMillis == 0) {
-                        fhirCodeSystemTransform = queryAndGetConceptInFhirFormat(this.customFromEpochMillis,
-                                transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()), stampCalculator, exportFile);
-                    } else {
-                        fhirCodeSystemTransform = queryAndGetConceptInFhirFormat(this.customFromEpochMillis, this.customToEpochMillis, stampCalculator, exportFile);
-                    }
+            exportProgressBar.setVisible(true);
+            exportStatusMessage.setVisible(false);
 
-                } else if (CURRENT_DATE.equals(dateChoice)) {
-                    fhirCodeSystemTransform = queryAndGetConceptInFhirFormat(transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM),
-                            System.currentTimeMillis(), stampCalculator, exportFile);
-                }
-                // compute()
-                try {
-                    if (fhirCodeSystemTransform != null) {
-                        fhirCodeSystemTransform.compute();
-                    }
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }).whenComplete((v, throwable) -> {
-                if (throwable != null) {
-                    LOG.error("Fhir Json File Export failed to complete");
-                    exportButton.setDisable(false);
-                } else {
-                    LOG.info("Fhir Json File Export Completed");
-                    exportButton.setDisable(false);
-                }
-            });
+            long fromDate = transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM);
+            long toDate =  System.currentTimeMillis();
+            String dateChoice = timePeriodComboBox.getSelectionModel().getSelectedItem();
+            if (CUSTOM_RANGE.equals(dateChoice)) {
+                fromDate = this.customFromEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()) : this.customFromEpochMillis;
+                toDate = this.customToEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()) : this.customToEpochMillis;
+            }
+            Task<Void> exportTask = exportChangeSet(fromDate, toDate, exportFile);
+            exportProgressBar.progressProperty().unbind();
+            exportProgressBar.progressProperty().bind(exportTask.progressProperty());
+            // publish event of task
+            EvtBusFactory.getDefaultEvtBus()
+                    .publish(PROGRESS_TOPIC, new ProgressEvent<>(this, ProgressEvent.SUMMON, exportTask));
+            // execute the task
+            TinkExecutor.threadPool().execute(exportTask);
+
         }
     }
 
-    private void saveZippedFhirFormatToDisk(String content, File file) throws IOException {
-        File tempFile = File.createTempFile("fhir", ".json");
-        try (Writer write = new FileWriter(tempFile)) {
-            write.write(content);
-        }
-        try (ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(file));
-             FileInputStream fis = new FileInputStream(tempFile)) {
-            ZipEntry zipEntry = new ZipEntry(tempFile.getName());
-            zipOut.putNextEntry(zipEntry);
-            byte[] bytes = new byte[1024];
-            int length;
-            while ((length = fis.read(bytes)) >= 0) {
-                zipOut.write(bytes, 0, length);
+    private Task<Void> exportChangeSet(long fromDate, long toDate, File exportFile) {
+        TrackingCallable<Void> trackingCallable = new TrackingCallable<>(){
+            @Override
+            protected Void compute() throws Exception {
+                updateTitle("FHIR JSON changeset to file " + exportFile.getName());
+                updateProgress(0,3);
+                updateMessage("Retrieving changeset data in progress.");
+                try{
+                    Set<ConceptEntity<? extends ConceptEntityVersion>> conceptEntities = retrieveDataTask(fromDate, toDate).call();
+                    updateProgress(1,3);
+                    updateMessage("Retrieved " + conceptEntities.size()+" concepts to export complete.");
+                    StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
+                    FhirCodeSystemTransform fhirCodeSystemTransform = new FhirCodeSystemTransform(fromDate, toDate, stampCalculator, conceptEntities.stream(), (fhirString) -> {
+                        try {
+                        updateProgress(2,3);
+                        saveFhirFormatToDisk(fhirString, exportFile);
+                        updateProgress(3,3);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                    fhirCodeSystemTransform.compute();
+                }catch(Exception e){
+                    LOG.error("Error Saving FHIR export file", e);
+                    updateMessage("Error Saving FHIR export file");
+                    return null;
+                }
+                exportButton.setDisable(false);
+                return null;
             }
-            zipOut.closeEntry();
-        } finally {
-            tempFile.delete();
-        }
-
+        };
+        return TaskWrapper.make(trackingCallable);
     }
 
     @FXML
@@ -324,7 +328,6 @@ public class ExportDatasetController implements BasicController {
             addTagStage.show();
             return;
         }
-
         addTagStage = new Stage();
         FXMLLoader addTagLoader = ExportDatasetViewFactory.createFXMLLoaderForAddTagExportDataset();
         try {
@@ -354,21 +357,13 @@ public class ExportDatasetController implements BasicController {
     public void handleCurrentDateTimeExport() {
         // Responsible for showing/hiding custom date range controls
         timePeriodComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
-
             if (timePeriodComboBox.getValue().equals("Current Date")) {
                 // Hide custom date range controls
                 dateTimePickerHbox.setVisible(false);
             } else {
                 dateTimePickerHbox.setVisible(true);
             }
-
         });
-    }
-
-    private long transformLocalDateTimeToEpochMillis(LocalDateTime localDateTime) {
-        ZoneId zoneId = ZoneId.of("America/New_York");
-        ZonedDateTime zonedDateTime = localDateTime.atZone(zoneId);
-        return zonedDateTime.toInstant().toEpochMilli();
     }
 
     @FXML
@@ -381,21 +376,26 @@ public class ExportDatasetController implements BasicController {
         toDateTimePopOver.show((Node) event.getSource());
     }
 
-    private static Set<ConceptEntity<? extends ConceptEntityVersion>> getConceptEntities(long fromTimeStamp, long toTimeStamp) {
-        Set<ConceptEntity<? extends ConceptEntityVersion>> concepts = new HashSet<>();
-        TemporalEntityAggregator temporalEntityAggregator = new TemporalEntityAggregator(fromTimeStamp, toTimeStamp);
-        temporalEntityAggregator.aggregate(nid -> {
-            Entity<EntityVersion> entity = EntityService.get().getEntityFast(nid);
-            if (entity instanceof ConceptEntity conceptEntity) {
-                concepts.add(conceptEntity);
-            } else if (entity instanceof SemanticEntity semanticEntity) {
-                Entity<EntityVersion> referencedConcept = semanticEntity.referencedComponent();
-                if (referencedConcept instanceof ConceptEntity concept) {
-                    concepts.add(concept);
-                }
+    private TrackingCallable<Set<ConceptEntity<? extends ConceptEntityVersion>>> retrieveDataTask(long fromTimeStamp, long toTimeStamp) {
+        return new TrackingCallable<>(){
+            @Override
+            protected Set<ConceptEntity<? extends ConceptEntityVersion>> compute() {
+                Set<ConceptEntity<? extends ConceptEntityVersion>> concepts = new HashSet<>();
+                TemporalEntityAggregator temporalEntityAggregator = new TemporalEntityAggregator(fromTimeStamp, toTimeStamp);
+                temporalEntityAggregator.aggregate(nid -> {
+                    Entity<EntityVersion> entity = EntityService.get().getEntityFast(nid);
+                    if (entity instanceof ConceptEntity conceptEntity) {
+                        concepts.add(conceptEntity);
+                    } else if (entity instanceof SemanticEntity semanticEntity) {
+                        Entity<EntityVersion> referencedConcept = semanticEntity.referencedComponent();
+                        if (referencedConcept instanceof ConceptEntity concept) {
+                            concepts.add(concept);
+                        }
+                    }
+                });
+                return concepts;
             }
-        });
-        return concepts;
+        };
     }
 
     public ViewProperties getViewProperties() {
@@ -411,18 +411,6 @@ public class ExportDatasetController implements BasicController {
         ZoneId zoneId = ZoneId.of("America/New_York");
         ZonedDateTime zonedDateTime = localDateTime.atZone(zoneId);
         return dateTimeFormatter.format(zonedDateTime);
-    }
-
-    private FhirCodeSystemTransform queryAndGetConceptInFhirFormat(long dateRangeFrom, long dateRangeTo, StampCalculator stampCalculator, File exportFile) {
-        Set<ConceptEntity<? extends ConceptEntityVersion>> concepts = getConceptEntities(dateRangeFrom, dateRangeTo);
-
-        return new FhirCodeSystemTransform(dateRangeFrom, dateRangeTo, stampCalculator, concepts.stream(), (fhirString) -> {
-            try {
-                saveFhirFormatToDisk(fhirString, exportFile);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
     }
 
     private void saveFhirFormatToDisk(String fhirString, File exportFile) throws IOException {
