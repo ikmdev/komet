@@ -18,6 +18,7 @@ package dev.ikm.komet.kview.mvvm.view.pattern;
 import static dev.ikm.komet.kview.events.PatternPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.PatternPropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_ADD_DEFINITION;
+import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_EDIT_FIELDS;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
@@ -102,6 +103,9 @@ public class PatternDetailsController {
 
     @FXML
     private Button addDescriptionButton;
+
+    @FXML
+    private Button editFieldsButton;
 
     @InjectViewModel
     private PatternViewModel patternViewModel;
@@ -200,6 +204,16 @@ public class PatternDetailsController {
         LOG.info("Todo show bump out and display Edit Description panel \n" + actionEvent);
         // publish property open.
         eventBus.publish(conceptTopic, new ShowPatternPanelEvent(actionEvent.getSource(), SHOW_ADD_DEFINITION));
+
+        eventBus.publish(conceptTopic, new PatternPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
+    }
+
+
+    @FXML
+    private void showEditFieldsPanel(ActionEvent actionEvent) {
+        LOG.info("Todo show bump out and display Edit Fields panel \n" + actionEvent);
+
+        eventBus.publish(conceptTopic, new ShowPatternPanelEvent(actionEvent.getSource(), SHOW_EDIT_FIELDS));
 
         eventBus.publish(conceptTopic, new PatternPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
