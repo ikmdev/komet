@@ -16,15 +16,15 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_ADD_DEFINITION;
+import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_EDIT_FIELDS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CONCEPT_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ShowPatternPanelEvent;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Toggle;
@@ -37,11 +37,9 @@ import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
-import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
 
@@ -51,10 +49,13 @@ public class PropertiesController {
 
     private static final URL PATTERN_DEFINITION_FXML_URL = PatternDefinitionController.class.getResource("pattern-definition.fxml");
 
+    private static final URL PATTERN_FIELDS_FXML_URL = PatternFieldsController.class.getResource("pattern-fields.fxml");
+
     private EvtBus eventBus;
 
     @InjectViewModel
-    private SimpleViewModel propertiesViewModel;
+    private PatternViewModel patternViewModel;
+
 
     @FXML
     private SVGPath commentsButton;
@@ -76,9 +77,13 @@ public class PropertiesController {
 
     private Pane currentEditPane;
 
-    private PatternDefinitionController patternDescriptionController;
+    private PatternDefinitionController patternDefinitionController;
 
-    private Pane patternDescriptionPane;
+    private PatternFieldsController patternFieldsController;
+
+    private Pane patternDefinitionPane;
+
+    private Pane patternFieldsPane;
 
     private Subscriber<ShowPatternPanelEvent> showPatternPanelEventSubscriber;
 
@@ -91,16 +96,21 @@ public class PropertiesController {
         // +-----------------------------------
         // ! Add definition(s) to a Pattern
         // +------------------------------------
-        Config definitionConfig = new Config(PATTERN_DEFINITION_FXML_URL)
-                .updateViewModel("patternViewModel", (patternViewModel) ->
-                                patternViewModel
-                                .setPropertyValue(MODE, CREATE)
-                                .setPropertyValue(VIEW_PROPERTIES, getViewProperties())
-                                );
+        Config definitionConfig = new Config(PATTERN_DEFINITION_FXML_URL);
 
-        JFXNode<Pane, PatternDefinitionController> patternDescriptionControllerJFXNode = FXMLMvvmLoader.make(definitionConfig);
-        patternDescriptionController = patternDescriptionControllerJFXNode.controller();
-        patternDescriptionPane = patternDescriptionControllerJFXNode.node();
+        JFXNode<Pane, PatternDefinitionController> patternDefinitionControllerJFXNode = FXMLMvvmLoader.make(definitionConfig);
+        patternDefinitionController = patternDefinitionControllerJFXNode.controller();
+        patternDefinitionPane = patternDefinitionControllerJFXNode.node();
+
+
+        // +-----------------------------------
+        // ! Edit field(s) within a Pattern
+        // +-----------------------------------
+        Config fieldsConfig = new Config(PATTERN_FIELDS_FXML_URL);
+
+        JFXNode<Pane, PatternFieldsController> patternFieldsJFXNode = FXMLMvvmLoader.make(fieldsConfig);
+        patternFieldsController = patternFieldsJFXNode.controller();
+        patternFieldsPane = patternFieldsJFXNode.node();
 
         // initially a default selected tab and view is shown
         updateDefaultSelectedViews();
@@ -111,7 +121,9 @@ public class PropertiesController {
 
             // TODO swap based on state (edit definition, ).
             if (evt.getEventType() == SHOW_ADD_DEFINITION) {
-                currentEditPane = patternDescriptionPane; // must be available.
+                currentEditPane = patternDefinitionPane; // must be available.
+            } else if (evt.getEventType() == SHOW_EDIT_FIELDS) {
+                currentEditPane = patternFieldsPane;
             }
             updateEditPane();
         };
@@ -131,7 +143,7 @@ public class PropertiesController {
         event.consume();
         this.editButton.setSelected(true);
         LOG.info("Show Edit View " + event);
-        contentBorderPane.setCenter(patternDescriptionPane);
+        contentBorderPane.setCenter(patternDefinitionPane);
     }
 
     private void updateEditPane() {
@@ -140,11 +152,11 @@ public class PropertiesController {
 
     public UUID getConceptTopic() {
         //TODO will we have a pattern topic?
-        return propertiesViewModel.getPropertyValue(CONCEPT_TOPIC);
+        return patternViewModel.getPropertyValue(CONCEPT_TOPIC);
     }
 
     public ViewProperties getViewProperties() {
-        return propertiesViewModel.getPropertyValue(VIEW_PROPERTIES);
+        return patternViewModel.getPropertyValue(VIEW_PROPERTIES);
     }
     public void clearView() {
     }

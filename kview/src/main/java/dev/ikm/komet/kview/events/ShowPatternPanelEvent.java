@@ -22,6 +22,8 @@ public class ShowPatternPanelEvent extends Evt {
 
     public static final EvtType<ShowPatternPanelEvent> SHOW_ADD_DEFINITION = new EvtType<>(Evt.ANY, "SHOW_ADD_DEFINITION");
 
+    public static final EvtType<ShowPatternPanelEvent> SHOW_EDIT_FIELDS = new EvtType<>(Evt.ANY, "SHOW_EDIT_FIELDS");
+
     //TODO future: other EvtTypes like show History, show Timeline etc
 
     /**
