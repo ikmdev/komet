@@ -61,6 +61,15 @@
                                        </padding></Region>
                                  </graphic>
                               </MenuItem>
+                             <MenuItem mnemonicParsing="false" styleClass="search-context-menu-item" text="Open in Concept Navigator" onAction="#openInConceptNavigator">
+                                <graphic>
+                                   <Region styleClass="populate-icon">
+                                      <padding>
+                                         <Insets right="16.0" />
+                                      </padding>
+                                   </Region>
+                                </graphic>
+                             </MenuItem>
                              <MenuItem mnemonicParsing="false" styleClass="search-context-menu-item" text="Send to Journal">
                                 <graphic>
                                    <Region styleClass="arrow-icon">

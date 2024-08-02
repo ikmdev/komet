@@ -15,11 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.search;
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.SEARCH_SORT_TOPIC;
-import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT;
-import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT_ALPHA;
-import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC;
-import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC_ALPHA;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -28,7 +23,6 @@ import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.events.SearchSortOptionEvent;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
-import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
@@ -63,14 +57,11 @@ import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.OptionalInt;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static dev.ikm.komet.framework.events.FrameworkTopics.SEARCH_SORT_TOPIC;
+import static dev.ikm.komet.kview.events.SearchSortOptionEvent.*;
 
 
 public class NextGenSearchController extends AbstractBasicController {
@@ -382,8 +373,6 @@ public class NextGenSearchController extends AbstractBasicController {
             }
             controller.setRetired(!entityVersion.active());
             VBox.setMargin(entry.get(), new Insets(8, 0, 8, 0));
-
-
             setUpDraggable(entry.get(), entity);
         });
 
