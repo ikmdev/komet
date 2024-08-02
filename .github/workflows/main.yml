@@ -16,6 +16,16 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: compile and build
+      - name: Checkout tinkar-core repo
+        uses: actions/checkout@v4
+        with:
+          repository: 'ikmdev/tinkar-core'
+          path: tinkar-core
+
+      - name: Build tinkar-core
+        working-directory: tinkar-core
+        run: mvn clean install
+
+      - name: Build Komet
         run: |
           mvn clean install
