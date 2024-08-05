@@ -51,7 +51,7 @@
                      <children>
                         <StackPane fx:id="purposeStackPane" alignment="TOP_CENTER">
                            <children>
-                              <Region prefHeight="200.0" prefWidth="200.0" styleClass="lidr-rounded-region" />
+                              <Region styleClass="rounded-region" />
                               <VBox>
                                  <StackPane.margin>
                                     <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
@@ -102,14 +102,6 @@
                            </VBox.margin>
                         </StackPane>
                                 <StackPane fx:id="selectedPurposeStackPane" alignment="TOP_CENTER">
-                                    <children>
-                                        <Region styleClass="lidr-rounded-region" />
-                                        <HBox fx:id="selectedPurpose">
-                                            <children>
-                                                <VBox fx:id="selectedPurposeContainer" />
-                                            </children>
-                                        </HBox>
-                                    </children>
                                     <opaqueInsets>
                                         <Insets />
                                     </opaqueInsets>

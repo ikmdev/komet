@@ -2273,6 +2273,34 @@ Timeline Year line segment (will overlay change circles)
     -fx-pref-width: 400px;
 }
 
+/* start making these for the dragged concept reusable fxml */
+.concept-entry {
+    -fx-border-radius: 2;
+    -fx-border-width: 1px;
+    -fx-border-color: -Grey-6;
+    -fx-background-color: white;
+    -fx-pref-width: 475px;
+}
+
+.concept-entry-label {
+    -fx-text-fill: -Grey-11;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-pref-width: 400px;
+}
+
+.concept-entry-close-button {
+    -fx-pref-width: 16px;
+    -fx-pref-height: 16px;
+    -fx-background-color: -Secondary-05;
+    -fx-shape: "M15.8337 5.34199L14.6587 4.16699L10.0003 8.82533L5.34199 4.16699L4.16699 5.34199L8.82533 10.0003L4.16699 14.6587L5.34199 15.8337L10.0003 11.1753L14.6587 15.8337L15.8337 14.6587L11.1753 10.0003L15.8337 5.34199Z";
+}
+
+
+/* end making these for the dragged concept reusable fxml */
+
 .rounded-region {
     -fx-background-radius: 8px;
     -fx-background-color: -Grey-4;

@@ -443,7 +443,7 @@
                               </Label>
                               <ImageView fx:id="identiconImageView" fitHeight="36.0" fitWidth="36.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-color: #F1F3F8;" GridPane.valignment="TOP">
                                  <image>
-                                    <Image url="@../images/pattern-identicon-placeholder.png" />
+                                    <Image url="@../images/identicon-placeholder.png" />
                                  </image></ImageView>
                            </children>
                            <padding>
