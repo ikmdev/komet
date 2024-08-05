@@ -48,6 +48,9 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.fxutils.window to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.fxutils.window;
 
+    opens dev.ikm.komet.kview.mvvm.view.common to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.common;
+
     exports dev.ikm.komet.kview.mvvm.model;
     exports dev.ikm.komet.kview.fxutils;
 
