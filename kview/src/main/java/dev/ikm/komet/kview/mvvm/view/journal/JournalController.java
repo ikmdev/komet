@@ -33,6 +33,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
+import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.fxutils.window.WindowSupport;
@@ -234,6 +235,8 @@ public class JournalController {
 
     private Subscriber<MakeConceptWindowEvent> makeConceptWindowEventSubscriber;
 
+    private Subscriber<ShowNavigationalPanelEvent> showNavigationalPanelEventSubscriber;
+
     @InjectViewModel
     private NextGenSearchViewModel nextGenSearchViewModel;
 
@@ -282,6 +285,17 @@ public class JournalController {
             }
         };
         journalEventBus.subscribe(JOURNAL_TOPIC, MakeConceptWindowEvent.class, makeConceptWindowEventSubscriber);
+
+        showNavigationalPanelEventSubscriber = evt -> {
+            try {
+                getNavigatorNode().getController().showConcept(evt.getConceptFacade().nid());
+            } catch (Exception e) {
+                LOG.error("Unable to process event: ", e);
+            }
+            navigatorToggleButton.setSelected(true);
+        };
+        journalEventBus.subscribe(JOURNAL_TOPIC, ShowNavigationalPanelEvent.class, showNavigationalPanelEventSubscriber);
+
 
         // initially drop region is invisible
         dropAnimationRegion.setVisible(false);
@@ -383,9 +397,6 @@ public class JournalController {
             }
         };
         journalEventBus.subscribe(PROGRESS_TOPIC, ProgressEvent.class, progressPopupSubscriber);
-
-
-
     }
 
     private JFXNode<Pane, ProgressController> createProgressBox(Task<Void> task) {
