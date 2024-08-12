@@ -269,12 +269,19 @@ public class KometStageController implements SaveState {
         this.nodePreferences = nodePreferences;
         this.window = topGridPane.getScene().getWindow();
         this.windowSettings = new WindowSettings(nodePreferences);
+        boolean windowInitialized = nodePreferences.getBoolean(WindowKeys.WINDOW_INITIALIZED, false);
 
         ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(windowSettings.getView().toViewCoordinateRecord());
 
-        this.leftDetachableTabPane = TabGroup.create(windowSettings.getView(), TabGroup.REMOVAL.DISALLOW);
-        this.centerDetachableTabPane = TabGroup.create(windowSettings.getView(), TabGroup.REMOVAL.DISALLOW);
-        this.rightDetachableTabPane = TabGroup.create(windowSettings.getView(), TabGroup.REMOVAL.DISALLOW);
+        if (windowInitialized) {
+            this.leftDetachableTabPane = TabGroup.create(windowSettings.getView(), nodePreferences.node(nodePreferences.get(WindowSettings.Keys.LEFT_TAB_PREFERENCES).get()));
+            this.centerDetachableTabPane = TabGroup.create(windowSettings.getView(), nodePreferences.node(nodePreferences.get(WindowSettings.Keys.CENTER_TAB_PREFERENCES).get()));
+            this.rightDetachableTabPane = TabGroup.create(windowSettings.getView(), nodePreferences.node(nodePreferences.get(WindowSettings.Keys.RIGHT_TAB_PREFERENCES).get()));
+        } else {
+            this.leftDetachableTabPane = TabGroup.create(windowSettings.getView(), TabGroup.REMOVAL.DISALLOW);
+            this.centerDetachableTabPane = TabGroup.create(windowSettings.getView(), TabGroup.REMOVAL.DISALLOW);
+            this.rightDetachableTabPane = TabGroup.create(windowSettings.getView(), TabGroup.REMOVAL.DISALLOW);
+        }
 
         leftBorderPane.setCenter(this.leftDetachableTabPane);
         centerBorderPane.setCenter(this.centerDetachableTabPane);

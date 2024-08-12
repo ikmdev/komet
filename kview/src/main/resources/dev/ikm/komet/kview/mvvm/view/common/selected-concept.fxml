@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="rounded-region" stylesheets="@../kview.css" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/22" fx:controller="dev.ikm.komet.kview.mvvm.view.common.SelectedConceptController">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="8.0" prefWidth="8.0" />
+      <ColumnConstraints hgrow="SOMETIMES" />
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="8.0" prefWidth="8.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints maxHeight="-Infinity" minHeight="8.0" prefHeight="8.0" vgrow="SOMETIMES" />
+    <RowConstraints maxHeight="-Infinity" minHeight="32.0" prefHeight="32.0" vgrow="SOMETIMES" />
+    <RowConstraints maxHeight="-Infinity" minHeight="8.0" prefHeight="8.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+   <children>
+      <HBox alignment="CENTER" maxWidth="1.7976931348623157E308" spacing="4.0" styleClass="concept-entry" GridPane.columnIndex="1" GridPane.rowIndex="1">
+         <children>
+            <ImageView fx:id="identicon" fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true" HBox.hgrow="ALWAYS">
+               <image>
+                  <Image url="@../images/identicon-placeholder.png" />
+               </image>
+            </ImageView>
+            <Label fx:id="conceptName" maxWidth="1.7976931348623157E308" styleClass="concept-entry-label" text="Concept Name" HBox.hgrow="ALWAYS" />
+            <Button fx:id="closeButton" alignment="CENTER_RIGHT" mnemonicParsing="false" styleClass="background-white" HBox.hgrow="ALWAYS">
+               <graphic>
+                  <Region styleClass="concept-entry-close-button" />
+               </graphic>
+            </Button>
+         </children>
+         <opaqueInsets>
+            <Insets />
+         </opaqueInsets>
+         <padding>
+            <Insets left="4.0" />
+         </padding>
+      </HBox>
+   </children>
+</GridPane>

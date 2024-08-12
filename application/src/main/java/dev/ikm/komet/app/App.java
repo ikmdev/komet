@@ -81,6 +81,7 @@ import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.Preferences;
 import dev.ikm.komet.progress.CompletionNodeFactory;
 import dev.ikm.komet.progress.ProgressNodeFactory;
+import dev.ikm.komet.reasoner.ReasonerResultsNodeFactory;
 import dev.ikm.komet.search.SearchNodeFactory;
 import dev.ikm.komet.table.TableNodeFactory;
 import dev.ikm.tinkar.common.alert.AlertObject;
@@ -131,6 +132,7 @@ import java.time.Year;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 
@@ -581,7 +583,7 @@ public class App extends Application {
 
         // Launch windows window pane inside journal view
         journalStageWindow.setOnShown(windowEvent -> {
-            //TODO: Refactor factory constructor calls below to use ServiceLoader (make constructors private)
+            //TODO: Refactor factory constructor calls below to use PluggableService (make constructors private)
             KometNodeFactory navigatorNodeFactory = new GraphNavigatorNodeFactory();
             KometNodeFactory searchNodeFactory = new SearchNodeFactory();
 

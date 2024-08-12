@@ -354,7 +354,7 @@
                                                 <Insets top="4.0" />
                                              </HBox.margin>
                                           </Separator>
-                                          <Button mnemonicParsing="false" styleClass="add-pencil-button" text="Button">
+                                          <Button fx:id="editFieldsButton" mnemonicParsing="false" onAction="#showEditFieldsPanel" styleClass="add-pencil-button" text="Button">
                                              <graphic>
                                                 <Region prefHeight="200.0" prefWidth="200.0" styleClass="add-pencil" stylesheets="@../kview.css" />
                                              </graphic>
@@ -443,7 +443,7 @@
                               </Label>
                               <ImageView fx:id="identiconImageView" fitHeight="36.0" fitWidth="36.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-color: #F1F3F8;" GridPane.valignment="TOP">
                                  <image>
-                                    <Image url="@../images/pattern-identicon-placeholder.png" />
+                                    <Image url="@../images/identicon-placeholder.png" />
                                  </image></ImageView>
                            </children>
                            <padding>

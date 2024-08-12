@@ -26,6 +26,7 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.reasoner.ui.RunElkOwlReasonerIncrementalTask;
 import dev.ikm.komet.reasoner.ui.RunElkOwlReasonerTask;
 import dev.ikm.tinkar.common.alert.AlertStreams;
+import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.reasoner.service.ReasonerService;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -79,7 +80,7 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 				ArrayList<MenuItem> collectionMenuItems = new ArrayList<>();
 				collectionMenuItems.add(new SeparatorMenuItem());
 
-				List<ReasonerService> rss = ServiceLoader.load(ReasonerService.class).stream().map(Provider::get)
+				List<ReasonerService> rss = PluggableService.load(ReasonerService.class).stream().map(Provider::get)
 						.sorted(Comparator.comparing(ReasonerService::getName)).toList();
 				for (ReasonerService rs : rss) {
 					LOG.info("Reasoner service add: " + rs);

@@ -16,6 +16,7 @@
 package dev.ikm.komet.framework.preferences;
 
 
+import dev.ikm.tinkar.common.service.PluggableService;
 import javafx.scene.control.TreeItem;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -61,7 +62,7 @@ public class PreferencesTreeItem extends TreeItem<PreferenceGroup> {
             try {
                 String propertySheetClassName = optionalPropertySheetClass.get();
 
-                Class preferencesSheetClass = Class.forName(propertySheetClassName);
+                Class preferencesSheetClass = PluggableService.forName(propertySheetClassName);
                 Constructor<PreferenceGroup> c = preferencesSheetClass.getConstructor(
                         KometPreferences.class,
                         ViewProperties.class,

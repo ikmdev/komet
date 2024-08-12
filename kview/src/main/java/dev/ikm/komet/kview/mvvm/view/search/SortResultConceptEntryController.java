@@ -15,11 +15,11 @@
  */
 package dev.ikm.komet.kview.mvvm.view.search;
 
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
+import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import javafx.event.ActionEvent;
@@ -28,7 +28,6 @@ import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -36,6 +35,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import org.carlfx.cognitive.viewmodel.ViewModel;
+
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 
 
 public class SortResultConceptEntryController extends AbstractBasicController {
@@ -108,6 +109,12 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     private void populateConcept(ActionEvent actionEvent) {
         actionEvent.consume();
         eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity, windowView));
+    }
+
+    @FXML
+    private  void openInConceptNavigator(ActionEvent actionEvent){
+        actionEvent.consume();
+        eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_CONCEPT, conceptEntity));
     }
 
     public boolean isRetired() {

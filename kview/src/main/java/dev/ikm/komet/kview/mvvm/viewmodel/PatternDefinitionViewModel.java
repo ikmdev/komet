@@ -16,29 +16,25 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import dev.ikm.komet.framework.view.ViewProperties;
-import org.carlfx.cognitive.viewmodel.ViewModel;
+import dev.ikm.tinkar.terms.EntityFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
-public class PatternViewModel extends FormViewModel {
+public class PatternDefinitionViewModel extends FormViewModel {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PatternViewModel.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PatternDefinitionViewModel.class);
 
+    public static String PURPOSE_ENTITY = "purposeEntity";
 
-    // --------------------------------------------
-    // Known properties
-    // --------------------------------------------
-    public static String STAMP_VIEW_MODEL = "stampViewModel";
+    public static String MEANING_ENTITY = "meaningEntity";
 
-    public static String DEFINITION_VIEW_MODEL = "definitionViewModel";
-
-    public PatternViewModel() {
+    public PatternDefinitionViewModel() {
         super();
-            addProperty(CONCEPT_TOPIC, (UUID) null)
-                    .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
-                    .addProperty(STAMP_VIEW_MODEL, (ViewModel) null)
-                    .addProperty(DEFINITION_VIEW_MODEL, (ViewModel) null);
+        addProperty(CONCEPT_TOPIC, (UUID) null)
+                .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+                .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
+                .addProperty(MEANING_ENTITY, (EntityFacade) null); // this is/will be the 'purpose' concept entity
     }
 }

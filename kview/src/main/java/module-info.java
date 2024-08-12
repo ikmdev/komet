@@ -26,6 +26,7 @@ module dev.ikm.komet.kview {
     requires dev.ikm.komet.classification;
     requires dev.ikm.komet.progress;
     requires org.carlfx.cognitive;
+    requires org.semanticweb.elk.reasoner;
 
     opens dev.ikm.komet.kview.mvvm.view.details to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.details;
@@ -47,6 +48,9 @@ module dev.ikm.komet.kview {
 
     opens dev.ikm.komet.kview.fxutils.window to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.fxutils.window;
+
+    opens dev.ikm.komet.kview.mvvm.view.common to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.common;
 
     exports dev.ikm.komet.kview.mvvm.model;
     exports dev.ikm.komet.kview.fxutils;

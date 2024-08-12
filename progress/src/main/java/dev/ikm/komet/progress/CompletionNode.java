@@ -48,6 +48,10 @@ public class CompletionNode extends ExplorationNodeAbstract {
         Bindings.bindContent(progressView.getTasks(), taskLists.completedTasks());
     }
 
+    public CompletionNode() {
+        super();
+    }
+
     public CompletionNode(ViewProperties viewProperties, KometPreferences nodePreferences) {
         super(viewProperties, nodePreferences);
         revertPreferences();

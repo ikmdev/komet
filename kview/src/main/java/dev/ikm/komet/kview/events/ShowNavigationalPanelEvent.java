@@ -17,14 +17,13 @@ package dev.ikm.komet.kview.events;
 
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.tinkar.terms.ConceptFacade;
 
-public class ShowPatternPanelEvent extends Evt {
+public class ShowNavigationalPanelEvent extends Evt {
+    public static final EvtType<ShowNavigationalPanelEvent> SHOW_CONCEPT_NAVIGATIONAL_FROM_CONCEPT = new EvtType<>(Evt.ANY, "SHOW_CONCEPT_NAVIGATIONAL_FROM_CONCEPT");
+    public static final EvtType<ShowNavigationalPanelEvent> SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC = new EvtType<>(Evt.ANY, "SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC");
 
-    public static final EvtType<ShowPatternPanelEvent> SHOW_ADD_DEFINITION = new EvtType<>(Evt.ANY, "SHOW_ADD_DEFINITION");
-
-    public static final EvtType<ShowPatternPanelEvent> SHOW_EDIT_FIELDS = new EvtType<>(Evt.ANY, "SHOW_EDIT_FIELDS");
-
-    //TODO future: other EvtTypes like show History, show Timeline etc
+    private ConceptFacade conceptFacade;
 
     /**
      * Constructs a prototypical Event.
@@ -33,7 +32,18 @@ public class ShowPatternPanelEvent extends Evt {
      * @param eventType
      * @throws IllegalArgumentException if source is null
      */
-    public ShowPatternPanelEvent(Object source, EvtType eventType) {
+    public ShowNavigationalPanelEvent(Object source, EvtType eventType) {
         super(source, eventType);
     }
-}
+
+    public ShowNavigationalPanelEvent(Object source, EvtType eventType, ConceptFacade conceptFacade) {
+        super(source, eventType);
+        this.conceptFacade = conceptFacade;
+    }
+
+
+    public ConceptFacade getConceptFacade(){
+        return conceptFacade;
+    }
+
+   }

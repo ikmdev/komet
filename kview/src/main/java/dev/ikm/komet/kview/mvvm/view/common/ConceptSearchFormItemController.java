@@ -13,25 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.mvvm.view.pattern;
+package dev.ikm.komet.kview.mvvm.view.common;
 
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-
-public class PatternDescriptionController {
-
-    @FXML
-    private Button cancelButton;
-
-    @FXML
-    private Button doneButton;
-
-    @FXML
-    private void clearView(ActionEvent actionEvent) {
-    }
-
-    @FXML
-    private void cancel(ActionEvent actionEvent) {
-    }
+public class ConceptSearchFormItemController {
 }

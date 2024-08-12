@@ -81,6 +81,7 @@ public class DeviceController implements BasicController {
     @FXML
     private StackPane selectedDeviceStackPane;
 
+    @FXML
     private HBox selectedConcept;
 
     @FXML
@@ -246,7 +247,7 @@ public class DeviceController implements BasicController {
         // format the device HBox
         selectedConcept.getStyleClass().add("lidr-device-entry");
         selectedConcept.setAlignment(Pos.CENTER_LEFT);
-        selectedConcept.setPadding(new Insets(4, 0, 4, 0));
+        selectedConcept.setPadding(new Insets(0, 0, 4, 0));
         HBox.setMargin(selectedDeviceContainer, new Insets(8));
 
         // add the close 'X' button to the right side of the device container

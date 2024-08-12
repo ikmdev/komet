@@ -17,24 +17,24 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<BorderPane stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDescriptionController">
+<BorderPane stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDefinitionController">
    <center>
       <ScrollPane fitToWidth="true" hbarPolicy="NEVER" BorderPane.alignment="CENTER">
          <BorderPane.margin>
             <Insets bottom="12.0" left="12.0" right="12.0" top="12.0" />
          </BorderPane.margin>
          <content>
-            <VBox fx:id="analyteGroupVbox">
+            <VBox fx:id="semanticOuterVBox">
                <children>
-                  <Label styleClass="lidr-device-label" text="Purpose" />
-                  <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="424.0">
+                  <Label fx:id="purposeLabel" styleClass="lidr-device-label" text="Purpose" />
+                  <VBox fx:id="selectedPurposeOuterContainer" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="424.0">
                      <children>
-                        <StackPane alignment="TOP_CENTER">
+                        <StackPane fx:id="selectedPurposeStackPane" alignment="TOP_CENTER">
                            <children>
                               <Region styleClass="lidr-rounded-region" />
-                              <HBox>
+                              <HBox fx:id="selectedPurpose">
                                  <children>
-                                    <VBox />
+                                    <VBox fx:id="selectedPurposeContainer" />
                                  </children>
                               </HBox>
                            </children>
@@ -47,9 +47,9 @@
                         </StackPane>
                      </children>
                   </VBox>
-                  <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="48.0" prefWidth="424.0">
+                  <VBox fx:id="purposeVBox" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="48.0" prefWidth="424.0">
                      <children>
-                        <StackPane alignment="TOP_CENTER">
+                        <StackPane fx:id="purposeStackPane" alignment="TOP_CENTER">
                            <children>
                               <Region prefHeight="200.0" prefWidth="200.0" styleClass="lidr-rounded-region" />
                               <VBox>
@@ -59,7 +59,7 @@
                                  <children>
                                     <HBox>
                                        <children>
-                                          <TextField alignment="TOP_CENTER" prefWidth="180.0" promptText="🔍  Search" styleClass="lidr-search-device-text-input" HBox.hgrow="ALWAYS">
+                                          <TextField fx:id="purposeSearchTextField" alignment="TOP_CENTER" prefWidth="180.0" promptText="🔍  Search" styleClass="lidr-search-device-text-input" HBox.hgrow="ALWAYS">
                                              <opaqueInsets>
                                                 <Insets />
                                              </opaqueInsets>
@@ -74,7 +74,7 @@
                                                 </Region>
                                              </graphic>
                                           </Button>
-                                          <Region prefHeight="200.0" prefWidth="200.0" styleClass="pattern-region-add">
+                                          <Region styleClass="region-add">
                                              <opaqueInsets>
                                                 <Insets />
                                              </opaqueInsets>
@@ -99,15 +99,15 @@
                         <Insets bottom="16.0" />
                      </VBox.margin>
                   </VBox>
-                  <Label styleClass="lidr-device-label" text="Meaning" />
-                  <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="424.0">
+                  <Label fx:id="meaningLabel" styleClass="lidr-device-label" text="Meaning" />
+                  <VBox fx:id="selectedMeaningOuterContainer" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="424.0">
                      <children>
-                        <StackPane alignment="TOP_CENTER">
+                        <StackPane fx:id="selectedMeaningStackPane" alignment="TOP_CENTER">
                            <children>
                               <Region styleClass="lidr-rounded-region" />
                               <HBox>
                                  <children>
-                                    <VBox />
+                                    <VBox fx:id="selectedMeaningContainer" />
                                  </children>
                               </HBox>
                            </children>
@@ -120,9 +120,9 @@
                         </StackPane>
                      </children>
                   </VBox>
-                  <VBox maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="48.0" prefWidth="424.0">
+                  <VBox fx:id="meaningVBox" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="48.0" prefWidth="424.0">
                      <children>
-                        <StackPane alignment="TOP_CENTER">
+                        <StackPane fx:id="meaningStackPane" alignment="TOP_CENTER">
                            <children>
                               <Region prefHeight="200.0" prefWidth="200.0" styleClass="lidr-rounded-region" />
                               <VBox>
@@ -132,7 +132,7 @@
                                  <children>
                                     <HBox>
                                        <children>
-                                          <TextField alignment="TOP_CENTER" prefWidth="424.0" promptText="🔍  Search" styleClass="lidr-search-device-text-input" HBox.hgrow="ALWAYS">
+                                          <TextField fx:id="meaningSearchTextField" alignment="TOP_CENTER" prefWidth="424.0" promptText="🔍  Search" styleClass="lidr-search-device-text-input" HBox.hgrow="ALWAYS">
                                              <opaqueInsets>
                                                 <Insets />
                                              </opaqueInsets>
@@ -147,7 +147,7 @@
                                                 </Region>
                                              </graphic>
                                           </Button>
-                                          <Region prefHeight="200.0" prefWidth="200.0" styleClass="pattern-region-add">
+                                          <Region styleClass="region-add">
                                              <HBox.margin>
                                                 <Insets bottom="2.0" left="4.0" right="5.0" top="2.0" />
                                              </HBox.margin>
