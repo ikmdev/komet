@@ -172,9 +172,6 @@ public class PatternDetailsController {
     @InjectViewModel
     private PatternViewModel patternViewModel;
 
-
-    private EvtBus eventBus;
-
     private Subscriber<PatternPropertyPanelEvent> patternPropertiesEventSubscriber;
 
     private Subscriber<PatternDefinitionEvent> patternDefinitionEventSubscriber;
@@ -189,7 +186,6 @@ public class PatternDetailsController {
     private void initialize() {
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
-        eventBus = EvtBusFactory.getDefaultEvtBus();
 
         // listen for open and close events
         patternPropertiesEventSubscriber = (evt) -> {
@@ -207,7 +203,7 @@ public class PatternDetailsController {
                 }
             }
         };
-        eventBus.subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternPropertyPanelEvent.class, patternPropertiesEventSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternPropertyPanelEvent.class, patternPropertiesEventSubscriber);
 
         // capture pattern definition information
         StringProperty purposeTextProperty = patternViewModel.getProperty(PURPOSE_TEXT);
@@ -229,7 +225,7 @@ public class PatternDetailsController {
                 purposeDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
             }
         };
-        eventBus.subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
 
         // capture descriptions information
         StringProperty fqnTextProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
@@ -257,13 +253,13 @@ public class PatternDetailsController {
                 otherNameDate.setText(StringUtils.EMPTY);
             }
         };
-        eventBus.subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
 
         patternFieldsPanelEventSubscriber = evt -> {
             patternViewModel.addPatternField(evt.getPatternField());
             addField(evt.getPatternField());
         };
-        eventBus.subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
 
         // Setup Properties
         setupProperties();
@@ -353,9 +349,9 @@ public class PatternDetailsController {
         // Todo show bump out and display Edit Description panel
         LOG.info("Todo show bump out and display Edit Definition panel \n" + actionEvent);
         // publish property open.
-        eventBus.publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternPanelEvent(actionEvent.getSource(), SHOW_ADD_DEFINITION));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternPanelEvent(actionEvent.getSource(), SHOW_ADD_DEFINITION));
 
-        eventBus.publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 
 
@@ -363,9 +359,9 @@ public class PatternDetailsController {
     private void showEditFieldsPanel(ActionEvent actionEvent) {
         LOG.info("Todo show bump out and display Edit Fields panel \n" + actionEvent);
 
-        eventBus.publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternPanelEvent(actionEvent.getSource(), SHOW_EDIT_FIELDS));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternPanelEvent(actionEvent.getSource(), SHOW_EDIT_FIELDS));
 
-        eventBus.publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 
     @FXML
@@ -376,14 +372,14 @@ public class PatternDetailsController {
     @FXML
     private void showAddFqnPanel(ActionEvent actionEvent) {
         LOG.info("Bumpout Add FQN panel \n" + actionEvent);
-        eventBus.publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternPanelEvent(actionEvent.getSource(), SHOW_ADD_FQN));
-        eventBus.publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternPanelEvent(actionEvent.getSource(), SHOW_ADD_FQN));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
     @FXML
     private void showAddOtherNamePanel(ActionEvent actionEvent) {
         LOG.info("Bumpout Add Other name panel \n" + actionEvent);
-        eventBus.publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternPanelEvent(actionEvent.getSource(), SHOW_ADD_OTHER_NAME));
-        eventBus.publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternPanelEvent(actionEvent.getSource(), SHOW_ADD_OTHER_NAME));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 
     @FXML
@@ -416,7 +412,7 @@ public class PatternDetailsController {
     private void openPropertiesPanel(ActionEvent event) {
         ToggleButton propertyToggle = (ToggleButton) event.getSource();
         EvtType<PatternPropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? OPEN_PANEL : CLOSE_PANEL;
-        eventBus.publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(propertyToggle, eventEvtType));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(propertyToggle, eventEvtType));
     }
 
     public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
