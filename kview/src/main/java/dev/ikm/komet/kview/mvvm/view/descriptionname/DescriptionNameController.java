@@ -133,7 +133,6 @@ public class DescriptionNameController {
     @FXML
     public void initialize() {
         clearView();
-//        setEditDescriptionTitleLabel("Edit Description: Other Name");
 
         descrNameViewModel
 //                .setPropertyValue(NAME_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE)
