@@ -15,10 +15,19 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
+import static dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent.PATTERN_DEFINITION;
+import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.MEANING_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.PURPOSE_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.events.EvtBus;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
+import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
+import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
@@ -50,6 +59,8 @@ public class PatternDefinitionController {
     private static final Logger LOG = LoggerFactory.getLogger(PatternDefinitionController.class);
 
     public static final String DRAG_AND_DROP_CONCEPT_S_HERE = "Drag and drop concept(s) here";
+
+    private EvtBus eventBus;
 
     @InjectViewModel
     private PatternDefinitionViewModel patternDefinitionViewModel;
@@ -112,7 +123,9 @@ public class PatternDefinitionController {
     private VBox semanticOuterVBox;
 
     @FXML
-    private void clearView(ActionEvent actionEvent) {
+    private void clearView() {
+        patternDefinitionViewModel.setPropertyValue(PatternViewModel.PURPOSE_ENTITY, null);
+        patternDefinitionViewModel.setPropertyValue(PatternViewModel.MEANING_ENTITY, null);
     }
 
     @FXML
@@ -122,6 +135,7 @@ public class PatternDefinitionController {
 
     @FXML
     private void initialize() {
+        eventBus = EvtBusFactory.getDefaultEvtBus();
 
         setupDragNDrop(purposeStackPane, (publicId) -> {
             // check to see if a pattern > purpose was already dragged into the purpose section before saving
@@ -130,8 +144,6 @@ public class PatternDefinitionController {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
                 patternDefinitionViewModel.setPropertyValue(PURPOSE_ENTITY, entity);
-                // save calls validate
-                patternDefinitionViewModel.save();
                 addPurposeToForm(entity);
             }
         });
@@ -143,8 +155,6 @@ public class PatternDefinitionController {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
                 patternDefinitionViewModel.setPropertyValue(MEANING_ENTITY, entity);
-                // save calls validate
-                patternDefinitionViewModel.save();
                 addMeaningToForm(entity);
             }
         });
@@ -412,8 +422,6 @@ public class PatternDefinitionController {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
                 patternDefinitionViewModel.setPropertyValue(MEANING_ENTITY, entity);
-                // save calls validate
-                patternDefinitionViewModel.save();
                 addMeaningToForm(entity);
             }
         });
@@ -492,12 +500,40 @@ public class PatternDefinitionController {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
                 patternDefinitionViewModel.setPropertyValue(PURPOSE_ENTITY, entity);
-                // save calls validate
-                patternDefinitionViewModel.save();
                 addPurposeToForm(entity);
             }
         });
 
         return purposeVBox;
+    }
+
+
+    @FXML
+    private void onCancel(ActionEvent actionEvent) {
+        actionEvent.consume();
+        clearView();
+        //publish close env
+        eventBus.publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+    }
+
+
+    @FXML
+    public void onDone(ActionEvent actionEvent) {
+        actionEvent.consume();
+        // save calls validate
+        patternDefinitionViewModel.save();
+
+        PatternDefinition patternDefinition = new PatternDefinition(
+                patternDefinitionViewModel.getPropertyValue(PURPOSE_ENTITY),
+                patternDefinitionViewModel.getPropertyValue(MEANING_ENTITY),
+                null);
+
+        //publish close env
+        eventBus.publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC),
+                new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+
+        // publish form submission data
+        eventBus.publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC),
+                new PatternDefinitionEvent(actionEvent.getSource(), PATTERN_DEFINITION, patternDefinition));
     }
 }
