@@ -135,7 +135,6 @@ public class DescriptionNameController {
         clearView();
 
         descrNameViewModel
-//                .setPropertyValue(NAME_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE)
                 .setPropertyValue(STATUS, TinkarTerm.ACTIVE_STATE);
 
         populateDialectComboBoxes();

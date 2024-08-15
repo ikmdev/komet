@@ -60,8 +60,6 @@ public class PatternDefinitionController {
 
     public static final String DRAG_AND_DROP_CONCEPT_S_HERE = "Drag and drop concept(s) here";
 
-    private EvtBus eventBus;
-
     @InjectViewModel
     private PatternDefinitionViewModel patternDefinitionViewModel;
 
@@ -135,7 +133,6 @@ public class PatternDefinitionController {
 
     @FXML
     private void initialize() {
-        eventBus = EvtBusFactory.getDefaultEvtBus();
 
         setupDragNDrop(purposeStackPane, (publicId) -> {
             // check to see if a pattern > purpose was already dragged into the purpose section before saving
@@ -513,7 +510,7 @@ public class PatternDefinitionController {
         actionEvent.consume();
         clearView();
         //publish close env
-        eventBus.publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+        EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
     }
 
 
@@ -529,11 +526,11 @@ public class PatternDefinitionController {
                 null);
 
         //publish close env
-        eventBus.publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC),
                 new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
 
         // publish form submission data
-        eventBus.publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC),
                 new PatternDefinitionEvent(actionEvent.getSource(), PATTERN_DEFINITION, patternDefinition));
     }
 }
