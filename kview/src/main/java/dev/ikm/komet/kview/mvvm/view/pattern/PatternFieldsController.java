@@ -72,7 +72,6 @@ public class PatternFieldsController {
     @InjectViewModel
     private PatternFieldsViewModel patternFieldsViewModel;
 
-    private EvtBus eventBus;
 
     @FXML
     private TextField displayNameTextField;
@@ -107,15 +106,8 @@ public class PatternFieldsController {
     @FXML
     private ComboBox<Integer> fieldOrderComboBox = new ComboBox<>();
 
-    private ObservableList<Integer> fieldOrderValues;
-
     @FXML
     private void initialize() {
-        // initially set the combo box to 1
-        //FIXME need observable for fields
-        fieldOrderComboBox = new ComboBox<>(fieldOrderValues);
-
-        eventBus = EvtBusFactory.getDefaultEvtBus();
 
         // load drag over animation for reuse on every drag and drop
         Config animeConfig = new Config(DRAG_OVER_ANIMATION_FXML_URL);
@@ -367,7 +359,7 @@ public class PatternFieldsController {
         patternFieldsViewModel.save();
 
         //publish close env
-        eventBus.publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
                 new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
 
 
@@ -381,7 +373,7 @@ public class PatternFieldsController {
                 patternFieldsViewModel.getPropertyValue(COMMENTS)
         );
 
-        eventBus.publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
                 new PatternFieldsPanelEvent(actionEvent.getSource(), PATTERN_FIELDS, patternField));
     }
 }
