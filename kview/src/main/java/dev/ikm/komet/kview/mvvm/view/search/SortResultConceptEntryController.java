@@ -19,7 +19,6 @@ import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
-import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import javafx.event.ActionEvent;
@@ -114,7 +113,6 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     @FXML
     private  void openInConceptNavigator(ActionEvent actionEvent){
         actionEvent.consume();
-        eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_CONCEPT, conceptEntity));
     }
 
     public boolean isRetired() {

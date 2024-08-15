@@ -19,7 +19,6 @@ import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
-import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -36,7 +35,7 @@ import javafx.scene.text.TextFlow;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 
-public class SortResultSemanticEntryController {
+public class SortResultSemanticEntryController  {
 
     @FXML
     private HBox searchEntryHBox;
@@ -107,9 +106,9 @@ public class SortResultSemanticEntryController {
     }
 
     @FXML
-    private  void openInConceptNavigator(ActionEvent actionEvent){
+    private  void openInConceptNavigator(ActionEvent actionEvent) {
         actionEvent.consume();
-        eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));    }
+    }
 
     public boolean isRetired() {
         return retired;
@@ -148,6 +147,4 @@ public class SortResultSemanticEntryController {
     public void setWindowView(ObservableViewNoOverride windowView) {
         this.windowView = windowView;
     }
-
-
 }

@@ -51,6 +51,7 @@ open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.panel.axiom;
     exports dev.ikm.komet.framework.events;
     exports dev.ikm.komet.framework.events.appevents;
+    exports dev.ikm.komet.framework.utils;
 
     provides CachingService with DragRegistry.CacheProvider;
     requires io.github.classgraph;
