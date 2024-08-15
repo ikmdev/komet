@@ -360,6 +360,7 @@ public class JournalController {
         setupSlideOutTrayPane(progressListVBox, progressSlideoutTrayPane);
         SlideOutTrayHelper.slideIn(progressSlideoutTrayPane);
     }
+
     private void setupProgressListener() {
         Subscriber<ProgressEvent> progressPopupSubscriber = evt -> {
             // if summon event type, load stuff and reference task to progress popup
