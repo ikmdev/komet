@@ -25,7 +25,6 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import javafx.application.Platform;
 import javafx.scene.Node;
-import javafx.scene.control.TreeItem;
 import org.eclipse.collections.api.collection.ImmutableCollection;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -60,7 +59,6 @@ public class ExpandTask extends TrackingCallable<Void> {
                 multiParentGraphViewController,
                 IntIds.set.empty(),
                 null
-
         );
 
         AtomicReference<MultiParentVertexImpl> pathParent = new AtomicReference<>(newTreeTop);
@@ -96,39 +94,16 @@ public class ExpandTask extends TrackingCallable<Void> {
             pathParent.get().getChildren().addAll(childrenVertexes);
             pathParent.set(newPathParent.get());
         }
-        // Compute the row number, treeView.getRow(vertexToSelect) is to slow...
-
-
-        int currentRow = 0;
-        for (int i = 0; i < pathParentList.size() - 1; i++) {
-            MultiParentVertexImpl vertex = pathParentList.get(i);
-            MultiParentVertexImpl nextVertex = pathParentList.get(i + 1);
-
-            for (TreeItem childVertex : vertex.getChildren()) {
-                currentRow++;
-                if (childVertex == nextVertex) {
-                    break;
-                }
-            }
-        }
-
-        final int rowNumber = currentRow;
-
-        // Create an entire new root...
+        // Add the tinkar root node and select the root given vertex,
+        // expand the selected node and scroll to the concept.
         Platform.runLater(() -> {
-            LOG.info("Sending expansion results to interface for: " + expansionPath +
-                    "\n Selecting row: " + rowNumber);
-            Platform.runLater(() -> {
-                multiParentGraphViewController.getTreeView().getRoot().getChildren().add(newTreeTop);
-                newTreeTop.setExpanded(true);
-                MultiParentVertexImpl vertexToSelect = pathParentList.get(pathParentList.size() - 1);
-                multiParentGraphViewController.getTreeView().scrollTo(rowNumber);
-                // +1 for the root concept, and +1 for the current?
-                // TODO: figure out why this is consistently off by 2, and update accordingly.
-                int rowToSelect = rowNumber + 2;
-                multiParentGraphViewController.getTreeView().getSelectionModel().select(rowToSelect);
-                multiParentGraphViewController.getTreeView().getSelectionModel().getSelectedItems().getFirst().setExpanded(true);
-            });
+            multiParentGraphViewController.getTreeView().getRoot().getChildren().add(newTreeTop);
+            newTreeTop.setExpanded(true);
+            MultiParentVertexImpl vertexToSelect = pathParentList.get(pathParentList.size() - 1);
+            multiParentGraphViewController.getTreeView().getSelectionModel().select(vertexToSelect);
+            multiParentGraphViewController.getTreeView().getSelectionModel().getSelectedItems().getFirst().setExpanded(true);
+            int selectedIndex = multiParentGraphViewController.getTreeView().getSelectionModel().getSelectedIndex();
+            multiParentGraphViewController.getTreeView().scrollTo(selectedIndex);
         });
         return null;
     }
