@@ -338,7 +338,8 @@ public class PatternFieldsController {
 
     @FXML
     private void clearView(ActionEvent actionEvent) {
-        displayNameTextField.setText("");
+        patternFieldsViewModel.setPropertyValue(DISPLAY_NAME, "");
+        patternFieldsViewModel.save(true);
     }
 
     @FXML
