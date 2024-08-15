@@ -15,25 +15,29 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.PURPOSE_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.MEANING_ENTITY;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.view.common.ConceptDragOverAnimationController;
 import dev.ikm.komet.kview.mvvm.view.common.ConceptSearchFormItemController;
 import dev.ikm.komet.kview.mvvm.view.common.SelectedConceptController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.terms.ConceptToDataType;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -43,6 +47,11 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.function.Consumer;
+
+import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.DATA_TYPE_OPTIONS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.PURPOSE_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.MEANING_ENTITY;
 
 public class PatternFieldsController {
 
@@ -85,6 +94,9 @@ public class PatternFieldsController {
     private StackPane selectedMeaningStackPane;  // StackPane to hold the dropped/selected meaning item
 
     @FXML
+    private ComboBox<ConceptEntity> dataTypeComboBox;
+
+    @FXML
     private void initialize() {
 
         // load drag over animation for reuse on every drag and drop
@@ -117,6 +129,62 @@ public class PatternFieldsController {
                 addMeaningToForm(entity);
             }
         });
+
+        loadDataTypeComboBox();
+
+    }
+
+    ViewProperties viewProperties;
+
+    public void setViewProperties(ViewProperties viewProperties) {
+        this.viewProperties = viewProperties;
+    }
+
+    private void loadDataTypeComboBox(){
+        ViewCalculator viewCalculator = viewProperties.calculator();
+      /*
+          ViewCalculator viewCalculator = viewProperties.calculator();
+          IntIdSet dataTypeFields = viewCalculator.descendentsOf(TinkarTerm.DISPLAY_FIELDS);
+            Set<ConceptEntity> allDataTypes =
+                    dataTypeFields.intStream()
+                            .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
+                            .collect(Collectors.toSet());
+
+            IntIdSet dataTypeDynamic = viewCalculator.descendentsOf(TinkarTerm.DYNAMIC_COLUMN_DATA_TYPES);
+
+            allDataTypes.addAll(dataTypeDynamic.intStream()
+                    .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
+                    .collect(Collectors.toSet()));
+
+            dataTypeComboBox.setConverter((new StringConverter<ConceptEntity>() {
+                @Override
+                public String toString(ConceptEntity conceptEntity) {
+                    Optional<String> stringOptional= viewCalculator.getFullyQualifiedNameText(conceptEntity.nid());
+                    return stringOptional.orElse("");
+                }
+
+                @Override
+                public ConceptEntity fromString(String s) {
+                    return null;
+                }
+            }));
+        */
+        dataTypeComboBox.setConverter((new StringConverter<ConceptEntity>() {
+            @Override
+            public String toString(ConceptEntity conceptEntity) {
+                return ConceptToDataType.convert(conceptEntity).name();
+            }
+
+            @Override
+            public ConceptEntity fromString(String s) {
+                return null;
+            }
+        }));
+        dataTypeComboBox.getItems().addAll(DATA_TYPE_OPTIONS);
+    }
+
+    private ViewProperties getViewProperties() {
+        return patternFieldsViewModel.getPropertyValue(VIEW_PROPERTIES);
     }
 
     private void setupDragNDrop(Node node, StackPane dragOverContainer, Consumer<PublicId> consumer) {

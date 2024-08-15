@@ -41,11 +41,11 @@
                               </VBox.margin>
                   </TextField>
                           <Label styleClass="lidr-device-label" text="Data type" />
-                          <ComboBox maxWidth="1.7976931348623157E308" prefWidth="425.0" promptText="Select type" styleClass="membership-tag-combo-box">
+                        <ComboBox fx:id="dataTypeComboBox" maxWidth="1.7976931348623157E308" prefWidth="425.0" promptText="Select type" styleClass="membership-tag-combo-box">
                               <VBox.margin>
                                   <Insets />
                               </VBox.margin>
-                          </ComboBox>
+                        </ComboBox>
                         <Label fx:id="purposeLabel" styleClass="lidr-device-label" text="Purpose" />
                   <VBox fx:id="purposeVBox" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="48.0" prefWidth="424.0">
                      <children>

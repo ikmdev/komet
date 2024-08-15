@@ -360,7 +360,6 @@ public class JournalController {
         setupSlideOutTrayPane(progressListVBox, progressSlideoutTrayPane);
         SlideOutTrayHelper.slideIn(progressSlideoutTrayPane);
     }
-
     private void setupProgressListener() {
         Subscriber<ProgressEvent> progressPopupSubscriber = evt -> {
             // if summon event type, load stuff and reference task to progress popup
@@ -493,8 +492,8 @@ public class JournalController {
         // +------------------------------------
         Config nextGenSearchConfig = new Config(NextGenSearchController.class.getResource(NEXT_GEN_SEARCH_FXML_URL))
                 .updateViewModel("nextGenSearchViewModel", (nextGenSearchViewModel) ->
-                                nextGenSearchViewModel
-                                        .setPropertyValue(MODE, CREATE)
+                        nextGenSearchViewModel
+                                .setPropertyValue(MODE, CREATE)
                 );
 
         JFXNode<Pane, NextGenSearchController> nextGenSearchJFXNode = FXMLMvvmLoader.make(nextGenSearchConfig);
@@ -1149,7 +1148,7 @@ public class JournalController {
             // Applying the preferences naming convention to the files.
             // e.g., journal-window/JOURNAL_Journal_1/CONCEPT_XXX
             KometPreferences conceptPreferences =journalSubWindowPreferences.node(
-                            conceptPreference.getDirectoryName());
+                    conceptPreference.getDirectoryName());
             conceptPreferences.put(CONCEPT_PREF_NAME, conceptPreference.getDirectoryName());
             conceptPreferences.put(NID_TYPE, conceptPreference.getNidType().toString());
             conceptPreferences.putInt(NID_VALUE, conceptPreference.getNid());

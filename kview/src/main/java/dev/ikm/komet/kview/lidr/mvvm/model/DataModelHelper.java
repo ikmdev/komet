@@ -48,6 +48,8 @@ import dev.ikm.tinkar.terms.*;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
@@ -58,6 +60,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class DataModelHelper {
+    private static final Logger LOG = LoggerFactory.getLogger(DataModelHelper.class);
+
     public static final EntityProxy.Concept METHOD_TYPE = EntityProxy.Concept.make(null, UuidUtil.fromSNOMED("260686004"));
     public static final EntityProxy.Concept SYSTEM = EntityProxy.Concept.make(null, UuidUtil.fromSNOMED("246333005")); // UuidUtil.fromSNOMED("704327008"));
     public static final EntityProxy.Concept ANALYTE = EntityProxy.Concept.make(null, UUID.fromString("4d943091-fd91-33d8-9291-630ba22f37d5")); //UUID.fromString("8c9214df-511c-36ba-bd5d-f4d38ce25f2f"));
@@ -92,13 +96,36 @@ public class DataModelHelper {
             Entity.getFast(TinkarTerm.DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE.nid())
     );
 
+    public static final Set<ConceptEntity> DATA_TYPE_OPTIONS = Set.of(
+            Entity.getFast(TinkarTerm.STRING.nid()),
+            Entity.getFast(TinkarTerm.COMPONENT_FIELD.nid()),
+            Entity.getFast(TinkarTerm.COMPONENT_ID_SET_FIELD.nid()),
+            Entity.getFast(TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()),
+            Entity.getFast(TinkarTerm.DITREE_FIELD.nid()),
+            Entity.getFast(TinkarTerm.DIGRAPH_FIELD.nid()),
+            Entity.getFast(TinkarTerm.CONCEPT_FIELD.nid()),
+            Entity.getFast(TinkarTerm.SEMANTIC_FIELD_TYPE.nid()),
+            Entity.getFast(TinkarTerm.INTEGER_FIELD.nid()),
+            Entity.getFast(TinkarTerm.FLOAT_FIELD.nid()),
+            Entity.getFast(TinkarTerm.BOOLEAN_FIELD.nid()),
+            Entity.getFast(TinkarTerm.BYTE_ARRAY_FIELD.nid()),
+            Entity.getFast(TinkarTerm.ARRAY_FIELD.nid()),
+            Entity.getFast(TinkarTerm.INSTANT_LITERAL.nid()),
+            Entity.getFast(TinkarTerm.LONG.nid())
+    );
+
     public static ObservableView viewPropertiesNode() {
+        ViewProperties viewProperties = createViewProperties();
+        return viewProperties.nodeView();
+    }
+
+    public static ViewProperties createViewProperties() {
         // TODO how do we get a viewProperties?
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node("main-komet-window");
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
         ViewProperties viewProperties = windowSettings.getView().makeOverridableViewProperties();
-        return viewProperties.nodeView();
+        return viewProperties;
     }
 
     public static SpecimenRecord makeSpecimenRecord(PublicId specimenId) {

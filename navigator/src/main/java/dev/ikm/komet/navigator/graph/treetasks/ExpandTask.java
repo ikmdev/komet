@@ -94,6 +94,8 @@ public class ExpandTask extends TrackingCallable<Void> {
             pathParent.get().getChildren().addAll(childrenVertexes);
             pathParent.set(newPathParent.get());
         }
+        // Add the tinkar root node and select the root given vertex,
+        // expand the selected node and scroll to the concept.
         Platform.runLater(() -> {
             multiParentGraphViewController.getTreeView().getRoot().getChildren().add(newTreeTop);
             newTreeTop.setExpanded(true);
