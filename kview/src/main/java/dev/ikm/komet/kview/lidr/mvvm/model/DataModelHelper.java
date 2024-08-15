@@ -15,13 +15,13 @@
  */
 package dev.ikm.komet.kview.lidr.mvvm.model;
 
-import dev.ikm.komet.kview.data.schema.SemanticDetail;
-import dev.ikm.komet.kview.data.persistence.SemanticWriter;
 import dev.ikm.komet.framework.builder.AxiomBuilderRecord;
 import dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.data.persistence.SemanticWriter;
+import dev.ikm.komet.kview.data.schema.SemanticDetail;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.common.id.IntIdSet;
@@ -44,7 +44,10 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
-import dev.ikm.tinkar.terms.*;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -96,23 +99,7 @@ public class DataModelHelper {
             Entity.getFast(TinkarTerm.DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE.nid())
     );
 
-    public static final Set<ConceptEntity> DATA_TYPE_OPTIONS = Set.of(
-            Entity.getFast(TinkarTerm.STRING.nid()),
-            Entity.getFast(TinkarTerm.COMPONENT_FIELD.nid()),
-            Entity.getFast(TinkarTerm.COMPONENT_ID_SET_FIELD.nid()),
-            Entity.getFast(TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()),
-            Entity.getFast(TinkarTerm.DITREE_FIELD.nid()),
-            Entity.getFast(TinkarTerm.DIGRAPH_FIELD.nid()),
-            Entity.getFast(TinkarTerm.CONCEPT_FIELD.nid()),
-            Entity.getFast(TinkarTerm.SEMANTIC_FIELD_TYPE.nid()),
-            Entity.getFast(TinkarTerm.INTEGER_FIELD.nid()),
-            Entity.getFast(TinkarTerm.FLOAT_FIELD.nid()),
-            Entity.getFast(TinkarTerm.BOOLEAN_FIELD.nid()),
-            Entity.getFast(TinkarTerm.BYTE_ARRAY_FIELD.nid()),
-            Entity.getFast(TinkarTerm.ARRAY_FIELD.nid()),
-            Entity.getFast(TinkarTerm.INSTANT_LITERAL.nid()),
-            Entity.getFast(TinkarTerm.LONG.nid())
-    );
+
 
     public static ObservableView viewPropertiesNode() {
         ViewProperties viewProperties = createViewProperties();

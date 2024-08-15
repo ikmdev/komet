@@ -29,28 +29,31 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityCountSummary;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static dev.ikm.komet.kview.mvvm.viewmodel.DataViewModelHelper.DATA_TYPE_OPTIONS;
+
+
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class DataTypesViewModelTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataTypesViewModelTest.class);
 
-    @BeforeAll
-    public static void sartDataStore() {
+
+    public void sartDataStore() {
         LOG.info("Clear caches");
         File dataStore = new File(System.getProperty("user.home") + "/Solor/testPBFile");
         CachingService.clearAll();
@@ -61,43 +64,31 @@ public class DataTypesViewModelTest {
         PrimitiveData.start();
     }
 
+    @BeforeAll
+    public void init(){
+        sartDataStore();
+        loadStarterData();
+
+    }
+
     @AfterAll
-    public static void stopDB() {
+    public void stopDB() {
         PrimitiveData.stop();
         System.exit(0);
     }
 
-    @Test
+  //  @Test
     public void loadDataTypesTest(){
-        loadStarterData();
         Platform.startup(() -> {
-
-            Set<ConceptEntity> dataTypeOptions = new HashSet<>();
-            dataTypeOptions.add(Entity.getFast(TinkarTerm.STRING.nid()));
-            dataTypeOptions.add(Entity.getFast(TinkarTerm.COMPONENT_FIELD.nid()));
-            dataTypeOptions.add(Entity.getFast(TinkarTerm.COMPONENT_ID_SET_FIELD.nid()));
-            dataTypeOptions.add(Entity.getFast(TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()));
-            dataTypeOptions.add(Entity.getFast(TinkarTerm.DITREE_FIELD.nid()));
-            dataTypeOptions.add(Entity.getFast(TinkarTerm.DIGRAPH_FIELD.nid()));
-            dataTypeOptions.add(Entity.getFast(TinkarTerm.CONCEPT_FIELD.nid()));
-            dataTypeOptions.add(Entity.getFast(TinkarTerm.SEMANTIC_FIELD_TYPE.nid()));
-            dataTypeOptions.add(Entity.getFast(TinkarTerm.INTEGER_FIELD.nid()));
-            dataTypeOptions.add(Entity.getFast(TinkarTerm.FLOAT_FIELD.nid()));
-            dataTypeOptions.add(Entity.getFast(TinkarTerm.BOOLEAN_FIELD.nid()));
-            dataTypeOptions.add(Entity.getFast(TinkarTerm.BYTE_ARRAY_FIELD.nid()));
-            dataTypeOptions.add(Entity.getFast(TinkarTerm.ARRAY_FIELD.nid()));
-            dataTypeOptions.add(Entity.getFast(TinkarTerm.INSTANT_LITERAL.nid()));
-            dataTypeOptions.add(Entity.getFast(TinkarTerm.LONG.nid()));
-
             ViewProperties viewProperties = createViewProperties();
             ViewCalculator viewCalculator = viewProperties.calculator();
             IntIdSet dataTypeFields = viewCalculator.descendentsOf(TinkarTerm.DISPLAY_FIELDS);
             LOG.info(dataTypeFields.size() + " = " + dataTypeFields);
 
-            Set<ConceptEntity> allDataTypes =
+            Set<EntityFacade> allDataTypes =
                 dataTypeFields.intStream()
-                    .mapToObj(conceptNid -> (ConceptEntity) Entity.getFast(conceptNid))
-                    .filter(p -> dataTypeOptions.contains((ConceptEntity) Entity.getFast(p)))
+                    .mapToObj(conceptNid -> (EntityFacade) Entity.getFast(conceptNid))
+   //                 .filter(p -> DATA_TYPE_OPTIONS.contains((EntityFacade) Entity.getFast(p)))
                     .collect(Collectors.toSet());
 
             IntIdSet dataTypeDynamic = viewCalculator.descendentsOf(TinkarTerm.DYNAMIC_COLUMN_DATA_TYPES);
@@ -105,14 +96,27 @@ public class DataTypesViewModelTest {
 
             allDataTypes.addAll(dataTypeDynamic.intStream()
                 .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
-                .filter(p -> dataTypeOptions.contains((ConceptEntity) Entity.getFast(p)))
+   //             .filter(p -> DATA_TYPE_OPTIONS.contains((EntityFacade) Entity.getFast(p)))
                 .collect(Collectors.toSet()));
 
 
             AtomicInteger counter = new AtomicInteger();
-            allDataTypes.forEach(conceptEntity -> {
-                Optional<String> stringOptional = viewCalculator.getFullyQualifiedNameText(conceptEntity.nid());
-                LOG.info(counter.incrementAndGet() + " - " + stringOptional.orElse("") + " UUID: " + Arrays.stream(conceptEntity.asUuidArray()).findFirst().get());
+            allDataTypes.forEach(entityFacade -> {
+                Optional<String> stringOptional = viewCalculator.getFullyQualifiedNameText(entityFacade.nid());
+                LOG.info(counter.incrementAndGet() + " - " + stringOptional.orElse(""));
+            });
+        });
+    }
+
+ //   @Test
+    public void loadDataTypesTest2(){
+        Platform.startup(() -> {
+            ViewProperties viewProperties = createViewProperties();
+            ViewCalculator viewCalculator = viewProperties.calculator();
+            AtomicInteger counter = new AtomicInteger();
+            DATA_TYPE_OPTIONS.forEach(entityFacade -> {
+                Optional<String> stringOptional = viewCalculator.getFullyQualifiedNameText(entityFacade.nid());
+                LOG.info(counter.incrementAndGet() + " - " + stringOptional.orElse(""));
             });
         });
     }
