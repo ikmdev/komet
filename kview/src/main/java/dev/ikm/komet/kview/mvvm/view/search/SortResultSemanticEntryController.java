@@ -147,4 +147,5 @@ public class SortResultSemanticEntryController  {
     public void setWindowView(ObservableViewNoOverride windowView) {
         this.windowView = windowView;
     }
+
 }
