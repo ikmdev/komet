@@ -358,6 +358,10 @@ public class PatternFieldsController {
 
         // save calls validate
         patternFieldsViewModel.save();
+        if (patternFieldsViewModel.hasErrorMsgs()) {
+            // when there are validators, we potentially will have errors
+            return; // do not proceed.
+        }
 
         //publish close env
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
@@ -366,12 +370,12 @@ public class PatternFieldsController {
 
         //publish form submission data
         PatternField patternField = new PatternField(
-                patternFieldsViewModel.getPropertyValue(FIELD_ORDER),
-                patternFieldsViewModel.getPropertyValue(DISPLAY_NAME),
-                patternFieldsViewModel.getPropertyValue(DATA_TYPE),
-                patternFieldsViewModel.getPropertyValue(PURPOSE_ENTITY),
-                patternFieldsViewModel.getPropertyValue(MEANING_ENTITY),
-                patternFieldsViewModel.getPropertyValue(COMMENTS)
+                patternFieldsViewModel.getValue(FIELD_ORDER),
+                patternFieldsViewModel.getValue(DISPLAY_NAME),
+                patternFieldsViewModel.getValue(DATA_TYPE),
+                patternFieldsViewModel.getValue(PURPOSE_ENTITY),
+                patternFieldsViewModel.getValue(MEANING_ENTITY),
+                patternFieldsViewModel.getValue(COMMENTS)
         );
 
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
