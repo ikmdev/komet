@@ -29,15 +29,15 @@ import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_DATE_STR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAME_DESCRIPTION_NAME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_DATE_STR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_TEXT;
-import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
-import dev.ikm.komet.framework.utils.StringUtils;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ShowPatternPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
@@ -206,26 +206,22 @@ public class PatternDetailsController {
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternPropertyPanelEvent.class, patternPropertiesEventSubscriber);
 
         // capture pattern definition information
-        StringProperty purposeTextProperty = patternViewModel.getProperty(PURPOSE_TEXT);
-        purposeText.textProperty().bind(purposeTextProperty);
+        purposeText.textProperty().bind(patternViewModel.getProperty(PURPOSE_TEXT));
         purposeText.getStyleClass().add("text-noto-sans-bold-grey-twelve");
 
-        StringProperty meaningTextProperty = patternViewModel.getProperty(MEANING_TEXT);
-        meaningText.textProperty().bind(meaningTextProperty);
+        meaningText.textProperty().bind(patternViewModel.getProperty(MEANING_TEXT));
         meaningText.getStyleClass().add("text-noto-sans-bold-grey-twelve");
+
+        meaningDate.textProperty().bind(patternViewModel.getProperty(MEANING_DATE_STR));
+        purposeDate.textProperty().bind(patternViewModel.getProperty(PURPOSE_DATE_STR));
+
         patternDefinitionEventSubscriber = evt -> {
             patternViewModel.setPurposeAndMeaningText(evt.getPatternDefinition());
-            String dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-            if (StringUtils.isNotEmpty(patternViewModel.getPropertyValue(MEANING_TEXT))) {
-                meaningDate.setText("Date Added: " + dateAddedStr);
-                meaningDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
-            }
-            if (StringUtils.isNotEmpty(patternViewModel.getPropertyValue(PURPOSE_TEXT))) {
-                purposeDate.setText("Date Added: " + dateAddedStr);
-                purposeDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
-            }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
+
+        meaningDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
+        purposeDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
 
         // capture descriptions information
         StringProperty fqnTextProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
@@ -240,17 +236,19 @@ public class PatternDetailsController {
                 patternViewModel.setOtherNameText(evt.getDescrName());
             }
             String dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-            if (StringUtils.isNotEmpty(patternViewModel.getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))) {
+            if (patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT) != null
+                && !((String)patternViewModel.getPropertyValue(FQN_DESCRIPTION_NAME_TEXT)).isEmpty()) {
                 fqnDate.setText("Date Added: " + dateAddedStr);
                 fqnDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
             } else {
-                fqnDate.setText(StringUtils.EMPTY);
+                fqnDate.setText("");
             }
-            if (StringUtils.isNotEmpty(patternViewModel.getPropertyValue(OTHER_NAME_DESCRIPTION_NAME_TEXT))) {
+            if (patternViewModel.getProperty(OTHER_NAME_DESCRIPTION_NAME_TEXT) != null
+                && !((String)patternViewModel.getPropertyValue(OTHER_NAME_DESCRIPTION_NAME_TEXT)).isEmpty()) {
                 otherNameDate.setText("Date Added: " + dateAddedStr);
                 otherNameDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
             } else {
-                otherNameDate.setText(StringUtils.EMPTY);
+                otherNameDate.setText("");
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);

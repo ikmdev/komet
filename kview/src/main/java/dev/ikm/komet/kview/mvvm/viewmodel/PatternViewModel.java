@@ -24,6 +24,8 @@ import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -58,6 +60,10 @@ public class PatternViewModel extends FormViewModel {
 
     public static String FIELDS_COLLECTION = "fieldsCollection";
 
+    public static String PURPOSE_DATE_STR = "purposeDateStr";
+
+    public static String MEANING_DATE_STR = "meaningDateStr";
+
     public PatternViewModel() {
         super();
             addProperty(VIEW_PROPERTIES, (ViewProperties) null)
@@ -69,8 +75,10 @@ public class PatternViewModel extends FormViewModel {
                     // PATTERN>DEFINITION Purpose and Meaning
                     .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
                     .addProperty(MEANING_ENTITY, (EntityFacade) null) // this is/will be the 'meaning' concept entity
-                    .addProperty(PURPOSE_TEXT, (String) "")
-                    .addProperty(MEANING_TEXT, (String) "")
+                    .addProperty(PURPOSE_TEXT, "")
+                    .addProperty(MEANING_TEXT, "")
+                    .addProperty(PURPOSE_DATE_STR, "")
+                    .addProperty(MEANING_DATE_STR, "")
                     // PATTERN>DESCRIPTION FQN and Other Name
                     .addProperty(FQN_DESCRIPTION_NAME_TEXT, "")
                     .addProperty(OTHER_NAME_DESCRIPTION_NAME_TEXT, "")
@@ -83,6 +91,13 @@ public class PatternViewModel extends FormViewModel {
         setPropertyValue(PURPOSE_ENTITY, patternDefinition.purpose());
         setPropertyValue(MEANING_ENTITY, patternDefinition.meaning());
 
+        String dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
+        if (patternDefinition.meaning() != null) {
+            setPropertyValue(MEANING_DATE_STR, "Date Added: " + dateAddedStr);
+        }
+        if (patternDefinition.purpose() != null) {
+            setPropertyValue(PURPOSE_DATE_STR, "Date Added: " + dateAddedStr);
+        }
 
         EntityFacade purposeFacade = getPropertyValue(PURPOSE_ENTITY);
         EntityFacade meaningFacade = getPropertyValue(MEANING_ENTITY);
