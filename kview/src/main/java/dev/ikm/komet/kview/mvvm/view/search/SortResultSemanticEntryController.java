@@ -149,5 +149,4 @@ public class SortResultSemanticEntryController {
         this.windowView = windowView;
     }
 
-
 }
