@@ -15,10 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
-import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_ADD_DEFINITION;
-import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_EDIT_FIELDS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CONCEPT_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -43,6 +39,11 @@ import org.slf4j.LoggerFactory;
 import java.net.URL;
 import java.util.UUID;
 
+import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_ADD_DEFINITION;
+import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_EDIT_FIELDS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CONCEPT_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+
 public class PropertiesController {
 
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesController.class);
@@ -55,7 +56,6 @@ public class PropertiesController {
 
     @InjectViewModel
     private PatternViewModel patternViewModel;
-
 
     @FXML
     private SVGPath commentsButton;
@@ -107,10 +107,13 @@ public class PropertiesController {
         // ! Edit field(s) within a Pattern
         // +-----------------------------------
         Config fieldsConfig = new Config(PATTERN_FIELDS_FXML_URL);
+        fieldsConfig.updateViewModel("propertiesViewModel", (propertiesViewModel) ->
+                propertiesViewModel.setPropertyValue(VIEW_PROPERTIES, getViewProperties()));
 
         JFXNode<Pane, PatternFieldsController> patternFieldsJFXNode = FXMLMvvmLoader.make(fieldsConfig);
         patternFieldsController = patternFieldsJFXNode.controller();
         patternFieldsPane = patternFieldsJFXNode.node();
+        patternFieldsController.setViewProperties(getViewProperties());
 
         // initially a default selected tab and view is shown
         updateDefaultSelectedViews();
