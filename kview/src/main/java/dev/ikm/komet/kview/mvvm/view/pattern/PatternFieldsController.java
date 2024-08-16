@@ -37,11 +37,13 @@ import dev.ikm.komet.kview.mvvm.view.common.SelectedConceptController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.component.Concept;
+import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.ConceptToDataType;
 import dev.ikm.tinkar.terms.EntityFacade;
 
+import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -129,7 +131,8 @@ public class PatternFieldsController {
         setupDragNDrop(purposeVBox, purposeStackPane, (publicId) -> {
             // check to see if a pattern > purpose was already dragged into the purpose section before saving
             // to the view model
-            if (patternFieldsViewModel.getPropertyValue(PatternFieldsViewModel.PURPOSE_ENTITY) == null) {
+            ObjectProperty<ConceptEntity> purposeProp = patternFieldsViewModel.getProperty(PatternFieldsViewModel.PURPOSE_ENTITY);
+            if (purposeProp.isNull().get()) {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
                 patternFieldsViewModel.setPropertyValue(PatternFieldsViewModel.PURPOSE_ENTITY, entity);
