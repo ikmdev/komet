@@ -41,7 +41,7 @@
                               </VBox.margin>
                   </TextField>
                           <Label styleClass="lidr-device-label" text="Data type" />
-                        <ComboBox fx:id="dataTypeComboBox" maxWidth="1.7976931348623157E308" prefWidth="425.0" promptText="Select type" styleClass="membership-tag-combo-box">
+                        <ComboBox fx:id="dataTypeComboBox" maxWidth="1.7976931348623157E308" prefWidth="425.0" promptText="Select type" styleClass="blue-arrow-combo-box">
                               <VBox.margin>
                                   <Insets />
                               </VBox.margin>
