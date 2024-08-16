@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
+
 import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.DESCRIPTION_NAME;
 import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_ADD_DEFINITION;
 import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_ADD_FQN;
@@ -29,6 +30,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
@@ -55,6 +57,11 @@ import org.slf4j.LoggerFactory;
 import java.net.URL;
 import java.util.UUID;
 
+import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_ADD_DEFINITION;
+import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_EDIT_FIELDS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CONCEPT_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+
 public class PropertiesController {
 
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesController.class);
@@ -72,7 +79,6 @@ public class PropertiesController {
 
     @InjectViewModel
     private SimpleViewModel patternPropertiesViewModel;
-
 
     @FXML
     private SVGPath commentsButton;
@@ -134,6 +140,7 @@ public class PropertiesController {
         JFXNode<Pane, PatternFieldsController> patternFieldsJFXNode = FXMLMvvmLoader.make(fieldsConfig);
         patternFieldsController = patternFieldsJFXNode.controller();
         patternFieldsPane = patternFieldsJFXNode.node();
+        patternFieldsController.setViewProperties(getViewProperties());
 
         // initially a default selected tab and view is shown
         updateDefaultSelectedViews();

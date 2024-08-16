@@ -15,13 +15,13 @@
  */
 package dev.ikm.komet.kview.lidr.mvvm.model;
 
-import dev.ikm.komet.kview.data.schema.SemanticDetail;
-import dev.ikm.komet.kview.data.persistence.SemanticWriter;
 import dev.ikm.komet.framework.builder.AxiomBuilderRecord;
 import dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.data.persistence.SemanticWriter;
+import dev.ikm.komet.kview.data.schema.SemanticDetail;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.common.id.IntIdSet;
@@ -44,10 +44,15 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
-import dev.ikm.tinkar.terms.*;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
@@ -58,6 +63,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class DataModelHelper {
+    private static final Logger LOG = LoggerFactory.getLogger(DataModelHelper.class);
+
     public static final EntityProxy.Concept METHOD_TYPE = EntityProxy.Concept.make(null, UuidUtil.fromSNOMED("260686004"));
     public static final EntityProxy.Concept SYSTEM = EntityProxy.Concept.make(null, UuidUtil.fromSNOMED("246333005")); // UuidUtil.fromSNOMED("704327008"));
     public static final EntityProxy.Concept ANALYTE = EntityProxy.Concept.make(null, UUID.fromString("4d943091-fd91-33d8-9291-630ba22f37d5")); //UUID.fromString("8c9214df-511c-36ba-bd5d-f4d38ce25f2f"));
@@ -92,13 +99,20 @@ public class DataModelHelper {
             Entity.getFast(TinkarTerm.DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE.nid())
     );
 
+
+
     public static ObservableView viewPropertiesNode() {
+        ViewProperties viewProperties = createViewProperties();
+        return viewProperties.nodeView();
+    }
+
+    public static ViewProperties createViewProperties() {
         // TODO how do we get a viewProperties?
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node("main-komet-window");
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
         ViewProperties viewProperties = windowSettings.getView().makeOverridableViewProperties();
-        return viewProperties.nodeView();
+        return viewProperties;
     }
 
     public static SpecimenRecord makeSpecimenRecord(PublicId specimenId) {
