@@ -21,13 +21,11 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.MEAN
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.PURPOSE_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
@@ -122,8 +120,8 @@ public class PatternDefinitionController {
 
     @FXML
     private void clearView() {
-        patternDefinitionViewModel.setPropertyValue(PatternViewModel.PURPOSE_ENTITY, null);
-        patternDefinitionViewModel.setPropertyValue(PatternViewModel.MEANING_ENTITY, null);
+        patternDefinitionViewModel.setPropertyValue(PURPOSE_ENTITY, null);
+        patternDefinitionViewModel.setPropertyValue(MEANING_ENTITY, null);
         patternDefinitionViewModel.save(true);
     }
 
