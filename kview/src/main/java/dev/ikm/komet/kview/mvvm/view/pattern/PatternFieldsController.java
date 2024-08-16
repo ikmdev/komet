@@ -24,9 +24,9 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.DISPLAY_
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.FIELD_ORDER;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.MEANING_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.PURPOSE_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.PURPOSE_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
@@ -40,9 +40,6 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.component.Concept;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
-
-import javafx.collections.ObservableList;
-
 import dev.ikm.tinkar.terms.ConceptToDataType;
 import dev.ikm.tinkar.terms.EntityFacade;
 
@@ -70,8 +67,6 @@ import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.DataViewModelHelper.DATA_TYPE_OPTIONS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.PURPOSE_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.MEANING_ENTITY;
 
 public class PatternFieldsController {
 
@@ -135,10 +130,10 @@ public class PatternFieldsController {
         setupDragNDrop(purposeVBox, purposeStackPane, (publicId) -> {
             // check to see if a pattern > purpose was already dragged into the purpose section before saving
             // to the view model
-            if (patternFieldsViewModel.getPropertyValue(PURPOSE_ENTITY) == null) {
+            if (patternFieldsViewModel.getPropertyValue(PatternFieldsViewModel.PURPOSE_ENTITY) == null) {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-                patternFieldsViewModel.setPropertyValue(PURPOSE_ENTITY, entity);
+                patternFieldsViewModel.setPropertyValue(PatternFieldsViewModel.PURPOSE_ENTITY, entity);
                 addPurposeToForm(entity);
             }
         });
@@ -337,10 +332,10 @@ public class PatternFieldsController {
         setupDragNDrop(purposeVBox, purposeStackPane, (publicId) -> {
             // check to see if a pattern > purpose was already dragged into the purpose section before saving
             // to the view model
-            if (patternFieldsViewModel.getPropertyValue(PURPOSE_ENTITY) == null) {
+            if (patternFieldsViewModel.getPropertyValue(PatternFieldsViewModel.PURPOSE_ENTITY) == null) {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-                patternFieldsViewModel.setPropertyValue(PURPOSE_ENTITY, entity);
+                patternFieldsViewModel.setPropertyValue(PatternFieldsViewModel.PURPOSE_ENTITY, entity);
                 // save calls validate
                 patternFieldsViewModel.save();
                 addPurposeToForm(entity);
@@ -446,7 +441,7 @@ public class PatternFieldsController {
                 patternFieldsViewModel.getValue(FIELD_ORDER),
                 patternFieldsViewModel.getValue(DISPLAY_NAME),
                 patternFieldsViewModel.getValue(DATA_TYPE),
-                patternFieldsViewModel.getValue(PURPOSE_ENTITY),
+                patternFieldsViewModel.getValue(PatternFieldsViewModel.PURPOSE_ENTITY),
                 patternFieldsViewModel.getValue(MEANING_ENTITY),
                 patternFieldsViewModel.getValue(COMMENTS)
         );
