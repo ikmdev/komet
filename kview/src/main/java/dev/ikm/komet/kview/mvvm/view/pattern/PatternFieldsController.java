@@ -131,11 +131,11 @@ public class PatternFieldsController {
         setupDragNDrop(purposeVBox, purposeStackPane, (publicId) -> {
             // check to see if a pattern > purpose was already dragged into the purpose section before saving
             // to the view model
-            ObjectProperty<ConceptEntity> purposeProp = patternFieldsViewModel.getProperty(PatternFieldsViewModel.PURPOSE_ENTITY);
+            ObjectProperty<ConceptEntity> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
             if (purposeProp.isNull().get()) {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-                patternFieldsViewModel.setPropertyValue(PatternFieldsViewModel.PURPOSE_ENTITY, entity);
+                patternFieldsViewModel.setPropertyValue(PURPOSE_ENTITY, entity);
                 addPurposeToForm(entity);
             }
         });
@@ -334,10 +334,10 @@ public class PatternFieldsController {
         setupDragNDrop(purposeVBox, purposeStackPane, (publicId) -> {
             // check to see if a pattern > purpose was already dragged into the purpose section before saving
             // to the view model
-            if (patternFieldsViewModel.getPropertyValue(PatternFieldsViewModel.PURPOSE_ENTITY) == null) {
+            if (patternFieldsViewModel.getPropertyValue(PURPOSE_ENTITY) == null) {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-                patternFieldsViewModel.setPropertyValue(PatternFieldsViewModel.PURPOSE_ENTITY, entity);
+                patternFieldsViewModel.setPropertyValue(PURPOSE_ENTITY, entity);
                 // save calls validate
                 patternFieldsViewModel.save();
                 addPurposeToForm(entity);
@@ -443,7 +443,7 @@ public class PatternFieldsController {
                 patternFieldsViewModel.getValue(FIELD_ORDER),
                 patternFieldsViewModel.getValue(DISPLAY_NAME),
                 patternFieldsViewModel.getValue(DATA_TYPE),
-                patternFieldsViewModel.getValue(PatternFieldsViewModel.PURPOSE_ENTITY),
+                patternFieldsViewModel.getValue(PURPOSE_ENTITY),
                 patternFieldsViewModel.getValue(MEANING_ENTITY),
                 patternFieldsViewModel.getValue(COMMENTS)
         );
