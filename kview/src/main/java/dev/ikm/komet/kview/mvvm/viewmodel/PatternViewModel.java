@@ -122,14 +122,4 @@ public class PatternViewModel extends FormViewModel {
         setPropertyValue(OTHER_NAME_DESCRIPTION_NAME_TEXT, descrName.getNameText());
     }
 
-    public void addPatternField(PatternField patternField) {
-        List<PatternField> patternFields;
-        if (getProperty(FIELDS_COLLECTION) == null) {
-            patternFields = new ArrayList<>();
-            setPropertyValue(FIELDS_COLLECTION, patternFields);
-        } else {
-            patternFields = getPropertyValue(FIELDS_COLLECTION);
-        }
-        patternFields.add(patternField);
-    }
 }
