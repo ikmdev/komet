@@ -26,13 +26,13 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.TilePane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Ellipse?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
-<?import javafx.scene.text.TextFlow?>
 
 <BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="456.0" prefHeight="560.0" prefWidth="727.0" style="-fx-background-color: transparent;" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
    <center>
@@ -183,26 +183,25 @@
                                                 <Font name="Noto Sans Batak Regular" size="12.0" />
                                              </font>
                                           </Text>
-                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" GridPane.rowIndex="1" />
-                                          <TextFlow prefHeight="58.0" prefWidth="368.0" GridPane.halignment="LEFT" GridPane.rowIndex="2" GridPane.valignment="TOP">
-                                             <children>
-                                                <Text fx:id="deviceSummaryText" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="227.6090087890625">
-                                                   <font>
-                                                      <Font name="Noto Sans Batak Regular" size="13.0" />
-                                                   </font>
-                                                </Text>
-                                             </children>
-                                          </TextFlow>
-                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 500; -fx-fill: -Grey-12;" text="SEMANTIC PURPOSE" wrappingWidth="117.490234375" GridPane.columnIndex="1">
-                                             <font>
-                                                <Font name="Open Sans Bold" size="14.0" />
-                                             </font>
-                                          </Text>
-                                          <Text fx:id="mfgSummaryText" strokeType="OUTSIDE" strokeWidth="0.0" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.valignment="TOP">
+                                          <Label />
+                                          <Text fx:id="semanticMeaningText" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="227.6090087890625">
                                              <font>
                                                 <Font name="Noto Sans Batak Regular" size="13.0" />
                                              </font>
                                           </Text>
+                                          <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 500; -fx-fill: -Grey-12;" text="SEMANTIC PURPOSE" wrappingWidth="117.490234375" GridPane.columnIndex="1">
+                                             <font>
+                                                <Font name="Open Sans Bold" size="14.0" />
+                                             </font>
+                                          </Text>
+                                          <Text fx:id="purposeDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-normal-grey-eight" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                             <font>
+                                                <Font name="Noto Sans Batak Regular" size="13.0" />
+                                             </font>
+                                          </Text>
+                                          <Text fx:id="meaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" GridPane.rowIndex="1" />
+                                          <Text fx:id="meaningDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-normal-grey-eight" GridPane.rowIndex="2" />
+                                          <Text fx:id="purposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                        </children>
                                     </GridPane>
                                  </content>
@@ -219,7 +218,7 @@
                                                 <Insets top="4.0" />
                                              </HBox.margin>
                                           </Separator>
-                                          <Button fx:id="addDescriptionButton" mnemonicParsing="false" onAction="#showEditDescriptionPanel" styleClass="add-pencil-button" text="Button">
+                                          <Button fx:id="addDefinitionButton" mnemonicParsing="false" onAction="#showAddDefinitionPanel" styleClass="add-pencil-button" text="Button">
                                              <graphic>
                                                 <Region prefHeight="200.0" prefWidth="200.0" styleClass="add-pencil" stylesheets="@../kview.css" />
                                              </graphic>
@@ -253,26 +252,20 @@
                                                 <Font name="Noto Sans Batak Regular" size="12.0" />
                                              </font>
                                           </Text>
-                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" GridPane.rowIndex="1" />
-                                          <TextFlow prefHeight="58.0" prefWidth="368.0" GridPane.halignment="LEFT" GridPane.rowIndex="2" GridPane.valignment="TOP">
-                                             <children>
-                                                <Text fx:id="deviceSummaryText1" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="227.6090087890625">
-                                                   <font>
-                                                      <Font name="Noto Sans Batak Regular" size="13.0" />
-                                                   </font>
-                                                </Text>
-                                             </children>
-                                          </TextFlow>
+                                          <Text fx:id="fqnText" strokeType="OUTSIDE" strokeWidth="0.0" GridPane.rowIndex="1" />
+                                          <Text fx:id="deviceSummaryText1" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="227.6090087890625">
+                                             <font>
+                                                <Font name="Noto Sans Batak Regular" size="13.0" />
+                                             </font>
+                                          </Text>
+                                          <Text fx:id="fqnDate" strokeType="OUTSIDE" strokeWidth="0.0" GridPane.rowIndex="2" />
                                           <Text strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 500; -fx-fill: -Grey-12;" text="OTHER NAME" wrappingWidth="117.490234375" GridPane.columnIndex="1">
                                              <font>
                                                 <Font name="Open Sans Bold" size="14.0" />
                                              </font>
                                           </Text>
-                                          <Text fx:id="mfgSummaryText1" strokeType="OUTSIDE" strokeWidth="0.0" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.valignment="TOP">
-                                             <font>
-                                                <Font name="Noto Sans Batak Regular" size="13.0" />
-                                             </font>
-                                          </Text>
+                                          <Text fx:id="otherNameText" strokeType="OUTSIDE" strokeWidth="0.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                          <Text fx:id="otherNameDate" strokeType="OUTSIDE" strokeWidth="0.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                        </children>
                                     </GridPane>
                                  </content>
@@ -289,13 +282,32 @@
                                                 <Insets top="4.0" />
                                              </HBox.margin>
                                           </Separator>
-                                          <Button mnemonicParsing="false" styleClass="add-pencil-button" text="Button">
+                                          <Button fx:id="addDescriptionButton" mnemonicParsing="false" onAction="#popupAddDescriptionContextMenu" styleClass="add-pencil-button" text="description name">
                                              <graphic>
                                                 <Region prefHeight="200.0" prefWidth="200.0" styleClass="add-pencil" stylesheets="@../kview.css" />
                                              </graphic>
                                              <HBox.margin>
                                                 <Insets top="4.0" />
                                              </HBox.margin>
+                                             <contextMenu>
+                                                <ContextMenu fx:id="descriptionContextMenu" opacity="0.99" styleClass="kview-context-menu">
+                                                   <items>
+                                                      <MenuItem mnemonicParsing="false" text="DESCRIPTIONS" />
+                                                      <SeparatorMenuItem mnemonicParsing="false" />
+                                                      <MenuItem fx:id="addFqnMenuItem" mnemonicParsing="false" onAction="#showAddFqnPanel" text="Add Fully Qualified Name">
+                                                         <graphic>
+                                                            <Region prefHeight="20.0" prefWidth="20.0" styleClass="concept-edit-description-menu-icon" />
+                                                         </graphic>
+                                                      </MenuItem>
+                                                      <MenuItem fx:id="addOtherNameMenuItem" mnemonicParsing="false" onAction="#showAddOtherNamePanel" text="Add Other Name">
+                                                         <graphic>
+                                                            <Region prefHeight="20.0" prefWidth="20.0" styleClass="concept-edit-description-menu-icon" />
+                                                         </graphic>
+                                                      </MenuItem>
+                                                      <SeparatorMenuItem mnemonicParsing="false" />
+                                                   </items>
+                                                </ContextMenu>
+                                             </contextMenu>
                                           </Button>
                                        </children>
                                     </HBox>
@@ -306,44 +318,120 @@
                         <HBox layoutX="14.0" layoutY="135.0" prefWidth="711.0">
                            <children>
                               <TitledPane fx:id="fieldsTitledPane" contentDisplay="BOTTOM" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" prefWidth="5000.0" styleClass="pattern-titled-pane" text="FIELDS">
-                                 <content>
-                                    <GridPane prefWidth="711.0">
-                                       <columnConstraints>
-                                          <ColumnConstraints hgrow="SOMETIMES" maxWidth="326.0" minWidth="10.0" prefWidth="302.0" />
-                                          <ColumnConstraints hgrow="SOMETIMES" maxWidth="645.0" minWidth="10.0" prefWidth="387.0" />
-                                       </columnConstraints>
-                                       <rowConstraints>
-                                          <RowConstraints maxHeight="16.0" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                       </rowConstraints>
-                                       <children>
-                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 600; -fx-fill: -Grey-12;" wrappingWidth="135.474609375">
-                                             <font>
-                                                <Font name="Noto Sans Batak Regular" size="12.0" />
-                                             </font>
-                                          </Text>
-                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" GridPane.rowIndex="1" />
-                                          <TextFlow prefHeight="58.0" prefWidth="368.0" GridPane.halignment="LEFT" GridPane.rowIndex="2" GridPane.valignment="TOP">
-                                             <children>
-                                                <Text fx:id="deviceSummaryText11" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="227.6090087890625">
-                                                   <font>
-                                                      <Font name="Noto Sans Batak Regular" size="13.0" />
-                                                   </font>
-                                                </Text>
-                                             </children>
-                                          </TextFlow>
-                                          <Text fx:id="mfgSummaryText11" strokeType="OUTSIDE" strokeWidth="0.0" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.valignment="TOP">
-                                             <font>
-                                                <Font name="Noto Sans Batak Regular" size="13.0" />
-                                             </font>
-                                          </Text>
-                                       </children>
-                                    </GridPane>
-                                 </content>
                                  <font>
                                     <Font name="Noto Sans Batak Regular" size="12.0" />
                                  </font>
+                                 <content>
+                                    <TilePane fx:id="fieldsTilePane" hgap="20.0">
+                                       <children>
+                                          <VBox prefWidth="330.0">
+                                             <children>
+                                                <Label text="Field 1" />
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey12-12pt-bold" text="Data Mapping" />
+                                                <HBox spacing="8.0">
+                                                   <children>
+                                                      <HBox>
+                                                         <children>
+                                                            <Label text="Date Added: " />
+                                                            <Label maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
+                                                         </children>
+                                                      </HBox>
+                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
+                                                         <opaqueInsets>
+                                                            <Insets />
+                                                         </opaqueInsets>
+                                                      </Region>
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox>
+                                             <children>
+                                                <Label text="Field 2" />
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey12-12pt-bold" text="Data Mapping" />
+                                                <HBox spacing="8.0">
+                                                   <children>
+                                                      <HBox>
+                                                         <children>
+                                                            <Label text="Date Added: " />
+                                                            <Label maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
+                                                         </children>
+                                                      </HBox>
+                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
+                                                         <opaqueInsets>
+                                                            <Insets />
+                                                         </opaqueInsets>
+                                                      </Region>
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox>
+                                             <children>
+                                                <Label text="Field 3" />
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey12-12pt-bold" text="Data Mapping" />
+                                                <HBox spacing="8.0">
+                                                   <children>
+                                                      <HBox>
+                                                         <children>
+                                                            <Label text="Date Added: " />
+                                                            <Label maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
+                                                         </children>
+                                                      </HBox>
+                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
+                                                         <opaqueInsets>
+                                                            <Insets />
+                                                         </opaqueInsets>
+                                                      </Region>
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox>
+                                             <children>
+                                                <Label text="Field 4" />
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey12-12pt-bold" text="Data Mapping" />
+                                                <HBox spacing="8.0">
+                                                   <children>
+                                                      <HBox>
+                                                         <children>
+                                                            <Label text="Date Added: " />
+                                                            <Label maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
+                                                         </children>
+                                                      </HBox>
+                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
+                                                         <opaqueInsets>
+                                                            <Insets />
+                                                         </opaqueInsets>
+                                                      </Region>
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox>
+                                             <children>
+                                                <Label text="Field 5" />
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey12-12pt-bold" text="Data Mapping" />
+                                                <HBox spacing="8.0">
+                                                   <children>
+                                                      <HBox>
+                                                         <children>
+                                                            <Label text="Date Added: " />
+                                                            <Label maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
+                                                         </children>
+                                                      </HBox>
+                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
+                                                         <opaqueInsets>
+                                                            <Insets />
+                                                         </opaqueInsets>
+                                                      </Region>
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </TilePane>
+                                 </content>
                               </TitledPane>
                               <Pane>
                                  <children>

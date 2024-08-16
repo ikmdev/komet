@@ -15,9 +15,8 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
-import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
-import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.TinkExecutor;
@@ -52,25 +51,32 @@ public class DescrNameViewModel extends FormViewModel {
     public static final String MODULE = "module";
     public static final String LANGUAGE = "language";
     public static final String IS_SUBMITTED = "isSubmitted";
-    public static final String  MODULES_PROPERTY = "modules";
-    public static final String  PATHS_PROPERTY = "paths";
+    public static final String MODULES_PROPERTY = "modules";
+    public static final String PATHS_PROPERTY = "paths";
 
     public static final String PARENT_PUBLIC_ID = "parentPublidId";
 
     public static final String SEMANTIC_PUBLIC_ID = "semanticPublidId";
 
+    public static final String TITLE_TEXT = "titleText";
+
+    public static final String DESCRIPTION_NAME_TYPE = "descrNameType";
+
 
     public DescrNameViewModel() {
         super(); // defaults to View mode
         addProperty(NAME_TEXT, "")
-                .addProperty(NAME_TYPE, (Object) null)
+                .addProperty(NAME_TYPE, (ConceptEntity) null)
                 .addProperty(CASE_SIGNIFICANCE, (ConceptEntity) null)
                 .addProperty(STATUS, TinkarTerm.ACTIVE_STATE)
                 .addProperty(MODULE, (ConceptEntity) null)
                 .addProperty(LANGUAGE, (ConceptEntity) null)
                 .addProperty(IS_SUBMITTED, false)
                 .addProperty(PARENT_PUBLIC_ID, (PublicId) null)
-                .addProperty(SEMANTIC_PUBLIC_ID, (PublicId) null);;
+                .addProperty(SEMANTIC_PUBLIC_ID, (PublicId) null)
+                .addProperty(TITLE_TEXT, "")
+                .addProperty(DESCRIPTION_NAME_TYPE, "")
+        ;
     }
 
     public Set<ConceptEntity> findAllLanguages(ViewProperties viewProperties) {

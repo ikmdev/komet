@@ -15,7 +15,21 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
+
+import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.PATTERN_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.COMMENTS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.DATA_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.DISPLAY_NAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.FIELD_ORDER;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.MEANING_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.PURPOSE_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
+import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
+import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.view.common.ConceptDragOverAnimationController;
 import dev.ikm.komet.kview.mvvm.view.common.ConceptSearchFormItemController;
@@ -23,15 +37,19 @@ import dev.ikm.komet.kview.mvvm.view.common.SelectedConceptController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.component.Concept;
+import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.ConceptToDataType;
 import dev.ikm.tinkar.terms.EntityFacade;
+
+import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
@@ -50,8 +68,6 @@ import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.DataViewModelHelper.DATA_TYPE_OPTIONS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.PURPOSE_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.MEANING_ENTITY;
 
 public class PatternFieldsController {
 
@@ -65,6 +81,10 @@ public class PatternFieldsController {
 
     @InjectViewModel
     private PatternFieldsViewModel patternFieldsViewModel;
+
+
+    @FXML
+    private TextField displayNameTextField;
 
     @FXML
     private Button cancelButton;
@@ -94,7 +114,11 @@ public class PatternFieldsController {
     private StackPane selectedMeaningStackPane;  // StackPane to hold the dropped/selected meaning item
 
     @FXML
-    private ComboBox<EntityFacade> dataTypeComboBox;
+    private ComboBox<Integer> fieldOrderComboBox = new ComboBox<>();
+
+    @FXML
+    private ComboBox<EntityFacade> dataTypeComboBox = new ComboBox<>();
+
 
     @FXML
     private void initialize() {
@@ -107,12 +131,11 @@ public class PatternFieldsController {
         setupDragNDrop(purposeVBox, purposeStackPane, (publicId) -> {
             // check to see if a pattern > purpose was already dragged into the purpose section before saving
             // to the view model
-            if (patternFieldsViewModel.getPropertyValue(PURPOSE_ENTITY) == null) {
+            ObjectProperty<ConceptEntity> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
+            if (purposeProp.isNull().get()) {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
                 patternFieldsViewModel.setPropertyValue(PURPOSE_ENTITY, entity);
-                // save calls validate
-                patternFieldsViewModel.save();
                 addPurposeToForm(entity);
             }
         });
@@ -124,8 +147,6 @@ public class PatternFieldsController {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
                 patternFieldsViewModel.setPropertyValue(MEANING_ENTITY, entity);
-                // save calls validate
-                patternFieldsViewModel.save();
                 addMeaningToForm(entity);
             }
         });
@@ -387,9 +408,47 @@ public class PatternFieldsController {
 
     @FXML
     private void clearView(ActionEvent actionEvent) {
+        patternFieldsViewModel.setPropertyValue(DISPLAY_NAME, "");
+        patternFieldsViewModel.save(true);
     }
 
     @FXML
-    private void cancel(ActionEvent actionEvent) {
+    private void onCancel(ActionEvent actionEvent) {
+    }
+
+    private void collectFormData() {
+        patternFieldsViewModel.setPropertyValue(DISPLAY_NAME, displayNameTextField.getText());
+        //TODO collect all the data
+    }
+
+    @FXML
+    public void onDone(ActionEvent actionEvent) {
+        actionEvent.consume();
+        collectFormData();
+
+        // save calls validate
+        patternFieldsViewModel.save();
+        if (patternFieldsViewModel.hasErrorMsgs()) {
+            // when there are validators, we potentially will have errors
+            return; // do not proceed.
+        }
+
+        //publish close env
+        EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
+                new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+
+
+        //publish form submission data
+        PatternField patternField = new PatternField(
+                patternFieldsViewModel.getValue(FIELD_ORDER),
+                patternFieldsViewModel.getValue(DISPLAY_NAME),
+                patternFieldsViewModel.getValue(DATA_TYPE),
+                patternFieldsViewModel.getValue(PURPOSE_ENTITY),
+                patternFieldsViewModel.getValue(MEANING_ENTITY),
+                patternFieldsViewModel.getValue(COMMENTS)
+        );
+
+        EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
+                new PatternFieldsPanelEvent(actionEvent.getSource(), PATTERN_FIELDS, patternField));
     }
 }
