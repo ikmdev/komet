@@ -112,10 +112,10 @@ public class PatternFieldsController {
     private StackPane selectedMeaningStackPane;  // StackPane to hold the dropped/selected meaning item
 
     @FXML
-
     private ComboBox<Integer> fieldOrderComboBox = new ComboBox<>();
 
-    private ComboBox<EntityFacade> dataTypeComboBox;
+    @FXML
+    private ComboBox<EntityFacade> dataTypeComboBox = new ComboBox<>();
 
 
     @FXML
