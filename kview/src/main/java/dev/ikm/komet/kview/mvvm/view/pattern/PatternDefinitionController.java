@@ -124,6 +124,7 @@ public class PatternDefinitionController {
     private void clearView() {
         patternDefinitionViewModel.setPropertyValue(PatternViewModel.PURPOSE_ENTITY, null);
         patternDefinitionViewModel.setPropertyValue(PatternViewModel.MEANING_ENTITY, null);
+        patternDefinitionViewModel.save(true);
     }
 
     @FXML
