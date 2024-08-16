@@ -272,7 +272,7 @@ public class PatternDetailsController {
         VBox fieldVBoxContainer = new VBox();
         fieldVBoxContainer.prefWidth(330);
         Label fieldLabel = new Label("Field " + fieldNum);
-        Text fieldText = new Text(patternField.getDisplayName());
+        Text fieldText = new Text(patternField.displayName());
         fieldText.getStyleClass().add("grey12-12pt-bold");
         HBox outerHBox = new HBox();
         outerHBox.setSpacing(8);
