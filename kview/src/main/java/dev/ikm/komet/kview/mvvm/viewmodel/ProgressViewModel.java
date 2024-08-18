@@ -22,6 +22,7 @@ public class ProgressViewModel extends ValidationViewModel {
     public static String TASK_PROPERTY = "taskProperty";
     public static String IS_CANCELLED_PROP = "cancelState";
     public static String CANCEL_BUTTON_TEXT_PROP = "cancelButtonText";
+    public static String SHOW_CANCEL_BUTTON_PROP = "showCancelButton";
 
 
 
@@ -30,5 +31,6 @@ public class ProgressViewModel extends ValidationViewModel {
         addProperty(TASK_PROPERTY, (Task<Void>) null);
         addProperty(IS_CANCELLED_PROP, false);
         addProperty(CANCEL_BUTTON_TEXT_PROP, "Cancel");
+        addProperty(SHOW_CANCEL_BUTTON_PROP, true);
     }
 }
