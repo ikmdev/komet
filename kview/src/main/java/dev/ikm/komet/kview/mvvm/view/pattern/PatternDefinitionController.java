@@ -15,9 +15,16 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
+import static dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent.PATTERN_DEFINITION;
+import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.MEANING_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.PURPOSE_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
+import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
+import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.Entity;
@@ -112,7 +119,10 @@ public class PatternDefinitionController {
     private VBox semanticOuterVBox;
 
     @FXML
-    private void clearView(ActionEvent actionEvent) {
+    private void clearView() {
+        patternDefinitionViewModel.setPropertyValue(PURPOSE_ENTITY, null);
+        patternDefinitionViewModel.setPropertyValue(MEANING_ENTITY, null);
+        patternDefinitionViewModel.save(true);
     }
 
     @FXML
@@ -130,8 +140,6 @@ public class PatternDefinitionController {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
                 patternDefinitionViewModel.setPropertyValue(PURPOSE_ENTITY, entity);
-                // save calls validate
-                patternDefinitionViewModel.save();
                 addPurposeToForm(entity);
             }
         });
@@ -143,8 +151,6 @@ public class PatternDefinitionController {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
                 patternDefinitionViewModel.setPropertyValue(MEANING_ENTITY, entity);
-                // save calls validate
-                patternDefinitionViewModel.save();
                 addMeaningToForm(entity);
             }
         });
@@ -412,8 +418,6 @@ public class PatternDefinitionController {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
                 patternDefinitionViewModel.setPropertyValue(MEANING_ENTITY, entity);
-                // save calls validate
-                patternDefinitionViewModel.save();
                 addMeaningToForm(entity);
             }
         });
@@ -492,12 +496,40 @@ public class PatternDefinitionController {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
                 patternDefinitionViewModel.setPropertyValue(PURPOSE_ENTITY, entity);
-                // save calls validate
-                patternDefinitionViewModel.save();
                 addPurposeToForm(entity);
             }
         });
 
         return purposeVBox;
+    }
+
+
+    @FXML
+    private void onCancel(ActionEvent actionEvent) {
+        actionEvent.consume();
+        clearView();
+        //publish close env
+        EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+    }
+
+
+    @FXML
+    public void onDone(ActionEvent actionEvent) {
+        actionEvent.consume();
+        // save calls validate
+        patternDefinitionViewModel.save();
+
+        PatternDefinition patternDefinition = new PatternDefinition(
+                patternDefinitionViewModel.getPropertyValue(PURPOSE_ENTITY),
+                patternDefinitionViewModel.getPropertyValue(MEANING_ENTITY),
+                null);
+
+        //publish close env
+        EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC),
+                new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+
+        // publish form submission data
+        EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC),
+                new PatternDefinitionEvent(actionEvent.getSource(), PATTERN_DEFINITION, patternDefinition));
     }
 }

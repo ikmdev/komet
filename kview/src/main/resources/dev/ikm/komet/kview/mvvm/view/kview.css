@@ -2245,6 +2245,22 @@ Timeline Year line segment (will overlay change circles)
     -fx-shape: "M27 22.5V27H9V22.5H6V27C6 28.65 7.35 30 9 30H27C28.65 30 30 28.65 30 27V22.5H27ZM25.5 16.5L23.385 14.385L19.5 18.255V6H16.5V18.255L12.615 14.385L10.5 16.5L18 24L25.5 16.5Z";
 }
 
+.text-noto-sans-bold-grey-twelve {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: bold;
+    -fx-text-fill: -Grey-12;
+}
+
+.text-noto-sans-normal-grey-eight {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 11px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-text-fill: -Grey-8;
+}
+
 .background-white {
     -fx-background-color: white;
 }
@@ -2298,6 +2314,19 @@ Timeline Year line segment (will overlay change circles)
     -fx-shape: "M15.8337 5.34199L14.6587 4.16699L10.0003 8.82533L5.34199 4.16699L4.16699 5.34199L8.82533 10.0003L4.16699 14.6587L5.34199 15.8337L10.0003 11.1753L14.6587 15.8337L15.8337 14.6587L11.1753 10.0003L15.8337 5.34199Z";
 }
 
+.grey12-12pt-bold {
+    -fx-text-fill: -Grey-12;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: bold;
+}
+
+.transparent-scroll.scroll-pane,
+.transparent-scroll.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
 
 /* end making these for the dragged concept reusable fxml */
 
@@ -2317,7 +2346,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-shape: "M20 13H13V20H11V13H4V11H11V4H13V11H20V13Z";    
 }
 
-.membership-tag-combo-box {
+.blue-arrow-combo-box {
     -fx-background-color: -Grey-1;
     -fx-color: -Grey-8;
     -fx-font-family: "Noto Sans";
@@ -2326,7 +2355,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-weight: 500;
 }
 
-.membership-tag-combo-box.combo-box-base > .arrow-button > .arrow {
+.blue-arrow-combo-box.combo-box-base > .arrow-button > .arrow {
     -fx-background-color: -Secondary-05;
     -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
 }
@@ -2348,6 +2377,17 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-size: 14px;
     -fx-font-style: normal;
     -fx-font-weight: 500;
+}
+
+.grey-comment-icon {
+    -fx-pref-height: 14;
+    -fx-pref-width: 15;
+    -fx-background-color: -Grey-8;
+    -fx-shape: "M5.59231 12.8337C5.4376 12.8337 5.28922 12.7722 5.17983 12.6628C5.07043 12.5534 5.00897 12.405 5.00897 12.2503V10.5003H2.67564C2.36622 10.5003 2.06947 10.3774 1.85068 10.1586C1.63189 9.93982 1.50897 9.64308 1.50897 9.33366V2.33366C1.50897 1.68616 2.03397 1.16699 2.67564 1.16699H12.009C12.3184 1.16699 12.6151 1.28991 12.8339 1.5087C13.0527 1.72749 13.1756 2.02424 13.1756 2.33366V9.33366C13.1756 9.64308 13.0527 9.93982 12.8339 10.1586C12.6151 10.3774 12.3184 10.5003 12.009 10.5003H8.45064L6.2923 12.6645C6.17564 12.7753 6.02981 12.8337 5.88397 12.8337H5.59231ZM6.17564 9.33366V11.1303L7.97231 9.33366H12.009V2.33366H2.67564V9.33366H6.17564Z";
+}
+
+.grey4-background {
+    -fx-background-color: -Grey-4;
 }
 
 /*********************************************************************************
@@ -3093,7 +3133,6 @@ Styling a context menu for kview ui/ux controls
     -fx-background-radius: 8px;
     -fx-background-insets: 1;
     -fx-background-color: -Grey-11;
-    -fx-pref-width: 197px;
 }
 .context-menu.kview-context-menu .separator:horizontal {
     -fx-padding: 4px 8px 4px 8px;

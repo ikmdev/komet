@@ -20,7 +20,6 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.UUID;
 
 public class PatternDefinitionViewModel extends FormViewModel {
 
@@ -32,8 +31,7 @@ public class PatternDefinitionViewModel extends FormViewModel {
 
     public PatternDefinitionViewModel() {
         super();
-        addProperty(CONCEPT_TOPIC, (UUID) null)
-                .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+            addProperty(VIEW_PROPERTIES, (ViewProperties) null)
                 .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
                 .addProperty(MEANING_ENTITY, (EntityFacade) null); // this is/will be the 'purpose' concept entity
     }
