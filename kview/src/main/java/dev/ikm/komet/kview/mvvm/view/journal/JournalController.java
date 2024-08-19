@@ -114,6 +114,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROP
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
 import static dev.ikm.komet.preferences.ConceptWindowPreferences.*;
@@ -353,10 +354,9 @@ public class JournalController {
             // if summon event type, load stuff and reference task to progress popup
             if (evt.getEventType() == SUMMON) {
                 progressToggleButton.setVisible(true);
-                Task<Void> task = (Task<Void>) evt.getTask();
-                JFXNode<Pane, ProgressController> progressJFXNode = createProgressBox(task);
+                Task<Void> task = evt.getTask();
+                JFXNode<Pane, ProgressController> progressJFXNode = createProgressBox(task, evt.getCancelButtonText());
                 ProgressController progressController = progressJFXNode.controller();
-
                 Pane progressPane = progressJFXNode.node();
                 PopOver popOver = new PopOver(progressPane);
 
@@ -374,7 +374,7 @@ public class JournalController {
                 Platform.runLater(() -> popOver.show(progressToggleButton));
 
                 // Create one inside the list for bump out
-                JFXNode<Pane, ProgressController> progressJFXNode2 = createProgressBox(task);
+                JFXNode<Pane, ProgressController> progressJFXNode2 = createProgressBox(task, evt.getCancelButtonText());
                 ProgressController progressController2 = progressJFXNode2.controller();
                 Pane progressBox2 = progressJFXNode2.node();
                 progressController2.getCloseProgressButton().setOnAction(actionEvent -> {
@@ -390,12 +390,15 @@ public class JournalController {
 
     }
 
-    private JFXNode<Pane, ProgressController> createProgressBox(Task<Void> task) {
+    private JFXNode<Pane, ProgressController> createProgressBox(Task<Void> task, String cancelButtonText) {
         // Create one inside the list for bump out
         // Inject Stamp view model into form.
-        Config config = new Config(ProgressController.class.getResource("progress.fxml"));
-        config.updateViewModel("progressViewModel",
-                (viewModel -> viewModel.setPropertyValue(TASK_PROPERTY, task)));
+        Config config = new Config(ProgressController.class.getResource("progress.fxml"))
+                .updateViewModel("progressViewModel", (viewModel -> viewModel
+                        .setPropertyValue(TASK_PROPERTY, task)
+                        .setPropertyValue(CANCEL_BUTTON_TEXT_PROP, cancelButtonText))
+                );
+
         JFXNode<Pane, ProgressController> progressJFXNode = FXMLMvvmLoader.make(config);
         return progressJFXNode;
     }
