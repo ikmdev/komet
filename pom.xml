@@ -60,7 +60,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
-        <tinkar-core.version>1.58.0</tinkar-core.version>
+        <tinkar-core.version>1.57.0</tinkar-core.version>
         <owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
         <owlapi.version>4.7.0</owlapi.version>
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
