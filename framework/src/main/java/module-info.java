@@ -38,6 +38,7 @@ open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.performance.impl;
     exports dev.ikm.komet.framework.performance;
     exports dev.ikm.komet.framework.preferences;
+    exports dev.ikm.komet.framework.progress;
     exports dev.ikm.komet.framework.propsheet.editor to org.controlsfx.controls, dev.ikm.komet.list, dev.ikm.komet.application;
     exports dev.ikm.komet.framework.propsheet;
     exports dev.ikm.komet.framework.rulebase;
