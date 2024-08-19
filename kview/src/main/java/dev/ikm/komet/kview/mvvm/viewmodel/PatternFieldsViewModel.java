@@ -24,14 +24,27 @@ public class PatternFieldsViewModel extends FormViewModel {
 
     private static final Logger LOG = LoggerFactory.getLogger(PatternFieldsViewModel.class);
 
+    public static String FIELD_ORDER = "fieldOrder";
+
+    public static String DISPLAY_NAME = "displayName";
+
+    public static String DATA_TYPE = "dataType";
+
     public static String PURPOSE_ENTITY = "purposeEntity";
 
     public static String MEANING_ENTITY = "meaningEntity";
 
+    public static String COMMENTS = "comments";
+
     public PatternFieldsViewModel() {
         super();
         addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+                .addProperty(FIELD_ORDER, (Integer) 1) // default to 1, in create mode they will create the first one
+                .addProperty(DISPLAY_NAME, "")
+                .addProperty(DATA_TYPE, (EntityFacade) null)
                 .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
-                .addProperty(MEANING_ENTITY, (EntityFacade) null); // this is/will be the 'purpose' concept entity
+                .addProperty(MEANING_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
+                .addProperty(COMMENTS, "")
+        ;
     }
 }

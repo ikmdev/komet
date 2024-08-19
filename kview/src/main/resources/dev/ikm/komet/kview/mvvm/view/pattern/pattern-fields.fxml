@@ -29,23 +29,23 @@
                 <VBox fx:id="semanticOuterVBox" spacing="8.0">
                     <children>
                           <Label styleClass="lidr-device-label" text="Field Order" />
-                          <ComboBox prefHeight="30.0" prefWidth="46.0" styleClass="membership-tag-combo-box">
+                          <ComboBox fx:id="fieldOrderComboBox" prefHeight="30.0" prefWidth="46.0" styleClass="blue-arrow-combo-box">
                               <VBox.margin>
                                   <Insets />
                               </VBox.margin>
                   </ComboBox>
                           <Label styleClass="lidr-device-label" text="Display Name" />
-                          <TextField maxWidth="1.7976931348623157E308" prefHeight="32.0" prefWidth="310.0">
+                          <TextField fx:id="displayNameTextField" maxWidth="1.7976931348623157E308" prefHeight="32.0" prefWidth="310.0">
                               <VBox.margin>
                                   <Insets />
                               </VBox.margin>
                   </TextField>
                           <Label styleClass="lidr-device-label" text="Data type" />
-                          <ComboBox maxWidth="1.7976931348623157E308" prefWidth="425.0" promptText="Select type" styleClass="membership-tag-combo-box">
+                        <ComboBox fx:id="dataTypeComboBox" maxWidth="1.7976931348623157E308" prefWidth="425.0" promptText="Select type" styleClass="blue-arrow-combo-box">
                               <VBox.margin>
                                   <Insets />
                               </VBox.margin>
-                          </ComboBox>
+                        </ComboBox>
                         <Label fx:id="purposeLabel" styleClass="lidr-device-label" text="Purpose" />
                   <VBox fx:id="purposeVBox" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="48.0" prefWidth="424.0">
                      <children>
@@ -244,8 +244,8 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
-                <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#clearView" styleClass="lidr-cancel-clear-button" text="CANCEL" GridPane.halignment="RIGHT" />
-                <Button fx:id="doneButton" mnemonicParsing="false" styleClass="lidr-done-button" text="DONE" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
+                <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#onCancel" styleClass="lidr-cancel-clear-button" text="CANCEL" GridPane.halignment="RIGHT" />
+                <Button fx:id="doneButton" mnemonicParsing="false" onAction="#onDone" styleClass="lidr-done-button" text="DONE" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
                     <GridPane.margin>
                         <Insets right="12.0" />
                     </GridPane.margin>

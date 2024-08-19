@@ -30,7 +30,11 @@ public class FormViewModel extends ValidationViewModel {
     public static String CREATE = "CREATE";
     public static String EDIT = "EDIT";
     public static String VIEW = "VIEW";
-
+    public enum FormMode {
+        CREATE,
+        EDIT,
+        VIEW
+    }
     public FormViewModel() {
         // Default Form View
         addProperty(MODE, EDIT);
@@ -38,5 +42,8 @@ public class FormViewModel extends ValidationViewModel {
         addProperty(CURRENT_JOURNAL_WINDOW_TOPIC, (UUID) null); // events within the current journal window's scope
         addProperty(CONCEPT_TOPIC, (UUID) null);                // events within the concept window's scope
         addProperty(VIEW_PROPERTIES, (ViewProperties) null);
+    }
+    public FormMode getMode() {
+        return FormMode.valueOf(getPropertyValue(MODE));
     }
 }
