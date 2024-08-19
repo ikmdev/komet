@@ -39,6 +39,8 @@ public class DataViewModelHelper {
             BYTE_ARRAY_FIELD,
             ARRAY_FIELD,
             INSTANT_LITERAL,
-            LONG
+            LONG,
+            UUID_DATA_TYPE,
+            VERTEX_FIELD
     ));
 }

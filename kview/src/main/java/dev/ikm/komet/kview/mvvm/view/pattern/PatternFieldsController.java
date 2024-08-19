@@ -18,6 +18,8 @@ package dev.ikm.komet.kview.mvvm.view.pattern;
 
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.PATTERN_FIELDS;
 import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DataViewModelHelper.DATA_TYPE_OPTIONS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.COMMENTS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.DATA_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.DISPLAY_NAME;
@@ -27,22 +29,20 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.PURPOSE_
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
-import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.view.common.ConceptDragOverAnimationController;
 import dev.ikm.komet.kview.mvvm.view.common.ConceptSearchFormItemController;
 import dev.ikm.komet.kview.mvvm.view.common.SelectedConceptController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.component.Concept;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.terms.ConceptToDataType;
 import dev.ikm.tinkar.terms.EntityFacade;
-
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -65,9 +65,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.function.Consumer;
-
-import static dev.ikm.komet.kview.mvvm.viewmodel.DataViewModelHelper.DATA_TYPE_OPTIONS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 public class PatternFieldsController {
 
@@ -192,7 +189,8 @@ public class PatternFieldsController {
         dataTypeComboBox.setConverter((new StringConverter<EntityFacade>() {
             @Override
             public String toString(EntityFacade conceptEntity) {
-                return ConceptToDataType.convert((Concept) conceptEntity).name();
+                ViewCalculator viewCalculator = viewProperties.calculator();
+                return viewCalculator.getRegularDescriptionText(conceptEntity).get();
             }
 
             @Override
@@ -200,7 +198,11 @@ public class PatternFieldsController {
                 return null;
             }
         }));
-        dataTypeComboBox.getItems().addAll(DATA_TYPE_OPTIONS);
+        dataTypeComboBox.getItems().addAll(DATA_TYPE_OPTIONS.stream().sorted((entityFacade1, entityFacade2) -> {
+            ViewCalculator viewCalculator = getViewProperties().calculator();
+            return viewCalculator.getRegularDescriptionText(entityFacade1).get()
+                            .compareToIgnoreCase(viewCalculator.getRegularDescriptionText(entityFacade2).get());
+        }).toList());
     }
 
     private ViewProperties getViewProperties() {
