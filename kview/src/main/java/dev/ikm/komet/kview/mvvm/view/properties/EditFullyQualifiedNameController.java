@@ -267,11 +267,7 @@ public class EditFullyQualifiedNameController implements BasicController {
         moduleComboBox.getSelectionModel().select(currentModule);
 
         // get all statuses
-        IntIdSet statusDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.STATUS_VALUE.nid());
-        Set<ConceptEntity> allStatuses = statusDescendents.intStream()
-                .mapToObj(statusNid -> (ConceptEntity) Entity.getFast(statusNid))
-                .collect(Collectors.toSet());
-        setupComboBox(statusComboBox, allStatuses);
+        setupComboBox(statusComboBox, descrNameViewModel.findAllStatuses(getViewProperties()));
 
         // populate the current status (ACTIVE | INACTIVE) and select it
         ConceptEntity currentStatus = Entity.getFast(stampEntity.state().nid());

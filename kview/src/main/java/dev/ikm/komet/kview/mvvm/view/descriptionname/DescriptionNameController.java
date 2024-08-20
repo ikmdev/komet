@@ -272,12 +272,7 @@ public class DescriptionNameController {
         ConceptEntity currentModule = (ConceptEntity) stampEntity.module();
         moduleComboBox.getSelectionModel().select(currentModule);
 
-        // get all statuses
-        IntIdSet statusDescendents = getViewProperties().calculator().descendentsOf(TinkarTerm.STATUS_VALUE.nid());
-        Set<ConceptEntity> allStatuses = statusDescendents.intStream()
-                .mapToObj(statusNid -> (ConceptEntity) Entity.getFast(statusNid))
-                .collect(Collectors.toSet());
-        setupComboBox(statusComboBox, allStatuses);
+        setupComboBox(statusComboBox, descrNameViewModel.findAllStatuses(getViewProperties()));
 
         // populate the current status (ACTIVE | INACTIVE) and select it
         ConceptEntity currentStatus = Entity.getFast(stampEntity.state().nid());
