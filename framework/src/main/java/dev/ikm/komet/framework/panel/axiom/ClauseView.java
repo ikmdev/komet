@@ -143,6 +143,7 @@ public class ClauseView {
             }
             case NECESSARY_SET -> setupForNecessarySet();
             case SUFFICIENT_SET -> setupForSufficientSet();
+            case INCLUSION_SET -> setupForInclusionSet();
             case DEFINITION_ROOT -> setupForDefinitionRoot();
             case PROPERTY_SET -> setupForPropertySet();
             case PROPERTY_PATTERN_IMPLICATION -> setupForPropertyPatternImplication();
@@ -275,6 +276,20 @@ public class ClauseView {
             LOG.info("TODO should never be null, need better handling. 39");
         }
 
+    }
+
+    private void setupForInclusionSet() {
+        rootBorderPane.getStyleClass()
+                .add(StyleClasses.DEF_SUFFICIENT_SET.toString());
+        titleLabel.setText(axiomView.getEntityForAxiomsText(
+                calculator().getPreferredDescriptionTextWithFallbackOrNid(axiomVertex.getMeaningNid())));
+        titleLabel.setGraphic(Icon.TAXONOMY_DEFINED_SINGLE_PARENT.makeIcon());
+        int column = 0;
+        this.axiomView.addToGridPaneNoGrow(rootGridPane, expandButton, column++);
+        this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
+        if (this.axiomView.premiseType == STATED) {
+            this.axiomView.addToGridPaneNoGrow(rootGridPane, editButton, column++);
+        }
     }
 
     private void setupForSufficientSet() {
@@ -750,6 +765,19 @@ public class ClauseView {
                     leftStroke = "stroke: #5ec200;";
                     leftWidth = 4;
                     nodeText = "Sufficient set";
+                    bottomInset = 4;
+                    preTextIconWidth = 20;
+                    builder.append("<use xlink:href=\"#circle\" x=\"");
+                    builder.append((xOffset + rootBounds.getMinX() + leftWidth + textOffset) * 33);
+                    builder.append("\" y=\"");
+                    builder.append((yOffset + rootBounds.getMinY() + textOffset + 1) * 33);
+                    builder.append("\" style=\"fill: white; stroke: #5ec200; stroke-width: 50.0;\"");
+                    builder.append(" transform=\" scale(.03) \"/>");
+                    break;
+                case INCLUSION_SET:
+                    leftStroke = "stroke: #5ec200;";
+                    leftWidth = 4;
+                    nodeText = "Inclusion set";
                     bottomInset = 4;
                     preTextIconWidth = 20;
                     builder.append("<use xlink:href=\"#circle\" x=\"");
