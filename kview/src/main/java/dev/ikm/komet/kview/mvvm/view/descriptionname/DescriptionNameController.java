@@ -125,6 +125,17 @@ public class DescriptionNameController {
             nameDescriptionType.valueProperty().bind(descriptionTypeProperty);
         }
 
+        setupComboBox(moduleComboBox, descrNameViewModel.findAllModules(getViewProperties()));
+        moduleComboBox.selectionModelProperty().bindBidirectional(descrNameViewModel.getProperty(MODULE));
+        setupComboBox(statusComboBox, descrNameViewModel.findAllStatuses(getViewProperties()));
+        statusComboBox.selectionModelProperty().bindBidirectional(descrNameViewModel.getProperty(STATUS));
+        setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants(getViewProperties()));
+        caseSignificanceComboBox.selectionModelProperty().bindBidirectional(descrNameViewModel.getProperty(CASE_SIGNIFICANCE));
+        setupComboBox(languageComboBox, descrNameViewModel.findAllLanguages(getViewProperties()));
+        languageComboBox.selectionModelProperty().bindBidirectional(descrNameViewModel.getProperty(LANGUAGE));
+
+
+
         //FIXME we haven't determined what is required and not required for Pattern>FQN or Pattern>OtherName
         // also we don't have the drop downs populated, so even if we wanted to validate, we would
         // have to get values for them in order to test the DONE functionality
