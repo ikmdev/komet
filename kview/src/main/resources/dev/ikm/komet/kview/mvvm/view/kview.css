@@ -2315,12 +2315,56 @@ Timeline Year line segment (will overlay change circles)
     -fx-shape: "M15.8337 5.34199L14.6587 4.16699L10.0003 8.82533L5.34199 4.16699L4.16699 5.34199L8.82533 10.0003L4.16699 14.6587L5.34199 15.8337L10.0003 11.1753L14.6587 15.8337L15.8337 14.6587L11.1753 10.0003L15.8337 5.34199Z";
 }
 
+.grey9-14pt-normal {
+    -fx-text-fill: -Grey-9;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: normal;
+}
+
 .grey12-12pt-bold {
     -fx-text-fill: -Grey-12;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 12px;
     -fx-font-style: normal;
     -fx-font-weight: bold;
+}
+
+.grey12-18pt-normal {
+    -fx-text-fill: -Grey-12;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 18px;
+    -fx-font-style: normal;
+    -fx-font-weight: normal;
+}
+
+.grey-button-black-text {
+    -fx-border-radius: 4;
+    -fx-text-fill: #4B4B4B;
+    -fx-background-color: #D2D2D2;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 10px;
+    -fx-font-style: normal;
+    -fx-font-weight: normal;
+}
+
+.text-field-grey6 {
+    -fx-text-fill: -Grey-6;
+    -fx-border-radius: 5;
+}
+
+.white-container-border6 {
+    -fx-background-color: white;
+    -fx-border-radius: 6;
+    -fx-border-color: -Grey-6;
+}
+
+.white-combo-grey-arrow {
+    -fx-border-radius: 4;
+    -fx-background-color: -Grey-1;
+    -fx-text-fill: black;
+    -fx-border-color: -Grey-6;
 }
 
 .transparent-scroll.scroll-pane,
