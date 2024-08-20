@@ -15,12 +15,9 @@
  */
 package dev.ikm.komet.kview.mvvm.view.export;
 
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.appevents.ProgressEvent;
+import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
-import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -51,8 +48,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 
 /**
  * ArtifactExportController is responsible for triggering an export class in Tinkar-Core. This class
@@ -362,7 +357,7 @@ public class ArtifactExportController2 {
                         updateProgress(0.0, 0.0);
                     }else {
                         updateMessage("Export Completed!");
-                        updateProgress(0.0, 1.0);
+                        updateProgress(1.0, 1.0);
                     }
                 });
                 EntityCountSummary entityCountSummary = completableFuture.get();
@@ -370,10 +365,7 @@ public class ArtifactExportController2 {
                 return entityCountSummary;
             }
         };
-        TinkExecutor.threadPool().execute(javafxTask);
-        EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
-        evtBus.publish(PROGRESS_TOPIC, new ProgressEvent<>(this, ProgressEvent.SUMMON, javafxTask));
-
+        ProgressHelper.progress(javafxTask, "Cancel Export");
     }
     public void handleSelectivePathExport(ActionEvent event) {
         //Getting selected item from the combobox

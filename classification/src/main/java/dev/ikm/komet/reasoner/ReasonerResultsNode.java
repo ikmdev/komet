@@ -19,8 +19,7 @@ import dev.ikm.komet.framework.ExplorationNodeAbstract;
 import dev.ikm.komet.framework.TopPanelFactory;
 import dev.ikm.komet.framework.activity.ActivityStreams;
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
-import dev.ikm.komet.framework.events.*;
-import dev.ikm.komet.framework.events.appevents.ProgressEvent;
+import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.reasoner.ui.RunElkOwlReasonerIncrementalTask;
@@ -46,13 +45,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.ServiceLoader.Provider;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
-import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 
 public class ReasonerResultsNode extends ExplorationNodeAbstract {
 
@@ -155,11 +154,7 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 
 			// publish event of task
 			TaskWrapper<ReasonerService> javafxTask = TaskWrapper.make(task);
-
-			EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
-			evtBus.publish(PROGRESS_TOPIC, new ProgressEvent<>(this, ProgressEvent.SUMMON, javafxTask));
-
-			Future reasonerFuture = TinkExecutor.threadPool().submit(javafxTask);
+			Future reasonerFuture = ProgressHelper.progress(javafxTask, "Cancel Reasoner");
 			int conceptCount = 0;
 			try {
 				reasonerFuture.get();
@@ -170,15 +165,15 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 				LOG.info(ie.getMessage(), ie);
 			} catch (CancellationException ce) {
 				LOG.info(ce.getMessage(), ce);
-				task.updateMessage("Cancelled by user");
-				javafxTask.updateProgress(-1, 1);
-				LOG.info("task is cancelled? " + task.isCancelled() );
-				LOG.info("javafxTask is cancelled? " + javafxTask.isCancelled() );
+				task.updateMessage("Cancelled full reasoner");
+				task.cancel();
+				ProgressHelper.cancel(javafxTask);
 			}
 
 			LOG.info("Concept count: " + conceptCount + " " + task.durationString());
 		});
 	}
+
 
 	private void elkOwlReasonerIncremental(ActionEvent actionEvent) {
 		reinferAllHierarchy = false;
@@ -187,11 +182,7 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 					resultsController::setResults);
 			// publish event of task
 			TaskWrapper<ReasonerService> javafxTask = TaskWrapper.make(task);
-
-			EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
-			evtBus.publish(PROGRESS_TOPIC, new ProgressEvent<>(this, ProgressEvent.SUMMON, javafxTask));
-
-			Future reasonerFuture = TinkExecutor.threadPool().submit(javafxTask);
+			Future reasonerFuture = ProgressHelper.progress(javafxTask, "Cancel Reasoner");
 			int conceptCount = 0;
 			try {
 				reasonerFuture.get();
@@ -201,13 +192,11 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 			} catch (InterruptedException ie) {
 				LOG.info(ie.getMessage(), ie);
 				task.updateMessage(ie.getMessage());
-				javafxTask.updateProgress(0, 1);
 			} catch (CancellationException ce) {
 				LOG.info(ce.getMessage(), ce);
-				task.updateMessage("Cancelled by user");
-				javafxTask.updateProgress(0, 1);
-				LOG.info("task is cancelled? " + task.isCancelled() );
-				LOG.info("javafxTask is cancelled? " + javafxTask.isCancelled() );
+				task.updateMessage("Cancelled incremental reasoner");
+				task.cancel();
+				ProgressHelper.cancel(javafxTask);
 			}
 
 			LOG.info("Concept count: " + conceptCount + " " + task.durationString());

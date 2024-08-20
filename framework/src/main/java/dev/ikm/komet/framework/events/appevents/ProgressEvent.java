@@ -21,16 +21,13 @@ import javafx.concurrent.Task;
 
 /**
  * For event publishers and subscribers to summon progress popup panel, add and remove a panel from a list of running progress panels.
- * @param <V>
  */
-public class ProgressEvent<V> extends Evt  {
+public class ProgressEvent extends Evt  {
 
     public static final EvtType<ProgressEvent> SUMMON = new EvtType<>(Evt.ANY, "SUMMON");
-    public static final EvtType<ProgressEvent> CLOSE = new EvtType<>(Evt.ANY, "CLOSE");
-    public static final EvtType<ProgressEvent> ADD_PROGRESS_LIST = new EvtType<>(Evt.ANY, "ADD_PROGRESS_LIST");
-    public static final EvtType<ProgressEvent> REMOVE_PROGRESS_LIST = new EvtType<>(Evt.ANY, "REMOVE_PROGRESS_LIST");
-
-    private Task<V> task;
+    public static final EvtType<ProgressEvent> CANCEL = new EvtType<>(Evt.ANY, "CANCEL");
+    private Task task;
+    private String cancelButtonText;
 
     /**
      * Constructs a prototypical Event.
@@ -39,16 +36,28 @@ public class ProgressEvent<V> extends Evt  {
      * @param eventType     the event type
      * @param task         the event payload: a javafx Task.
      */
-    public ProgressEvent(Object source, EvtType eventType, Task<V> task) {
+    public <V> ProgressEvent(Object source, EvtType eventType, Task<V> task) {
         super(source, eventType);
         this.task = task;
     }
+    public <V> ProgressEvent(Object source, EvtType eventType, Task<V> task, String cancelButtonText) {
+        super(source, eventType);
+        this.task = task;
+        this.cancelButtonText = cancelButtonText;
+    }
 
-    public Task<V> getTask() {
+    public <V> Task<V> getTask() {
         return task;
     }
 
-    public void setTask(Task<V> task) {
+    public <V> void setTask(Task<V> task) {
         this.task = task;
+    }
+
+    public String getCancelButtonText() {
+        if (cancelButtonText == null) {
+            return "Cancel";
+        }
+        return cancelButtonText;
     }
 }
