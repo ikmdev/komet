@@ -105,7 +105,7 @@ public class EditFullyQualifiedNameController implements BasicController {
     private EvtBus eventBus;
 
     @InjectViewModel
-    private DescrNameViewModel fqnViewModel;
+    private DescrNameViewModel descrNameViewModel;
 
     public EditFullyQualifiedNameController() { }
 
@@ -156,8 +156,8 @@ public class EditFullyQualifiedNameController implements BasicController {
     }
 
     private void copyUIToViewModelProperties() {
-        if (fqnViewModel != null) {
-            fqnViewModel.setPropertyValue(NAME_TEXT, fqnText.getText())
+        if (descrNameViewModel != null) {
+            descrNameViewModel.setPropertyValue(NAME_TEXT, fqnText.getText())
                     .setPropertyValue(NAME_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
                     .setPropertyValue(CASE_SIGNIFICANCE, caseSignificanceComboBox.getSelectionModel().getSelectedItem())
                     .setPropertyValue(STATUS, statusComboBox.getSelectionModel().getSelectedItem())
@@ -260,12 +260,7 @@ public class EditFullyQualifiedNameController implements BasicController {
         this.fqnText.setText(otherName);
 
         // get all descendant modules
-        IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.MODULE.nid());
-        Set<ConceptEntity> allModules =
-                moduleDescendents.intStream()
-                        .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
-                        .collect(Collectors.toSet());
-        setupComboBox(moduleComboBox, allModules);
+        setupComboBox(moduleComboBox, descrNameViewModel.findAllModules(getViewProperties()));
 
         // populate the current module and select it (e.g. 'SNOMED CT core module')
         ConceptEntity currentModule = (ConceptEntity) stampEntity.module();
@@ -283,7 +278,7 @@ public class EditFullyQualifiedNameController implements BasicController {
         statusComboBox.getSelectionModel().select(currentStatus);
 
         // populate all case significance choices
-        setupComboBox(caseSignificanceComboBox, fqnViewModel.findAllCaseSignificants(getViewProperties()));
+        setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants(getViewProperties()));
 
         // get case concept's case sensitivity (e.g. 'Case insensitive')
         PatternEntity<PatternEntityVersion> patternEntity = latestEntityVersion.get().pattern();
@@ -318,18 +313,18 @@ public class EditFullyQualifiedNameController implements BasicController {
         actionEvent.consume();
 
         copyUIToViewModelProperties();
-        fqnViewModel.save();
+        descrNameViewModel.save();
         // validate
-        if (fqnViewModel.hasErrorMsgs()) {
-            fqnViewModel.getValidationMessages().stream().forEach(msg -> LOG.error("Validation error " + msg));
+        if (descrNameViewModel.hasErrorMsgs()) {
+            descrNameViewModel.getValidationMessages().stream().forEach(msg -> LOG.error("Validation error " + msg));
             return;
         }
-        fqnViewModel.setPropertyValue(IS_SUBMITTED, true);
+        descrNameViewModel.setPropertyValue(IS_SUBMITTED, true);
 
-        DescrName fqnDescrName = fqnViewModel.create();
+        DescrName fqnDescrName = descrNameViewModel.create();
 
         // delegate the transaction logic to the view model
-        fqnViewModel.updateFullyQualifiedName(this.publicId);
+        descrNameViewModel.updateFullyQualifiedName(this.publicId);
 
         LOG.info("transaction complete");
         clearView();
@@ -342,7 +337,6 @@ public class EditFullyQualifiedNameController implements BasicController {
         eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(submitButton,
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
     }
-
 
     @Override
     public void updateView() { }

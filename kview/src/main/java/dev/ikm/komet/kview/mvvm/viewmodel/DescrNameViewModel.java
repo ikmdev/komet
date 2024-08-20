@@ -102,22 +102,15 @@ public class DescrNameViewModel extends FormViewModel {
         return allCaseDescendents;
     }
 
-    public List<ConceptEntity> findAllModules(ViewProperties viewProperties) {
-        try {
-            Entity<? extends EntityVersion> moduleEntity = EntityService.get().getEntityFast(TinkarTerm.MODULE);
-            IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(moduleEntity.nid());
-
-            // get all descendant modules
-            List<ConceptEntity> allModules =
+    public Set<ConceptEntity> findAllModules(ViewProperties viewProperties) {
+            IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.MODULE.nid());
+            Set<ConceptEntity> allModules =
                     moduleDescendents.intStream()
                             .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
-                            .toList();
+                            .collect(Collectors.toSet());
             return allModules;
-        } catch (Throwable th) {
-            addValidator(MODULES_PROPERTY, "Module Entities", (Void prop, ViewModel vm) -> new ValidationMessage(MessageType.ERROR, "PrimitiveData services are not up. Attempting to retrieve ${%s}. Must call start().".formatted(MODULES_PROPERTY), th));
-            return List.of();
-        }
     }
+
     public List<ConceptEntity<ConceptEntityVersion>> findAllPaths(ViewProperties viewProperties) {
         try {
             //List of Concepts that represent available Paths in the data

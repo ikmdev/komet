@@ -274,15 +274,7 @@ public class EditDescriptionFormController implements BasicController {
         String otherName = viewCalculator.getDescriptionText(nid).get();
         this.otherNameTextField.setText(otherName);
 
-        Entity<? extends EntityVersion> moduleEntity = EntityService.get().getEntityFast(TinkarTerm.MODULE);
-        IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(moduleEntity.nid());
-
-        // get all descendant modules
-        Set<ConceptEntity> allModules =
-                moduleDescendents.intStream()
-                        .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
-                        .collect(Collectors.toSet());
-        setupComboBox(moduleComboBox, allModules);
+        setupComboBox(moduleComboBox, descrNameViewModel.findAllModules(getViewProperties()));
 
         // populate the current module and select it (e.g. 'SNOMED CT core module')
         ConceptEntity currentModule = (ConceptEntity) stampEntity.module();
