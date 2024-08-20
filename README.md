@@ -23,56 +23,55 @@ Follow these steps to build and run Komet on your local machine:
 1. Clone the [komet-jpro repository](https://github.com/Sandec/komet-jpro) from GitHub to your local machine.
 2. Navigate to the `komet-jpro` directory.
 3. Build the application by executing the following command:
-```bash
-mvn clean install
-```
+   ```bash
+   mvn clean install
+   ```
 4. Run the Komet application using the following command:
-```bash
-mvn -f application javafx:run
-```
+   ```bash
+   mvn -f application javafx:run
+   ```
 
 ## Running Komet with JPro locally
 After building Komet, you can run it with JPro on your local machine by following these steps:
 1. Execute the following command to run the Komet application in your web browser:
-```bash
-mvn -f application jpro:run
-```
-The default web browser should open automatically, displaying the Komet application. If it doesn't, navigate
-to `http://localhost:8080` in your browser.
+   ```bash
+   mvn -f application jpro:run
+   ```
+   The default web browser should open automatically, displaying the Komet application. If it doesn't, navigate
+   to `http://localhost:8080` in your browser.
 2. To stop the application, press `Ctrl + C` in the terminal where the application is running.
 3. To rerun the application, repeat step 1.
 
 ## Running Komet with JPro in a Docker Container
 To run Komet with JPro in a Docker container, follow these steps:
 1. Create the application release zip for deployment using the following command:
-```bash
-mvn clean -f application jpro:release
-```
-The release zip will be created in the `application/target` directory, named `application-jpro.zip`.
+   ```bash
+   mvn clean -f application jpro:release
+   ```
+   The release zip will be created in the `application/target` directory, named `application-jpro.zip`.
 2. Transfer the `application-jpro.zip` file to the directory where you want to run the Docker container.
 3. Extract the contents of `application-jpro.zip` file and navigate to the extracted folder.
 4. To run the application in a Docker container, choose one of the following options:
-* **Option 1**: Build the Docker image and run the Docker container manually
-   * Inside the unzipped directory, locate the `Dockerfile`.
-   * Build the Docker image with the following command:
-     ```bash
-     docker build -t komet-jpro .
-     ```
-   * Run the Docker container using the following command:
-     ```bash
-     docker run -d -v ~/Solor:/root/Solor -p 8080:8080 komet-jpro
-     ```
-     Note: `-v ~/Solor:/root/Solor`: This option mounts a volume, mapping a directory on your host machine to 
-     a directory inside the container.
-      * **~/Solor**: Path to the dataset directory on your local system.
-      * **/root/Solor**: Path inside the container where the dataset will be accessible.
-
-* **Option 2**: Use Docker Compose
-   * Within the extracted directory, find the `docker-compose.yml` file.
-   * Start the Docker container with Docker Compose by running:
-     ```bash
-     docker-compose up -d
-     ```
+    * **Option 1**: Build the Docker image and run the Docker container manually
+        * Inside the unzipped directory, locate the `Dockerfile`.
+        * Build the Docker image with the following command:
+          ```bash
+          docker build -t komet-jpro .
+          ```
+        * Run the Docker container using the following command:
+          ```bash
+          docker run -d -v ~/Solor:/root/Solor -p 8080:8080 komet-jpro
+          ```
+          Note: `-v ~/Solor:/root/Solor`: This option mounts a volume, mapping a directory on your host machine to
+          a directory inside the container.
+            * **~/Solor**: Path to the dataset directory on your local system.
+            * **/root/Solor**: Path inside the container where the dataset will be accessible.
+    * **Option 2**: Use Docker Compose
+        * Within the extracted directory, find the `docker-compose.yml` file.
+        * Start the Docker container with Docker Compose by running:
+          ```bash
+          docker-compose up -d
+          ```
 5. The application should now be running in the Docker container. Access it by navigating to `http://localhost:8080`
    in your web browser. If running on a remote server, replace localhost with the server’s IP address.
 
