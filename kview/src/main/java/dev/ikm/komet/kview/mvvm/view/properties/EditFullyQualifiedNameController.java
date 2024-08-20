@@ -283,11 +283,7 @@ public class EditFullyQualifiedNameController implements BasicController {
         statusComboBox.getSelectionModel().select(currentStatus);
 
         // populate all case significance choices
-        IntIdSet caseSenseDescendents = viewProperties.calculator().descendentsOf(DESCRIPTION_CASE_SIGNIFICANCE.nid());
-        Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
-                .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
-                .collect(Collectors.toSet());
-        setupComboBox(caseSignificanceComboBox, allCaseDescendents);
+        setupComboBox(caseSignificanceComboBox, fqnViewModel.findAllCaseSignificants(getViewProperties()));
 
         // get case concept's case sensitivity (e.g. 'Case insensitive')
         PatternEntity<PatternEntityVersion> patternEntity = latestEntityVersion.get().pattern();

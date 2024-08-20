@@ -38,8 +38,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.CASE_SIGNIFICANCE_OPTIONS;
-
 public class DescrNameViewModel extends FormViewModel {
 
     private static final Logger LOG = LoggerFactory.getLogger(DescrNameViewModel.class);
@@ -97,16 +95,13 @@ public class DescrNameViewModel extends FormViewModel {
     }
 
     public Set<ConceptEntity> findAllCaseSignificants(ViewProperties viewProperties) {
-
-
-        //FIXME after connect-a-thon put this query back
-//        IntIdSet caseSenseDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
-//        Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
-//                .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
-//                .collect(Collectors.toSet());
-
-        return CASE_SIGNIFICANCE_OPTIONS;
+        IntIdSet caseSenseDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
+        Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
+                .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
+                .collect(Collectors.toSet());
+        return allCaseDescendents;
     }
+
     public List<ConceptEntity> findAllModules(ViewProperties viewProperties) {
         try {
             Entity<? extends EntityVersion> moduleEntity = EntityService.get().getEntityFast(TinkarTerm.MODULE);

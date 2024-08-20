@@ -76,7 +76,7 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
     private PublicId publicId;
 
     @InjectViewModel
-    private DescrNameViewModel fqnViewModel;
+    private DescrNameViewModel descrNameViewModel;
 
     public AddFullyQualifiedNameController(UUID conceptTopic) {
         this.conceptTopic = conceptTopic;
@@ -90,7 +90,7 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
 
 
         // Initialize the fqnViewModel
-        fqnViewModel
+        descrNameViewModel
                 .setPropertyValue(NAME_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
                 .setPropertyValue(STATUS, TinkarTerm.ACTIVE_STATE);
 
@@ -114,8 +114,8 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
      * This copies form values into the ViewModel's property values. It does not save or validate.
      */
     private void copyUIToViewModelProperties() {
-        if (fqnViewModel != null) {
-            fqnViewModel.setPropertyValue(NAME_TEXT, fullyQualifiedNameTextField.getText())
+        if (descrNameViewModel != null) {
+            descrNameViewModel.setPropertyValue(NAME_TEXT, fullyQualifiedNameTextField.getText())
                     .setPropertyValue(NAME_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
                     .setPropertyValue(CASE_SIGNIFICANCE, caseSignificanceComboBox.getSelectionModel().getSelectedItem())
                     .setPropertyValue(STATUS, statusComboBox.getSelectionModel().getSelectedItem())
@@ -132,10 +132,10 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
     public void updateView() {
 
         // populate form combo fields module, status, case significance, lang.
-        populate(moduleComboBox, fqnViewModel.findAllModules(getViewProperties()));
-        populate(statusComboBox, fqnViewModel.findAllStatuses(getViewProperties()));
-        populate(caseSignificanceComboBox, fqnViewModel.findAllCaseSignificants(getViewProperties()));
-        populate(languageComboBox, fqnViewModel.findAllLanguages(getViewProperties()));
+        populate(moduleComboBox, descrNameViewModel.findAllModules(getViewProperties()));
+        populate(statusComboBox, descrNameViewModel.findAllStatuses(getViewProperties()));
+        populate(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants(getViewProperties()));
+        populate(languageComboBox, descrNameViewModel.findAllLanguages(getViewProperties()));
     }
 
     @Override
@@ -221,19 +221,19 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
 
         // TODO assuming it's valid save() check for errors and publish event
 
-        fqnViewModel.save();
-        if (fqnViewModel.getValidationMessages().size() == 0) {
+        descrNameViewModel.save();
+        if (descrNameViewModel.getValidationMessages().size() == 0) {
             // publish event with the fqnViewModel.
             // ... This property may not be needed.
-            fqnViewModel.setPropertyValue(IS_SUBMITTED, true);
+            descrNameViewModel.setPropertyValue(IS_SUBMITTED, true);
         }
 
-        LOG.info("Ready to add to the concept view model: " + fqnViewModel);
+        LOG.info("Ready to add to the concept view model: " + descrNameViewModel);
 
         //////////////////////////////////////////////////////////////////////////////////////////
         // event received in Details Controller that will call conceptViewModel.createConcept()
         //////////////////////////////////////////////////////////////////////////////////////////
-        DescrName fqnDescrName = fqnViewModel.create();
+        DescrName fqnDescrName = descrNameViewModel.create();
         eventBus.publish(conceptTopic, new CreateConceptEvent(this, CreateConceptEvent.ADD_FQN, fqnDescrName));
 
         // clear the form after saving.  otherwise when you navigate back to Add Other Name
@@ -255,6 +255,6 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
 
     @Override
     public DescrNameViewModel getViewModel() {
-        return fqnViewModel;
+        return descrNameViewModel;
     }
 }

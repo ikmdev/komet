@@ -15,13 +15,13 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
-import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
-import dev.ikm.komet.kview.events.CreateConceptEvent;
-import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.events.CreateConceptEvent;
+import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
+import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -35,7 +35,6 @@ import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -75,7 +74,7 @@ public class AddOtherNameController extends AbstractBasicController {
     private EntityFacade entityFacade;
 
     @InjectViewModel
-    private DescrNameViewModel otherNameViewModel;
+    private DescrNameViewModel descrNameViewModel;
 
 
     public AddOtherNameController() { }
@@ -91,7 +90,7 @@ public class AddOtherNameController extends AbstractBasicController {
         submitButton.setDisable(true);
         setAddOtherNameTitleLabel("Add New Description: Other Name");
         // Initialize view models
-        otherNameViewModel
+        descrNameViewModel
                 .setPropertyValue(NAME_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE)
                 .setPropertyValue(STATUS, TinkarTerm.ACTIVE_STATE);
         // register listeners
@@ -114,8 +113,8 @@ public class AddOtherNameController extends AbstractBasicController {
      * This copies form values into the ViewModel's property values. It does not save or validate.
      */
     private void copyUIToViewModelProperties() {
-        if (otherNameViewModel != null) {
-            otherNameViewModel.setPropertyValue(NAME_TEXT, otherNameTextField.getText())
+        if (descrNameViewModel != null) {
+            descrNameViewModel.setPropertyValue(NAME_TEXT, otherNameTextField.getText())
                     .setPropertyValue(NAME_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE)
                     .setPropertyValue(CASE_SIGNIFICANCE, caseSignificanceComboBox.getSelectionModel().getSelectedItem())
                     .setPropertyValue(STATUS, statusComboBox.getSelectionModel().getSelectedItem())
@@ -128,14 +127,10 @@ public class AddOtherNameController extends AbstractBasicController {
         this.viewProperties = viewProperties;
     }
 
-    public void populate(ComboBox comboBox, Collection<ConceptEntity> entities) {
-        comboBox.getItems().addAll(entities);
-    }
-
 
     @Override
     public DescrNameViewModel getViewModel() {
-        return otherNameViewModel;
+        return descrNameViewModel;
     }
 
 
@@ -203,30 +198,28 @@ public class AddOtherNameController extends AbstractBasicController {
         actionEvent.consume();
 
         // TODO assuming it's valid save() check for errors and publish event
-        otherNameViewModel.setPropertyValue(IS_SUBMITTED, true);
-        otherNameViewModel.save();
-        if (otherNameViewModel.hasNoErrorMsgs()) {
+        descrNameViewModel.setPropertyValue(IS_SUBMITTED, true);
+        descrNameViewModel.save();
+        if (descrNameViewModel.hasNoErrorMsgs()) {
             // publish event with the otherNameViewModel.
             // ...
-            LOG.info("Ready to add to the concept view model: " + otherNameViewModel);
+            LOG.info("Ready to add to the concept view model: " + descrNameViewModel);
             eventBus.publish(conceptTopic, new CreateConceptEvent(this, CreateConceptEvent.ADD_OTHER_NAME,
-                    otherNameViewModel.create()));
+                    descrNameViewModel.create()));
             clearView();
             close();
         }
 
     }
 
-
     @Override
     public void updateView() {
         // populate form combo fields module, status, case significance, lang.
-        populate(moduleComboBox, otherNameViewModel.findAllModules(getViewProperties()));
-        populate(statusComboBox, otherNameViewModel.findAllStatuses(getViewProperties()));
-        populate(caseSignificanceComboBox, otherNameViewModel.findAllCaseSignificants(getViewProperties()));
-        populate(languageComboBox, otherNameViewModel.findAllLanguages(getViewProperties()));
+        moduleComboBox.getItems().addAll(descrNameViewModel.findAllModules(getViewProperties()));
+        statusComboBox.getItems().addAll(descrNameViewModel.findAllStatuses(getViewProperties()));
+        caseSignificanceComboBox.getItems().addAll(descrNameViewModel.findAllCaseSignificants(getViewProperties()));
+        languageComboBox.getItems().addAll(descrNameViewModel.findAllLanguages(getViewProperties()));
     }
-
 
     @Override
     public void clearView() {

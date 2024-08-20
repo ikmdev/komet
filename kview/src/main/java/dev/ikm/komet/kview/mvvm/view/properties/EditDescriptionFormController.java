@@ -106,7 +106,7 @@ public class EditDescriptionFormController implements BasicController {
     private EvtBus eventBus;
 
     @InjectViewModel
-    private DescrNameViewModel otherNameViewModel;
+    private DescrNameViewModel descrNameViewModel;
 
     public EditDescriptionFormController() { }
 
@@ -121,7 +121,7 @@ public class EditDescriptionFormController implements BasicController {
         clearView();
         setEditDescriptionTitleLabel("Edit Description: Other Name");
 
-        otherNameViewModel
+        descrNameViewModel
                 .setPropertyValue(NAME_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE)
                 .setPropertyValue(STATUS, TinkarTerm.ACTIVE_STATE);
 
@@ -300,11 +300,7 @@ public class EditDescriptionFormController implements BasicController {
         statusComboBox.getSelectionModel().select(currentStatus);
 
         // populate all case significance choices
-        IntIdSet caseSenseDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
-        Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
-                .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
-                .collect(Collectors.toSet());
-        setupComboBox(caseSignificanceComboBox, allCaseDescendents);
+        setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants(getViewProperties()));
 
         // get case concept's case sensitivity (e.g. 'Case insensitive')
         PatternEntity<PatternEntityVersion> patternEntity = latestEntityVersion.get().pattern();
@@ -335,8 +331,8 @@ public class EditDescriptionFormController implements BasicController {
     }
 
     private void copyUIToViewModelProperties() {
-        if (otherNameViewModel != null) {
-            otherNameViewModel.setPropertyValue(NAME_TEXT, otherNameTextField.getText())
+        if (descrNameViewModel != null) {
+            descrNameViewModel.setPropertyValue(NAME_TEXT, otherNameTextField.getText())
                     .setPropertyValue(NAME_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE)
                     .setPropertyValue(CASE_SIGNIFICANCE, caseSignificanceComboBox.getSelectionModel().getSelectedItem())
                     .setPropertyValue(STATUS, statusComboBox.getSelectionModel().getSelectedItem())
@@ -348,20 +344,20 @@ public class EditDescriptionFormController implements BasicController {
     @FXML
     private void updateOtherName(ActionEvent actionEvent) {
         actionEvent.consume();
-        otherNameViewModel.setPropertyValue(IS_SUBMITTED, true);
+        descrNameViewModel.setPropertyValue(IS_SUBMITTED, true);
         copyUIToViewModelProperties();
-        otherNameViewModel.save();
+        descrNameViewModel.save();
 
-        if (!otherNameViewModel.hasNoErrorMsgs()) {
+        if (!descrNameViewModel.hasNoErrorMsgs()) {
             // publish event with the otherNameViewModel.
             return;
         }
-        LOG.info("Ready to update to the concept view model: " + otherNameViewModel);
+        LOG.info("Ready to update to the concept view model: " + descrNameViewModel);
 
-        otherNameViewModel.updateOtherName(this.publicId);
+        descrNameViewModel.updateOtherName(this.publicId);
 
         eventBus.publish(conceptTopic, new UpdateSemanticEvent(submitButton, UpdateSemanticEvent.UPDATE_OTHER_NAME,
-                otherNameViewModel.create()));
+                descrNameViewModel.create()));
 
 
         eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(submitButton,
