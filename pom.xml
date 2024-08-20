@@ -69,6 +69,8 @@
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
         <jpms-record-builder-core.version>36-r6</jpms-record-builder-core.version>
         <jpms-roaringbitmap.version>0.9.31-r7</jpms-roaringbitmap.version>
+        <jpro.version>2024.3.2-KOMET</jpro.version>
+        <jpro-platform.version>0.4.0</jpro-platform.version>
         <classgraph.version>4.8.115</classgraph.version>
         <controlsfx.version>11.1.0</controlsfx.version>
         <ikonli.version>12.2.0</ikonli.version>

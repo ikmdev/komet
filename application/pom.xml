@@ -7,6 +7,18 @@
         <version>1.34.0-SNAPSHOT</version>
     </parent>
     <artifactId>application</artifactId>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jpro-repository</id>
+            <url>https://sandec.jfrog.io/artifactory/repo</url>
+        </pluginRepository>
+    </pluginRepositories>
+    <repositories>
+        <repository>
+            <id>jpro-repository</id>
+            <url>https://sandec.jfrog.io/artifactory/repo</url>
+        </repository>
+    </repositories>
     <dependencies>
         <dependency>
             <groupId>de.jangassen</groupId>
@@ -88,6 +100,19 @@
             <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>data-ephemeral-provider</artifactId>
         </dependency>
+        <!-- Start JPro related dependencies -->
+        <dependency>
+            <groupId>com.sandec.jpro</groupId>
+            <artifactId>jpro-webapi</artifactId>
+            <version>${jpro.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>one.jpro.platform</groupId>
+            <artifactId>jpro-internal-util</artifactId>
+            <version>${jpro-platform.version}</version>
+        </dependency>
+        <!-- End JPro related dependencies -->
         <dependency>
             <groupId>org.controlsfx</groupId>
             <artifactId>controlsfx</artifactId>
@@ -211,6 +236,24 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>one.jpro</groupId>
+                <artifactId>jpro-maven-plugin</artifactId>
+                <version>${jpro.version}</version>
+                <configuration>
+                    <mainClassName>dev.ikm.komet.app.App</mainClassName>
+                    <useModuleSystem>true</useModuleSystem>
+                    <JVMArgs>
+                        <JVMArg>-Xmx16g</JVMArg>
+                        <JVMArg>--add-opens</JVMArg>
+                        <JVMArg>javafx.graphics/javafx.scene=org.controlsfx.controls</JVMArg>
+                        <JVMArg>--add-exports</JVMArg>
+                        <JVMArg>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</JVMArg>
+                        <JVMArg>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</JVMArg>
+                    </JVMArgs>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
