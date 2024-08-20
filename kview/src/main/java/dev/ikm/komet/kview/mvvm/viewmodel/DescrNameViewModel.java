@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -109,6 +110,20 @@ public class DescrNameViewModel extends FormViewModel {
                             .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
                             .collect(Collectors.toSet());
             return allModules;
+    }
+
+    /**
+     *  The VIEW_PROPERTIES SHOULD NOT BE NULL.
+      * @return descriptionTypes
+     */
+
+    public Collection<ConceptEntity> getDescriptionTypes() {
+        ViewProperties viewProperties = getPropertyValue(VIEW_PROPERTIES);
+        IntIdSet descriptionType = viewProperties.calculator().descendentsOf(TinkarTerm.DESCRIPTION_TYPE.nid());
+        Set<ConceptEntity> descriptionTypes = descriptionType.intStream()
+                .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
+                .collect(Collectors.toSet());
+        return descriptionTypes;
     }
 
     public List<ConceptEntity<ConceptEntityVersion>> findAllPaths(ViewProperties viewProperties) {
@@ -248,4 +263,6 @@ public class DescrNameViewModel extends FormViewModel {
 
         LOG.info("transaction complete");
     }
+
+
 }
