@@ -30,6 +30,10 @@ public class ExportDatasetCombinedController {
     private ComboBox<EntityFacade> pathOptions;
 
     @FXML
+    private ComboBox<String> timePeriodComboBox;
+
+
+    @FXML
     public void initialize() {
 
         exportOptions.getItems().addAll("Change set", "FHIR");

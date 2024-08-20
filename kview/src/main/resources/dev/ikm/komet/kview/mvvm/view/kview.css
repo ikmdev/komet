@@ -2372,6 +2372,41 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: transparent;
 }
 
+.button-blue5-text-grey1-bg {
+    -fx-border-radius: 4;
+    -fx-background-color: -Grey-1;
+    -fx-border-color: -Secondary-05;
+    -fx-text-fill: -Secondary-05;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Noto Sans";
+}
+
+.blue-arrow-combo-box-grey11 .list-cell {
+    -fx-text-fill: -Grey-11;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;   
+    -fx-background-color: -Grey-1;
+}
+
+.blue-arrow-combo-box-grey11.combo-box-base {
+    -fx-border-radius: 4;
+    -fx-border-color: -Grey-5;
+    -fx-background-color: -Grey-1;
+}
+
+.blue-arrow-combo-box-grey11.combo-box-base > .arrow-button > .arrow {    
+    -fx-background-color: -Secondary-05;    
+    -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
+}
+
+.tag-container {
+    -fx-border-radius: 5;
+    -fx-border-color: -Grey-5;
+    -fx-background-color: -Grey-1;
+}
 
 /* end making these for the dragged concept reusable fxml */
 
