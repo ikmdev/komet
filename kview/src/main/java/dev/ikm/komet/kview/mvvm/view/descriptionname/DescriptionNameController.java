@@ -21,11 +21,10 @@ import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
-import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
@@ -43,11 +42,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
-import static dev.ikm.tinkar.terms.TinkarTerm.*;
+import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 
 public class DescriptionNameController {
 
@@ -126,13 +124,13 @@ public class DescriptionNameController {
         }
 
         setupComboBox(moduleComboBox, descrNameViewModel.findAllModules(getViewProperties()));
-        moduleComboBox.selectionModelProperty().bindBidirectional(descrNameViewModel.getProperty(MODULE));
+        moduleComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(MODULE));
         setupComboBox(statusComboBox, descrNameViewModel.findAllStatuses(getViewProperties()));
-        statusComboBox.selectionModelProperty().bindBidirectional(descrNameViewModel.getProperty(STATUS));
+        statusComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(STATUS));
         setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants(getViewProperties()));
-        caseSignificanceComboBox.selectionModelProperty().bindBidirectional(descrNameViewModel.getProperty(CASE_SIGNIFICANCE));
+        caseSignificanceComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(CASE_SIGNIFICANCE));
         setupComboBox(languageComboBox, descrNameViewModel.findAllLanguages(getViewProperties()));
-        languageComboBox.selectionModelProperty().bindBidirectional(descrNameViewModel.getProperty(LANGUAGE));
+        languageComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(LANGUAGE));
 
 
 
@@ -262,7 +260,7 @@ public class DescriptionNameController {
         comboBox.getItems().addAll(conceptEntities);
     }
 
-    public void setConceptAndPopulateForm(PublicId publicId) {
+   /* public void setConceptAndPopulateForm(PublicId publicId) {
         clearView();
         ViewCalculator viewCalculator = getViewProperties().calculator();
 
@@ -315,8 +313,8 @@ public class DescriptionNameController {
 
         LOG.info(publicId.toString());
     }
-
-    private void copyUIToViewModelProperties() {
+*/
+   /* private void copyUIToViewModelProperties() {
         if (descrNameViewModel != null) {
             descrNameViewModel.setPropertyValue(NAME_TEXT, nameTextField.getText())
                     .setPropertyValue(CASE_SIGNIFICANCE, caseSignificanceComboBox.getSelectionModel().getSelectedItem())
@@ -324,14 +322,15 @@ public class DescriptionNameController {
                     .setPropertyValue(MODULE, moduleComboBox.getSelectionModel().getSelectedItem())
                     .setPropertyValue(LANGUAGE, languageComboBox.getSelectionModel().getSelectedItem());
         }
-    }
+    }*/
 
     @FXML
     private void submitForm(ActionEvent actionEvent) {
         actionEvent.consume();
         descrNameViewModel.setPropertyValue(IS_SUBMITTED, true);
-        copyUIToViewModelProperties();
+        LOG.info("BEFORE SAVE:  {}", descrNameViewModel.toString());
         descrNameViewModel.save();
+        LOG.info("AFTER SAVE:  {}", descrNameViewModel.toString());
 
         if (!descrNameViewModel.hasNoErrorMsgs()) {
             // publish event with the otherNameViewModel.
