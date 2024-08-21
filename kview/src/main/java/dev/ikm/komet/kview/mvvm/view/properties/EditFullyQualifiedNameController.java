@@ -261,21 +261,21 @@ public class EditFullyQualifiedNameController implements BasicController {
         this.fqnText.setText(otherName);
 
         // get all descendant modules
-        setupComboBox(moduleComboBox, descrNameViewModel.findAllModules(getViewProperties()));
+        setupComboBox(moduleComboBox, descrNameViewModel.findAllModules());
 
         // populate the current module and select it (e.g. 'SNOMED CT core module')
         ConceptEntity currentModule = (ConceptEntity) stampEntity.module();
         moduleComboBox.getSelectionModel().select(currentModule);
 
         // get all statuses
-        setupComboBox(statusComboBox, descrNameViewModel.findAllStatuses(getViewProperties()));
+        setupComboBox(statusComboBox, descrNameViewModel.findAllStatuses());
 
         // populate the current status (ACTIVE | INACTIVE) and select it
         ConceptEntity currentStatus = Entity.getFast(stampEntity.state().nid());
         statusComboBox.getSelectionModel().select(currentStatus);
 
         // populate all case significance choices
-        setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants(getViewProperties()));
+        setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants());
 
         // get case concept's case sensitivity (e.g. 'Case insensitive')
         PatternEntity<PatternEntityVersion> patternEntity = latestEntityVersion.get().pattern();
@@ -286,7 +286,7 @@ public class EditFullyQualifiedNameController implements BasicController {
         caseSignificanceComboBox.getSelectionModel().select(caseSigConcept);
 
         // get all available languages
-        setupComboBox(languageComboBox, descrNameViewModel.findAllLanguages(getViewProperties()));
+        setupComboBox(languageComboBox, descrNameViewModel.findAllLanguages());
 
         // get the language (e.g. 'English language')
         int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);

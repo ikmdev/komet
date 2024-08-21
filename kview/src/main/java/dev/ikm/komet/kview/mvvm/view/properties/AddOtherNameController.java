@@ -215,10 +215,10 @@ public class AddOtherNameController extends AbstractBasicController {
     @Override
     public void updateView() {
         // populate form combo fields module, status, case significance, lang.
-        moduleComboBox.getItems().addAll(descrNameViewModel.findAllModules(getViewProperties()));
-        statusComboBox.getItems().addAll(descrNameViewModel.findAllStatuses(getViewProperties()));
-        caseSignificanceComboBox.getItems().addAll(descrNameViewModel.findAllCaseSignificants(getViewProperties()));
-        languageComboBox.getItems().addAll(descrNameViewModel.findAllLanguages(getViewProperties()));
+        moduleComboBox.getItems().addAll(descrNameViewModel.findAllModules());
+        statusComboBox.getItems().addAll(descrNameViewModel.findAllStatuses());
+        caseSignificanceComboBox.getItems().addAll(descrNameViewModel.findAllCaseSignificants());
+        languageComboBox.getItems().addAll(descrNameViewModel.findAllLanguages());
     }
 
     @Override

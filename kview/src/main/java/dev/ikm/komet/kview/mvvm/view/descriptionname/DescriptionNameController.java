@@ -109,13 +109,13 @@ public class DescriptionNameController {
         editDescriptionTitleLabel.textProperty().bind(descrNameViewModel.getProperty(TITLE_TEXT));
         nameTextField.textProperty().bindBidirectional(descrNameViewModel.getProperty(NAME_TEXT));
 
-        setupComboBox(moduleComboBox, descrNameViewModel.findAllModules(getViewProperties()));
+        setupComboBox(moduleComboBox, descrNameViewModel.findAllModules());
         moduleComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(MODULE));
-        setupComboBox(statusComboBox, descrNameViewModel.findAllStatuses(getViewProperties()));
+        setupComboBox(statusComboBox, descrNameViewModel.findAllStatuses());
         statusComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(STATUS));
-        setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants(getViewProperties()));
+        setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants());
         caseSignificanceComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(CASE_SIGNIFICANCE));
-        setupComboBox(languageComboBox, descrNameViewModel.findAllLanguages(getViewProperties()));
+        setupComboBox(languageComboBox, descrNameViewModel.findAllLanguages());
         languageComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(LANGUAGE));
 
 

@@ -132,10 +132,10 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
     public void updateView() {
 
         // populate form combo fields module, status, case significance, lang.
-        populate(moduleComboBox, descrNameViewModel.findAllModules(getViewProperties()));
-        populate(statusComboBox, descrNameViewModel.findAllStatuses(getViewProperties()));
-        populate(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants(getViewProperties()));
-        populate(languageComboBox, descrNameViewModel.findAllLanguages(getViewProperties()));
+        populate(moduleComboBox, descrNameViewModel.findAllModules());
+        populate(statusComboBox, descrNameViewModel.findAllStatuses());
+        populate(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants());
+        populate(languageComboBox, descrNameViewModel.findAllLanguages());
     }
 
     @Override

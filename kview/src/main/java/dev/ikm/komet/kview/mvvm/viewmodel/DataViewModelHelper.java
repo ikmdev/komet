@@ -15,10 +15,16 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
@@ -41,4 +47,12 @@ public class DataViewModelHelper {
             INSTANT_LITERAL,
             LONG
     ));
+
+    public static Set<ConceptEntity> fetchDescendentsOfConcept(ViewProperties viewProperties, ConceptFacade conceptFacade) {
+        IntIdSet decendents = viewProperties.calculator().descendentsOf(conceptFacade);
+        Set<ConceptEntity> allDecendents = decendents.intStream()
+                .mapToObj(decendentNid -> (ConceptEntity) Entity.getFast(decendentNid))
+                .collect(Collectors.toSet());
+        return allDecendents;
+    }
 }

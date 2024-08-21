@@ -17,7 +17,6 @@ package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
-import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.entity.*;
@@ -37,7 +36,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import static dev.ikm.komet.kview.mvvm.viewmodel.DataViewModelHelper.fetchDescendentsOfConcept;
 
 public class DescrNameViewModel extends FormViewModel {
 
@@ -78,38 +78,20 @@ public class DescrNameViewModel extends FormViewModel {
         ;
     }
 
-    public Set<ConceptEntity> findAllLanguages(ViewProperties viewProperties) {
-        IntIdSet languageDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.LANGUAGE.nid());
-        Set<ConceptEntity> allLangs = languageDescendents.intStream()
-                .mapToObj(langNid -> (ConceptEntity) Entity.getFast(langNid))
-                .collect(Collectors.toSet());
-        return allLangs;
+    public Set<ConceptEntity> findAllLanguages() {
+       return fetchDescendentsOfConcept(getPropertyValue(VIEW_PROPERTIES), TinkarTerm.LANGUAGE);
     }
 
-    public Set<ConceptEntity> findAllStatuses(ViewProperties viewProperties) {
-        Entity<? extends EntityVersion> statusEntity = EntityService.get().getEntityFast(TinkarTerm.STATUS_VALUE);
-        IntIdSet statusDescendents = viewProperties.calculator().descendentsOf(statusEntity.nid());
-        Set<ConceptEntity> allStatuses = statusDescendents.intStream()
-                .mapToObj(statusNid -> (ConceptEntity) Entity.getFast(statusNid))
-                .collect(Collectors.toSet());
-        return allStatuses;
+    public Set<ConceptEntity> findAllStatuses() {
+        return fetchDescendentsOfConcept(getPropertyValue(VIEW_PROPERTIES), TinkarTerm.STATUS_VALUE);
     }
 
-    public Set<ConceptEntity> findAllCaseSignificants(ViewProperties viewProperties) {
-        IntIdSet caseSenseDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
-        Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
-                .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
-                .collect(Collectors.toSet());
-        return allCaseDescendents;
+    public Set<ConceptEntity> findAllCaseSignificants() {
+        return fetchDescendentsOfConcept(getPropertyValue(VIEW_PROPERTIES), TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE);
     }
 
-    public Set<ConceptEntity> findAllModules(ViewProperties viewProperties) {
-            IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.MODULE.nid());
-            Set<ConceptEntity> allModules =
-                    moduleDescendents.intStream()
-                            .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
-                            .collect(Collectors.toSet());
-            return allModules;
+    public Set<ConceptEntity> findAllModules() {
+        return fetchDescendentsOfConcept(getPropertyValue(VIEW_PROPERTIES), TinkarTerm.MODULE);
     }
 
     /**
@@ -118,12 +100,8 @@ public class DescrNameViewModel extends FormViewModel {
      */
 
     public Collection<ConceptEntity> getDescriptionTypes() {
-        ViewProperties viewProperties = getPropertyValue(VIEW_PROPERTIES);
-        IntIdSet descriptionType = viewProperties.calculator().descendentsOf(TinkarTerm.DESCRIPTION_TYPE.nid());
-        Set<ConceptEntity> descriptionTypes = descriptionType.intStream()
-                .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
-                .collect(Collectors.toSet());
-        return descriptionTypes;
+        return fetchDescendentsOfConcept(getPropertyValue(VIEW_PROPERTIES), TinkarTerm.DESCRIPTION_TYPE);
+
     }
 
     public List<ConceptEntity<ConceptEntityVersion>> findAllPaths(ViewProperties viewProperties) {
