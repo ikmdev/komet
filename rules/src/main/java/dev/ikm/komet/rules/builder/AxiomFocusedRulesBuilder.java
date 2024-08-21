@@ -34,11 +34,14 @@ import java.util.UUID;
 public class AxiomFocusedRulesBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(AxiomFocusedRulesBuilder.class);
 
-    static KnowledgeService service = new KnowledgeService();
-    static Knowledge knowledge = service.newKnowledge();
+    static final KnowledgeService service = new KnowledgeService();
+    static final Knowledge knowledge;
 
     static {
-        knowledge.newRule("Axiom of interest is not the definition root")
+        knowledge = service
+                .newKnowledge()
+                .builder()
+                .newRule("Axiom of interest is not the definition root")
                 .forEach(
                         "$observation", ObservationRecord.class,
                         "$actionList", ConcurrentHashSet.class,
@@ -65,6 +68,7 @@ public class AxiomFocusedRulesBuilder {
                         $actionList.add(new ConsequenceAction(UUID.randomUUID(),
                                 Thread.currentThread().getStackTrace()[1].toString(), removeAxiomAction));
                     }
-                });
+                })
+                .build();
     }
 }

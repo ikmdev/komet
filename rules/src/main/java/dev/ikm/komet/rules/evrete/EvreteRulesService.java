@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 public class EvreteRulesService implements RuleService {
@@ -47,24 +48,30 @@ public class EvreteRulesService implements RuleService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EvreteRulesService.class);
 
-    private Configuration conf = new Configuration();
     private KnowledgeService service;
 
     private Knowledge knowledge;
 
     public EvreteRulesService() throws IOException {
+        Configuration conf = new Configuration();
+        conf.set(Constants.PROP_EXTEND_RULE_CLASSES, "false");
 
         for (Map.Entry<Object, Object> confEntry: conf.entrySet()) {
             LOG.info(confEntry.toString());
         }
 
-        this.service = new KnowledgeService(this.conf);
-        this.knowledge = service.newKnowledge(Constants.PROVIDER_JAVA_CLASS,
-                ComponentFocusRules.class,
-                NewConceptRules.class,
-                AxiomFocusedRules.class,
-                NewPatternRules.class
-        );
+        this.service = new KnowledgeService(conf);
+
+        this.knowledge = service.newKnowledge()
+                .importRules(
+                        Constants.PROVIDER_JAVA_CLASS,
+                        List.of(
+                                ComponentFocusRules.class,
+                                NewConceptRules.class,
+                                AxiomFocusedRules.class,
+                                NewPatternRules.class
+                        )
+                );
         LOG.info("Constructed EvreteRulesService");
     }
 
