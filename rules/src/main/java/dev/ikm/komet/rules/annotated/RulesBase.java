@@ -32,7 +32,8 @@ import dev.ikm.tinkar.entity.ConceptEntityVersion;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.control.Menu;
-import org.evrete.dsl.annotation.EnvironmentListener;
+import org.evrete.api.events.EnvironmentChangeEvent;
+import org.evrete.dsl.annotation.EventSubscription;
 import org.evrete.dsl.annotation.FieldDeclaration;
 
 import java.util.Objects;
@@ -50,33 +51,25 @@ public abstract class RulesBase {
     private ViewProperties viewProperties;
 
     /**
-     * Instead of submitting consequences as a fact for each rule, we set it as an environment variable
+     * Environment listener
      *
-     * @param consequences the set of consequences
+     * @param event environment change event
      */
-    @EnvironmentListener(ENV_CONSEQUENCES)
-    public void onConsequences(ConcurrentHashSet<Consequence<?>> consequences) {
-        this.consequences = consequences;
-    }
-
-    /**
-     * Instead of submitting coordinates as a fact for each rule, we set it as an environment variable
-     *
-     * @param editCoordinate coordinate environment value
-     */
-    @EnvironmentListener(ENV_EDIT_COORDINATE)
-    public void onEditCoordinate(EditCoordinate editCoordinate) {
-        this.editCoordinate = editCoordinate;
-    }
-
-    /**
-     * Instead of submitting view properties as a fact for each rule, we set it as an environment variable
-     *
-     * @param viewProperties view properties environment value
-     */
-    @EnvironmentListener(ENV_VIEW_PROPERTIES)
-    public void onViewProperties(ViewProperties viewProperties) {
-        this.viewProperties = viewProperties;
+    @EventSubscription
+    @SuppressWarnings("unchecked")
+    public void onGlobalsChange(EnvironmentChangeEvent event) {
+        Object envValue = event.getValue();
+        switch (event.getProperty()) {
+            case ENV_CONSEQUENCES:
+                this.consequences = (ConcurrentHashSet<Consequence<?>>) envValue;
+                break;
+            case ENV_EDIT_COORDINATE:
+                this.editCoordinate = (EditCoordinate) envValue;
+                break;
+            case ENV_VIEW_PROPERTIES:
+                this.viewProperties = (ViewProperties) envValue;
+                break;
+        }
     }
 
     public EditCoordinate editCoordinate() {
