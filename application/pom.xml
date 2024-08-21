@@ -104,13 +104,11 @@
         <dependency>
             <groupId>com.sandec.jpro</groupId>
             <artifactId>jpro-webapi</artifactId>
-            <version>${jpro.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>one.jpro.platform</groupId>
             <artifactId>jpro-internal-util</artifactId>
-            <version>${jpro-platform.version}</version>
         </dependency>
         <!-- End JPro related dependencies -->
         <dependency>

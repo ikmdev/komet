@@ -311,6 +311,16 @@
                 <version>${jpms-roaringbitmap.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.sandec.jpro</groupId>
+                <artifactId>jpro-webapi</artifactId>
+                <version>${jpro.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>one.jpro.platform</groupId>
+                <artifactId>jpro-internal-util</artifactId>
+                <version>${jpro-platform.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-base</artifactId>
                 <version>${openjfx.version}</version>
