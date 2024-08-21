@@ -19,11 +19,10 @@ import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
-import dev.ikm.komet.framework.events.appevents.ProgressEvent;
+import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ExportDateTimePopOverEvent;
 import dev.ikm.komet.kview.mvvm.view.BasicController;
-import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.*;
@@ -59,7 +58,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 import static dev.ikm.komet.kview.events.ExportDateTimePopOverEvent.*;
 
 public class ExportDatasetController implements BasicController {
@@ -279,12 +277,7 @@ public class ExportDatasetController implements BasicController {
             Task<Void> exportTask = exportChangeSet(fromDate, toDate, exportFile);
             exportProgressBar.progressProperty().unbind();
             exportProgressBar.progressProperty().bind(exportTask.progressProperty());
-            // publish event of task
-            EvtBusFactory.getDefaultEvtBus()
-                    .publish(PROGRESS_TOPIC, new ProgressEvent<>(this, ProgressEvent.SUMMON, exportTask));
-            // execute the task
-            TinkExecutor.threadPool().execute(exportTask);
-
+            ProgressHelper.progress(exportTask, "Cancel Export");
         }
     }
 
