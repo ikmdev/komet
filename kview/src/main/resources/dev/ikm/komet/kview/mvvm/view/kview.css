@@ -41,7 +41,8 @@
     -Accent-color-lavender: #956AFF;
     -Accent-color-blue: #0085FF;
     -Accent-color-tiffany: #02CACD;
-    -Chip-Accepted-color-green: #00BC62;
+    -Accent-color-green: #00BC62;
+    -Chip-Accepted-color-green: -Accent-color-green;
     -Chip-Error-color-red: -Accent-color-red;
     -Text-hover: #C6DCFF4D;
     -Hover-light-blue: rgba(198, 220, 255, 0.30);
@@ -3818,14 +3819,14 @@ Styling a context menu for kview ui/ux controls
     -fx-indeterminate-bar-animation-time: 2;
 }
 .kview-progress .progress-bar > .bar {
-    -fx-background-color: #00BC62;
+    -fx-background-color: -Accent-color-green;
     -fx-background-insets: 3 3 4 3;
     /*-fx-background-radius: 0.583em; *//* 7 */
     -fx-background-radius: 6;
     -fx-padding: 0.75em;
 }
 .kview-progress .progress-bar:indeterminate > .bar {
-    -fx-background-color: linear-gradient(to left, transparent, -fx-accent);
+    -fx-background-color: linear-gradient(to left, transparent, -Accent-color-green);
 }
 .kview-progress .progress-bar > .track {
     -fx-background-color: #545D72;
