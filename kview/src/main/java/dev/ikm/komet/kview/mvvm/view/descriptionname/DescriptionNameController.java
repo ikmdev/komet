@@ -250,9 +250,7 @@ public class DescriptionNameController {
     private void submitForm(ActionEvent actionEvent) {
         actionEvent.consume();
         descrNameViewModel.setPropertyValue(IS_SUBMITTED, true);
-        LOG.info("BEFORE SAVE:  {}", descrNameViewModel.toString());
         descrNameViewModel.save();
-        LOG.info("AFTER SAVE:  {}", descrNameViewModel.toString());
 
         if (!descrNameViewModel.hasNoErrorMsgs()) {
             // publish event with the otherNameViewModel.
