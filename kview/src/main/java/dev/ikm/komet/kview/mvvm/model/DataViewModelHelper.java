@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.mvvm.viewmodel;
+package dev.ikm.komet.kview.mvvm.model;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityFacade;
 
 import java.util.Collections;
@@ -48,8 +49,8 @@ public class DataViewModelHelper {
             LONG
     ));
 
-    public static Set<ConceptEntity> fetchDescendentsOfConcept(ViewProperties viewProperties, ConceptFacade conceptFacade) {
-        IntIdSet decendents = viewProperties.calculator().descendentsOf(conceptFacade);
+    public static Set<ConceptEntity> fetchDescendentsOfConcept(ViewProperties viewProperties, PublicId publicId) {
+        IntIdSet decendents = viewProperties.calculator().descendentsOf(EntityService.get().nidForPublicId(publicId));
         Set<ConceptEntity> allDecendents = decendents.intStream()
                 .mapToObj(decendentNid -> (ConceptEntity) Entity.getFast(decendentNid))
                 .collect(Collectors.toSet());

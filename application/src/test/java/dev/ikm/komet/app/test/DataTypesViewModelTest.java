@@ -44,7 +44,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.DataViewModelHelper.DATA_TYPE_OPTIONS;
+import static dev.ikm.komet.kview.mvvm.model.DataViewModelHelper.DATA_TYPE_OPTIONS;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

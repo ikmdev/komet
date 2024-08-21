@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
+import static dev.ikm.komet.kview.mvvm.model.DataViewModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
@@ -261,21 +262,21 @@ public class EditFullyQualifiedNameController implements BasicController {
         this.fqnText.setText(otherName);
 
         // get all descendant modules
-        setupComboBox(moduleComboBox, descrNameViewModel.findAllModules());
+        setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE));
 
         // populate the current module and select it (e.g. 'SNOMED CT core module')
         ConceptEntity currentModule = (ConceptEntity) stampEntity.module();
         moduleComboBox.getSelectionModel().select(currentModule);
 
         // get all statuses
-        setupComboBox(statusComboBox, descrNameViewModel.findAllStatuses());
+        setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE));
 
         // populate the current status (ACTIVE | INACTIVE) and select it
         ConceptEntity currentStatus = Entity.getFast(stampEntity.state().nid());
         statusComboBox.getSelectionModel().select(currentStatus);
 
         // populate all case significance choices
-        setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants());
+        setupComboBox(caseSignificanceComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE));
 
         // get case concept's case sensitivity (e.g. 'Case insensitive')
         PatternEntity<PatternEntityVersion> patternEntity = latestEntityVersion.get().pattern();
@@ -286,7 +287,7 @@ public class EditFullyQualifiedNameController implements BasicController {
         caseSignificanceComboBox.getSelectionModel().select(caseSigConcept);
 
         // get all available languages
-        setupComboBox(languageComboBox, descrNameViewModel.findAllLanguages());
+        setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE));
 
         // get the language (e.g. 'English language')
         int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);

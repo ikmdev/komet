@@ -40,6 +40,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
+import static dev.ikm.komet.kview.mvvm.model.DataViewModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 
 public class AddFullyQualifiedNameController extends AbstractBasicController {
@@ -132,10 +133,10 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
     public void updateView() {
 
         // populate form combo fields module, status, case significance, lang.
-        populate(moduleComboBox, descrNameViewModel.findAllModules());
-        populate(statusComboBox, descrNameViewModel.findAllStatuses());
-        populate(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants());
-        populate(languageComboBox, descrNameViewModel.findAllLanguages());
+        populate(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE));
+        populate(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE));
+        populate(caseSignificanceComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE));
+        populate(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE));
     }
 
     @Override

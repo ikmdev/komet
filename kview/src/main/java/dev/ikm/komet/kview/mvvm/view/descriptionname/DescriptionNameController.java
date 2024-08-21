@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.mvvm.model.DataViewModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
@@ -103,19 +104,22 @@ public class DescriptionNameController {
         clearView();
         populateDialectComboBoxes();
 
-        setupComboBox(nameDescriptionType, descrNameViewModel.getDescriptionTypes());
+        setupComboBox(nameDescriptionType, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DESCRIPTION_TYPE.publicId())); // Hard coded
         nameDescriptionType.valueProperty().bind(descrNameViewModel.getProperty(NAME_TYPE));
 
         editDescriptionTitleLabel.textProperty().bind(descrNameViewModel.getProperty(TITLE_TEXT));
         nameTextField.textProperty().bindBidirectional(descrNameViewModel.getProperty(NAME_TEXT));
 
-        setupComboBox(moduleComboBox, descrNameViewModel.findAllModules());
+        setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
         moduleComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(MODULE));
-        setupComboBox(statusComboBox, descrNameViewModel.findAllStatuses());
+
+        setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId())); // Hard coded...
         statusComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(STATUS));
-        setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants());
+
+        setupComboBox(caseSignificanceComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.publicId())); // Hard Coded
         caseSignificanceComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(CASE_SIGNIFICANCE));
-        setupComboBox(languageComboBox, descrNameViewModel.findAllLanguages());
+
+        setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
         languageComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(LANGUAGE));
 
 

@@ -33,11 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-
-import static dev.ikm.komet.kview.mvvm.viewmodel.DataViewModelHelper.fetchDescendentsOfConcept;
 
 public class DescrNameViewModel extends FormViewModel {
 
@@ -76,32 +72,6 @@ public class DescrNameViewModel extends FormViewModel {
                 .addProperty(TITLE_TEXT, "")
                 .addProperty(DESCRIPTION_NAME_TYPE, "")
         ;
-    }
-
-    public Set<ConceptEntity> findAllLanguages() {
-       return fetchDescendentsOfConcept(getPropertyValue(VIEW_PROPERTIES), TinkarTerm.LANGUAGE);
-    }
-
-    public Set<ConceptEntity> findAllStatuses() {
-        return fetchDescendentsOfConcept(getPropertyValue(VIEW_PROPERTIES), TinkarTerm.STATUS_VALUE);
-    }
-
-    public Set<ConceptEntity> findAllCaseSignificants() {
-        return fetchDescendentsOfConcept(getPropertyValue(VIEW_PROPERTIES), TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE);
-    }
-
-    public Set<ConceptEntity> findAllModules() {
-        return fetchDescendentsOfConcept(getPropertyValue(VIEW_PROPERTIES), TinkarTerm.MODULE);
-    }
-
-    /**
-     *  The VIEW_PROPERTIES SHOULD NOT BE NULL.
-      * @return descriptionTypes
-     */
-
-    public Collection<ConceptEntity> getDescriptionTypes() {
-        return fetchDescendentsOfConcept(getPropertyValue(VIEW_PROPERTIES), TinkarTerm.DESCRIPTION_TYPE);
-
     }
 
     public List<ConceptEntity<ConceptEntityVersion>> findAllPaths(ViewProperties viewProperties) {

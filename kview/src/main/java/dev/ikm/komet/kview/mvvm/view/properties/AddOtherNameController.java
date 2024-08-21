@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 import java.util.UUID;
 
+import static dev.ikm.komet.kview.mvvm.model.DataViewModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 
 public class AddOtherNameController extends AbstractBasicController {
@@ -215,10 +216,10 @@ public class AddOtherNameController extends AbstractBasicController {
     @Override
     public void updateView() {
         // populate form combo fields module, status, case significance, lang.
-        moduleComboBox.getItems().addAll(descrNameViewModel.findAllModules());
-        statusComboBox.getItems().addAll(descrNameViewModel.findAllStatuses());
-        caseSignificanceComboBox.getItems().addAll(descrNameViewModel.findAllCaseSignificants());
-        languageComboBox.getItems().addAll(descrNameViewModel.findAllLanguages());
+        moduleComboBox.getItems().addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE));
+        statusComboBox.getItems().addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE));
+        caseSignificanceComboBox.getItems().addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE));
+        languageComboBox.getItems().addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE));
     }
 
     @Override
