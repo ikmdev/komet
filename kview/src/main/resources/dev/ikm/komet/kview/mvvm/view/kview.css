@@ -2470,6 +2470,12 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-4;
 }
 
+.grey7bg-grey2text {
+    -fx-border-radius: 4;
+    -fx-background-color: -Grey-7;
+    -fx-fill: -Grey-2;
+}
+
 /*********************************************************************************
  * End of Pattern UI elements                                                    *
  *********************************************************************************/
