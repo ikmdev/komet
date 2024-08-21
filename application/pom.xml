@@ -238,7 +238,6 @@
             <plugin>
                 <groupId>one.jpro</groupId>
                 <artifactId>jpro-maven-plugin</artifactId>
-                <version>${jpro.version}</version>
                 <configuration>
                     <mainClassName>dev.ikm.komet.app.App</mainClassName>
                     <useModuleSystem>true</useModuleSystem>
