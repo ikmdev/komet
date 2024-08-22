@@ -20,10 +20,6 @@ import static dev.ikm.komet.kview.events.ExportDateTimePopOverEvent.CANCEL_POP_O
 import static dev.ikm.komet.kview.events.ExportDateTimePopOverEvent.FROM_DATE;
 import static dev.ikm.komet.kview.events.ExportDateTimePopOverEvent.TO_DATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.tinkar.terms.TinkarTerm.DEVELOPMENT_PATH;
-import static dev.ikm.tinkar.terms.TinkarTerm.MASTER_PATH;
-import static dev.ikm.tinkar.terms.TinkarTerm.PRIMORDIAL_PATH;
-import static dev.ikm.tinkar.terms.TinkarTerm.SANDBOX_PATH;
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -38,6 +34,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.ConceptEntityVersion;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityCountSummary;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntity;
@@ -81,6 +78,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class ExportDatasetCombinedController {
@@ -261,6 +259,9 @@ public class ExportDatasetCombinedController {
     @FXML
     void handleExport(ActionEvent exportEvent){
         exportEvent.consume();
+
+        exportButton.setDisable(true);
+
         String exportOption = exportOptions.getSelectionModel().getSelectedItem();
         FileChooser fileChooser = new FileChooser();
         //Date formatter for the desired date template
@@ -268,20 +269,53 @@ public class ExportDatasetCombinedController {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
         String initialFileName = "komet-%s.zip".formatted(simpleDateFormat.format(new Date()));
         fileChooser.setInitialFileName(initialFileName);
+
+        // get the from and to dates as millisecond long values
+        long fromDate = transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM);
+        long toDate =  System.currentTimeMillis();
+        String dateChoice = timePeriodComboBox.getSelectionModel().getSelectedItem();
+        if (CUSTOM_RANGE.equals(dateChoice)) {
+            fromDate = this.customFromEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()) : this.customFromEpochMillis;
+            toDate = this.customToEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()) : this.customToEpochMillis;
+        }
+
+
         if (exportOption.equalsIgnoreCase(CHANGE_SET)) {
             fileChooser.setTitle("Export file name as");
             //Making sure the zip is the only thing that is zipped up
             fileChooser.getExtensionFilters().addAll(
                     new FileChooser.ExtensionFilter("Zip Files", "*.zip"));
+            performChangeSetExport(fileChooser, fromDate, toDate);
         } else if (exportOption.equalsIgnoreCase(FHIR)) {
             fileChooser.setTitle("Fhir File Exporter");
             fileChooser.getExtensionFilters().addAll(
                     new FileChooser.ExtensionFilter("Fhir Json Files", "*.json"));
+            // FHIR export
+            performFhirExport(fileChooser, fromDate, toDate);
         }
-        performFhirExport(fileChooser);
+
+
     }
 
-    private void performFhirExport(FileChooser fileChooser) {
+    private void performChangeSetExport(FileChooser fileChooser, long fromDate, long toDate) {
+        File exportFile = fileChooser.showSaveDialog(exportButton.getScene().getWindow());
+        if (exportFile != null) {
+            //Calls a tinkar-core class that is responsible for transforming entities from the database to
+
+            CompletableFuture<EntityCountSummary> completableFuture = EntityService.get().temporalExport(exportFile, fromDate, toDate)
+                    .whenComplete((entityCountSummary, th) -> {
+                        if (th != null) {
+                            LOG.error("Export failed to complete", th);
+                        }else {
+                            LOG.info("Export Completed");
+                        }
+
+                    });
+            //ProgressHelper.progress(completableFuture, "Cancel Export");
+        }
+    }
+
+    private void performFhirExport(FileChooser fileChooser, long fromDate, long toDate) {
         //Triggers the file chooser screen (where a user can choose a location)
         File exportFile = fileChooser.showSaveDialog(exportButton.getScene().getWindow());
         if (exportFile != null) {
@@ -289,13 +323,7 @@ public class ExportDatasetCombinedController {
             //exportProgressBar.setVisible(true); //TODO do we need these? don't we want the progress notification
             //exportStatusMessage.setVisible(false);
 
-            long fromDate = transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM);
-            long toDate =  System.currentTimeMillis();
-            String dateChoice = timePeriodComboBox.getSelectionModel().getSelectedItem();
-            if (CUSTOM_RANGE.equals(dateChoice)) {
-                fromDate = this.customFromEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()) : this.customFromEpochMillis;
-                toDate = this.customToEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()) : this.customToEpochMillis;
-            }
+
             Task<Void> exportTask = exportChangeSet(fromDate, toDate, exportFile);
             //exportProgressBar.progressProperty().unbind();
             //exportProgressBar.progressProperty().bind(exportTask.progressProperty());
