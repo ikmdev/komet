@@ -309,7 +309,7 @@ public class ExportDatasetCombinedController {
                         }else {
                             LOG.info("Export Completed");
                         }
-
+                        exportButton.setDisable(false);
                     });
             notifyProgressIndicator(completableFuture, "Export all data");
         }
