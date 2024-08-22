@@ -27,32 +27,13 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.ConceptEntityVersion;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import org.evrete.dsl.annotation.FieldDeclaration;
-import org.evrete.dsl.annotation.Rule;
-import org.evrete.dsl.annotation.RuleSet;
-import org.evrete.dsl.annotation.Where;
+import org.evrete.dsl.annotation.*;
 
 /**
  * Rules related to component-related observations.
- * <p>
- * To simplify the conditions of the rules, this ruleset employs custom field declarations through
- * the use of the {@link FieldDeclaration} annotation.
- * </p>
- * <p>
- * Custom field declarations provide an additional abstraction layer for the domain classes and allow
- * for changing the conditions easily should the domain classes change. And, as a side benefit,
- * we no longer need to include now unnecessary imports via the
- * {@link org.evrete.api.Knowledge#addImport(Class)} method.
- * </p>
- * <p>
- * Custom fields are better placed in a common parent class so they could be reused
- * by multiple rulesets.
- * </p>
- *
  * Note: The java compiler needs the -parameters argument
  * see: <a href="https://www.evrete.org/docs#ajr">https://www.evrete.org/docs/#ajr</a>
  */
-
 @RuleSet("Component focus rules")
 public class ComponentFocusRules extends RulesBase {
 
@@ -63,9 +44,9 @@ public class ComponentFocusRules extends RulesBase {
      * @see RulesBase#isComponentActive(ObservationRecord)
      */
     @Rule("Component focused and active")
-    @Where({
-            "$observation.focusedComponent",
-            "$observation.isComponentActive"
+    @Where(methods = {
+            @MethodPredicate(method = "isComponentFocused", args = {"$observation"}),
+            @MethodPredicate(method = "isComponentActive", args = {"$observation"})
     })
     public void componentFocusedAndActive(ObservationRecord $observation) {
         if ($observation.subject() instanceof EntityVersion entityVersion) {
@@ -80,9 +61,9 @@ public class ComponentFocusRules extends RulesBase {
      * @see RulesBase#isComponentInactive(ObservationRecord)
      */
     @Rule("Component focused and inactive")
-    @Where({
-            "$observation.focusedComponent",
-            "$observation.isComponentInactive"
+    @Where(methods = {
+            @MethodPredicate(method = "isComponentFocused", args = {"$observation"}),
+            @MethodPredicate(method = "isComponentInactive", args = {"$observation"})
     })
     public void componentFocusedAndInactive(ObservationRecord $observation) {
         if ($observation.subject() instanceof EntityVersion entityVersion) {
@@ -97,9 +78,9 @@ public class ComponentFocusRules extends RulesBase {
      * @see RulesBase#isConceptVersion(ObservationRecord)
      */
     @Rule("Concept version focused")
-    @Where({
-            "$observation.focusedComponent",
-            "$observation.isConceptVersion"
+    @Where(methods = {
+            @MethodPredicate(method = "isComponentFocused", args = {"$observation"}),
+            @MethodPredicate(method = "isConceptVersion", args = {"$observation"})
     })
     public void conceptVersionFocused(ObservationRecord $observation) {
         //TODO see if we can get more in the @Where annotation, and maybe split into multiple rules.
