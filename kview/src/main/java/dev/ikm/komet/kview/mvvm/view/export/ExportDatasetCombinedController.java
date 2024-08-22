@@ -311,8 +311,31 @@ public class ExportDatasetCombinedController {
                         }
 
                     });
-            //ProgressHelper.progress(completableFuture, "Cancel Export");
+            notifyProgressIndicator(completableFuture, "Export all data");
         }
+    }
+
+    private void notifyProgressIndicator(CompletableFuture<EntityCountSummary> completableFuture, String title) {
+        Task<EntityCountSummary> javafxTask = new Task() {
+            @Override
+            protected EntityCountSummary call() throws Exception {
+                updateTitle(title);
+                updateProgress(-1, 1);
+                completableFuture.whenComplete((entityCountSummary, th) -> {
+                    if (th != null) {
+                        updateMessage( "Export failed to complete");
+                        updateProgress(0.0, 0.0);
+                    }else {
+                        updateMessage("Export Completed!");
+                        updateProgress(1.0, 1.0);
+                    }
+                });
+                EntityCountSummary entityCountSummary = completableFuture.get();
+
+                return entityCountSummary;
+            }
+        };
+        ProgressHelper.progress(javafxTask, "Cancel Export");
     }
 
     private void performFhirExport(FileChooser fileChooser, long fromDate, long toDate) {
