@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
-public class DataViewModelHelper {
+public class DataModelHelper {
 
 
 

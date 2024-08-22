@@ -56,7 +56,7 @@ import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.PATTERN_FIELDS;
 import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.mvvm.model.DataViewModelHelper.fetchFieldDefinitionDataTypes;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchFieldDefinitionDataTypes;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;

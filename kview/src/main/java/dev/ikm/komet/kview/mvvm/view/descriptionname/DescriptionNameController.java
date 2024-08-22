@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.mvvm.model.DataViewModelHelper.*;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
