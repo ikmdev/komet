@@ -7,6 +7,9 @@
 [Komet](https://www.ikm.dev/platform) was created to harmonize existing medical terminology and create interoperable
 data. This file will explain best practices for getting started, building, running, and contributing code in Komet.
 
+### Team Ownership - Product Owner
+Install App Team
+
 ## Getting Started
 
 To get started with using Komet, [download the latest version](https://www.ikm.dev/install) on your machine. See the
