@@ -38,6 +38,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -53,8 +55,10 @@ public class EvreteRulesService implements RuleService {
     private Knowledge knowledge;
 
     public EvreteRulesService() throws IOException {
+        Instant t0 = Instant.now();
         Configuration conf = new Configuration();
-        conf.set(Constants.PROP_EXTEND_RULE_CLASSES, "false");
+        // This will fast fail the engine in case of a literal condition
+        conf.set(Configuration.DISABLE_LITERAL_DATA, "true");
 
         for (Map.Entry<Object, Object> confEntry: conf.entrySet()) {
             LOG.info(confEntry.toString());
@@ -72,7 +76,11 @@ public class EvreteRulesService implements RuleService {
                                 NewPatternRules.class
                         )
                 );
-        LOG.info("Constructed EvreteRulesService");
+        Instant t1 = Instant.now();
+
+        // Log the timing. With literal conditions disabled, the cold start time
+        // is expected to be in the range of tens of milliseconds.
+        LOG.info("Constructed EvreteRulesService, duration: {}ms", Duration.between(t0, t1).toMillis());
     }
 
     @Override

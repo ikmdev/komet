@@ -15,8 +15,6 @@
  */
 package dev.ikm.komet.framework.rulebase;
 
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
