@@ -50,21 +50,21 @@ public class EvreteRulesService implements RuleService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EvreteRulesService.class);
 
-    private KnowledgeService service;
-
-    private Knowledge knowledge;
+    private final Knowledge knowledge;
 
     public EvreteRulesService() throws IOException {
         Instant t0 = Instant.now();
         Configuration conf = new Configuration();
-        // This will fast fail the engine in case of a literal condition
+
+        // Literal data requires the Java compiler and significantly increases build time.
+        // Setting this option will fast-fail the engine in case of a literal condition/action.
         conf.set(Configuration.DISABLE_LITERAL_DATA, "true");
 
         for (Map.Entry<Object, Object> confEntry: conf.entrySet()) {
             LOG.info(confEntry.toString());
         }
 
-        this.service = new KnowledgeService(conf);
+        KnowledgeService service = new KnowledgeService(conf);
 
         this.knowledge = service.newKnowledge()
                 .importRules(

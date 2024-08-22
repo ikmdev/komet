@@ -22,7 +22,7 @@ import dev.ikm.tinkar.common.service.PluggableService;
 
 public enum RuleServiceFinder {
     INSTANCE;
-    RuleService service;
+    final RuleService service;
 
     RuleServiceFinder() {
         Optional<RuleService> optionalService = PluggableService.load(RuleService.class).findFirst();
