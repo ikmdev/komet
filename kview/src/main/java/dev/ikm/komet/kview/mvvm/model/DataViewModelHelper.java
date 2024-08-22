@@ -21,9 +21,7 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.terms.EntityFacade;
 
-import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,36 +29,46 @@ import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 public class DataViewModelHelper {
 
-    public static final Set<EntityFacade> DATA_TYPE_OPTIONS = Collections.unmodifiableSet(Set.of(
-            STRING,
-            COMPONENT_FIELD,
-            COMPONENT_ID_SET_FIELD,
-            COMPONENT_ID_LIST_FIELD,
-            DITREE_FIELD,
-            DIGRAPH_FIELD,
-            CONCEPT_FIELD,
-            SEMANTIC_FIELD_TYPE,
-            INTEGER_FIELD,
-            FLOAT_FIELD,
-            BOOLEAN_FIELD,
-            BYTE_ARRAY_FIELD,
-            ARRAY_FIELD,
-            INSTANT_LITERAL,
-            LONG
-    ));
 
-    public static final Set<ConceptEntity> STATUS_OPTIONS = Collections.unmodifiableSet(Set.of(
-            Entity.getFast(ACTIVE_STATE.nid()),
-            Entity.getFast(INACTIVE_STATE.nid()),
-            Entity.getFast(WITHDRAWN_STATE.nid()),
-            Entity.getFast(CANCELED_STATE.nid()),
-            Entity.getFast(PRIMORDIAL_STATE.nid())
-    ));
 
-    public static final Set<ConceptEntity> DESCRIPTION_TYPE_OPTIONS = Collections.unmodifiableSet(Set.of(
-            Entity.getFast(FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()),
-            Entity.getFast(REGULAR_NAME_DESCRIPTION_TYPE.nid())
-    ));
+    public static Set<ConceptEntity> fetchFieldDefinitionDataTypes() {
+
+        return Set.of(
+                Entity.getFast(STRING.nid()),
+                Entity.getFast(COMPONENT_FIELD.nid()),
+                Entity.getFast(COMPONENT_ID_SET_FIELD.nid()),
+                Entity.getFast(COMPONENT_ID_LIST_FIELD.nid()),
+                Entity.getFast(DITREE_FIELD.nid()),
+                Entity.getFast(DIGRAPH_FIELD.nid()),
+                Entity.getFast(CONCEPT_FIELD.nid()),
+                Entity.getFast(SEMANTIC_FIELD_TYPE.nid()),
+                Entity.getFast(INTEGER_FIELD.nid()),
+                Entity.getFast(FLOAT_FIELD.nid()),
+                Entity.getFast(BOOLEAN_FIELD.nid()),
+                Entity.getFast(BYTE_ARRAY_FIELD.nid()),
+                Entity.getFast(ARRAY_FIELD.nid()),
+                Entity.getFast(INSTANT_LITERAL.nid()),
+                Entity.getFast(LONG.nid())
+        );
+    }
+
+    public static Set<ConceptEntity> fetchStatusOpions(){
+        return Set.of(
+                Entity.getFast(ACTIVE_STATE.nid()),
+                Entity.getFast(INACTIVE_STATE.nid()),
+                Entity.getFast(WITHDRAWN_STATE.nid()),
+                Entity.getFast(CANCELED_STATE.nid()),
+                Entity.getFast(PRIMORDIAL_STATE.nid())
+        );
+
+    }
+
+    public static Set<ConceptEntity> fetchDescriptionTypes(){
+        return Set.of(
+                Entity.getFast(FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()),
+                Entity.getFast(REGULAR_NAME_DESCRIPTION_TYPE.nid())
+        );
+    }
 
     public static Set<ConceptEntity> fetchDescendentsOfConcept(ViewProperties viewProperties, PublicId publicId) {
         IntIdSet decendents = viewProperties.calculator().descendentsOf(EntityService.get().nidForPublicId(publicId));
