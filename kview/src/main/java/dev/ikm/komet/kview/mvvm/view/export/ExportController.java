@@ -81,9 +81,9 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public class ExportDatasetCombinedController {
+public class ExportController {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ExportDatasetCombinedController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ExportController.class);
 
     protected static final String FHIR_TIME_EXPORT_PICKER_FXML_FILE = "fhir-time-export-picker.fxml";
 

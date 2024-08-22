@@ -42,9 +42,7 @@ import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.fxutils.CssHelper;
 import dev.ikm.komet.kview.fxutils.ResourceHelper;
-import dev.ikm.komet.kview.mvvm.view.export.ExportDatasetCombinedController;
-import dev.ikm.komet.kview.mvvm.view.export.ExportDatasetController;
-import dev.ikm.komet.kview.mvvm.view.export.ExportDatasetViewFactory;
+import dev.ikm.komet.kview.mvvm.view.export.ExportController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalViewFactory;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
@@ -284,12 +282,6 @@ public class App extends Application {
         kViewEventBus.subscribe(JOURNAL_TOPIC, CreateJournalEvent.class, detailsSubscriber);
     }
 
-    private MenuItem createExportChangesetMenuItem() {
-        // Apple menu item for export
-        MenuItem exportMenuItem = new MenuItem("Export Dataset");
-        exportMenuItem.setOnAction(event -> openExport());
-        return exportMenuItem;
-    }
     @Override
     public void start(Stage stage) {
 
@@ -812,36 +804,16 @@ public class App extends Application {
         }
     }
 
-    public void openDatasetPage(){
-        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
-
-        WindowSettings windowSettings = new WindowSettings(windowPreferences);
-        Stage datasetStage = new Stage();
-        FXMLLoader datasetPageLoader = ExportDatasetViewFactory.createFXMLLoaderForExportDataset();
-        try {
-            Pane datasetBorderPane = datasetPageLoader.load();
-            ExportDatasetController datasetPageController = datasetPageLoader.getController();
-            datasetPageController.setViewProperties(windowSettings.getView().makeOverridableViewProperties());
-            Scene sourceScene = new Scene(datasetBorderPane, 550, 700);
-            datasetStage.setScene(sourceScene);
-            datasetStage.setTitle("Export Dataset");
-            datasetStage.show();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private void openExport() {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
         Stage exportStage = new Stage();
         //set up ExportViewModel
-        Config exportConfig = new Config(ExportDatasetCombinedController.class.getResource("export-data-set-fhir-and-excel.fxml"))
+        Config exportConfig = new Config(ExportController.class.getResource("export.fxml"))
             .updateViewModel("exportViewModel", (exportViewModel) ->
                 exportViewModel.setPropertyValue(VIEW_PROPERTIES, windowSettings.getView().makeOverridableViewProperties()));
-        JFXNode<Pane, ExportDatasetCombinedController> exportJFXNode = FXMLMvvmLoader.make(exportConfig);
+        JFXNode<Pane, ExportController> exportJFXNode = FXMLMvvmLoader.make(exportConfig);
 
         Pane exportPane = exportJFXNode.node();
         Scene exportScene = new Scene(exportPane);
