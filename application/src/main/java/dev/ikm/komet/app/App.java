@@ -42,7 +42,6 @@ import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.fxutils.CssHelper;
 import dev.ikm.komet.kview.fxutils.ResourceHelper;
-import dev.ikm.komet.kview.mvvm.view.export.ArtifactExportController2;
 import dev.ikm.komet.kview.mvvm.view.export.ExportDatasetCombinedController;
 import dev.ikm.komet.kview.mvvm.view.export.ExportDatasetController;
 import dev.ikm.komet.kview.mvvm.view.export.ExportDatasetViewFactory;
@@ -286,14 +285,9 @@ public class App extends Application {
     }
 
     private MenuItem createExportChangesetMenuItem() {
-        MenuItem exportMenuItem = new MenuItem("_Export Changesets...");
-        exportMenuItem.setOnAction(event -> {
-            Stage stage = new Stage();
-            JFXNode<Pane, ArtifactExportController2> jfxNode = FXMLMvvmLoader.make(
-                    ArtifactExportController2.class.getResource("artifact-export2.fxml"));
-            stage.setScene(new Scene(jfxNode.node()));
-            stage.show();
-        });
+        // Apple menu item for export
+        MenuItem exportMenuItem = new MenuItem("Export Dataset");
+        exportMenuItem.setOnAction(event -> openExport());
         return exportMenuItem;
     }
     @Override
@@ -324,12 +318,11 @@ public class App extends Application {
             importDatasetMenuItem.setOnAction(actionEvent -> doImportDataSet(primaryStage));
 
             // Exporting data
-            Menu exportMenu = new Menu("Export Dataset");
-            MenuItem fhirMenuItem = new MenuItem("FHIR");
-            fhirMenuItem.setOnAction(actionEvent -> openDatasetPage());
-            exportMenu.getItems().addAll(createExportChangesetMenuItem(), fhirMenuItem);
+                        MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset");
+            exportDatasetMenuItem.setOnAction(actionEvent -> openExport());
+            fileMenu.getItems().add(exportDatasetMenuItem);
 
-            fileMenu.getItems().addAll(importDatasetMenuItem, exportMenu, new SeparatorMenuItem(), tk.createCloseWindowMenuItem());
+            fileMenu.getItems().addAll(importDatasetMenuItem, exportDatasetMenuItem, new SeparatorMenuItem(), tk.createCloseWindowMenuItem());
 
             // Edit
             Menu editMenu = new Menu("Edit");
@@ -868,13 +861,6 @@ public class App extends Application {
         importMenuItem.setOnAction(actionEvent -> doImportDataSet(stage));
 
         // Exporting data
-//        Menu exportMenu = new Menu("Export Dataset");
-//        MenuItem fhirMenuItem = new MenuItem("FHIR");
-//        fhirMenuItem.setOnAction(actionEvent -> openDatasetPage());
-//        exportMenu.getItems().addAll(createExportChangesetMenuItem(), fhirMenuItem);
-
-//        fileMenu.getItems().addAll(importMenuItem, exportMenu);
-
         MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset");
         exportDatasetMenuItem.setOnAction(actionEvent -> openExport());
         fileMenu.getItems().add(exportDatasetMenuItem);
