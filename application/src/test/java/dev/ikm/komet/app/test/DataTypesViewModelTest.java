@@ -44,7 +44,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.DataViewModelHelper.DATA_TYPE_OPTIONS;
+import static dev.ikm.komet.kview.mvvm.model.DataViewModelHelper.fetchFieldDefinitionDataTypes;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -108,13 +108,13 @@ public class DataTypesViewModelTest {
         });
     }
 
- //   @Test
+//    @Test
     public void loadDataTypesTest2(){
         Platform.startup(() -> {
             ViewProperties viewProperties = createViewProperties();
             ViewCalculator viewCalculator = viewProperties.calculator();
             AtomicInteger counter = new AtomicInteger();
-            DATA_TYPE_OPTIONS.forEach(entityFacade -> {
+            fetchFieldDefinitionDataTypes().forEach(entityFacade -> {
                 Optional<String> stringOptional = viewCalculator.getFullyQualifiedNameText(entityFacade.nid());
                 LOG.info(counter.incrementAndGet() + " - " + stringOptional.orElse(""));
             });

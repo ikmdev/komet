@@ -16,17 +16,6 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
-import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.PATTERN_FIELDS;
-import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DataViewModelHelper.DATA_TYPE_OPTIONS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.COMMENTS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.DATA_TYPE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.DISPLAY_NAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.FIELD_ORDER;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.MEANING_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.PURPOSE_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -42,7 +31,6 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -65,6 +53,13 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.function.Consumer;
+
+import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.PATTERN_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.mvvm.model.DataViewModelHelper.fetchFieldDefinitionDataTypes;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 
 public class PatternFieldsController {
 
@@ -114,7 +109,7 @@ public class PatternFieldsController {
     private ComboBox<Integer> fieldOrderComboBox = new ComboBox<>();
 
     @FXML
-    private ComboBox<EntityFacade> dataTypeComboBox = new ComboBox<>();
+    private ComboBox<ConceptEntity> dataTypeComboBox = new ComboBox<>();
 
 
     @FXML
@@ -186,19 +181,27 @@ public class PatternFieldsController {
                 }
             }));
         */
-        dataTypeComboBox.setConverter((new StringConverter<EntityFacade>() {
+        dataTypeComboBox.setConverter((new StringConverter<ConceptEntity>() {
             @Override
-            public String toString(EntityFacade conceptEntity) {
+            public String toString(ConceptEntity conceptEntity) {
                 ViewCalculator viewCalculator = viewProperties.calculator();
                 return viewCalculator.getRegularDescriptionText(conceptEntity).get();
             }
 
             @Override
-            public EntityFacade fromString(String s) {
+            public ConceptEntity fromString(String s) {
                 return null;
             }
         }));
-        dataTypeComboBox.getItems().addAll(DATA_TYPE_OPTIONS.stream().sorted((entityFacade1, entityFacade2) -> {
+
+        // TODO fetchFieldDefinitionDataTypes() method call returns hardcoded values.
+        //  When right backend data is available below logic can be used?
+        //  Set<ConceptEntity> allDataTypes = fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DISPLAY_FIELDS.publicId()));
+        //  AND/OR?
+        //  allDataTypes.addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DYNAMIC_COLUMN_DATA_TYPES.publicId())));
+        //  dataTypeComboBox.getItems().addAll(fetchFieldDefinitionDataTypes().stream()...).toList());
+
+        dataTypeComboBox.getItems().addAll(fetchFieldDefinitionDataTypes().stream().sorted((entityFacade1, entityFacade2) -> {
             ViewCalculator viewCalculator = getViewProperties().calculator();
             return viewCalculator.getRegularDescriptionText(entityFacade1).get()
                             .compareToIgnoreCase(viewCalculator.getRegularDescriptionText(entityFacade2).get());

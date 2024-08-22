@@ -105,10 +105,10 @@ public class DescriptionNameController {
         populateDialectComboBoxes();
 
         //TODO These are temp hard coded values:
-        // Should use
+        // Can use below code later?
         // setupComboBox(nameDescriptionType, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DESCRIPTION_TYPE.publicId()));
 
-        setupComboBox(nameDescriptionType, DESCRIPTION_TYPE_OPTIONS); // Hard coded
+        setupComboBox(nameDescriptionType, fetchDescriptionTypes()); // Hard coded
         nameDescriptionType.valueProperty().bind(descrNameViewModel.getProperty(NAME_TYPE));
 
         editDescriptionTitleLabel.textProperty().bind(descrNameViewModel.getProperty(TITLE_TEXT));
@@ -118,14 +118,14 @@ public class DescriptionNameController {
         moduleComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(MODULE));
 
         //TODO These are temp hard coded values:
-        // Should use depending on the valid data.
+        // Can use below code later?
         // setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId())); // Hard coded...
 
-        setupComboBox(statusComboBox, STATUS_OPTIONS); // Hard coded...
+        setupComboBox(statusComboBox, fetchStatusOpions()); // Hard coded...
         statusComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(STATUS));
 
         //TODO These are temp hard coded values:
-        // Should use
+        // Can use below code later?
         // setupComboBox(caseSignificanceComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.publicId())); // Hard Coded
         setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants(getViewProperties()));
         caseSignificanceComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(CASE_SIGNIFICANCE));
