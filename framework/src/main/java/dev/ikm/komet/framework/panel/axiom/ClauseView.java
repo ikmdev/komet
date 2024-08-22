@@ -280,7 +280,7 @@ public class ClauseView {
 
     private void setupForInclusionSet() {
         rootBorderPane.getStyleClass()
-                .add(StyleClasses.DEF_SUFFICIENT_SET.toString());
+                .add(StyleClasses.DEF_INCLUSION_SET.toString());
         titleLabel.setText(axiomView.getEntityForAxiomsText(
                 calculator().getPreferredDescriptionTextWithFallbackOrNid(axiomVertex.getMeaningNid())));
         titleLabel.setGraphic(Icon.TAXONOMY_DEFINED_SINGLE_PARENT.makeIcon());
