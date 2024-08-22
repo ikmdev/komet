@@ -18,27 +18,10 @@ package dev.ikm.komet.rules.annotated;
 import dev.ikm.komet.framework.performance.Request;
 import dev.ikm.komet.framework.performance.Statement;
 import dev.ikm.komet.rules.actions.concept.NewConceptFromTextAction;
-import org.evrete.dsl.annotation.FieldDeclaration;
-import org.evrete.dsl.annotation.Rule;
-import org.evrete.dsl.annotation.RuleSet;
-import org.evrete.dsl.annotation.Where;
+import org.evrete.dsl.annotation.*;
 
 /**
  * Rules related to concept-related statements.
- * <p>
- * To simplify the conditions of the rules, this ruleset employs custom field declarations through
- * the use of the {@link FieldDeclaration} annotation.
- * </p>
- * <p>
- * Custom field declarations provide an additional abstraction layer for the domain classes and allow
- * for changing the conditions easily should the domain classes change. And, as a side benefit,
- * we no longer need to include now unnecessary imports via the
- * {@link org.evrete.api.Knowledge#addImport(Class)} method.
- * </p>
- * <p>
- * Custom fields are better placed in a common parent class so they could be reused
- * by multiple rulesets.
- * </p>
  */
 @RuleSet("New concept rules")
 public class NewConceptRules extends RulesBase {
@@ -48,9 +31,9 @@ public class NewConceptRules extends RulesBase {
      * @see RulesBase#requestWithStringSubject(Statement)
      */
     @Rule("New concept rule")
-    @Where({
-            "$request.isNewConceptRequest",
-            "$request.requestWithStringSubject"
+    @Where(methods = {
+            @MethodPredicate(method = "isNewConceptRequest", args = {"$request"}),
+            @MethodPredicate(method = "requestWithStringSubject", args = {"$request"})
     })
     public void newConceptRule(Statement $request) {
         if ($request instanceof Request request) {
