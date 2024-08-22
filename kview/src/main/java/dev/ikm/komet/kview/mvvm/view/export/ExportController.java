@@ -141,8 +141,6 @@ public class ExportController {
         exportDatasetEventBus = EvtBusFactory.getDefaultEvtBus();
         exportTopic = UUID.randomUUID();
 
-        //FIXME bind view model properties? ... exportViewModel
-
         exportOptions.getItems().addAll(CHANGE_SET, FHIR);
         setupDateTimeExportComboBox();
         setupCustomDateRangeLabel();
@@ -279,7 +277,6 @@ public class ExportController {
             toDate = this.customToEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()) : this.customToEpochMillis;
         }
 
-
         if (exportOption.equalsIgnoreCase(CHANGE_SET)) {
             fileChooser.setTitle("Export file name as");
             //Making sure the zip is the only thing that is zipped up
@@ -293,8 +290,6 @@ public class ExportController {
             // FHIR export
             performFhirExport(fileChooser, fromDate, toDate);
         }
-
-
     }
 
     private void performChangeSetExport(FileChooser fileChooser, long fromDate, long toDate) {
@@ -343,13 +338,7 @@ public class ExportController {
         File exportFile = fileChooser.showSaveDialog(exportButton.getScene().getWindow());
         if (exportFile != null) {
             exportButton.setDisable(true);
-            //exportProgressBar.setVisible(true); //TODO do we need these? don't we want the progress notification
-            //exportStatusMessage.setVisible(false);
-
-
             Task<Void> exportTask = exportChangeSet(fromDate, toDate, exportFile);
-            //exportProgressBar.progressProperty().unbind();
-            //exportProgressBar.progressProperty().bind(exportTask.progressProperty());
             ProgressHelper.progress(exportTask, "Cancel Export");
         }
     }
