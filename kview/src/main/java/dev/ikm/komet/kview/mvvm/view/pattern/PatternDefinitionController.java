@@ -115,6 +115,7 @@ public class PatternDefinitionController {
     @FXML
     private VBox semanticOuterVBox;
 
+
     @FXML
     private void clearView() {
         removePurpose();
@@ -131,7 +132,6 @@ public class PatternDefinitionController {
 
     @FXML
     private void initialize() {
-
         setupDragNDrop(purposeStackPane, (publicId) -> {
             // check to see if a pattern > purpose was already dragged into the purpose section before saving
             // to the view model
@@ -506,9 +506,9 @@ public class PatternDefinitionController {
     @FXML
     private void onCancel(ActionEvent actionEvent) {
         actionEvent.consume();
-        clearView();
         //publish close env
         EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+        clearView();
     }
 
 
@@ -530,5 +530,6 @@ public class PatternDefinitionController {
         // publish form submission data
         EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC),
                 new PatternDefinitionEvent(actionEvent.getSource(), PATTERN_DEFINITION, patternDefinition));
+        clearView();
     }
 }
