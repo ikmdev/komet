@@ -15,11 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
-import static dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent.PATTERN_DEFINITION;
-import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.MEANING_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.PURPOSE_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
@@ -41,16 +36,18 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
+
+import static dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent.PATTERN_DEFINITION;
+import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.MEANING_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.PURPOSE_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 
 public class PatternDefinitionController {
 
@@ -118,8 +115,11 @@ public class PatternDefinitionController {
     @FXML
     private VBox semanticOuterVBox;
 
+
     @FXML
     private void clearView() {
+        removePurpose();
+        removeMeaning();
         patternDefinitionViewModel.setPropertyValue(PURPOSE_ENTITY, null);
         patternDefinitionViewModel.setPropertyValue(MEANING_ENTITY, null);
         patternDefinitionViewModel.save(true);
@@ -132,7 +132,6 @@ public class PatternDefinitionController {
 
     @FXML
     private void initialize() {
-
         setupDragNDrop(purposeStackPane, (publicId) -> {
             // check to see if a pattern > purpose was already dragged into the purpose section before saving
             // to the view model
@@ -507,9 +506,9 @@ public class PatternDefinitionController {
     @FXML
     private void onCancel(ActionEvent actionEvent) {
         actionEvent.consume();
-        clearView();
         //publish close env
         EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+        clearView();
     }
 
 
@@ -531,5 +530,6 @@ public class PatternDefinitionController {
         // publish form submission data
         EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC),
                 new PatternDefinitionEvent(actionEvent.getSource(), PATTERN_DEFINITION, patternDefinition));
+        clearView();
     }
 }
