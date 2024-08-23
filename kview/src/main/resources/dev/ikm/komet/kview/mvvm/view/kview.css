@@ -2315,6 +2315,14 @@ Timeline Year line segment (will overlay change circles)
     -fx-shape: "M15.8337 5.34199L14.6587 4.16699L10.0003 8.82533L5.34199 4.16699L4.16699 5.34199L8.82533 10.0003L4.16699 14.6587L5.34199 15.8337L10.0003 11.1753L14.6587 15.8337L15.8337 14.6587L11.1753 10.0003L15.8337 5.34199Z";
 }
 
+.grey9-14pt-normal {
+    -fx-text-fill: -Grey-9;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: normal;
+}
+
 .grey12-12pt-bold {
     -fx-text-fill: -Grey-12;
     -fx-font-family: "Noto Sans";
@@ -2323,11 +2331,82 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-weight: bold;
 }
 
+.grey12-18pt-normal {
+    -fx-text-fill: -Grey-12;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 18px;
+    -fx-font-style: normal;
+    -fx-font-weight: normal;
+}
+
+.grey-button-black-text {
+    -fx-border-radius: 4;
+    -fx-text-fill: #4B4B4B;
+    -fx-background-color: #D2D2D2;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 10px;
+    -fx-font-style: normal;
+    -fx-font-weight: normal;
+}
+
+.text-field-grey6 {
+    -fx-text-fill: -Grey-6;
+    -fx-border-radius: 5;
+}
+
+.white-container-border6 {
+    -fx-background-color: white;
+    -fx-border-radius: 6;
+    -fx-border-color: -Grey-6;
+}
+
+.white-combo-grey-arrow {
+    -fx-border-radius: 4;
+    -fx-background-color: -Grey-1;
+    -fx-text-fill: black;
+    -fx-border-color: -Grey-6;
+}
+
 .transparent-scroll.scroll-pane,
 .transparent-scroll.scroll-pane > .viewport {
     -fx-background-color: transparent;
 }
 
+.button-blue5-text-grey1-bg {
+    -fx-border-radius: 4;
+    -fx-background-color: -Grey-1;
+    -fx-border-color: -Secondary-05;
+    -fx-text-fill: -Secondary-05;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Noto Sans";
+}
+
+.blue-arrow-combo-box-grey11 .list-cell {
+    -fx-text-fill: -Grey-11;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;   
+    -fx-background-color: -Grey-1;
+}
+
+.blue-arrow-combo-box-grey11.combo-box-base {
+    -fx-border-radius: 4;
+    -fx-border-color: -Grey-5;
+    -fx-background-color: -Grey-1;
+}
+
+.blue-arrow-combo-box-grey11.combo-box-base > .arrow-button > .arrow {    
+    -fx-background-color: -Secondary-05;    
+    -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
+}
+
+.tag-container {
+    -fx-border-radius: 5;
+    -fx-border-color: -Grey-5;
+    -fx-background-color: -Grey-1;
+}
 
 /* end making these for the dragged concept reusable fxml */
 
@@ -2389,6 +2468,12 @@ Timeline Year line segment (will overlay change circles)
 
 .grey4-background {
     -fx-background-color: -Grey-4;
+}
+
+.grey7bg-grey2text {
+    -fx-border-radius: 4;
+    -fx-background-color: -Grey-7;
+    -fx-fill: -Grey-2;
 }
 
 /*********************************************************************************
