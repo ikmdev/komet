@@ -64,7 +64,19 @@ public class AxiomComparator implements Comparator<ClauseView> {
             if (vertex1.getMeaningNid() == TinkarTerm.NECESSARY_SET.nid()) {
                 return -1;
             }
-            if (vertex1.getMeaningNid() == TinkarTerm.NECESSARY_SET.nid()) {
+            if (vertex2.getMeaningNid() == TinkarTerm.NECESSARY_SET.nid()) {
+                return 1;
+            }
+            if (vertex1.getMeaningNid() == TinkarTerm.INCLUSION_SET.nid()) {
+                return -1;
+            }
+            if (vertex2.getMeaningNid() == TinkarTerm.INCLUSION_SET.nid()) {
+                return 1;
+            }
+            if (vertex1.getMeaningNid() == TinkarTerm.PROPERTY_SET.nid()) {
+                return -1;
+            }
+            if (vertex2.getMeaningNid() == TinkarTerm.PROPERTY_SET.nid()) {
                 return 1;
             }
             if (vertex1.getMeaningNid() == TinkarTerm.CONCEPT_REFERENCE.nid()) {
@@ -95,6 +107,8 @@ public class AxiomComparator implements Comparator<ClauseView> {
                     vertex1.getMeaningNid() == TinkarTerm.AND.nid() ||
                     vertex1.getMeaningNid() == TinkarTerm.SUFFICIENT_SET.nid() ||
                     vertex1.getMeaningNid() == TinkarTerm.NECESSARY_SET.nid() ||
+                    vertex1.getMeaningNid() == TinkarTerm.INCLUSION_SET.nid() ||
+                    vertex1.getMeaningNid() == TinkarTerm.PROPERTY_SET.nid() ||
                     vertex1.getMeaningNid() == TinkarTerm.FEATURE.nid()) {
                 if (children1.isEmpty()) {
                     if (children2.isEmpty()) {

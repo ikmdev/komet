@@ -58,11 +58,12 @@
         <module>application</module>
     </modules>
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
-        <tinkar-core.version>1.58.0</tinkar-core.version>
-        <owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
-        <owlapi.version>4.7.0</owlapi.version>
+        <!-- Utilize for Binding to SLF4J -->
+        <bind-to-slf4j.version>2.0.13</bind-to-slf4j.version>
+        <classgraph.version>4.8.115</classgraph.version>
+        <cognitive.version>1.1.0</cognitive.version>
+        <common-java5.version>3.0.0-M9</common-java5.version>
+        <controlsfx.version>11.1.0</controlsfx.version>
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
         <ikm-evrete.version>4.0.3</ikm-evrete.version>
         <tinkar-jpms-deps.groupId>dev.ikm.jpms</tinkar-jpms-deps.groupId>
@@ -72,21 +73,26 @@
         <classgraph.version>4.8.115</classgraph.version>
         <controlsfx.version>11.1.0</controlsfx.version>
         <ikonli.version>12.2.0</ikonli.version>
-        <nsmenufx.version>3.1.0</nsmenufx.version>
-        <cognitive.version>1.1.0</cognitive.version>
-        <openjfx.version>21</openjfx.version>
-        <javafx.version>0.0.8</javafx.version>
+        <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
         <jpackage.version>1.6.0</jpackage.version>
+        <jpms-record-builder-core.version>36-r3</jpms-record-builder-core.version>
+        <jpms-roaringbitmap.version>0.9.31-r3</jpms-roaringbitmap.version>
+        <log4j.version>3.0.0-alpha1</log4j.version>
+        <maven.assembly-plugin.version>3.6.0</maven.assembly-plugin.version>
         <maven.compiler.version>3.13.0</maven.compiler.version>
+        <mockito.version>5.7.0</mockito.version>
+        <nsmenufx.version>3.1.0</nsmenufx.version>
+        <openjfx.version>21</openjfx.version>
+        <owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
+        <owlapi.version>4.7.0</owlapi.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <record-builder-processor.version>34</record-builder-processor.version>
         <scenic-view.version>11.0.2</scenic-view.version>
         <slf4j.version>2.0.13</slf4j.version>
-        <log4j.version>3.0.0-alpha1</log4j.version>
-        <!-- Utilize for Binding to SLF4J -->
-        <bind-to-slf4j.version>2.0.13</bind-to-slf4j.version>
-        <mockito.version>5.7.0</mockito.version>
-        <common-java5.version>3.0.0-M9</common-java5.version>
-        <maven.assembly-plugin.version>3.6.0</maven.assembly-plugin.version>
+        <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
+        <tinkar-core.version>1.65.0</tinkar-core.version>
+        <tinkar-jpms-deps.groupId>dev.ikm.jpms</tinkar-jpms-deps.groupId>
+        <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -510,10 +516,16 @@
     <build>
         <pluginManagement>
             <plugins>
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>${maven.assembly-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-maven-plugin</artifactId>
+                    <version>${javafx-maven-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.panteleyev</groupId>

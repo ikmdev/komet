@@ -1281,6 +1281,15 @@ modena.css is the default css.
     -fx-background-insets: 4 0 2 0;
 }
 
+.def-inclusion-set {
+    -fx-background-color: white;
+    -fx-padding: 0;
+    -fx-border-color: -komet-panel-background-color -komet-panel-background-color -komet-panel-background-color -komet-concept-color;
+    -fx-border-insets: 2 0 2 0;
+    -fx-border-width: 1 0 1 5;
+    -fx-background-insets: 4 0 2 0;
+}
+
 .def-role-group {
     -fx-background-color: white;
     -fx-padding: 0;
