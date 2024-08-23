@@ -21,10 +21,7 @@ import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -40,9 +37,10 @@ import java.util.*;
 import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
-import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 public class DescriptionNameController {
 
@@ -152,6 +150,7 @@ public class DescriptionNameController {
     private void handleCancelButtonEvent() {
         EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new ClosePropertiesPanelEvent(cancelButton,
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
+        clearView();
     }
 
     private boolean isFormPopulated() {
@@ -194,10 +193,12 @@ public class DescriptionNameController {
     }
 
     public void clearView() {
-        caseSignificanceComboBox.getItems().clear();
-        statusComboBox.getItems().clear();
-        moduleComboBox.getItems().clear();
-        languageComboBox.getItems().clear();
+        nameTextField.clear();
+        //Since default value needs to be selected, setting the view-model value.
+        statusComboBox.getSelectionModel().select((ConceptEntity) EntityService.get().getEntityFast(ACTIVE_STATE.nid()));
+        caseSignificanceComboBox.getSelectionModel().select(null);
+        moduleComboBox.getSelectionModel().select(null);
+        languageComboBox.getSelectionModel().select(null);
     }
 
     public void cleanup() {
