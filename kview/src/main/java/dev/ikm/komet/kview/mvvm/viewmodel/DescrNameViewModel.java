@@ -200,9 +200,9 @@ public class DescrNameViewModel extends FormViewModel {
                 getValue(NAME_TEXT),
                 getValue(NAME_TYPE),
                 getValue(CASE_SIGNIFICANCE),
+                getValue(STATUS),
                 getValue(MODULE),
                 getValue(LANGUAGE),
-                getValue(STATUS),
                 getValue(SEMANTIC_PUBLIC_ID)
         );
     }
