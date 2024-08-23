@@ -15,8 +15,6 @@
  */
 package dev.ikm.komet.framework.rulebase;
 
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -24,7 +22,7 @@ import dev.ikm.tinkar.common.service.PluggableService;
 
 public enum RuleServiceFinder {
     INSTANCE;
-    RuleService service;
+    final RuleService service;
 
     RuleServiceFinder() {
         Optional<RuleService> optionalService = PluggableService.load(RuleService.class).findFirst();

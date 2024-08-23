@@ -38,6 +38,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 public class EvreteRulesService implements RuleService {
@@ -47,25 +50,37 @@ public class EvreteRulesService implements RuleService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EvreteRulesService.class);
 
-    private Configuration conf = new Configuration();
-    private KnowledgeService service;
-
-    private Knowledge knowledge;
+    private final Knowledge knowledge;
 
     public EvreteRulesService() throws IOException {
+        Instant t0 = Instant.now();
+        Configuration conf = new Configuration();
+
+        // Literal data requires the Java compiler and significantly increases build time.
+        // Setting this option will fast-fail the engine in case of a literal condition/action.
+        conf.set(Configuration.DISABLE_LITERAL_DATA, "true");
 
         for (Map.Entry<Object, Object> confEntry: conf.entrySet()) {
             LOG.info(confEntry.toString());
         }
 
-        this.service = new KnowledgeService(this.conf);
-        this.knowledge = service.newKnowledge(Constants.PROVIDER_JAVA_CLASS,
-                ComponentFocusRules.class,
-                NewConceptRules.class,
-                AxiomFocusedRules.class,
-                NewPatternRules.class
-        );
-        LOG.info("Constructed EvreteRulesService");
+        KnowledgeService service = new KnowledgeService(conf);
+
+        this.knowledge = service.newKnowledge()
+                .importRules(
+                        Constants.PROVIDER_JAVA_CLASS,
+                        List.of(
+                                ComponentFocusRules.class,
+                                NewConceptRules.class,
+                                AxiomFocusedRules.class,
+                                NewPatternRules.class
+                        )
+                );
+        Instant t1 = Instant.now();
+
+        // Log the timing. With literal conditions disabled, the cold start time
+        // is expected to be in the range of tens of milliseconds.
+        LOG.info("Constructed EvreteRulesService, duration: {}ms", Duration.between(t0, t1).toMillis());
     }
 
     @Override
