@@ -65,7 +65,13 @@
         <common-java5.version>3.0.0-M9</common-java5.version>
         <controlsfx.version>11.1.0</controlsfx.version>
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
-        <ikm-evrete.version>3.2.01</ikm-evrete.version>
+        <ikm-evrete.version>4.0.3</ikm-evrete.version>
+        <tinkar-jpms-deps.groupId>dev.ikm.jpms</tinkar-jpms-deps.groupId>
+        <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
+        <jpms-record-builder-core.version>36-r6</jpms-record-builder-core.version>
+        <jpms-roaringbitmap.version>0.9.31-r7</jpms-roaringbitmap.version>
+        <classgraph.version>4.8.115</classgraph.version>
+        <controlsfx.version>11.1.0</controlsfx.version>
         <ikonli.version>12.2.0</ikonli.version>
         <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
         <jpackage.version>1.6.0</jpackage.version>

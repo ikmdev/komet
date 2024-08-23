@@ -15,32 +15,28 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import static dev.ikm.tinkar.terms.TinkarTerm.DEVELOPMENT_PATH;
+import static dev.ikm.tinkar.terms.TinkarTerm.MASTER_PATH;
+import static dev.ikm.tinkar.terms.TinkarTerm.PRIMORDIAL_PATH;
+import static dev.ikm.tinkar.terms.TinkarTerm.SANDBOX_PATH;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.terms.EntityFacade;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.*;
+public class ExportViewModel extends FormViewModel {
 
-public class DataViewModelHelper {
+    private static final Logger LOG = LoggerFactory.getLogger(ExportViewModel.class);
 
-    public static final Set<EntityFacade> DATA_TYPE_OPTIONS = Collections.unmodifiableSet(Set.of(
-            STRING,
-            COMPONENT_FIELD,
-            COMPONENT_ID_SET_FIELD,
-            COMPONENT_ID_LIST_FIELD,
-            DITREE_FIELD,
-            DIGRAPH_FIELD,
-            CONCEPT_FIELD,
-            SEMANTIC_FIELD_TYPE,
-            INTEGER_FIELD,
-            FLOAT_FIELD,
-            BOOLEAN_FIELD,
-            BYTE_ARRAY_FIELD,
-            ARRAY_FIELD,
-            INSTANT_LITERAL,
-            LONG,
-            UUID_DATA_TYPE,
-            VERTEX_FIELD
-    ));
+    public ExportViewModel() {
+        super();
+            addProperty(VIEW_PROPERTIES, (ViewProperties) null);
+    }
+
+    public Set<EntityFacade> getPaths() {
+        return Set.of(PRIMORDIAL_PATH, SANDBOX_PATH);
+    }
 }
