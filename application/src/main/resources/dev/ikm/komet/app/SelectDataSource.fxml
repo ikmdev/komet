@@ -13,7 +13,7 @@
             <items>
                 <ImageView fitHeight="26.0" fitWidth="103.0" pickOnBounds="true" preserveRatio="true">
                     <image>
-                        <Image url="@../images/mark.png"/>
+                        <Image url="@mark.png"/>
                     </image>
                 </ImageView>
                 <Label text="    data source:"/>

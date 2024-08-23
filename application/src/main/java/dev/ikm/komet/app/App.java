@@ -42,9 +42,7 @@ import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.fxutils.CssHelper;
 import dev.ikm.komet.kview.fxutils.ResourceHelper;
-import dev.ikm.komet.kview.mvvm.view.export.ArtifactExportController2;
-import dev.ikm.komet.kview.mvvm.view.export.ExportDatasetController;
-import dev.ikm.komet.kview.mvvm.view.export.ExportDatasetViewFactory;
+import dev.ikm.komet.kview.mvvm.view.export.ExportController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalViewFactory;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
@@ -87,6 +85,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.factory.Lists;
@@ -112,6 +111,7 @@ import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.fxutils.CssHelper.defaultStyleSheet;
 import static dev.ikm.komet.kview.fxutils.CssHelper.refreshPanes;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
@@ -282,17 +282,6 @@ public class App extends Application {
         kViewEventBus.subscribe(JOURNAL_TOPIC, CreateJournalEvent.class, detailsSubscriber);
     }
 
-    private MenuItem createExportChangesetMenuItem() {
-        MenuItem exportMenuItem = new MenuItem("_Export Changesets...");
-        exportMenuItem.setOnAction(event -> {
-            Stage stage = new Stage();
-            JFXNode<Pane, ArtifactExportController2> jfxNode = FXMLMvvmLoader.make(
-                    ArtifactExportController2.class.getResource("artifact-export2.fxml"));
-            stage.setScene(new Scene(jfxNode.node()));
-            stage.show();
-        });
-        return exportMenuItem;
-    }
     @Override
     public void start(Stage stage) {
 
@@ -321,12 +310,11 @@ public class App extends Application {
             importDatasetMenuItem.setOnAction(actionEvent -> doImportDataSet(primaryStage));
 
             // Exporting data
-            Menu exportMenu = new Menu("Export Dataset");
-            MenuItem fhirMenuItem = new MenuItem("FHIR");
-            fhirMenuItem.setOnAction(actionEvent -> openDatasetPage());
-            exportMenu.getItems().addAll(createExportChangesetMenuItem(), fhirMenuItem);
+            MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset");
+            exportDatasetMenuItem.setOnAction(actionEvent -> openExport());
+            fileMenu.getItems().add(exportDatasetMenuItem);
 
-            fileMenu.getItems().addAll(importDatasetMenuItem, exportMenu, new SeparatorMenuItem(), tk.createCloseWindowMenuItem());
+            fileMenu.getItems().addAll(importDatasetMenuItem, exportDatasetMenuItem, new SeparatorMenuItem(), tk.createCloseWindowMenuItem());
 
             // Edit
             Menu editMenu = new Menu("Edit");
@@ -810,30 +798,27 @@ public class App extends Application {
         appPreferences.sync();
         if (createJournalViewMenuItem != null) {
             createJournalViewMenuItem.setDisable(false);
-            KeyCombination newJournalKeyCombo = new KeyCodeCombination(KeyCode.J, KeyCombination.SHORTCUT_DOWN);
+                KeyCombination newJournalKeyCombo = new KeyCodeCombination(KeyCode.J, KeyCombination.SHORTCUT_DOWN);
             createJournalViewMenuItem.setAccelerator(newJournalKeyCombo);
             KometPreferences journalPreferences = appPreferences.node(JOURNAL_WINDOW);
         }
     }
 
-    public void openDatasetPage(){
+    private void openExport() {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
-
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
-        Stage datasetStage = new Stage();
-        FXMLLoader datasetPageLoader = ExportDatasetViewFactory.createFXMLLoaderForExportDataset();
-        try {
-            Pane datasetBorderPane = datasetPageLoader.load();
-            ExportDatasetController datasetPageController = datasetPageLoader.getController();
-            datasetPageController.setViewProperties(windowSettings.getView().makeOverridableViewProperties());
-            Scene sourceScene = new Scene(datasetBorderPane, 550, 700);
-            datasetStage.setScene(sourceScene);
-            datasetStage.setTitle("Export Dataset");
-            datasetStage.show();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        Stage exportStage = new Stage();
+        //set up ExportViewModel
+        Config exportConfig = new Config(ExportController.class.getResource("export.fxml"))
+            .updateViewModel("exportViewModel", (exportViewModel) ->
+                exportViewModel.setPropertyValue(VIEW_PROPERTIES, windowSettings.getView().makeOverridableViewProperties()));
+        JFXNode<Pane, ExportController> exportJFXNode = FXMLMvvmLoader.make(exportConfig);
+
+        Pane exportPane = exportJFXNode.node();
+        Scene exportScene = new Scene(exportPane);
+        exportStage.setScene(exportScene);
+        exportStage.show();
     }
 
     private void generateMsWindowsMenu(BorderPane kometRoot, Stage stage) {
@@ -848,12 +833,9 @@ public class App extends Application {
         importMenuItem.setOnAction(actionEvent -> doImportDataSet(stage));
 
         // Exporting data
-        Menu exportMenu = new Menu("Export Dataset");
-        MenuItem fhirMenuItem = new MenuItem("FHIR");
-        fhirMenuItem.setOnAction(actionEvent -> openDatasetPage());
-        exportMenu.getItems().addAll(createExportChangesetMenuItem(), fhirMenuItem);
-
-        fileMenu.getItems().addAll(importMenuItem, exportMenu);
+        MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset");
+        exportDatasetMenuItem.setOnAction(actionEvent -> openExport());
+        fileMenu.getItems().add(exportDatasetMenuItem);
 
         MenuItem menuItemQuit = new MenuItem("Quit");
         KeyCombination quitKeyCombo = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
