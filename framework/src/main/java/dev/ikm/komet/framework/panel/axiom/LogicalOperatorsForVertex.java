@@ -74,7 +74,7 @@ public enum LogicalOperatorsForVertex {
 
     PROPERTY_PATTERN_IMPLICATION(TinkarTerm.PROPERTY_PATTERN_IMPLICATION),
 
-    IMPLICATION_SET(TinkarTerm.IMPLICATION_SET);
+    INCLUSION_SET(TinkarTerm.INCLUSION_SET);
 
     final ConceptFacade logicalMeaning;
 
