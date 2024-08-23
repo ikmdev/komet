@@ -310,7 +310,7 @@ public class App extends Application {
             importDatasetMenuItem.setOnAction(actionEvent -> doImportDataSet(primaryStage));
 
             // Exporting data
-                        MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset");
+            MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset");
             exportDatasetMenuItem.setOnAction(actionEvent -> openExport());
             fileMenu.getItems().add(exportDatasetMenuItem);
 
