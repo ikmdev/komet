@@ -99,7 +99,7 @@ public class DescriptionNameController {
 
     @FXML
     public void initialize() {
-        clearView();
+
         populateDialectComboBoxes();
 
         //TODO These are temp hard coded values:
@@ -147,7 +147,8 @@ public class DescriptionNameController {
     }
 
     @FXML
-    private void handleCancelButtonEvent() {
+    private void handleCancelButtonEvent(ActionEvent actionEvent) {
+        actionEvent.consume();
         EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new ClosePropertiesPanelEvent(cancelButton,
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
         clearView();
@@ -194,11 +195,10 @@ public class DescriptionNameController {
 
     public void clearView() {
         nameTextField.clear();
-        //Since default value needs to be selected, setting the view-model value.
-        statusComboBox.getSelectionModel().select((ConceptEntity) EntityService.get().getEntityFast(ACTIVE_STATE.nid()));
-        caseSignificanceComboBox.getSelectionModel().select(null);
-        moduleComboBox.getSelectionModel().select(null);
-        languageComboBox.getSelectionModel().select(null);
+        descrNameViewModel.setPropertyValue(STATUS, ACTIVE_STATE);
+        descrNameViewModel.setPropertyValue(MODULE, null);
+        descrNameViewModel.setPropertyValue(CASE_SIGNIFICANCE, null);
+        descrNameViewModel.setPropertyValue(LANGUAGE, null);
     }
 
     public void cleanup() {
