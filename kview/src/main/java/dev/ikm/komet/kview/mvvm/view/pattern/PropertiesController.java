@@ -164,7 +164,7 @@ public class PropertiesController {
                 descrNameViewModel.setPropertyValue(MODE, CREATE)
                         .setPropertyValue(NAME_TYPE, FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
                         .setPropertyValue(TITLE_TEXT, ADD_FQN_TITLE_TEXT)
-                        .setPropertyValue(DESCRIPTION_NAME_TYPE, "Fully Qualified Name_Swaroop")
+                        .setPropertyValue(DESCRIPTION_NAME_TYPE, "Fully Qualified Name")
                 ;
             });
         } else if (eventType == SHOW_ADD_OTHER_NAME) {
