@@ -15,27 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
-import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_ADD_DEFINITION;
-import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_ADD_FQN;
-import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_ADD_OTHER_NAME;
-import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.SHOW_EDIT_FIELDS;
-import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.OPEN_PANEL;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
-import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FIELDS_COLLECTION;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_DATE_STR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAME_DESCRIPTION_NAME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_DATE_STR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_TEXT;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -53,18 +32,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.TilePane;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -78,6 +47,15 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.function.Consumer;
+
+import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.*;
+import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
+import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
+import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 
 public class PatternDetailsController {
 
@@ -186,6 +164,7 @@ public class PatternDetailsController {
 
     @FXML
     private void initialize() {
+
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
 
@@ -228,11 +207,13 @@ public class PatternDetailsController {
         // capture descriptions information
         StringProperty fqnTextProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
         fqnText.textProperty().bind(fqnTextProperty);
+        addFqnMenuItem.setVisible(fqnTextProperty.isEmpty().get());
         StringProperty otTextProperty = patternViewModel.getProperty(OTHER_NAME_DESCRIPTION_NAME_TEXT);
         otherNameText.textProperty().bind(otTextProperty);
         patternDescriptionEventSubscriber = evt -> {
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_FQN) {
                 patternViewModel.setFullyQualifiedName(evt.getDescrName());
+                addFqnMenuItem.setVisible(fqnTextProperty.isEmpty().get());
             }
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
                 patternViewModel.setOtherNameText(evt.getDescrName());
