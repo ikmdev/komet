@@ -21,7 +21,7 @@
     <top>
         <HBox alignment="TOP_CENTER" styleClass="edit-concept-label-container" BorderPane.alignment="TOP_CENTER">
             <children>
-                <Label fx:id="editDescriptionTitleLabel" alignment="TOP_CENTER" styleClass="edit-concept-title" text="Edit Description: Other Name" textAlignment="CENTER" />
+                <Label fx:id="editDescriptionTitleLabel" alignment="TOP_CENTER" text="Edit Description: Other Name" textAlignment="CENTER" />
             </children>
         </HBox>
     </top>
@@ -30,7 +30,7 @@
          <content>
             <VBox>
                <children>
-                    <GridPane prefWidth="487.0" BorderPane.alignment="CENTER">
+                    <GridPane prefWidth="487.0">
                         <columnConstraints>
                             <ColumnConstraints hgrow="SOMETIMES" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" />
                             <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" prefWidth="400.0" />
@@ -58,27 +58,27 @@
                               <Insets right="15.0" />
                            </GridPane.margin>
                         </TextField>
-                            <ComboBox fx:id="nameDescriptionType" disable="true" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Fully Qualified Name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+                            <ComboBox fx:id="nameDescriptionType" disable="true" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Other Name" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
                            <GridPane.margin>
                               <Insets right="15.0" />
                            </GridPane.margin>
                         </ComboBox>
-                            <ComboBox fx:id="caseSignificanceComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select case sensitivity" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
+                            <ComboBox fx:id="caseSignificanceComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" styleClass="blue-arrow-combo-box" promptText="Select case sensitivity" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
                            <GridPane.margin>
                               <Insets right="15.0" />
                            </GridPane.margin>
                         </ComboBox>
-                            <ComboBox fx:id="languageComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select Language" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5">
+                            <ComboBox fx:id="languageComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" styleClass="blue-arrow-combo-box" promptText="Select Language" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5">
                            <GridPane.margin>
                               <Insets right="15.0" />
                            </GridPane.margin>
                         </ComboBox>
-                            <ComboBox fx:id="statusComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select Status" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
+                            <ComboBox fx:id="statusComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" styleClass="blue-arrow-combo-box" promptText="Select Status" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
                            <GridPane.margin>
                               <Insets right="15.0" />
                            </GridPane.margin>
                         </ComboBox>
-                            <ComboBox fx:id="moduleComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select Module" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4">
+                            <ComboBox fx:id="moduleComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" styleClass="blue-arrow-combo-box" promptText="Select Module" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4">
                            <GridPane.margin>
                               <Insets right="15.0" />
                            </GridPane.margin>
@@ -92,7 +92,7 @@
                                           <Insets />
                                        </opaqueInsets>
                                     </Label>
-                                    <ComboBox fx:id="dialectComboBox1" disable="true" prefHeight="28.0" prefWidth="173.0">
+                                    <ComboBox fx:id="dialectComboBox1" disable="true" prefHeight="28.0" prefWidth="173.0" styleClass="blue-arrow-combo-box">
                                        <HBox.margin>
                                           <Insets bottom="8.0" />
                                        </HBox.margin>
@@ -115,7 +115,7 @@
                                           <Insets />
                                        </opaqueInsets>
                                     </Label>
-                                    <ComboBox fx:id="dialectComboBox2" disable="true" prefHeight="28.0" prefWidth="173.0">
+                                    <ComboBox fx:id="dialectComboBox2" disable="true" prefHeight="28.0" prefWidth="173.0" styleClass="blue-arrow-combo-box">
                                        <HBox.margin>
                                           <Insets bottom="8.0" />
                                        </HBox.margin>
@@ -138,7 +138,7 @@
                                           <Insets />
                                        </opaqueInsets>
                                     </Label>
-                                    <ComboBox fx:id="dialectComboBox3" disable="true" prefHeight="28.0" prefWidth="173.0">
+                                    <ComboBox fx:id="dialectComboBox3" disable="true" prefHeight="28.0" prefWidth="173.0" styleClass="blue-arrow-combo-box">
                                        <HBox.margin>
                                           <Insets bottom="8.0" />
                                        </HBox.margin>
