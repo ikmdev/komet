@@ -119,11 +119,7 @@ public class DescriptionNameController {
         setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
         moduleComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(MODULE));
 
-        //TODO These are temp hard coded values:
-        // Can use below code later?
-        // setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId())); // Hard coded...
-
-        setupComboBox(statusComboBox, fetchStatusOpions()); // Hard coded...
+        setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
         statusComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(STATUS));
 
         //TODO These are temp hard coded values:
