@@ -417,7 +417,7 @@ public class PatternFieldsController {
 
     @FXML
     private void clearView(ActionEvent actionEvent) {
-        patternFieldsViewModel.setPropertyValue(FIELD_ORDER, null);
+
         patternFieldsViewModel.setPropertyValue(DISPLAY_NAME, "");
         patternFieldsViewModel.setPropertyValue(DATA_TYPE, null);
         removePurpose();
