@@ -68,7 +68,7 @@ public class DescrNameViewModel extends FormViewModel {
         addProperty(NAME_TEXT, "")
                 .addProperty(NAME_TYPE, (ConceptEntity) null)
                 .addProperty(CASE_SIGNIFICANCE, (ConceptEntity) null)
-                .addProperty(STATUS, TinkarTerm.ACTIVE_STATE)
+                .addProperty(STATUS, (ConceptEntity) null)
                 .addProperty(MODULE, (ConceptEntity) null)
                 .addProperty(LANGUAGE, (ConceptEntity) null)
                 .addProperty(IS_SUBMITTED, false)

@@ -195,7 +195,7 @@ public class DescriptionNameController {
 
     public void clearView() {
         nameTextField.clear();
-        descrNameViewModel.setPropertyValue(STATUS, ACTIVE_STATE);
+        descrNameViewModel.setPropertyValue(STATUS, null);
         descrNameViewModel.setPropertyValue(MODULE, null);
         descrNameViewModel.setPropertyValue(CASE_SIGNIFICANCE, null);
         descrNameViewModel.setPropertyValue(LANGUAGE, null);
@@ -277,6 +277,7 @@ public class DescriptionNameController {
         if (descrNameViewModel.getPropertyValue(NAME_TYPE) == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE) {
             EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new PatternDescriptionEvent(submitButton,
                     PatternDescriptionEvent.PATTERN_ADD_FQN, descrNameViewModel.create()));
+
         } else if (descrNameViewModel.getPropertyValue(NAME_TYPE) == REGULAR_NAME_DESCRIPTION_TYPE) {
             EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new PatternDescriptionEvent(submitButton,
                     PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME, descrNameViewModel.create()));
