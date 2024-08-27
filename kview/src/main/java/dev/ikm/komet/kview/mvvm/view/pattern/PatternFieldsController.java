@@ -143,6 +143,10 @@ public class PatternFieldsController {
             }
         });
 
+        fieldOrderComboBox.valueProperty().bindBidirectional(patternFieldsViewModel.getProperty(FIELD_ORDER));
+        displayNameTextField.textProperty().bindBidirectional(patternFieldsViewModel.getProperty(DISPLAY_NAME));
+        dataTypeComboBox.valueProperty().bindBidirectional(patternFieldsViewModel.getProperty(DATA_TYPE));
+
         loadDataTypeComboBox();
 
     }
@@ -413,12 +417,20 @@ public class PatternFieldsController {
 
     @FXML
     private void clearView(ActionEvent actionEvent) {
+        patternFieldsViewModel.setPropertyValue(FIELD_ORDER, null);
         patternFieldsViewModel.setPropertyValue(DISPLAY_NAME, "");
+        patternFieldsViewModel.setPropertyValue(DATA_TYPE, null);
+        removePurpose();
+        removeMeaning();
         patternFieldsViewModel.save(true);
     }
 
     @FXML
     private void onCancel(ActionEvent actionEvent) {
+        //publish close env
+        EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
+                new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+        clearView(actionEvent);
     }
 
     private void collectFormData() {
@@ -455,5 +467,6 @@ public class PatternFieldsController {
 
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
                 new PatternFieldsPanelEvent(actionEvent.getSource(), PATTERN_FIELDS, patternField));
+        clearView(actionEvent);
     }
 }
