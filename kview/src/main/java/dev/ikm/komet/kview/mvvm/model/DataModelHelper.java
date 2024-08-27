@@ -52,17 +52,6 @@ public class DataModelHelper {
         );
     }
 
-    public static Set<ConceptEntity> fetchStatusOpions(){
-        return Set.of(
-                Entity.getFast(ACTIVE_STATE.nid()),
-                Entity.getFast(INACTIVE_STATE.nid()),
-                Entity.getFast(WITHDRAWN_STATE.nid()),
-                Entity.getFast(CANCELED_STATE.nid()),
-                Entity.getFast(PRIMORDIAL_STATE.nid())
-        );
-
-    }
-
     public static Set<ConceptEntity> fetchDescriptionTypes(){
         return Set.of(
                 Entity.getFast(FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()),
