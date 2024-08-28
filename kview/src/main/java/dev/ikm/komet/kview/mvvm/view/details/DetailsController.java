@@ -344,11 +344,13 @@ public class DetailsController  {
             }
             // sort the added (able to be removed)
             Comparator<MenuItem> patternMenuComparator = (m1, m2) -> m1.getText().compareToIgnoreCase(m2.getText());
-            membershipContextMenu.getItems().addAll(addedMenuItems.stream().sorted(patternMenuComparator).collect(Collectors.toList()));
+            addedMenuItems.sort(patternMenuComparator);
+            membershipContextMenu.getItems().addAll(addedMenuItems);
             // then add a menu line separator
             membershipContextMenu.getItems().add(new SeparatorMenuItem());
             // then add the sorted removed (that can be added)
-            membershipContextMenu.getItems().addAll(removedMenuItems.stream().sorted(patternMenuComparator).collect(Collectors.toList()));
+            removedMenuItems.sort(patternMenuComparator);
+            membershipContextMenu.getItems().addAll(removedMenuItems);
 
             membershipContextMenu.show(identiconImageView, contextMenuEvent.getScreenX(),
                     contextMenuEvent.getSceneY() + identiconImageView.getFitHeight());
