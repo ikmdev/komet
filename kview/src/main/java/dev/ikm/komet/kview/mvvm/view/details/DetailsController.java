@@ -263,20 +263,36 @@ public class DetailsController  {
             // query current concept's membership semantic records.
             // build menuItems according to 'add' or 'remove' , style to look like figma designs style classes.
             // show offset to the right of the identicon
-            EntityFacade currentConcept = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
+            ViewCalculator viewCalculator = viewProperties.calculator();
+            EntityFacade currentConceptFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
             List<PatternEntityVersion> patterns = DataModelHelper.getMembershipPatterns();
             ContextMenu membershipContextMenu = new ContextMenu();
             membershipContextMenu.getStyleClass().add("kview-context-menu");
             membershipContextMenu.getItems().addAll(patterns.stream().map(pattern -> {
                 // TODO need a check to see if currentConcept is a member of pattern
-                MenuItem menuItem = new MenuItem(pattern.entity().description());
-                Region region = new Region();
-                region.setPrefWidth(20);
-                region.setPrefHeight(20);
-                region.getStyleClass().add("concept-edit-description-menu-icon");
-                menuItem.setGraphic(region);
+                boolean isMember = DataModelHelper.isInMembershipPattern(currentConceptFacade.nid(), pattern.nid());
+                MenuItem menuItem = new MenuItem();
+                if (isMember) {
+                    menuItem.setText("Remove from " + pattern.entity().description());
+                    menuItem.setOnAction(evt -> DataModelHelper.removeFromMembershipPattern(currentConceptFacade, pattern.entity(), viewCalculator));
+                } else {
+                    menuItem.setText("Add to " + pattern.entity().description());
+                    menuItem.setOnAction(evt -> DataModelHelper.addToMembershipPattern(currentConceptFacade, pattern.entity(), viewCalculator));
+                }
+                addPlusIconToMenuItem(menuItem);
                 return menuItem;
             }).collect(Collectors.toList()));
+            if (DataModelHelper.isComponentActive(currentConceptFacade)) {
+                MenuItem inActivateMenuItem = new MenuItem("Inactivate component");
+                addPlusIconToMenuItem(inActivateMenuItem);
+                membershipContextMenu.getItems().add(inActivateMenuItem);
+                //TODO inactivate
+            } else if (DataModelHelper.isComponentInActive(currentConceptFacade)) {
+                MenuItem activateMenuItem = new MenuItem("Activate component");
+                addPlusIconToMenuItem(activateMenuItem);
+                membershipContextMenu.getItems().add(activateMenuItem);
+                //TODO activate
+            }
             membershipContextMenu.show(identiconImageView, contextMenuEvent.getScreenX(),
                     contextMenuEvent.getSceneY() + identiconImageView.getFitHeight());
         });
@@ -392,6 +408,14 @@ public class DetailsController  {
         changeSetTypeEventSubscriber = evt -> updateAxioms();
         eventBus.subscribe(RULES_TOPIC, AxiomChangeEvent.class, changeSetTypeEventSubscriber);
 
+    }
+
+    private void addPlusIconToMenuItem(MenuItem menuItem) {
+        Region region = new Region();
+        region.setPrefWidth(20);
+        region.setPrefHeight(20);
+        region.getStyleClass().add("concept-edit-description-menu-icon");
+        menuItem.setGraphic(region);
     }
 
     public ViewProperties getViewProperties() {
