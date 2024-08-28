@@ -316,7 +316,6 @@ public class DetailsController  {
 
     @FXML
     public void initialize() {
-        AtomicInteger count = new AtomicInteger();
         identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
             // query all available memberships (semantics having the purpose as 'membership', and no fields)
             // query current concept's membership semantic records.
