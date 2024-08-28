@@ -28,6 +28,8 @@ import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import javafx.beans.property.StringProperty;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
@@ -236,20 +238,29 @@ public class PatternDetailsController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
 
+        //TODO This will listen to the pattern fields input form submit.
+        // The list should do insert at the field order instead of add.
         patternFieldsPanelEventSubscriber = evt -> {
             List<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
             patternFieldList.add(evt.getPatternField());
-            addField(evt.getPatternField());
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
 
+        //TODO This observable listener should refresh and reorder as per the inserted records field order.
+        ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
+        patternFieldList.addListener((ListChangeListener<? super PatternField>) (listener) -> {
+            while(listener.next()){
+                if(listener.wasAdded()) {
+                    PatternField patternField = listener.getAddedSubList().getFirst();
+                    //TODO the fieldNum code should be removed and replaced by patternField.fieldOrder();
+                    int fieldNum = fieldsTilePane.getChildren().size() + 1;
+                    fieldsTilePane.getChildren().add(createFieldEntry(patternField, fieldNum));
+                }
+            }
+        });
+
         // Setup Properties
         setupProperties();
-    }
-
-    private void addField(PatternField patternField) {
-        int fieldNum = fieldsTilePane.getChildren().size() + 1;
-        fieldsTilePane.getChildren().add(createFieldEntry(patternField, fieldNum));
     }
 
     private Node createFieldEntry(PatternField patternField, int fieldNum) {
