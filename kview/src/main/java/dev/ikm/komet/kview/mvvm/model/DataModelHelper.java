@@ -190,19 +190,4 @@ public class DataModelHelper {
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
         TinkExecutor.threadPool().submit(commitTransactionTask);
     }
-
-    public static boolean isComponentActive(EntityFacade entityFacade) {
-        return getLastEntityVersion(entityFacade).active();
-    }
-
-    public static boolean isComponentInActive(EntityFacade entityFacade) {
-        return getLastEntityVersion(entityFacade).inactive();
-    }
-
-    public static EntityVersion getLastEntityVersion(EntityFacade entityFacade) {
-        //FIXME will this work? EntityFacade and I want an EntityVersion to check active/inactive
-        Entity entity = EntityService.get().getEntityFast(entityFacade);
-        ImmutableList versions = entity.versions();
-        return  (EntityVersion) versions.getLastOptional().get();
-    }
 }
