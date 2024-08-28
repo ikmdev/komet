@@ -83,7 +83,7 @@ public class PatternViewModel extends FormViewModel {
                     .addProperty(FQN_DESCRIPTION_NAME_TEXT, "")
                     .addProperty(OTHER_NAME_DESCRIPTION_NAME_TEXT, "")
                     // Ordered collection of Fields
-                    .addProperty(FIELDS_COLLECTION, (List<PatternField>) null)
+                    .addProperty(FIELDS_COLLECTION, (List<PatternField>) new ArrayList<PatternField>())
             ;
     }
 
