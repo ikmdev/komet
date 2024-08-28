@@ -18,10 +18,17 @@ package dev.ikm.komet.kview.mvvm.model;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.TinkarTerm;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -76,5 +83,17 @@ public class DataModelHelper {
                 .mapToObj(decendentNid -> (ConceptEntity) Entity.getFast(decendentNid))
                 .collect(Collectors.toSet());
         return allDecendents;
+    }
+
+    public static List<PatternEntityVersion> getMembershipPatterns() {
+        List<PatternEntityVersion> membershipPatternList = new ArrayList<>();
+        PrimitiveData.get().forEachPatternNid((patternNid) -> {
+            PatternEntityVersion patternEntityVersion = (PatternEntityVersion)
+                    Calculators.View.Default().stampCalculator().latest(patternNid).get();
+            if (patternEntityVersion.semanticPurposeNid() == TinkarTerm.MEMBERSHIP_SEMANTIC.nid()) {
+                membershipPatternList.add(patternEntityVersion);
+            }
+        });
+        return membershipPatternList;
     }
 }

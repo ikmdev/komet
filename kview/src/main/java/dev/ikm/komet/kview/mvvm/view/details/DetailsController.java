@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.details;
 
+import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.events.*;
@@ -64,7 +65,9 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
@@ -254,6 +257,30 @@ public class DetailsController  {
 
     @FXML
     public void initialize() {
+        AtomicInteger count = new AtomicInteger();
+        identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
+            // query all available memberships (semantics having the purpose as 'membership', and no fields)
+            // query current concept's membership semantic records.
+            // build menuItems according to 'add' or 'remove' , style to look like figma designs style classes.
+            // show offset to the right of the identicon
+            EntityFacade currentConcept = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
+            List<PatternEntityVersion> patterns = DataModelHelper.getMembershipPatterns();
+            ContextMenu membershipContextMenu = new ContextMenu();
+            membershipContextMenu.getStyleClass().add("kview-context-menu");
+            membershipContextMenu.getItems().addAll(patterns.stream().map(pattern -> {
+                // TODO need a check to see if currentConcept is a member of pattern
+                MenuItem menuItem = new MenuItem(pattern.entity().description());
+                Region region = new Region();
+                region.setPrefWidth(20);
+                region.setPrefHeight(20);
+                region.getStyleClass().add("concept-edit-description-menu-icon");
+                menuItem.setGraphic(region);
+                return menuItem;
+            }).collect(Collectors.toList()));
+            membershipContextMenu.show(identiconImageView, contextMenuEvent.getScreenX(),
+                    contextMenuEvent.getSceneY() + identiconImageView.getFitHeight());
+        });
+
         Tooltip.install(identifierText, identifierTooltip);
         Tooltip.install(lastUpdatedText, authorTooltip);
         Tooltip.install(fqnTitleText, conceptNameTooltip);
