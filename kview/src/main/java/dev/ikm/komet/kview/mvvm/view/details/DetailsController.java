@@ -328,28 +328,28 @@ public class DetailsController  {
             ContextMenu membershipContextMenu = new ContextMenu();
             membershipContextMenu.getStyleClass().add("kview-context-menu");
 
-            List<MenuItem> activateMenuItems = new ArrayList<>();
-            List<MenuItem> inActivateMenuItems = new ArrayList<>();
+            List<MenuItem> addedMenuItems = new ArrayList<>();
+            List<MenuItem> removedMenuItems = new ArrayList<>();
             for (PatternEntityVersion pattern : patterns) {
                 MenuItem menuItem = new MenuItem();
                 if (isInMembershipPattern(currentConceptFacade.nid(), pattern.nid())) {
                     menuItem.setText("Remove from " + pattern.entity().description());
                     menuItem.setOnAction(evt -> removeFromMembershipPattern(currentConceptFacade, pattern.entity(), viewCalculator));
-                    activateMenuItems.add(menuItem);
+                    addedMenuItems.add(menuItem);
                 } else {
                     menuItem.setText("Add to " + pattern.entity().description());
                     menuItem.setOnAction(evt -> addToMembershipPattern(currentConceptFacade, pattern.entity(), viewCalculator));
-                    inActivateMenuItems.add(menuItem);
+                    removedMenuItems.add(menuItem);
                 }
                 addPlusIconToMenuItem(menuItem);
             }
-            // sort the active (able to be in-activated)
+            // sort the added (able to be removed)
             Comparator<MenuItem> patternMenuComparator = (m1, m2) -> m1.getText().compareToIgnoreCase(m2.getText());
-            membershipContextMenu.getItems().addAll(activateMenuItems.stream().sorted(patternMenuComparator).collect(Collectors.toList()));
+            membershipContextMenu.getItems().addAll(addedMenuItems.stream().sorted(patternMenuComparator).collect(Collectors.toList()));
             // then add a menu line separator
             membershipContextMenu.getItems().add(new SeparatorMenuItem());
-            // then add the sorted inactive (that can be activated)
-            membershipContextMenu.getItems().addAll(inActivateMenuItems.stream().sorted(patternMenuComparator).collect(Collectors.toList()));
+            // then add the sorted removed (that can be added)
+            membershipContextMenu.getItems().addAll(removedMenuItems.stream().sorted(patternMenuComparator).collect(Collectors.toList()));
 
             membershipContextMenu.show(identiconImageView, contextMenuEvent.getScreenX(),
                     contextMenuEvent.getSceneY() + identiconImageView.getFitHeight());
