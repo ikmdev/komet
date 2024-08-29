@@ -28,6 +28,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.ConceptEntityVersion;
 import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.ConceptVersionRecord;
 import dev.ikm.tinkar.entity.Entity;
@@ -45,18 +46,24 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
+/**
+ * utitity class
+ */
 public class DataModelHelper {
 
-
+    private static final Logger LOG = LoggerFactory.getLogger(DataModelHelper.class);
 
     public static Set<ConceptEntity> fetchFieldDefinitionDataTypes() {
 
@@ -107,6 +114,14 @@ public class DataModelHelper {
     }
 
     public static boolean isInMembershipPattern(int conceptNid, int patternNid) {
+//        int[] semanticNidsForComponent = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptNid,
+//                patternNid);
+//        if (semanticNidsForComponent.length > 0) {
+//            Latest<EntityVersion> latestSemanticVersion = viewCalculator.latest(semanticNidsForComponent[0]);
+//            return latestSemanticVersion.isPresent();
+//        } else {
+//            return false;
+//        }
         int[] semanticCount = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptNid, patternNid);
         // if the semantic count is empty then it is not a member of that pattern
         return semanticCount.length > 0;
@@ -120,7 +135,7 @@ public class DataModelHelper {
             createSemantic(concept, pattern, editCoordinate.toEditCoordinateRecord(), viewCalculator);
         } else {
             // a member, need to change to inactive.
-            updateSemantic(pattern, semanticNidsForComponent[0], editCoordinate.toEditCoordinateRecord(), viewCalculator);
+            updateSemantic(pattern, semanticNidsForComponent[0], editCoordinate.toEditCoordinateRecord(), viewCalculator, true);
         }
     }
 
@@ -131,14 +146,13 @@ public class DataModelHelper {
             // case 1: never a member
             throw new IllegalStateException("Asking to retire element that was never a member...");
         } else {
-            updateSemantic(pattern, semanticNidsForComponent[0], editCoordinate.toEditCoordinateRecord(), viewCalculator);
+            updateSemantic(pattern, semanticNidsForComponent[0], editCoordinate.toEditCoordinateRecord(), viewCalculator, false);
         }
     }
 
     private static SemanticRecord createSemantic(EntityFacade concept, EntityFacade pattern, EditCoordinateRecord editCoordinateRecord, ViewCalculator viewCalculator) {
         PublicId newSemanticId = PublicIds.singleSemanticId(pattern.publicId(), concept.publicId());
         RecordListBuilder versionListBuilder = RecordListBuilder.make();
-        //FIXME will casting to PatternFacade work here??? or will pattern.toProxy() work???
         SemanticRecord newSemantic = SemanticRecord.makeNew(newSemanticId, pattern.toProxy(), concept.nid(), versionListBuilder);
         Transaction transaction = Transaction.make();
         ViewCoordinateRecord viewRecord = viewCalculator.viewCoordinateRecord();
@@ -160,14 +174,15 @@ public class DataModelHelper {
         return newSemantic;
     }
 
-    private static void updateSemantic(EntityFacade pattern, int semanticNid, EditCoordinateRecord editCoordinateRecord, ViewCalculator viewCalculator) {
+    private static void updateSemantic(EntityFacade pattern, int semanticNid, EditCoordinateRecord editCoordinateRecord, ViewCalculator viewCalculator, boolean active) {
         SemanticRecord semanticEntity = Entity.getFast(semanticNid);
         Transaction transaction = Transaction.make();
         ViewCoordinateRecord viewRecord = viewCalculator.viewCoordinateRecord();
 
         Latest<PatternEntityVersion> latestPatternVersion = viewCalculator.latestPatternEntityVersion(pattern.toProxy());
         latestPatternVersion.ifPresentOrElse(patternEntityVersion -> {
-            StampEntity stampEntity = transaction.getStamp(State.ACTIVE, Long.MAX_VALUE, editCoordinateRecord.getAuthorNidForChanges(),
+            State state = active ? State.ACTIVE : State.INACTIVE;
+            StampEntity stampEntity = transaction.getStamp(state, Long.MAX_VALUE, editCoordinateRecord.getAuthorNidForChanges(),
                     patternEntityVersion.moduleNid(), viewRecord.stampCoordinate().pathNidForFilter());
             SemanticVersionRecord newSemanticVersion = new SemanticVersionRecord(semanticEntity, stampEntity.nid(), Lists.immutable.empty());
             SemanticRecord analogue = semanticEntity.with(newSemanticVersion).build();
