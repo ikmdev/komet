@@ -341,14 +341,15 @@ public class DetailsController  {
                     menuItem.setOnAction(evt -> addToMembershipPattern(currentConceptFacade, pattern.entity(), viewCalculator));
                     removedMenuItems.add(menuItem);
                 }
-                addPlusIconToMenuItem(menuItem);
             }
             if (!addedMenuItems.isEmpty()) {
                 // sort the added (able to be removed)
                 addedMenuItems.sort(patternMenuComparator);
                 membershipContextMenu.getItems().addAll(addedMenuItems);
                 // then add a menu line separator
-                membershipContextMenu.getItems().add(new SeparatorMenuItem());
+                if (!removedMenuItems.isEmpty()) {
+                    membershipContextMenu.getItems().add(new SeparatorMenuItem());
+                }
             }
             // then add the sorted removed (that can be added)
             removedMenuItems.sort(patternMenuComparator);
@@ -469,15 +470,6 @@ public class DetailsController  {
         changeSetTypeEventSubscriber = evt -> updateAxioms();
         eventBus.subscribe(RULES_TOPIC, AxiomChangeEvent.class, changeSetTypeEventSubscriber);
 
-    }
-
-    private void addPlusIconToMenuItem(MenuItem menuItem) {
-        //TODO we anticipate creating a "minus" or "remove" icon in the future
-        Region region = new Region();
-        region.setPrefWidth(20);
-        region.setPrefHeight(20);
-        region.getStyleClass().add("concept-edit-description-menu-icon");
-        menuItem.setGraphic(region);
     }
 
     public ViewProperties getViewProperties() {
