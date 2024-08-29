@@ -25,9 +25,9 @@ import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
+import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
-import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -207,19 +207,23 @@ public class PatternDetailsController {
         purposeDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
 
         // capture descriptions information
-        StringProperty fqnTextProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
-        fqnText.textProperty().bind(fqnTextProperty);
-        addFqnMenuItem.setVisible(fqnTextProperty.isEmpty().get());
-        StringProperty otTextProperty = patternViewModel.getProperty(OTHER_NAME_DESCRIPTION_NAME_TEXT);
-        otherNameText.textProperty().bind(otTextProperty);
+//        StringProperty fqnTextProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
+        fqnText.textProperty().bind(patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT));
+        addFqnMenuItem.setVisible(fqnText.getText().isEmpty());
+
+        otherNameText.textProperty().bind(patternViewModel.getProperty(OTHER_NAME_DESCRIPTION_NAME_TEXT));
+
+        // This will listen to the pattern descriptions event.
         patternDescriptionEventSubscriber = evt -> {
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_FQN) {
-                patternViewModel.setFullyQualifiedName(evt.getDescrName());
-                addFqnMenuItem.setVisible(fqnTextProperty.isEmpty().get());
+                patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, evt.getDescrName().getNameText());
             }
+
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
-                patternViewModel.setOtherNameText(evt.getDescrName());
+                ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
+                descrNameObservableList.add(evt.getDescrName());
             }
+
             String dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
             if (patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT) != null
                 && !((String)patternViewModel.getPropertyValue(FQN_DESCRIPTION_NAME_TEXT)).isEmpty()) {
@@ -236,7 +240,25 @@ public class PatternDetailsController {
                 otherNameDate.setText("");
             }
         };
+
+        patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT).addListener((observableValue, o, t1) -> {
+            addFqnMenuItem.setVisible(fqnText.getText().isEmpty());
+        });
+
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
+
+        ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
+        descrNameObservableList.addListener(new ListChangeListener<DescrName>() {
+            @Override
+            public void onChanged(Change<? extends DescrName> change) {
+                while(change.next()){
+                    if(change.wasAdded()){
+                        DescrName descrName = change.getAddedSubList().getFirst();
+                    }
+                }
+            }
+        });
+
 
         //TODO This will listen to the pattern fields input form submit.
         // The list should do insert at the field order instead of add.

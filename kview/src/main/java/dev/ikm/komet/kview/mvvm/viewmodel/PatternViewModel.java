@@ -71,7 +71,7 @@ public class PatternViewModel extends FormViewModel {
                     .addProperty(STAMP_VIEW_MODEL, (ViewModel) null)
                     .addProperty(DEFINITION_VIEW_MODEL, (ViewModel) null)
                     .addProperty(FQN_DESCRIPTION_NAME, (DescrName) null)
-                    .addProperty(OTHER_NAMES, (List) null)
+                    .addProperty(OTHER_NAMES, (List<DescrName>) new ArrayList<DescrName>())
                     // PATTERN>DEFINITION Purpose and Meaning
                     .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
                     .addProperty(MEANING_ENTITY, (EntityFacade) null) // this is/will be the 'meaning' concept entity
@@ -110,16 +110,16 @@ public class PatternViewModel extends FormViewModel {
         }
     }
 
-    public void setDescriptionData(PatternField patternFields) {
+//    public void setDescriptionData(PatternField patternFields) {
+//
+//    }
 
-    }
-
-    public void setFullyQualifiedName(DescrName descrName) {
-        setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, descrName.getNameText());
-    }
-
-    public void setOtherNameText(DescrName descrName) {
-        setPropertyValue(OTHER_NAME_DESCRIPTION_NAME_TEXT, descrName.getNameText());
-    }
+//    public void setFullyQualifiedName(DescrName descrName) {
+//        setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, descrName.getNameText());
+//    }
+//
+//    public void setOtherNameText(DescrName descrName) {
+//        setPropertyValue(OTHER_NAME_DESCRIPTION_NAME_TEXT, descrName.getNameText());
+//    }
 
 }
