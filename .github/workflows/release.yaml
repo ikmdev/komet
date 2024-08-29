@@ -1,4 +1,4 @@
-name: Komet Release Workflow
+name: Release Workflow
 
 run-name: "Releasing ${{ github.event.repository.name }} #${{github.run_number}}"
 
