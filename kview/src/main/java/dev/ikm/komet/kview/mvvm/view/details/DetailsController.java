@@ -327,13 +327,14 @@ public class DetailsController  {
             ContextMenu membershipContextMenu = new ContextMenu();
             membershipContextMenu.getStyleClass().add("kview-context-menu");
 
+            Comparator<MenuItem> patternMenuComparator = (m1, m2) -> m1.getText().compareToIgnoreCase(m2.getText());
             List<MenuItem> addedMenuItems = new ArrayList<>();
             List<MenuItem> removedMenuItems = new ArrayList<>();
             for (PatternEntityVersion pattern : patterns) {
                 MenuItem menuItem = new MenuItem();
                 if (isInMembershipPattern(currentConceptFacade.nid(), pattern.nid())) {
                     menuItem.setText("Remove from " + pattern.entity().description());
-                    menuItem.setOnAction(evt -> removeFromMembershipPattern(currentConceptFacade, pattern.entity(), viewCalculator));
+                    menuItem.setOnAction(evt -> removeFromMembershipPattern(currentConceptFacade.nid(), pattern.entity(), viewCalculator));
                     addedMenuItems.add(menuItem);
                 } else {
                     menuItem.setText("Add to " + pattern.entity().description());
@@ -342,12 +343,13 @@ public class DetailsController  {
                 }
                 addPlusIconToMenuItem(menuItem);
             }
-            // sort the added (able to be removed)
-            Comparator<MenuItem> patternMenuComparator = (m1, m2) -> m1.getText().compareToIgnoreCase(m2.getText());
-            addedMenuItems.sort(patternMenuComparator);
-            membershipContextMenu.getItems().addAll(addedMenuItems);
-            // then add a menu line separator
-            membershipContextMenu.getItems().add(new SeparatorMenuItem());
+            if (!addedMenuItems.isEmpty()) {
+                // sort the added (able to be removed)
+                addedMenuItems.sort(patternMenuComparator);
+                membershipContextMenu.getItems().addAll(addedMenuItems);
+                // then add a menu line separator
+                membershipContextMenu.getItems().add(new SeparatorMenuItem());
+            }
             // then add the sorted removed (that can be added)
             removedMenuItems.sort(patternMenuComparator);
             membershipContextMenu.getItems().addAll(removedMenuItems);
@@ -470,6 +472,7 @@ public class DetailsController  {
     }
 
     private void addPlusIconToMenuItem(MenuItem menuItem) {
+        //TODO we anticipate creating a "minus" or "remove" icon in the future
         Region region = new Region();
         region.setPrefWidth(20);
         region.setPrefHeight(20);

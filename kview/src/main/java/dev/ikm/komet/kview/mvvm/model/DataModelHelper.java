@@ -124,9 +124,9 @@ public class DataModelHelper {
         }
     }
 
-    public static void removeFromMembershipPattern(EntityFacade concept, EntityFacade pattern, ViewCalculator viewCalculator) {
+    public static void removeFromMembershipPattern(int conceptNid, EntityFacade pattern, ViewCalculator viewCalculator) {
         EditCoordinate editCoordinate = viewCalculator.viewCoordinateRecord().editCoordinate();
-        int[] semanticNidsForComponent = PrimitiveData.get().semanticNidsForComponentOfPattern(concept.nid(), pattern.nid());
+        int[] semanticNidsForComponent = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptNid, pattern.nid());
         if (semanticNidsForComponent.length == 0) {
             // case 1: never a member
             throw new IllegalStateException("Asking to retire element that was never a member...");
