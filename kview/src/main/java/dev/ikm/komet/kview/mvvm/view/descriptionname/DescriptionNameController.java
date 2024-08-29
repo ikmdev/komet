@@ -17,11 +17,13 @@ package dev.ikm.komet.kview.mvvm.view.descriptionname;
 
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
-import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -32,15 +34,17 @@ import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
-import static dev.ikm.tinkar.terms.TinkarTerm.*;
+import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 
 public class DescriptionNameController {
 
@@ -115,11 +119,7 @@ public class DescriptionNameController {
         setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
         moduleComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(MODULE));
 
-        //TODO These are temp hard coded values:
-        // Can use below code later?
-        // setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId())); // Hard coded...
-
-        setupComboBox(statusComboBox, fetchStatusOpions()); // Hard coded...
+        setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
         statusComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(STATUS));
 
         //TODO These are temp hard coded values:
@@ -149,8 +149,8 @@ public class DescriptionNameController {
     @FXML
     private void handleCancelButtonEvent(ActionEvent actionEvent) {
         actionEvent.consume();
-        EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new ClosePropertiesPanelEvent(cancelButton,
-                ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
+        EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(),
+                new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         clearView();
     }
 
@@ -195,7 +195,7 @@ public class DescriptionNameController {
 
     public void clearView() {
         nameTextField.clear();
-        descrNameViewModel.setPropertyValue(STATUS, ACTIVE_STATE);
+        descrNameViewModel.setPropertyValue(STATUS, null);
         descrNameViewModel.setPropertyValue(MODULE, null);
         descrNameViewModel.setPropertyValue(CASE_SIGNIFICANCE, null);
         descrNameViewModel.setPropertyValue(LANGUAGE, null);
@@ -277,6 +277,7 @@ public class DescriptionNameController {
         if (descrNameViewModel.getPropertyValue(NAME_TYPE) == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE) {
             EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new PatternDescriptionEvent(submitButton,
                     PatternDescriptionEvent.PATTERN_ADD_FQN, descrNameViewModel.create()));
+
         } else if (descrNameViewModel.getPropertyValue(NAME_TYPE) == REGULAR_NAME_DESCRIPTION_TYPE) {
             EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new PatternDescriptionEvent(submitButton,
                     PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME, descrNameViewModel.create()));
