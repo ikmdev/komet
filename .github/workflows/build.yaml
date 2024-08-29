@@ -59,7 +59,7 @@ jobs:
        - name: Setup Java
          uses: actions/setup-java@v4
          with:
-            distribution: 'adopt'
+            distribution: 'zulu'
             java-version: '21'
 
        - name: Composite Action
