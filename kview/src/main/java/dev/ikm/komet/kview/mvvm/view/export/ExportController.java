@@ -50,6 +50,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.control.skin.DatePickerSkin;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -95,6 +96,9 @@ public class ExportController {
 
     @InjectViewModel
     private ExportViewModel exportViewModel;
+
+    @FXML
+    private TextField exportName;
 
     @FXML
     private ComboBox<String> exportOptions;
@@ -258,15 +262,12 @@ public class ExportController {
     void handleExport(ActionEvent exportEvent){
         exportEvent.consume();
 
-        exportButton.setDisable(true);
-
         String exportOption = exportOptions.getSelectionModel().getSelectedItem();
         FileChooser fileChooser = new FileChooser();
         //Date formatter for the desired date template
         String pattern = "yyyyMMdd-HHmm";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-        String initialFileName = "komet-%s.zip".formatted(simpleDateFormat.format(new Date()));
-        fileChooser.setInitialFileName(initialFileName);
+
 
         // get the from and to dates as millisecond long values
         long fromDate = transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM);
@@ -276,20 +277,26 @@ public class ExportController {
             fromDate = this.customFromEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()) : this.customFromEpochMillis;
             toDate = this.customToEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()) : this.customToEpochMillis;
         }
-
+        String namePrefix = exportName.getText().equals("") ? "komet" : exportName.getText();
+        String initialFileName = "%s-%s".formatted(namePrefix, simpleDateFormat.format(new Date()));
         if (exportOption.equalsIgnoreCase(CHANGE_SET)) {
+            initialFileName += ".zip";
             fileChooser.setTitle("Export file name as");
             //Making sure the zip is the only thing that is zipped up
             fileChooser.getExtensionFilters().addAll(
                     new FileChooser.ExtensionFilter("Zip Files", "*.zip"));
+            fileChooser.setInitialFileName(initialFileName);
             performChangeSetExport(fileChooser, fromDate, toDate);
         } else if (exportOption.equalsIgnoreCase(FHIR)) {
+            initialFileName += ".json";
             fileChooser.setTitle("Fhir File Exporter");
             fileChooser.getExtensionFilters().addAll(
                     new FileChooser.ExtensionFilter("Fhir Json Files", "*.json"));
+            fileChooser.setInitialFileName(initialFileName);
             // FHIR export
             performFhirExport(fileChooser, fromDate, toDate);
         }
+
     }
 
     private void performChangeSetExport(FileChooser fileChooser, long fromDate, long toDate) {
@@ -304,7 +311,6 @@ public class ExportController {
                         }else {
                             LOG.info("Export Completed");
                         }
-                        exportButton.setDisable(false);
                     });
             notifyProgressIndicator(completableFuture, "Export all data");
         }
@@ -337,7 +343,6 @@ public class ExportController {
         //Triggers the file chooser screen (where a user can choose a location)
         File exportFile = fileChooser.showSaveDialog(exportButton.getScene().getWindow());
         if (exportFile != null) {
-            exportButton.setDisable(true);
             Task<Void> exportTask = exportChangeSet(fromDate, toDate, exportFile);
             ProgressHelper.progress(exportTask, "Cancel Export");
         }
