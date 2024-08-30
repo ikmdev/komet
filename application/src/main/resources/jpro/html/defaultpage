@@ -4,7 +4,7 @@
 <head>
     <title>KOMET Web application</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="description" content="some description">
+    <meta name="description" content="Komet is a health care interoperability solution that seeks to translate and integrate terminology standards used in health care settings">
 
     <link rel="stylesheet" type="text/css" href="/jpro/css/jpro-fullscreen.css">
     <link rel="stylesheet" type="text/css" href="/jpro/css/jpro.css">
