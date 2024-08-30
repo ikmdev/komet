@@ -132,8 +132,8 @@ public class DataModelHelper {
     }
 
     /**
-     * a concept has many semantics, one can be a membership semantics
-     * in that semantic has a chronology with at least one version
+     * a concept has many semantics, one can be a membership semantic
+     * in that semantic, it will have a chronology with at least one version
      * that version can be active
      * to the user it is called remove, but in the database we are really appending a version
      * if we activate/inactivate we are appending versions
