@@ -59,12 +59,16 @@ import java.util.stream.Collectors;
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 /**
- * utitity class
+ * utitity class for accessing and modifying common data operations
  */
 public class DataModelHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataModelHelper.class);
 
+    /**
+     * data types for field definitions
+     * @return field definitions
+     */
     public static Set<ConceptEntity> fetchFieldDefinitionDataTypes() {
 
         return Set.of(
@@ -86,6 +90,10 @@ public class DataModelHelper {
         );
     }
 
+    /**
+     * return description types
+     * @return description types
+     */
     public static Set<ConceptEntity> fetchDescriptionTypes(){
         return Set.of(
                 Entity.getFast(FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()),
@@ -93,6 +101,12 @@ public class DataModelHelper {
         );
     }
 
+    /**
+     * return distinct collection of the descendants of a concept
+     * @param viewProperties viewProperties
+     * @param publicId public id for a concept
+     * @return distinct collection of the descendants of a concept
+     */
     public static Set<ConceptEntity> fetchDescendentsOfConcept(ViewProperties viewProperties, PublicId publicId) {
         IntIdSet decendents = viewProperties.calculator().descendentsOf(EntityService.get().nidForPublicId(publicId));
         Set<ConceptEntity> allDecendents = decendents.intStream()
@@ -101,6 +115,10 @@ public class DataModelHelper {
         return allDecendents;
     }
 
+    /**
+     * return the available membership patterns
+     * @return collection of membership patterns
+     */
     public static List<PatternEntityVersion> getMembershipPatterns() {
         List<PatternEntityVersion> membershipPatternList = new ArrayList<>();
         PrimitiveData.get().forEachPatternNid((patternNid) -> {
@@ -113,20 +131,28 @@ public class DataModelHelper {
         return membershipPatternList;
     }
 
-    public static boolean isInMembershipPattern(int conceptNid, int patternNid) {
-//        int[] semanticNidsForComponent = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptNid,
-//                patternNid);
-//        if (semanticNidsForComponent.length > 0) {
-//            Latest<EntityVersion> latestSemanticVersion = viewCalculator.latest(semanticNidsForComponent[0]);
-//            return latestSemanticVersion.isPresent();
-//        } else {
-//            return false;
-//        }
-        int[] semanticCount = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptNid, patternNid);
-        // if the semantic count is empty then it is not a member of that pattern
-        return semanticCount.length > 0;
+    /**
+     * a concept has many semantics, one can be a membership semantics
+     * in that semantic has a chronology with at least one version
+     * that version can be active
+     * to the user it is called remove, but in the database we are really appending a version
+     * if we activate/inactivate we are appending versions
+     * @param conceptNid nid from the conceptFacade
+     * @param patternNid nid from the patternFacade
+     * @param viewCalculator viewCaclculator for querying
+     * @return true if in the membership pattern, false otherwise
+     */
+    public static boolean isInMembershipPattern(int conceptNid, int patternNid, ViewCalculator viewCalculator) {
+        int[] semanticNidsForComponent = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptNid, patternNid);
+        return semanticNidsForComponent.length > 0 && viewCalculator.stampCalculator().isLatestActive(semanticNidsForComponent[0]);
     }
 
+    /**
+     * operation to add a concept into a membership pattern
+     * @param concept entityFacade for a concept that we are adding
+     * @param pattern the membership pattern that we are adding the concept to
+     * @param viewCalculator viewCaclculator for querying
+     */
     public static void addToMembershipPattern(EntityFacade concept, EntityFacade pattern, ViewCalculator viewCalculator) {
         EditCoordinate editCoordinate = viewCalculator.viewCoordinateRecord().editCoordinate();
         int[] semanticNidsForComponent = PrimitiveData.get().semanticNidsForComponentOfPattern(concept.nid(), pattern.nid());
@@ -139,6 +165,12 @@ public class DataModelHelper {
         }
     }
 
+    /**
+     * operation to remove a concept into a membership pattern
+     * @param conceptNid nid from the conceptFacade
+     * @param pattern the membership pattern that we are adding the concept from
+     * @param viewCalculator viewCaclculator for querying
+     */
     public static void removeFromMembershipPattern(int conceptNid, EntityFacade pattern, ViewCalculator viewCalculator) {
         EditCoordinate editCoordinate = viewCalculator.viewCoordinateRecord().editCoordinate();
         int[] semanticNidsForComponent = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptNid, pattern.nid());

@@ -333,8 +333,8 @@ public class DetailsController  {
             List<MenuItem> removedMenuItems = new ArrayList<>();
             for (PatternEntityVersion pattern : patterns) {
                 MenuItem menuItem = new MenuItem();
-                //if (isInMembershipPattern(currentConceptFacade.nid(), pattern.nid(), viewCalculator)) {
-                if (isInMembershipPattern(currentConceptFacade.nid(), pattern.nid())) {
+                if (isInMembershipPattern(currentConceptFacade.nid(), pattern.nid(), viewCalculator)) {
+                //if (isInMembershipPattern(currentConceptFacade.nid(), pattern.nid())) {
                     menuItem.setText("Remove from " + pattern.entity().description());
                     menuItem.setOnAction(evt -> removeFromMembershipPattern(currentConceptFacade.nid(), pattern.entity(), viewCalculator));
                     addedMenuItems.add(menuItem);
