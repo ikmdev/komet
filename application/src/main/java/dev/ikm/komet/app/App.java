@@ -831,6 +831,7 @@ public class App extends Application {
 
         MenuItem importMenuItem = new MenuItem("Import Dataset");
         importMenuItem.setOnAction(actionEvent -> doImportDataSet(stage));
+        fileMenu.getItems().add(importMenuItem);
 
         // Exporting data
         MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset");
