@@ -73,7 +73,7 @@ To run Komet with JPro in a Docker container, follow these steps:
         * Within the extracted directory, find the `docker-compose.yml` file.
         * Start the Docker container with Docker Compose by running:
           ```bash
-          docker-compose up -d
+          docker compose up -d
           ```
 5. The application should now be running in the Docker container. Access it by navigating to `http://localhost:8080`
    in your web browser. If running on a remote server, replace localhost with the server’s IP address.
