@@ -108,6 +108,10 @@
         </dependency>
         <dependency>
             <groupId>one.jpro.platform</groupId>
+            <artifactId>jpro-auth-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>one.jpro.platform</groupId>
             <artifactId>jpro-internal-util</artifactId>
         </dependency>
         <!-- End JPro related dependencies -->
@@ -239,9 +243,9 @@
                 <groupId>one.jpro</groupId>
                 <artifactId>jpro-maven-plugin</artifactId>
                 <configuration>
-                    <mainClassName>dev.ikm.komet.app.App</mainClassName>
+                    <mainClassName>dev.ikm.komet.app.WebApp</mainClassName>
                     <useModuleSystem>true</useModuleSystem>
-                    <releasePlatforms> <!-- Sets the platforms to be included in the zip generated via jpro:release  -->
+                    <releasePlatforms> <!-- Sets the platforms to be included in the zip generated via jpro:release -->
                         <releasePlatform>linux</releasePlatform> <!-- includes linux x64 builds -->
                         <releasePlatform>linux-aarch64</releasePlatform> <!-- includes linux aarch64 builds -->
                     </releasePlatforms>
