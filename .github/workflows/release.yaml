@@ -1,0 +1,35 @@
+name: Release Workflow
+
+run-name: "Releasing ${{ github.event.repository.name }} #${{github.run_number}}"
+
+# Trigger workflow manually
+on:
+  workflow_dispatch:
+
+env:
+  BRANCH_NAME: ${{github.ref_name}}
+  TRUNK_BRANCH_NAME: 'main'
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-24.04
+    if: github.repository_owner == 'ikmdev'
+    steps:
+      - name: Verify Branch
+        if: env.BRANCH_NAME != env.TRUNK_BRANCH_NAME
+        run: |
+          echo "ERROR: Attempting to release from branch ${{env.BRANCH_NAME}}. Release from ${{env.TRUNK_BRANCH_NAME}} branch only"
+          exit 1
+
+      - name: Release IKMDEV Code
+        id: release_ikmdev_codes
+        uses: ikmdev/maven-release-action@komet
+        with:
+          ikmdevops_pat: ${{secrets.IKMDEVOPS_PAT_TOKEN}}
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          ossrh_username: ${{secrets.OSSRH_TOKEN_USER}}
+          ossrh_token: ${{secrets.OSSRH_TOKEN_PASS}}
+          gpg_key: ${{secrets.GPG_KEY}}
+          gpg_passphrase: ${{secrets.GPG_PASSPHRASE}}
+            
