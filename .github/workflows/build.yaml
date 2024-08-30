@@ -9,109 +9,66 @@ on:
 
 env:
   BRANCH_NAME: ${{github.ref_name}}
+  IS_TAG: ${{contains(github.ref_type, 'tag')}}
 
 jobs:
   build-job:
     name: Build Job
     runs-on: ubuntu-24.04
+    outputs:
+      RELEASE_UPLOAD_URL: ${{steps.upload_url.outputs.RELEASE_UPLOAD_URL}}
     steps:
       - uses: actions/setup-java@v4
         with:
             java-version: '21'
             distribution: 'zulu'
+
       - name: Build IKMDEV Code
         uses: ikmdev/maven-clean-install-build-action@main
         with:
           branch_name: ${{env.BRANCH_NAME}}
 
-  installers_initialization:
-     name: Initializing Installers
-     runs-on: ubuntu-20.04
-     needs: build-job
-     outputs:
-        IS_SNAPSHOT: ${{ contains(steps.get_current_version.outputs.POM_VERSION, '-SNAPSHOT')}}
-        POM_VERSION: ${{ steps.get_current_version.outputs.POM_VERSION }}
-     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        
-      - name: Extract Version
-        id: get_current_version
-        run: |
-            echo "POM_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
-  
-      - name: Print Maven POM project version
-        run: |
-          echo "version = ${{ steps.get_current_version.outputs.POM_VERSION }}"
-
-      - name: Print Status
-        run: |
-          echo "IS_SNAPSHOT --  ${{ contains(steps.get_current_version.outputs.POM_VERSION, '-SNAPSHOT')}}"
-          echo "BRANCH_NAME -- ${{env.BRANCH_NAME}}"
-   
-  generating_installers_for_multiple_os:
-        strategy:
-          matrix:
-            os: [macos-13, macos-14, ubuntu-20.04, windows-2022]
-        needs: installers_initialization
-        name: "Generate Installers For ${{matrix.os}}"
-        runs-on: ${{matrix.os}}
-        steps:
-          - name: Current OS
-            run: echo "Current OS - ${{matrix.os}}"
-
-          - name: Checkout Repository
-            uses: actions/checkout@v4
+      - name: Get Release URL (Tag)
+        id: get_tag_release_url
+        if: env.IS_TAG == 'true'
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/${{github.repository}}/releases/tags/${{env.BRANCH_NAME}}
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+           
       
-          - name: Setup Java
-            uses: actions/setup-java@v4
-            with:
-              distribution: 'zulu'
-              java-version: '21'
+      - name: Print & Assign Release Upload Url (Tag)
+        if: env.IS_TAG == 'true'
+        id: upload_url
+        run: | 
+         echo "RELEASE_UPLOAD_URL=${{fromJson(steps.get_tag_release_url.outputs.data).upload_url}}" >> $GITHUB_OUTPUT
+     
 
-          - name: Generate Maven Installer Args (SNAPSHOT)
-            if: needs.installers_initialization.outputs.IS_SNAPSHOT == 'true'
-            uses: actions/github-script@v7
-            id: snapshot_installers_vars
-            with:
-              result-encoding: json
-              script: |
-                  //Get MacOS Suffix
+  generate_build_installers:
+    name: Generate Release Installers
+    needs: build-job
+    strategy:
+      matrix:
+        os: [macos-13, macos-14, ubuntu-20.04, windows-2022]
+    runs-on: ${{matrix.os}}
+    steps:
+       - name: Checkout Code Repository
+         uses: actions/checkout@v4
+    
+       - name: Setup Java
+         uses: actions/setup-java@v4
+         with:
+            distribution: 'zulu'
+            java-version: '21'
 
-                  var macos_suffix = '';
-                  if ("${{matrix.os}}".includes("macos")){
-                    macos_suffix = ("${{matrix.os}}".includes("13")) ? "-intel" : "-m1"
-                  }
-                  
-                  // Get OS Name
-                  const NODE_NAME = "${{matrix.os}}".includes("ubuntu") ? "linux" : "${{matrix.os}}".split('-')[0] + macos_suffix;
-                  
-
-                  var snapshotBranchName = 'main'; 
-                  if ("${{env.BRANCH_NAME}}" != "main"){
-                    try {
-                      snapshotBranchName = "${{env.BRANCH_NAME}}".split('/')[1].substring(0, Math.min("${{env.BRANCH_NAME}}".split('/')[1].length, 15))
-                    } catch(ex) {
-                      snapshotBranchName = "${{env.BRANCH_NAME}}".substring(0, Math.min("${{env.BRANCH_NAME}}".length, 15))
-                    }
-                  }
-                  
-
-                  const jpackageAppName = `Komet-SNAPSHOT-${NODE_NAME}-${snapshotBranchName}`;
-                  const jpackageAppVersion = "${{needs.installers_initialization.outputs.POM_VERSION}}".split('.')[0] + "." + "${{needs.installers_initialization.outputs.POM_VERSION}}".split('.')[1] + "." + "${{github.run_number}}"
-                  const mvnInstallerArgs = `-Pcreate-installer -D"jpackage.app.name"=${jpackageAppName} -D"jpackage.app.dest"=target/dist/snapshot-installer -D"jpackage.app.version"=${jpackageAppVersion}`
-
-
-                  return {jpackageAppName, jpackageAppVersion, mvnInstallerArgs};
-
-          - name: Build Installers (SNAPSHOT)
-            if: needs.installers_initialization.outputs.IS_SNAPSHOT == 'true'
-            run: |
-                 ./mvnw clean install ${{fromJson(steps.snapshot_installers_vars.outputs.result).mvnInstallerArgs}} -B -e -D"org.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener"=warn -D"maven.build.cache.enabled"=false -DskipTests -DskipITs
+       - name: Composite Action
+         uses: ./.github/installer_composite
+         with:
+            branch_name: ${{ env.BRANCH_NAME }}
+            isTag: ${{env.IS_TAG}}
+            release_upload_url: ${{ needs.build-job.outputs.RELEASE_UPLOAD_URL || '' }}
+            github_token: ${{secrets.GITHUB_TOKEN}}
+            operating_system: ${{matrix.os}}
         
-          - name: Upload SNAPSHOT Installers
-            uses: actions/upload-artifact@v4
-            if: needs.installers_initialization.outputs.IS_SNAPSHOT == 'true'
-            with:
-             name: ${{fromJson(steps.snapshot_installers_vars.outputs.result).jpackageAppName}}-${{fromJson(steps.snapshot_installers_vars.outputs.result).jpackageAppVersion}}
-             path: application/target/dist/snapshot-installer/*
+
