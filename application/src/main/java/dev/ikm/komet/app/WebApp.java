@@ -86,6 +86,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import one.jpro.platform.internal.util.PlatformUtils;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -300,7 +301,9 @@ public class WebApp extends Application {
                     AlertStreams.getRoot().dispatch(AlertObject.makeError(exception)));
 
             // Initialize the JPro WebAPI
-            webAPI = WebAPI.getWebAPI(stage);
+            if (IS_BROWSER) {
+                webAPI = WebAPI.getWebAPI(stage);
+            }
 
             setupMenus();
 
@@ -308,7 +311,7 @@ public class WebApp extends Application {
             stage.setScene(scene);
 
             if (state.get() == RUNNING) {
-                launchLandingPage();
+                launchLandingPage(stage);
             } else {
                 launchSelectDataSourcePage(stage);
             }
@@ -403,7 +406,7 @@ public class WebApp extends Application {
 
         // Export Dataset Menu Item
         MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset...");
-        exportDatasetMenuItem.setOnAction(actionEvent -> openExport());
+        exportDatasetMenuItem.setOnAction(actionEvent -> openExport(primaryStage));
 
         // Close Window Menu Item
         MenuItem closeWindowMenuItem = tk.createCloseWindowMenuItem();
@@ -486,14 +489,16 @@ public class WebApp extends Application {
     }
 
     private void doImportDataSet(Stage stage) {
-        File selectedFile = getFileFromChooser(stage);
-        // selectedFile is null if the user clicks cancel
-        if (selectedFile != null) {
-            try {
-                LoadEntitiesFromProtobufFile loadEntities = new LoadEntitiesFromProtobufFile(selectedFile);
-                ProgressHelper.progress(loadEntities, "Cancel Import");
-            } catch (Exception e) {
-                LOG.error(e.getLocalizedMessage(), e);
+        if (IS_DESKTOP) { // TODO: Use JPro File module to handle file operations for desktop and browser
+            File selectedFile = getFileFromChooser(stage);
+            // selectedFile is null if the user clicks cancel
+            if (selectedFile != null) {
+                try {
+                    LoadEntitiesFromProtobufFile loadEntities = new LoadEntitiesFromProtobufFile(selectedFile);
+                    ProgressHelper.progress(loadEntities, "Cancel Import");
+                } catch (Exception e) {
+                    LOG.error(e.getLocalizedMessage(), e);
+                }
             }
         }
     }
@@ -507,7 +512,7 @@ public class WebApp extends Application {
         return fileChooser.showOpenDialog(stage);
     }
 
-    private void launchLandingPage() {
+    private void launchLandingPage(Stage stage) {
         try {
             KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
             KometPreferences windowPreferences = appPreferences.node("main-komet-window");
@@ -520,7 +525,7 @@ public class WebApp extends Application {
                 createMenuOptions(landingPageBorderPane);
             }
 
-            Scene sourceScene = primaryStage.getScene();
+            Scene sourceScene = stage.getScene();
             sourceScene.getStylesheets().addAll(
                     Objects.requireNonNull(graphicsModule.getClassLoader().getResource(CSS_LOCATION)).toString(),
                     CssHelper.defaultStyleSheet());
@@ -528,9 +533,9 @@ public class WebApp extends Application {
             LandingPageController landingPageController = landingPageLoader.getController();
             attachCSSRefresher(landingPageController.getSettingsToggleButton(), landingPageBorderPane);
 
-            primaryStage.setTitle("Landing Page");
-            primaryStage.setMaximized(true);
-            primaryStage.setOnCloseRequest(windowEvent -> {
+            stage.setTitle("Landing Page");
+            stage.setMaximized(true);
+            stage.setOnCloseRequest(windowEvent -> {
                 state.set(SHUTDOWN);
                 landingPageController.cleanup();
             });
@@ -776,7 +781,7 @@ public class WebApp extends Application {
                     Platform.runLater(() -> state.set(LOADING_DATA_SOURCE));
                     TinkExecutor.threadPool().submit(new LoadDataSourceTask(state));
                 }
-                case RUNNING -> launchLandingPage();
+                case RUNNING -> launchLandingPage(primaryStage);
                 case SHUTDOWN -> quit();
             }
         } catch (Throwable e) {
@@ -871,11 +876,12 @@ public class WebApp extends Application {
         }
     }
 
-    private void openExport() {
+    private void openExport(Window owner) {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
         Stage exportStage = new Stage();
+        exportStage.initOwner(owner);
         //set up ExportViewModel
         Config exportConfig = new Config(ExportController.class.getResource("export.fxml"))
                 .updateViewModel("exportViewModel", (exportViewModel) ->
@@ -893,29 +899,29 @@ public class WebApp extends Application {
         Menu fileMenu = new Menu("File");
 
         MenuItem about = new MenuItem("About");
-        about.setOnAction(actionEvent -> showWindowsAboutScreen());
+        about.setOnAction(actionEvent -> showWindowsAboutScreen(stage));
         fileMenu.getItems().add(about);
 
+        // Importing data
         MenuItem importMenuItem = new MenuItem("Import Dataset");
         importMenuItem.setOnAction(actionEvent -> doImportDataSet(stage));
+        fileMenu.getItems().add(importMenuItem);
 
         // Exporting data
         MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset");
-        exportDatasetMenuItem.setOnAction(actionEvent -> openExport());
+        exportDatasetMenuItem.setOnAction(actionEvent -> openExport(stage));
         fileMenu.getItems().add(exportDatasetMenuItem);
 
-        if (IS_DESKTOP) {
-            MenuItem menuItemQuit = new MenuItem("Quit");
-            KeyCombination quitKeyCombo = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
-            menuItemQuit.setOnAction(actionEvent -> quit());
-            menuItemQuit.setAccelerator(quitKeyCombo);
-            fileMenu.getItems().add(menuItemQuit);
-        }
+        MenuItem menuItemQuit = new MenuItem("Quit");
+        KeyCombination quitKeyCombo = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
+        menuItemQuit.setOnAction(actionEvent -> quit());
+        menuItemQuit.setAccelerator(quitKeyCombo);
+        fileMenu.getItems().add(menuItemQuit);
 
         Menu editMenu = new Menu("Edit");
         MenuItem landingPage = new MenuItem("Landing Page");
         KeyCombination landingPageKeyCombo = new KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN);
-        landingPage.setOnAction(actionEvent -> launchLandingPage());
+        landingPage.setOnAction(actionEvent -> launchLandingPage(primaryStage));
         landingPage.setAccelerator(landingPageKeyCombo);
         editMenu.getItems().add(landingPage);
 
@@ -936,9 +942,9 @@ public class WebApp extends Application {
         Platform.runLater(() -> kometRoot.setTop(menuBar));
     }
 
-    private void showWindowsAboutScreen() {
+    private void showWindowsAboutScreen(Window owner) {
         Stage aboutWindow = new Stage();
-        aboutWindow.initOwner(primaryStage);
+        aboutWindow.initOwner(owner);
         Label kometLabel = new Label("Komet");
         kometLabel.setFont(new Font("Open Sans", 24));
         Label copyright = new Label("Copyright \u00a9 " + Year.now().getValue());
@@ -982,16 +988,14 @@ public class WebApp extends Application {
 
         Menu fileMenu = new Menu("File");
         MenuItem about = new MenuItem("About");
-        about.setOnAction(actionEvent -> showWindowsAboutScreen());
+        about.setOnAction(actionEvent -> showWindowsAboutScreen(primaryStage));
         fileMenu.getItems().add(about);
 
-        if (IS_DESKTOP) {
-            MenuItem menuItemQuit = new MenuItem("Quit");
-            KeyCombination quitKeyCombo = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
-            menuItemQuit.setOnAction(actionEvent -> quit());
-            menuItemQuit.setAccelerator(quitKeyCombo);
-            fileMenu.getItems().add(menuItemQuit);
-        }
+        MenuItem menuItemQuit = new MenuItem("Quit");
+        KeyCombination quitKeyCombo = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
+        menuItemQuit.setOnAction(actionEvent -> quit());
+        menuItemQuit.setAccelerator(quitKeyCombo);
+        fileMenu.getItems().add(menuItemQuit);
 
         Menu viewMenu = new Menu("View");
         MenuItem classicKometMenuItem = createClassicKometMenuItem();
