@@ -70,6 +70,7 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
@@ -332,7 +333,8 @@ public class DetailsController  {
             List<MenuItem> removedMenuItems = new ArrayList<>();
             for (PatternEntityVersion pattern : patterns) {
                 MenuItem menuItem = new MenuItem();
-                if (isInMembershipPattern(currentConceptFacade.nid(), pattern.nid())) {
+                if (isInMembershipPattern(currentConceptFacade.nid(), pattern.nid(), viewCalculator)) {
+                //if (isInMembershipPattern(currentConceptFacade.nid(), pattern.nid())) {
                     menuItem.setText("Remove from " + pattern.entity().description());
                     menuItem.setOnAction(evt -> removeFromMembershipPattern(currentConceptFacade.nid(), pattern.entity(), viewCalculator));
                     addedMenuItems.add(menuItem);
