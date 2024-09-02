@@ -916,6 +916,7 @@ public class WebApp extends Application {
         KeyCombination quitKeyCombo = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
         menuItemQuit.setOnAction(actionEvent -> quit());
         menuItemQuit.setAccelerator(quitKeyCombo);
+        menuItemQuit.setDisable(IS_BROWSER);
         fileMenu.getItems().add(menuItemQuit);
 
         Menu editMenu = new Menu("Edit");
@@ -923,6 +924,7 @@ public class WebApp extends Application {
         KeyCombination landingPageKeyCombo = new KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN);
         landingPage.setOnAction(actionEvent -> launchLandingPage(primaryStage));
         landingPage.setAccelerator(landingPageKeyCombo);
+        landingPage.setDisable(IS_BROWSER);
         editMenu.getItems().add(landingPage);
 
         Menu windowMenu = new Menu("Window");
@@ -933,6 +935,7 @@ public class WebApp extends Application {
             obj.setIconified(true);
         });
         minimizeWindow.setAccelerator(minimizeKeyCombo);
+        minimizeWindow.setDisable(IS_BROWSER);
         windowMenu.getItems().add(minimizeWindow);
 
         menuBar.getMenus().add(fileMenu);
@@ -995,6 +998,7 @@ public class WebApp extends Application {
         KeyCombination quitKeyCombo = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
         menuItemQuit.setOnAction(actionEvent -> quit());
         menuItemQuit.setAccelerator(quitKeyCombo);
+        menuItemQuit.setDisable(IS_BROWSER);
         fileMenu.getItems().add(menuItemQuit);
 
         Menu viewMenu = new Menu("View");
@@ -1009,6 +1013,7 @@ public class WebApp extends Application {
             obj.setIconified(true);
         });
         minimizeWindow.setAccelerator(minimizeKeyCombo);
+        minimizeWindow.setDisable(IS_BROWSER);
         windowMenu.getItems().add(minimizeWindow);
 
         menuBar.getMenus().add(fileMenu);
