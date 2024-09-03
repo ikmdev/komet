@@ -17,6 +17,8 @@ package dev.ikm.komet.app.test;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE;
 import static dev.ikm.tinkar.terms.TinkarTerm.ENGLISH_LANGUAGE;
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.ServiceKeys;
@@ -25,6 +27,8 @@ import dev.ikm.tinkar.composer.Composer;
 import dev.ikm.tinkar.composer.Session;
 import dev.ikm.tinkar.composer.assembler.PatternAssembler;
 import dev.ikm.tinkar.composer.template.FullyQualifiedName;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
@@ -32,6 +36,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.Optional;
+import java.util.UUID;
 
 public class PatternViewModelTest {
 
@@ -77,14 +83,15 @@ public class PatternViewModelTest {
     public void savePatternDefinition() {
         Composer composer = new Composer("Test Save Pattern Definition");
 
-        State status = null;
-        long time = Long.MIN_VALUE; //FIXME
-        EntityProxy.Concept author = null; //???
-        EntityProxy.Concept module = null;
-        EntityProxy.Concept path = null;
+        State status = State.ACTIVE;
+        long time = Long.MIN_VALUE;
 
-        EntityProxy.Concept patternMeaning = null; // find a meaning
-        EntityProxy.Concept patternPurpose = null;
+        EntityProxy.Concept author = EntityProxy.Concept.make(UUID.randomUUID().toString());
+        EntityProxy.Concept module = EntityProxy.Concept.make(UUID.randomUUID().toString());
+        EntityProxy.Concept path = EntityProxy.Concept.make(UUID.randomUUID().toString());
+
+        EntityProxy.Concept patternMeaning = EntityProxy.Concept.make(UUID.randomUUID().toString()); // find a meaning
+        EntityProxy.Concept patternPurpose = EntityProxy.Concept.make(UUID.randomUUID().toString());
 
         Session session = composer.open(status, time, author, module, path);
 
@@ -93,6 +100,5 @@ public class PatternViewModelTest {
                 .purpose(patternPurpose));
 
         composer.commitSession(session);
-
     }
 }
