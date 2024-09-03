@@ -313,6 +313,8 @@ public class WebApp extends Application {
             if (state.get() == RUNNING) {
                 launchLandingPage(stage);
             } else {
+                state.set(AppState.SELECT_DATA_SOURCE);
+                state.addListener(this::appStateChangeListener);
                 launchSelectDataSourcePage(stage);
             }
 
@@ -325,8 +327,6 @@ public class WebApp extends Application {
 
             // Show stage and set initial state
             stage.show();
-            state.set(AppState.SELECT_DATA_SOURCE);
-            state.addListener(this::appStateChangeListener);
         } catch (Exception ex) {
             LOG.error("Failed to initialize the application", ex);
             Platform.exit();
@@ -337,8 +337,10 @@ public class WebApp extends Application {
     public void stop() {
         LOG.info("Stopping application\n\n###############\n\n");
 
-        // close all journal windows
-        journalControllersList.forEach(JournalController::close);
+        if (IS_DESKTOP) {
+            // close all journal windows
+            journalControllersList.forEach(JournalController::close);
+        }
     }
 
     private StackPane createRootPane(Node... children) {
