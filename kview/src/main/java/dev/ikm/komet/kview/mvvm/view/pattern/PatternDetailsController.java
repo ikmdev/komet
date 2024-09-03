@@ -32,8 +32,6 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -235,33 +233,16 @@ public class PatternDetailsController {
 
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
 
-        ObjectProperty<DescrName> objectProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME);
-        objectProperty.addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue observableValue, Object o, Object t1) {
-                DescrName descrName = (DescrName) t1;
-                fqnDescriptionSemanticText.setText(" (%s)".formatted(generateDescriptionSemantics(descrName)));
-                fqnDescriptionSemanticText.getStyleClass().add("descr-semantic");
-            }
+        ObjectProperty<DescrName> fqnNameProp = patternViewModel.getProperty(FQN_DESCRIPTION_NAME);
+        fqnNameProp.addListener((observableValue, oldDescrName, newDescrName) ->  {
+            fqnDescriptionSemanticText.setText(" (%s)".formatted(generateDescriptionSemantics(newDescrName)));
+            String dateAddedStr = newDescrName.getNameText().isEmpty()? "": LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
+            fqnAddDateLabel.setText(dateAddedStr);
         });
 
         // Set the visibility for the menuitem based on the FQN text..
         StringProperty fqnDescrText = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
         addFqnMenuItem.visibleProperty().bind(fqnDescrText.isEmpty());
-        //Update the date.
-        fqnDescrText.addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
-                if(!t1.isEmpty()){
-                    String dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-                    fqnAddDateLabel.setText(dateAddedStr);
-                    fqnAddDateLabel.getStyleClass().add("text-noto-sans-normal-grey-eight");
-                }else {
-                    fqnAddDateLabel.setText("");
-                }
-            }
-        });
-
         // Update Other names section based on changes in List.
         ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
         descrNameObservableList.addListener(new ListChangeListener<DescrName>() {
@@ -301,10 +282,11 @@ public class PatternDetailsController {
         setupProperties();
     }
 
-    /**     *
+    /**
+     * This method Retrives language and case semantics.
      * @param descrName
      * @return String.
-     * Retrive language and case semantics.
+     *
      */
 
     private String generateDescriptionSemantics(DescrName descrName){

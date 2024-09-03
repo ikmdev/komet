@@ -243,9 +243,6 @@
                                           <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="212.0" prefWidth="408.0" HBox.hgrow="ALWAYS">
                                              <children>
                                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="pattern-title" text="FULLY QUALIFIED NAME:">
-                                                   <font>
-                                                      <Font name="Open Sans" size="13.0" />
-                                                   </font>
                                                 </Text>
                                                 <VBox>
                                                    <children>
@@ -277,9 +274,6 @@
                                           <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="211.0" prefWidth="357.0" HBox.hgrow="SOMETIMES">
                                              <children>
                                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="pattern-title" text="OTHER NAMES:">
-                                                   <font>
-                                                      <Font name="Open Sans Bold" size="14.0" />
-                                                   </font>
                                                 </Text>
                                                 <VBox fx:id="otherNamesVBox">
                                                    <children>
