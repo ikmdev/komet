@@ -91,7 +91,6 @@
         <dependency>
             <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>composer</artifactId>
-            <version>${tinkar-composer.version}</version>
         </dependency>
         <dependency>
             <groupId>org.controlsfx</groupId>

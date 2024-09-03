@@ -17,8 +17,6 @@ package dev.ikm.komet.app.test;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE;
 import static dev.ikm.tinkar.terms.TinkarTerm.ENGLISH_LANGUAGE;
-import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.ServiceKeys;
@@ -27,8 +25,6 @@ import dev.ikm.tinkar.composer.Composer;
 import dev.ikm.tinkar.composer.Session;
 import dev.ikm.tinkar.composer.assembler.PatternAssembler;
 import dev.ikm.tinkar.composer.template.FullyQualifiedName;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
@@ -36,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Optional;
 import java.util.UUID;
 
 public class PatternViewModelTest {

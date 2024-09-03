@@ -139,6 +139,11 @@
                 <version>${tinkar-core.version}</version>
             </dependency>
             <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>composer</artifactId>
+                <version>${tinkar-composer.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>kview</artifactId>
                 <version>${project.version}</version>
