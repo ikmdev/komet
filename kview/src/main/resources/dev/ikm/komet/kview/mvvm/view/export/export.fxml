@@ -26,7 +26,7 @@
             <Label styleClass="grey9-14pt-normal" text="Name Export" />
             <HBox spacing="11.0">
                <children>
-                  <TextField prefHeight="32.0" prefWidth="474.0" promptText="Enter name" styleClass="text-field-grey6" HBox.hgrow="ALWAYS" />
+                  <TextField fx:id="exportName" prefHeight="32.0" prefWidth="474.0" promptText="Enter name" styleClass="text-field-grey6" HBox.hgrow="ALWAYS" />
                   <ComboBox fx:id="exportOptions" prefHeight="32.0" prefWidth="150.0" styleClass="white-combo-grey-arrow" />
                </children>
             </HBox>
