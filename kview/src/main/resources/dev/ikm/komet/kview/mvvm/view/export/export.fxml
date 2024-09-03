@@ -116,7 +116,7 @@
                   <Insets bottom="4.0" left="16.0" right="16.0" top="4.0" />
                </opaqueInsets>
             </Button>
-            <Button fx:id="exportButton" mnemonicParsing="false" onAction="#handleExport" prefHeight="25.0" prefWidth="76.0" styleClass="grey7bg-grey2text" text="EXPORT" textFill="#e1e6f8">
+            <Button fx:id="exportButton" mnemonicParsing="false" onAction="#handleExport" prefHeight="25.0" prefWidth="76.0" styleClass="grey-blue-button" text="EXPORT" textFill="#e1e6f8">
                <font>
                   <Font size="13.0" />
                </font>

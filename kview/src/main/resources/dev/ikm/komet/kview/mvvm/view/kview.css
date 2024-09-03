@@ -2381,25 +2381,66 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-weight: bold;
     -fx-font-family: "Noto Sans";
 }
-
-.blue-arrow-combo-box-grey11 .list-cell {
+/*
+.blue-arrow-combo-box-grey11.combo-box {
     -fx-text-fill: -Grey-11;
+    -fx-fill:-Grey-11;
+    -fx-color: -Grey-11;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
     -fx-font-weight: 500;   
-    -fx-background-color: -Grey-1;
+    -fx-background-color: white;
 }
+
+.blue-arrow-combo-box-grey11.combo-box > .list-cell {
+    -fx-text-fill: white;
+    -fx-fill:white;
+    -fx-color: white;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;   
+    -fx-background-color: -Grey-11;
+    -width-size: 122px;
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+}
+
+.blue-arrow-combo-box-grey11.combo-box .combo-box-popup .list-cell > .text-flow > .text {
+    -fx-text-fill: white;
+    -fx-fill: white;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;   
+    -fx-background-color: -Grey-11;
+}
+
 
 .blue-arrow-combo-box-grey11.combo-box-base {
     -fx-border-radius: 4;
     -fx-border-color: -Grey-5;
-    -fx-background-color: -Grey-1;
+    -fx-background-color: -Grey-1;    
 }
 
 .blue-arrow-combo-box-grey11.combo-box-base > .arrow-button > .arrow {    
     -fx-background-color: -Secondary-05;    
     -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
+}
+*/
+.green-checkmark {
+    -width-size: 20px;
+    -height-size: 20px;
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+    -fx-min-height: -height-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+    -fx-background-color: -Primary-04;
+    -fx-shape: "M7.49989 13.4749L4.02489 9.99987L2.84155 11.1749L7.49989 15.8332L17.4999 5.8332L16.3249 4.6582L7.49989 13.4749Z";
 }
 
 .tag-container {
@@ -2470,10 +2511,16 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-4;
 }
 
-.grey7bg-grey2text {
+.grey-blue-button:disabled {
     -fx-border-radius: 4;
     -fx-background-color: -Grey-7;
     -fx-fill: -Grey-2;
+}
+
+.grey-blue-button {
+    -fx-border-radius: 4;
+    -fx-background-color: -Secondary-05;
+    -fx-fill: white;
 }
 
 /*********************************************************************************

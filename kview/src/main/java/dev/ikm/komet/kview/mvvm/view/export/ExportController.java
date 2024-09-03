@@ -53,6 +53,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.skin.DatePickerSkin;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
@@ -91,6 +94,10 @@ public class ExportController {
 
     private static final String CUSTOM_RANGE = "Custom Range";
 
+    private TextFlow currentDate;
+
+    private TextFlow customRange;
+
     private static final String CURRENT_DATE_TIME_RANGE_FROM = "01/01/2022, 12:00 AM";
 
     @InjectViewModel
@@ -103,7 +110,7 @@ public class ExportController {
     private ComboBox<EntityFacade> pathOptions;
 
     @FXML
-    private ComboBox<String> timePeriodComboBox;
+    private ComboBox<TextFlow> timePeriodComboBox;
 
     @FXML
     private HBox dateTimePickerHbox;
@@ -193,8 +200,25 @@ public class ExportController {
     }
 
     public void setupDateTimeExportComboBox() {
-        timePeriodComboBox.setValue(CURRENT_DATE);
-        timePeriodComboBox.getItems().addAll(CURRENT_DATE, CUSTOM_RANGE);
+
+        Region greenCheckRegion = new Region();
+        greenCheckRegion.getStyleClass().add("green-checkmark");
+        Text curDateText = new Text(CURRENT_DATE);
+        Text customRangeText = new Text(CUSTOM_RANGE);
+        currentDate = new TextFlow(curDateText);
+        customRange = new TextFlow(customRangeText);
+        timePeriodComboBox.setValue(currentDate);
+        timePeriodComboBox.getItems().addAll(currentDate, customRange);
+//        timePeriodComboBox.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
+//            timePeriodComboBox.getSelectionModel().getSelectedItem().getChildren().add(greenCheckRegion);
+//
+//            timePeriodComboBox.getItems().stream().forEach(item -> {
+//                if (item != timePeriodComboBox.getSelectionModel().getSelectedItem()) {
+//                    item.getChildren().remove(greenCheckRegion);
+//                }
+//            });
+//
+//        }));
         dateTimePickerHbox.setVisible(false);
         handleCurrentDateTimeExport();
     }
@@ -238,6 +262,7 @@ public class ExportController {
     public void handleCurrentDateTimeExport() {
         // Responsible for showing/hiding custom date range controls
         timePeriodComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
+            //FIXME
             if (timePeriodComboBox.getValue().equals("Current Date")) {
                 // Hide custom date range controls
                 dateTimePickerHbox.setVisible(false);
@@ -271,7 +296,8 @@ public class ExportController {
         // get the from and to dates as millisecond long values
         long fromDate = transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM);
         long toDate =  System.currentTimeMillis();
-        String dateChoice = timePeriodComboBox.getSelectionModel().getSelectedItem();
+        TextFlow dateChoice = timePeriodComboBox.getSelectionModel().getSelectedItem();
+        //FIXME get the text inside the textFlow
         if (CUSTOM_RANGE.equals(dateChoice)) {
             fromDate = this.customFromEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()) : this.customFromEpochMillis;
             toDate = this.customToEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()) : this.customToEpochMillis;
