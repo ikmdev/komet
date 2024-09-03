@@ -233,16 +233,16 @@ public class PatternDetailsController {
 
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
 
+        // Bind FQN property with description text, date and FQN menu item.
         ObjectProperty<DescrName> fqnNameProp = patternViewModel.getProperty(FQN_DESCRIPTION_NAME);
-        fqnNameProp.addListener((observableValue, oldDescrName, newDescrName) ->  {
-            fqnDescriptionSemanticText.setText(" (%s)".formatted(generateDescriptionSemantics(newDescrName)));
-            String dateAddedStr = newDescrName.getNameText().isEmpty()? "": LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-            fqnAddDateLabel.setText(dateAddedStr);
-        });
+        // Generate description semantic and show
+        fqnDescriptionSemanticText.textProperty().bind(fqnNameProp.map(descrName -> " (%s)".formatted(generateDescriptionSemantics(descrName))).orElse(""));
+        // display current date else blank.
+        fqnAddDateLabel.textProperty().bind(fqnNameProp.map((fqnName) -> LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"))).orElse(""));
+        // hide menu item if FQN is added.
+        addFqnMenuItem.visibleProperty().bind(fqnNameProp.map(fqnname -> fqnname.getNameText().isEmpty()).orElse(true));
 
-        // Set the visibility for the menuitem based on the FQN text..
-        StringProperty fqnDescrText = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
-        addFqnMenuItem.visibleProperty().bind(fqnDescrText.isEmpty());
+
         // Update Other names section based on changes in List.
         ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
         descrNameObservableList.addListener(new ListChangeListener<DescrName>() {
