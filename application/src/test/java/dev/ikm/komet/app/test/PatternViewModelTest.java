@@ -78,10 +78,11 @@ public class PatternViewModelTest {
         });
     }
 
-    private void savePattern() {
-    }
 
-    public void savePatternDefinition() {
+    /**
+     * test creating a pattern using the composer API
+     */
+    public void savePattern() {
         Composer composer = new Composer("Test Save Pattern Definition");
 
         State status = State.ACTIVE;
