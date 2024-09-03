@@ -67,9 +67,7 @@ public class PatternViewModelTest {
             setUpBefore();
             try {
                 PatternViewModelTest testHarness = new PatternViewModelTest();
-                testHarness.savePatternDefinition();
-                //TODO save patternDescription
-                //TODO save patternFields
+                testHarness.savePattern();
             } catch (Throwable e) {
                 e.printStackTrace();
                 tearDownAfter();
@@ -78,6 +76,9 @@ public class PatternViewModelTest {
             tearDownAfter();
             System.exit(0);
         });
+    }
+
+    private void savePattern() {
     }
 
     public void savePatternDefinition() {
@@ -95,9 +96,18 @@ public class PatternViewModelTest {
 
         Session session = composer.open(status, time, author, module, path);
 
+        EntityProxy.Concept fieldMeaning = EntityProxy.Concept.make(UUID.randomUUID().toString());
+        EntityProxy.Concept fieldPurpose = EntityProxy.Concept.make(UUID.randomUUID().toString());
+        EntityProxy.Concept fieldDataType = EntityProxy.Concept.make(UUID.randomUUID().toString());
         session.compose((PatternAssembler patternAssembler) -> patternAssembler
                 .meaning(patternMeaning)
-                .purpose(patternPurpose));
+                .purpose(patternPurpose)
+                .fieldDefinition(fieldMeaning, fieldPurpose, fieldDataType)
+                .attach((FullyQualifiedName fqn) -> fqn
+                        .language(ENGLISH_LANGUAGE)
+                        .text("FQN for Pattern")
+                        .caseSignificance(DESCRIPTION_NOT_CASE_SENSITIVE))
+        );
 
         composer.commitSession(session);
     }
