@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
@@ -59,7 +61,14 @@
             <Label styleClass="grey9-14pt-normal" text="Time Period" />
             <HBox spacing="12.0">
                <children>
-                  <ComboBox fx:id="timePeriodComboBox" prefHeight="28.0" prefWidth="172.0" styleClass="blue-arrow-combo-box-grey11" visibleRowCount="12" />
+                  <ComboBox fx:id="timePeriodComboBox" prefHeight="28.0" prefWidth="172.0" styleClass="blue-arrow-combo-box-grey11" visibleRowCount="12">
+                     <items>
+                        <FXCollections fx:factory="observableArrayList">
+                           <String fx:value="Current Date" />
+                           <String fx:value="Custom Range" />
+                        </FXCollections>
+                     </items>
+                  </ComboBox>
                   <HBox fx:id="dateTimePickerHbox">
                      <children>
                         <HBox alignment="CENTER" spacing="1.0">

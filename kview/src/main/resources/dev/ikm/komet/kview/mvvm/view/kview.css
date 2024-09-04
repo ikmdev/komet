@@ -2381,43 +2381,21 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-weight: bold;
     -fx-font-family: "Noto Sans";
 }
-/*
-.blue-arrow-combo-box-grey11.combo-box {
-    -fx-text-fill: -Grey-11;
-    -fx-fill:-Grey-11;
-    -fx-color: -Grey-11;
-    -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
-    -fx-font-style: normal;
-    -fx-font-weight: 500;   
-    -fx-background-color: white;
+
+/* date selection combo box used by export */
+.blue-arrow-combo-box-grey11.combo-box > .combo-box-popup  {
+    -fx-background-radius: 8;    
 }
 
-.blue-arrow-combo-box-grey11.combo-box > .list-cell {
-    -fx-text-fill: white;
-    -fx-fill:white;
-    -fx-color: white;
-    -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
-    -fx-font-style: normal;
-    -fx-font-weight: 500;   
-    -fx-background-color: -Grey-11;
-    -width-size: 122px;
-    -fx-min-width: -width-size;
-    -fx-pref-width: -width-size;
-    -fx-max-width: -width-size;
-}
-
-.blue-arrow-combo-box-grey11.combo-box .combo-box-popup .list-cell > .text-flow > .text {
+.blue-arrow-combo-box-grey11.combo-box .combo-box-popup .list-cell  {
     -fx-text-fill: white;
     -fx-fill: white;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
     -fx-font-weight: 500;   
-    -fx-background-color: -Grey-11;
+    -fx-background-color: -Grey-11;    
 }
-
 
 .blue-arrow-combo-box-grey11.combo-box-base {
     -fx-border-radius: 4;
@@ -2429,7 +2407,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Secondary-05;    
     -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
 }
-*/
+
 .green-checkmark {
     -width-size: 20px;
     -height-size: 20px;
