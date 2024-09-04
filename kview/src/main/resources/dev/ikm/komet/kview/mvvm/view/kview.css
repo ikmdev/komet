@@ -2383,11 +2383,17 @@ Timeline Year line segment (will overlay change circles)
 }
 
 /* date selection combo box used by export */
-.blue-arrow-combo-box-grey11.combo-box > .combo-box-popup  {
-    -fx-background-radius: 8;    
+/* .blue-arrow-combo-box-grey11.combo-box > .combo-box-popup  {    
+    -fx-background-radius: 8;     
+} */
+
+.blue-arrow-combo-box-grey11.combo-box .combo-box-popup .list-view {
+    -fx-background-color: -Grey-11;    
+    -fx-background-insets: 8; 
+    -fx-background-radius: 8;     
 }
 
-.blue-arrow-combo-box-grey11.combo-box .combo-box-popup .list-cell  {
+/* .blue-arrow-combo-box-grey11.combo-box .combo-box-popup .list-cell  {    
     -fx-text-fill: white;
     -fx-fill: white;
     -fx-font-family: "Noto Sans";
@@ -2395,7 +2401,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-style: normal;
     -fx-font-weight: 500;   
     -fx-background-color: -Grey-11;    
-}
+} */
 
 .blue-arrow-combo-box-grey11.combo-box-base {
     -fx-border-radius: 4;
