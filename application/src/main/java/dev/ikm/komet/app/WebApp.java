@@ -313,8 +313,6 @@ public class WebApp extends Application {
                 webAPI = WebAPI.getWebAPI(stage);
             }
 
-            setupMenus();
-
             Scene scene = new Scene(rootPane, 600, 400);
             stage.setScene(scene);
 
@@ -368,8 +366,8 @@ public class WebApp extends Application {
     }
 
     private void setupMenus() {
-        Menu kometAppMenu;
         MenuToolkit menuToolkit = MenuToolkit.toolkit();
+        Menu kometAppMenu;
         if (IS_MAC) {
             kometAppMenu = menuToolkit.createDefaultApplicationMenu("Komet");
         } else {
@@ -383,26 +381,31 @@ public class WebApp extends Application {
         if (IS_MAC) {
             kometAppMenu.getItems().add(2, prefsItem);
             kometAppMenu.getItems().add(3, new SeparatorMenuItem());
+            MenuItem appleQuit = kometAppMenu.getItems().getLast();
+            appleQuit.setOnAction(event -> quit());
         } else {
             kometAppMenu.getItems().addAll(prefsItem, new SeparatorMenuItem());
         }
-        // Assign quit action to the last menu item in the Komet application menu
-        kometAppMenu.getItems().getLast().setOnAction(event -> quit());
 
-        Menu fileMenu = createFileMenu(menuToolkit);
-        Menu editMenu = createEditMenu();
-        Menu viewMenu = createViewMenu();
+        MenuBar menuBar = new MenuBar(kometAppMenu);
+
+        if (state.get() == RUNNING) {
+            Menu fileMenu = createFileMenu(menuToolkit);
+            Menu editMenu = createEditMenu();
+            Menu viewMenu = createViewMenu();
+            menuBar.getMenus().addAll(fileMenu, editMenu, viewMenu);
+        }
+
         Menu windowMenu = createWindowMenu(menuToolkit);
         Menu helpMenu = createHelpMenu();
-
-        MenuBar bar = new MenuBar(kometAppMenu, fileMenu, editMenu, viewMenu, windowMenu, helpMenu);
+        menuBar.getMenus().addAll(windowMenu, helpMenu);
 
         if (IS_MAC) {
             menuToolkit.setApplicationMenu(kometAppMenu);
             menuToolkit.setAppearanceMode(AppearanceMode.AUTO);
             menuToolkit.setDockIconMenu(createDockMenu());
             menuToolkit.autoAddWindowMenuItems(windowMenu);
-            menuToolkit.setGlobalMenuBar(bar);
+            menuToolkit.setGlobalMenuBar(menuBar);
             menuToolkit.setTrayMenu(createSampleMenu());
         }
     }
@@ -446,16 +449,16 @@ public class WebApp extends Application {
 
     private Menu createViewMenu() {
         Menu viewMenu = new Menu("View");
-        MenuItem classicKometPage = new MenuItem("Classic Komet");
-        classicKometPage.setAccelerator(new KeyCodeCombination(KeyCode.K, KeyCombination.SHORTCUT_DOWN));
-        classicKometPage.setOnAction(actionEvent -> {
+        MenuItem classicKometMenuItem = new MenuItem("Classic Komet");
+        classicKometMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.K, KeyCombination.SHORTCUT_DOWN));
+        classicKometMenuItem.setOnAction(actionEvent -> {
             try {
                 launchClassicKomet();
             } catch (IOException | BackingStoreException e) {
                 throw new RuntimeException(e);
             }
         });
-        viewMenu.getItems().add(classicKometPage);
+        viewMenu.getItems().add(classicKometMenuItem);
         return viewMenu;
     }
 
@@ -481,6 +484,8 @@ public class WebApp extends Application {
         BorderPane sourceRoot = sourceLoader.load();
         rootPane.getChildren().setAll(sourceRoot);
         stage.setTitle("KOMET Startup");
+
+        setupMenus();
     }
 
     private void addEventFilters(Stage stage) {
@@ -551,6 +556,8 @@ public class WebApp extends Application {
             });
 
             rootPane.getChildren().setAll(landingPageBorderPane);
+
+            setupMenus();
         } catch (IOException e) {
             LOG.error("Failed to initialize the landing page window", e);
         }
