@@ -240,7 +240,7 @@ public class PatternDetailsController {
         // display current date else blank.
         fqnAddDateLabel.textProperty().bind(fqnNameProp.map((fqnName) -> LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"))).orElse(""));
         // hide menu item if FQN is added.
-        addFqnMenuItem.visibleProperty().bind(fqnNameProp.map(fqnname -> fqnname.getNameText().isEmpty()).orElse(true));
+        addFqnMenuItem.visibleProperty().bind(fqnNameProp.isNull());
 
 
         // Update Other names section based on changes in List.
