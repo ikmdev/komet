@@ -130,9 +130,7 @@ public class DescriptionNameController {
 
         setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
         languageComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(LANGUAGE));
-
-
-
+        validateForm();
         //FIXME we haven't determined what is required and not required for Pattern>FQN or Pattern>OtherName
         // also we don't have the drop downs populated, so even if we wanted to validate, we would
         // have to get values for them in order to test the DONE functionality
@@ -162,6 +160,7 @@ public class DescriptionNameController {
                 && (languageComboBox.getSelectionModel().getSelectedItem() != null);
     }
 
+    @FXML
     private void validateForm() {
         boolean isOtherNameTextFieldEmpty = nameTextField.getText().trim().isEmpty();
         boolean isModuleComboBoxSelected = moduleComboBox.getValue() != null;
@@ -199,6 +198,7 @@ public class DescriptionNameController {
         descrNameViewModel.setPropertyValue(MODULE, null);
         descrNameViewModel.setPropertyValue(CASE_SIGNIFICANCE, null);
         descrNameViewModel.setPropertyValue(LANGUAGE, null);
+        submitButton.setDisable(true);
     }
 
     public void cleanup() {
@@ -223,13 +223,12 @@ public class DescriptionNameController {
     }
 
     private void setupComboBox(ComboBox comboBox, Collection<ConceptEntity> conceptEntities) {
-        comboBox.setConverter(new StringConverter<ConceptEntity>() {
 
+        comboBox.setConverter(new StringConverter<ConceptEntity>() {
             @Override
             public String toString(ConceptEntity conceptEntity) {
                 return getDisplayText(conceptEntity);
             }
-
             @Override
             public ConceptEntity fromString(String string) {
                 return null;
@@ -237,7 +236,6 @@ public class DescriptionNameController {
         });
 
         comboBox.setCellFactory(new Callback<>() {
-
             /**
              * @param param The single argument upon which the returned value should be
              *              determined.
