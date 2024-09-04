@@ -142,7 +142,7 @@
                     <groupId>org.openjfx</groupId>
                     <artifactId>javafx-maven-plugin</artifactId>
                     <configuration>
-                        <mainClass>dev.ikm.komet.application/dev.ikm.komet.app.App</mainClass>
+                        <mainClass>dev.ikm.komet.application/dev.ikm.komet.app.WebApp</mainClass>
                         <stripDebug>false</stripDebug>
                         <compress>2</compress>
                         <bindServices>true</bindServices>
@@ -165,7 +165,7 @@
                         <!-- Default configuration for running -->
                         <id>default-cli</id>
                         <phase>package</phase>
-                        <!--                        <phase>none</phase>-->
+                        <!-- <phase>none</phase> -->
                         <goals>
                             <goal>jlink</goal>
                         </goals>

@@ -326,10 +326,8 @@ public class WebApp extends Application {
 
             addEventFilters(stage);
 
-            if (IS_DESKTOP) {
-                // Handle close request
-                stage.setOnCloseRequest(windowEvent -> state.set(SHUTDOWN));
-            }
+            // This is called only when the user clicks the close button on the window
+            stage.setOnCloseRequest(windowEvent -> state.set(SHUTDOWN));
 
             // Show stage and set initial state
             stage.show();
@@ -529,6 +527,8 @@ public class WebApp extends Application {
 
     private void launchLandingPage(Stage stage) {
         try {
+            rootPane.getChildren().clear(); // Clear the root pane before adding new content
+
             KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
             KometPreferences windowPreferences = appPreferences.node("main-komet-window");
             WindowSettings windowSettings = new WindowSettings(windowPreferences);
@@ -551,11 +551,12 @@ public class WebApp extends Application {
             stage.setTitle("Landing Page");
             stage.setMaximized(true);
             stage.setOnCloseRequest(windowEvent -> {
+                // This is called only when the user clicks the close button on the window
                 state.set(SHUTDOWN);
                 landingPageController.cleanup();
             });
 
-            rootPane.getChildren().setAll(landingPageBorderPane);
+            rootPane.getChildren().add(landingPageBorderPane);
 
             setupMenus();
         } catch (IOException e) {
@@ -694,7 +695,6 @@ public class WebApp extends Application {
             LOG.error("error writing journal window flag to preferences", e);
         }
     }
-
 
     /**
      * This attaches a listener for the right mouse double click to refresh CSS stylesheet files.
