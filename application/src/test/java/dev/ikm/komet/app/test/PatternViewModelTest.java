@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.app.test;
 
+import static dev.ikm.tinkar.terms.EntityProxy.Concept;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE;
 import static dev.ikm.tinkar.terms.TinkarTerm.ENGLISH_LANGUAGE;
 import dev.ikm.tinkar.common.service.CachingService;
@@ -25,7 +26,7 @@ import dev.ikm.tinkar.composer.Composer;
 import dev.ikm.tinkar.composer.Session;
 import dev.ikm.tinkar.composer.assembler.PatternAssembler;
 import dev.ikm.tinkar.composer.template.FullyQualifiedName;
-import dev.ikm.tinkar.terms.EntityProxy;
+
 import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
 import org.slf4j.Logger;
@@ -83,18 +84,18 @@ public class PatternViewModelTest {
         State status = State.ACTIVE;
         long time = Long.MIN_VALUE;
 
-        EntityProxy.Concept author = EntityProxy.Concept.make(UUID.randomUUID().toString());
-        EntityProxy.Concept module = EntityProxy.Concept.make(UUID.randomUUID().toString());
-        EntityProxy.Concept path = EntityProxy.Concept.make(UUID.randomUUID().toString());
+        Concept author = Concept.make(UUID.randomUUID().toString());
+        Concept module = Concept.make(UUID.randomUUID().toString());
+        Concept path = Concept.make(UUID.randomUUID().toString());
 
-        EntityProxy.Concept patternMeaning = EntityProxy.Concept.make(UUID.randomUUID().toString()); // find a meaning
-        EntityProxy.Concept patternPurpose = EntityProxy.Concept.make(UUID.randomUUID().toString());
+        Concept patternMeaning = Concept.make(UUID.randomUUID().toString()); // find a meaning
+        Concept patternPurpose = Concept.make(UUID.randomUUID().toString());
 
         Session session = composer.open(status, time, author, module, path);
 
-        EntityProxy.Concept fieldMeaning = EntityProxy.Concept.make(UUID.randomUUID().toString());
-        EntityProxy.Concept fieldPurpose = EntityProxy.Concept.make(UUID.randomUUID().toString());
-        EntityProxy.Concept fieldDataType = EntityProxy.Concept.make(UUID.randomUUID().toString());
+        Concept fieldMeaning = Concept.make(UUID.randomUUID().toString());
+        Concept fieldPurpose = Concept.make(UUID.randomUUID().toString());
+        Concept fieldDataType = Concept.make(UUID.randomUUID().toString());
         session.compose((PatternAssembler patternAssembler) -> patternAssembler
                 .meaning(patternMeaning)
                 .purpose(patternPurpose)
