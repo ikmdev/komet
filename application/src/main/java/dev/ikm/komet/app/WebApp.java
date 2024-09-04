@@ -284,8 +284,16 @@ public class WebApp extends Application {
             journalControllersList.stream()
                     .filter(journalController -> journalController.getTitle().equals(journalName))
                     .findFirst()
-                    .ifPresentOrElse(
-                            JournalController::windowToFront,  // Bring the existing window to the front
+                    .ifPresentOrElse(journalController -> {
+                                if (IS_BROWSER) {
+                                    // Similar to the desktop version, bring the existing tab to the front
+                                    Stage journalStage = (Stage) journalController.getJournalBorderPane().getScene().getWindow();
+                                    webAPI.openStageAsTab(journalStage, journalName.replace(" ", "_"));
+                                } else {
+                                    // Bring the existing window to the front
+                                    journalController.windowToFront();
+                                }
+                            },
                             () -> launchJournalViewPage(evt.getWindowSettingsObjectMap()));
         };
 
@@ -620,10 +628,11 @@ public class WebApp extends Application {
             kViewEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
             journalControllersList.add(journalController);
 
-            journalStage.show();
-
             if (IS_BROWSER) {
-                webAPI.openStageAsTab(journalStage);
+                String journalName = journalWindowSettings.getValue(JOURNAL_TITLE);
+                webAPI.openStageAsTab(journalStage, journalName.replace(" ", "_"));
+            } else {
+                journalStage.show();
             }
         } catch (IOException e) {
             LOG.error("Failed to launch the journal view window", e);
