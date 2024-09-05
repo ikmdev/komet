@@ -27,6 +27,7 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ExportDateTimePopOverEvent;
+import dev.ikm.komet.kview.fxutils.ComboBoxHelper;
 import dev.ikm.komet.kview.mvvm.viewmodel.ExportViewModel;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -198,21 +199,7 @@ public class ExportController {
     public void setupDateTimeExportComboBox() {
         dateTimePickerHbox.setVisible(false);
         handleCurrentDateTimeExport();
-        timePeriodComboBox.setCellFactory(lv -> {
-            final ListCell<String> cell = new ListCell<>() {
-                @Override
-                public void updateItem(String item, boolean empty) {
-                    super.updateItem(item, empty);
-                    setText(item != null ? item : null);
-                }
-            };
-            Region icon = new Region();
-            icon.getStyleClass().add("icon");
-
-            cell.setGraphic(icon);
-            cell.setGraphicTextGap(20);
-            return cell;
-        });
+        ComboBoxHelper.setupComboBoxWithIcon(timePeriodComboBox);
     }
 
     private PopOver createPopover(UUID exportTopic, final int rangeType, Consumer<Long> dateTimeConsumer) {

@@ -18,13 +18,28 @@ package dev.ikm.komet.kview.fxutils;
 import javafx.beans.InvalidationListener;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
+import javafx.scene.layout.Region;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.function.Function;
 
+/**
+ * A class containing utility methods for common ComboBox creation / setup
+ */
 public class ComboBoxHelper {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ComboBoxHelper.class);
+
+    /**
+     * set up a comboBox for ConceptEntities
+     * @param comboBox combo box for concepEntities
+     * @param listener invalidation listener
+     * @param displayText a function that applies how to render the display text
+     * @param <T> type ConceptEntity
+     */
     public static <T> void setupComboBox(ComboBox comboBox, InvalidationListener listener, Function<T, String> displayText) {
         comboBox.setConverter(new StringConverter<T>() {
 
@@ -65,5 +80,26 @@ public class ComboBoxHelper {
 
         // register invalidation listener
         comboBox.getSelectionModel().selectedItemProperty().addListener(listener);
+    }
+
+    /**
+     * style a comboBox with a custom graphic icon
+     * @param comboBox comboBox we are setting up
+     */
+    public static void setupComboBoxWithIcon(ComboBox comboBox) {
+        comboBox.setCellFactory(lv -> {
+            final ListCell<String> cell = new ListCell<>() {
+                @Override
+                public void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(item != null ? item : null);
+                }
+            };
+            Region icon = new Region();
+            icon.getStyleClass().add("icon");
+            cell.setGraphic(icon);
+            LOG.info(cell.getItem().toString());
+            return cell;
+        });
     }
 }

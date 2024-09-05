@@ -2383,10 +2383,28 @@ Timeline Year line segment (will overlay change circles)
 }
 
 /* date selection combo box used by export */
+.blue-arrow-combo-box-grey11.combo-box-base {
+    -fx-text-fill: -Grey-11;
+    -fx-background-color: -Grey-1;
+    -fx-border-color: -Grey-5;
+    -fx-border-radius: 4;
+
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+
+    -width-size: 180px;   
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+}
+
 .blue-arrow-combo-box-grey11.combo-box-base > .arrow-button > .arrow {
     -fx-background-color: -Secondary-05;
     -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
 }
+
 .blue-arrow-combo-box-grey11 .combo-box-popup > .list-view {
     /*-fx-text-fill: lightgreen;*/
     /*-fx-font-family: "Noto Sans";*/
@@ -2436,22 +2454,25 @@ Timeline Year line segment (will overlay change circles)
     /*-fx-background-radius: 8;*/
     -fx-background-color: -Grey-10;
 }
+
 .blue-arrow-combo-box-grey11 .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover {
     -fx-background: -fx-accent;
     -fx-background-color: -Grey-9;
 }
+
 .blue-arrow-combo-box-grey11 .combo-box-popup  > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
 .blue-arrow-combo-box-grey11 .combo-box-popup  > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected:hover {
     -fx-background: -fx-accent;
     -fx-background-color: -Grey-9;
     -fx-background-insets: 0 1;
 }
+
 .blue-arrow-combo-box-grey11 .combo-box-popup > .list-view > .placeholder > .label {
     -fx-text-fill: derive(-fx-control-inner-background,-30%);
 }
 
-/* green checkmark */
-.blue-arrow-combo-box-grey11.combo-box-base > .list-view .list-cell .icon {    
+/* green checkmark to the right on selected items in the drop down */
+.blue-arrow-combo-box-grey11 .list-view .list-cell .icon {        
     -width-size: 20px;
     -height-size: 20px;
     -fx-min-width: -width-size;
@@ -2461,7 +2482,31 @@ Timeline Year line segment (will overlay change circles)
     -fx-pref-height: -height-size;
     -fx-max-height: -height-size;
     -fx-background-color: -Primary-04;
-    -fx-shape: "M7.49989 13.4749L4.02489 9.99987L2.84155 11.1749L7.49989 15.8332L17.4999 5.8332L16.3249 4.6582L7.49989 13.4749Z";
+    -fx-shape: "M7.49989 13.4749L4.02489 9.99987L2.84155 11.1749L7.49989 15.8332L17.4999 5.8332L16.3249 4.6582L7.49989 13.4749Z";    
+    -fx-content-display: right;
+}
+
+.blue-arrow-combo-box-grey11 .list-view .list-cell {
+    -fx-content-display: text-only;
+    -fx-graphic-text-gap: 40;
+    
+    -width-size: 148px;   
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+}
+
+.blue-arrow-combo-box-grey11 .list-view .list-cell > .label {
+    -fx-border-color: red;
+}
+
+.blue-arrow-combo-box-grey11 .list-view .list-cell:filled:selected {
+    -fx-content-display: right;
+
+    -width-size: 148px;   
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
 }
 
 /* end making these for the dragged concept reusable fxml */
