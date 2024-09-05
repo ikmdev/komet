@@ -2450,6 +2450,20 @@ Timeline Year line segment (will overlay change circles)
     -fx-text-fill: derive(-fx-control-inner-background,-30%);
 }
 
+/* green checkmark */
+.blue-arrow-combo-box-grey11.combo-box-base > .list-view .list-cell .icon {    
+    -width-size: 20px;
+    -height-size: 20px;
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+    -fx-min-height: -height-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+    -fx-background-color: -Primary-04;
+    -fx-shape: "M7.49989 13.4749L4.02489 9.99987L2.84155 11.1749L7.49989 15.8332L17.4999 5.8332L16.3249 4.6582L7.49989 13.4749Z";
+}
+
 /* end making these for the dragged concept reusable fxml */
 
 .rounded-region {

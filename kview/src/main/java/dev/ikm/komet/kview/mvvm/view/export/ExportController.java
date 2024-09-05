@@ -50,6 +50,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.skin.DatePickerSkin;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -197,6 +198,21 @@ public class ExportController {
     public void setupDateTimeExportComboBox() {
         dateTimePickerHbox.setVisible(false);
         handleCurrentDateTimeExport();
+        timePeriodComboBox.setCellFactory(lv -> {
+            final ListCell<String> cell = new ListCell<>() {
+                @Override
+                public void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(item != null ? item : null);
+                }
+            };
+            Region icon = new Region();
+            icon.getStyleClass().add("icon");
+
+            cell.setGraphic(icon);
+            cell.setGraphicTextGap(20);
+            return cell;
+        });
     }
 
     private PopOver createPopover(UUID exportTopic, final int rangeType, Consumer<Long> dateTimeConsumer) {
