@@ -32,6 +32,8 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -114,6 +116,10 @@ public class PatternFieldsController {
 
     @FXML
     private void initialize() {
+        ChangeListener fieldsValidationListner = (obs, oldValue, newValue) -> {
+            patternFieldsViewModel.validate();
+            doneButton.setDisable(patternFieldsViewModel.hasErrorMsgs());
+        };
 
         // load drag over animation for reuse on every drag and drop
         Config animeConfig = new Config(DRAG_OVER_ANIMATION_FXML_URL);
@@ -143,12 +149,22 @@ public class PatternFieldsController {
             }
         });
 
-        fieldOrderComboBox.valueProperty().bindBidirectional(patternFieldsViewModel.getProperty(FIELD_ORDER));
-        displayNameTextField.textProperty().bindBidirectional(patternFieldsViewModel.getProperty(DISPLAY_NAME));
-        dataTypeComboBox.valueProperty().bindBidirectional(patternFieldsViewModel.getProperty(DATA_TYPE));
-
         loadDataTypeComboBox();
+        ObjectProperty<Integer> fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
+        SimpleStringProperty displayNameProp = patternFieldsViewModel.getProperty(DISPLAY_NAME);
+        ObjectProperty<ConceptEntity> dataTypeProp = patternFieldsViewModel.getProperty(DATA_TYPE);
+        ObjectProperty<ConceptEntity> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
+        ObjectProperty<ConceptEntity> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
 
+        fieldOrderComboBox.valueProperty().bindBidirectional(fieldOrderProp);
+        displayNameTextField.textProperty().bindBidirectional(displayNameProp);
+        dataTypeComboBox.valueProperty().bindBidirectional(dataTypeProp);
+
+        fieldOrderProp.addListener(fieldsValidationListner);
+        displayNameProp.addListener(fieldsValidationListner);
+        dataTypeProp.addListener(fieldsValidationListner);
+        purposeProp.addListener(fieldsValidationListner);
+        meaningProp.addListener(fieldsValidationListner);
     }
 
     ViewProperties viewProperties;
@@ -417,7 +433,6 @@ public class PatternFieldsController {
 
     @FXML
     private void clearView(ActionEvent actionEvent) {
-
         patternFieldsViewModel.setPropertyValue(DISPLAY_NAME, "");
         patternFieldsViewModel.setPropertyValue(DATA_TYPE, null);
         removePurpose();

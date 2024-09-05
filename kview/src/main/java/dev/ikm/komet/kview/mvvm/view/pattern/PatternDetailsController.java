@@ -213,7 +213,6 @@ public class PatternDetailsController {
         // capture descriptions information
         StringProperty fqnTextProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
         latestFqnText.textProperty().bind(fqnTextProperty);
-        addFqnMenuItem.setVisible(fqnTextProperty.isEmpty().get());
 
         // This will listen to the pattern descriptions event. Adding an FQN, Adding other name.
         patternDescriptionEventSubscriber = evt -> {
