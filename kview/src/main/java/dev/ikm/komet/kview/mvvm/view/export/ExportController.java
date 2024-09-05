@@ -195,17 +195,6 @@ public class ExportController {
     }
 
     public void setupDateTimeExportComboBox() {
-
-//        Region greenCheckRegion = new Region();
-//        greenCheckRegion.getStyleClass().add("green-checkmark");
-
-//        Text curDateText = new Text(CURRENT_DATE);
-//        Text customRangeText = new Text(CUSTOM_RANGE);
-//        currentDate = new TextFlow(curDateText);
-//        customRange = new TextFlow(customRangeText);
-
-
-
         dateTimePickerHbox.setVisible(false);
         handleCurrentDateTimeExport();
     }
@@ -284,7 +273,6 @@ public class ExportController {
         long fromDate = transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM);
         long toDate =  System.currentTimeMillis();
         String dateChoice = timePeriodComboBox.getSelectionModel().getSelectedItem();
-        //FIXME get the text inside the textFlow
         if (CUSTOM_RANGE.equals(dateChoice)) {
             fromDate = this.customFromEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()) : this.customFromEpochMillis;
             toDate = this.customToEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()) : this.customToEpochMillis;
