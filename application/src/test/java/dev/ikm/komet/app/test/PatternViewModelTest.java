@@ -18,6 +18,8 @@ package dev.ikm.komet.app.test;
 import static dev.ikm.tinkar.terms.EntityProxy.Concept;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE;
 import static dev.ikm.tinkar.terms.TinkarTerm.ENGLISH_LANGUAGE;
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.ServiceKeys;
@@ -27,6 +29,8 @@ import dev.ikm.tinkar.composer.Session;
 import dev.ikm.tinkar.composer.assembler.PatternAssembler;
 import dev.ikm.tinkar.composer.template.FullyQualifiedName;
 
+import dev.ikm.tinkar.entity.PatternEntity;
+import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
 import org.slf4j.Logger;
@@ -82,7 +86,7 @@ public class PatternViewModelTest {
         Composer composer = new Composer("Test Save Pattern Definition");
 
         State status = State.ACTIVE;
-        long time = Long.MIN_VALUE;
+        long uncommittedStampTime = Long.MAX_VALUE; // is this correct?
 
         Concept author = Concept.make(UUID.randomUUID().toString());
         Concept module = Concept.make(UUID.randomUUID().toString());
@@ -91,21 +95,62 @@ public class PatternViewModelTest {
         Concept patternMeaning = Concept.make(UUID.randomUUID().toString()); // find a meaning
         Concept patternPurpose = Concept.make(UUID.randomUUID().toString());
 
-        Session session = composer.open(status, time, author, module, path);
+        Session session = composer.open(status, uncommittedStampTime, author, module, path);
 
         Concept fieldMeaning = Concept.make(UUID.randomUUID().toString());
         Concept fieldPurpose = Concept.make(UUID.randomUUID().toString());
         Concept fieldDataType = Concept.make(UUID.randomUUID().toString());
+
+        PublicId patternPublicId = PublicIds.newRandom();
+        EntityProxy.Pattern pattern = EntityProxy.Pattern.make(patternPublicId);
+
+        // the composer handles saving to an uncommitted stamp
+        // it is uncommited until you say commit
         session.compose((PatternAssembler patternAssembler) -> patternAssembler
+                .pattern(pattern)
                 .meaning(patternMeaning)
                 .purpose(patternPurpose)
-                .fieldDefinition(fieldMeaning, fieldPurpose, fieldDataType)
-                .attach((FullyQualifiedName fqn) -> fqn
-                        .language(ENGLISH_LANGUAGE)
-                        .text("FQN for Pattern")
-                        .caseSignificance(DESCRIPTION_NOT_CASE_SENSITIVE))
+//                .fieldDefinition(fieldMeaning, fieldPurpose, fieldDataType)
+//                .attach((FullyQualifiedName fqn) -> fqn
+//                        .language(ENGLISH_LANGUAGE)
+//                        .text("FQN for Pattern")
+//                        .caseSignificance(DESCRIPTION_NOT_CASE_SENSITIVE))
         );
 
+        // commit vs uncommitted = the timestamp value on the STAMP. long max vs a real date
+        //      you can have as many concepts and patters as you want pointing to that stamp
+        //      when you say commit it changes that timestamp from long.max to that point in time
+
+        // if you create a stamp with the same params in the same transaction, then it will be the same stamp
+
+        // CANCEL the temp transaction and re-save to accomplish
+
+        //Pattern pattern = ?
+
+        // a pattern has fields IN IT... they are not a separate semantic
+        // whereas a concept does NOT have semantics... a semantic that is part of a concept will point to the concept
+        // the pattern field definitions are essentially a list of field definitions that live inside the pattern
+        // you never want to write pattern definitions for the same pattern that have different numbers of field definitions
+        //      e.g. A Person Pattern
+        //          1) they have a first name and last name field... uncommitted transaction...(both Strings)
+        //          (assuming we are in the uncommitted transaction...)
+        //              ^^ we are writing an uncommitted version when we do this
+        //                  * you have to make sure that we take that uncommitted version, save off to memory, cancel that uncommitted transaction
+        //                  * and create a new transaction
+        //                  - goal is to summon the pattern window again and resume working on creating it
+        //          2) then add another pattern version by adding an additional field, e.g. middle initial <- BAD
+        //          3) can the user reorder the fields ? e.g. last name, first name
+        //              ^^^ 2 and 3 are both possible, new pattern versions + different number or order
+        //              shouldn't do this, if you have written semantics against this it will break them
+        //              if you make new pattern version you have to trust the existing viewCalculator queries throughout the codebase
+        //          * a work-around is to retire the old pattern and create a new pattern if you want to reorder or change the
+        //              the fields
+
+
+        // uncommitted transactions are lost on restart because they are java objects... on restart of komet you will lose that transaction
+        // and accessing the stamp
+
+        // submit... (really publish??? need to revisit this)
         composer.commitSession(session);
     }
 }
