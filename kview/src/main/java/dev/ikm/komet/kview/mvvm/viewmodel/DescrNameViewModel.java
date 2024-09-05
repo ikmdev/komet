@@ -65,7 +65,6 @@ public class DescrNameViewModel extends FormViewModel {
 
     public static final String IS_INVALID = "isInvalid";
 
-
     public DescrNameViewModel() {
         super(); // defaults to View mode
         addProperty(NAME_TEXT, "")

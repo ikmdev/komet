@@ -43,8 +43,6 @@ public class PatternFieldsViewModel extends FormViewModel {
 
     public static final String IS_INVALID = "isInvalid";
 
-
-
     public PatternFieldsViewModel() {
         super();
         addProperty(VIEW_PROPERTIES, (ViewProperties) null)

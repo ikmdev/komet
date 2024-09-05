@@ -153,6 +153,7 @@ public class PatternFieldsController {
         });
 
         loadDataTypeComboBox();
+
         ObjectProperty<Integer> fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
         SimpleStringProperty displayNameProp = patternFieldsViewModel.getProperty(DISPLAY_NAME);
         ObjectProperty<ConceptEntity> dataTypeProp = patternFieldsViewModel.getProperty(DATA_TYPE);

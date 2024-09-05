@@ -162,16 +162,7 @@ public class DescriptionNameController {
         clearView();
     }
 
-    private boolean isFormPopulated() {
-        return (nameTextField.getText() != null && !nameTextField.getText().toString().isEmpty())
-                && (moduleComboBox.getSelectionModel().getSelectedItem() != null)
-                && (statusComboBox.getSelectionModel().getSelectedItem() != null)
-                && (caseSignificanceComboBox.getSelectionModel().getSelectedItem() != null)
-                && (languageComboBox.getSelectionModel().getSelectedItem() != null);
-    }
-
-
-    private void populateDialectComboBoxes() {
+     private void populateDialectComboBoxes() {
         // currently no UNACCEPTABLE in TinkarTerm
         Entity<? extends EntityVersion> acceptable = EntityService.get().getEntityFast(TinkarTerm.ACCEPTABLE);
         Entity<? extends EntityVersion> preferred = EntityService.get().getEntityFast(TinkarTerm.PREFERRED);
@@ -219,7 +210,6 @@ public class DescriptionNameController {
     }
 
     private void setupComboBox(ComboBox comboBox, Collection<ConceptEntity> conceptEntities) {
-
         comboBox.setConverter(new StringConverter<ConceptEntity>() {
             @Override
             public String toString(ConceptEntity conceptEntity) {
@@ -230,7 +220,6 @@ public class DescriptionNameController {
                 return null;
             }
         });
-
         comboBox.setCellFactory(new Callback<>() {
             /**
              * @param param The single argument upon which the returned value should be
@@ -281,7 +270,6 @@ public class DescriptionNameController {
         EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(),
                 new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         clearView();
-
     }
 
 }

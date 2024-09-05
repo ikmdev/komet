@@ -21,9 +21,13 @@ import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -45,6 +49,7 @@ import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent.PATTERN_DEFINITION;
 import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.MEANING_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.PURPOSE_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
@@ -132,6 +137,13 @@ public class PatternDefinitionController {
 
     @FXML
     private void initialize() {
+        ChangeListener fieldsValidationListner = (obs, oldValue, newValue) -> {
+            patternDefinitionViewModel.validate();
+            patternDefinitionViewModel.setPropertyValue(IS_INVALID, patternDefinitionViewModel.hasErrorMsgs());
+        };
+
+        doneButton.disableProperty().bind(patternDefinitionViewModel.getProperty(IS_INVALID));
+
         setupDragNDrop(purposeStackPane, (publicId) -> {
             // check to see if a pattern > purpose was already dragged into the purpose section before saving
             // to the view model
@@ -153,6 +165,10 @@ public class PatternDefinitionController {
                 addMeaningToForm(entity);
             }
         });
+        ObjectProperty<ConceptEntity> purposeProp = patternDefinitionViewModel.getProperty(PatternFieldsViewModel.PURPOSE_ENTITY);
+        ObjectProperty<ConceptEntity> meaningProp = patternDefinitionViewModel.getProperty(PatternFieldsViewModel.MEANING_ENTITY);
+        purposeProp.addListener(fieldsValidationListner);
+        meaningProp.addListener(fieldsValidationListner);
     }
 
     private void setupDragNDrop(Node node, Consumer<PublicId> consumer) {
