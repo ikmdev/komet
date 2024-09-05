@@ -41,6 +41,8 @@ public class PatternFieldsViewModel extends FormViewModel {
 
     public static String COMMENTS = "comments";
 
+    public static final String IS_INVALID = "isInvalid";
+
 
 
     public PatternFieldsViewModel() {
@@ -62,21 +64,21 @@ public class PatternFieldsViewModel extends FormViewModel {
                     return VALID;
                 })
                 .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
-                .addValidator(PURPOSE_ENTITY, "Data Type", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
+                .addValidator(PURPOSE_ENTITY, "Purpose Entity", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
                     if (prop.isNull().get()) {
                         return new ValidationMessage(PURPOSE_ENTITY, MessageType.ERROR, "${%s} is required".formatted(PURPOSE_ENTITY));
                     }
                     return VALID;
                 })
                 .addProperty(MEANING_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
-                .addValidator(MEANING_ENTITY, "Data Type", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
+                .addValidator(MEANING_ENTITY, "Meaning Entity", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
                     if (prop.isNull().get()) {
                         return new ValidationMessage(MEANING_ENTITY, MessageType.ERROR, "${%s} is required".formatted(MEANING_ENTITY));
                     }
                     return VALID;
                 })
                 .addProperty(COMMENTS, "")
-
+                .addProperty(IS_INVALID, true)
         ;
     }
 }

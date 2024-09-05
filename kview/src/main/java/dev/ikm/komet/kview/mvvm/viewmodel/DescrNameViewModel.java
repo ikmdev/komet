@@ -25,6 +25,7 @@ import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import org.carlfx.cognitive.validator.MessageType;
 import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.viewmodel.ViewModel;
@@ -62,20 +63,53 @@ public class DescrNameViewModel extends FormViewModel {
 
     public static final String DESCRIPTION_NAME_TYPE = "descrNameType";
 
+    public static final String IS_INVALID = "isInvalid";
+
 
     public DescrNameViewModel() {
         super(); // defaults to View mode
         addProperty(NAME_TEXT, "")
                 .addProperty(NAME_TYPE, (ConceptEntity) null)
+                .addValidator(NAME_TYPE, "Name Type", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
+                    if (prop.isNull().get()) {
+                        return new ValidationMessage(NAME_TYPE, MessageType.ERROR, "${%s} is required".formatted(NAME_TYPE));
+                    }
+                    return VALID;
+                })
                 .addProperty(CASE_SIGNIFICANCE, (ConceptEntity) null)
+                .addValidator(CASE_SIGNIFICANCE, "Case Significance", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
+                    if (prop.isNull().get()) {
+                        return new ValidationMessage(CASE_SIGNIFICANCE, MessageType.ERROR, "${%s} is required".formatted(CASE_SIGNIFICANCE));
+                    }
+                    return VALID;
+                })
                 .addProperty(STATUS, (ConceptEntity) null)
+                .addValidator(STATUS, "Status", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
+                    if (prop.isNull().get()) {
+                        return new ValidationMessage(STATUS, MessageType.ERROR, "${%s} is required".formatted(STATUS));
+                    }
+                    return VALID;
+                })
                 .addProperty(MODULE, (ConceptEntity) null)
+                .addValidator(MODULE, "Module", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
+                    if (prop.isNull().get()) {
+                        return new ValidationMessage(MODULE, MessageType.ERROR, "${%s} is required".formatted(MODULE));
+                    }
+                    return VALID;
+                })
                 .addProperty(LANGUAGE, (ConceptEntity) null)
+                .addValidator(LANGUAGE, "Language", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
+                    if (prop.isNull().get()) {
+                        return new ValidationMessage(LANGUAGE, MessageType.ERROR, "${%s} is required".formatted(LANGUAGE));
+                    }
+                    return VALID;
+                })
                 .addProperty(IS_SUBMITTED, false)
                 .addProperty(PARENT_PUBLIC_ID, (PublicId) null)
                 .addProperty(SEMANTIC_PUBLIC_ID, (PublicId) null)
                 .addProperty(TITLE_TEXT, "")
                 .addProperty(DESCRIPTION_NAME_TYPE, "")
+                .addProperty(IS_INVALID, true)
         ;
     }
 

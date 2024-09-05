@@ -25,6 +25,9 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -40,7 +43,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescriptionTypes;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
@@ -103,6 +107,12 @@ public class DescriptionNameController {
 
     @FXML
     public void initialize() {
+        ChangeListener fieldsValidationListner = (obs, oldValue, newValue) -> {
+            descrNameViewModel.validate();
+            descrNameViewModel.setPropertyValue(IS_INVALID, descrNameViewModel.hasErrorMsgs());
+        };
+
+        submitButton.disableProperty().bind(descrNameViewModel.getProperty(IS_INVALID));
 
         populateDialectComboBoxes();
 
@@ -114,34 +124,34 @@ public class DescriptionNameController {
         nameDescriptionType.valueProperty().bind(descrNameViewModel.getProperty(NAME_TYPE));
 
         editDescriptionTitleLabel.textProperty().bind(descrNameViewModel.getProperty(TITLE_TEXT));
-        nameTextField.textProperty().bindBidirectional(descrNameViewModel.getProperty(NAME_TEXT));
+
+        SimpleStringProperty nameTextProp = descrNameViewModel.getProperty(NAME_TEXT);
+        nameTextField.textProperty().bindBidirectional(nameTextProp);
+        nameTextProp.addListener(fieldsValidationListner);
+
 
         setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
-        moduleComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(MODULE));
+        ObjectProperty<ConceptEntity> moduleProp = descrNameViewModel.getProperty(MODULE);
+        moduleComboBox.valueProperty().bindBidirectional(moduleProp);
+        moduleProp.addListener(fieldsValidationListner);
 
         setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
-        statusComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(STATUS));
+        ObjectProperty<ConceptEntity> statusProp = descrNameViewModel.getProperty(STATUS);
+        statusComboBox.valueProperty().bindBidirectional(statusProp);
+        statusProp.addListener(fieldsValidationListner);
 
         //TODO These are temp hard coded values:
         // Can use below code later?
         // setupComboBox(caseSignificanceComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.publicId())); // Hard Coded
         setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants(getViewProperties()));
-        caseSignificanceComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(CASE_SIGNIFICANCE));
+        ObjectProperty<ConceptEntity> caseSignificanceProp = descrNameViewModel.getProperty(CASE_SIGNIFICANCE);
+        caseSignificanceComboBox.valueProperty().bindBidirectional(caseSignificanceProp);
+        caseSignificanceProp.addListener(fieldsValidationListner);
 
         setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
-        languageComboBox.valueProperty().bindBidirectional(descrNameViewModel.getProperty(LANGUAGE));
-        validateForm();
-        //FIXME we haven't determined what is required and not required for Pattern>FQN or Pattern>OtherName
-        // also we don't have the drop downs populated, so even if we wanted to validate, we would
-        // have to get values for them in order to test the DONE functionality
-        // therefore, turning off the validation for now until those stories
-
-//        nameTextField.textProperty().addListener(invalidationListener);
-//        moduleComboBox.valueProperty().addListener(invalidationListener);
-//        caseSignificanceComboBox.valueProperty().addListener(invalidationListener);
-//        statusComboBox.valueProperty().addListener(invalidationListener);
-//        languageComboBox.valueProperty().addListener(invalidationListener);
-//        validateForm();
+        ObjectProperty<ConceptEntity> languageProp = descrNameViewModel.getProperty(LANGUAGE);
+        languageComboBox.valueProperty().bindBidirectional(languageProp);
+        languageProp.addListener(fieldsValidationListner);
     }
 
     @FXML
@@ -160,19 +170,6 @@ public class DescriptionNameController {
                 && (languageComboBox.getSelectionModel().getSelectedItem() != null);
     }
 
-    @FXML
-    private void validateForm() {
-        boolean isOtherNameTextFieldEmpty = nameTextField.getText().trim().isEmpty();
-        boolean isModuleComboBoxSelected = moduleComboBox.getValue() != null;
-        boolean isCaseSignificanceComboBoxSelected = caseSignificanceComboBox.getValue() != null;
-        boolean isStatusComboBoxComboBoxSelected = statusComboBox.getValue() != null;
-        boolean isLanguageComboBoxComboBoxSelected = languageComboBox.getValue() != null;
-
-        submitButton.setDisable(
-                isOtherNameTextFieldEmpty || !isModuleComboBoxSelected
-                || !isCaseSignificanceComboBoxSelected || !isLanguageComboBoxComboBoxSelected
-                || !isStatusComboBoxComboBoxSelected);
-    }
 
     private void populateDialectComboBoxes() {
         // currently no UNACCEPTABLE in TinkarTerm
@@ -198,7 +195,6 @@ public class DescriptionNameController {
         descrNameViewModel.setPropertyValue(MODULE, null);
         descrNameViewModel.setPropertyValue(CASE_SIGNIFICANCE, null);
         descrNameViewModel.setPropertyValue(LANGUAGE, null);
-        submitButton.setDisable(true);
     }
 
     public void cleanup() {

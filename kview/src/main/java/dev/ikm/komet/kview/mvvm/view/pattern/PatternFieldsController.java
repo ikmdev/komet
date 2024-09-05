@@ -59,6 +59,7 @@ import java.util.function.Consumer;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.PATTERN_FIELDS;
 import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchFieldDefinitionDataTypes;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
@@ -118,8 +119,10 @@ public class PatternFieldsController {
     private void initialize() {
         ChangeListener fieldsValidationListner = (obs, oldValue, newValue) -> {
             patternFieldsViewModel.validate();
-            doneButton.setDisable(patternFieldsViewModel.hasErrorMsgs());
+            patternFieldsViewModel.setPropertyValue(IS_INVALID, patternFieldsViewModel.hasErrorMsgs());
         };
+
+        doneButton.disableProperty().bind(patternFieldsViewModel.getProperty(IS_INVALID));
 
         // load drag over animation for reuse on every drag and drop
         Config animeConfig = new Config(DRAG_OVER_ANIMATION_FXML_URL);
