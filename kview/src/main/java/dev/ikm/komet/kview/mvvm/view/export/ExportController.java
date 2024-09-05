@@ -279,7 +279,7 @@ public class ExportController {
         }
         // if the user enters a name then use that name, e.g. test.json or test.zip
         // if the user does not enter a name, then default to komet-yyyyMMdd-HHmm.zip|.json
-        String initialFileName = exportName.getText().equals("")
+        String initialFileName = exportName.getText().isBlank()
                 ? "komet-%s".formatted(simpleDateFormat.format(new Date()))
                 : exportName.getText();
         if (exportOption.equalsIgnoreCase(CHANGE_SET)) {
