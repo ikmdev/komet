@@ -2453,6 +2453,11 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-insets: 0;
     /*-fx-background-radius: 8;*/
     -fx-background-color: -Grey-10;
+
+    -width-size: 148px;   
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;    
 }
 
 .blue-arrow-combo-box-grey11 .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover {
@@ -2473,7 +2478,7 @@ Timeline Year line segment (will overlay change circles)
 
 /* green checkmark to the right on selected items in the drop down */
 .blue-arrow-combo-box-grey11 .list-view .list-cell .icon {        
-    -width-size: 20px;
+    -width-size: 25px;
     -height-size: 20px;
     -fx-min-width: -width-size;
     -fx-pref-width: -width-size;
@@ -2489,24 +2494,10 @@ Timeline Year line segment (will overlay change circles)
 .blue-arrow-combo-box-grey11 .list-view .list-cell {
     -fx-content-display: text-only;
     -fx-graphic-text-gap: 40;
-    
-    -width-size: 148px;   
-    -fx-min-width: -width-size;
-    -fx-pref-width: -width-size;
-    -fx-max-width: -width-size;
-}
-
-.blue-arrow-combo-box-grey11 .list-view .list-cell > .label {
-    -fx-border-color: red;
 }
 
 .blue-arrow-combo-box-grey11 .list-view .list-cell:filled:selected {
     -fx-content-display: right;
-
-    -width-size: 148px;   
-    -fx-min-width: -width-size;
-    -fx-pref-width: -width-size;
-    -fx-max-width: -width-size;
 }
 
 /* end making these for the dragged concept reusable fxml */

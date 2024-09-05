@@ -94,6 +94,8 @@ public class ExportController {
 
     private static final String CUSTOM_RANGE = "Custom Range";
 
+    private static final String CURRRENT_DATE = "Current Date";
+
 
     private static final String CURRENT_DATE_TIME_RANGE_FROM = "01/01/2022, 12:00 AM";
 
@@ -200,6 +202,7 @@ public class ExportController {
         dateTimePickerHbox.setVisible(false);
         handleCurrentDateTimeExport();
         ComboBoxHelper.setupComboBoxWithIcon(timePeriodComboBox);
+        timePeriodComboBox.getSelectionModel().select(CURRRENT_DATE);
     }
 
     private PopOver createPopover(UUID exportTopic, final int rangeType, Consumer<Long> dateTimeConsumer) {
