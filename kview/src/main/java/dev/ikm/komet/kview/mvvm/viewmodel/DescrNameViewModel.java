@@ -26,6 +26,7 @@ import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
 import org.carlfx.cognitive.validator.MessageType;
 import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.viewmodel.ViewModel;
@@ -67,7 +68,13 @@ public class DescrNameViewModel extends FormViewModel {
 
     public DescrNameViewModel() {
         super(); // defaults to View mode
-        addProperty(NAME_TEXT, "")
+                addProperty(NAME_TEXT, "")
+                .addValidator(NAME_TEXT, "Name Text", (ReadOnlyStringProperty prop, ViewModel vm) -> {
+                    if (prop.isEmpty().get()) {
+                        return new ValidationMessage(NAME_TEXT, MessageType.ERROR, "${%s} is required".formatted(NAME_TEXT));
+                    }
+                    return VALID;
+                })
                 .addProperty(NAME_TYPE, (ConceptEntity) null)
                 .addValidator(NAME_TYPE, "Name Type", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
                     if (prop.isNull().get()) {
@@ -75,6 +82,7 @@ public class DescrNameViewModel extends FormViewModel {
                     }
                     return VALID;
                 })
+
                 .addProperty(CASE_SIGNIFICANCE, (ConceptEntity) null)
                 .addValidator(CASE_SIGNIFICANCE, "Case Significance", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
                     if (prop.isNull().get()) {

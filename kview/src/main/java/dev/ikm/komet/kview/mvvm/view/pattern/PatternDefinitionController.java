@@ -312,8 +312,6 @@ public class PatternDefinitionController {
 
         VBox.setMargin(selectedPurposeOuterContainer, new Insets(0, 0, 16, 0));
 
-        doneButton.setDisable(false);
-
         removePurposeForm();
     }
 
@@ -365,10 +363,7 @@ public class PatternDefinitionController {
         selectedMeaningContainer.getChildren().add(selectedMeaning);
 
         VBox.setMargin(selectedMeaningStackPane, new Insets(0,0, 0,0));
-
         VBox.setMargin(selectedMeaningOuterContainer, new Insets(0, 0, 16, 0));
-
-        doneButton.setDisable(false);
 
         removeMeaningForm();
 
@@ -384,7 +379,6 @@ public class PatternDefinitionController {
             int meaningLabelIndex = semanticOuterVBox.getChildren().indexOf(meaningLabel);
             semanticOuterVBox.getChildren().add(meaningLabelIndex + 1, generateMeaningSearchControls());
         }
-        doneButton.setDisable(true);
     }
 
     private Node generateMeaningSearchControls() {
@@ -462,7 +456,6 @@ public class PatternDefinitionController {
             int purposeLabelIndex = semanticOuterVBox.getChildren().indexOf(purposeLabel);
             semanticOuterVBox.getChildren().add(purposeLabelIndex + 1, generatePurposeSearchControls());
         }
-        doneButton.setDisable(true);
     }
 
     private Node generatePurposeSearchControls() {

@@ -116,19 +116,20 @@ public class DescriptionNameController {
 
         populateDialectComboBoxes();
 
+        editDescriptionTitleLabel.textProperty().bind(descrNameViewModel.getProperty(TITLE_TEXT));
+
         //TODO These are temp hard coded values:
         // Can use below code later?
         // setupComboBox(nameDescriptionType, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DESCRIPTION_TYPE.publicId()));
 
         setupComboBox(nameDescriptionType, fetchDescriptionTypes()); // Hard coded
-        nameDescriptionType.valueProperty().bind(descrNameViewModel.getProperty(NAME_TYPE));
-
-        editDescriptionTitleLabel.textProperty().bind(descrNameViewModel.getProperty(TITLE_TEXT));
+        ObjectProperty<ConceptEntity> nameTypeProp = descrNameViewModel.getProperty(NAME_TYPE);
+        nameDescriptionType.valueProperty().bind(nameTypeProp);
+        nameTypeProp.addListener(fieldsValidationListner);
 
         SimpleStringProperty nameTextProp = descrNameViewModel.getProperty(NAME_TEXT);
         nameTextField.textProperty().bindBidirectional(nameTextProp);
         nameTextProp.addListener(fieldsValidationListner);
-
 
         setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
         ObjectProperty<ConceptEntity> moduleProp = descrNameViewModel.getProperty(MODULE);
