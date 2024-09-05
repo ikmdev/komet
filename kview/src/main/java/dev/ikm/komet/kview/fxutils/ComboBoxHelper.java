@@ -98,7 +98,6 @@ public class ComboBoxHelper {
             Region icon = new Region();
             icon.getStyleClass().add("icon");
             cell.setGraphic(icon);
-            LOG.info(cell.getItem().toString());
             return cell;
         });
     }
