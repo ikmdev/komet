@@ -17,6 +17,7 @@ package dev.ikm.komet.kview.fxutils;
 
 import javafx.beans.InvalidationListener;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
@@ -96,8 +97,12 @@ public class ComboBoxHelper {
                 }
             };
             Region icon = new Region();
+            Label iconLabel = new Label("", icon);
+            //iconLabel.setStyle("-fx-border-color: green; -fx-border-width: 1");
+            //iconLabel.setPrefWidth(400);
             icon.getStyleClass().add("icon");
-            cell.setGraphic(icon);
+            cell.setGraphic(iconLabel);
+            //cell.setStyle("-fx-border-color: red");
             return cell;
         });
     }
