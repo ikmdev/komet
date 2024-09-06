@@ -36,6 +36,10 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>classification</artifactId>
         </dependency>
+        <dependency>
+            <groupId>one.jpro.platform</groupId>
+            <artifactId>jpro-auth-core</artifactId>
+        </dependency>
         <!--        testing -->
         <dependency>
             <groupId>${project.groupId}</groupId>

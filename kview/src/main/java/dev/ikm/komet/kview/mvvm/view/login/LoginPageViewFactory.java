@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.app;
+package dev.ikm.komet.kview.mvvm.view.login;
 
-public enum AppState {
-    STARTING,
-    LOGIN,
-    SELECT_DATA_SOURCE,
-    SELECTED_DATA_SOURCE,
-    LOADING_DATA_SOURCE,
-    RUNNING,
-    SHUTDOWN;
+import javafx.scene.layout.BorderPane;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.JFXNode;
 
+public class LoginPageViewFactory {
+    public static JFXNode<BorderPane, LoginPageController> createFXMLMvvmLoader() {
+        return FXMLMvvmLoader.make(LoginPageViewFactory.class.getResource("login-page.fxml"));
+    }
 }

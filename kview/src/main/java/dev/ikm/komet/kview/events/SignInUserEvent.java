@@ -13,15 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.app;
+package dev.ikm.komet.kview.events;
 
-public enum AppState {
-    STARTING,
-    LOGIN,
-    SELECT_DATA_SOURCE,
-    SELECTED_DATA_SOURCE,
-    LOADING_DATA_SOURCE,
-    RUNNING,
-    SHUTDOWN;
+import dev.ikm.komet.framework.events.Evt;
+import dev.ikm.komet.framework.events.EvtType;
+import one.jpro.platform.auth.core.authentication.User;
 
+public class SignInUserEvent extends Evt {
+
+    public static final EvtType<SignInUserEvent> SIGN_IN_USER = new EvtType<>(Evt.ANY, "SIGN_IN_USER");
+
+    private final User user;
+
+    public SignInUserEvent(Object source, EvtType<? extends Evt> evtType, User user) {
+        super(source, evtType);
+        this.user = user;
+    }
+
+    public User getUser() {
+        return user;
+    }
 }

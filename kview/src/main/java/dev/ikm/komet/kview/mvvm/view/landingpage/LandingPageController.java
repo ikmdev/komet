@@ -29,10 +29,7 @@ import dev.ikm.komet.preferences.KometPreferencesImpl;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
@@ -61,6 +58,9 @@ public class LandingPageController implements BasicController {
     private static final Logger LOG = LoggerFactory.getLogger(LandingPageController.class);
 
     @FXML
+    private Label welcomeTitleLabel;
+
+    @FXML
     private ScrollPane journalProjectCardScrollPane;
 
     @FXML
@@ -77,6 +77,7 @@ public class LandingPageController implements BasicController {
 
     @FXML
     BorderPane landingPageBorderPane;
+
     @FXML
     ComboBox<String> notificationTypeFilterComboBox;
 
@@ -370,5 +371,9 @@ public class LandingPageController implements BasicController {
 
         LOG.info("CARD LAUNCHED");
 
+    }
+
+    public Label getWelcomeTitleLabel() {
+        return welcomeTitleLabel;
     }
 }

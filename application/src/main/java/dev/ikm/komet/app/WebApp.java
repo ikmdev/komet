@@ -41,6 +41,7 @@ import dev.ikm.komet.framework.window.WindowComponent;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.JournalTileEvent;
+import dev.ikm.komet.kview.events.SignInUserEvent;
 import dev.ikm.komet.kview.fxutils.CssHelper;
 import dev.ikm.komet.kview.fxutils.ResourceHelper;
 import dev.ikm.komet.kview.mvvm.view.export.ExportController;
@@ -48,6 +49,8 @@ import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalViewFactory;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
+import dev.ikm.komet.kview.mvvm.view.login.LoginPageController;
+import dev.ikm.komet.kview.mvvm.view.login.LoginPageViewFactory;
 import dev.ikm.komet.list.ListNodeFactory;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNodeFactory;
 import dev.ikm.komet.navigator.pattern.PatternNavigatorFactory;
@@ -87,6 +90,7 @@ import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import one.jpro.platform.auth.core.authentication.User;
 import one.jpro.platform.internal.util.PlatformUtils;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -112,6 +116,7 @@ import static dev.ikm.komet.app.AppState.*;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.fxutils.CssHelper.defaultStyleSheet;
 import static dev.ikm.komet.kview.fxutils.CssHelper.refreshPanes;
@@ -127,6 +132,7 @@ public class WebApp extends Application {
     private static final Logger LOG = LoggerFactory.getLogger(WebApp.class);
     public static final String CSS_LOCATION = "dev/ikm/komet/framework/graphics/komet.css";
     public static final SimpleObjectProperty<AppState> state = new SimpleObjectProperty<>(STARTING);
+    public static final SimpleObjectProperty<User> userProperty = new SimpleObjectProperty<>();
     private static Stage primaryStage;
 
     private static Stage classicKometStage;
@@ -299,6 +305,22 @@ public class WebApp extends Application {
 
         // Subscribe the subscriber to the JOURNAL_TOPIC
         kViewEventBus.subscribe(JOURNAL_TOPIC, CreateJournalEvent.class, detailsSubscriber);
+
+        Subscriber<SignInUserEvent> signInUserEventSubscriber = evt -> {
+            final User user = evt.getUser();
+            userProperty.set(user);
+
+            if (state.get() == RUNNING) {
+                launchLandingPage(primaryStage, user);
+            } else {
+                state.set(AppState.SELECT_DATA_SOURCE);
+            state.addListener(this::appStateChangeListener);
+                launchSelectDataSourcePage(primaryStage);
+            }
+        };
+
+        // Subscribe the subscriber to the USER_TOPIC
+        kViewEventBus.subscribe(USER_TOPIC, SignInUserEvent.class, signInUserEventSubscriber);
     }
 
     @Override
@@ -313,16 +335,12 @@ public class WebApp extends Application {
                 webAPI = WebAPI.getWebAPI(stage);
             }
 
-            Scene scene = new Scene(rootPane, 600, 400);
+            Scene scene = new Scene(rootPane);
+            scene.getStylesheets().addAll(CssHelper.defaultStyleSheet());
             stage.setScene(scene);
 
-            if (state.get() == RUNNING) {
-                launchLandingPage(stage);
-            } else {
-                state.set(AppState.SELECT_DATA_SOURCE);
-                state.addListener(this::appStateChangeListener);
-                launchSelectDataSourcePage(stage);
-            }
+            state.set(LOGIN);
+            launchLoginPage(stage);
 
             addEventFilters(stage);
 
@@ -477,13 +495,26 @@ public class WebApp extends Application {
         return helpMenu;
     }
 
-    private void launchSelectDataSourcePage(Stage stage) throws IOException {
-        FXMLLoader sourceLoader = new FXMLLoader(getClass().getResource("SelectDataSource.fxml"));
-        BorderPane sourceRoot = sourceLoader.load();
-        rootPane.getChildren().setAll(sourceRoot);
-        stage.setTitle("KOMET Startup");
+    private void launchLoginPage(Stage stage) {
+        JFXNode<BorderPane, LoginPageController> loginNode = LoginPageViewFactory.createFXMLMvvmLoader();
+        BorderPane loginPane = loginNode.node();
+        rootPane.getChildren().setAll(loginPane);
+        stage.setTitle("KOMET Login");
 
         setupMenus();
+    }
+
+    private void launchSelectDataSourcePage(Stage stage) {
+        try {
+            FXMLLoader sourceLoader = new FXMLLoader(getClass().getResource("SelectDataSource.fxml"));
+            BorderPane sourceRoot = sourceLoader.load();
+            rootPane.getChildren().setAll(sourceRoot);
+            stage.setTitle("KOMET Startup");
+
+            setupMenus();
+        } catch (IOException ex) {
+            LOG.error("Failed to initialize the select data source window", ex);
+        }
     }
 
     private void addEventFilters(Stage stage) {
@@ -525,7 +556,7 @@ public class WebApp extends Application {
         return fileChooser.showOpenDialog(stage);
     }
 
-    private void launchLandingPage(Stage stage) {
+    private void launchLandingPage(Stage stage, User user) {
         try {
             rootPane.getChildren().clear(); // Clear the root pane before adding new content
 
@@ -546,6 +577,7 @@ public class WebApp extends Application {
                     CssHelper.defaultStyleSheet());
 
             LandingPageController landingPageController = landingPageLoader.getController();
+            landingPageController.getWelcomeTitleLabel().setText("Welcome " + user.getName());
             attachCSSRefresher(landingPageController.getSettingsToggleButton(), landingPageBorderPane);
 
             stage.setTitle("Landing Page");
@@ -799,7 +831,7 @@ public class WebApp extends Application {
                     Platform.runLater(() -> state.set(LOADING_DATA_SOURCE));
                     TinkExecutor.threadPool().submit(new LoadDataSourceTask(state));
                 }
-                case RUNNING -> launchLandingPage(primaryStage);
+                case RUNNING -> launchLandingPage(primaryStage, userProperty.get());
                 case SHUTDOWN -> quit();
             }
         } catch (Throwable e) {
@@ -940,7 +972,7 @@ public class WebApp extends Application {
         Menu editMenu = new Menu("Edit");
         MenuItem landingPage = new MenuItem("Landing Page");
         KeyCombination landingPageKeyCombo = new KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN);
-        landingPage.setOnAction(actionEvent -> launchLandingPage(primaryStage));
+        landingPage.setOnAction(actionEvent -> launchLandingPage(primaryStage, userProperty.get()));
         landingPage.setAccelerator(landingPageKeyCombo);
         landingPage.setDisable(IS_BROWSER);
         editMenu.getItems().add(landingPage);

@@ -26,6 +26,7 @@ module dev.ikm.komet.kview {
     requires dev.ikm.komet.classification;
     requires dev.ikm.komet.progress;
     requires org.carlfx.cognitive;
+    requires one.jpro.platform.auth.core;
 
     opens dev.ikm.komet.kview.mvvm.view.details to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.details;
@@ -41,6 +42,9 @@ module dev.ikm.komet.kview {
 
     opens dev.ikm.komet.kview.mvvm.view.landingpage to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.landingpage;
+
+    opens dev.ikm.komet.kview.mvvm.view.login to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.login;
 
     opens dev.ikm.komet.kview.mvvm.view.search to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.search;
