@@ -277,8 +277,11 @@ public class ExportController {
             fromDate = this.customFromEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()) : this.customFromEpochMillis;
             toDate = this.customToEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()) : this.customToEpochMillis;
         }
-        String namePrefix = exportName.getText().equals("") ? "komet" : exportName.getText();
-        String initialFileName = "%s-%s".formatted(namePrefix, simpleDateFormat.format(new Date()));
+        // if the user enters a name then use that name, e.g. test.json or test.zip
+        // if the user does not enter a name, then default to komet-yyyyMMdd-HHmm.zip|.json
+        String initialFileName = exportName.getText().isBlank()
+                ? "komet-%s".formatted(simpleDateFormat.format(new Date()))
+                : exportName.getText();
         if (exportOption.equalsIgnoreCase(CHANGE_SET)) {
             initialFileName += ".zip";
             fileChooser.setTitle("Export file name as");
