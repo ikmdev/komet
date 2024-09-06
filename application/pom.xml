@@ -7,18 +7,6 @@
         <version>1.35.0-SNAPSHOT</version>
     </parent>
     <artifactId>application</artifactId>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>jpro-repository</id>
-            <url>https://sandec.jfrog.io/artifactory/repo</url>
-        </pluginRepository>
-    </pluginRepositories>
-    <repositories>
-        <repository>
-            <id>jpro-repository</id>
-            <url>https://sandec.jfrog.io/artifactory/repo</url>
-        </repository>
-    </repositories>
     <dependencies>
         <dependency>
             <groupId>de.jangassen</groupId>
