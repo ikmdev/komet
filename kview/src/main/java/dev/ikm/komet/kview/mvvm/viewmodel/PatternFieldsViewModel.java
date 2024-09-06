@@ -17,6 +17,10 @@ package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
+import org.carlfx.cognitive.validator.ValidationResult;
+import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,15 +40,38 @@ public class PatternFieldsViewModel extends FormViewModel {
 
     public static String COMMENTS = "comments";
 
+    public static final String IS_INVALID = "isInvalid";
+
     public PatternFieldsViewModel() {
         super();
         addProperty(VIEW_PROPERTIES, (ViewProperties) null)
                 .addProperty(FIELD_ORDER, (Integer) 1) // default to 1, in create mode they will create the first one
                 .addProperty(DISPLAY_NAME, "")
+                .addValidator(DISPLAY_NAME, "Display Name", (ReadOnlyStringProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
+                    if (prop.isEmpty().get()) {
+                        validationResult.error("${%s} is required".formatted(DISPLAY_NAME));
+                    }
+                })
                 .addProperty(DATA_TYPE, (EntityFacade) null)
+                .addValidator(DATA_TYPE, "Data Type", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
+                    if (prop.isNull().get()) {
+                        validationResult.error("${%s} is required".formatted(DATA_TYPE));
+                    }
+                })
                 .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
+                .addValidator(PURPOSE_ENTITY, "Purpose Entity", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
+                    if (prop.isNull().get()) {
+                        validationResult.error("${%s} is required".formatted(PURPOSE_ENTITY));
+                    }
+                })
                 .addProperty(MEANING_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
+                .addValidator(MEANING_ENTITY, "Meaning Entity", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
+                    if (prop.isNull().get()) {
+                        validationResult.error("${%s} is required".formatted(MEANING_ENTITY));
+                    }
+                })
                 .addProperty(COMMENTS, "")
+                .addProperty(IS_INVALID, true)
         ;
     }
 }
