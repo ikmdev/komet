@@ -137,7 +137,7 @@ public class PatternDefinitionController {
 
     @FXML
     private void initialize() {
-        ChangeListener fieldsValidationListner = (obs, oldValue, newValue) -> {
+        ChangeListener fieldsValidationListener = (obs, oldValue, newValue) -> {
             patternDefinitionViewModel.validate();
             patternDefinitionViewModel.setPropertyValue(IS_INVALID, patternDefinitionViewModel.hasErrorMsgs());
         };
@@ -167,8 +167,8 @@ public class PatternDefinitionController {
         });
         ObjectProperty<ConceptEntity> purposeProp = patternDefinitionViewModel.getProperty(PatternFieldsViewModel.PURPOSE_ENTITY);
         ObjectProperty<ConceptEntity> meaningProp = patternDefinitionViewModel.getProperty(PatternFieldsViewModel.MEANING_ENTITY);
-        purposeProp.addListener(fieldsValidationListner);
-        meaningProp.addListener(fieldsValidationListner);
+        purposeProp.addListener(fieldsValidationListener);
+        meaningProp.addListener(fieldsValidationListener);
     }
 
     private void setupDragNDrop(Node node, Consumer<PublicId> consumer) {

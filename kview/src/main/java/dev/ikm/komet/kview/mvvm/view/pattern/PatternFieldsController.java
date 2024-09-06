@@ -117,7 +117,7 @@ public class PatternFieldsController {
 
     @FXML
     private void initialize() {
-        ChangeListener fieldsValidationListner = (obs, oldValue, newValue) -> {
+        ChangeListener fieldsValidationListener = (obs, oldValue, newValue) -> {
             patternFieldsViewModel.validate();
             patternFieldsViewModel.setPropertyValue(IS_INVALID, patternFieldsViewModel.hasErrorMsgs());
         };
@@ -164,11 +164,11 @@ public class PatternFieldsController {
         displayNameTextField.textProperty().bindBidirectional(displayNameProp);
         dataTypeComboBox.valueProperty().bindBidirectional(dataTypeProp);
 
-        fieldOrderProp.addListener(fieldsValidationListner);
-        displayNameProp.addListener(fieldsValidationListner);
-        dataTypeProp.addListener(fieldsValidationListner);
-        purposeProp.addListener(fieldsValidationListner);
-        meaningProp.addListener(fieldsValidationListner);
+        fieldOrderProp.addListener(fieldsValidationListener);
+        displayNameProp.addListener(fieldsValidationListener);
+        dataTypeProp.addListener(fieldsValidationListener);
+        purposeProp.addListener(fieldsValidationListener);
+        meaningProp.addListener(fieldsValidationListener);
     }
 
     ViewProperties viewProperties;

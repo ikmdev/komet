@@ -18,8 +18,7 @@ package dev.ikm.komet.kview.mvvm.viewmodel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.ReadOnlyObjectProperty;
-import org.carlfx.cognitive.validator.MessageType;
-import org.carlfx.cognitive.validator.ValidationMessage;
+import org.carlfx.cognitive.validator.ValidationResult;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,19 +38,17 @@ public class PatternDefinitionViewModel extends FormViewModel {
         super();
             addProperty(VIEW_PROPERTIES, (ViewProperties) null)
                 .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
-                .addValidator(PURPOSE_ENTITY, "Purpose Entity", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
+                .addValidator(PURPOSE_ENTITY, "Purpose Entity", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
                     if (prop.isNull().get()) {
-                        return new ValidationMessage(PURPOSE_ENTITY, MessageType.ERROR, "${%s} is required".formatted(PURPOSE_ENTITY));
+                        validationResult.error("${%s} is required".formatted(PURPOSE_ENTITY));
                     }
-                    return VALID;
                 })
                 .addProperty(MEANING_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
-                .addValidator(MEANING_ENTITY, "Meaning Entity", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
-                        if (prop.isNull().get()) {
-                            return new ValidationMessage(MEANING_ENTITY, MessageType.ERROR, "${%s} is required".formatted(MEANING_ENTITY));
-                        }
-                        return VALID;
-                    })
+                .addValidator(MEANING_ENTITY, "Meaning Entity", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
+                    if (prop.isNull().get()) {
+                        validationResult.error("${%s} is required".formatted(MEANING_ENTITY));
+                    }
+                })
                 .addProperty(IS_INVALID, true);
     }
 }

@@ -29,6 +29,7 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import org.carlfx.cognitive.validator.MessageType;
 import org.carlfx.cognitive.validator.ValidationMessage;
+import org.carlfx.cognitive.validator.ValidationResult;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -69,47 +70,41 @@ public class DescrNameViewModel extends FormViewModel {
     public DescrNameViewModel() {
         super(); // defaults to View mode
                 addProperty(NAME_TEXT, "")
-                .addValidator(NAME_TEXT, "Name Text", (ReadOnlyStringProperty prop, ViewModel vm) -> {
+                .addValidator(NAME_TEXT, "Name Text", (ReadOnlyStringProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
                     if (prop.isEmpty().get()) {
-                        return new ValidationMessage(NAME_TEXT, MessageType.ERROR, "${%s} is required".formatted(NAME_TEXT));
+                        validationResult.error("${%s} is required".formatted(NAME_TEXT));
                     }
-                    return VALID;
                 })
                 .addProperty(NAME_TYPE, (ConceptEntity) null)
-                .addValidator(NAME_TYPE, "Name Type", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
+                .addValidator(NAME_TYPE, "Name Type", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
                     if (prop.isNull().get()) {
-                        return new ValidationMessage(NAME_TYPE, MessageType.ERROR, "${%s} is required".formatted(NAME_TYPE));
+                        validationResult.error("${%s} is required".formatted(NAME_TYPE));
                     }
-                    return VALID;
                 })
 
                 .addProperty(CASE_SIGNIFICANCE, (ConceptEntity) null)
-                .addValidator(CASE_SIGNIFICANCE, "Case Significance", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
+                .addValidator(CASE_SIGNIFICANCE, "Case Significance", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
                     if (prop.isNull().get()) {
-                        return new ValidationMessage(CASE_SIGNIFICANCE, MessageType.ERROR, "${%s} is required".formatted(CASE_SIGNIFICANCE));
+                        validationResult.error("${%s} is required".formatted(CASE_SIGNIFICANCE));
                     }
-                    return VALID;
                 })
                 .addProperty(STATUS, (ConceptEntity) null)
-                .addValidator(STATUS, "Status", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
+                .addValidator(STATUS, "Status", (ReadOnlyObjectProperty prop,ValidationResult validationResult, ViewModel viewModel) -> {
                     if (prop.isNull().get()) {
-                        return new ValidationMessage(STATUS, MessageType.ERROR, "${%s} is required".formatted(STATUS));
+                        validationResult.error("${%s} is required".formatted(STATUS));
                     }
-                    return VALID;
                 })
                 .addProperty(MODULE, (ConceptEntity) null)
-                .addValidator(MODULE, "Module", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
+                .addValidator(MODULE, "Module", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
                     if (prop.isNull().get()) {
-                        return new ValidationMessage(MODULE, MessageType.ERROR, "${%s} is required".formatted(MODULE));
+                        validationResult.error("${%s} is required".formatted(MODULE));
                     }
-                    return VALID;
                 })
                 .addProperty(LANGUAGE, (ConceptEntity) null)
-                .addValidator(LANGUAGE, "Language", (ReadOnlyObjectProperty prop, ViewModel vm) -> {
+                .addValidator(LANGUAGE, "Language", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
                     if (prop.isNull().get()) {
-                        return new ValidationMessage(LANGUAGE, MessageType.ERROR, "${%s} is required".formatted(LANGUAGE));
+                        validationResult.error("${%s} is required".formatted(LANGUAGE));
                     }
-                    return VALID;
                 })
                 .addProperty(IS_SUBMITTED, false)
                 .addProperty(PARENT_PUBLIC_ID, (PublicId) null)

@@ -26,7 +26,7 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -107,7 +107,7 @@ public class DescriptionNameController {
 
     @FXML
     public void initialize() {
-        ChangeListener fieldsValidationListner = (obs, oldValue, newValue) -> {
+        ChangeListener fieldsValidationListener = (obs, oldValue, newValue) -> {
             descrNameViewModel.validate();
             descrNameViewModel.setPropertyValue(IS_INVALID, descrNameViewModel.hasErrorMsgs());
         };
@@ -125,21 +125,21 @@ public class DescriptionNameController {
         setupComboBox(nameDescriptionType, fetchDescriptionTypes()); // Hard coded
         ObjectProperty<ConceptEntity> nameTypeProp = descrNameViewModel.getProperty(NAME_TYPE);
         nameDescriptionType.valueProperty().bind(nameTypeProp);
-        nameTypeProp.addListener(fieldsValidationListner);
+        nameTypeProp.addListener(fieldsValidationListener);
 
-        SimpleStringProperty nameTextProp = descrNameViewModel.getProperty(NAME_TEXT);
+        StringProperty nameTextProp = descrNameViewModel.getProperty(NAME_TEXT);
         nameTextField.textProperty().bindBidirectional(nameTextProp);
-        nameTextProp.addListener(fieldsValidationListner);
+        nameTextProp.addListener(fieldsValidationListener);
 
         setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
         ObjectProperty<ConceptEntity> moduleProp = descrNameViewModel.getProperty(MODULE);
         moduleComboBox.valueProperty().bindBidirectional(moduleProp);
-        moduleProp.addListener(fieldsValidationListner);
+        moduleProp.addListener(fieldsValidationListener);
 
         setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
         ObjectProperty<ConceptEntity> statusProp = descrNameViewModel.getProperty(STATUS);
         statusComboBox.valueProperty().bindBidirectional(statusProp);
-        statusProp.addListener(fieldsValidationListner);
+        statusProp.addListener(fieldsValidationListener);
 
         //TODO These are temp hard coded values:
         // Can use below code later?
@@ -147,12 +147,12 @@ public class DescriptionNameController {
         setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants(getViewProperties()));
         ObjectProperty<ConceptEntity> caseSignificanceProp = descrNameViewModel.getProperty(CASE_SIGNIFICANCE);
         caseSignificanceComboBox.valueProperty().bindBidirectional(caseSignificanceProp);
-        caseSignificanceProp.addListener(fieldsValidationListner);
+        caseSignificanceProp.addListener(fieldsValidationListener);
 
         setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
         ObjectProperty<ConceptEntity> languageProp = descrNameViewModel.getProperty(LANGUAGE);
         languageComboBox.valueProperty().bindBidirectional(languageProp);
-        languageProp.addListener(fieldsValidationListner);
+        languageProp.addListener(fieldsValidationListener);
     }
 
     @FXML
