@@ -16,6 +16,7 @@
 package dev.ikm.komet.app.test;
 
 import static dev.ikm.tinkar.terms.EntityProxy.Concept;
+import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE;
 import static dev.ikm.tinkar.terms.TinkarTerm.ENGLISH_LANGUAGE;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -28,9 +29,9 @@ import dev.ikm.tinkar.composer.Composer;
 import dev.ikm.tinkar.composer.Session;
 import dev.ikm.tinkar.composer.assembler.PatternAssembler;
 import dev.ikm.tinkar.composer.template.FullyQualifiedName;
-
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.PatternEntity;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
 import org.slf4j.Logger;
@@ -54,10 +55,28 @@ public class PatternViewModelTest {
         PrimitiveData.selectControllerByName("Open SpinedArrayStore");
 
         PrimitiveData.start();
+
+        // set up the composer session
+        composer = new Composer("Test Save Pattern Definition");
+        State status = State.ACTIVE;
+        long uncommittedStampTime = Long.MAX_VALUE; // is this correct?
+
+        Concept author = Concept.make(UUID.randomUUID().toString());
+        Concept module = Concept.make(UUID.randomUUID().toString());
+        Concept path = Concept.make(UUID.randomUUID().toString());
+        session = composer.open(status, uncommittedStampTime, author, module, path);
     }
+
+
+    public static Composer composer;
+
+    public static Session session;
 
     //@AfterAll
     public static void tearDownAfter() {
+        // perform the commit
+        // submit... (really publish??? need to revisit this)
+        composer.commitSession(session);
         PrimitiveData.stop();
     }
 
@@ -67,7 +86,17 @@ public class PatternViewModelTest {
             setUpBefore();
             try {
                 PatternViewModelTest testHarness = new PatternViewModelTest();
-                testHarness.savePattern();
+
+                // create the pattern definition; do not commit yet
+                PublicId patternPublicId = testHarness.setPatternDefintion();
+
+                // create the pattern description; do not commit yet
+                testHarness.setPatternDescription(patternPublicId);
+
+                // create the pattern fields; do not commit yet
+                //TODO implement this
+                //testHarness.setPatternFields(patternPublicId);
+
             } catch (Throwable e) {
                 e.printStackTrace();
                 tearDownAfter();
@@ -79,43 +108,34 @@ public class PatternViewModelTest {
     }
 
 
+
+
     /**
      * test creating a pattern using the composer API
      */
-    public void savePattern() {
-        Composer composer = new Composer("Test Save Pattern Definition");
-
-        State status = State.ACTIVE;
-        long uncommittedStampTime = Long.MAX_VALUE; // is this correct?
-
-        Concept author = Concept.make(UUID.randomUUID().toString());
-        Concept module = Concept.make(UUID.randomUUID().toString());
-        Concept path = Concept.make(UUID.randomUUID().toString());
+    public PublicId setPatternDefintion() {
 
         Concept patternMeaning = Concept.make(UUID.randomUUID().toString()); // find a meaning
-        Concept patternPurpose = Concept.make(UUID.randomUUID().toString());
+        Concept patternPurpose = Concept.make(UUID.randomUUID().toString()); // find a purpose
 
-        Session session = composer.open(status, uncommittedStampTime, author, module, path);
-
-        Concept fieldMeaning = Concept.make(UUID.randomUUID().toString());
-        Concept fieldPurpose = Concept.make(UUID.randomUUID().toString());
-        Concept fieldDataType = Concept.make(UUID.randomUUID().toString());
 
         PublicId patternPublicId = PublicIds.newRandom();
-        EntityProxy.Pattern pattern = EntityProxy.Pattern.make(patternPublicId);
+        Pattern pattern = Pattern.make(patternPublicId);
 
         // the composer handles saving to an uncommitted stamp
-        // it is uncommited until you say commit
+        // it is un-committed until you say commit
         session.compose((PatternAssembler patternAssembler) -> patternAssembler
                 .pattern(pattern)
                 .meaning(patternMeaning)
                 .purpose(patternPurpose)
-//                .fieldDefinition(fieldMeaning, fieldPurpose, fieldDataType)
-//                .attach((FullyQualifiedName fqn) -> fqn
-//                        .language(ENGLISH_LANGUAGE)
-//                        .text("FQN for Pattern")
-//                        .caseSignificance(DESCRIPTION_NOT_CASE_SENSITIVE))
         );
+        session.cancel(); // should we cancel?
+
+
+        // versions should be only 1
+        assert(EntityService.get().getEntityFast(pattern.asUuidList()).versions().size() == 1);
+
+        return patternPublicId;
 
         // commit vs uncommitted = the timestamp value on the STAMP. long max vs a real date
         //      you can have as many concepts and patters as you want pointing to that stamp
@@ -149,8 +169,27 @@ public class PatternViewModelTest {
 
         // uncommitted transactions are lost on restart because they are java objects... on restart of komet you will lose that transaction
         // and accessing the stamp
+    }
 
-        // submit... (really publish??? need to revisit this)
-        composer.commitSession(session);
+    private void setPatternDescription(PublicId patternPublicId) {
+
+        Pattern pattern = (Pattern) EntityService.get().getEntity(patternPublicId.asUuidList()).get();
+        Concept fieldMeaning = Concept.make(UUID.randomUUID().toString());
+        Concept fieldPurpose = Concept.make(UUID.randomUUID().toString());
+        Concept fieldDataType = Concept.make(UUID.randomUUID().toString());
+        session.compose((PatternAssembler patternAssembler) -> patternAssembler
+                        .pattern(pattern)
+                .fieldDefinition(fieldMeaning, fieldPurpose, fieldDataType)
+                .attach((FullyQualifiedName fqn) -> fqn
+                        .language(ENGLISH_LANGUAGE)
+                        .text("FQN for Pattern")
+                        .caseSignificance(DESCRIPTION_NOT_CASE_SENSITIVE))
+        );
+    }
+
+    private void setPatternFields(PublicId patterPublicId) {
+        Concept fieldMeaning = Concept.make(UUID.randomUUID().toString());
+        Concept fieldPurpose = Concept.make(UUID.randomUUID().toString());
+        Concept fieldDataType = Concept.make(UUID.randomUUID().toString());
     }
 }
