@@ -51,13 +51,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.skin.DatePickerSkin;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
@@ -262,7 +258,7 @@ public class ExportController {
     }
 
     @FXML
-    void handleExport(ActionEvent exportEvent){
+    private void handleExport(ActionEvent exportEvent) {
         exportEvent.consume();
 
         exportButton.setDisable(true);
