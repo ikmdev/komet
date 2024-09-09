@@ -213,7 +213,6 @@ public class PatternDetailsController {
         // capture descriptions information
         StringProperty fqnTextProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
         latestFqnText.textProperty().bind(fqnTextProperty);
-        addFqnMenuItem.setVisible(fqnTextProperty.isEmpty().get());
 
         // This will listen to the pattern descriptions event. Adding an FQN, Adding other name.
         patternDescriptionEventSubscriber = evt -> {
@@ -347,7 +346,7 @@ public class PatternDetailsController {
     private Node createFieldEntry(PatternField patternField, int fieldNum) {
         VBox fieldVBoxContainer = new VBox();
         fieldVBoxContainer.prefWidth(330);
-        Label fieldLabel = new Label("Field " + fieldNum);
+        Label fieldLabel = new Label("FIELD " + fieldNum);
         Text fieldText = new Text(patternField.displayName());
         fieldText.getStyleClass().add("grey12-12pt-bold");
         HBox outerHBox = new HBox();

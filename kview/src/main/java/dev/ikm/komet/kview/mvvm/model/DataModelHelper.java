@@ -27,33 +27,19 @@ import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.ConceptEntityVersion;
-import dev.ikm.tinkar.entity.ConceptRecord;
-import dev.ikm.tinkar.entity.ConceptVersionRecord;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.RecordListBuilder;
-import dev.ikm.tinkar.entity.SemanticRecord;
-import dev.ikm.tinkar.entity.SemanticVersionRecord;
-import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
@@ -86,7 +72,11 @@ public class DataModelHelper {
                 Entity.getFast(BYTE_ARRAY_FIELD.nid()),
                 Entity.getFast(ARRAY_FIELD.nid()),
                 Entity.getFast(INSTANT_LITERAL.nid()),
-                Entity.getFast(LONG.nid())
+                Entity.getFast(LONG.nid()),
+                Entity.getFast(VERTEX_FIELD.nid()),
+//                Entity.getFast(PLANAR_POINT.nid()),
+//                Entity.getFast(SPATIAL_POINT.nid()),
+                Entity.getFast(UUID_DATA_TYPE.nid())
         );
     }
 
