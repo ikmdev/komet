@@ -32,6 +32,8 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -57,6 +59,7 @@ import java.util.function.Consumer;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.PATTERN_FIELDS;
 import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchFieldDefinitionDataTypes;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
@@ -114,6 +117,12 @@ public class PatternFieldsController {
 
     @FXML
     private void initialize() {
+        ChangeListener fieldsValidationListener = (obs, oldValue, newValue) -> {
+            patternFieldsViewModel.validate();
+            patternFieldsViewModel.setPropertyValue(IS_INVALID, patternFieldsViewModel.hasErrorMsgs());
+        };
+
+        doneButton.disableProperty().bind(patternFieldsViewModel.getProperty(IS_INVALID));
 
         // load drag over animation for reuse on every drag and drop
         Config animeConfig = new Config(DRAG_OVER_ANIMATION_FXML_URL);
@@ -143,12 +152,23 @@ public class PatternFieldsController {
             }
         });
 
-        fieldOrderComboBox.valueProperty().bindBidirectional(patternFieldsViewModel.getProperty(FIELD_ORDER));
-        displayNameTextField.textProperty().bindBidirectional(patternFieldsViewModel.getProperty(DISPLAY_NAME));
-        dataTypeComboBox.valueProperty().bindBidirectional(patternFieldsViewModel.getProperty(DATA_TYPE));
-
         loadDataTypeComboBox();
 
+        ObjectProperty<Integer> fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
+        SimpleStringProperty displayNameProp = patternFieldsViewModel.getProperty(DISPLAY_NAME);
+        ObjectProperty<ConceptEntity> dataTypeProp = patternFieldsViewModel.getProperty(DATA_TYPE);
+        ObjectProperty<ConceptEntity> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
+        ObjectProperty<ConceptEntity> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
+
+        fieldOrderComboBox.valueProperty().bindBidirectional(fieldOrderProp);
+        displayNameTextField.textProperty().bindBidirectional(displayNameProp);
+        dataTypeComboBox.valueProperty().bindBidirectional(dataTypeProp);
+
+        fieldOrderProp.addListener(fieldsValidationListener);
+        displayNameProp.addListener(fieldsValidationListener);
+        dataTypeProp.addListener(fieldsValidationListener);
+        purposeProp.addListener(fieldsValidationListener);
+        meaningProp.addListener(fieldsValidationListener);
     }
 
     ViewProperties viewProperties;
@@ -417,7 +437,6 @@ public class PatternFieldsController {
 
     @FXML
     private void clearView(ActionEvent actionEvent) {
-
         patternFieldsViewModel.setPropertyValue(DISPLAY_NAME, "");
         patternFieldsViewModel.setPropertyValue(DATA_TYPE, null);
         removePurpose();

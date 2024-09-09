@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 public class PatternViewModel extends FormViewModel {
@@ -71,7 +70,7 @@ public class PatternViewModel extends FormViewModel {
                     .addProperty(STAMP_VIEW_MODEL, (ViewModel) null)
                     .addProperty(DEFINITION_VIEW_MODEL, (ViewModel) null)
                     .addProperty(FQN_DESCRIPTION_NAME, (DescrName) null)
-                    .addProperty(OTHER_NAMES, (List) null)
+                    .addProperty(OTHER_NAMES, new ArrayList<DescrName>())
                     // PATTERN>DEFINITION Purpose and Meaning
                     .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
                     .addProperty(MEANING_ENTITY, (EntityFacade) null) // this is/will be the 'meaning' concept entity
@@ -83,7 +82,7 @@ public class PatternViewModel extends FormViewModel {
                     .addProperty(FQN_DESCRIPTION_NAME_TEXT, "")
                     .addProperty(OTHER_NAME_DESCRIPTION_NAME_TEXT, "")
                     // Ordered collection of Fields
-                    .addProperty(FIELDS_COLLECTION, (List<PatternField>) new ArrayList<PatternField>())
+                    .addProperty(FIELDS_COLLECTION, new ArrayList<PatternField>())
             ;
     }
 
@@ -109,17 +108,4 @@ public class PatternViewModel extends FormViewModel {
             setPropertyValue(MEANING_TEXT, meaningFacade.description());
         }
     }
-
-    public void setDescriptionData(PatternField patternFields) {
-
-    }
-
-    public void setFullyQualifiedName(DescrName descrName) {
-        setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, descrName.getNameText());
-    }
-
-    public void setOtherNameText(DescrName descrName) {
-        setPropertyValue(OTHER_NAME_DESCRIPTION_NAME_TEXT, descrName.getNameText());
-    }
-
 }
