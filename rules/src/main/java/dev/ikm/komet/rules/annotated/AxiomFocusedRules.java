@@ -60,8 +60,7 @@ public class AxiomFocusedRules extends RulesBase {
             @MethodPredicate(method = "isAxiomFocused", args = {"$observation"}),
             @MethodPredicate(method = "isDefinitionRoot", args = {"$observation"})
     })
-    public void axiomIsDefinitionRoot(ObservationRecord $observation,
-                                      RhsContext ctx) {
+    public void axiomIsDefinitionRoot(ObservationRecord $observation) {
         if ($observation.subject() instanceof AxiomSubjectRecord axiomSubjectRecord) {
             if (!axiomSubjectRecord.axiomTree().containsVertexWithMeaning(TinkarTerm.NECESSARY_SET)) {
                 // allow addition of necessary set
@@ -84,8 +83,7 @@ public class AxiomFocusedRules extends RulesBase {
             @MethodPredicate(method = "isAxiomFocused", args = {"$observation"}),
             @MethodPredicate(method = "isAxiomSet", args = {"$observation"})
     })
-    public void axiomIsSet(ObservationRecord $observation,
-                           RhsContext ctx) {
+    public void axiomIsSet(ObservationRecord $observation) {
         if ($observation.subject() instanceof AxiomSubjectRecord axiomSubject) {
             if (axiomSubject.axiomMeaning().equals(TinkarTerm.NECESSARY_SET)) {
                 ChangeSetType changeToSufficientSet = new ChangeSetType(TinkarTerm.SUFFICIENT_SET, "Change to sufficient set", axiomSubject, calculator(), editCoordinate());
@@ -157,8 +155,7 @@ public class AxiomFocusedRules extends RulesBase {
             @MethodPredicate(method = "isAxiomFocused", args = {"$observation"}),
             @MethodPredicate(method = "isAxiomRoleOnly", args = {"$observation"})
     })
-    public void axiomIsRoleButNotARoleGroup(ObservationRecord $observation,
-                                            RhsContext ctx) {
+    public void axiomIsRoleButNotARoleGroup(ObservationRecord $observation) {
 
         if ($observation.subject() instanceof AxiomSubjectRecord axiomSubjectRecord) {
 
@@ -187,8 +184,7 @@ public class AxiomFocusedRules extends RulesBase {
             @MethodPredicate(method = "isAxiomFocused", args = {"$observation"}),
             @MethodPredicate(method = "isAxiomFeature", args = {"$observation"})
     })
-    public void axiomIsFeature(ObservationRecord $observation,
-                               RhsContext ctx) {
+    public void axiomIsFeature(ObservationRecord $observation) {
 
         if ($observation.subject() instanceof AxiomSubjectRecord axiomSubjectRecord) {
 
