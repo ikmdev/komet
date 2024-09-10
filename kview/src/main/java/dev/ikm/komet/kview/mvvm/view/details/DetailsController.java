@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.details;
 
+import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.events.*;
@@ -65,6 +66,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
@@ -637,9 +639,13 @@ public class DetailsController  {
         definitionTextArea.setText(viewCalculator.getDefinitionDescriptionText(entityFacade.nid()).orElse(""));
 
         // Public ID (UUID)
-        String uuidStr = entityFacade.publicId() != null ? entityFacade.publicId().asUuidArray()[0].toString(): "";
-        identifierText.setText(uuidStr);
-        identifierTooltip.setText(uuidStr);
+        List<String> idList = entityFacade.publicId().asUuidList().stream()
+                .map(UUID::toString)
+                .collect(Collectors.toList());
+        idList.addAll(DataModelHelper.getIdsToAppend(viewCalculator, entityFacade.toProxy()));
+        String idStr = String.join(", ", idList);
+        identifierText.setText(idStr);
+        identifierTooltip.setText(idStr);
 
         // Identicon
         Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());

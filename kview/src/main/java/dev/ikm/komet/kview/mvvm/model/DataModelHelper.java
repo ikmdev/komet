@@ -18,10 +18,17 @@ package dev.ikm.komet.kview.mvvm.model;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.TinkarTerm;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -65,5 +72,22 @@ public class DataModelHelper {
                 .mapToObj(decendentNid -> (ConceptEntity) Entity.getFast(decendentNid))
                 .collect(Collectors.toSet());
         return allDecendents;
+    }
+
+    public static List<String> getIdsToAppend(ViewCalculator viewCalc, EntityProxy componentInDetailsViewer) {
+        Latest<PatternEntityVersion> latestIdPattern = viewCalc.latestPatternEntityVersion(TinkarTerm.IDENTIFIER_PATTERN);
+        List<String> identifiersToAppend = new ArrayList<>();
+
+        EntityService.get().forEachSemanticForComponentOfPattern(componentInDetailsViewer.nid(), TinkarTerm.IDENTIFIER_PATTERN.nid(), (semanticEntity) -> {
+            viewCalc.latest(semanticEntity).ifPresent((latestSemanticVersion -> {
+                EntityProxy identifierSource = latestIdPattern.get().getFieldWithMeaning(TinkarTerm.IDENTIFIER_SOURCE, latestSemanticVersion);
+                if (!PublicId.equals(identifierSource, TinkarTerm.UNIVERSALLY_UNIQUE_IDENTIFIER)) {
+                    String idSourceName = viewCalc.getPreferredDescriptionTextWithFallbackOrNid(identifierSource);
+                    String idValue = latestIdPattern.get().getFieldWithMeaning(TinkarTerm.IDENTIFIER_VALUE, latestSemanticVersion);
+                    identifiersToAppend.add("%s: %s".formatted(idSourceName, idValue));
+                }
+            }));
+        });
+        return identifiersToAppend;
     }
 }
