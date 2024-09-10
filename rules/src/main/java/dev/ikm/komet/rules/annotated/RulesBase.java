@@ -165,8 +165,9 @@ public abstract class RulesBase {
      */
     @RuleElement
     public boolean isAxiomRoleGroup(ObservationRecord observation) {
-        return observation.subject() instanceof AxiomSubjectRecord axiomSubject &&
-                axiomSubject.axiomMeaningNid() == TinkarTerm.ROLE_TYPE.nid()
+        return observation.subject() instanceof AxiomSubjectRecord axiomSubject
+                &&
+                axiomSubject.axiomMeaningNid() == TinkarTerm.ROLE.nid()
                 &&
                 axiomSubject.vertexPropertyEquals(TinkarTerm.ROLE_TYPE, TinkarTerm.ROLE_GROUP);
     }
@@ -182,7 +183,7 @@ public abstract class RulesBase {
     public boolean isAxiomRoleOnly(ObservationRecord observation) {
         return observation.subject() instanceof AxiomSubjectRecord axiomSubject
                 &&
-                axiomSubject.axiomMeaningNid() == TinkarTerm.ROLE_TYPE.nid()
+                axiomSubject.axiomMeaningNid() == TinkarTerm.ROLE.nid()
                 &&
                 !axiomSubject.vertexPropertyEquals(TinkarTerm.ROLE_TYPE, TinkarTerm.ROLE_GROUP);
     }
