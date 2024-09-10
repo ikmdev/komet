@@ -51,4 +51,27 @@ public class ShowPatternPanelEvent extends Evt {
     public ShowPatternPanelEvent(Object source, EvtType eventType) {
         super(source, eventType);
     }
+
+    /**
+     * Constructs a prototypical Event.
+     *
+     * @param source    the object on which the Event initially occurred
+     * @param eventType
+     * @param fieldOrders the total number of field orders in the current pattern.
+     * @throws IllegalArgumentException if source is null
+     */
+    public ShowPatternPanelEvent(Object source, EvtType eventType, int fieldOrders) {
+        super(source, eventType);
+        this.fieldOrders = fieldOrders;
+    }
+
+    private int fieldOrders;
+
+    public int getFieldOrders() {
+        return fieldOrders;
+    }
+
+    public void setFieldOrders(int fieldOrders) {
+        this.fieldOrders = fieldOrders;
+    }
 }

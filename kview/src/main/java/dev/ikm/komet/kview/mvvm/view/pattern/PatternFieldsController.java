@@ -46,6 +46,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
+import javafx.util.converter.IntegerStringConverter;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -151,8 +152,8 @@ public class PatternFieldsController {
                 addMeaningToForm(entity);
             }
         });
-
         loadDataTypeComboBox();
+        loadFieldOrderComboBox();
 
         ObjectProperty<Integer> fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
         SimpleStringProperty displayNameProp = patternFieldsViewModel.getProperty(DISPLAY_NAME);
@@ -169,6 +170,15 @@ public class PatternFieldsController {
         dataTypeProp.addListener(fieldsValidationListener);
         purposeProp.addListener(fieldsValidationListener);
         meaningProp.addListener(fieldsValidationListener);
+    }
+
+    private void loadFieldOrderComboBox() {
+        int maxFieldOrders = 3;//(Integer) patternFieldsViewModel.getPropertyValue(MAX_FIELD_ORDERS) + 1 ;
+        for(int i=1; i <= maxFieldOrders; i++ ){
+            fieldOrderComboBox.getItems().add(i);
+        }
+        fieldOrderComboBox.setConverter(new IntegerStringConverter());
+        fieldOrderComboBox.getSelectionModel().selectFirst();
     }
 
     ViewProperties viewProperties;
