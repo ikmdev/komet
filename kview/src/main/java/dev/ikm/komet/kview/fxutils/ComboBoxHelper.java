@@ -17,11 +17,13 @@ package dev.ikm.komet.kview.fxutils;
 
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
@@ -47,7 +49,6 @@ public class ComboBoxHelper {
      */
     public static <T> void setupComboBox(ComboBox comboBox, InvalidationListener listener, Function<T, String> displayText) {
         comboBox.setConverter(new StringConverter<T>() {
-
             @Override
             public String toString(T conceptEntity) {
                 return displayText.apply(conceptEntity);
@@ -77,7 +78,6 @@ public class ComboBoxHelper {
                         } else {
                             setText(null);
                         }
-
                     }
                 };
             }
@@ -94,6 +94,7 @@ public class ComboBoxHelper {
     public static <T> void setupComboBoxWithCheckMarkIcon(ComboBox<T> comboBox, Function<T, String> displayText) {
         setupComboBoxWithIcon(comboBox, displayText, DEFAULT_CHECK_MARK_ICON_REGION);
     }
+
     /**
      * style a comboBox with a custom graphic icon
      * @param comboBox comboBox we are setting up
@@ -137,7 +138,7 @@ public class ComboBoxHelper {
                     if (!empty) {
                         if (this.isSelected()) {
                             this.getStyleClass().add("check-mark-selected");
-                        }else {
+                        } else {
                             this.getStyleClass().remove("check-mark-selected");
                         }
 
@@ -146,14 +147,11 @@ public class ComboBoxHelper {
                         contentLabel.setTextFill(Color.WHITE);
                         HBox.setHgrow(contentLabel, Priority.ALWAYS);
                         contentLabel.setMaxWidth(Double.MAX_VALUE);
-                        //contentLabel.setBorder(new Border(new BorderStroke(Color.ORANGE, BorderStrokeStyle.DASHED, new CornerRadii(2), new BorderWidths(1))));
 
                         // Create a check mark graphic
                         Region iconGraphic = new Region();
-                        //checkMarkGraphic.setBorder(new Border(new BorderStroke(Color.YELLOW, BorderStrokeStyle.DASHED, new CornerRadii(2), new BorderWidths(1))));
                         iconGraphic.getStyleClass().add(iconStyleClass);
                         HBox customListCell = new HBox(contentLabel, iconGraphic);
-                        //customListCell.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.DASHED, new CornerRadii(2), new BorderWidths(1))));
                         setGraphic(customListCell);
                     } else {
                         setGraphic(null);
