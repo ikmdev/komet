@@ -17,7 +17,6 @@ package dev.ikm.komet.app.test;
 
 import static dev.ikm.tinkar.terms.EntityProxy.Concept;
 import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
-import static dev.ikm.tinkar.terms.EntityProxy.Semantic;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_PATTERN;
 import static dev.ikm.tinkar.terms.TinkarTerm.ENGLISH_LANGUAGE;
@@ -30,17 +29,19 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.ServiceKeys;
 import dev.ikm.tinkar.common.service.ServiceProperties;
 import dev.ikm.tinkar.composer.Composer;
-import dev.ikm.tinkar.composer.SemanticTemplate;
 import dev.ikm.tinkar.composer.Session;
 import dev.ikm.tinkar.composer.assembler.PatternAssembler;
 import dev.ikm.tinkar.composer.assembler.SemanticAssembler;
 import dev.ikm.tinkar.composer.template.FullyQualifiedName;
 import dev.ikm.tinkar.composer.template.USDialect;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
-import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.PatternRecord;
+import dev.ikm.tinkar.entity.PatternRecordBuilder;
 import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
 import org.slf4j.Logger;
@@ -85,7 +86,7 @@ public class PatternViewModelTest {
     public static void tearDownAfter() {
         // perform the commit
         // submit... (really publish??? need to revisit this)
-        composer.commitSession(session);
+
         PrimitiveData.stop();
     }
 
@@ -105,6 +106,14 @@ public class PatternViewModelTest {
                 // create the pattern fields; do not commit yet
                 testHarness.setPatternFields(patternPublicId);
 
+                composer.commitSession(session);
+
+                Pattern pattern = (Pattern) EntityService.get().getEntity(patternPublicId.asUuidList()).get();
+                int patternVersionCount = EntityService.get().getEntityFast(pattern.asUuidList()).versions().size();
+                System.out.println("***************************************");
+                System.out.println("***** Pattern version count = %d *******".formatted(patternVersionCount));
+                System.out.println("***************************************");
+
             } catch (Throwable e) {
                 e.printStackTrace();
                 tearDownAfter();
@@ -123,9 +132,13 @@ public class PatternViewModelTest {
      */
     public PublicId setPatternDefintion() {
 
-        Concept patternMeaning = Concept.make(UUID.randomUUID().toString()); // find a meaning
-        Concept patternPurpose = Concept.make(UUID.randomUUID().toString()); // find a purpose
+        // a06158ff-e08a-5d7d-bcfa-6cbfdb138910
+        //Concept patternMeaning = Concept.make(UUID.randomUUID().toString()); // find a meaning
+        Concept patternMeaning = EntityService.get().getEntityFast(UUID.fromString("a06158ff-e08a-5d7d-bcfa-6cbfdb138910")).toProxy();
 
+        //c3dffc48-6493-54df-a2f0-14be8ba03091
+        //Concept patternPurpose = Concept.make(UUID.randomUUID().toString()); // find a purpose
+        Concept patternPurpose = EntityService.get().getEntityFast(UUID.fromString("c3dffc48-6493-54df-a2f0-14be8ba03091")).toProxy();
 
         PublicId patternPublicId = PublicIds.newRandom();
         Pattern pattern = Pattern.make(patternPublicId);
@@ -181,7 +194,8 @@ public class PatternViewModelTest {
 
     private void setPatternDescription(PublicId patternPublicId) {
 
-        Pattern pattern = (Pattern) EntityService.get().getEntity(patternPublicId.asUuidList()).get();
+        Pattern pattern = EntityService.get().getEntity(patternPublicId.asUuidList()).get().toProxy();
+
 
         session.compose((PatternAssembler patternAssembler) -> patternAssembler
                         .pattern(pattern)
