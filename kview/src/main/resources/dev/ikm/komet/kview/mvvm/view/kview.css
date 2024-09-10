@@ -2349,8 +2349,8 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-weight: normal;
 }
 
-.text-field-grey6 {
-    -fx-text-fill: -Grey-6;
+.text-field-black {
+    -fx-text-fill: black;
     -fx-border-radius: 5;
 }
 
