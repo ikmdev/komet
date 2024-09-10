@@ -138,21 +138,22 @@ public class ComboBoxHelper {
                     if (!empty) {
                         if (this.isSelected()) {
                             this.getStyleClass().add("check-mark-selected");
+
+                            // Label of text horizontal grow
+                            Label contentLabel = new Label(displayText.apply(item));
+                            contentLabel.setTextFill(Color.WHITE);
+                            HBox.setHgrow(contentLabel, Priority.ALWAYS);
+                            contentLabel.setMaxWidth(Double.MAX_VALUE);
+
+                            // Create a check mark graphic
+                            Region iconGraphic = new Region();
+                            iconGraphic.getStyleClass().add(iconStyleClass);
+                            HBox customListCell = new HBox(contentLabel, iconGraphic);
+                            setGraphic(customListCell);
                         } else {
                             this.getStyleClass().remove("check-mark-selected");
+                            setGraphic(null);
                         }
-
-                        // Label of text horizontal grow
-                        Label contentLabel = new Label(displayText.apply(item));
-                        contentLabel.setTextFill(Color.WHITE);
-                        HBox.setHgrow(contentLabel, Priority.ALWAYS);
-                        contentLabel.setMaxWidth(Double.MAX_VALUE);
-
-                        // Create a check mark graphic
-                        Region iconGraphic = new Region();
-                        iconGraphic.getStyleClass().add(iconStyleClass);
-                        HBox customListCell = new HBox(contentLabel, iconGraphic);
-                        setGraphic(customListCell);
                     } else {
                         setGraphic(null);
                     }
