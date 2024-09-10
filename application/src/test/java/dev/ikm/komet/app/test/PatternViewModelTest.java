@@ -17,8 +17,12 @@ package dev.ikm.komet.app.test;
 
 import static dev.ikm.tinkar.terms.EntityProxy.Concept;
 import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
+import static dev.ikm.tinkar.terms.EntityProxy.Semantic;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE;
+import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_PATTERN;
 import static dev.ikm.tinkar.terms.TinkarTerm.ENGLISH_LANGUAGE;
+import static dev.ikm.tinkar.terms.TinkarTerm.PREFERRED;
+import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.CachingService;
@@ -26,11 +30,16 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.ServiceKeys;
 import dev.ikm.tinkar.common.service.ServiceProperties;
 import dev.ikm.tinkar.composer.Composer;
+import dev.ikm.tinkar.composer.SemanticTemplate;
 import dev.ikm.tinkar.composer.Session;
 import dev.ikm.tinkar.composer.assembler.PatternAssembler;
+import dev.ikm.tinkar.composer.assembler.SemanticAssembler;
 import dev.ikm.tinkar.composer.template.FullyQualifiedName;
+import dev.ikm.tinkar.composer.template.USDialect;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.PatternEntity;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
@@ -94,8 +103,7 @@ public class PatternViewModelTest {
                 testHarness.setPatternDescription(patternPublicId);
 
                 // create the pattern fields; do not commit yet
-                //TODO implement this
-                //testHarness.setPatternFields(patternPublicId);
+                testHarness.setPatternFields(patternPublicId);
 
             } catch (Throwable e) {
                 e.printStackTrace();
@@ -129,7 +137,7 @@ public class PatternViewModelTest {
                 .meaning(patternMeaning)
                 .purpose(patternPurpose)
         );
-        session.cancel(); // should we cancel?
+        //session.cancel(); // should we cancel?
 
 
         // versions should be only 1
@@ -174,22 +182,29 @@ public class PatternViewModelTest {
     private void setPatternDescription(PublicId patternPublicId) {
 
         Pattern pattern = (Pattern) EntityService.get().getEntity(patternPublicId.asUuidList()).get();
-        Concept fieldMeaning = Concept.make(UUID.randomUUID().toString());
-        Concept fieldPurpose = Concept.make(UUID.randomUUID().toString());
-        Concept fieldDataType = Concept.make(UUID.randomUUID().toString());
+
         session.compose((PatternAssembler patternAssembler) -> patternAssembler
                         .pattern(pattern)
-                .fieldDefinition(fieldMeaning, fieldPurpose, fieldDataType)
                 .attach((FullyQualifiedName fqn) -> fqn
                         .language(ENGLISH_LANGUAGE)
                         .text("FQN for Pattern")
                         .caseSignificance(DESCRIPTION_NOT_CASE_SENSITIVE))
         );
+
+        session.compose((SemanticAssembler semanticAssembler) -> semanticAssembler
+                .reference(pattern)
+                .pattern(DESCRIPTION_PATTERN)
+                .fieldValues(fieldValues -> fieldValues
+                        .with(ENGLISH_LANGUAGE)
+                        .with("Pattern Other Name")
+                        .with(DESCRIPTION_NOT_CASE_SENSITIVE)
+                        .with(REGULAR_NAME_DESCRIPTION_TYPE))
+                .attach((USDialect dialect) -> dialect
+                        .acceptability(PREFERRED)));
+
     }
 
     private void setPatternFields(PublicId patterPublicId) {
-        Concept fieldMeaning = Concept.make(UUID.randomUUID().toString());
-        Concept fieldPurpose = Concept.make(UUID.randomUUID().toString());
-        Concept fieldDataType = Concept.make(UUID.randomUUID().toString());
+
     }
 }
