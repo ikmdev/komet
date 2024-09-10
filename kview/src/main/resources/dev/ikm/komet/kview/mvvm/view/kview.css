@@ -2393,8 +2393,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-size: 14px;
     -fx-font-style: normal;
     -fx-font-weight: 500;
-
-    /*-width-size: 180px;*/
+    
     -fx-min-width: -width-size;
     -fx-pref-width: -width-size;
     -fx-max-width: -width-size;
