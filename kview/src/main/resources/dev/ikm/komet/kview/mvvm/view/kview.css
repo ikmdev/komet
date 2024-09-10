@@ -2349,8 +2349,8 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-weight: normal;
 }
 
-.text-field-grey6 {
-    -fx-text-fill: -Grey-6;
+.text-field-black {
+    -fx-text-fill: black;
     -fx-border-radius: 5;
 }
 
@@ -2382,30 +2382,102 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-family: "Noto Sans";
 }
 
-.blue-arrow-combo-box-grey11 .list-cell {
+/* date selection combo box used by export */
+.blue-arrow-combo-box-grey11.combo-box-base {
     -fx-text-fill: -Grey-11;
+    -fx-background-color: -Grey-1;
+    -fx-border-color: -Grey-5;
+    -fx-border-radius: 4;
+
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
-    -fx-font-weight: 500;   
-    -fx-background-color: -Grey-1;
+    -fx-font-weight: 500;
+    
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
 }
 
-.blue-arrow-combo-box-grey11.combo-box-base {
-    -fx-border-radius: 4;
-    -fx-border-color: -Grey-5;
-    -fx-background-color: -Grey-1;
-}
-
-.blue-arrow-combo-box-grey11.combo-box-base > .arrow-button > .arrow {    
-    -fx-background-color: -Secondary-05;    
+.blue-arrow-combo-box-grey11.combo-box-base > .arrow-button > .arrow {
+    -fx-background-color: -Secondary-05;
     -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
 }
 
-.tag-container {
-    -fx-border-radius: 5;
-    -fx-border-color: -Grey-5;
-    -fx-background-color: -Grey-1;
+/* The background of the combo box's popup container */
+.blue-arrow-combo-box-grey11 .combo-box-popup > .list-view {
+    -fx-padding: 8px 0px;
+
+    /* border styling (outline stroke) */
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-border-color: -Grey-10;
+    -fx-border-style: solid;
+
+    /* background styling (fill) */
+    -fx-background-insets: 0;
+    -fx-background-radius: 8;
+    -fx-background-color: -Grey-10;
+
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.2) , 12, 0.0 , 0 , 8 );
+}
+
+/* Default color of ListCell when populated and not selected*/
+.blue-arrow-combo-box-grey11 .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell,
+.blue-arrow-combo-box-grey11 .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell:filled {
+    -fx-padding: 10 8;
+    -fx-text-fill: white;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 400;
+    -fx-background-insets: 0;
+    -fx-background-color: -Grey-10;
+    -fx-content-display: text-only;
+}
+
+/* Default color of ListCell when populated and not selected when there is a mouse hover */
+.blue-arrow-combo-box-grey11 .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell:filled:hover {
+    -fx-background: -fx-accent;
+    -fx-background-color: -Grey-9;
+    -fx-text-fill: white;
+    -fx-content-display: text-only;
+}
+
+/* ComboBox's ListView's ListCell is selected show the text only (allows Scene Builder to display without a check mark) */
+.blue-arrow-combo-box-grey11 .combo-box-popup  > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell:filled:selected,
+.blue-arrow-combo-box-grey11 .combo-box-popup  > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell:filled:selected:hover {
+    -fx-background: -fx-accent;
+    -fx-background-color: -Grey-9;
+    -fx-background-insets: 0;
+    -fx-text-fill: white;
+    -fx-content-display: text-only;
+}
+
+/* ComboBox's ListView's ListCell is selected show the graphic only when listcell has a class of .check-mark-selected
+   See ComboBoxHelper.setupComboBoxWithIcon(ComboBox cb, String iconStyleClass)
+*/
+.blue-arrow-combo-box-grey11 .combo-box-popup  > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell.check-mark-selected:filled:selected,
+.blue-arrow-combo-box-grey11 .combo-box-popup  > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell.check-mark-selected:filled:selected:hover {
+    -fx-background: -fx-accent;
+    -fx-background-color: -Grey-9;
+    -fx-background-insets: 0 1;
+    -fx-text-fill: white;
+    -fx-content-display: graphic-only;
+}
+
+/* green checkmark to the right on selected items in a ComboBox control */
+.check-mark {
+    -width-size: 25px;
+    -height-size: 20px;
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+    -fx-min-height: -height-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+    -fx-background-color: -Primary-04;
+    -fx-shape: "M7.49989 13.4749L4.02489 9.99987L2.84155 11.1749L7.49989 15.8332L17.4999 5.8332L16.3249 4.6582L7.49989 13.4749Z";
 }
 
 /* end making these for the dragged concept reusable fxml */
@@ -2470,10 +2542,16 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-4;
 }
 
-.grey7bg-grey2text {
+.grey-blue-button:disabled {
     -fx-border-radius: 4;
     -fx-background-color: -Grey-7;
     -fx-fill: -Grey-2;
+}
+
+.grey-blue-button {
+    -fx-border-radius: 4;
+    -fx-background-color: -Secondary-05;
+    -fx-fill: white;
 }
 
 /*********************************************************************************
@@ -2733,6 +2811,16 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-width: 4;
     -fx-border-style: dashed;
     -fx-background-color: rgba(255, 255, 255, 0.50);    
+}
+
+/* Styles title text inside the content of TitlePane. eg: DESCRIPTION , Fully Qualified Name.*/
+.pattern-title {
+    -fx-text-alignment: center;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-fill: -Grey-8;
+    -fx-font-weight: 600;
 }
 
 .pattern-titled-pane {
