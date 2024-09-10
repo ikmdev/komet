@@ -244,7 +244,6 @@ public class ExportController {
     public void handleCurrentDateTimeExport() {
         // Responsible for showing/hiding custom date range controls
         timePeriodComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
-            //FIXME
             if (timePeriodComboBox.getValue().equals("Current Date")) {
                 // Hide custom date range controls
                 dateTimePickerHbox.setVisible(false);
