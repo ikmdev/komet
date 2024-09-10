@@ -44,7 +44,7 @@ import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.MAX_FIELD_ORDERS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.TOTAL_EXISTING_FIELDS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
@@ -145,7 +145,7 @@ public class PropertiesController {
                         patternFieldsViewModel
                                 .setPropertyValue(PATTERN_TOPIC, patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC))
                                 .setPropertyValue(VIEW_PROPERTIES, getViewProperties())
-                                .setPropertyValue(MAX_FIELD_ORDERS, fieldOrders)
+                                .setPropertyValue(TOTAL_EXISTING_FIELDS, fieldOrders)
                 );
         JFXNode<Pane, PatternFieldsController> patternFieldsJFXNode = FXMLMvvmLoader.make(fieldsConfig);
         patternFieldsController = patternFieldsJFXNode.controller();

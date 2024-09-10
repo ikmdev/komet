@@ -34,6 +34,8 @@ import dev.ikm.tinkar.entity.EntityService;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -46,7 +48,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
-import javafx.util.converter.IntegerStringConverter;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -154,7 +155,7 @@ public class PatternFieldsController {
         });
         loadDataTypeComboBox();
         loadFieldOrderComboBox();
-
+        ObjectProperty<Integer> fieldOrders = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
         ObjectProperty<Integer> fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
         SimpleStringProperty displayNameProp = patternFieldsViewModel.getProperty(DISPLAY_NAME);
         ObjectProperty<ConceptEntity> dataTypeProp = patternFieldsViewModel.getProperty(DATA_TYPE);
@@ -173,12 +174,35 @@ public class PatternFieldsController {
     }
 
     private void loadFieldOrderComboBox() {
-        int maxFieldOrders = 3;//(Integer) patternFieldsViewModel.getPropertyValue(MAX_FIELD_ORDERS) + 1 ;
+        //remove the items from combobox list.
+        fieldOrderComboBox.getItems().clear();
+
+        //Create Interger observable List.
+        ObservableList<Integer> fieldOrdersList = FXCollections.observableArrayList();
+        // Get existing total number of fields.
+        ObjectProperty<Integer> fieldOrders = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
+        // The max field orders to be displayed is totalFields+1.
+        int maxFieldOrders = fieldOrders.get()+1;
+        //Iterate to populate the fieldOrdersList with number of fieds to be displayed.
         for(int i=1; i <= maxFieldOrders; i++ ){
-            fieldOrderComboBox.getItems().add(i);
+            fieldOrdersList.add(i);
         }
-        fieldOrderComboBox.setConverter(new IntegerStringConverter());
-        fieldOrderComboBox.getSelectionModel().selectFirst();
+        fieldOrderComboBox.setItems(fieldOrdersList);
+
+        /*fieldOrderComboBox.setConverter((new StringConverter<Integer>() {
+            @Override
+            public String toString(Integer fieldNumber) {
+                return String.valueOf(fieldNumber);
+            }
+
+            @Override
+            public Integer fromString(String s) {
+                return null;
+            }
+        }));
+
+        //Select 1st one by default This is temp code can be removed
+        fieldOrderComboBox.getSelectionModel().selectFirst();*/
     }
 
     ViewProperties viewProperties;

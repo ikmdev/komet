@@ -28,7 +28,7 @@ public class PatternFieldsViewModel extends FormViewModel {
 
     private static final Logger LOG = LoggerFactory.getLogger(PatternFieldsViewModel.class);
 
-    public static String MAX_FIELD_ORDERS = "maxFieldOrders";
+    public static String TOTAL_EXISTING_FIELDS = "totalExistingFields";
 
     public static String FIELD_ORDER = "fieldOrder";
 
@@ -74,7 +74,7 @@ public class PatternFieldsViewModel extends FormViewModel {
                 })
                 .addProperty(COMMENTS, "")
                 .addProperty(IS_INVALID, true)
-                .addProperty(MAX_FIELD_ORDERS, 1);
+                .addProperty(TOTAL_EXISTING_FIELDS, (Integer) 1);
         ;
     }
 }
