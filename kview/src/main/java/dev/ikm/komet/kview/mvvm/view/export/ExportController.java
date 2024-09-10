@@ -42,6 +42,7 @@ import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.aggregator.TemporalEntityAggregator;
 import dev.ikm.tinkar.fhir.transformers.FhirCodeSystemTransform;
 import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -201,7 +202,7 @@ public class ExportController {
     public void setupDateTimeExportComboBox() {
         dateTimePickerHbox.setVisible(false);
         handleCurrentDateTimeExport();
-        ComboBoxHelper.setupComboBoxWithIcon(timePeriodComboBox);
+        ComboBoxHelper.setupComboBoxWithIcon(timePeriodComboBox, String::toString, "check-mark");
         timePeriodComboBox.getSelectionModel().select(CURRRENT_DATE);
     }
 

@@ -14,7 +14,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" spacing="20.0" styleClass="white-container-border6" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.export.ExportController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" spacing="20.0" styleClass="white-container-border6" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.export.ExportController">
    <children>
       <HBox>
          <children>
@@ -61,7 +61,7 @@
             <Label styleClass="grey9-14pt-normal" text="Time Period" />
             <HBox spacing="12.0">
                <children>
-                  <ComboBox fx:id="timePeriodComboBox" prefHeight="28.0" prefWidth="172.0" styleClass="blue-arrow-combo-box-grey11" visibleRowCount="12">
+                  <ComboBox fx:id="timePeriodComboBox" prefHeight="28.0" prefWidth="172.0" styleClass="blue-arrow-combo-box-grey11">
                      <items>
                         <FXCollections fx:factory="observableArrayList">
                            <String fx:value="Current Date" />
