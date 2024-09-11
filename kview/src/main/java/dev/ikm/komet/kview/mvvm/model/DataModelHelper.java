@@ -36,6 +36,12 @@ import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.terms.EntityProxy;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -215,5 +221,29 @@ public class DataModelHelper {
         });
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
         TinkExecutor.threadPool().submit(commitTransactionTask);
+    }
+
+    public static List<String> getIdsToAppend(ViewCalculator viewCalc, EntityProxy componentInDetailsViewer) {
+        Latest<PatternEntityVersion> latestIdPattern = viewCalc.latestPatternEntityVersion(TinkarTerm.IDENTIFIER_PATTERN);
+        List<String> identifiersToAppend = new ArrayList<>();
+
+        EntityService.get().forEachSemanticForComponentOfPattern(componentInDetailsViewer.nid(), TinkarTerm.IDENTIFIER_PATTERN.nid(), (semanticEntity) -> {
+            viewCalc.latest(semanticEntity).ifPresent((latestSemanticVersion -> {
+                EntityProxy identifierSource = latestIdPattern.get().getFieldWithMeaning(TinkarTerm.IDENTIFIER_SOURCE, latestSemanticVersion);
+                if (!PublicId.equals(identifierSource, TinkarTerm.UNIVERSALLY_UNIQUE_IDENTIFIER)) {
+                    try {
+                        String idSourceName = viewCalc.getPreferredDescriptionTextWithFallbackOrNid(identifierSource);
+                        String idValue = latestIdPattern.get().getFieldWithMeaning(TinkarTerm.IDENTIFIER_VALUE, latestSemanticVersion);
+
+                        identifiersToAppend.add("%s: %s".formatted(idSourceName, idValue));
+                    } catch (IndexOutOfBoundsException exception) {
+                        // ignore. TODO: getFieldWithMeaning() should handle gracefully when a meaning isn't found
+                        // The issue is that the starter data's identifier symantec's idValue field's meaning id does not match.
+                        // When this is ignored the identifier field will just have the normal public ids.
+                    }
+                }
+            }));
+        });
+        return identifiersToAppend;
     }
 }
