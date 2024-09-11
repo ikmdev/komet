@@ -27,6 +27,7 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ExportDateTimePopOverEvent;
+import dev.ikm.komet.kview.fxutils.ComboBoxHelper;
 import dev.ikm.komet.kview.mvvm.viewmodel.ExportViewModel;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -50,6 +51,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.control.skin.DatePickerSkin;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -87,14 +89,18 @@ public class ExportController {
 
     protected static final String FHIR_TIME_EXPORT_PICKER_FXML_FILE = "fhir-time-export-picker.fxml";
 
-    private static final String CURRENT_DATE = "Current Date";
-
     private static final String CUSTOM_RANGE = "Custom Range";
+
+    private static final String CURRRENT_DATE = "Current Date";
+
 
     private static final String CURRENT_DATE_TIME_RANGE_FROM = "01/01/2022, 12:00 AM";
 
     @InjectViewModel
     private ExportViewModel exportViewModel;
+
+    @FXML
+    private TextField exportName;
 
     @FXML
     private ComboBox<String> exportOptions;
@@ -193,10 +199,10 @@ public class ExportController {
     }
 
     public void setupDateTimeExportComboBox() {
-        timePeriodComboBox.setValue(CURRENT_DATE);
-        timePeriodComboBox.getItems().addAll(CURRENT_DATE, CUSTOM_RANGE);
         dateTimePickerHbox.setVisible(false);
         handleCurrentDateTimeExport();
+        ComboBoxHelper.setupComboBoxWithIcon(timePeriodComboBox, String::toString, "check-mark");
+        timePeriodComboBox.getSelectionModel().select(CURRRENT_DATE);
     }
 
     private PopOver createPopover(UUID exportTopic, final int rangeType, Consumer<Long> dateTimeConsumer) {
@@ -255,18 +261,15 @@ public class ExportController {
     }
 
     @FXML
-    void handleExport(ActionEvent exportEvent){
+    private void handleExport(ActionEvent exportEvent) {
         exportEvent.consume();
-
-        exportButton.setDisable(true);
 
         String exportOption = exportOptions.getSelectionModel().getSelectedItem();
         FileChooser fileChooser = new FileChooser();
         //Date formatter for the desired date template
         String pattern = "yyyyMMdd-HHmm";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-        String initialFileName = "komet-%s.zip".formatted(simpleDateFormat.format(new Date()));
-        fileChooser.setInitialFileName(initialFileName);
+
 
         // get the from and to dates as millisecond long values
         long fromDate = transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM);
@@ -276,20 +279,29 @@ public class ExportController {
             fromDate = this.customFromEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()) : this.customFromEpochMillis;
             toDate = this.customToEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()) : this.customToEpochMillis;
         }
-
+        // if the user enters a name then use that name, e.g. test.json or test.zip
+        // if the user does not enter a name, then default to komet-yyyyMMdd-HHmm.zip|.json
+        String initialFileName = exportName.getText().isBlank()
+                ? "komet-%s".formatted(simpleDateFormat.format(new Date()))
+                : exportName.getText();
         if (exportOption.equalsIgnoreCase(CHANGE_SET)) {
+            initialFileName += ".zip";
             fileChooser.setTitle("Export file name as");
             //Making sure the zip is the only thing that is zipped up
             fileChooser.getExtensionFilters().addAll(
                     new FileChooser.ExtensionFilter("Zip Files", "*.zip"));
+            fileChooser.setInitialFileName(initialFileName);
             performChangeSetExport(fileChooser, fromDate, toDate);
         } else if (exportOption.equalsIgnoreCase(FHIR)) {
+            initialFileName += ".json";
             fileChooser.setTitle("Fhir File Exporter");
             fileChooser.getExtensionFilters().addAll(
                     new FileChooser.ExtensionFilter("Fhir Json Files", "*.json"));
+            fileChooser.setInitialFileName(initialFileName);
             // FHIR export
             performFhirExport(fileChooser, fromDate, toDate);
         }
+
     }
 
     private void performChangeSetExport(FileChooser fileChooser, long fromDate, long toDate) {
@@ -304,7 +316,6 @@ public class ExportController {
                         }else {
                             LOG.info("Export Completed");
                         }
-                        exportButton.setDisable(false);
                     });
             notifyProgressIndicator(completableFuture, "Export all data");
         }
@@ -337,7 +348,6 @@ public class ExportController {
         //Triggers the file chooser screen (where a user can choose a location)
         File exportFile = fileChooser.showSaveDialog(exportButton.getScene().getWindow());
         if (exportFile != null) {
-            exportButton.setDisable(true);
             Task<Void> exportTask = exportChangeSet(fromDate, toDate, exportFile);
             ProgressHelper.progress(exportTask, "Cancel Export");
         }

@@ -245,7 +245,7 @@
             </rowConstraints>
             <children>
                 <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#onCancel" styleClass="lidr-cancel-clear-button" text="CANCEL" GridPane.halignment="RIGHT" />
-                <Button fx:id="doneButton" mnemonicParsing="false" onAction="#onDone" styleClass="lidr-done-button" text="DONE" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
+                <Button fx:id="doneButton" disable="true" mnemonicParsing="false" onAction="#onDone" styleClass="lidr-done-button" text="DONE" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
                     <GridPane.margin>
                         <Insets right="12.0" />
                     </GridPane.margin>

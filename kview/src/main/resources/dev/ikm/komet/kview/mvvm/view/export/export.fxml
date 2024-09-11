@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
@@ -26,7 +28,7 @@
             <Label styleClass="grey9-14pt-normal" text="Name Export" />
             <HBox spacing="11.0">
                <children>
-                  <TextField prefHeight="32.0" prefWidth="474.0" promptText="Enter name" styleClass="text-field-grey6" HBox.hgrow="ALWAYS" />
+                  <TextField fx:id="exportName" prefHeight="32.0" prefWidth="474.0" promptText="Enter name" styleClass="text-field-black" HBox.hgrow="ALWAYS" />
                   <ComboBox fx:id="exportOptions" prefHeight="32.0" prefWidth="150.0" styleClass="white-combo-grey-arrow" />
                </children>
             </HBox>
@@ -59,7 +61,14 @@
             <Label styleClass="grey9-14pt-normal" text="Time Period" />
             <HBox spacing="12.0">
                <children>
-                  <ComboBox fx:id="timePeriodComboBox" prefHeight="28.0" prefWidth="172.0" styleClass="blue-arrow-combo-box-grey11" visibleRowCount="12" />
+                  <ComboBox fx:id="timePeriodComboBox" prefHeight="28.0" prefWidth="172.0" styleClass="blue-arrow-combo-box-grey11">
+                     <items>
+                        <FXCollections fx:factory="observableArrayList">
+                           <String fx:value="Current Date" />
+                           <String fx:value="Custom Range" />
+                        </FXCollections>
+                     </items>
+                  </ComboBox>
                   <HBox fx:id="dateTimePickerHbox">
                      <children>
                         <HBox alignment="CENTER" spacing="1.0">
@@ -116,7 +125,7 @@
                   <Insets bottom="4.0" left="16.0" right="16.0" top="4.0" />
                </opaqueInsets>
             </Button>
-            <Button fx:id="exportButton" mnemonicParsing="false" onAction="#handleExport" prefHeight="25.0" prefWidth="76.0" styleClass="grey7bg-grey2text" text="EXPORT" textFill="#e1e6f8">
+            <Button fx:id="exportButton" mnemonicParsing="false" onAction="#handleExport" prefHeight="25.0" prefWidth="76.0" styleClass="grey-blue-button" text="EXPORT" textFill="#e1e6f8">
                <font>
                   <Font size="13.0" />
                </font>

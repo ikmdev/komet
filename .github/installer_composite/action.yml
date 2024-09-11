@@ -1,0 +1,151 @@
+name: 'Workflow Call Installer Workflow'
+description: 'Installer Workflow Test'
+
+inputs:
+  branch_name:
+    required: false
+    description: "Branch Name"
+  isTag:
+    required: true
+    description: "Is Tagged Version"
+  release_upload_url:
+    required: false
+    description: "Release Upload Url"
+  operating_system:
+    required: true
+    description: "Current Operating System"
+  github_token:
+    required: true
+    description: "GitHub Token"
+
+runs:
+  using: "composite"
+  steps:
+     - name: Current OS
+       run: echo "Current OS - ${{inputs.operating_system}}"
+       shell: bash
+
+     - name: Extract Version
+       id: get_current_version
+       shell: bash
+       run: |
+          echo "POM_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
+
+     - name: Verify Is SNAPSHOT Version
+       id: verify_snapshot
+       shell: bash 
+       run: echo "isSnapshot=${{ contains(steps.get_current_version.outputs.POM_VERSION, '-SNAPSHOT') }}" >> $GITHUB_OUTPUT
+
+     - name: IS_SNAPSHOT
+       if:  steps.verify_snapshot.outputs.isSnapshot == 'true'
+       uses: actions/github-script@v7
+       id: snapshot_installers_vars
+       with:
+        result-encoding: json
+        script: |
+            //Get MacOS Suffix
+
+            var macos_suffix = '';
+            if ("${{inputs.operating_system}}".includes("macos")){
+            macos_suffix = ("${{inputs.operating_system}}".includes("13")) ? "-intel" : "-m1"
+            }
+            
+            // Get OS Name
+            const NODE_NAME = "${{inputs.operating_system}}".includes("ubuntu") ? "linux" : "${{inputs.operating_system}}".split('-')[0] + macos_suffix;
+            
+
+            var snapshotBranchName = 'main'; 
+            if ("${{inputs.branch_name}}" != "main"){
+            try {
+                snapshotBranchName = "${{inputs.branch_name}}".split('/')[1].substring(0, Math.min("${{inputs.branch_name}}".split('/')[1].length, 15))
+            } catch(ex) {
+                snapshotBranchName = "${{inputs.branch_name}}".substring(0, Math.min("${{inputs.branch_name}}".length, 15))
+            }
+            }
+            
+
+            const jpackageAppName = `Komet-SNAPSHOT-${NODE_NAME}-${snapshotBranchName}`;
+            const jpackageAppVersion = "${{steps.get_current_version.outputs.POM_VERSION}}".split('.')[0] + "." + "${{steps.get_current_version.outputs.POM_VERSION}}".split('.')[1] + "." + "${{github.run_number}}"
+            const mvnInstallerArgs = `-Pcreate-installer -D"jpackage.app.name"=${jpackageAppName} -D"jpackage.app.dest"=target/dist/snapshot-installer -D"jpackage.app.version"=${jpackageAppVersion}`
+
+
+            return {jpackageAppName, jpackageAppVersion, mvnInstallerArgs};
+
+     - name: Build Installers (SNAPSHOT)
+       if:  steps.verify_snapshot.outputs.isSnapshot == 'true'
+       run: |
+         ./mvnw clean install \
+           ${{fromJson(steps.snapshot_installers_vars.outputs.result).mvnInstallerArgs}} \
+           -B \
+           -e \
+           -D"org.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener"=warn \
+           -D"maven.build.cache.enabled"=false \
+           -DskipTests \
+           -DskipITs
+       shell: bash
+
+     - name: Upload SNAPSHOT Installers
+       uses: actions/upload-artifact@v4
+       if: steps.verify_snapshot.outputs.isSnapshot == 'true'
+       with:
+        name: ${{fromJson(steps.snapshot_installers_vars.outputs.result).jpackageAppName}}-${{fromJson(steps.snapshot_installers_vars.outputs.result).jpackageAppVersion}}
+        path: application/target/dist/snapshot-installer/*
+
+     - name: Build Installers (Release)
+       if: steps.verify_snapshot.outputs.isSnapshot == 'false' && inputs.isTag == 'true'
+       shell: bash
+       run: |
+        ./mvnw clean install \
+         -P create-installer \
+         -B \
+         -e \
+         -D"org.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener"=warn \
+         -D"maven.build.cache.enabled"=false \
+         -DskipTests \
+         -DskipITs 
+
+     - name: List Installer (Release)
+       id: get_installer_name
+       if: steps.verify_snapshot.outputs.isSnapshot == 'false' && inputs.isTag == 'true'
+       shell: bash
+       run: |
+        echo "INSTALLER_NAME=$(ls ./application/target/dist/installer/)" >> $GITHUB_OUTPUT
+
+     - name: Rename Operating System (Release)
+       id: get_asset_name_and_type
+       if: steps.verify_snapshot.outputs.isSnapshot == 'false' && inputs.isTag == 'true'
+       uses: actions/github-script@v7
+       with:
+        result-encoding: json
+        script: |
+          var node_name = "${{inputs.operating_system}}";
+          var asset_type = "";
+          var os_title = "";
+
+          if(node_name.includes("windows")){
+            asset_type = "msi";
+            os_title = "Windows";
+          } else if(node_name.includes("ubuntu")){
+            asset_type = "rpm";
+            os_title = "Linux"
+          } else  {
+            asset_type = "pkg";
+            os_title = node_name.includes("14") ? "Mac-M1" : "Mac-Intel";
+          }
+
+          const assetName = `Komet-${{steps.get_current_version.outputs.POM_VERSION}}-Installer-${os_title}-Unsigned.${asset_type}`;
+
+          return {assetName, asset_type};
+
+          
+
+     - name: upload linux artifact
+       uses: actions/upload-release-asset@v1
+       if: steps.verify_snapshot.outputs.isSnapshot == 'false' && inputs.isTag == 'true'
+       env:
+         GITHUB_TOKEN: ${{ inputs.github_token}}
+       with:
+         upload_url: ${{ inputs.release_upload_url }}
+         asset_path: ./application/target/dist/installer/${{steps.get_installer_name.outputs.INSTALLER_NAME}}
+         asset_name: ${{fromJson(steps.get_asset_name_and_type.outputs.result).assetName}}
+         asset_content_type: application/${{fromJson(steps.get_asset_name_and_type.outputs.result).asset_type}}
