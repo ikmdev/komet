@@ -260,8 +260,7 @@ public class PatternDetailsController {
         //TODO This will listen to the pattern fields input form submit.
         // The list should do insert at the field order instead of add.
         patternFieldsPanelEventSubscriber = evt -> {
-            List<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
-            patternFieldList.add(evt.getPatternField());
+            processFields(evt.getPatternField());
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
 
@@ -271,14 +270,37 @@ public class PatternDetailsController {
             while(listener.next()){
                 if(listener.wasAdded()) {
                     PatternField patternField = listener.getAddedSubList().getFirst();
-                    //TODO the fieldNum code should be removed and replaced by patternField.fieldOrder();
-                    int fieldNum = fieldsTilePane.getChildren().size() + 1;
-                    fieldsTilePane.getChildren().add(createFieldEntry(patternField, fieldNum));
+                    /*TODO the fieldNum code should be removed and replaced by patternField.fieldOrder();
+                    int fieldNum = fieldsTilePane.getChildren().size() + 1;*/
+                    fieldsTilePane.getChildren().add(createFieldEntry(patternField, patternField.fieldOrder()));
+                }
+                if(listener.wasRemoved()){
+                    PatternField patternField = listener.getRemoved().getFirst();
+                    fieldsTilePane.getChildren().remove(patternField.fieldOrder()-1);
                 }
             }
         });
         // Setup Properties
         setupProperties();
+    }
+
+    private void processFields(PatternField currentPatternField) {
+        List<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
+        int currentFieldOrder = currentPatternField.fieldOrder();
+        System.out.println(" ListSize: " + patternFieldList.size() + "  Current Field Order " + currentFieldOrder);
+        if(!patternFieldList.isEmpty() && patternFieldList.size() >= currentFieldOrder && patternFieldList.get(currentFieldOrder-1) != null){
+            rearrangeFields(currentFieldOrder, currentPatternField);
+        }else{
+            patternFieldList.add(currentPatternField.fieldOrder()-1, currentPatternField);
+        }
+    }
+
+    private void rearrangeFields(int currentFieldOrder, PatternField currentPatternField) {
+        List<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
+        PatternField replacePatternField = patternFieldList.remove(currentFieldOrder-1);
+        patternFieldList.add(currentPatternField.fieldOrder()-1, currentPatternField);
+        PatternField shiftPatternField = replacePatternField.withFieldOrder(currentFieldOrder+1);
+        processFields(shiftPatternField);
     }
 
     /**

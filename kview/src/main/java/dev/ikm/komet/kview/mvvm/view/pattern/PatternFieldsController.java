@@ -485,19 +485,15 @@ public class PatternFieldsController {
     public void onDone(ActionEvent actionEvent) {
         actionEvent.consume();
         collectFormData();
-
         // save calls validate
         patternFieldsViewModel.save();
         if (patternFieldsViewModel.hasErrorMsgs()) {
             // when there are validators, we potentially will have errors
             return; // do not proceed.
         }
-
         //publish close env
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
                 new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
-
-
         //publish form submission data
         PatternField patternField = new PatternField(
                 patternFieldsViewModel.getValue(FIELD_ORDER),
@@ -507,7 +503,6 @@ public class PatternFieldsController {
                 patternFieldsViewModel.getValue(MEANING_ENTITY),
                 patternFieldsViewModel.getValue(COMMENTS)
         );
-
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
                 new PatternFieldsPanelEvent(actionEvent.getSource(), PATTERN_FIELDS, patternField));
         clearView(actionEvent);
