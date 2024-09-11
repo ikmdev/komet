@@ -181,7 +181,6 @@ public class PatternFieldsController {
     private void loadFieldOrderComboBox() {
         //remove the items from combobox list.
         fieldOrderComboBox.getItems().clear();
-
         //Create Interger observable List.
         ObservableList<Integer> fieldOrdersList = FXCollections.observableArrayList();
         // Get existing total number of fields.
@@ -193,22 +192,7 @@ public class PatternFieldsController {
             fieldOrdersList.add(i);
         }
         fieldOrderComboBox.setItems(fieldOrdersList);
-
-        fieldOrderComboBox.getSelectionModel().selectLast();
-        /*fieldOrderComboBox.setConverter((new StringConverter<Integer>() {
-            @Override
-            public String toString(Integer fieldNumber) {
-                return String.valueOf(fieldNumber);
-            }
-
-            @Override
-            public Integer fromString(String s) {
-                return null;
-            }
-        }));
-
-        //Select 1st one by default This is temp code can be removed
-        fieldOrderComboBox.getSelectionModel().selectFirst();*/
+        patternFieldsViewModel.setPropertyValue(FIELD_ORDER, maxFieldOrders);
     }
 
     ViewProperties viewProperties;

@@ -378,9 +378,6 @@ public class PatternDetailsController {
         JFXNode<BorderPane, PropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(config);
         this.propertiesBorderPane = propsFXMLLoader.node();
         this.propertiesController = propsFXMLLoader.controller();
-
-
-
         attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
     }
 

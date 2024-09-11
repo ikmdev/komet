@@ -47,7 +47,7 @@ public class PatternFieldsViewModel extends FormViewModel {
     public PatternFieldsViewModel() {
         super();
         addProperty(VIEW_PROPERTIES, (ViewProperties) null)
-                .addProperty(FIELD_ORDER, 0) // default to 1, in create mode they will create the first one
+                .addProperty(FIELD_ORDER, 1) // default to 1, in create mode they will create the first one
                 .addProperty(DISPLAY_NAME, "")
                 .addValidator(DISPLAY_NAME, "Display Name", (ReadOnlyStringProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
                     if (prop.isEmpty().get()) {
