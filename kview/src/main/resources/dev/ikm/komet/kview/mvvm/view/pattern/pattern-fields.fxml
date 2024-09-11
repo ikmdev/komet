@@ -29,7 +29,7 @@
                 <VBox fx:id="semanticOuterVBox" spacing="8.0">
                     <children>
                           <Label styleClass="lidr-device-label" text="Field Order" />
-                          <ComboBox fx:id="fieldOrderComboBox" prefHeight="30.0" prefWidth="46.0" styleClass="blue-arrow-combo-box">
+                          <ComboBox fx:id="fieldOrderComboBox" prefHeight="30.0" styleClass="blue-arrow-combo-box">
                               <VBox.margin>
                                   <Insets />
                               </VBox.margin>

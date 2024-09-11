@@ -31,6 +31,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -155,16 +156,20 @@ public class PatternFieldsController {
         });
         loadDataTypeComboBox();
         loadFieldOrderComboBox();
-        ObjectProperty<Integer> fieldOrders = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
-        ObjectProperty<Integer> fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
+        IntegerProperty fieldOrders = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
+        IntegerProperty fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
         SimpleStringProperty displayNameProp = patternFieldsViewModel.getProperty(DISPLAY_NAME);
         ObjectProperty<ConceptEntity> dataTypeProp = patternFieldsViewModel.getProperty(DATA_TYPE);
         ObjectProperty<ConceptEntity> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
         ObjectProperty<ConceptEntity> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
 
-        fieldOrderComboBox.valueProperty().bindBidirectional(fieldOrderProp);
+        fieldOrderComboBox.valueProperty().bindBidirectional(fieldOrderProp.asObject());
         displayNameTextField.textProperty().bindBidirectional(displayNameProp);
         dataTypeComboBox.valueProperty().bindBidirectional(dataTypeProp);
+
+        fieldOrders.addListener((obs, oldVal, newVal) -> {
+            loadFieldOrderComboBox();
+        });
 
         fieldOrderProp.addListener(fieldsValidationListener);
         displayNameProp.addListener(fieldsValidationListener);
@@ -180,7 +185,7 @@ public class PatternFieldsController {
         //Create Interger observable List.
         ObservableList<Integer> fieldOrdersList = FXCollections.observableArrayList();
         // Get existing total number of fields.
-        ObjectProperty<Integer> fieldOrders = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
+        IntegerProperty fieldOrders = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
         // The max field orders to be displayed is totalFields+1.
         int maxFieldOrders = fieldOrders.get()+1;
         //Iterate to populate the fieldOrdersList with number of fieds to be displayed.
@@ -189,6 +194,7 @@ public class PatternFieldsController {
         }
         fieldOrderComboBox.setItems(fieldOrdersList);
 
+        fieldOrderComboBox.getSelectionModel().selectLast();
         /*fieldOrderComboBox.setConverter((new StringConverter<Integer>() {
             @Override
             public String toString(Integer fieldNumber) {
