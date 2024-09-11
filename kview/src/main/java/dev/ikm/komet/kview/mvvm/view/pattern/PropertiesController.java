@@ -70,7 +70,7 @@ public class PropertiesController {
     private SVGPath commentsButton;
 
     @FXML
-    private ToggleButton editButton;
+    private ToggleButton addEditButton;
 
     @FXML
     private ToggleButton historyButton;
@@ -132,17 +132,18 @@ public class PropertiesController {
         updateDefaultSelectedViews();
 
         showPatternPanelEventSubscriber = evt -> {
-            LOG.info("Show Edit View " + evt.getEventType());
-            this.editButton.setSelected(true);
+            LOG.info("Show Add/Edit View " + evt.getEventType());
 
             // TODO swap based on state (edit definition, ).
             if (evt.getEventType() == SHOW_ADD_DEFINITION) {
+                this.addEditButton.setText("ADD");
                 currentEditPane = patternDefinitionPane; // must be available.
             } else if (evt.getEventType() == SHOW_EDIT_FIELDS) {
                 currentEditPane = patternFieldsPane;
             } else if (evt.getEventType().getSuperType() == DESCRIPTION_NAME) {
                 setupDescriptionNamePane(evt.getEventType());
             }
+            this.addEditButton.setSelected(true);
             updateEditPane();
         };
         eventBus.subscribe(getPatternTopic(), ShowPatternPanelEvent.class, showPatternPanelEventSubscriber);
@@ -183,16 +184,16 @@ public class PropertiesController {
     private void updateDefaultSelectedViews() {
         // default to selected tab (History)
         Toggle tab = propertyToggleButtonGroup.getSelectedToggle();
-        if (editButton.equals(tab)) {
+        if (addEditButton.equals(tab)) {
             contentBorderPane.setCenter(null);
         }
     }
 
     @FXML
-    private void showEditView(ActionEvent event) {
+    private void showAddEditView(ActionEvent event) {
+        LOG.info("Show Add/Edit View " + event);
         event.consume();
-        this.editButton.setSelected(true);
-        LOG.info("Show Edit View " + event);
+        this.addEditButton.setSelected(true);
         contentBorderPane.setCenter(patternDefinitionPane);
     }
 

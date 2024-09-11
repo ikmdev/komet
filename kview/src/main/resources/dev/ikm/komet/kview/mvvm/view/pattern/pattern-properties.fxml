@@ -18,7 +18,7 @@
                <children>
                   <HBox alignment="CENTER" prefWidth="515.0">
                      <children>
-                        <ToggleButton fx:id="editButton" mnemonicParsing="false" styleClass="properties-tab" text="EDIT" textAlignment="JUSTIFY">
+                        <ToggleButton fx:id="addEditButton" mnemonicParsing="false" onAction="#showAddEditView" styleClass="properties-tab" text="ADD" textAlignment="JUSTIFY">
                            <graphic>
                               <SVGPath content="M11.7167 8L12.5 8.78333L4.93333 16.3333H4.16667V15.5667L11.7167 8ZM14.7167 3C14.5083 3 14.2917 3.08333 14.1333 3.24167L12.6083 4.76667L15.7333 7.89167L17.2583 6.36667C17.5833 6.04167 17.5833 5.5 17.2583 5.19167L15.3083 3.24167C15.1417 3.075 14.9333 3 14.7167 3ZM11.7167 5.65833L2.5 14.875V18H5.625L14.8417 8.78333L11.7167 5.65833Z" styleClass="svg-tab" />
                            </graphic>
