@@ -81,5 +81,7 @@ To run Komet with JPro in a Docker container, follow these steps:
 **Note:** Komet requires sample data to function fully.
 
 ## Issues and Contributions
-Technical and non-technical issues can be reported to the Issue Tracker (LINK TO ISSUE TRACKER ONCE PUT IN KOMET REPO).
+Technical and non-technical issues can be reported to the [Issue Tracker](https://github.com/ikmdev/komet/issues).
+
 Contributions can be submitted via pull requests. Please check the [contribution guide](doc/how-to-contribute.md) for more details.
+
