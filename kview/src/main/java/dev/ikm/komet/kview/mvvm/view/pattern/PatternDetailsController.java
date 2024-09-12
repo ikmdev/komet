@@ -273,7 +273,7 @@ public class PatternDetailsController {
                 }
                 if(listener.wasRemoved()){
                     PatternField patternField = listener.getRemoved().getFirst();
-                    fieldsTilePane.getChildren().remove(removeFieldEntry(patternField, patternField.fieldOrder()));
+                    fieldsTilePane.getChildren().remove(removeFieldEntry(patternField.fieldOrder()));
                 }
             }
         });
@@ -360,21 +360,28 @@ public class PatternDetailsController {
         return textFlows;
     }
 
-    private Node removeFieldEntry(PatternField patternField, int fieldNum){
+    /**
+     * This method iterates through the fieldsTilePane
+     * and removes the node that has to be rearranged.
+     * TODO - question for Carl - Do we need to use patternField instead. there is some hardcoding for FIELD label.
+     * @param fieldNum
+     * @return Node
+     *
+     */
+    private Node removeFieldEntry(int fieldNum){
 
-        AtomicReference<Node> nodetoRemove = new AtomicReference<>();
+        AtomicReference<Node> nodeToRemove = new AtomicReference<>();
         ObservableList<Node> fieldVBoxs = fieldsTilePane.getChildren();
         fieldVBoxs.forEach(node -> {
             VBox fieldVBoxContainer = (VBox) node;
             ObservableList<Node> fieldVBoxContainerItems = fieldVBoxContainer.getChildren();
             fieldVBoxContainerItems.forEach(item -> {
                 if((item instanceof Label) && ( ((Label) item).getText().equalsIgnoreCase("FIELD " + fieldNum))){
-                    nodetoRemove.set(node);
-
+                    nodeToRemove.set(node);
                 }
             });
         });
-        return nodetoRemove.get();
+        return nodeToRemove.get();
     }
 
     private Node createFieldEntry(PatternField patternField, int fieldNum) {
