@@ -54,6 +54,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.*;
@@ -241,7 +242,6 @@ public class PatternDetailsController {
         // hide menu item if FQN is added.
         addFqnMenuItem.visibleProperty().bind(fqnNameProp.isNull());
 
-
         // Update Other names section based on changes in List.
         ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
         descrNameObservableList.addListener(new ListChangeListener<DescrName>() {
@@ -264,19 +264,16 @@ public class PatternDetailsController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
 
-        //TODO This observable listener should refresh and reorder as per the inserted records field order.
         ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
         patternFieldList.addListener((ListChangeListener<? super PatternField>) (listener) -> {
             while(listener.next()){
                 if(listener.wasAdded()) {
                     PatternField patternField = listener.getAddedSubList().getFirst();
-                    /*TODO the fieldNum code should be removed and replaced by patternField.fieldOrder();
-                    int fieldNum = fieldsTilePane.getChildren().size() + 1;*/
                     fieldsTilePane.getChildren().add(createFieldEntry(patternField, patternField.fieldOrder()));
                 }
                 if(listener.wasRemoved()){
                     PatternField patternField = listener.getRemoved().getFirst();
-                    fieldsTilePane.getChildren().remove(patternField.fieldOrder()-1);
+                    fieldsTilePane.getChildren().remove(removeFieldEntry(patternField, patternField.fieldOrder()));
                 }
             }
         });
@@ -285,9 +282,8 @@ public class PatternDetailsController {
     }
 
     private void processFields(PatternField currentPatternField) {
-        List<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
+        ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
         int currentFieldOrder = currentPatternField.fieldOrder();
-        System.out.println(" ListSize: " + patternFieldList.size() + "  Current Field Order " + currentFieldOrder);
         if(!patternFieldList.isEmpty() && patternFieldList.size() >= currentFieldOrder && patternFieldList.get(currentFieldOrder-1) != null){
             rearrangeFields(currentFieldOrder, currentPatternField);
         }else{
@@ -296,7 +292,7 @@ public class PatternDetailsController {
     }
 
     private void rearrangeFields(int currentFieldOrder, PatternField currentPatternField) {
-        List<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
+        ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
         PatternField replacePatternField = patternFieldList.remove(currentFieldOrder-1);
         patternFieldList.add(currentPatternField.fieldOrder()-1, currentPatternField);
         PatternField shiftPatternField = replacePatternField.withFieldOrder(currentFieldOrder+1);
@@ -324,7 +320,6 @@ public class PatternDetailsController {
     private List<TextFlow> generateOtherNameRow(DescrName otherName) {
 
         List<TextFlow> textFlows = new ArrayList<>();
-
         // create textflow to hold regular name label
         TextFlow row1 = new TextFlow();
         Object obj = otherName.getNameText();
@@ -363,6 +358,23 @@ public class PatternDetailsController {
         textFlows.add(row2);
         textFlows.add(row3);
         return textFlows;
+    }
+
+    private Node removeFieldEntry(PatternField patternField, int fieldNum){
+
+        AtomicReference<Node> nodetoRemove = new AtomicReference<>();
+        ObservableList<Node> fieldVBoxs = fieldsTilePane.getChildren();
+        fieldVBoxs.forEach(node -> {
+            VBox fieldVBoxContainer = (VBox) node;
+            ObservableList<Node> fieldVBoxContainerItems = fieldVBoxContainer.getChildren();
+            fieldVBoxContainerItems.forEach(item -> {
+                if((item instanceof Label) && ( ((Label) item).getText().equalsIgnoreCase("FIELD " + fieldNum))){
+                    nodetoRemove.set(node);
+
+                }
+            });
+        });
+        return nodetoRemove.get();
     }
 
     private Node createFieldEntry(PatternField patternField, int fieldNum) {
