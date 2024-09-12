@@ -25,8 +25,12 @@ import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
+import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -37,6 +41,7 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -47,6 +52,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -122,16 +128,14 @@ public class PatternDetailsController {
 
     // pattern description fields
     @FXML
-    private Text fqnText; // fqn = fully qualified name
+    private Text latestFqnText; // fqn = fully qualified name
+    @FXML
+    private Text fqnDescriptionSemanticText;
+    @FXML
+    private Label fqnAddDateLabel;
 
     @FXML
-    private Text fqnDate;
-
-    @FXML
-    private Text otherNameText;
-
-    @FXML
-    private Text otherNameDate;
+    private VBox otherNamesVBox;
 
     @FXML
     private Button addDescriptionButton;
@@ -169,7 +173,7 @@ public class PatternDetailsController {
 
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
-
+        otherNamesVBox.getChildren().clear();
         // listen for open and close events
         patternPropertiesEventSubscriber = (evt) -> {
             if (evt.getEventType() == CLOSE_PANEL) {
@@ -208,35 +212,50 @@ public class PatternDetailsController {
 
         // capture descriptions information
         StringProperty fqnTextProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
-        fqnText.textProperty().bind(fqnTextProperty);
-        addFqnMenuItem.setVisible(fqnTextProperty.isEmpty().get());
-        StringProperty otTextProperty = patternViewModel.getProperty(OTHER_NAME_DESCRIPTION_NAME_TEXT);
-        otherNameText.textProperty().bind(otTextProperty);
+        latestFqnText.textProperty().bind(fqnTextProperty);
+
+        // This will listen to the pattern descriptions event. Adding an FQN, Adding other name.
         patternDescriptionEventSubscriber = evt -> {
+            // This if is invoked when the data is coming from FQN name screen.
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_FQN) {
-                patternViewModel.setFullyQualifiedName(evt.getDescrName());
-                addFqnMenuItem.setVisible(fqnTextProperty.isEmpty().get());
+                DescrName descrName = evt.getDescrName();
+                patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, descrName.getNameText());
+                patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME, descrName);
             }
+
+            // This if is invoked when the data is coming from Other name name screen.
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
-                patternViewModel.setOtherNameText(evt.getDescrName());
-            }
-            String dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-            if (patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT) != null
-                && !((String)patternViewModel.getPropertyValue(FQN_DESCRIPTION_NAME_TEXT)).isEmpty()) {
-                fqnDate.setText("Date Added: " + dateAddedStr);
-                fqnDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
-            } else {
-                fqnDate.setText("");
-            }
-            if (patternViewModel.getProperty(OTHER_NAME_DESCRIPTION_NAME_TEXT) != null
-                && !((String)patternViewModel.getPropertyValue(OTHER_NAME_DESCRIPTION_NAME_TEXT)).isEmpty()) {
-                otherNameDate.setText("Date Added: " + dateAddedStr);
-                otherNameDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
-            } else {
-                otherNameDate.setText("");
+                ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
+                descrNameObservableList.add(evt.getDescrName());
             }
         };
+
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
+
+        // Bind FQN property with description text, date and FQN menu item.
+        ObjectProperty<DescrName> fqnNameProp = patternViewModel.getProperty(FQN_DESCRIPTION_NAME);
+        // Generate description semantic and show
+        fqnDescriptionSemanticText.textProperty().bind(fqnNameProp.map(descrName -> " (%s)".formatted(generateDescriptionSemantics(descrName))).orElse(""));
+        // display current date else blank.
+        fqnAddDateLabel.textProperty().bind(fqnNameProp.map((fqnName) -> LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"))).orElse(""));
+        // hide menu item if FQN is added.
+        addFqnMenuItem.visibleProperty().bind(fqnNameProp.isNull());
+
+
+        // Update Other names section based on changes in List.
+        ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
+        descrNameObservableList.addListener(new ListChangeListener<DescrName>() {
+            @Override
+            public void onChanged(Change<? extends DescrName> change) {
+                while(change.next()){
+                    if(change.wasAdded()){
+                        DescrName descrName = change.getAddedSubList().getFirst();
+                        List<TextFlow> rows = generateOtherNameRow(descrName);
+                        otherNamesVBox.getChildren().addAll(rows);
+                    }
+                }
+            }
+        });
 
         //TODO This will listen to the pattern fields input form submit.
         // The list should do insert at the field order instead of add.
@@ -258,15 +277,76 @@ public class PatternDetailsController {
                 }
             }
         });
-
         // Setup Properties
         setupProperties();
+    }
+
+    /**
+     * This method Retrives language and case semantics.
+     * @param descrName
+     * @return String.
+     *
+     */
+
+    private String generateDescriptionSemantics(DescrName descrName){
+        ViewCalculator viewCalculator = getViewProperties().calculator();
+        ConceptEntity caseSigConcept = descrName.getCaseSignificance();
+        String casSigText = viewCalculator.getRegularDescriptionText(caseSigConcept.nid())
+                .orElse(caseSigConcept.nid()+"");
+        ConceptEntity langConcept = descrName.getLanguage();
+        String langText = viewCalculator.getRegularDescriptionText(langConcept.nid())
+                .orElse(String.valueOf(langConcept.nid()));
+        return "%s | %s".formatted(casSigText, langText);
+    }
+
+    private List<TextFlow> generateOtherNameRow(DescrName otherName) {
+
+        List<TextFlow> textFlows = new ArrayList<>();
+
+        // create textflow to hold regular name label
+        TextFlow row1 = new TextFlow();
+        Object obj = otherName.getNameText();
+        String nameLabel = String.valueOf(obj);
+        Text otherNameLabel = new Text(nameLabel);
+        otherNameLabel.getStyleClass().add("text-noto-sans-bold-grey-twelve");
+
+        //Text area of semantics used for the Other name text
+        Text semanticDescrText = new Text();
+        semanticDescrText.setText(" (%s)".formatted(generateDescriptionSemantics(otherName)));
+        semanticDescrText.getStyleClass().add("descr-semantic");
+
+        // add the other name label and description semantic label
+        row1.getStyleClass().add("descr-semantic-container");
+
+        row1.getChildren().addAll(otherNameLabel);
+
+        TextFlow row2 = new TextFlow();
+        row2.getChildren().addAll(semanticDescrText);
+
+        // update date
+        String dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
+        TextFlow row3 = new TextFlow();
+        Text dateAddedLabel = new Text("Date Added:");
+        dateAddedLabel.getStyleClass().add("text-noto-sans-normal-grey-eight");
+        Text dateLabel = new Text(dateAddedStr);
+        dateLabel.getStyleClass().add("text-noto-sans-normal-grey-eight");
+
+        Hyperlink attachmentHyperlink = new Hyperlink("Attachment");
+        Hyperlink commentHyperlink = new Hyperlink("Comment");
+
+        // Add the date info and additional hyperlinks
+        row3.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentHyperlink);
+
+        textFlows.add(row1);
+        textFlows.add(row2);
+        textFlows.add(row3);
+        return textFlows;
     }
 
     private Node createFieldEntry(PatternField patternField, int fieldNum) {
         VBox fieldVBoxContainer = new VBox();
         fieldVBoxContainer.prefWidth(330);
-        Label fieldLabel = new Label("Field " + fieldNum);
+        Label fieldLabel = new Label("FIELD " + fieldNum);
         Text fieldText = new Text(patternField.displayName());
         fieldText.getStyleClass().add("grey12-12pt-bold");
         HBox outerHBox = new HBox();

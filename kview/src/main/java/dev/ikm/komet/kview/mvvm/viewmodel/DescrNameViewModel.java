@@ -25,8 +25,11 @@ import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
 import org.carlfx.cognitive.validator.MessageType;
 import org.carlfx.cognitive.validator.ValidationMessage;
+import org.carlfx.cognitive.validator.ValidationResult;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -62,20 +65,53 @@ public class DescrNameViewModel extends FormViewModel {
 
     public static final String DESCRIPTION_NAME_TYPE = "descrNameType";
 
+    public static final String IS_INVALID = "isInvalid";
 
     public DescrNameViewModel() {
         super(); // defaults to View mode
-        addProperty(NAME_TEXT, "")
+                addProperty(NAME_TEXT, "")
+                .addValidator(NAME_TEXT, "Name Text", (ReadOnlyStringProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
+                    if (prop.isEmpty().get()) {
+                        validationResult.error("${%s} is required".formatted(NAME_TEXT));
+                    }
+                })
                 .addProperty(NAME_TYPE, (ConceptEntity) null)
+                .addValidator(NAME_TYPE, "Name Type", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
+                    if (prop.isNull().get()) {
+                        validationResult.error("${%s} is required".formatted(NAME_TYPE));
+                    }
+                })
+
                 .addProperty(CASE_SIGNIFICANCE, (ConceptEntity) null)
+                .addValidator(CASE_SIGNIFICANCE, "Case Significance", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
+                    if (prop.isNull().get()) {
+                        validationResult.error("${%s} is required".formatted(CASE_SIGNIFICANCE));
+                    }
+                })
                 .addProperty(STATUS, (ConceptEntity) null)
+                .addValidator(STATUS, "Status", (ReadOnlyObjectProperty prop,ValidationResult validationResult, ViewModel viewModel) -> {
+                    if (prop.isNull().get()) {
+                        validationResult.error("${%s} is required".formatted(STATUS));
+                    }
+                })
                 .addProperty(MODULE, (ConceptEntity) null)
+                .addValidator(MODULE, "Module", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
+                    if (prop.isNull().get()) {
+                        validationResult.error("${%s} is required".formatted(MODULE));
+                    }
+                })
                 .addProperty(LANGUAGE, (ConceptEntity) null)
+                .addValidator(LANGUAGE, "Language", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
+                    if (prop.isNull().get()) {
+                        validationResult.error("${%s} is required".formatted(LANGUAGE));
+                    }
+                })
                 .addProperty(IS_SUBMITTED, false)
                 .addProperty(PARENT_PUBLIC_ID, (PublicId) null)
                 .addProperty(SEMANTIC_PUBLIC_ID, (PublicId) null)
                 .addProperty(TITLE_TEXT, "")
                 .addProperty(DESCRIPTION_NAME_TYPE, "")
+                .addProperty(IS_INVALID, true)
         ;
     }
 

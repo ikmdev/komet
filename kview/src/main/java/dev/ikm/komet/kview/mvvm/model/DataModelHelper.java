@@ -27,33 +27,25 @@ import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.ConceptEntityVersion;
-import dev.ikm.tinkar.entity.ConceptRecord;
-import dev.ikm.tinkar.entity.ConceptVersionRecord;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.RecordListBuilder;
-import dev.ikm.tinkar.entity.SemanticRecord;
-import dev.ikm.tinkar.entity.SemanticVersionRecord;
-import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.terms.EntityProxy;
+
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
@@ -86,7 +78,11 @@ public class DataModelHelper {
                 Entity.getFast(BYTE_ARRAY_FIELD.nid()),
                 Entity.getFast(ARRAY_FIELD.nid()),
                 Entity.getFast(INSTANT_LITERAL.nid()),
-                Entity.getFast(LONG.nid())
+                Entity.getFast(LONG.nid()),
+                Entity.getFast(VERTEX_FIELD.nid()),
+//                Entity.getFast(PLANAR_POINT.nid()),
+//                Entity.getFast(SPATIAL_POINT.nid()),
+                Entity.getFast(UUID_DATA_TYPE.nid())
         );
     }
 
@@ -225,5 +221,29 @@ public class DataModelHelper {
         });
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
         TinkExecutor.threadPool().submit(commitTransactionTask);
+    }
+
+    public static List<String> getIdsToAppend(ViewCalculator viewCalc, EntityProxy componentInDetailsViewer) {
+        Latest<PatternEntityVersion> latestIdPattern = viewCalc.latestPatternEntityVersion(TinkarTerm.IDENTIFIER_PATTERN);
+        List<String> identifiersToAppend = new ArrayList<>();
+
+        EntityService.get().forEachSemanticForComponentOfPattern(componentInDetailsViewer.nid(), TinkarTerm.IDENTIFIER_PATTERN.nid(), (semanticEntity) -> {
+            viewCalc.latest(semanticEntity).ifPresent((latestSemanticVersion -> {
+                EntityProxy identifierSource = latestIdPattern.get().getFieldWithMeaning(TinkarTerm.IDENTIFIER_SOURCE, latestSemanticVersion);
+                if (!PublicId.equals(identifierSource, TinkarTerm.UNIVERSALLY_UNIQUE_IDENTIFIER)) {
+                    try {
+                        String idSourceName = viewCalc.getPreferredDescriptionTextWithFallbackOrNid(identifierSource);
+                        String idValue = latestIdPattern.get().getFieldWithMeaning(TinkarTerm.IDENTIFIER_VALUE, latestSemanticVersion);
+
+                        identifiersToAppend.add("%s: %s".formatted(idSourceName, idValue));
+                    } catch (IndexOutOfBoundsException exception) {
+                        // ignore. TODO: getFieldWithMeaning() should handle gracefully when a meaning isn't found
+                        // The issue is that the starter data's identifier symantec's idValue field's meaning id does not match.
+                        // When this is ignored the identifier field will just have the normal public ids.
+                    }
+                }
+            }));
+        });
+        return identifiersToAppend;
     }
 }

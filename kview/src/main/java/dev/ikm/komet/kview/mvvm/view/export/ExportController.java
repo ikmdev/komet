@@ -27,6 +27,7 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ExportDateTimePopOverEvent;
+import dev.ikm.komet.kview.fxutils.ComboBoxHelper;
 import dev.ikm.komet.kview.mvvm.viewmodel.ExportViewModel;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -88,9 +89,10 @@ public class ExportController {
 
     protected static final String FHIR_TIME_EXPORT_PICKER_FXML_FILE = "fhir-time-export-picker.fxml";
 
-    private static final String CURRENT_DATE = "Current Date";
-
     private static final String CUSTOM_RANGE = "Custom Range";
+
+    private static final String CURRRENT_DATE = "Current Date";
+
 
     private static final String CURRENT_DATE_TIME_RANGE_FROM = "01/01/2022, 12:00 AM";
 
@@ -197,10 +199,10 @@ public class ExportController {
     }
 
     public void setupDateTimeExportComboBox() {
-        timePeriodComboBox.setValue(CURRENT_DATE);
-        timePeriodComboBox.getItems().addAll(CURRENT_DATE, CUSTOM_RANGE);
         dateTimePickerHbox.setVisible(false);
         handleCurrentDateTimeExport();
+        ComboBoxHelper.setupComboBoxWithIcon(timePeriodComboBox, String::toString, "check-mark");
+        timePeriodComboBox.getSelectionModel().select(CURRRENT_DATE);
     }
 
     private PopOver createPopover(UUID exportTopic, final int rangeType, Consumer<Long> dateTimeConsumer) {
@@ -259,7 +261,7 @@ public class ExportController {
     }
 
     @FXML
-    void handleExport(ActionEvent exportEvent){
+    private void handleExport(ActionEvent exportEvent) {
         exportEvent.consume();
 
         String exportOption = exportOptions.getSelectionModel().getSelectedItem();
@@ -277,8 +279,11 @@ public class ExportController {
             fromDate = this.customFromEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()) : this.customFromEpochMillis;
             toDate = this.customToEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()) : this.customToEpochMillis;
         }
-        String namePrefix = exportName.getText().equals("") ? "komet" : exportName.getText();
-        String initialFileName = "%s-%s".formatted(namePrefix, simpleDateFormat.format(new Date()));
+        // if the user enters a name then use that name, e.g. test.json or test.zip
+        // if the user does not enter a name, then default to komet-yyyyMMdd-HHmm.zip|.json
+        String initialFileName = exportName.getText().isBlank()
+                ? "komet-%s".formatted(simpleDateFormat.format(new Date()))
+                : exportName.getText();
         if (exportOption.equalsIgnoreCase(CHANGE_SET)) {
             initialFileName += ".zip";
             fileChooser.setTitle("Export file name as");
