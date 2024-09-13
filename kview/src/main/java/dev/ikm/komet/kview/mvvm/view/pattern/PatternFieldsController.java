@@ -48,6 +48,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
+import javafx.util.converter.IntegerStringConverter;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -177,8 +178,11 @@ public class PatternFieldsController {
             loadFieldOrderOptions(newVal.intValue());
         });
 
+
+        fieldOrderComboBox.setConverter(new IntegerStringConverter());
+
         loadDataTypeComboBox();
-//        loadFieldOrderOptions(totalExistingfields.get());
+        loadFieldOrderOptions(totalExistingfields.get());
 
     }
 
@@ -199,8 +203,7 @@ public class PatternFieldsController {
             int optionValue = totalFields + 1;
             fieldOrderOptions.add(optionValue);
         }
-        patternFieldsViewModel.setPropertyValue(FIELD_ORDER, fieldOrderOptions.getLast());
-
+        fieldOrderComboBox.getSelectionModel().selectLast();
     }
 
     ViewProperties viewProperties;
