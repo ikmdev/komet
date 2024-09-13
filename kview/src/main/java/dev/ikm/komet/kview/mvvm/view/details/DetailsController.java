@@ -43,6 +43,12 @@ import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
+import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
+import dev.ikm.komet.kview.fxutils.MenuHelper;
+import dev.ikm.komet.kview.mvvm.model.DescrName;
+import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.AxiomChangeEvent;
 import dev.ikm.komet.framework.events.EvtBus;
@@ -60,17 +66,11 @@ import dev.ikm.komet.kview.events.EditConceptEvent;
 import dev.ikm.komet.kview.events.EditConceptFullyQualifiedNameEvent;
 import dev.ikm.komet.kview.events.EditOtherNameConceptEvent;
 import dev.ikm.komet.kview.events.OpenPropertiesPanelEvent;
-import dev.ikm.komet.kview.fxutils.MenuHelper;
-import dev.ikm.komet.kview.mvvm.model.DescrName;
-import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
-import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
@@ -744,9 +744,13 @@ public class DetailsController  {
         definitionTextArea.setText(viewCalculator.getDefinitionDescriptionText(entityFacade.nid()).orElse(""));
 
         // Public ID (UUID)
-        String uuidStr = entityFacade.publicId() != null ? entityFacade.publicId().asUuidArray()[0].toString(): "";
-        identifierText.setText(uuidStr);
-        identifierTooltip.setText(uuidStr);
+        List<String> idList = entityFacade.publicId().asUuidList().stream()
+                .map(UUID::toString)
+                .collect(Collectors.toList());
+        idList.addAll(DataModelHelper.getIdsToAppend(viewCalculator, entityFacade.toProxy()));
+        String idStr = String.join(", ", idList);
+        identifierText.setText(idStr);
+        identifierTooltip.setText(idStr);
 
         // Identicon
         Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
