@@ -30,6 +30,8 @@ import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
@@ -277,6 +279,13 @@ public class PatternDetailsController {
                 }
             }
         });
+        Label fqnAddDateLabel = new Label();
+        ObjectProperty<DescrName> objectProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME);
+        StringBinding dateStrProp = Bindings
+                .when(objectProperty.isNotNull())
+                .then(LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")))
+                .otherwise("");
+        fqnAddDateLabel.textProperty().bind(dateStrProp);
         // Setup Properties
         setupProperties();
     }

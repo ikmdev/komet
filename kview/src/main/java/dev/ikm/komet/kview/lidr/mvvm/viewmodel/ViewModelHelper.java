@@ -51,6 +51,7 @@ import java.util.regex.Pattern;
 import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.*;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ResultsViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 
 
 public class ViewModelHelper {
@@ -119,15 +120,15 @@ public class ViewModelHelper {
             }
             LOG.error("Error(s) with validation message(s)\n" + sb);
         }
-        State status = stampViewModel.getValue(STATUS_PROPERTY);
+        State status = stampViewModel.getValue(STATUS);
         PublicId statusPublicId = status != null ? status.publicId() : TinkarTerm.ACTIVE_STATE.publicId();
-        Concept author = stampViewModel.getValue(AUTHOR_PROPERTY);
+        Concept author = stampViewModel.getValue(AUTHOR);
         PublicId authorPublicId = author != null ? author.publicId() : TinkarTerm.USER.publicId();
-        Long time = stampViewModel.getValue(TIME_PROPERTY);
+        Long time = stampViewModel.getValue(TIME);
         long epochMillis = time == null ? System.currentTimeMillis() : time; // This may change due to when the actual record is written.
-        Concept module = stampViewModel.getValue(MODULE_PROPERTY);
+        Concept module = stampViewModel.getValue(MODULE);
         PublicId modulePublicId = module != null ? module.publicId() : TinkarTerm.DEVELOPMENT_MODULE.publicId();
-        Concept path = stampViewModel.getValue(PATH_PROPERTY);
+        Concept path = stampViewModel.getValue(PATH);
         PublicId pathPublicId = path != null ? path.publicId() : TinkarTerm.DEVELOPMENT_PATH.publicId();
 
         return new STAMPDetail(statusPublicId, epochMillis, authorPublicId, modulePublicId, pathPublicId);
