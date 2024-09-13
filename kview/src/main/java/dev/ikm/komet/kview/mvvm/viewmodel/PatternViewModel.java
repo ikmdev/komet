@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel.DISPLAY_DEFINITION_EDIT_MODE;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
@@ -89,6 +90,9 @@ public class PatternViewModel extends FormViewModel {
     public void setPurposeAndMeaningText(PatternDefinition patternDefinition) {
         setPropertyValue(PURPOSE_ENTITY, patternDefinition.purpose());
         setPropertyValue(MEANING_ENTITY, patternDefinition.meaning());
+
+        // if they are both not null, then toggle from add to edit mode, and vice versa
+        setPropertyValue(DISPLAY_DEFINITION_EDIT_MODE, patternDefinition.purpose() != null && patternDefinition.meaning() != null);
 
         String dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
         if (patternDefinition.meaning() != null) {

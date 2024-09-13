@@ -539,6 +539,5 @@ public class PatternDefinitionController {
         // publish form submission data
         EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC),
                 new PatternDefinitionEvent(actionEvent.getSource(), PATTERN_DEFINITION, patternDefinition));
-        clearView();
     }
 }

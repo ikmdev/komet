@@ -224,7 +224,7 @@ public class PatternDetailsController {
                 patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME, descrName);
             }
 
-            // This if is invoked when the data is coming from Other name name screen.
+            // This if is invoked when the data is coming from Other Name screen.
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
                 ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
                 descrNameObservableList.add(evt.getDescrName());
@@ -417,13 +417,15 @@ public class PatternDetailsController {
         // put the edit view in the properties pane
     }
 
+    /**
+     * show bump out and display Add or Edit Description panel
+     * @param actionEvent
+     */
     @FXML
-    private void showAddDefinitionPanel(ActionEvent actionEvent) {
-        // Todo show bump out and display Edit Description panel
+    private void showAddEditDefinitionPanel(ActionEvent actionEvent) {
         LOG.info("Todo show bump out and display Edit Definition panel \n" + actionEvent);
         // publish property open.
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_DEFINITION));
-
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 

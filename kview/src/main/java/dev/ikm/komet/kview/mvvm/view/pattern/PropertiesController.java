@@ -16,13 +16,30 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.DESCRIPTION_NAME;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_DEFINITION;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FQN;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_OTHER_NAME;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FIELDS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.DESCRIPTION_NAME_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TITLE_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel.DISPLAY_DEFINITION_EDIT_MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
+import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
+import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
 import dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import javafx.event.ActionEvent;
@@ -43,13 +60,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.UUID;
-
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*;
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
-import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 
 public class PropertiesController {
 
@@ -117,6 +127,8 @@ public class PropertiesController {
 
     private Subscriber<PropertyPanelEvent> showPropertyPanelSubscriber;
 
+    private Subscriber<PatternDefinitionEvent> patternDefinitionEventSubscriber;
+
     @FXML
     private void initialize() {
         clearView();
@@ -167,7 +179,6 @@ public class PropertiesController {
 
             // TODO swap based on state (edit definition, ).
             if (evt.getEventType() == SHOW_ADD_DEFINITION) {
-                this.addEditButton.setText("ADD");
                 currentEditPane = patternDefinitionPane; // must be available.
             } else if (evt.getEventType() == SHOW_EDIT_FIELDS) {
                 currentEditPane = patternFieldsPane;
@@ -191,6 +202,13 @@ public class PropertiesController {
             }
         };
         eventBus.subscribe(getPatternTopic(), PropertyPanelEvent.class, showPropertyPanelSubscriber);
+
+        patternDefinitionEventSubscriber = evt -> {
+            boolean isInEditMode = patternViewModel.getPropertyValue(DISPLAY_DEFINITION_EDIT_MODE);
+            this.addEditButton.setText(isInEditMode ? "EDIT" : "ADD");
+            System.out.println(this.addEditButton.getText());
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
     }
 
     private void setupDescriptionNamePane(EvtType eventType) {
