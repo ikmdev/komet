@@ -18,7 +18,7 @@ package dev.ikm.komet.kview.mvvm.view.descriptionname;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
-import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
+import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
@@ -42,7 +42,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
-import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescriptionTypes;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
@@ -159,7 +159,7 @@ public class DescriptionNameController {
     private void handleCancelButtonEvent(ActionEvent actionEvent) {
         actionEvent.consume();
         EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(),
-                new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+                new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         clearView();
     }
 
@@ -269,7 +269,7 @@ public class DescriptionNameController {
 
         //publish close env
         EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(),
-                new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+                new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         clearView();
     }
 

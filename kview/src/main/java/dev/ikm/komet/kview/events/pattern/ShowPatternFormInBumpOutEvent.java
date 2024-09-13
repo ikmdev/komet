@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.events;
+package dev.ikm.komet.kview.events.pattern;
 
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
@@ -26,18 +26,19 @@ import dev.ikm.komet.framework.events.EvtType;
  *     - Panel to add/edit a other description name
  * </pre>
  */
-public class ShowPatternPanelEvent extends Evt {
+public class ShowPatternFormInBumpOutEvent extends Evt {
 
-    public static final EvtType<ShowPatternPanelEvent> SHOW_ADD_DEFINITION = new EvtType<>(Evt.ANY, "SHOW_ADD_DEFINITION");
+    public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_ADD_DEFINITION = new EvtType<>(Evt.ANY, "SHOW_ADD_DEFINITION");
 
-    public static final EvtType<ShowPatternPanelEvent> SHOW_EDIT_FIELDS = new EvtType<>(Evt.ANY, "SHOW_EDIT_FIELDS");
+    public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_EDIT_FIELDS = new EvtType<>(Evt.ANY, "SHOW_EDIT_FIELDS");
 
     ////////// Description Name semantic events
-    public static final EvtType<ShowPatternPanelEvent> DESCRIPTION_NAME = new EvtType<>(Evt.ANY, "DESCRIPTION_NAME");
-    public static final EvtType<ShowPatternPanelEvent> SHOW_ADD_FQN = new EvtType<>(DESCRIPTION_NAME, "SHOW_ADD_FQN");
-    public static final EvtType<ShowPatternPanelEvent> SHOW_ADD_OTHER_NAME = new EvtType<>(DESCRIPTION_NAME, "SHOW_ADD_OTHER_NAME_DESCRIPTION");
-    public static final EvtType<ShowPatternPanelEvent> SHOW_EDIT_FQN = new EvtType<>(DESCRIPTION_NAME, "SHOW_EDIT_FQN_DESCRIPTION");
-    public static final EvtType<ShowPatternPanelEvent> SHOW_EDIT_OTHER_NAME = new EvtType<>(DESCRIPTION_NAME, "SHOW_EDIT_OTHER_NAME_DESCRIPTION");
+    public static final EvtType<ShowPatternFormInBumpOutEvent> DESCRIPTION_NAME = new EvtType<>(Evt.ANY, "DESCRIPTION_NAME");
+    public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_ADD_FQN = new EvtType<>(DESCRIPTION_NAME, "SHOW_ADD_FQN");
+    public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_ADD_OTHER_NAME = new EvtType<>(DESCRIPTION_NAME, "SHOW_ADD_OTHER_NAME_DESCRIPTION");
+
+    public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_EDIT_FQN = new EvtType<>(DESCRIPTION_NAME, "SHOW_EDIT_FQN_DESCRIPTION");
+    public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_EDIT_OTHER_NAME = new EvtType<>(DESCRIPTION_NAME, "SHOW_EDIT_OTHER_NAME_DESCRIPTION");
 
     //TODO future: other EvtTypes like show History, show Timeline etc
 
@@ -48,7 +49,7 @@ public class ShowPatternPanelEvent extends Evt {
      * @param eventType
      * @throws IllegalArgumentException if source is null
      */
-    public ShowPatternPanelEvent(Object source, EvtType eventType) {
+    public ShowPatternFormInBumpOutEvent(Object source, EvtType eventType) {
         super(source, eventType);
     }
 }
