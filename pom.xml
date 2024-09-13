@@ -76,7 +76,6 @@
         <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
         <jpackage.version>1.6.0</jpackage.version>
         <jpms-record-builder-core.version>36-r3</jpms-record-builder-core.version>
-        <jpms-roaringbitmap.version>0.9.31-r3</jpms-roaringbitmap.version>
         <log4j.version>3.0.0-alpha1</log4j.version>
         <maven.assembly-plugin.version>3.6.0</maven.assembly-plugin.version>
         <maven.compiler.version>3.13.0</maven.compiler.version>
