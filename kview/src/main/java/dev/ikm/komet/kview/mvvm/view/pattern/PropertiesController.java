@@ -115,6 +115,19 @@ public class PropertiesController {
         patternDefinitionPane = patternDefinitionControllerJFXNode.node();
 
 
+        // +-----------------------------------
+        // ! Edit field(s) within a Pattern
+        // +-----------------------------------
+        Config fieldsConfig = new Config(PATTERN_FIELDS_FXML_URL)
+                .updateViewModel("patternFieldsViewModel", (patternFieldsViewModel) ->
+                        patternFieldsViewModel
+                                .setPropertyValue(PATTERN_TOPIC, patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC))
+                                .setPropertyValue(VIEW_PROPERTIES, getViewProperties()));
+
+        JFXNode<Pane, PatternFieldsController> patternFieldsJFXNode = FXMLMvvmLoader.make(fieldsConfig);
+        patternFieldsController = patternFieldsJFXNode.controller();
+        patternFieldsPane = patternFieldsJFXNode.node();
+        patternFieldsController.setViewProperties(getViewProperties());
 
         // initially a default selected tab and view is shown
         updateDefaultSelectedViews();
@@ -127,7 +140,11 @@ public class PropertiesController {
             if (evt.getEventType() == SHOW_ADD_DEFINITION) {
                 currentEditPane = patternDefinitionPane; // must be available.
             } else if (evt.getEventType() == SHOW_EDIT_FIELDS) {
-                setupFieldsPane(evt.getFieldOrders());
+                patternFieldsController.updateViewModel(patternFieldsViewModel -> {
+                    patternFieldsViewModel.setPropertyValue(TOTAL_EXISTING_FIELDS, evt.getFieldOrders());
+                });
+                currentEditPane = patternFieldsPane;
+             //   setupFieldsPane(evt.getFieldOrders());
             } else if (evt.getEventType().getSuperType() == DESCRIPTION_NAME) {
                 setupDescriptionNamePane(evt.getEventType());
             }

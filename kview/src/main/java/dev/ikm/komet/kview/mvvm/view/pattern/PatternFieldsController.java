@@ -33,9 +33,8 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -154,45 +153,54 @@ public class PatternFieldsController {
                 addMeaningToForm(entity);
             }
         });
-        loadDataTypeComboBox();
-        loadFieldOrderComboBox();
-        IntegerProperty fieldOrders = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
+
+        IntegerProperty totalExistingfields = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
         IntegerProperty fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
-        SimpleStringProperty displayNameProp = patternFieldsViewModel.getProperty(DISPLAY_NAME);
+        StringProperty displayNameProp = patternFieldsViewModel.getProperty(DISPLAY_NAME);
         ObjectProperty<ConceptEntity> dataTypeProp = patternFieldsViewModel.getProperty(DATA_TYPE);
         ObjectProperty<ConceptEntity> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
         ObjectProperty<ConceptEntity> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
+        ObservableList<Integer> fieldOrderOptions = patternFieldsViewModel.getObservableList(FIELD_ORDER_OPTIONS);
+
+        fieldOrderComboBox.setItems(fieldOrderOptions); // Set the items in fieldOrder
 
         fieldOrderComboBox.valueProperty().bindBidirectional(fieldOrderProp.asObject());
         displayNameTextField.textProperty().bindBidirectional(displayNameProp);
         dataTypeComboBox.valueProperty().bindBidirectional(dataTypeProp);
 
-        fieldOrders.addListener((obs, oldVal, newVal) -> {
-            loadFieldOrderComboBox();
-        });
-
-        fieldOrderProp.addListener(fieldsValidationListener);
         displayNameProp.addListener(fieldsValidationListener);
         dataTypeProp.addListener(fieldsValidationListener);
         purposeProp.addListener(fieldsValidationListener);
         meaningProp.addListener(fieldsValidationListener);
+
+        totalExistingfields.addListener((obs, oldVal, newVal) -> {
+            loadFieldOrderOptions(newVal.intValue());
+        });
+
+        loadDataTypeComboBox();
+//        loadFieldOrderOptions(totalExistingfields.get());
+
     }
 
-    private void loadFieldOrderComboBox() {
-        //remove the items from combobox list.
-        fieldOrderComboBox.getItems().clear();
-        //Create Interger observable List.
-        ObservableList<Integer> fieldOrdersList = FXCollections.observableArrayList();
-        // Get existing total number of fields.
-        IntegerProperty fieldOrders = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
-        // The max field orders to be displayed is totalFields+1.
-        int maxFieldOrders = fieldOrders.get()+1;
-        //Iterate to populate the fieldOrdersList with number of fieds to be displayed.
-        for(int i=1; i <= maxFieldOrders; i++ ){
-            fieldOrdersList.add(i);
+    private void loadFieldOrderOptions(int totalFields){
+        // get the available dropdown options initially list will be empty.
+        ObservableList<Integer> fieldOrderOptions = patternFieldsViewModel.getObservableList(FIELD_ORDER_OPTIONS);
+        int optionsSize = fieldOrderOptions.size();
+        // The difference in totalFields populated and options available.
+        int diff = totalFields - optionsSize;
+
+        if (diff < 0) { // This is true if the user deletes few fields in details pane.
+            fieldOrderOptions.remove(totalFields, totalFields +1);
+        } else if (diff > 0) { // This is true if the user is editing the pattern fields.
+            for (int i = optionsSize; i <= totalFields; i++) {  // Loop and add all the field orders (Total fields +1)
+                fieldOrderOptions.add(i + 1);
+            }
+        } else {  // This is true when we are creating a new pattern and no fields are entered.
+            int optionValue = totalFields + 1;
+            fieldOrderOptions.add(optionValue);
         }
-        fieldOrderComboBox.setItems(fieldOrdersList);
-        patternFieldsViewModel.setPropertyValue(FIELD_ORDER, maxFieldOrders);
+        patternFieldsViewModel.setPropertyValue(FIELD_ORDER, fieldOrderOptions.getLast());
+
     }
 
     ViewProperties viewProperties;
@@ -503,8 +511,22 @@ public class PatternFieldsController {
                 patternFieldsViewModel.getValue(MEANING_ENTITY),
                 patternFieldsViewModel.getValue(COMMENTS)
         );
+
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
                 new PatternFieldsPanelEvent(actionEvent.getSource(), PATTERN_FIELDS, patternField));
+        if(LOG.isDebugEnabled()){
+            LOG.debug("Adding Field Number :%s , Field Name: %s".formatted(patternField.fieldOrder(), patternField.displayName()));
+        }
         clearView(actionEvent);
+    }
+
+    public void updateViewModel(Consumer<PatternFieldsViewModel> viewModelConsumer) {
+        if (viewModelConsumer != null) {
+            viewModelConsumer.accept(getViewModel());
+        }
+    }
+
+    public PatternFieldsViewModel getViewModel(){
+        return patternFieldsViewModel;
     }
 }

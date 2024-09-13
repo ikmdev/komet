@@ -265,6 +265,7 @@ public class PatternDetailsController {
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
 
         ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
+
         patternFieldList.addListener((ListChangeListener<? super PatternField>) (listener) -> {
             while(listener.next()){
                 if(listener.wasAdded()) {
@@ -274,6 +275,7 @@ public class PatternDetailsController {
                 if(listener.wasRemoved()){
                     PatternField patternField = listener.getRemoved().getFirst();
                     fieldsTilePane.getChildren().remove(removeFieldEntry(patternField.fieldOrder()));
+
                 }
             }
         });
@@ -283,6 +285,7 @@ public class PatternDetailsController {
 
     private void processFields(PatternField currentPatternField) {
         ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
+
         int currentFieldOrder = currentPatternField.fieldOrder();
         if(!patternFieldList.isEmpty() && patternFieldList.size() >= currentFieldOrder && patternFieldList.get(currentFieldOrder-1) != null){
             rearrangeFields(currentFieldOrder, currentPatternField);

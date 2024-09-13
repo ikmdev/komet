@@ -24,11 +24,15 @@ import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+
 public class PatternFieldsViewModel extends FormViewModel {
 
     private static final Logger LOG = LoggerFactory.getLogger(PatternFieldsViewModel.class);
 
     public static String TOTAL_EXISTING_FIELDS = "totalExistingFields";
+
+    public static String FIELD_ORDER_OPTIONS = "fieldOrderOptions";
 
     public static String FIELD_ORDER = "fieldOrder";
 
@@ -74,7 +78,8 @@ public class PatternFieldsViewModel extends FormViewModel {
                 })
                 .addProperty(COMMENTS, "")
                 .addProperty(IS_INVALID, true)
-                .addProperty(TOTAL_EXISTING_FIELDS, 0);
+                .addProperty(TOTAL_EXISTING_FIELDS, 0)
+                .addProperty(FIELD_ORDER_OPTIONS, new ArrayList<Integer>())
         ;
     }
 }
