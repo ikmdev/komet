@@ -81,7 +81,7 @@
         <maven.compiler.version>3.13.0</maven.compiler.version>
         <mockito.version>5.7.0</mockito.version>
         <nsmenufx.version>3.1.0</nsmenufx.version>
-        <openjfx.version>21</openjfx.version>
+        <openjfx.version>21.0.4</openjfx.version>
         <owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
         <owlapi.version>4.7.1</owlapi.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
