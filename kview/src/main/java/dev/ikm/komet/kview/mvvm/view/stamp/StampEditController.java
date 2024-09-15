@@ -31,6 +31,8 @@ import org.carlfx.cognitive.viewmodel.ViewModel;
 import java.util.List;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 
 public class StampEditController extends AbstractBasicController {
 
@@ -76,7 +78,7 @@ public class StampEditController extends AbstractBasicController {
         // When user selects a radio button
         moduleToggleGroup.selectedToggleProperty().addListener((observableValue, toggle, t1) -> {
             ConceptEntity module = (ConceptEntity) t1.getUserData();
-            getStampViewModel().setPropertyValue(MODULE_PROPERTY, module);
+            getStampViewModel().setPropertyValue(MODULE, module);
             if (module != null) {
                 moduleTitledPane.setText("Module: " + module.description());
             }
@@ -84,7 +86,7 @@ public class StampEditController extends AbstractBasicController {
 
         pathToggleGroup.selectedToggleProperty().addListener(((observableValue, toggle, t1) -> {
             ConceptEntity path = (ConceptEntity) t1.getUserData();
-            getStampViewModel().setPropertyValue(PATH_PROPERTY, path);
+            getStampViewModel().setPropertyValue(PATH, path);
             if (path != null) {
                 pathTitledPane.setText("Path: " + path.description());
             }
@@ -100,7 +102,7 @@ public class StampEditController extends AbstractBasicController {
             rb.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
             rb.setUserData(module);
             rb.setToggleGroup(moduleToggleGroup);
-            ObjectProperty<ConceptEntity> moduleProperty = getStampViewModel().getProperty(MODULE_PROPERTY);
+            ObjectProperty<ConceptEntity> moduleProperty = getStampViewModel().getProperty(MODULE);
             if (moduleProperty.isNotNull().get() && moduleProperty.get().nid() == module.nid()) {
                 rb.setSelected(true);
             }
@@ -115,7 +117,7 @@ public class StampEditController extends AbstractBasicController {
             rb.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
             rb.setUserData(path);
             rb.setToggleGroup(pathToggleGroup);
-            ObjectProperty<ConceptEntity> pathProperty = getStampViewModel().getProperty(PATH_PROPERTY);
+            ObjectProperty<ConceptEntity> pathProperty = getStampViewModel().getProperty(PATH);
             if (pathProperty.isNotNull().get() && pathProperty.get().nid() == path.nid()) {
                 rb.setSelected(true);
             }

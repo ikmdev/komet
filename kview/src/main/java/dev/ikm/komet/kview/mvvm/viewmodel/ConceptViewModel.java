@@ -22,6 +22,7 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
+import dev.ikm.tinkar.coordinate.stamp.StampFields;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
@@ -49,8 +50,7 @@ import java.util.UUID;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULE_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATH_PROPERTY;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 
 public class ConceptViewModel extends FormViewModel {
     private static final Logger LOG = LoggerFactory.getLogger(ConceptViewModel.class);
@@ -143,8 +143,8 @@ public class ConceptViewModel extends FormViewModel {
         Transaction transaction = Transaction.make("New concept for: " + fqnDescrName.getNameText());
 
         // Copy STAMP info
-        ConceptEntity module = stampViewModel.getValue(MODULE_PROPERTY);
-        ConceptEntity path = stampViewModel.getValue(PATH_PROPERTY);
+        ConceptEntity module = stampViewModel.getValue(StampFields.MODULE);
+        ConceptEntity path = stampViewModel.getValue(PATH);
 
         StampEntity stampEntity = transaction.getStamp(State.ACTIVE, editCoordinate.getAuthorNidForChanges(),
                 module.nid(), path.nid());
