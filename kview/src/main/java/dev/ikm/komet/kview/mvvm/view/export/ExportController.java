@@ -291,7 +291,9 @@ public class ExportController {
             fileChooser.getExtensionFilters().addAll(
                     new FileChooser.ExtensionFilter("Zip Files", "*.zip"));
             fileChooser.setInitialFileName(initialFileName);
-            performChangeSetExport(fileChooser, fromDate, toDate);
+            String progressTitle = CUSTOM_RANGE.equals(dateChoice) ?
+                    "Export Date Range: %s to %s".formatted(dateTimeFromLabel.getText(), dateTimeToLabel.getText())  : "Export All Data";
+            performChangeSetExport(fileChooser, fromDate, toDate, progressTitle);
         } else if (exportOption.equalsIgnoreCase(FHIR)) {
             initialFileName += ".json";
             fileChooser.setTitle("Fhir File Exporter");
@@ -304,7 +306,7 @@ public class ExportController {
 
     }
 
-    private void performChangeSetExport(FileChooser fileChooser, long fromDate, long toDate) {
+    private void performChangeSetExport(FileChooser fileChooser, long fromDate, long toDate, String progressTitle) {
         File exportFile = fileChooser.showSaveDialog(exportButton.getScene().getWindow());
         if (exportFile != null) {
             //Calls a tinkar-core class that is responsible for transforming entities from the database to
@@ -317,7 +319,7 @@ public class ExportController {
                             LOG.info("Export Completed");
                         }
                     });
-            notifyProgressIndicator(completableFuture, "Export all data");
+            notifyProgressIndicator(completableFuture, progressTitle);
         }
     }
 

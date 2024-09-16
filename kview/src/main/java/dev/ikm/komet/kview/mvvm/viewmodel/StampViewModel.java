@@ -17,6 +17,7 @@ package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.coordinate.stamp.StampFields;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -29,34 +30,32 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
+
 public class StampViewModel extends FormViewModel {
-    public final static String STATUS_PROPERTY = "status";
-    public final static String TIME_PROPERTY = "time";
-    public final static String AUTHOR_PROPERTY = "author";
-    public final static String MODULE_PROPERTY = "module";
-    public final static String PATH_PROPERTY = "path";
+
     public final static String MODULES_PROPERTY = "modules";
     public final static String PATHS_PROPERTY = "paths";
     public final static String INCOMPLETE = "Incomplete";
     public StampViewModel() {
         super(); // Default to ViewMode
-        addProperty(STATUS_PROPERTY, State.ACTIVE)
-                .addProperty(AUTHOR_PROPERTY, TinkarTerm.USER)
-                .addProperty(TIME_PROPERTY, System.currentTimeMillis())
-                .addProperty(MODULE_PROPERTY, (ConceptEntity) null)
-                .addProperty(PATH_PROPERTY, (ConceptEntity) null)
+        addProperty(STATUS, State.ACTIVE)
+                .addProperty(AUTHOR, TinkarTerm.USER)
+                .addProperty(TIME, System.currentTimeMillis())
+                .addProperty(MODULE, (ConceptEntity) null)
+                .addProperty(PATH, (ConceptEntity) null)
                 .addProperty(MODULES_PROPERTY, Collections.emptyList(), true)
                 .addProperty(PATHS_PROPERTY, Collections.emptyList(), true);
 
-        addValidator(MODULE_PROPERTY, "Module", (ReadOnlyObjectProperty nidProp, ViewModel vm) -> {
+        addValidator(MODULE, "Module", (ReadOnlyObjectProperty nidProp, ViewModel vm) -> {
             if (nidProp.isNull().get()) {
-                return new ValidationMessage(MODULE_PROPERTY, MessageType.ERROR, "Stamp's ${%s} is required.".formatted(MODULE_PROPERTY));
+                return new ValidationMessage(MODULE, MessageType.ERROR, "Stamp's ${%s} is required.".formatted(MODULE));
             }
             return VALID;
         });
-        addValidator(PATH_PROPERTY, "Path", (ReadOnlyObjectProperty nidProp, ViewModel vm) -> {
+        addValidator(PATH, "Path", (ReadOnlyObjectProperty nidProp, ViewModel vm) -> {
             if (nidProp.isNull().get()) {
-                return new ValidationMessage(PATH_PROPERTY, MessageType.ERROR, "Stamp's ${%s} is required.".formatted(PATH_PROPERTY));
+                return new ValidationMessage(PATH, MessageType.ERROR, "Stamp's ${%s} is required.".formatted(PATH));
             }
             return VALID;
         });
