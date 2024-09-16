@@ -48,7 +48,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
-import javafx.util.converter.IntegerStringConverter;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -163,8 +162,6 @@ public class PatternFieldsController {
         ObjectProperty<ConceptEntity> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
         ObservableList<Integer> fieldOrderOptions = patternFieldsViewModel.getObservableList(FIELD_ORDER_OPTIONS);
 
-        fieldOrderComboBox.setItems(fieldOrderOptions); // Set the items in fieldOrder
-
         fieldOrderComboBox.valueProperty().bindBidirectional(fieldOrderProp.asObject());
         displayNameTextField.textProperty().bindBidirectional(displayNameProp);
         dataTypeComboBox.valueProperty().bindBidirectional(dataTypeProp);
@@ -180,10 +177,12 @@ public class PatternFieldsController {
 
         loadDataTypeComboBox();
         loadFieldOrderOptions(totalExistingfields.get());
+        fieldOrderComboBox.setItems(fieldOrderOptions); // Set the items in fieldOrder
 
     }
 
     private void loadFieldOrderOptions(int totalFields){
+
         // get the available dropdown options initially list will be empty.
         ObservableList<Integer> fieldOrderOptions = patternFieldsViewModel.getObservableList(FIELD_ORDER_OPTIONS);
         int optionsSize = fieldOrderOptions.size();
@@ -200,8 +199,9 @@ public class PatternFieldsController {
             int optionValue = totalFields + 1;
             fieldOrderOptions.add(optionValue);
         }
+
+        fieldOrderComboBox.setItems(fieldOrderOptions); // Set the items in fieldOrder
         fieldOrderComboBox.getSelectionModel().selectLast();
-        fieldOrderComboBox.setConverter(new IntegerStringConverter());
 
     }
 
