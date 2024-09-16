@@ -108,7 +108,6 @@ import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
@@ -249,9 +248,6 @@ public class JournalController {
      */
     @FXML
     public void initialize() {
-        // According to the JavaFX docs an ordinary Pane does not clip region. TODO infinite workspace
-        clipChildren(desktopSurfacePane, 0);
-
         reasonerNodePanel = new BorderPane();
 
         // When user clicks on sidebar tray's toggle buttons.
