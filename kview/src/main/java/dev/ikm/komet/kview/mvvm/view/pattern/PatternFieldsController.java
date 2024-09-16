@@ -178,9 +178,6 @@ public class PatternFieldsController {
             loadFieldOrderOptions(newVal.intValue());
         });
 
-
-        fieldOrderComboBox.setConverter(new IntegerStringConverter());
-
         loadDataTypeComboBox();
         loadFieldOrderOptions(totalExistingfields.get());
 
@@ -204,6 +201,8 @@ public class PatternFieldsController {
             fieldOrderOptions.add(optionValue);
         }
         fieldOrderComboBox.getSelectionModel().selectLast();
+        fieldOrderComboBox.setConverter(new IntegerStringConverter());
+
     }
 
     ViewProperties viewProperties;
