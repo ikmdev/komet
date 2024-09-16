@@ -38,7 +38,7 @@ public class ShowPatternPanelEvent extends Evt {
     public static final EvtType<ShowPatternPanelEvent> SHOW_ADD_OTHER_NAME = new EvtType<>(DESCRIPTION_NAME, "SHOW_ADD_OTHER_NAME_DESCRIPTION");
     public static final EvtType<ShowPatternPanelEvent> SHOW_EDIT_FQN = new EvtType<>(DESCRIPTION_NAME, "SHOW_EDIT_FQN_DESCRIPTION");
     public static final EvtType<ShowPatternPanelEvent> SHOW_EDIT_OTHER_NAME = new EvtType<>(DESCRIPTION_NAME, "SHOW_EDIT_OTHER_NAME_DESCRIPTION");
-    private final int fields;
+    private final int totalFields;
 
 
     //TODO future: other EvtTypes like show History, show Timeline etc
@@ -52,7 +52,7 @@ public class ShowPatternPanelEvent extends Evt {
      */
     public ShowPatternPanelEvent(Object source, EvtType eventType) {
         super(source, eventType);
-        this.fields=0;
+        this.totalFields =0;
     }
 
     /**
@@ -60,16 +60,16 @@ public class ShowPatternPanelEvent extends Evt {
      *
      * @param source    the object on which the Event initially occurred
      * @param eventType
-     * @param fields the total number of fields added in the current pattern.
+     * @param totalFields the total number of fields added in the current pattern.
      * @throws IllegalArgumentException if source is null
      */
-    public ShowPatternPanelEvent(Object source, EvtType eventType, int fields) {
+    public ShowPatternPanelEvent(Object source, EvtType eventType, int totalFields) {
         super(source, eventType);
-        this.fields = fields;
+        this.totalFields = totalFields;
     }
 
-    public int getFields() {
-        return fields;
+    public int getTotalFields() {
+        return totalFields;
     }
 
 }

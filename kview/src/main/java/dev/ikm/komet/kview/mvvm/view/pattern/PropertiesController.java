@@ -140,7 +140,7 @@ public class PropertiesController {
                 currentEditPane = patternDefinitionPane; // must be available.
             } else if (evt.getEventType() == SHOW_EDIT_FIELDS) {
                 patternFieldsController.updateViewModel(patternFieldsViewModel -> {
-                    patternFieldsViewModel.setPropertyValue(TOTAL_EXISTING_FIELDS, evt.getFields());
+                    patternFieldsViewModel.setPropertyValue(TOTAL_EXISTING_FIELDS, evt.getTotalFields());
                 });
                 currentEditPane = patternFieldsPane;
              //   setupFieldsPane(evt.getFields());
