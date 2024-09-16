@@ -38,6 +38,8 @@ public class ShowPatternPanelEvent extends Evt {
     public static final EvtType<ShowPatternPanelEvent> SHOW_ADD_OTHER_NAME = new EvtType<>(DESCRIPTION_NAME, "SHOW_ADD_OTHER_NAME_DESCRIPTION");
     public static final EvtType<ShowPatternPanelEvent> SHOW_EDIT_FQN = new EvtType<>(DESCRIPTION_NAME, "SHOW_EDIT_FQN_DESCRIPTION");
     public static final EvtType<ShowPatternPanelEvent> SHOW_EDIT_OTHER_NAME = new EvtType<>(DESCRIPTION_NAME, "SHOW_EDIT_OTHER_NAME_DESCRIPTION");
+    private final int fields;
+
 
     //TODO future: other EvtTypes like show History, show Timeline etc
 
@@ -50,6 +52,7 @@ public class ShowPatternPanelEvent extends Evt {
      */
     public ShowPatternPanelEvent(Object source, EvtType eventType) {
         super(source, eventType);
+        this.fields=0;
     }
 
     /**
@@ -57,21 +60,16 @@ public class ShowPatternPanelEvent extends Evt {
      *
      * @param source    the object on which the Event initially occurred
      * @param eventType
-     * @param fieldOrders the total number of field orders in the current pattern.
+     * @param fields the total number of fields added in the current pattern.
      * @throws IllegalArgumentException if source is null
      */
-    public ShowPatternPanelEvent(Object source, EvtType eventType, int fieldOrders) {
+    public ShowPatternPanelEvent(Object source, EvtType eventType, int fields) {
         super(source, eventType);
-        this.fieldOrders = fieldOrders;
+        this.fields = fields;
     }
 
-    private int fieldOrders;
-
-    public int getFieldOrders() {
-        return fieldOrders;
+    public int getFields() {
+        return fields;
     }
 
-    public void setFieldOrders(int fieldOrders) {
-        this.fieldOrders = fieldOrders;
-    }
 }
