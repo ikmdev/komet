@@ -33,6 +33,7 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
@@ -155,7 +156,7 @@ public class PatternFieldsController {
         });
 
         IntegerProperty totalExistingfields = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
-        IntegerProperty fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
+        SimpleIntegerProperty fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
         StringProperty displayNameProp = patternFieldsViewModel.getProperty(DISPLAY_NAME);
         ObjectProperty<ConceptEntity> dataTypeProp = patternFieldsViewModel.getProperty(DATA_TYPE);
         ObjectProperty<ConceptEntity> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
@@ -177,7 +178,6 @@ public class PatternFieldsController {
 
         loadDataTypeComboBox();
         loadFieldOrderOptions(totalExistingfields.get());
-        fieldOrderComboBox.setItems(fieldOrderOptions); // Set the items in fieldOrder
 
     }
 
@@ -504,6 +504,11 @@ public class PatternFieldsController {
         //publish close env
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
                 new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+
+        //TODO This If block is not required but for some reason the bidirectional binding declared in initialize method is not working with FIELD_ORDER.
+        if(fieldOrderComboBox.getSelectionModel().getSelectedItem() != patternFieldsViewModel.getValue(FIELD_ORDER)){
+            patternFieldsViewModel.setValue(FIELD_ORDER, fieldOrderComboBox.getSelectionModel().getSelectedItem());
+        }
         //publish form submission data
         PatternField patternField = new PatternField(
                 patternFieldsViewModel.getValue(FIELD_ORDER),
