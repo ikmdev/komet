@@ -1081,24 +1081,6 @@ selected(active) - dark black
     -fx-padding: 0;
 }
 
-/*.scroll-pane.scroll-area > .scroll-bar:horizontal,*/
-/*.scroll-pane.scroll-area:focused > .scroll-bar:horizontal {*/
-/*    -fx-pref-height: 196px;*/
-/*    -fx-background-color: -Grey-3;*/
-/*    -fx-background-insets: 0;*/
-/*    -fx-background-radius: 0;*/
-/*    -fx-padding: 0;*/
-/*}*/
-
-/*.scroll-pane.scroll-area > .viewport,*/
-/*.scroll-pane.scroll-area:focused > .viewport {*/
-/*    -fx-pref-height: 196px;*/
-/*    -fx-background-color: -Grey-3;*/
-/*    -fx-background-insets: 0;*/
-/*    -fx-background-radius: 0;*/
-/*    -fx-padding: 0;*/
-/*}*/
-
 .chapter-block-bar-stack {
     -icon-paint: -Grey-10;
     -default-height: 48px;
