@@ -181,6 +181,9 @@ public class JournalController {
     private Pane progressSlideoutTrayPane;
 
     @FXML
+    private Pane nextGenReasonerSlideoutTrayPane;
+
+    @FXML
     private ToggleButton reasonerToggleButton;
 
     @FXML
@@ -197,6 +200,9 @@ public class JournalController {
 
     @FXML
     private ToggleButton nextGenSearchToggleButton;
+
+    @FXML
+    private ToggleButton nextGenReasonerToggleButton;
 
     @FXML
     private Button addButton;
@@ -471,6 +477,8 @@ public class JournalController {
             return nexGenSearchSlideoutTrayPane;
         } else if (progressToggleButton.equals(selectedToggleButton)) {
             return progressSlideoutTrayPane;
+        } else if (nextGenReasonerToggleButton.equals(selectedToggleButton)) {
+            return nextGenReasonerSlideoutTrayPane;
         }
         return null;
     }
@@ -523,10 +531,10 @@ public class JournalController {
         return navigatorNode;
     }
 
+    /**
+     * Add a Next Gen Search, currently tied to the "comment" left lav button
+     */
     public void loadNextGenSearchPanel() {
-        // +-----------------------------------
-        // ! Add a Next Gen Search
-        // +------------------------------------
         Config nextGenSearchConfig = new Config(NextGenSearchController.class.getResource(NEXT_GEN_SEARCH_FXML_URL))
                 .updateViewModel("nextGenSearchViewModel", (nextGenSearchViewModel) ->
                         nextGenSearchViewModel
@@ -540,6 +548,13 @@ public class JournalController {
         nextGenSearchPanel = nextGenSearchJFXNode.node();
 
         setupSlideOutTrayPane(nextGenSearchPanel, nexGenSearchSlideoutTrayPane);
+    }
+
+    /**
+     * Add a Next Gen Reasoner Search Results, currently tied to the "bell" left nav button
+     */
+    public void loadNextGenReasonerPanel() {
+        //Config nextGenReasonerResultConfig = new Config()
     }
 
     private void loadSearchPanel(PublicIdStringKey<ActivityStream> searchActivityStreamKey,
