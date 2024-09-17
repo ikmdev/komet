@@ -266,6 +266,12 @@ public class DetailsController  {
     @FXML
     private Pane timelineSlideoutTrayPane;
 
+    @FXML
+    private ContextMenu reasonerContextMenu;
+
+    @FXML
+    private MenuItem incrementalReasoner;
+
     /**
      * A function from the caller. This class passes a boolean true if classifier button is pressed invoke caller's function to be returned a view.
      */
@@ -1231,9 +1237,18 @@ public class DetailsController  {
     }
 
     @FXML
-    private void openReasonerSlideout(ActionEvent event) {
-        ToggleButton reasonerToggle = (ToggleButton) event.getSource();
-        reasonerResultsControllerConsumer.accept(reasonerToggle);
+    private void runFullReasoner(ActionEvent actionEvent) {
+        LOG.info("Run full reaonser");
+    }
+
+    @FXML
+    private void runIncrementalReasoner(ActionEvent actionEvent) {
+        LOG.info("Run incremental reasoner");
+    }
+
+    @FXML
+    private void redoNavigation(ActionEvent actionEvent) {
+        LOG.info("Redo navigation");
     }
 
     /**
@@ -1286,6 +1301,11 @@ public class DetailsController  {
         // store and use later.
         stampEdit = popOver;
         this.stampEditController = stampEditController;
+    }
+
+    @FXML
+    private void popupAddContextMenu(ActionEvent actionEvent) {
+        MenuHelper.fireContextMenuEvent(actionEvent, Side.BOTTOM, 0, 0);
     }
 
     private void updateUIStamp(ViewModel stampViewModel) {
