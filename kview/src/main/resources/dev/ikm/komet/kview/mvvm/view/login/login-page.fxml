@@ -29,7 +29,7 @@
                <Label fx:id="usernameErrorLabel" styleClass="error-label"/>
                <PasswordField fx:id="passwordField" promptText="Password"/>
                <Label fx:id="passwordErrorLabel" styleClass="error-label"/>
-               <Button fx:id="signInButton" mnemonicParsing="false" text="Sign-in" onAction="#signInAction" styleClass="signin-button"/>
+               <Button fx:id="signInButton" defaultButton="true" mnemonicParsing="false" text="Sign-in" onAction="#signInAction" styleClass="signin-button"/>
             </VBox>
          </center>
          <bottom>
