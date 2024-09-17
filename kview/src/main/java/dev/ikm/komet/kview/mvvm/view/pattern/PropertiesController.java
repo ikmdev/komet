@@ -46,6 +46,10 @@ import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
 import dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.StringBinding;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Toggle;
@@ -113,7 +117,6 @@ public class PropertiesController {
     private Pane currentEditPane;
 
     private PatternDefinitionController patternDefinitionController;
-    // private DescriptionNameController descriptionNameController;
 
     private PatternFieldsController patternFieldsController;
 
@@ -145,6 +148,7 @@ public class PropertiesController {
         // ! Add definition(s) to a Pattern
         // +------------------------------------
         Config definitionConfig = new Config(PATTERN_DEFINITION_FXML_URL)
+                .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel))
                 .updateViewModel("patternDefinitionViewModel", (patternDefinitionViewModel) ->
                         patternDefinitionViewModel.setPropertyValue(PATTERN_TOPIC, patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC)));
         JFXNode<Pane, PatternDefinitionController> patternDefinitionControllerJFXNode = FXMLMvvmLoader.make(definitionConfig);
@@ -212,11 +216,9 @@ public class PropertiesController {
         };
         eventBus.subscribe(getPatternTopic(), PropertyPanelEvent.class, showPropertyPanelSubscriber);
 
-        patternDefinitionEventSubscriber = evt -> {
-            boolean isInEditMode = patternPropertiesViewModel.getPropertyValue(DISPLAY_DEFINITION_EDIT_MODE);
-            this.addEditButton.setText(isInEditMode ? "EDIT" : "ADD");
-        };
-        EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
+        BooleanProperty isEditModeProp = patternPropertiesViewModel.getProperty(DISPLAY_DEFINITION_EDIT_MODE);
+        StringBinding modeText = Bindings.when(isEditModeProp).then("EDIT").otherwise("ADD");
+        addEditButton.textProperty().bind(modeText);
     }
 
     private void setupBumpOut() {

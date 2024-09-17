@@ -29,10 +29,13 @@ import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
@@ -66,6 +69,9 @@ public class PatternDefinitionController {
 
     @InjectViewModel
     private PatternDefinitionViewModel patternDefinitionViewModel;
+
+    @InjectViewModel
+    private PatternPropertiesViewModel patternPropertiesViewModel;
 
     @FXML
     private VBox selectedPurposeOuterContainer;
@@ -536,7 +542,8 @@ public class PatternDefinitionController {
                 patternDefinitionViewModel.getPropertyValue(MEANING_ENTITY),
                 null);
 
-        patternDefinitionViewModel.setPropertyValue(DISPLAY_DEFINITION_EDIT_MODE, patternDefinition.purpose() != null && patternDefinition.meaning() != null);
+        // pattern properties view model keeping track of UI state elements
+        patternPropertiesViewModel.setPropertyValue(DISPLAY_DEFINITION_EDIT_MODE, patternDefinition.purpose() != null && patternDefinition.meaning() != null);
 
         //publish close env
         EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC),
