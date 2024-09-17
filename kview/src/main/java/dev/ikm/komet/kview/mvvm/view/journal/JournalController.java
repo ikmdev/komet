@@ -80,10 +80,10 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -108,7 +108,6 @@ import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
@@ -143,7 +142,10 @@ public class JournalController {
     private BorderPane journalBorderPane;
 
     @FXML
-    private Pane desktopSurfacePane;
+    private ScrollPane desktopSurfaceScrollPane;
+
+    @FXML
+    private AnchorPane desktopSurfacePane;
 
     @FXML
     private Region dropAnimationRegion;
@@ -206,13 +208,10 @@ public class JournalController {
     /////////////////////////////////////////////////////////////////
     // Private Data
     /////////////////////////////////////////////////////////////////
-    private VBox progressListVBox = new VBox();
+    private final VBox progressListVBox = new VBox();
     private Pane navigatorNodePanel;
-
     private Pane searchNodePanel;
-
     private Pane nextGenSearchPanel;
-
     private BorderPane reasonerNodePanel;
 
     private ActivityStream navigatorActivityStream;
@@ -227,15 +226,12 @@ public class JournalController {
     private static Consumer<ToggleButton> reasonerToggleConsumer;
 
     private GraphNavigatorNode navigatorNode;
-    private ObservableList<ConceptPreference> conceptWindows = FXCollections.observableArrayList();
-
+    private final ObservableList<ConceptPreference> conceptWindows = FXCollections.observableArrayList();
 
     protected static final String NEXT_GEN_SEARCH_FXML_URL = "next-gen-search.fxml";
 
     private NextGenSearchController nextGenSearchController;
-
     private Subscriber<MakeConceptWindowEvent> makeConceptWindowEventSubscriber;
-
     private Subscriber<ShowNavigationalPanelEvent> showNavigationalPanelEventSubscriber;
 
     @InjectViewModel
@@ -252,9 +248,6 @@ public class JournalController {
      */
     @FXML
     public void initialize() {
-        // According to the JavaFX docs an ordinary Pane does not clip region. TODO infinite workspace
-        clipChildren(desktopSurfacePane, 0);
-
         reasonerNodePanel = new BorderPane();
 
         // When user clicks on sidebar tray's toggle buttons.
@@ -297,12 +290,52 @@ public class JournalController {
         };
         journalEventBus.subscribe(JOURNAL_TOPIC, ShowNavigationalPanelEvent.class, showNavigationalPanelEventSubscriber);
 
-
         // initially drop region is invisible
         dropAnimationRegion.setVisible(false);
 
         // initialize drag and drop for search results of next gen search
         setupDragNDrop(desktopSurfacePane, (publicId) -> {});
+
+        // setup scalable desktop
+        setupScalableDesktop();
+    }
+
+    private void setupScalableDesktop() {
+        journalBorderPane.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
+            // if command key down make desktop surface mouse transparent.
+            // Meaning don't allow the dragging of concept windows, but allow panning of desktop surface.
+            if (keyEvent.getCode() == KeyCode.COMMAND || keyEvent.getCode() == KeyCode.CONTROL) {
+                desktopSurfacePane.setMouseTransparent(true);
+                desktopSurfaceScrollPane.setPannable(true);
+                StackPane viewport = (StackPane) desktopSurfaceScrollPane.lookup(".viewport");
+                viewport.setCursor(Cursor.OPEN_HAND); // Indicate dragging with open hand
+                desktopSurfaceScrollPane.requestFocus();
+            }
+        });
+
+        journalBorderPane.addEventHandler(KeyEvent.KEY_RELEASED, keyEvent -> {
+            // Turn desktop surface back to listen for drag and mouse press and set cursor back to default.
+            if (keyEvent.getCode() == KeyCode.COMMAND || keyEvent.getCode() == KeyCode.CONTROL) {
+                desktopSurfacePane.setMouseTransparent(false);
+                desktopSurfaceScrollPane.setPannable(false);
+                StackPane viewport = (StackPane) desktopSurfaceScrollPane.lookup(".viewport");
+                viewport.setCursor(Cursor.DEFAULT); // Revert back to default cursor
+            }
+        });
+
+        desktopSurfaceScrollPane.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
+            if (mouseEvent.isPrimaryButtonDown() && desktopSurfaceScrollPane.isPannable()) {
+                StackPane viewport = (StackPane) desktopSurfaceScrollPane.lookup(".viewport");
+                viewport.setCursor(Cursor.CLOSED_HAND); // Indicate dragging with closed hand
+            }
+        });
+
+        desktopSurfaceScrollPane.addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
+            if (desktopSurfaceScrollPane.isPannable()) {
+                StackPane viewport = (StackPane) desktopSurfaceScrollPane.lookup(".viewport");
+                viewport.setCursor(Cursor.OPEN_HAND); // Revert back to open hand after dragging
+            }
+        });
     }
 
     private void setupDragNDrop(Node node, Consumer<PublicId> consumer) {
@@ -1285,10 +1318,10 @@ public class JournalController {
 
         Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
                 .updateViewModel("patternViewModel", (patternViewModel) ->
-                    patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
-                            .setPropertyValue(MODE, CREATE)
-                            .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
-                            .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
+                        patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                                .setPropertyValue(MODE, CREATE)
+                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
+                                .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
                 );
 
         // create lidr window

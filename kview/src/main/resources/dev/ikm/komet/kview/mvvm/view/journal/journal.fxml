@@ -20,6 +20,8 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.AnchorPane?>
 
 <BorderPane fx:id="journalBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.journal.JournalController">
    <center>
@@ -134,11 +136,12 @@
                         </HBox>
                      </top>
                      <center>
-                        <Pane fx:id="desktopSurfacePane" prefHeight="200.0" prefWidth="200.0" styleClass="desktop-area">
-                           <children>
-                              <Region fx:id="dropAnimationRegion" layoutX="32.0" layoutY="30.0" mouseTransparent="true" prefHeight="200.0" prefWidth="200.0" styleClass="search-drop-region" />
-                           </children>
-                        </Pane>
+                        <ScrollPane fx:id="desktopSurfaceScrollPane" focusTraversable="true" styleClass="desktop-scroll-pane">
+                           <AnchorPane fx:id="desktopSurfacePane" maxWidth="2800.0" maxHeight="1800.0" prefWidth="2800.0" prefHeight="1800.0" styleClass="desktop-area">
+                              <Region fx:id="dropAnimationRegion" layoutX="32.0" layoutY="30.0" mouseTransparent="true"
+                                      prefHeight="200.0" prefWidth="200.0" styleClass="search-drop-region"/>
+                           </AnchorPane>
+                        </ScrollPane>
                      </center>
                   </BorderPane>
                </center>
