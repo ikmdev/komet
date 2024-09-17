@@ -43,9 +43,6 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.landingpage to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.landingpage;
 
-    opens dev.ikm.komet.kview.mvvm.view.login to javafx.fxml, org.carlfx.cognitive;
-    exports dev.ikm.komet.kview.mvvm.view.login;
-
     opens dev.ikm.komet.kview.mvvm.view.search to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.search;
 
@@ -95,6 +92,9 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.export;
     exports dev.ikm.komet.kview.mvvm.view.export;
     exports dev.ikm.komet.kview.mvvm.view;
+
+    opens dev.ikm.komet.kview.mvvm.view.login;
+    exports dev.ikm.komet.kview.mvvm.view.login;
 
     exports dev.ikm.komet.kview.mvvm.view.descriptionname;
     opens dev.ikm.komet.kview.mvvm.view.descriptionname to javafx.fxml, org.carlfx.cognitive;

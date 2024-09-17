@@ -50,7 +50,6 @@ import dev.ikm.komet.kview.mvvm.view.journal.JournalViewFactory;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
 import dev.ikm.komet.kview.mvvm.view.login.LoginPageController;
-import dev.ikm.komet.kview.mvvm.view.login.LoginPageViewFactory;
 import dev.ikm.komet.list.ListNodeFactory;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNodeFactory;
 import dev.ikm.komet.navigator.pattern.PatternNavigatorFactory;
@@ -496,7 +495,8 @@ public class WebApp extends Application {
     }
 
     private void launchLoginPage(Stage stage) {
-        JFXNode<BorderPane, LoginPageController> loginNode = LoginPageViewFactory.createFXMLMvvmLoader();
+        JFXNode<BorderPane, Void> loginNode = FXMLMvvmLoader.make(
+                LoginPageController.class.getResource("login-page.fxml"));
         BorderPane loginPane = loginNode.node();
         rootPane.getChildren().setAll(loginPane);
         stage.setTitle("KOMET Login");
