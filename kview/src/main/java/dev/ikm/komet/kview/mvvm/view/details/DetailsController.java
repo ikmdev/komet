@@ -1234,9 +1234,18 @@ public class DetailsController  {
     }
 
     @FXML
-    private void openReasonerSlideout(ActionEvent event) {
-        ToggleButton reasonerToggle = (ToggleButton) event.getSource();
-        reasonerResultsControllerConsumer.accept(reasonerToggle);
+    private void runFullReasoner(ActionEvent actionEvent) {
+        LOG.info("Run full reaonser");
+    }
+
+    @FXML
+    private void runIncrementalReasoner(ActionEvent actionEvent) {
+        LOG.info("Run incremental reasoner");
+    }
+
+    @FXML
+    private void redoNavigation(ActionEvent actionEvent) {
+        LOG.info("Redo navigation");
     }
 
     /**

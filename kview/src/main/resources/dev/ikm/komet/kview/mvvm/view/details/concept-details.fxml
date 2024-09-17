@@ -76,9 +76,9 @@
                            <contextMenu>
                               <ContextMenu fx:id="reasonerContextMenu" opacity="0.99" styleClass="kview-context-menu">
                                  <items>
-                                    <MenuItem mnemonicParsing="false" text="Run full reasoner" />
-                                    <MenuItem mnemonicParsing="false" text="Run incremental reasoner" />
-                                    <MenuItem mnemonicParsing="false" text="Redo navigation" />
+                                    <MenuItem mnemonicParsing="false" text="Run full reasoner" onAction="#runFullReasoner" />
+                                    <MenuItem mnemonicParsing="false" text="Run incremental reasoner" onAction="#runIncrementalReasoner"/>
+                                    <MenuItem mnemonicParsing="false" text="Redo navigation" onAction="#redoNavigation" />
                                  </items>
                               </ContextMenu>
                            </contextMenu>
