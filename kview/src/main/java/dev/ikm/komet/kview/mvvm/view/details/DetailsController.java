@@ -266,6 +266,9 @@ public class DetailsController  {
     @FXML
     private Pane timelineSlideoutTrayPane;
 
+    @FXML
+    private ContextMenu reasonerContextMenu;
+
     /**
      * A function from the caller. This class passes a boolean true if classifier button is pressed invoke caller's function to be returned a view.
      */
@@ -1286,6 +1289,11 @@ public class DetailsController  {
         // store and use later.
         stampEdit = popOver;
         this.stampEditController = stampEditController;
+    }
+
+    @FXML
+    private void popupAddContextMenu(ActionEvent actionEvent) {
+        MenuHelper.fireContextMenuEvent(actionEvent, Side.BOTTOM, 0, 0);
     }
 
     private void updateUIStamp(ViewModel stampViewModel) {
