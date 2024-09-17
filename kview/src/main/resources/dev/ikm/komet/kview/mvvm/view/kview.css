@@ -1006,11 +1006,11 @@ selected(active) - dark black
 
 .desktop-area {
     /*-fx-background-image: url("journal/grid-2x2-segment.png");*/
-    -fx-background-color: transparent; /* #828d9fff */
+    -fx-background-color: transparent;
 }
 
 .desktop-scroll-pane {
-    -fx-background-color: #cad3e2; /* #cad3e2 */
+    -fx-background-color: #cad3e2;
     -fx-background-insets: 0;
     -fx-padding: 0 -12 -12 0;
 }
