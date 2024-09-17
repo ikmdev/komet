@@ -56,6 +56,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -225,7 +226,6 @@ public class PatternDetailsController {
                 patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, descrName.getNameText());
                 patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME, descrName);
             }
-
             // This if is invoked when the data is coming from Other name name screen.
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
                 ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
@@ -264,25 +264,34 @@ public class PatternDetailsController {
         patternFieldsPanelEventSubscriber = evt -> {
             ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
             patternFieldList.add((evt.getCurrentFieldOrder()-1), evt.getPatternField());
-        //    processFields(evt.getPatternField(), evt.getCurrentFieldOrder());
         };
+
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
 
         ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
-
         patternFieldList.addListener((ListChangeListener<? super PatternField>) (listener) -> {
             while(listener.next()){
                 if(listener.wasAdded()) {
-                    System.out.println(" FROM : " + listener.getFrom()  + " TO : " + listener.getTo());
                     PatternField patternField = listener.getAddedSubList().getFirst();
-                    fieldsTilePane.getChildren().add(createFieldEntry(patternField, listener.getFrom()));
+                    fieldsTilePane.getChildren().add(listener.getFrom(), createFieldEntry(patternField, listener.getTo()));
                 }
                 if(listener.wasRemoved()){
                     PatternField patternField = listener.getRemoved().getFirst();
-                    fieldsTilePane.getChildren().remove(removeFieldEntry(listener.getFrom()));
+                    fieldsTilePane.getChildren().remove(removeFieldEntry(listener.getTo()));
                 }
             }
         });
+
+        ObservableList fieldsTilePaneList = fieldsTilePane.getChildren();
+        fieldsTilePaneList.addListener((ListChangeListener<? super VBox>) (listener) -> {
+            while(listener.next()){
+                if(listener.wasAdded()){
+                    updateFieldValues(listener.getAddedSubList().getFirst(), listener.getTo());
+                }
+            }
+
+        });
+
         Label fqnAddDateLabel = new Label();
         ObjectProperty<DescrName> objectProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME);
         StringBinding dateStrProp = Bindings
@@ -293,25 +302,6 @@ public class PatternDetailsController {
         // Setup Properties
         setupProperties();
     }
-
-   /* private void processFields(PatternField currentPatternField, int fieldOrder) {
-        ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
-
-        int currentFieldOrder = fieldOrder;
-        if(!patternFieldList.isEmpty() && patternFieldList.size() >= currentFieldOrder && patternFieldList.get(currentFieldOrder-1) != null){
-            rearrangeFields(currentFieldOrder, currentPatternField);
-        }else{
-            patternFieldList.add(fieldOrder-1, currentPatternField);
-        }
-    }*/
-
-/*    private void rearrangeFields(int currentFieldOrder, PatternField currentPatternField) {
-        ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
-        PatternField replacePatternField = patternFieldList.remove(currentFieldOrder-1);
-        patternFieldList.add(currentPatternField.fieldOrder()-1, currentPatternField);
-        PatternField shiftPatternField = replacePatternField.withFieldOrder(currentFieldOrder+1);
-        processFields(shiftPatternField);
-    }*/
 
     /**
      * This method Retrives language and case semantics.
@@ -399,12 +389,26 @@ public class PatternDetailsController {
     }
 
 
+    private void updateFieldValues(VBox vBox, int fieldNumber) {
+        AtomicInteger updateRest = new AtomicInteger(fieldNumber);
+        ObservableList<Node> fieldVBoxes = fieldsTilePane.getChildren();
+        if(fieldNumber < fieldVBoxes.size()){
+            List<Node> sublist = fieldVBoxes.subList(fieldNumber, fieldVBoxes.size());
+            sublist.forEach(node -> {
+                VBox fieldVBoxContainer = (VBox) node;
+                if(!fieldVBoxContainer.equals(vBox)){
+                    ObservableList<Node> fieldVBoxContainerItems = fieldVBoxContainer.getChildren();
+                    Label fieldLabel = (Label) fieldVBoxContainerItems.getFirst();
+                    fieldLabel.setText("FIELD " + updateRest.addAndGet(1));
+                }
+            });
+        }
+    }
+
     private Node createFieldEntry(PatternField patternField, int fieldNum) {
-        ObservableList<PatternField> patternFields = patternViewModel.getObservableList(FIELDS_COLLECTION);
         VBox fieldVBoxContainer = new VBox();
         fieldVBoxContainer.prefWidth(330);
         Label fieldLabel = new Label("FIELD " + fieldNum);
-
         Text fieldText = new Text(patternField.displayName());
         fieldText.getStyleClass().add("grey12-12pt-bold");
         HBox outerHBox = new HBox();
