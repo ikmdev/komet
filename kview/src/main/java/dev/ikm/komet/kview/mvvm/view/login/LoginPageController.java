@@ -15,11 +15,11 @@
  */
 package dev.ikm.komet.kview.mvvm.view.login;
 
-import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.komet.kview.mvvm.viewmodel.LoginViewModel;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -27,9 +27,12 @@ import javafx.scene.control.TextField;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.validator.ValidationMessage;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+
 import static dev.ikm.komet.kview.mvvm.viewmodel.LoginViewModel.*;
 
-public class LoginPageController extends AbstractBasicController {
+public class LoginPageController implements Initializable {
 
     @FXML
     private TextField usernameTextField;
@@ -53,7 +56,7 @@ public class LoginPageController extends AbstractBasicController {
     private LoginViewModel loginViewModel;
 
     @Override
-    public void initialize() {
+    public void initialize(URL location, ResourceBundle resources) {
         ChangeListener<String> isNotPopulatedListener = (observable, oldValue, newValue) ->
                 loginViewModel.getValidators(IS_NOT_POPULATED).stream()
                 .findAny()
@@ -102,29 +105,5 @@ public class LoginPageController extends AbstractBasicController {
             usernameErrorLabel.setText("");
             passwordErrorLabel.setText("");
         }
-    }
-
-    @Override
-    public void updateView() {
-
-    }
-
-    @Override
-    public void clearView() {
-        usernameTextField.clear();
-        usernameErrorLabel.setText("");
-        passwordField.clear();
-        passwordErrorLabel.setText("");
-        signInButton.setDisable(true);
-        authErrorLabel.setText("");
-    }
-
-    @Override
-    public void cleanup() {
-    }
-
-    @Override
-    public LoginViewModel getViewModel() {
-        return loginViewModel;
     }
 }
