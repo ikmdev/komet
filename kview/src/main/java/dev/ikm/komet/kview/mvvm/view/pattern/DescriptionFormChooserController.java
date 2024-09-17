@@ -51,8 +51,6 @@ public class DescriptionFormChooserController {
 
     @FXML
     public void initialize() {
-
-        // refresh();
         patternPropertiesViewModel.getProperty(DISPLAY_FQN_EDIT_MODE).addListener(((observable, oldValue, newValue) -> {
             if (newValue != null && (boolean) newValue) {
                 addEditFqnButton.setText("EDIT FULLY QUALIFIED NAME");
