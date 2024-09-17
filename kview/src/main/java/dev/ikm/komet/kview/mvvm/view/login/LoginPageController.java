@@ -65,10 +65,10 @@ public class LoginPageController implements Initializable {
         usernameTextField.textProperty().addListener(isNotPopulatedListener);
         passwordField.textProperty().addListener(isNotPopulatedListener);
 
-        usernameTextField.textProperty().bindBidirectional(loginViewModel.getProperty(LoginViewModel.USERNAME));
-        passwordField.textProperty().bindBidirectional(loginViewModel.getProperty(LoginViewModel.PASSWORD));
-        signInButton.disableProperty().bind(loginViewModel.getProperty(LoginViewModel.SIGN_IN_BUTTON_STATE));
-        authErrorLabel.textProperty().bind(loginViewModel.getProperty(LoginViewModel.AUTH_ERROR));
+        usernameTextField.textProperty().bindBidirectional(loginViewModel.getProperty(USERNAME));
+        passwordField.textProperty().bindBidirectional(loginViewModel.getProperty(PASSWORD));
+        signInButton.disableProperty().bind(loginViewModel.getProperty(SIGN_IN_BUTTON_STATE));
+        authErrorLabel.textProperty().bind(loginViewModel.getProperty(AUTH_ERROR));
     }
 
     @FXML
@@ -92,18 +92,23 @@ public class LoginPageController implements Initializable {
                 }
             }
 
-            // Set the error labels after processing all validation messages
+            // set the error labels after processing all validation messages
             usernameErrorLabel.setText(usernameErrorMessage);
             passwordErrorLabel.setText(passwordErrorMessage);
         } else {
             // login
-            String username = loginViewModel.getValue(LoginViewModel.USERNAME);
-            String password = loginViewModel.getValue(LoginViewModel.PASSWORD);
-
+            final String username = loginViewModel.getValue(USERNAME);
+            final String password = loginViewModel.getValue(PASSWORD);
             loginViewModel.authenticate(username, password);
 
+            // clear the view
             usernameErrorLabel.setText("");
             passwordErrorLabel.setText("");
+
+            // clear view model's values just in case passwords are in memory
+            loginViewModel.setValue(USERNAME, "");
+            loginViewModel.setValue(PASSWORD, "");
+            loginViewModel.save(true);
         }
     }
 }
