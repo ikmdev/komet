@@ -199,7 +199,6 @@ public class PatternFieldsController {
             int optionValue = totalFields + 1;
             fieldOrderOptions.add(optionValue);
         }
-
         fieldOrderComboBox.setItems(fieldOrderOptions); // Set the items in fieldOrder
         fieldOrderComboBox.getSelectionModel().selectLast();
 
@@ -511,7 +510,6 @@ public class PatternFieldsController {
         }
         //publish form submission data
         PatternField patternField = new PatternField(
-                patternFieldsViewModel.getValue(FIELD_ORDER),
                 patternFieldsViewModel.getValue(DISPLAY_NAME),
                 patternFieldsViewModel.getValue(DATA_TYPE),
                 patternFieldsViewModel.getValue(PURPOSE_ENTITY),
@@ -520,10 +518,8 @@ public class PatternFieldsController {
         );
 
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
-                new PatternFieldsPanelEvent(actionEvent.getSource(), PATTERN_FIELDS, patternField));
-        if(LOG.isDebugEnabled()){
-            LOG.debug("Adding Field Number :%s , Field Name: %s".formatted(patternField.fieldOrder(), patternField.displayName()));
-        }
+                new PatternFieldsPanelEvent(actionEvent.getSource(), PATTERN_FIELDS, patternField, patternFieldsViewModel.getValue(FIELD_ORDER)));
+
         clearView(actionEvent);
     }
 
