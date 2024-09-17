@@ -269,6 +269,9 @@ public class DetailsController  {
     @FXML
     private ContextMenu reasonerContextMenu;
 
+    @FXML
+    private MenuItem incrementalReasoner;
+
     /**
      * A function from the caller. This class passes a boolean true if classifier button is pressed invoke caller's function to be returned a view.
      */
