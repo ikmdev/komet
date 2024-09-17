@@ -276,7 +276,6 @@ public class PatternDetailsController {
                     fieldsTilePane.getChildren().add(listener.getFrom(), createFieldEntry(patternField, listener.getTo()));
                 }
                 if(listener.wasRemoved()){
-                    PatternField patternField = listener.getRemoved().getFirst();
                     fieldsTilePane.getChildren().remove(removeFieldEntry(listener.getTo()));
                 }
             }
