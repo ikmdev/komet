@@ -42,7 +42,6 @@ import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
-import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
 import dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController;
