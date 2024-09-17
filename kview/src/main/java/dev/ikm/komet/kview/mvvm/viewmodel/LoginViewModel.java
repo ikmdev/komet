@@ -70,7 +70,8 @@ public class LoginViewModel extends ValidationViewModel {
         addProperty(USERNAME, "")
                 .addValidator(USERNAME, "Username", (ReadOnlyStringProperty prop, ViewModel viewModel) -> {
                     if (prop.isEmpty().get() || prop.isNotEmpty().get() && prop.get().length() < 5) {
-                        return new ValidationMessage(USERNAME, MessageType.ERROR, "${%s} is required and must be greater then 5 characters.".formatted(USERNAME));
+                        return new ValidationMessage(USERNAME, MessageType.ERROR,
+                                "%s is required and must be greater then 5 characters.".formatted(USERNAME));
                     }
                     // clear any previous auth errors
                     setPropertyValue(AUTH_ERROR, "");
@@ -82,7 +83,7 @@ public class LoginViewModel extends ValidationViewModel {
                         Matcher matcher = EMAIL_PATTERN.matcher(email);
                         if (!matcher.matches()) {
                             return new ValidationMessage(USERNAME, MessageType.ERROR,
-                                    "${%s} is not a valid email address.".formatted(email));
+                                    "%s is not a valid email address.".formatted(email));
                         }
                     }
                     // clear any previous auth errors
@@ -93,7 +94,8 @@ public class LoginViewModel extends ValidationViewModel {
         addProperty(PASSWORD, "")
                 .addValidator(PASSWORD, "Password", (ReadOnlyStringProperty prop, ViewModel vm) -> {
                     if (prop.isEmpty().get() || prop.isNotEmpty().get() && prop.get().length() < 5) {
-                        return new ValidationMessage(PASSWORD, MessageType.ERROR, "${%s} is required and must be greater then 5 characters.".formatted(PASSWORD));
+                        return new ValidationMessage(PASSWORD, MessageType.ERROR,
+                                "%s is required and must be greater then 5 characters.".formatted(PASSWORD));
                     }
                     // clear any previous auth errors
                     setPropertyValue(AUTH_ERROR, "");
