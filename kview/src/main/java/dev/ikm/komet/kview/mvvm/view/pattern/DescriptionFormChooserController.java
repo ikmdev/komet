@@ -18,13 +18,20 @@ package dev.ikm.komet.kview.mvvm.view.pattern;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FQN;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_OTHER_NAME;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FQN;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_OTHER_NAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel.DISPLAY_FQN_EDIT_MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel.DISPLAY_OTHER_NAME_EDIT_MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import org.carlfx.cognitive.loader.InjectViewModel;
 
 import java.util.UUID;
 
@@ -39,27 +46,55 @@ public class DescriptionFormChooserController {
     @FXML
     private Button closePropertiesButton;
 
-    private UUID patternTopic;
+    @InjectViewModel
+    private PatternPropertiesViewModel patternPropertiesViewModel;
 
-    public DescriptionFormChooserController(UUID patternTopic) {
-        this.patternTopic = patternTopic;
+    @FXML
+    public void initialize() {
+
+        // refresh();
+        patternPropertiesViewModel.getProperty(DISPLAY_FQN_EDIT_MODE).addListener(((observable, oldValue, newValue) -> {
+            if (newValue != null && (boolean) newValue) {
+                addEditFqnButton.setText("EDIT FULLY QUALIFIED NAME");
+            } else {
+                addEditFqnButton.setText("ADD FULLY QUALIFIED NAME");
+            }
+        }));
+        patternPropertiesViewModel.getProperty(DISPLAY_OTHER_NAME_EDIT_MODE).addListener(((observable, oldValue, newValue) -> {
+            if (newValue != null && (boolean) newValue) {
+                addOtherNameButton.setText("EDIT OTHER NAME");
+            } else {
+                addOtherNameButton.setText("ADD OTHER NAME");
+            }
+        }));
     }
 
     @FXML
     private void showFqnForm(ActionEvent actionEvent) {
+        EvtType showFqnEvt = SHOW_ADD_FQN;
+        if (actionEvent.getSource() instanceof Button button && button.getText().startsWith("EDIT")) {
+            showFqnEvt = SHOW_EDIT_FQN;
+        }
         actionEvent.consume();
-        EvtBusFactory.getDefaultEvtBus().publish(patternTopic, new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_FQN));
+        EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), showFqnEvt));
     }
 
+    public UUID getPatternTopic() {
+        return patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC);
+    }
     @FXML
     private void showOtherNameForm(ActionEvent actionEvent) {
+        EvtType showOtherNameEvt = SHOW_ADD_OTHER_NAME;
+        if (actionEvent.getSource() instanceof Button button && button.getText().startsWith("EDIT")) {
+            showOtherNameEvt = SHOW_EDIT_OTHER_NAME;
+        }
         actionEvent.consume();
-        EvtBusFactory.getDefaultEvtBus().publish(patternTopic, new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_OTHER_NAME));
+        EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), showOtherNameEvt));
     }
 
     @FXML
     private void closePropertiesPanel(ActionEvent actionEvent) {
         actionEvent.consume();
-        EvtBusFactory.getDefaultEvtBus().publish(patternTopic, new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+        EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
     }
 }

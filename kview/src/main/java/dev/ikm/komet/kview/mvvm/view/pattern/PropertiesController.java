@@ -22,6 +22,8 @@ import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.S
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FQN;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_OTHER_NAME;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FQN;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_OTHER_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.DESCRIPTION_NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODE;
@@ -29,6 +31,8 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel.DISPLAY_DEFINITION_EDIT_MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel.DISPLAY_FQN_EDIT_MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel.DISPLAY_OTHER_NAME_EDIT_MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
@@ -38,10 +42,11 @@ import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
+import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
 import dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController;
-import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Toggle;
@@ -54,7 +59,7 @@ import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
-import org.carlfx.cognitive.viewmodel.SimpleViewModel;
+import org.carlfx.cognitive.loader.NamedVm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,15 +81,17 @@ public class PropertiesController {
 
     private static final String ADD_FQN_TITLE_TEXT = "Add Description: Add Fully Qualified Name";
 
+    private static final String EDIT_FQN_TITLE_TEXT = "Edit Description: Edit Fully Qualified Name";
+
     private static final String ADD_OTHER_NAME_TITLE_TEXT = "Add Description: Add Other Name";
+
+    private static final String EDIT_OTHER_NAME_TITLE_TEXT = "Edit Description: Edit Other Name";
 
     private EvtBus eventBus;
 
     @InjectViewModel
-    private SimpleViewModel patternPropertiesViewModel;
+    private PatternPropertiesViewModel patternPropertiesViewModel;
 
-    @InjectViewModel
-    private PatternViewModel patternViewModel;
 
     @FXML
     private SVGPath commentsButton;
@@ -117,7 +124,7 @@ public class PropertiesController {
 
     private PatternFormChooserController patternFormChooserController;
 
-    private Pane patternFormPane;
+    private Pane patternFormChooserPane;
 
     private DescriptionFormChooserController descriptionFormChooserController;
 
@@ -163,17 +170,20 @@ public class PropertiesController {
         JFXNode<Pane, PatternFormChooserController> patternFormJFXNode = FXMLMvvmLoader.make(PATTERN_FORM_CHOOSER_FXML_URL,
                 new PatternFormChooserController(patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC)));
         patternFormChooserController = patternFormJFXNode.controller();
-        patternFormPane = patternFormJFXNode.node();
+        patternFormChooserPane = patternFormJFXNode.node();
 
-        JFXNode<Pane, DescriptionFormChooserController> descriptionFormJFXNode = FXMLMvvmLoader.make(DESCRIPTION_FORM_CHOOSER_FXML_URL,
-                new DescriptionFormChooserController(patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC)));
+        Config descrFormconfig = new Config(DESCRIPTION_FORM_CHOOSER_FXML_URL)
+                .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel));
+        JFXNode<Pane, DescriptionFormChooserController> descriptionFormJFXNode = FXMLMvvmLoader.make(descrFormconfig);
         descriptionFormChooserController = descriptionFormJFXNode.controller();
         descriptionNameChooserPane = descriptionFormJFXNode.node();
 
         // initially a default selected tab and view is shown
         updateDefaultSelectedViews();
 
-        // hit the pencil icon
+        // choose a specific bump out panel either by clicking one of the
+        // pencil buttons, or by navigating from the properties toggle and
+        // selecting with form chooser buttons
         showPatternPanelEventSubscriber = evt -> {
             LOG.info("Show Add/Edit View " + evt.getEventType());
 
@@ -192,23 +202,32 @@ public class PropertiesController {
         };
         eventBus.subscribe(getPatternTopic(), ShowPatternFormInBumpOutEvent.class, showPatternPanelEventSubscriber);
 
-        // hit the properties toggle
+        // ONLY for clicking the properties toggle
         showPropertyPanelSubscriber = evt -> {
-            if (evt.getEventType() == OPEN_PANEL) {
+            if (evt.getSource() instanceof ToggleButton && evt.getEventType() == OPEN_PANEL) {
                 // if they hit the properties button, then give them the form chooser panel
                 // e.g. buttons with choices of Add|Edit Definition, Add|Edit Description, Add|Edit Fields
-                //TODO check add/edit progress for the pattern
-                currentEditPane = patternFormPane;
+                setupBumpOut();
+                updateEditPane();
             }
         };
         eventBus.subscribe(getPatternTopic(), PropertyPanelEvent.class, showPropertyPanelSubscriber);
 
         patternDefinitionEventSubscriber = evt -> {
-            boolean isInEditMode = patternViewModel.getPropertyValue(DISPLAY_DEFINITION_EDIT_MODE);
+            boolean isInEditMode = patternPropertiesViewModel.getPropertyValue(DISPLAY_DEFINITION_EDIT_MODE);
             this.addEditButton.setText(isInEditMode ? "EDIT" : "ADD");
-            System.out.println(this.addEditButton.getText());
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
+    }
+
+    private void setupBumpOut() {
+        if (patternPropertiesViewModel.shouldShowFormChooser()) {
+            currentEditPane = patternFormChooserPane;
+        } else if (patternPropertiesViewModel.shouldShowDescriptionChooser()) {
+            currentEditPane = descriptionNameChooserPane;
+        } else if (patternPropertiesViewModel.shouldShowFields()) {
+            currentEditPane = patternFieldsPane;
+        }
     }
 
     private void setupDescriptionNamePane(EvtType eventType) {
@@ -217,10 +236,12 @@ public class PropertiesController {
         }
 
         Config descrConfig = new Config(PATTERN_DESCRIPTION_FXML_URL);
-        descrConfig.updateViewModel("descrNameViewModel", (descrNameViewModel) -> {
-            descrNameViewModel
-                    .setPropertyValue(VIEW_PROPERTIES, getViewProperties())
-                    .setPropertyValue(PATTERN_TOPIC, getPatternTopic());
+        descrConfig
+                .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel))
+                .updateViewModel("descrNameViewModel", (descrNameViewModel) -> {
+                    descrNameViewModel
+                        .setPropertyValue(VIEW_PROPERTIES, getViewProperties())
+                        .setPropertyValue(PATTERN_TOPIC, getPatternTopic());
         });
         if (eventType == SHOW_ADD_FQN) {
             descrConfig.updateViewModel("descrNameViewModel", (descrNameViewModel) -> {
@@ -230,11 +251,27 @@ public class PropertiesController {
                         .setPropertyValue(DESCRIPTION_NAME_TYPE, "Fully Qualified Name")
                 ;
             });
+        } else if (eventType == SHOW_EDIT_FQN) {
+            descrConfig.updateViewModel("descrNameViewModel", (descrNameViewModel) -> {
+                descrNameViewModel.setPropertyValue(MODE, CREATE) // still creating, pattern not created yet
+                        .setPropertyValue(NAME_TYPE, FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
+                        .setPropertyValue(TITLE_TEXT, EDIT_FQN_TITLE_TEXT)
+                        .setPropertyValue(DESCRIPTION_NAME_TYPE, "Fully Qualified Name")
+                ;
+            });
         } else if (eventType == SHOW_ADD_OTHER_NAME) {
             descrConfig.updateViewModel("descrNameViewModel", (descrNameViewModel) -> {
                 descrNameViewModel.setPropertyValue(MODE, CREATE)
                         .setPropertyValue(NAME_TYPE, REGULAR_NAME_DESCRIPTION_TYPE)
                         .setPropertyValue(TITLE_TEXT, ADD_OTHER_NAME_TITLE_TEXT)
+                        .setPropertyValue(DESCRIPTION_NAME_TYPE, "Other Name")
+                ;
+            });
+        } else if (eventType == SHOW_EDIT_OTHER_NAME) {
+            descrConfig.updateViewModel("descrNameViewModel", (descrNameViewModel) -> {
+                descrNameViewModel.setPropertyValue(MODE, CREATE) // still creating, pattern not created yet
+                        .setPropertyValue(NAME_TYPE, REGULAR_NAME_DESCRIPTION_TYPE)
+                        .setPropertyValue(TITLE_TEXT, EDIT_OTHER_NAME_TITLE_TEXT)
                         .setPropertyValue(DESCRIPTION_NAME_TYPE, "Other Name")
                 ;
             });
@@ -257,6 +294,15 @@ public class PropertiesController {
         event.consume();
         this.addEditButton.setSelected(true);
         contentBorderPane.setCenter(currentEditPane);
+        if (currentEditPane == descriptionNameChooserPane) {
+            // if we will display EDIT for either FQN or Other Name, the display EDIT, otherwise ADD
+            if ((boolean) patternPropertiesViewModel.getPropertyValue(DISPLAY_FQN_EDIT_MODE)
+                    || (boolean) patternPropertiesViewModel.getPropertyValue(DISPLAY_OTHER_NAME_EDIT_MODE)) {
+                this.addEditButton.setText("EDIT");
+            } else {
+                this.addEditButton.setText("ADD");
+            }
+        }
     }
 
     private void updateEditPane() {

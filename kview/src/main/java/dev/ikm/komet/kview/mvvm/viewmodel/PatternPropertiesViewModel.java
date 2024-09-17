@@ -53,4 +53,38 @@ public class PatternPropertiesViewModel extends FormViewModel {
                 .addProperty(DISPLAY_FIELDS_EDIT_MODE, false)
         ;
     }
+
+    /**
+     * when we are in add mode in all four states then show form chooser
+     * (e.g. button form for Definitions|Descriptions|Fields)
+     * when the bump out is not specified, i.e. an OPEN event
+     * @return
+     */
+    public boolean shouldShowFormChooser() {
+        return !(boolean) getPropertyValue(DISPLAY_DEFINITION_EDIT_MODE)
+                && !(boolean) getPropertyValue(DISPLAY_FQN_EDIT_MODE)
+                && !(boolean) getPropertyValue(DISPLAY_OTHER_NAME_EDIT_MODE)
+                && !(boolean) getPropertyValue(DISPLAY_FIELDS_EDIT_MODE);
+    }
+
+    /**
+     * when we are in add mode in all four states except the definitions then show description chooser
+     * (e.g. button form for Fully Qualified Name|Other Name)
+     * when the bump out is not specified, i.e. an OPEN event
+     * @return
+     */
+    public boolean shouldShowDescriptionChooser() {
+        return (boolean) getPropertyValue(DISPLAY_DEFINITION_EDIT_MODE)
+                && (!(boolean) getPropertyValue(DISPLAY_FQN_EDIT_MODE) && !(boolean) getPropertyValue(DISPLAY_OTHER_NAME_EDIT_MODE))
+                || (((boolean) getPropertyValue(DISPLAY_FQN_EDIT_MODE) ^ (boolean) getPropertyValue(DISPLAY_OTHER_NAME_EDIT_MODE)));
+    }
+
+    public boolean shouldShowFields() {
+        return (boolean) getPropertyValue(DISPLAY_DEFINITION_EDIT_MODE)
+                && (boolean) getPropertyValue(DISPLAY_FQN_EDIT_MODE)
+                && (boolean) getPropertyValue(DISPLAY_OTHER_NAME_EDIT_MODE)
+                && !(boolean) getPropertyValue(DISPLAY_FIELDS_EDIT_MODE);
+    }
+
+
 }
