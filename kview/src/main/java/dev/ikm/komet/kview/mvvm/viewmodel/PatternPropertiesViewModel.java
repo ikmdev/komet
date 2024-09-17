@@ -58,7 +58,7 @@ public class PatternPropertiesViewModel extends FormViewModel {
      * when we are in add mode in all four states then show form chooser
      * (e.g. button form for Definitions|Descriptions|Fields)
      * when the bump out is not specified, i.e. an OPEN event
-     * @return
+     * @return true if the above condition is satisfied
      */
     public boolean shouldShowFormChooser() {
         return !(boolean) getPropertyValue(DISPLAY_DEFINITION_EDIT_MODE)
@@ -70,8 +70,10 @@ public class PatternPropertiesViewModel extends FormViewModel {
     /**
      * when we are in add mode in all four states except the definitions then show description chooser
      * (e.g. button form for Fully Qualified Name|Other Name)
-     * when the bump out is not specified, i.e. an OPEN event
-     * @return
+     * OR
+     * we are in edit mode for the definitions and only one of FQN or OT is in edit mode (XOR)
+     * and when the bump out is not specified, i.e. an OPEN event
+     * @return true if the above condition is satisfied
      */
     public boolean shouldShowDescriptionChooser() {
         return (boolean) getPropertyValue(DISPLAY_DEFINITION_EDIT_MODE)
@@ -79,6 +81,12 @@ public class PatternPropertiesViewModel extends FormViewModel {
                 || (((boolean) getPropertyValue(DISPLAY_FQN_EDIT_MODE) ^ (boolean) getPropertyValue(DISPLAY_OTHER_NAME_EDIT_MODE)));
     }
 
+    /**
+     * when the following display flags are in edit mode Definition|FQN|OT
+     * and when the display fields flag is in add mode then show the fields
+     * when the bump out is not specified, i.e. an OPEN event
+     * @return true if the above condition is satisfied
+     */
     public boolean shouldShowFields() {
         return (boolean) getPropertyValue(DISPLAY_DEFINITION_EDIT_MODE)
                 && (boolean) getPropertyValue(DISPLAY_FQN_EDIT_MODE)
