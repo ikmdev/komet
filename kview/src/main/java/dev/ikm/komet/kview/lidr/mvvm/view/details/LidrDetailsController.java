@@ -91,6 +91,7 @@ import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ViewModelHelper.addNewLidr
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ViewModelHelper.toStampDetail;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 
 public class LidrDetailsController {
     private static final Logger LOG = LoggerFactory.getLogger(LidrDetailsController.class);
@@ -470,20 +471,20 @@ public class LidrDetailsController {
                 // add a new stamp view model to the concept view model
                 StampViewModel stampViewModel = new StampViewModel();
                 stampViewModel.setPropertyValue(MODE, EDIT)
-                        .setPropertyValue(STATUS_PROPERTY, stamp.state())
-                        .setPropertyValue(AUTHOR_PROPERTY, stamp.author())
-                        .setPropertyValue(MODULE_PROPERTY, stamp.module())
-                        .setPropertyValue(PATH_PROPERTY, stamp.path())
+                        .setPropertyValue(STATUS, stamp.state())
+                        .setPropertyValue(AUTHOR, stamp.author())
+                        .setPropertyValue(MODULE, stamp.module())
+                        .setPropertyValue(PATH, stamp.path())
                         .setPropertyValues(MODULES_PROPERTY, stampViewModel.findAllModules(getViewProperties()), true)
                         .setPropertyValues(PATHS_PROPERTY, stampViewModel.findAllPaths(getViewProperties()), true);
 
                 getLidrViewModel().setPropertyValue(STAMP_VIEW_MODEL,stampViewModel);
             } else {
                 getStampViewModel()
-                        .setPropertyValue(STATUS_PROPERTY, stamp.state())
-                        .setPropertyValue(AUTHOR_PROPERTY, stamp.author())
-                        .setPropertyValue(MODULE_PROPERTY, stamp.module())
-                        .setPropertyValue(PATH_PROPERTY, stamp.path());
+                        .setPropertyValue(STATUS, stamp.state())
+                        .setPropertyValue(AUTHOR, stamp.author())
+                        .setPropertyValue(MODULE, stamp.module())
+                        .setPropertyValue(PATH, stamp.path());
             }
 
             STAMPDetail stampDetail = toStampDetail(getStampViewModel());
@@ -580,10 +581,10 @@ public class LidrDetailsController {
         ValidationViewModel stampViewModel = getLidrViewModel().getPropertyValue(STAMP_VIEW_MODEL);
         if (getLidrViewModel().getPropertyValue(STAMP_VIEW_MODEL) != null) {
             stampViewModel.setPropertyValue(MODE, mode)
-                    .setPropertyValue(STATUS_PROPERTY, stamp.state())
-                    .setPropertyValue(MODULE_PROPERTY, stamp.module())
-                    .setPropertyValue(PATH_PROPERTY, stamp.path())
-                    .setPropertyValue(TIME_PROPERTY, stamp.time())
+                    .setPropertyValue(STATUS, stamp.state())
+                    .setPropertyValue(MODULE, stamp.module())
+                    .setPropertyValue(PATH, stamp.path())
+                    .setPropertyValue(TIME, stamp.time())
                     .save(true);
         }
     }
@@ -707,24 +708,24 @@ public class LidrDetailsController {
     }
 
     private void updateUIStamp(ViewModel stampViewModel) {
-        long time = stampViewModel.getValue(TIME_PROPERTY);
+        long time = stampViewModel.getValue(TIME);
         DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
         Instant stampInstance = Instant.ofEpochSecond(time/1000);
         ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
         String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
 
         lastUpdatedText.setText(lastUpdated);
-        ConceptEntity moduleEntity = stampViewModel.getValue(MODULE_PROPERTY);
+        ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
         if (moduleEntity == null) {
             LOG.warn("Must select a valid module for Stamp.");
             return;
         }
         String moduleDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleEntity.nid());
         moduleText.setText(moduleDescr);
-        ConceptEntity pathEntity = stampViewModel.getValue(PATH_PROPERTY);
+        ConceptEntity pathEntity = stampViewModel.getValue(PATH);
         String pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
         pathText.setText(pathDescr);
-        statusText.setText(stampViewModel.getValue(STATUS_PROPERTY).toString());
+        statusText.setText(stampViewModel.getValue(STATUS).toString());
     }
 
     public void compactSizeWindow() {

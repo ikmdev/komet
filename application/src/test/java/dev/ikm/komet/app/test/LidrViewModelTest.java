@@ -46,6 +46,7 @@ import java.util.UUID;
 
 import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LidrViewModelTest {
@@ -172,11 +173,11 @@ public class LidrViewModelTest {
                 resultsConforms);
 
         StampViewModel stampViewModel = new StampViewModel();
-        stampViewModel.setPropertyValue(STATUS_PROPERTY, State.ACTIVE)
-                .setPropertyValue(AUTHOR_PROPERTY, TinkarTerm.USER)
-                .setPropertyValue(TIME_PROPERTY, System.currentTimeMillis())
-                .setPropertyValue(MODULE_PROPERTY, TinkarTerm.DEVELOPMENT_MODULE)
-                .setPropertyValue(PATH_PROPERTY, TinkarTerm.DEVELOPMENT_PATH);
+        stampViewModel.setPropertyValue(STATUS, State.ACTIVE)
+                .setPropertyValue(AUTHOR, TinkarTerm.USER)
+                .setPropertyValue(TIME, System.currentTimeMillis())
+                .setPropertyValue(MODULE, TinkarTerm.DEVELOPMENT_MODULE)
+                .setPropertyValue(PATH, TinkarTerm.DEVELOPMENT_PATH);
 
         PublicId lidrRecordPublicId = ViewModelHelper.addNewLidrRecord(lidrRecord, deviceId, stampViewModel);
         System.out.println("Created a LIDR record " + lidrRecordPublicId);

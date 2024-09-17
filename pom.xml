@@ -76,21 +76,21 @@
         <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
         <jpackage.version>1.6.0</jpackage.version>
         <jpms-record-builder-core.version>36-r3</jpms-record-builder-core.version>
-        <jpms-roaringbitmap.version>0.9.31-r3</jpms-roaringbitmap.version>
         <log4j.version>3.0.0-alpha1</log4j.version>
         <maven.assembly-plugin.version>3.6.0</maven.assembly-plugin.version>
         <maven.compiler.version>3.13.0</maven.compiler.version>
         <mockito.version>5.7.0</mockito.version>
         <nsmenufx.version>3.1.0</nsmenufx.version>
-        <openjfx.version>21</openjfx.version>
+        <openjfx.version>21.0.4</openjfx.version>
         <owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
-        <owlapi.version>4.7.0</owlapi.version>
+        <owlapi.version>4.7.1</owlapi.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <record-builder-processor.version>34</record-builder-processor.version>
         <scenic-view.version>11.0.2</scenic-view.version>
         <slf4j.version>2.0.13</slf4j.version>
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
-        <tinkar-core.version>1.68.0</tinkar-core.version>
+        <tinkar-composer.version>1.0.0</tinkar-composer.version>
+        <tinkar-core.version>1.69.0</tinkar-core.version>
         <tinkar-jpms-deps.groupId>dev.ikm.jpms</tinkar-jpms-deps.groupId>
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
     </properties>
@@ -136,6 +136,11 @@
                 <groupId>${tinkar-core.groupId}</groupId>
                 <artifactId>reasoner-elk-snomed</artifactId>
                 <version>${tinkar-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>composer</artifactId>
+                <version>${tinkar-composer.version}</version>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
