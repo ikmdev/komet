@@ -57,7 +57,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.*;
@@ -262,25 +261,18 @@ public class PatternDetailsController {
         //TODO This will listen to the pattern fields input form submit.
         // The list should do insert at the field order instead of add.
         patternFieldsPanelEventSubscriber = evt -> {
+            PatternField patternField = evt.getPatternField();
+            int fieldPosition = evt.getCurrentFieldOrder()-1;
+            //Update the fields collection data.
             ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
-            patternFieldList.add((evt.getCurrentFieldOrder()-1), evt.getPatternField());
+            patternFieldList.add(fieldPosition, patternField);
+            //update the display.
+            fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(patternField, evt.getCurrentFieldOrder()));
         };
 
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
 
-        ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
-        patternFieldList.addListener((ListChangeListener<? super PatternField>) (listener) -> {
-            while(listener.next()){
-                if(listener.wasAdded()) {
-                    PatternField patternField = listener.getAddedSubList().getFirst();
-                    fieldsTilePane.getChildren().add(listener.getFrom(), createFieldEntry(patternField, listener.getTo()));
-                }
-                if(listener.wasRemoved()){
-                    fieldsTilePane.getChildren().remove(removeFieldEntry(listener.getTo()));
-                }
-            }
-        });
-
+        //Listen to the changes int he fieldsTilePane and update the field numbers.
         ObservableList fieldsTilePaneList = fieldsTilePane.getChildren();
         fieldsTilePaneList.addListener((ListChangeListener<? super VBox>) (listener) -> {
             while(listener.next()){
@@ -288,7 +280,6 @@ public class PatternDetailsController {
                     updateFieldValues(listener.getAddedSubList().getFirst(), listener.getTo());
                 }
             }
-
         });
 
         Label fqnAddDateLabel = new Label();
@@ -308,7 +299,6 @@ public class PatternDetailsController {
      * @return String.
      *
      */
-
     private String generateDescriptionSemantics(DescrName descrName){
         ViewCalculator viewCalculator = getViewProperties().calculator();
         ConceptEntity caseSigConcept = descrName.getCaseSignificance();
@@ -364,30 +354,10 @@ public class PatternDetailsController {
     }
 
     /**
-     * This method iterates through the fieldsTilePane
-     * and removes the node that has to be rearranged.
-     * TODO - question for Carl - Do we need to use patternField instead. there is some hardcoding for FIELD label.
-     * @param fieldNum
-     * @return Node
-     *
+     * This method updates the Field label with the correct field number value.
+     * @param vBox
+     * @param fieldNumber
      */
-    private Node removeFieldEntry(int fieldNum){
-
-        AtomicReference<Node> nodeToRemove = new AtomicReference<>();
-        ObservableList<Node> fieldVBoxs = fieldsTilePane.getChildren();
-        fieldVBoxs.forEach(node -> {
-            VBox fieldVBoxContainer = (VBox) node;
-            ObservableList<Node> fieldVBoxContainerItems = fieldVBoxContainer.getChildren();
-            fieldVBoxContainerItems.forEach(item -> {
-                if((item instanceof Label) && ( ((Label) item).getText().equalsIgnoreCase("FIELD " + fieldNum))){
-                    nodeToRemove.set(node);
-                }
-            });
-        });
-        return nodeToRemove.get();
-    }
-
-
     private void updateFieldValues(VBox vBox, int fieldNumber) {
         AtomicInteger updateRest = new AtomicInteger(fieldNumber);
         ObservableList<Node> fieldVBoxes = fieldsTilePane.getChildren();

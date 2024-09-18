@@ -29,8 +29,4 @@ import dev.ikm.tinkar.terms.EntityFacade;
 public record PatternField(String displayName, EntityFacade dataType,
                           EntityFacade purpose, EntityFacade meaning, String comments) {
 
-//    public PatternField withFieldOrder(int fieldOrder){
-//        return new PatternField(fieldOrder, displayName(), dataType(), purpose(), meaning(), comments());
-//    }
-
 }
