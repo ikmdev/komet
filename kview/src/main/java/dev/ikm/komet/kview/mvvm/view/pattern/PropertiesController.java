@@ -143,31 +143,12 @@ public class PropertiesController {
                     patternFieldsViewModel.setPropertyValue(TOTAL_EXISTING_FIELDS, evt.getTotalFields());
                 });
                 currentEditPane = patternFieldsPane;
-             //   setupFieldsPane(evt.getFields());
             } else if (evt.getEventType().getSuperType() == DESCRIPTION_NAME) {
                 setupDescriptionNamePane(evt.getEventType());
             }
             updateEditPane();
         };
         eventBus.subscribe(getPatternTopic(), ShowPatternPanelEvent.class, showPatternPanelEventSubscriber);
-    }
-
-    private void setupFieldsPane(int fieldOrders) {
-        // +-----------------------------------
-        // ! Edit field(s) within a Pattern
-        // +-----------------------------------
-        Config fieldsConfig = new Config(PATTERN_FIELDS_FXML_URL)
-                .updateViewModel("patternFieldsViewModel", (patternFieldsViewModel) ->
-                        patternFieldsViewModel
-                                .setPropertyValue(PATTERN_TOPIC, patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC))
-                                .setPropertyValue(VIEW_PROPERTIES, getViewProperties())
-                                .setPropertyValue(TOTAL_EXISTING_FIELDS, fieldOrders)
-                );
-        JFXNode<Pane, PatternFieldsController> patternFieldsJFXNode = FXMLMvvmLoader.make(fieldsConfig);
-        patternFieldsController = patternFieldsJFXNode.controller();
-        patternFieldsPane = patternFieldsJFXNode.node();
-        patternFieldsController.setViewProperties(getViewProperties());
-        currentEditPane = patternFieldsPane;
     }
 
     private void setupDescriptionNamePane(EvtType eventType) {

@@ -58,6 +58,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.PATTERN_FIELDS;
 import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
@@ -161,9 +162,8 @@ public class PatternFieldsController {
         ObjectProperty<ConceptEntity> dataTypeProp = patternFieldsViewModel.getProperty(DATA_TYPE);
         ObjectProperty<ConceptEntity> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
         ObjectProperty<ConceptEntity> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
-        ObservableList<Integer> fieldOrderOptions = patternFieldsViewModel.getObservableList(FIELD_ORDER_OPTIONS);
 
-        fieldOrderComboBox.valueProperty().bindBidirectional(fieldOrderProp.asObject());
+        fieldOrderProp.bind(fieldOrderComboBox.getSelectionModel().selectedItemProperty());
         displayNameTextField.textProperty().bindBidirectional(displayNameProp);
         dataTypeComboBox.valueProperty().bindBidirectional(dataTypeProp);
 
@@ -185,21 +185,15 @@ public class PatternFieldsController {
 
         // get the available dropdown options initially list will be empty.
         ObservableList<Integer> fieldOrderOptions = patternFieldsViewModel.getObservableList(FIELD_ORDER_OPTIONS);
-        int optionsSize = fieldOrderOptions.size();
-        // The difference in totalFields populated and options available.
-        int diff = totalFields - optionsSize;
+        // Clear list
+        fieldOrderOptions.clear();
+        // Create a stream of integers from 1 to (total field + 1)
+        IntStream.rangeClosed(1, totalFields+1)
+                .boxed() // Convert int to Integer
+                .forEach(fieldOrderOptions::add);
 
-        if (diff < 0) { // This is true if the user deletes few fields in details pane.
-            fieldOrderOptions.remove(totalFields, totalFields +1);
-        } else if (diff > 0) { // This is true if the user is editing the pattern fields.
-            for (int i = optionsSize; i <= totalFields; i++) {  // Loop and add all the field orders (Total fields +1)
-                fieldOrderOptions.add(i + 1);
-            }
-        } else {  // This is true when we are creating a new pattern and no fields are entered.
-            int optionValue = totalFields + 1;
-            fieldOrderOptions.add(optionValue);
-        }
         fieldOrderComboBox.setItems(fieldOrderOptions); // Set the items in fieldOrder
+        // Select the last item as a default to the user
         fieldOrderComboBox.getSelectionModel().selectLast();
 
     }
@@ -281,7 +275,6 @@ public class PatternFieldsController {
                 /* allow for both copying and moving, whatever user chooses */
                 event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
             }
-
             event.consume();
         });
 
@@ -297,7 +290,6 @@ public class PatternFieldsController {
                 int lastIndex = nd.getChildren().size();
                 nd.getChildren().add(lastIndex, dragOverAnimation);
             }
-
             event.consume();
         });
 
@@ -504,10 +496,6 @@ public class PatternFieldsController {
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
                 new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
 
-        //TODO This If block is not required but for some reason the bidirectional binding declared in initialize method is not working with FIELD_ORDER.
-        if(fieldOrderComboBox.getSelectionModel().getSelectedItem() != patternFieldsViewModel.getValue(FIELD_ORDER)){
-            patternFieldsViewModel.setValue(FIELD_ORDER, fieldOrderComboBox.getSelectionModel().getSelectedItem());
-        }
         //publish form submission data
         PatternField patternField = new PatternField(
                 patternFieldsViewModel.getValue(DISPLAY_NAME),
