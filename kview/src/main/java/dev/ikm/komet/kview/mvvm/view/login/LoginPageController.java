@@ -30,7 +30,7 @@ import org.carlfx.cognitive.validator.ValidationMessage;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.LoginViewModel.*;
+import static dev.ikm.komet.kview.mvvm.view.login.LoginViewPropertyName.*;
 
 public class LoginPageController implements Initializable {
 
@@ -85,9 +85,9 @@ public class LoginPageController implements Initializable {
                 String propName = validationMessage.propertyName();
                 String message = validationMessage.interpolate(loginViewModel);
 
-                if (USERNAME.equals(propName)) {
+                if (USERNAME.name().equals(propName)) {
                     usernameErrorMessage = message;
-                } else if (PASSWORD.equals(propName)) {
+                } else if (PASSWORD.name().equals(propName)) {
                     passwordErrorMessage = message;
                 }
             }

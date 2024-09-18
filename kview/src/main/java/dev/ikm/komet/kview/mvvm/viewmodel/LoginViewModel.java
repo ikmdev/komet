@@ -15,8 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
-import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
-
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.kview.events.SignInUserEvent;
@@ -37,20 +35,13 @@ import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
+import static dev.ikm.komet.kview.events.SignInUserEvent.SIGN_IN_USER;
+import static dev.ikm.komet.kview.mvvm.view.login.LoginViewPropertyName.*;
+
 public class LoginViewModel extends ValidationViewModel {
 
     private static final Logger LOG = LoggerFactory.getLogger(LoginViewModel.class);
-
-    public static final String USERNAME = "username";
-    public static final String PASSWORD = "password";
-
-    public static final String SIGN_IN_BUTTON_STATE = "signInButtonState";
-    public static final String IS_NOT_POPULATED = "isNotPopulated";
-
-    public static final String ERROR = "error";
-    public static final String USERNAME_ERROR = USERNAME + ERROR;
-    public static final String PASSWORD_ERROR = PASSWORD + ERROR;
-    public static final String AUTH_ERROR = "auth" + ERROR;
 
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
@@ -62,22 +53,22 @@ public class LoginViewModel extends ValidationViewModel {
             .userManager(basicUserManager)
             .create();
 
-    private EvtBus eventBus;
+    private final EvtBus eventBus;
 
     public LoginViewModel() {
         eventBus = EvtBusFactory.getDefaultEvtBus();
 
         addProperty(USERNAME, "")
-                .addValidator(USERNAME, "Username", (ReadOnlyStringProperty prop, ViewModel viewModel) -> {
+                .addValidator(USERNAME, USERNAME.name(), (ReadOnlyStringProperty prop, ViewModel viewModel) -> {
                     if (prop.isEmpty().get() || prop.isNotEmpty().get() && prop.get().length() < 5) {
                         return new ValidationMessage(USERNAME, MessageType.ERROR,
-                                "%s is required and must be greater then 5 characters.".formatted(USERNAME));
+                                "%s is required and must be greater then 5 characters.".formatted(USERNAME.getPropertyName()));
                     }
                     // clear any previous auth errors
                     setPropertyValue(AUTH_ERROR, "");
                     return VALID;
                 })
-                .addValidator(USERNAME, "Username", (ReadOnlyStringProperty prop, ViewModel vm) -> {
+                .addValidator(USERNAME, USERNAME.name(), (ReadOnlyStringProperty prop, ViewModel vm) -> {
                     if (prop.isNotEmpty().get() && prop.get().contains("@")) {
                         String email = prop.get();
                         Matcher matcher = EMAIL_PATTERN.matcher(email);
@@ -92,10 +83,10 @@ public class LoginViewModel extends ValidationViewModel {
                 });
 
         addProperty(PASSWORD, "")
-                .addValidator(PASSWORD, "Password", (ReadOnlyStringProperty prop, ViewModel vm) -> {
+                .addValidator(PASSWORD, PASSWORD.name(), (ReadOnlyStringProperty prop, ViewModel vm) -> {
                     if (prop.isEmpty().get() || prop.isNotEmpty().get() && prop.get().length() < 5) {
                         return new ValidationMessage(PASSWORD, MessageType.ERROR,
-                                "%s is required and must be greater then 5 characters.".formatted(PASSWORD));
+                                "%s is required and must be greater then 5 characters.".formatted(PASSWORD.getPropertyName()));
                     }
                     // clear any previous auth errors
                     setPropertyValue(AUTH_ERROR, "");
@@ -103,7 +94,7 @@ public class LoginViewModel extends ValidationViewModel {
                 });
 
         addProperty(SIGN_IN_BUTTON_STATE, true); // disable sign in button by default
-        addValidator(IS_NOT_POPULATED, "Is Not Populated", (Void prop, ViewModel vm) -> {
+        addValidator(IS_NOT_POPULATED, IS_NOT_POPULATED.name(), (Void prop, ViewModel vm) -> {
             // if any fields are empty then it is not populated (invalid)
             if (vm.getPropertyValue(USERNAME).toString().isBlank()
                     || vm.getPropertyValue(PASSWORD).toString().isBlank()) {
@@ -148,7 +139,7 @@ public class LoginViewModel extends ValidationViewModel {
                         // clear the password
                         setPropertyValue(PASSWORD, "");
                         // publish the user via the sign in event
-                        eventBus.publish(USER_TOPIC, new SignInUserEvent(this, SignInUserEvent.SIGN_IN_USER, user));
+                        eventBus.publish(USER_TOPIC, new SignInUserEvent(this, SIGN_IN_USER, user));
                     });
                 })
                 .exceptionally(throwable -> {
