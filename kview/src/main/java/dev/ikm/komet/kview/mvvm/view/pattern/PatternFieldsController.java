@@ -158,6 +158,8 @@ public class PatternFieldsController {
 
         IntegerProperty totalExistingfields = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
         SimpleIntegerProperty fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
+        ObservableList<Integer> fieldOrderOptions = patternFieldsViewModel.getObservableList(FIELD_ORDER_OPTIONS);
+
         StringProperty displayNameProp = patternFieldsViewModel.getProperty(DISPLAY_NAME);
         ObjectProperty<ConceptEntity> dataTypeProp = patternFieldsViewModel.getProperty(DATA_TYPE);
         ObjectProperty<ConceptEntity> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
@@ -166,6 +168,8 @@ public class PatternFieldsController {
         fieldOrderProp.bind(fieldOrderComboBox.getSelectionModel().selectedItemProperty());
         displayNameTextField.textProperty().bindBidirectional(displayNameProp);
         dataTypeComboBox.valueProperty().bindBidirectional(dataTypeProp);
+        fieldOrderComboBox.setItems(fieldOrderOptions); // Set the items in fieldOrder
+
 
         displayNameProp.addListener(fieldsValidationListener);
         dataTypeProp.addListener(fieldsValidationListener);
@@ -192,7 +196,6 @@ public class PatternFieldsController {
                 .boxed() // Convert int to Integer
                 .forEach(fieldOrderOptions::add);
 
-        fieldOrderComboBox.setItems(fieldOrderOptions); // Set the items in fieldOrder
         // Select the last item as a default to the user
         fieldOrderComboBox.getSelectionModel().selectLast();
 
