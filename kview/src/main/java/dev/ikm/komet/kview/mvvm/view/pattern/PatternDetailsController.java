@@ -56,7 +56,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.*;
@@ -277,7 +276,7 @@ public class PatternDetailsController {
         fieldsTilePaneList.addListener((ListChangeListener<? super VBox>) (listener) -> {
             while(listener.next()){
                 if(listener.wasAdded()){
-                    updateFieldValues(listener.getAddedSubList().getFirst(), listener.getTo());
+                    updateFieldValues(listener.getTo());
                 }
             }
         });
@@ -354,23 +353,17 @@ public class PatternDetailsController {
     }
 
     /**
-     * This method updates the Field label with the correct field number value.
-     * @param vBox
+     * This method updates the Field label with the correct field number value.     *
      * @param fieldNumber
      */
-    private void updateFieldValues(VBox vBox, int fieldNumber) {
-        AtomicInteger updateRest = new AtomicInteger(fieldNumber);
+    private void updateFieldValues(int fieldNumber) {
         ObservableList<Node> fieldVBoxes = fieldsTilePane.getChildren();
-        if(fieldNumber < fieldVBoxes.size()){
-            List<Node> sublist = fieldVBoxes.subList(fieldNumber, fieldVBoxes.size());
-            sublist.forEach(node -> {
-                VBox fieldVBoxContainer = (VBox) node;
-                if(!fieldVBoxContainer.equals(vBox)){
-                    ObservableList<Node> fieldVBoxContainerItems = fieldVBoxContainer.getChildren();
-                    Label fieldLabel = (Label) fieldVBoxContainerItems.getFirst();
-                    fieldLabel.setText("FIELD " + updateRest.addAndGet(1));
-                }
-            });
+        for(int i=fieldNumber ; i < fieldVBoxes.size(); i++){
+            Node node = fieldVBoxes.get(i);
+            Node labelNode = node.lookup(".pattern-field");
+            if(labelNode instanceof Label label){
+                label.setText("FIELD " + (i+1));
+            }
         }
     }
 
@@ -378,6 +371,7 @@ public class PatternDetailsController {
         VBox fieldVBoxContainer = new VBox();
         fieldVBoxContainer.prefWidth(330);
         Label fieldLabel = new Label("FIELD " + fieldNum);
+        fieldLabel.getStyleClass().add("pattern-field");
         Text fieldText = new Text(patternField.displayName());
         fieldText.getStyleClass().add("grey12-12pt-bold");
         HBox outerHBox = new HBox();
