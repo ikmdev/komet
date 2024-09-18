@@ -32,6 +32,13 @@ import java.util.ResourceBundle;
 
 import static dev.ikm.komet.kview.mvvm.view.login.LoginViewPropertyName.*;
 
+/**
+ * Controller class for the Login Page.
+ * <p>
+ * This class handles user interactions with the login page, including input validation,
+ * property bindings between the view and the view model, and the authentication process.
+ * </p>
+ */
 public class LoginPageController implements Initializable {
 
     @FXML
@@ -55,6 +62,12 @@ public class LoginPageController implements Initializable {
     @InjectViewModel
     private LoginViewModel loginViewModel;
 
+    /**
+     * Initializes the controller class.
+     *
+     * @param location  The location used to resolve relative paths for the root object, or {@code null} if not known.
+     * @param resources The resources used to localize the root object, or {@code null} if not localized.
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         ChangeListener<String> isNotPopulatedListener = (observable, oldValue, newValue) ->
@@ -71,6 +84,11 @@ public class LoginPageController implements Initializable {
         authErrorLabel.textProperty().bind(loginViewModel.getProperty(AUTH_ERROR));
     }
 
+    /**
+     * Handles the action event when the sign-in button is clicked.
+     *
+     * @param actionEvent The action event triggered by the sign-in button.
+     */
     @FXML
     private void signInAction(ActionEvent actionEvent) {
         loginViewModel.save();
@@ -96,16 +114,16 @@ public class LoginPageController implements Initializable {
             usernameErrorLabel.setText(usernameErrorMessage);
             passwordErrorLabel.setText(passwordErrorMessage);
         } else {
-            // login
+            // Perform authentication
             final String username = loginViewModel.getValue(USERNAME);
             final String password = loginViewModel.getValue(PASSWORD);
             loginViewModel.authenticate(username, password);
 
-            // clear the view
+            // Clear the error labels
             usernameErrorLabel.setText("");
             passwordErrorLabel.setText("");
 
-            // clear view model's values just in case passwords are in memory
+            // Clear view model's values to remove passwords from memory
             loginViewModel.setValue(USERNAME, "");
             loginViewModel.setValue(PASSWORD, "");
             loginViewModel.save(true);
