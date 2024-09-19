@@ -18,11 +18,11 @@ package dev.ikm.komet.kview.events.pattern;
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
 
-public class PatternPropertyPanelEvent extends Evt {
+public class PropertyPanelEvent extends Evt {
 
-    public static final EvtType<PatternPropertyPanelEvent> OPEN_PANEL = new EvtType<>(Evt.ANY, "OPEN_PANEL");
+    public static final EvtType<PropertyPanelEvent> OPEN_PANEL = new EvtType<>(Evt.ANY, "OPEN_PANEL");
 
-    public static final EvtType<PatternPropertyPanelEvent> CLOSE_PANEL = new EvtType<>(Evt.ANY, "CLOSE_PANEL");
+    public static final EvtType<PropertyPanelEvent> CLOSE_PANEL = new EvtType<>(Evt.ANY, "CLOSE_PANEL");
 
 
     /**
@@ -30,7 +30,7 @@ public class PatternPropertyPanelEvent extends Evt {
      * @param source        the object on which the Event initially occurred
      * @param eventType     type of the event
      */
-    public PatternPropertyPanelEvent(Object source, EvtType<PatternPropertyPanelEvent> eventType) {
+    public PropertyPanelEvent(Object source, EvtType<PropertyPanelEvent> eventType) {
         super(source, eventType);
     }
 }
