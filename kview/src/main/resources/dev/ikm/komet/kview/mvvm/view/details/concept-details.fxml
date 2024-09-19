@@ -38,7 +38,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="456.0" prefHeight="650.0" prefWidth="727.0" styleClass="concept-detail-pane" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="456.0" prefHeight="650.0" prefWidth="727.0" styleClass="concept-detail-pane" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane" prefHeight="600.0" prefWidth="762.0">
          <top>
@@ -72,16 +72,20 @@
                               <SVGPath content="M10.4946 5.39299C9.15593 5.39299 8.09879 6.44558 8.09879 7.78882C8.09879 8.60528 8.46989 9.32176 9.05295 10.0351C9.63089 10.7422 10.4513 11.4861 11.4073 12.353L11.4145 12.3595L12.1821 13.0583L12.9503 12.3591L12.9569 12.353C13.913 11.4861 14.7334 10.7422 15.3113 10.0351C15.8944 9.32176 16.2655 8.60528 16.2655 7.78882C16.2655 6.44558 15.2083 5.39299 13.8696 5.39299C13.2412 5.39299 12.6377 5.63586 12.1821 6.03418C11.7266 5.63586 11.1231 5.39299 10.4946 5.39299ZM9.51546 7.78882C9.51546 7.22291 9.92872 6.80965 10.4946 6.80965C10.9425 6.80965 11.3767 7.10748 11.5228 7.48235L11.6055 7.69465H12.7587L12.8415 7.48235C12.9876 7.10748 13.4217 6.80965 13.8696 6.80965C14.4355 6.80965 14.8488 7.22291 14.8488 7.78882C14.8488 8.20766 14.6208 8.66806 14.117 9.25677C13.6512 9.80109 12.9934 10.4064 12.1804 11.1433C11.3691 10.4064 10.7123 9.8012 10.2469 9.25688C9.74346 8.66811 9.51546 8.2077 9.51546 7.78882Z  M4.9165 1.66699C3.53579 1.66699 2.4165 2.78628 2.4165 4.16699V15.8337C2.4165 17.2144 3.53579 18.3337 4.9165 18.3337H16.5832C17.9639 18.3337 19.0832 17.2144 19.0832 15.8337V4.16699C19.0832 2.78628 17.9639 1.66699 16.5832 1.66699H4.9165ZM4.08317 4.16699C4.08317 3.70675 4.45627 3.33366 4.9165 3.33366H16.5832C17.0434 3.33366 17.4165 3.70675 17.4165 4.16699V15.8337C17.4165 16.2939 17.0434 16.667 16.5832 16.667H4.9165C4.45627 16.667 4.08317 16.2939 4.08317 15.8337V4.16699Z" fillRule="EVEN_ODD" styleClass="favorite-concept" />
                            </graphic>
                         </Button>
-                        <ToggleButton fx:id="reasonerToggleButton" mnemonicParsing="false" onAction="#openReasonerSlideout" styleClass="reasoner" text="ToggleButton">
+                        <Button fx:id="reasonerToggleButton" layoutX="96.0" layoutY="16.0" mnemonicParsing="false" onAction="#popupAddContextMenu" styleClass="reasoner" text="Button">
+                           <contextMenu>
+                              <ContextMenu fx:id="reasonerContextMenu" opacity="0.99" styleClass="kview-context-menu">
+                                 <items>
+                                    <MenuItem mnemonicParsing="false" text="Run full reasoner" onAction="#runFullReasoner" />
+                                    <MenuItem mnemonicParsing="false" text="Run incremental reasoner" onAction="#runIncrementalReasoner" disable="true"/>
+                                    <MenuItem mnemonicParsing="false" text="Redo navigation" onAction="#redoNavigation" />
+                                 </items>
+                              </ContextMenu>
+                           </contextMenu>
                            <graphic>
-                              <Region prefHeight="200.0" prefWidth="200.0">
-                                 <styleClass>
-                                    <String fx:value="icon" />
-                                    <String fx:value="reasoner-icon" />
-                                 </styleClass>
-                              </Region>
+                              <SVGPath content="M1.66675 4.16675C1.66675 2.78604 2.78604 1.66675 4.16675 1.66675H15.8334C17.2141 1.66675 18.3334 2.78604 18.3334 4.16675V15.8334C18.3334 17.2141 17.2141 18.3334 15.8334 18.3334H4.16675C2.78604 18.3334 1.66675 17.2141 1.66675 15.8334V4.16675ZM4.16675 3.33341C3.70651 3.33341 3.33341 3.70651 3.33341 4.16675V15.8334C3.33341 16.2937 3.70651 16.6667 4.16675 16.6667H15.8334C16.2937 16.6667 16.6667 16.2937 16.6667 15.8334V4.16675C16.6667 3.70651 16.2937 3.33341 15.8334 3.33341H4.16675Z M15.3647 6.68147L14.3864 5.70321L10.7994 9.29016L8.84293 7.33364L7.86467 8.3119L10.7994 11.2467L15.3647 6.68147Z" fillRule="EVEN_ODD" styleClass="favorite-concept" />
                            </graphic>
-                        </ToggleButton>
+                        </Button>
                      </children>
                   </HBox>
                   <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />

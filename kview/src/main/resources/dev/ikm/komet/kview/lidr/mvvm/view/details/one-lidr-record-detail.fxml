@@ -11,7 +11,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<TitledPane fx:id="lidrRecordTitledPane" animated="false" maxHeight="1.7976931348623157E308" minHeight="0.0" styleClass="lidr-result-titled-pane" stylesheets="@../../../view/kview.css" text="SARS-CoV-2 Result Interpretation" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.lidr.mvvm.view.details.LidrRecordDetailsController">
+<TitledPane fx:id="lidrRecordTitledPane" animated="false" maxHeight="1.7976931348623157E308" minHeight="0.0" styleClass="lidr-result-titled-pane" stylesheets="@../../../../mvvm/view/kview.css" text="SARS-CoV-2 Result Interpretation" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.lidr.mvvm.view.details.LidrRecordDetailsController">
   <content>
       <BorderPane maxHeight="1.7976931348623157E308">
          <center>
@@ -55,7 +55,7 @@
                      <content>
                         <VBox fx:id="resultsConformanceVBox">
                            <children>
-                              <GridPane stylesheets="@../../../view/kview.css">
+                              <GridPane stylesheets="@../../../../mvvm/view/kview.css">
                                  <columnConstraints>
                                     <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="100.0" prefWidth="120.0" />
                                     <ColumnConstraints hgrow="SOMETIMES" maxWidth="423.0" minWidth="10.0" prefWidth="423.0" />
