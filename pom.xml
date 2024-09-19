@@ -90,7 +90,7 @@
         <slf4j.version>2.0.13</slf4j.version>
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.0.0</tinkar-composer.version>
-        <tinkar-core.version>1.69.0</tinkar-core.version>
+        <tinkar-core.version>1.70.0</tinkar-core.version>
         <tinkar-jpms-deps.groupId>dev.ikm.jpms</tinkar-jpms-deps.groupId>
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
     </properties>
