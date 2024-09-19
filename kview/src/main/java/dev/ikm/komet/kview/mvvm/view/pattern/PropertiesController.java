@@ -216,9 +216,12 @@ public class PropertiesController {
         };
         eventBus.subscribe(getPatternTopic(), PropertyPanelEvent.class, showPropertyPanelSubscriber);
 
-        BooleanProperty isEditModeProp = patternPropertiesViewModel.getProperty(DISPLAY_DEFINITION_EDIT_MODE);
-        StringBinding modeText = Bindings.when(isEditModeProp).then("EDIT").otherwise("ADD");
-        addEditButton.textProperty().bind(modeText);
+        patternDefinitionEventSubscriber = evt -> {
+            boolean isInEditMode = patternPropertiesViewModel.getPropertyValue(DISPLAY_DEFINITION_EDIT_MODE);
+            this.addEditButton.setText(isInEditMode ? "EDIT" : "ADD");
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
+        this.addEditButton.setSelected(true);
     }
 
     private void setupBumpOut() {
