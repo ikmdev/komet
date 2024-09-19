@@ -62,7 +62,7 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
      * @param totalFields the total number of fields added in the current pattern.
      * @throws IllegalArgumentException if source is null
      */
-    public ShowPatternPanelEvent(Object source, EvtType eventType, int totalFields) {
+    public ShowPatternFormInBumpOutEvent(Object source, EvtType eventType, int totalFields) {
         super(source, eventType);
         this.totalFields = totalFields;
     }
