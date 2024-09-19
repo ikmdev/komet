@@ -55,17 +55,11 @@ public class PatternPropertiesViewModel extends FormViewModel {
     }
 
     /**
-     * when we are in add mode in all four states then show form chooser
-     * (e.g. button form for Definitions|Descriptions|Fields)
-     * when the bump out is not specified, i.e. an OPEN event
+     * when we definitions haven't been added then display the form chooser field
      * @return true if the above condition is satisfied
      */
     public boolean shouldShowFormChooser() {
-        return !(boolean) getPropertyValue(DISPLAY_DEFINITION_EDIT_MODE)
-//                && !(boolean) getPropertyValue(DISPLAY_FQN_EDIT_MODE)
-//                && !(boolean) getPropertyValue(DISPLAY_OTHER_NAME_EDIT_MODE)
-//                && !(boolean) getPropertyValue(DISPLAY_FIELDS_EDIT_MODE)
-               ;
+        return !(boolean) getPropertyValue(DISPLAY_DEFINITION_EDIT_MODE);
     }
 
     /**
