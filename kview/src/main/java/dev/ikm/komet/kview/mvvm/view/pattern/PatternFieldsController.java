@@ -514,13 +514,18 @@ public class PatternFieldsController {
         clearView(actionEvent);
     }
 
+    /**
+     * This method is called to update the view model in the consumer
+     * so that value for additional properties can be set.
+     * @param viewModelConsumer
+     */
     public void updateViewModel(Consumer<PatternFieldsViewModel> viewModelConsumer) {
         if (viewModelConsumer != null) {
             viewModelConsumer.accept(getViewModel());
         }
     }
 
-    public PatternFieldsViewModel getViewModel(){
+    private PatternFieldsViewModel getViewModel(){
         return patternFieldsViewModel;
     }
 }

@@ -19,7 +19,6 @@ import dev.ikm.tinkar.terms.EntityFacade;
 
 /**
  * object to capture data for a Pattern>Field
- * //@param fieldOrder order in 1..n
  * @param displayName display name
  * @param dataType tinkar data type
  * @param purpose purpose concept

@@ -272,11 +272,11 @@ public class PatternDetailsController {
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
 
         //Listen to the changes int he fieldsTilePane and update the field numbers.
-        ObservableList fieldsTilePaneList = fieldsTilePane.getChildren();
-        fieldsTilePaneList.addListener((ListChangeListener<? super VBox>) (listener) -> {
+        ObservableList<Node> fieldsTilePaneList = fieldsTilePane.getChildren();
+        fieldsTilePaneList.addListener((ListChangeListener<Node>) (listener) -> {
             while(listener.next()){
                 if(listener.wasAdded()){
-                    updateFieldValues(listener.getTo());
+                    updateFieldValues(listener.getTo()); // Get the field number that has been added.
                 }
             }
         });
