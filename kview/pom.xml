@@ -42,6 +42,23 @@
         </dependency>
         <!--        testing -->
         <dependency>
+            <groupId>one.jpro.platform.jpms</groupId>
+            <artifactId>testfx-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>one.jpro.platform.jpms</groupId>
+            <artifactId>testfx-junit5</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>one.jpro.platform.jpms</groupId>
+            <artifactId>openjfx-monocle</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>executor</artifactId>
             <scope>test</scope>
@@ -72,4 +89,40 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>
+                        -Dtestfx.headless=true
+                        -Dprism.order=sw
+                        -Dprism.text=t2k
+                        -Djava.awt.headless=true
+                        --add-opens=javafx.graphics/com.sun.glass.ui=org.testfx.core
+                        --add-opens=javafx.graphics/com.sun.javafx.application=org.testfx.core
+                        --add-exports=javafx.graphics/com.sun.javafx.application=org.testfx.core
+                        --add-exports=javafx.graphics/com.sun.glass.ui=org.testfx.monocle
+                        --add-exports=javafx.graphics/com.sun.javafx.util=org.testfx.monocle
+                        --add-exports=javafx.base/com.sun.javafx.logging=org.testfx.monocle
+                    </argLine>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+<!--                            <useModulePath>true</useModulePath>-->
+                            <forkCount>1</forkCount>
+                            <reuseForks>false</reuseForks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

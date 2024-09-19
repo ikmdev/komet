@@ -49,6 +49,10 @@
             <artifactId>javafx-fxml</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+        </dependency>
+        <dependency>
             <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>entity</artifactId>
         </dependency>

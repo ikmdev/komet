@@ -72,9 +72,10 @@ open module dev.ikm.komet.framework {
     requires static java.compiler;
     requires static io.soabase.recordbuilder.core;
     requires transitive javafx.base;
+    requires transitive javafx.graphics;
     requires transitive javafx.controls;
     requires transitive javafx.fxml;
-    requires transitive javafx.graphics;
+    requires transitive javafx.swing;
     requires transitive org.controlsfx.controls;
     requires transitive dev.ikm.komet.preferences;
     requires transitive dev.ikm.komet.terms;
