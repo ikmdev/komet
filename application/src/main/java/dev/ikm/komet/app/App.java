@@ -544,8 +544,8 @@ public class App extends Application {
                     navigatorNodeFactory,
                     searchNodeFactory);
             // load additional panels
-            journalController.loadNextGenSearchPanel();
             journalController.loadNextGenReasonerPanel();
+            journalController.loadNextGenSearchPanel();
         });
         // disable the delete menu option for a Journal Card.
         journalWindowSettings.setValue(CAN_DELETE, false);

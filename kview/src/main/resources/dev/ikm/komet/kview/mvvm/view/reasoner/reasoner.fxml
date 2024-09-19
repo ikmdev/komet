@@ -2,21 +2,44 @@
 
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<Pane stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController">
+<Pane stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonserController">
    <children>
       <ScrollPane fitToWidth="true" maxHeight="-Infinity" minWidth="-Infinity" prefWidth="372.0">
          <content>
             <VBox prefHeight="900.0" prefWidth="372.0" styleClass="search-vertical-scroll-area">
                <children>
-                  <HBox alignment="CENTER" spacing="84.0">
+                  <HBox alignment="CENTER" prefHeight="32.0">
                      <children>
-                        <Label alignment="CENTER" prefHeight="32.0" prefWidth="278.0" styleClass="bold-white-label" text="Reasoner" />
+                        <GridPane prefHeight="32.0" prefWidth="386.0">
+                           <columnConstraints>
+                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="261.0" minWidth="10.0" prefWidth="210.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="113.0" minWidth="10.0" prefWidth="105.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="43.0" minWidth="10.0" prefWidth="43.0" />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                           </rowConstraints>
+                           <children>
+                              <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" styleClass="grey1-label" text="Reasoner" GridPane.halignment="RIGHT" />
+                              <Region prefWidth="35.0" styleClass="grey1-x" GridPane.columnIndex="2" GridPane.halignment="CENTER" />
+                           </children>
+                        </GridPane>
                      </children>
                   </HBox>
+                  <TitledPane fx:id="classificationDateTitledPane" animated="false" styleClass="classification-date-titled-pane" text="Classification Date">
+                     <content>
+                        <VBox prefHeight="200.0" prefWidth="100.0" />
+                     </content>
+                  </TitledPane>
                </children>
             </VBox>
          </content>

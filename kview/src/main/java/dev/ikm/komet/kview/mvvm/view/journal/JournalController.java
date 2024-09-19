@@ -45,6 +45,7 @@ import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
 import dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
+import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonserController;
 import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -178,10 +179,10 @@ public class JournalController {
     private Pane nexGenSearchSlideoutTrayPane;
 
     @FXML
-    private Pane progressSlideoutTrayPane;
+    private Pane nextGenReasonerSlideoutTrayPane;
 
     @FXML
-    private Pane nextGenReasonerSlideoutTrayPane;
+    private Pane progressSlideoutTrayPane;
 
     @FXML
     private ToggleButton reasonerToggleButton;
@@ -218,6 +219,9 @@ public class JournalController {
     private Pane navigatorNodePanel;
     private Pane searchNodePanel;
     private Pane nextGenSearchPanel;
+
+    private Pane nextGenReasonerPanel;
+
     private BorderPane reasonerNodePanel;
 
     private ActivityStream navigatorActivityStream;
@@ -234,9 +238,14 @@ public class JournalController {
     private GraphNavigatorNode navigatorNode;
     private final ObservableList<ConceptPreference> conceptWindows = FXCollections.observableArrayList();
 
-    protected static final String NEXT_GEN_SEARCH_FXML_URL = "next-gen-search.fxml";
+    private static final String NEXT_GEN_SEARCH_FXML_URL = "next-gen-search.fxml";
+
+    private static final String NEXT_GEN_REASONER_FXML_URL = "reasoner.fxml";
 
     private NextGenSearchController nextGenSearchController;
+
+    private NextGenReasonserController nextGenReasonserController;
+
     private Subscriber<MakeConceptWindowEvent> makeConceptWindowEventSubscriber;
     private Subscriber<ShowNavigationalPanelEvent> showNavigationalPanelEventSubscriber;
 
@@ -554,7 +563,15 @@ public class JournalController {
      * Add a Next Gen Reasoner Search Results, currently tied to the "bell" left nav button
      */
     public void loadNextGenReasonerPanel() {
-        //Config nextGenReasonerResultConfig = new Config()
+        Config nextGenReasonerConfig = new Config(NextGenReasonserController.class.getResource(NEXT_GEN_REASONER_FXML_URL));
+        JFXNode<Pane, NextGenReasonserController> reasonerJFXNode = FXMLMvvmLoader.make(nextGenReasonerConfig);
+
+        nextGenReasonserController = reasonerJFXNode.controller();
+        nextGenReasonerPanel = reasonerJFXNode.node();
+        // this throws an NPE presumably because the Pane isn't part of the scene graph yet
+        //reasonerJFXNode.controller().putTitlePanesArrowOnRight();
+
+        setupSlideOutTrayPane(nextGenReasonerPanel, nextGenReasonerSlideoutTrayPane);
     }
 
     private void loadSearchPanel(PublicIdStringKey<ActivityStream> searchActivityStreamKey,

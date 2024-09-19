@@ -165,6 +165,7 @@
                   <Pane fx:id="searchSlideoutTrayPane" styleClass="slideout-tray-pane" />
                   <Pane fx:id="reasonerSlideoutTrayPane" styleClass="slideout-tray-pane" />
                   <Pane fx:id="nexGenSearchSlideoutTrayPane" layoutX="10.0" layoutY="10.0" maxHeight="1.7976931348623157E308" styleClass="slideout-tray-pane" />
+                  <Pane fx:id="nextGenReasonerSlideoutTrayPane" layoutX="10.0" layoutY="10.0" maxHeight="1.7976931348623157E308" styleClass="slideout-tray-pane" />
                </children>
             </StackPane>
          </left>
