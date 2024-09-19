@@ -62,9 +62,10 @@ public class PatternPropertiesViewModel extends FormViewModel {
      */
     public boolean shouldShowFormChooser() {
         return !(boolean) getPropertyValue(DISPLAY_DEFINITION_EDIT_MODE)
-                && !(boolean) getPropertyValue(DISPLAY_FQN_EDIT_MODE)
-                && !(boolean) getPropertyValue(DISPLAY_OTHER_NAME_EDIT_MODE)
-                && !(boolean) getPropertyValue(DISPLAY_FIELDS_EDIT_MODE);
+//                && !(boolean) getPropertyValue(DISPLAY_FQN_EDIT_MODE)
+//                && !(boolean) getPropertyValue(DISPLAY_OTHER_NAME_EDIT_MODE)
+//                && !(boolean) getPropertyValue(DISPLAY_FIELDS_EDIT_MODE)
+               ;
     }
 
     /**

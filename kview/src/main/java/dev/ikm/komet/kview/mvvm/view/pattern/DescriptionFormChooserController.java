@@ -31,6 +31,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import org.carlfx.cognitive.loader.InjectViewModel;
 
 import java.util.UUID;
@@ -46,6 +47,9 @@ public class DescriptionFormChooserController {
     @FXML
     private Button closePropertiesButton;
 
+    @FXML
+    private Label continueEditingLabel;
+
     @InjectViewModel
     private PatternPropertiesViewModel patternPropertiesViewModel;
 
@@ -54,17 +58,14 @@ public class DescriptionFormChooserController {
         patternPropertiesViewModel.getProperty(DISPLAY_FQN_EDIT_MODE).addListener(((observable, oldValue, newValue) -> {
             if (newValue != null && (boolean) newValue) {
                 addEditFqnButton.setText("EDIT FULLY QUALIFIED NAME");
+                continueEditingLabel.setText("Continue Editing Descriptions?");
             } else {
                 addEditFqnButton.setText("ADD FULLY QUALIFIED NAME");
+                continueEditingLabel.setText("");
             }
         }));
-        patternPropertiesViewModel.getProperty(DISPLAY_OTHER_NAME_EDIT_MODE).addListener(((observable, oldValue, newValue) -> {
-            if (newValue != null && (boolean) newValue) {
-                addOtherNameButton.setText("EDIT OTHER NAME");
-            } else {
-                addOtherNameButton.setText("ADD OTHER NAME");
-            }
-        }));
+        // default to blank when we first start adding descriptions
+        continueEditingLabel.setText("");
     }
 
     @FXML
