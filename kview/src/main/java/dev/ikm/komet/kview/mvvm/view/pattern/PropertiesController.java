@@ -23,6 +23,7 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ShowPatternPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Toggle;
@@ -31,15 +32,14 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.SVGPath;
-import org.carlfx.cognitive.loader.Config;
-import org.carlfx.cognitive.loader.FXMLMvvmLoader;
-import org.carlfx.cognitive.loader.InjectViewModel;
-import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.loader.*;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
+import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
+import java.util.Optional;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.*;
@@ -117,17 +117,16 @@ public class PropertiesController {
         // +-----------------------------------
         // ! Edit field(s) within a Pattern
         // +-----------------------------------
-        Config fieldsConfig = new Config(PATTERN_FIELDS_FXML_URL)
-                .updateViewModel("patternFieldsViewModel", (patternFieldsViewModel) ->
-                        patternFieldsViewModel
-                                .setPropertyValue(PATTERN_TOPIC, patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC))
-                                .setPropertyValue(VIEW_PROPERTIES, getViewProperties()));
-
+        Config fieldsConfig = new Config(PATTERN_FIELDS_FXML_URL);
+        PatternFieldsViewModel patternFieldsViewModel = new PatternFieldsViewModel();
+        patternFieldsViewModel.setPropertyValue(PATTERN_TOPIC, patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC));
+        patternFieldsViewModel.setPropertyValue(VIEW_PROPERTIES,  getViewProperties());
+        fieldsConfig.addNamedViewModel(new NamedVm("patternFieldsViewModel", patternFieldsViewModel));
         JFXNode<Pane, PatternFieldsController> patternFieldsJFXNode = FXMLMvvmLoader.make(fieldsConfig);
+
         patternFieldsController = patternFieldsJFXNode.controller();
         patternFieldsPane = patternFieldsJFXNode.node();
         patternFieldsController.setViewProperties(getViewProperties());
-
         // initially a default selected tab and view is shown
         updateDefaultSelectedViews();
 
@@ -139,9 +138,8 @@ public class PropertiesController {
             if (evt.getEventType() == SHOW_ADD_DEFINITION) {
                 currentEditPane = patternDefinitionPane; // must be available.
             } else if (evt.getEventType() == SHOW_EDIT_FIELDS) {
-                patternFieldsController.updateViewModel(patternFieldsViewModel -> {
-                    patternFieldsViewModel.setPropertyValue(TOTAL_EXISTING_FIELDS, evt.getTotalFields());
-                });
+                Optional<ViewModel> viewModel = patternFieldsJFXNode.namedViewModels().stream().filter(namedVm -> namedVm.variableName().equals("patternFieldsViewModel")).map(NamedVm::viewModel).findAny();
+                viewModel.ifPresent(model -> model.setPropertyValue(TOTAL_EXISTING_FIELDS, evt.getTotalFields()));
                 currentEditPane = patternFieldsPane;
             } else if (evt.getEventType().getSuperType() == DESCRIPTION_NAME) {
                 setupDescriptionNamePane(evt.getEventType());
