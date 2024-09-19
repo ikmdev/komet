@@ -1187,6 +1187,9 @@ selected(active) - dark black
 .favorite-concept {
     -fx-fill: -Grey-2;
 }
+.button .reasoner {
+    -fx-fill: -Grey-2;
+}
 
 .pencil-icon-description {
     -fx-fill: -Secondary-05;
