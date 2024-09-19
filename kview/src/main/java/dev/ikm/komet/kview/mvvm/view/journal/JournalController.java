@@ -302,9 +302,9 @@ public class JournalController {
 
     private void setupScalableDesktop() {
         journalBorderPane.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
-            // if command key down make desktop surface mouse transparent.
+            // if control key down make desktop surface mouse transparent.
             // Meaning don't allow the dragging of concept windows, but allow panning of desktop surface.
-            if (keyEvent.getCode() == KeyCode.COMMAND || keyEvent.getCode() == KeyCode.CONTROL) {
+            if (keyEvent.getCode() == KeyCode.CONTROL) {
                 desktopSurfacePane.setMouseTransparent(true);
                 desktopSurfaceScrollPane.setPannable(true);
                 StackPane viewport = (StackPane) desktopSurfaceScrollPane.lookup(".viewport");
@@ -315,7 +315,7 @@ public class JournalController {
 
         journalBorderPane.addEventHandler(KeyEvent.KEY_RELEASED, keyEvent -> {
             // Turn desktop surface back to listen for drag and mouse press and set cursor back to default.
-            if (keyEvent.getCode() == KeyCode.COMMAND || keyEvent.getCode() == KeyCode.CONTROL) {
+            if (keyEvent.getCode() == KeyCode.CONTROL) {
                 desktopSurfacePane.setMouseTransparent(false);
                 desktopSurfaceScrollPane.setPannable(false);
                 StackPane viewport = (StackPane) desktopSurfaceScrollPane.lookup(".viewport");

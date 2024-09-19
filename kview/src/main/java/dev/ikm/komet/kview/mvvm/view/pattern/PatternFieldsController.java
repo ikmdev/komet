@@ -20,7 +20,7 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
-import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
+import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.common.ConceptDragOverAnimationController;
 import dev.ikm.komet.kview.mvvm.view.common.ConceptSearchFormItemController;
@@ -61,7 +61,7 @@ import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.PATTERN_FIELDS;
-import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchFieldDefinitionDataTypes;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
@@ -476,7 +476,7 @@ public class PatternFieldsController {
     private void onCancel(ActionEvent actionEvent) {
         //publish close env
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
-                new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+                new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         clearView(actionEvent);
     }
 
@@ -497,7 +497,7 @@ public class PatternFieldsController {
         }
         //publish close env
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
-                new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+                new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
 
         //publish form submission data
         PatternField patternField = new PatternField(
