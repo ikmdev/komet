@@ -412,10 +412,7 @@ public class JournalController {
                     progressController.cleanup();
                 });
 
-                popOver.setOnHidden(windowEvent -> {
-                    progressController.cleanup();
-                });
-
+                popOver.setOnHidden(windowEvent -> progressController.cleanup());
                 popOver.setArrowLocation(PopOver.ArrowLocation.LEFT_TOP);
                 Platform.runLater(() -> popOver.show(progressToggleButton));
 
@@ -427,7 +424,7 @@ public class JournalController {
                     progressController2.cleanup();
                     progressListVBox.getChildren().remove(progressBox2);
                 });
-                Platform.runLater(()->  progressListVBox.getChildren().add(0, progressBox2));
+                Platform.runLater(()->  progressListVBox.getChildren().addFirst(progressBox2));
             }
         };
         journalEventBus.subscribe(PROGRESS_TOPIC, ProgressEvent.class, progressPopupSubscriber);
