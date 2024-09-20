@@ -45,13 +45,23 @@ public class NextGenReasonserController {
 
     @FXML
     public void initialize() {
+        // we are running it this way for these reasons
+        // 1) if we call the putTitlePanesArrowOnRight before the node is on the scene graph then
+        //      we will get a NPE
+        // 2) we need add the results after the putTitlePanesArrowOnRight method because that method
+        //      causes a side effect on the first result's label styling if the results are added before
+        //      calling putTitlePanesArrowOnRight
         Platform.runLater(() -> {
             putTitlePanesArrowOnRight();
             showResults();
         });
     }
 
+    /**
+     * populate the reasoner results
+     */
     public void showResults() {
+        //TODO this is a mockup, future effort will populate will real results
         JFXNode<Pane, NextGenReasonerResultController> reasonerResultJFXNode = FXMLMvvmLoader
                 .make(NextGenReasonerResultController.class.getResource(REASONER_RESULT_FXML));
         NextGenReasonerResultController controller = reasonerResultJFXNode.controller();

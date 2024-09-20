@@ -568,8 +568,6 @@ public class JournalController {
 
         nextGenReasonserController = reasonerJFXNode.controller();
         nextGenReasonerPanel = reasonerJFXNode.node();
-        // this throws an NPE presumably because the Pane isn't part of the scene graph yet
-        //reasonerJFXNode.controller().putTitlePanesArrowOnRight();
 
         setupSlideOutTrayPane(nextGenReasonerPanel, nextGenReasonerSlideoutTrayPane);
     }

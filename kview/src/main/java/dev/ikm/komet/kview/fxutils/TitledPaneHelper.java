@@ -26,6 +26,8 @@ public class TitledPaneHelper {
 
 
     /**
+     * pass in the title and arrow css selectors since the behavior will apply to nested TitledPanes
+     * if you don't specific the selector more specifically
      * Code credit
      * https://stackoverflow.com/a/55085777
      * @param pane
@@ -70,6 +72,10 @@ public class TitledPaneHelper {
         }
     }
 
+    /**
+     * default params wrapper method for putArrowOnRight
+     * @param pane
+     */
     public static void putArrowOnRight(TitledPane pane) {
         putArrowOnRight(pane, DEFAULT_BUTTON_SPACING, ".title", ".arrow-button");
     }
