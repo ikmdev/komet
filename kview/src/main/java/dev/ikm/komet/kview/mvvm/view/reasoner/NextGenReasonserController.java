@@ -16,8 +16,13 @@
 package dev.ikm.komet.kview.mvvm.view.reasoner;
 
 import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.TitledPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.JFXNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +31,12 @@ public class NextGenReasonserController {
     @FXML
     private TitledPane classificationDateTitledPane;
 
+    @FXML
+    private VBox classificationDateVBox;
+
     private static final Logger LOG = LoggerFactory.getLogger(NextGenReasonserController.class);
+
+    private static final String REASONER_RESULT_FXML = "reasoner-entry.fxml";
 
 
     public NextGenReasonserController() {
@@ -35,10 +45,20 @@ public class NextGenReasonserController {
 
     @FXML
     public void initialize() {
+        Platform.runLater(() -> putTitlePanesArrowOnRight());
+        showResults();
+    }
 
+    public void showResults() {
+        JFXNode<Pane, NextGenReasonerResultController> reasonerResultJFXNode = FXMLMvvmLoader
+                .make(NextGenReasonerResultController.class.getResource(REASONER_RESULT_FXML));
+        NextGenReasonerResultController controller = reasonerResultJFXNode.controller();
+
+        classificationDateVBox.getChildren().add(reasonerResultJFXNode.node());
     }
 
     public void putTitlePanesArrowOnRight() {
-        putArrowOnRight(this.classificationDateTitledPane);
+        putArrowOnRight(this.classificationDateTitledPane, 10 /* offset from right */,
+                ".classification-date-titled-pane", ".classification-date-titled-pane > .title > .arrow-button");
     }
 }

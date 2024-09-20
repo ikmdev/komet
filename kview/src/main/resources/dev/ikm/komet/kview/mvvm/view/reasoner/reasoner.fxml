@@ -37,7 +37,7 @@
                   </HBox>
                   <TitledPane fx:id="classificationDateTitledPane" animated="false" styleClass="classification-date-titled-pane" text="Classification Date">
                      <content>
-                        <VBox prefHeight="200.0" prefWidth="100.0" />
+                        <VBox fx:id="classificationDateVBox" styleClass="reasoner-entry-titled-container" />
                      </content>
                   </TitledPane>
                </children>

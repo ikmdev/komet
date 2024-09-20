@@ -4131,19 +4131,55 @@ Styling a context menu for kview ui/ux controls
 
 .reasoner-entry-titled-pane {
     -fx-text-fill: -Grey-1; 
-    -fx-font-size: 13px;
-    -fx-border-width: 1 0 0 0;
-    -fx-border-color: -Grey-11;    
-    -fx-font-weight: bold;
+    -fx-font-size: 13px;        
+    -fx-font-weight: bold;    
 }
 
+
 .reasoner-entry-titled-pane > .title {        
-    -fx-background-color: -Grey-8;    
-    -fx-padding: 8 4 4 4;
+    -fx-background-color: -Grey-8;        
+}
+
+.reasoner-entry-titled-pane3 .content {
+    -fx-background-color: -Grey-8;
+    -fx-border-width: 0 0 0 0; 
+}
+
+.reasoner-label-container {
+    -fx-background-color: white;        
+}
+
+.titled-pane.reasoner-entry-titled-pane:focused > .title .arrow-button .arrow {
+    -width-size: 8px;
+    -height-size: 8px;
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+
+    -fx-min-height: -height-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+    -fx-shape: "M7 10L12 15L17 10L7 10Z";
+    -fx-background-color: white;   
+}
+
+.titled-pane.reasoner-entry-titled-pane > .title > .arrow-button > .arrow {
+    -width-size: 8px;
+    -height-size: 8px;
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+
+    -fx-min-height: -height-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+    -fx-shape: "M10 17L15 12L10 7V17Z";
+    -fx-background-color: white;    
 }
 
 .reasoner-entry-titled-container {    
     -fx-background-color: -Grey-8;    
+    -fx-border-width: 0 0 0 0;    
 }
 
 .reasoner-entry-description-label {
