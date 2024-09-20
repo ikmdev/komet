@@ -19,14 +19,13 @@ import dev.ikm.tinkar.terms.EntityFacade;
 
 /**
  * object to capture data for a Pattern>Field
- * @param fieldOrder order in 1..n
  * @param displayName display name
  * @param dataType tinkar data type
  * @param purpose purpose concept
  * @param meaning meaning concept
  * @param comments user comments
  */
-public record PatternField(int fieldOrder, String displayName, EntityFacade dataType,
+public record PatternField(String displayName, EntityFacade dataType,
                           EntityFacade purpose, EntityFacade meaning, String comments) {
 
 }
