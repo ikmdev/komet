@@ -25,11 +25,6 @@ public class TitledPaneHelper {
     private static final int DEFAULT_BUTTON_SPACING = 34; // pixels to offset the right arrow dropdown
 
 
-    public static void putArrowOnRight(TitledPane pane, double buttonSpacing) {
-        putArrowOnRight(pane, DEFAULT_BUTTON_SPACING, ".title", ".arrow-button");
-    }
-
-
     /**
      * Code credit
      * https://stackoverflow.com/a/55085777
@@ -74,7 +69,8 @@ public class TitledPaneHelper {
             pane.getGraphic().translateXProperty().bind(textGraphicBinding);
         }
     }
+
     public static void putArrowOnRight(TitledPane pane) {
-        putArrowOnRight(pane, DEFAULT_BUTTON_SPACING);
+        putArrowOnRight(pane, DEFAULT_BUTTON_SPACING, ".title", ".arrow-button");
     }
 }

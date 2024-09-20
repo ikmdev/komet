@@ -4140,9 +4140,9 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: -Grey-8;        
 }
 
-.reasoner-entry-titled-pane3 .content {
+.reasoner-entry-titled-pane .content {
     -fx-background-color: -Grey-8;
-    -fx-border-width: 0 0 0 0; 
+    -fx-border-width: 0 0 0 0;
 }
 
 .reasoner-label-container {

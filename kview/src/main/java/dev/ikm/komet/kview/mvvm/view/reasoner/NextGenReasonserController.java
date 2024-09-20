@@ -45,8 +45,10 @@ public class NextGenReasonserController {
 
     @FXML
     public void initialize() {
-        Platform.runLater(() -> putTitlePanesArrowOnRight());
-        showResults();
+        Platform.runLater(() -> {
+            putTitlePanesArrowOnRight();
+            showResults();
+        });
     }
 
     public void showResults() {
