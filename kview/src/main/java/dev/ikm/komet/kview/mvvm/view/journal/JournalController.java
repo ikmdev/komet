@@ -399,7 +399,7 @@ public class JournalController {
         Subscriber<ProgressEvent> progressPopupSubscriber = evt -> {
             // if summon event type, load stuff and reference task to progress popup
             if (evt.getEventType() == SUMMON) {
-                progressToggleButton.setVisible(true);
+                Platform.runLater(() -> progressToggleButton.setVisible(true));
                 Task<Void> task = evt.getTask();
                 JFXNode<Pane, ProgressController> progressJFXNode = createProgressBox(task, evt.getCancelButtonText());
                 ProgressController progressController = progressJFXNode.controller();
