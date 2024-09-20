@@ -425,7 +425,7 @@ public class JournalController {
                 Pane progressBox2 = progressJFXNode2.node();
                 progressController2.getCloseProgressButton().setOnAction(actionEvent -> {
                     progressController2.cleanup();
-                    Platform.runLater(()->  progressListVBox.getChildren().remove(progressBox2));
+                    progressListVBox.getChildren().remove(progressBox2);
                 });
                 Platform.runLater(()->  progressListVBox.getChildren().add(0, progressBox2));
             }
