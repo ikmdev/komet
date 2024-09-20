@@ -39,7 +39,7 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
 
     public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_EDIT_FQN = new EvtType<>(DESCRIPTION_NAME, "SHOW_EDIT_FQN_DESCRIPTION");
     public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_EDIT_OTHER_NAME = new EvtType<>(DESCRIPTION_NAME, "SHOW_EDIT_OTHER_NAME_DESCRIPTION");
-
+    private final int totalFields;
     //TODO future: other EvtTypes like show History, show Timeline etc
 
     /**
@@ -51,5 +51,24 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
      */
     public ShowPatternFormInBumpOutEvent(Object source, EvtType eventType) {
         super(source, eventType);
+        this.totalFields =0;
     }
+
+    /**
+     * Constructs a prototypical Event.
+     *
+     * @param source    the object on which the Event initially occurred
+     * @param eventType
+     * @param totalFields the total number of fields added in the current pattern.
+     * @throws IllegalArgumentException if source is null
+     */
+    public ShowPatternFormInBumpOutEvent(Object source, EvtType eventType, int totalFields) {
+        super(source, eventType);
+        this.totalFields = totalFields;
+    }
+
+    public int getTotalFields() {
+        return totalFields;
+    }
+
 }

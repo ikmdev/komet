@@ -283,26 +283,28 @@ public class PatternDetailsController {
             }
         });
 
-        //TODO This will listen to the pattern fields input form submit.
-        // The list should do insert at the field order instead of add.
         patternFieldsPanelEventSubscriber = evt -> {
-            List<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
-            patternFieldList.add(evt.getPatternField());
+            PatternField patternField = evt.getPatternField();
+            int fieldPosition = evt.getCurrentFieldOrder()-1;
+            //Update the fields collection data.
+            ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
+            patternFieldList.add(fieldPosition, patternField);
+            //update the display.
+            fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(patternField, evt.getCurrentFieldOrder()));
         };
+
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
 
-        //TODO This observable listener should refresh and reorder as per the inserted records field order.
-        ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
-        patternFieldList.addListener((ListChangeListener<? super PatternField>) (listener) -> {
+        //Listen to the changes int he fieldsTilePane and update the field numbers.
+        ObservableList<Node> fieldsTilePaneList = fieldsTilePane.getChildren();
+        fieldsTilePaneList.addListener((ListChangeListener<Node>) (listener) -> {
             while(listener.next()){
-                if(listener.wasAdded()) {
-                    PatternField patternField = listener.getAddedSubList().getFirst();
-                    //TODO the fieldNum code should be removed and replaced by patternField.fieldOrder();
-                    int fieldNum = fieldsTilePane.getChildren().size() + 1;
-                    fieldsTilePane.getChildren().add(createFieldEntry(patternField, fieldNum));
+                if(listener.wasAdded()){
+                    updateFieldValues(listener.getTo()); // Get the field number that has been added.
                 }
             }
         });
+
         Label fqnAddDateLabel = new Label();
         ObjectProperty<DescrName> objectProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME);
         StringBinding dateStrProp = Bindings
@@ -320,7 +322,6 @@ public class PatternDetailsController {
      * @return String.
      *
      */
-
     private String generateDescriptionSemantics(DescrName descrName){
         ViewCalculator viewCalculator = getViewProperties().calculator();
         ConceptEntity caseSigConcept = descrName.getCaseSignificance();
@@ -335,7 +336,6 @@ public class PatternDetailsController {
     private List<TextFlow> generateOtherNameRow(DescrName otherName) {
 
         List<TextFlow> textFlows = new ArrayList<>();
-
         // create textflow to hold regular name label
         TextFlow row1 = new TextFlow();
         Object obj = otherName.getNameText();
@@ -376,10 +376,26 @@ public class PatternDetailsController {
         return textFlows;
     }
 
+    /**
+     * This method updates the Field label with the correct field number value.     *
+     * @param fieldNumber
+     */
+    private void updateFieldValues(int fieldNumber) {
+        ObservableList<Node> fieldVBoxes = fieldsTilePane.getChildren();
+        for(int i=fieldNumber ; i < fieldVBoxes.size(); i++){
+            Node node = fieldVBoxes.get(i);
+            Node labelNode = node.lookup(".pattern-field");
+            if(labelNode instanceof Label label){
+                label.setText("FIELD " + (i+1));
+            }
+        }
+    }
+
     private Node createFieldEntry(PatternField patternField, int fieldNum) {
         VBox fieldVBoxContainer = new VBox();
         fieldVBoxContainer.prefWidth(330);
         Label fieldLabel = new Label("FIELD " + fieldNum);
+        fieldLabel.getStyleClass().add("pattern-field");
         Text fieldText = new Text(patternField.displayName());
         fieldText.getStyleClass().add("grey12-12pt-bold");
         HBox outerHBox = new HBox();
@@ -411,7 +427,6 @@ public class PatternDetailsController {
         JFXNode<BorderPane, PropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(config);
         this.propertiesBorderPane = propsFXMLLoader.node();
         this.propertiesController = propsFXMLLoader.controller();
-
         attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
     }
 
@@ -465,7 +480,7 @@ public class PatternDetailsController {
     private void showEditFieldsPanel(ActionEvent actionEvent) {
         LOG.info("Todo show bump out and display Edit Fields panel \n" + actionEvent);
 
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_EDIT_FIELDS));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_EDIT_FIELDS, patternViewModel.getObservableList(FIELDS_COLLECTION).size()));
 
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
