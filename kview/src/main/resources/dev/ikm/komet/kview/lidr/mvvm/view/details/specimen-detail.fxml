@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Text?>
 
-<GridPane stylesheets="@../../../view/kview.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.lidr.mvvm.view.details.SpecimenDetailsController">
+<GridPane stylesheets="@../../../../mvvm/view/kview.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.lidr.mvvm.view.details.SpecimenDetailsController">
    <columnConstraints>
       <ColumnConstraints hgrow="SOMETIMES" maxWidth="165.0" minWidth="100.0" prefWidth="155.0" />
       <ColumnConstraints hgrow="SOMETIMES" maxWidth="400.0" minWidth="10.0" prefWidth="369.0" />
