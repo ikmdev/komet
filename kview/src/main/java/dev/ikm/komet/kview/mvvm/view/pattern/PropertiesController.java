@@ -103,7 +103,6 @@ public class PropertiesController {
     private Pane currentEditPane;
 
     private PatternDefinitionController patternDefinitionController;
-    // private DescriptionNameController descriptionNameController;
 
     private PatternFieldsController patternFieldsController;
 
@@ -146,7 +145,6 @@ public class PropertiesController {
         // ! Edit field(s) within a Pattern
         // +-----------------------------------
         Config fieldsConfig = new Config(PATTERN_FIELDS_FXML_URL)
-                .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel))
                 .updateViewModel("patternFieldsViewModel", (patternFieldsViewModel) ->
                         patternFieldsViewModel
                                 .setPropertyValue(PATTERN_TOPIC, patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC))
