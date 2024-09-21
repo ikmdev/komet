@@ -162,7 +162,7 @@
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <Button fx:id="clearButton" mnemonicParsing="false" onAction="#clearView" styleClass="lidr-cancel-clear-button" text="CLEAR FORM" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
+            <Button fx:id="clearButton" mnemonicParsing="false" onAction="#removeDevice" styleClass="lidr-cancel-clear-button" text="CLEAR FORM" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
             <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#cancel" styleClass="lidr-cancel-clear-button" text="CANCEL">
                <GridPane.margin>
                   <Insets left="12.0" />

@@ -15,16 +15,16 @@
  */
 package dev.ikm.komet.kview.lidr.mvvm.view.device;
 
-import dev.ikm.komet.kview.lidr.mvvm.viewmodel.DeviceViewModel;
-import dev.ikm.komet.kview.mvvm.view.BasicController;
-import dev.ikm.komet.kview.lidr.events.AddDeviceEvent;
-import dev.ikm.komet.kview.lidr.events.LidrPropertyPanelEvent;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.lidr.events.AddDeviceEvent;
+import dev.ikm.komet.kview.lidr.events.LidrPropertyPanelEvent;
+import dev.ikm.komet.kview.lidr.mvvm.viewmodel.DeviceViewModel;
 import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.Entity;
@@ -32,6 +32,7 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -47,16 +48,19 @@ import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URL;
+import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.lidr.events.AddDeviceEvent.ADD_DEVICE;
 import static dev.ikm.komet.kview.lidr.events.LidrPropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.lidr.events.LidrPropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.DeviceViewModel.DEVICE_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CONCEPT_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
-public class DeviceController implements BasicController {
+public class DeviceController implements Initializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(DeviceController.class);
     public static final String DRAG_AND_DROP_CONCEPT_S_HERE = "Drag and drop concept(s) here";
@@ -97,14 +101,19 @@ public class DeviceController implements BasicController {
     EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
 
     @Override
-    @FXML
-    public void initialize() {
+    public void initialize(URL location, ResourceBundle resources) {
         //TODO we will need an event bus for the LIDR record
 
         // we need an instance of the EditCoordinateRecord in
         // order to save/update the device and manufacturer concepts
 
-        clearView();
+        // listen for open events
+        Subscriber<LidrPropertyPanelEvent> openPanelListener = (evt) -> {
+            if (evt.getEventType() == OPEN_PANEL) {
+                removeDevice();
+            }
+        };
+        evtBus.subscribe(getConceptTopic(), LidrPropertyPanelEvent.class, openPanelListener);
 
         // setup drag n drop
         setupDragNDrop(outerSearchStackPane, (publicId) -> {
@@ -274,8 +283,9 @@ public class DeviceController implements BasicController {
         }
     }
 
-    private void removeDevice() {
-        if (selectedDeviceContainer.getChildren().size() > 0) {
+    @FXML
+    public void removeDevice() {
+        if (!selectedDeviceContainer.getChildren().isEmpty()) {
             deviceViewModel.setPropertyValue(DEVICE_ENTITY, null);
             selectedDeviceContainer.getChildren().remove(selectedConcept);
             HBox.setMargin(selectedDeviceContainer, new Insets(0));
@@ -366,37 +376,14 @@ public class DeviceController implements BasicController {
         LOG.info("createDevice -> Todo publish event containing the device record to be added to lidr details view.");
         deviceViewModel.save();
         if (!deviceViewModel.hasErrorMsgs()) {
-            // 1. publish
-            // 2. reset screen for next entry
-            // 3. publish
-            evtBus.publish(getConceptTopic(), new LidrPropertyPanelEvent(event.getSource(), CLOSE_PANEL));
             evtBus.publish(getConceptTopic(), new AddDeviceEvent(event.getSource(), ADD_DEVICE, deviceViewModel.getValue(DEVICE_ENTITY)));
-            clearView();
+            evtBus.publish(getConceptTopic(), new LidrPropertyPanelEvent(event.getSource(), CLOSE_PANEL));
         }
     }
 
     @FXML
     public void cancel(ActionEvent event) {
         // close properties bump out via event bus
-        clearView();
-        EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
         evtBus.publish(getConceptTopic(), new LidrPropertyPanelEvent(event.getSource(), CLOSE_PANEL));
-    }
-
-
-    @Override
-    public void updateView() {
-
-    }
-
-    @Override
-    @FXML
-    public void clearView() {
-        removeDevice();
-    }
-
-    @Override
-    public void cleanup() {
-
     }
 }
