@@ -18,15 +18,15 @@ viewed historically.
 # Getting Started
 ## Installation Instructions
 ### Pre-requisites:
-1. You should have a copy of local DB available and configured. If not then please request for one. 
-2. Uninstall any previously installed version of Komet.
+1. You should have copy of a local DB available and configured. If not then please request for one. 
+2. Uninstall any previously installed versions of Komet.
 
 ### Installing Komet on your local machine:
 1. To get started with installing and using Komet, [browse to the available releases in GitHub](https://github.com/ikmdev/komet/releases). See the
 documentation about the new features included in each release.![img_1.png](img_1.png)
 2. Download the appropriate installation file for your machine (_example, for Windows OS download **Komet-X.X.X-Installer-Windows-Unsigned.msi**_).
-3. Once download is complete, run the downloaded file and install Komet. 
-4. Follow the (if-any) installation instruction. For Windows if you get a security alert click on "**_Run anyway_**" option.![img_2.png](img_2.png)
+3. Once the download is complete, run the downloaded file and install Komet. 
+4. Follow the (if-any) installation instructions. For Windows if you get a security alert click on "**_Run anyway_**" option.![img_2.png](img_2.png)
 5. Komet is now installed on your local machine. You can now run Komet from programs or installed directory.
 
 ## Follow the instructions below to set up the local environment for Komet
@@ -46,7 +46,7 @@ provided in "_**Fork the Repository**_" section in [GitHub document](https://ikm
    ```bash
    git clone git@github.com:your-github-username/komet.git
    ```
-3. Change local directory to location to `komet`
+3. Change the local directory location to `komet`
 4. Enter the following command to build the application:
    ```bash
    mvn clean install
@@ -57,7 +57,7 @@ provided in "_**Fork the Repository**_" section in [GitHub document](https://ikm
    mvn -f application javafx:run
    ```
 6. You can open Komet code using your favorite IDE like _Eclipse_ or _IntelliJ Idea_ and try running it from there. 
-While running Komet UI from IDE, you many have to add the follwoing vm argument: 
+While running Komet UI from your IDE, you many have to add the following VM arguments: 
    ```
    -Xmx10g --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
    ```
@@ -123,9 +123,9 @@ Example:
       }
    }
    ```
-4. Komet design also cognitive framework to implement MVVM architecture framework.
-you can find more information along with the examples [here](https://github.com/carldea/cognitive/wiki)
-   1. Gradel:
+4. Komet's design also includes the cognitive framework to implement MVVM architecture framework.
+You can find more information along with the examples [here](https://github.com/carldea/cognitive/wiki) 
+   1. Gradle:
       ```
       implementation 'org.carlfx:cognitive:1.3.0'
       ```
@@ -143,8 +143,8 @@ you can find more information along with the examples [here](https://github.com/
        ```
 
 ## Configuration Options
-1. No specific configuration is required to run installed version of Komet.
-2. To run Komet from IDE (developerment environment), you will have to do some VM configuration as below:
+1. No specific configuration is required to run the installed version of Komet.
+2. To run Komet from an IDE (developerment environment), you will have to do some VM configuration as below:
    ```
    -Xmx10g --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
    ```
