@@ -33,16 +33,19 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.FULLY_QUALIFIE
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.OTHER_NAMES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULE_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATH_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.STATUS_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.TIME_PROPERTY;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 import static dev.ikm.tinkar.terms.TinkarTerm.DEFINITION_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
+import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
+import dev.ikm.komet.kview.fxutils.MenuHelper;
+import dev.ikm.komet.kview.mvvm.model.DescrName;
+import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.AxiomChangeEvent;
 import dev.ikm.komet.framework.events.EvtBus;
@@ -60,17 +63,11 @@ import dev.ikm.komet.kview.events.EditConceptEvent;
 import dev.ikm.komet.kview.events.EditConceptFullyQualifiedNameEvent;
 import dev.ikm.komet.kview.events.EditOtherNameConceptEvent;
 import dev.ikm.komet.kview.events.OpenPropertiesPanelEvent;
-import dev.ikm.komet.kview.fxutils.MenuHelper;
-import dev.ikm.komet.kview.mvvm.model.DescrName;
-import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
-import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
@@ -744,9 +741,13 @@ public class DetailsController  {
         definitionTextArea.setText(viewCalculator.getDefinitionDescriptionText(entityFacade.nid()).orElse(""));
 
         // Public ID (UUID)
-        String uuidStr = entityFacade.publicId() != null ? entityFacade.publicId().asUuidArray()[0].toString(): "";
-        identifierText.setText(uuidStr);
-        identifierTooltip.setText(uuidStr);
+        List<String> idList = entityFacade.publicId().asUuidList().stream()
+                .map(UUID::toString)
+                .collect(Collectors.toList());
+        idList.addAll(DataModelHelper.getIdsToAppend(viewCalculator, entityFacade.toProxy()));
+        String idStr = String.join(", ", idList);
+        identifierText.setText(idStr);
+        identifierTooltip.setText(idStr);
 
         // Identicon
         Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
@@ -784,10 +785,10 @@ public class DetailsController  {
         ValidationViewModel stampViewModel = conceptViewModel.getPropertyValue(CONCEPT_STAMP_VIEW_MODEL);
         if (conceptViewModel.getPropertyValue(CONCEPT_STAMP_VIEW_MODEL) != null) {
             stampViewModel.setPropertyValue(MODE, mode)
-                    .setPropertyValue(STATUS_PROPERTY, stamp.state())
-                    .setPropertyValue(MODULE_PROPERTY, stamp.moduleNid())
-                    .setPropertyValue(PATH_PROPERTY, stamp.pathNid())
-                    .setPropertyValue(TIME_PROPERTY, stamp.time())
+                    .setPropertyValue(STATUS, stamp.state())
+                    .setPropertyValue(MODULE, stamp.moduleNid())
+                    .setPropertyValue(PATH, stamp.pathNid())
+                    .setPropertyValue(TIME, stamp.time())
                     .save(true);
         }
     }
@@ -957,7 +958,7 @@ public class DetailsController  {
         String descrSemanticStr = "%s | %s".formatted(casSigText, langText);
 
         // update date
-        long epochmillis = getStampViewModel() == null ? System.currentTimeMillis() : getStampViewModel().getValue(TIME_PROPERTY);
+        long epochmillis = getStampViewModel() == null ? System.currentTimeMillis() : getStampViewModel().getValue(TIME);
         Instant stampInstance = Instant.ofEpochSecond(epochmillis/1000);
         ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
         String time = DATE_TIME_FORMATTER.format(stampTime);
@@ -1288,24 +1289,24 @@ public class DetailsController  {
     }
 
     private void updateUIStamp(ViewModel stampViewModel) {
-        long time = stampViewModel.getValue(TIME_PROPERTY);
+        long time = stampViewModel.getValue(TIME);
         DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
         Instant stampInstance = Instant.ofEpochSecond(time/1000);
         ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
         String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
 
         lastUpdatedText.setText(lastUpdated);
-        ConceptEntity moduleEntity = stampViewModel.getValue(MODULE_PROPERTY);
+        ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
         if (moduleEntity == null) {
             LOG.warn("Must select a valid module for Stamp.");
             return;
         }
         String moduleDescr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleEntity.nid());
         moduleText.setText(moduleDescr);
-        ConceptEntity pathEntity = stampViewModel.getValue(PATH_PROPERTY);
+        ConceptEntity pathEntity = stampViewModel.getValue(PATH);
         String pathDescr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
         pathText.setText(pathDescr);
-        State status = stampViewModel.getValue(STATUS_PROPERTY);
+        State status = stampViewModel.getValue(STATUS);
         String statusMsg = status == null ? "Active" : viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
         statusText.setText(statusMsg);
     }

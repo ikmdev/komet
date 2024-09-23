@@ -21,6 +21,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
+import dev.ikm.tinkar.coordinate.stamp.StampFields;
 import dev.ikm.tinkar.terms.State;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 
@@ -29,6 +30,9 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 
 public class ConceptViewModelTest {
     public static void main(String[] args) {
@@ -44,10 +48,10 @@ public class ConceptViewModelTest {
 
         StampViewModel stampViewModel = new StampViewModel();
         stampViewModel
-                .setPropertyValue(STATUS_PROPERTY, State.ACTIVE)
-                .setPropertyValue(TIME_PROPERTY, System.currentTimeMillis())
-                .setPropertyValue(MODULE_PROPERTY, 0)
-                .setPropertyValue(PATH_PROPERTY, 0)
+                .setPropertyValue(STATUS, State.ACTIVE)
+                .setPropertyValue(TIME, System.currentTimeMillis())
+                .setPropertyValue(StampFields.MODULE, 0)
+                .setPropertyValue(PATH, 0)
                 .addProperty(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true)
                 .addProperty(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true);
         log("--------------");
