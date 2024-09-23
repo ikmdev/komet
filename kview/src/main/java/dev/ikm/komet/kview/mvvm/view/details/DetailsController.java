@@ -519,13 +519,12 @@ public class DetailsController  {
             menuItems = new Object[][]{
                     {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
                     {MenuHelper.SEPARATOR},
-                    {"Add Fully Qualified", true, null, (EventHandler<ActionEvent>) actionEvent ->
-                            eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(latestFqnText.getText() //TODO need to get a source
-                                    ,
+                    {"Add Fully Qualified Name", true, null, (EventHandler<ActionEvent>) actionEvent ->
+                            eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(contextMenu,
                                     AddFullyQualifiedNameEvent.ADD_FQN, getViewProperties())),
                             createConceptEditDescrIcon()},
                     {"Add Other Name", true, null, (EventHandler<ActionEvent>) actionEvent -> {
-                        eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(this,
+                        eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(contextMenu,
                                 AddOtherNameToConceptEvent.ADD_DESCRIPTION));
                     },
                             createConceptEditDescrIcon()},
@@ -544,12 +543,12 @@ public class DetailsController  {
                         }
                         if (currentConcept != null) {
                             // in edit mode, will have a concept and public id
-                            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(this,
+                            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(contextMenu,
                                     // pass the publicId of the Concept
                                     AddOtherNameToConceptEvent.ADD_DESCRIPTION, currentConcept.publicId())); // concept's publicId
                         } else {
                             // in create mode, we won't have a concept and public id yet
-                            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(this,
+                            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(contextMenu,
                                     AddOtherNameToConceptEvent.ADD_DESCRIPTION));
                         }
                     },
