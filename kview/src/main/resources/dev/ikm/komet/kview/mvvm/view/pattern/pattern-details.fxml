@@ -220,7 +220,7 @@
                                                 <Insets top="4.0" />
                                              </HBox.margin>
                                           </Separator>
-                                          <Button fx:id="addDefinitionButton" mnemonicParsing="false" onAction="#showAddDefinitionPanel" styleClass="add-pencil-button" text="Button">
+                                          <Button fx:id="addDefinitionButton" mnemonicParsing="false" onAction="#showAddEditDefinitionPanel" styleClass="add-pencil-button" text="Button">
                                              <graphic>
                                                 <Region prefHeight="200.0" prefWidth="200.0" styleClass="add-pencil" stylesheets="@../kview.css" />
                                              </graphic>

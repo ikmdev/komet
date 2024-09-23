@@ -1187,6 +1187,9 @@ selected(active) - dark black
 .favorite-concept {
     -fx-fill: -Grey-2;
 }
+.button .reasoner {
+    -fx-fill: -Grey-2;
+}
 
 .pencil-icon-description {
     -fx-fill: -Secondary-05;
@@ -2979,6 +2982,17 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-radius: 4;
     -fx-border-width: 1;
     -fx-border-color: -Secondary-06;
+}
+
+
+.close-properties-panel-05-button {
+    -fx-background-color: white;
+    -fx-text-fill: -Secondary-05;
+    -fx-pref-width: 320px;
+    -fx-pref-height: 32px;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-border-color: -Secondary-05;
 }
 
 .edit-concept-cancel-button-container {

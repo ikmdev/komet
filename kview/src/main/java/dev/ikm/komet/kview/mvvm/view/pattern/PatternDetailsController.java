@@ -15,15 +15,37 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_DEFINITION;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FQN;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_OTHER_NAME;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FIELDS;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
+import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
+import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FIELDS_COLLECTION;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_DATE_STR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAMES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_DATE_STR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_TEXT;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.events.ShowPatternPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
-import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
+import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
+import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
@@ -40,14 +62,26 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.TilePane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.loader.NamedVm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,15 +91,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-
-import static dev.ikm.komet.kview.events.ShowPatternPanelEvent.*;
-import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.OPEN_PANEL;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
-import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 
 public class PatternDetailsController {
 
@@ -131,8 +156,10 @@ public class PatternDetailsController {
     // pattern description fields
     @FXML
     private Text latestFqnText; // fqn = fully qualified name
+
     @FXML
     private Text fqnDescriptionSemanticText;
+
     @FXML
     private Label fqnAddDateLabel;
 
@@ -160,7 +187,7 @@ public class PatternDetailsController {
     @InjectViewModel
     private PatternViewModel patternViewModel;
 
-    private Subscriber<PatternPropertyPanelEvent> patternPropertiesEventSubscriber;
+    private Subscriber<PropertyPanelEvent> patternPropertiesEventSubscriber;
 
     private Subscriber<PatternDefinitionEvent> patternDefinitionEventSubscriber;
 
@@ -192,7 +219,7 @@ public class PatternDetailsController {
                 }
             }
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternPropertyPanelEvent.class, patternPropertiesEventSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PropertyPanelEvent.class, patternPropertiesEventSubscriber);
 
         // capture pattern definition information
         purposeText.textProperty().bind(patternViewModel.getProperty(PURPOSE_TEXT));
@@ -218,20 +245,17 @@ public class PatternDetailsController {
 
         // This will listen to the pattern descriptions event. Adding an FQN, Adding other name.
         patternDescriptionEventSubscriber = evt -> {
-            // This if is invoked when the data is coming from FQN name screen.
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_FQN) {
+                // This if is invoked when the data is coming from FQN name screen.
                 DescrName descrName = evt.getDescrName();
                 patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, descrName.getNameText());
                 patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME, descrName);
-            }
-
-            // This if is invoked when the data is coming from Other name name screen.
-            if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
+            } else if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
+                // This if is invoked when the data is coming from Other Name screen.
                 ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
                 descrNameObservableList.add(evt.getDescrName());
             }
         };
-
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
 
         // Bind FQN property with description text, date and FQN menu item.
@@ -259,26 +283,28 @@ public class PatternDetailsController {
             }
         });
 
-        //TODO This will listen to the pattern fields input form submit.
-        // The list should do insert at the field order instead of add.
         patternFieldsPanelEventSubscriber = evt -> {
-            List<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
-            patternFieldList.add(evt.getPatternField());
+            PatternField patternField = evt.getPatternField();
+            int fieldPosition = evt.getCurrentFieldOrder()-1;
+            //Update the fields collection data.
+            ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
+            patternFieldList.add(fieldPosition, patternField);
+            //update the display.
+            fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(patternField, evt.getCurrentFieldOrder()));
         };
+
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
 
-        //TODO This observable listener should refresh and reorder as per the inserted records field order.
-        ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
-        patternFieldList.addListener((ListChangeListener<? super PatternField>) (listener) -> {
+        //Listen to the changes int he fieldsTilePane and update the field numbers.
+        ObservableList<Node> fieldsTilePaneList = fieldsTilePane.getChildren();
+        fieldsTilePaneList.addListener((ListChangeListener<Node>) (listener) -> {
             while(listener.next()){
-                if(listener.wasAdded()) {
-                    PatternField patternField = listener.getAddedSubList().getFirst();
-                    //TODO the fieldNum code should be removed and replaced by patternField.fieldOrder();
-                    int fieldNum = fieldsTilePane.getChildren().size() + 1;
-                    fieldsTilePane.getChildren().add(createFieldEntry(patternField, fieldNum));
+                if(listener.wasAdded()){
+                    updateFieldValues(listener.getTo()); // Get the field number that has been added.
                 }
             }
         });
+
         Label fqnAddDateLabel = new Label();
         ObjectProperty<DescrName> objectProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME);
         StringBinding dateStrProp = Bindings
@@ -296,7 +322,6 @@ public class PatternDetailsController {
      * @return String.
      *
      */
-
     private String generateDescriptionSemantics(DescrName descrName){
         ViewCalculator viewCalculator = getViewProperties().calculator();
         ConceptEntity caseSigConcept = descrName.getCaseSignificance();
@@ -311,7 +336,6 @@ public class PatternDetailsController {
     private List<TextFlow> generateOtherNameRow(DescrName otherName) {
 
         List<TextFlow> textFlows = new ArrayList<>();
-
         // create textflow to hold regular name label
         TextFlow row1 = new TextFlow();
         Object obj = otherName.getNameText();
@@ -352,10 +376,26 @@ public class PatternDetailsController {
         return textFlows;
     }
 
+    /**
+     * This method updates the Field label with the correct field number value.     *
+     * @param fieldNumber
+     */
+    private void updateFieldValues(int fieldNumber) {
+        ObservableList<Node> fieldVBoxes = fieldsTilePane.getChildren();
+        for(int i=fieldNumber ; i < fieldVBoxes.size(); i++){
+            Node node = fieldVBoxes.get(i);
+            Node labelNode = node.lookup(".pattern-field");
+            if(labelNode instanceof Label label){
+                label.setText("FIELD " + (i+1));
+            }
+        }
+    }
+
     private Node createFieldEntry(PatternField patternField, int fieldNum) {
         VBox fieldVBoxContainer = new VBox();
         fieldVBoxContainer.prefWidth(330);
         Label fieldLabel = new Label("FIELD " + fieldNum);
+        fieldLabel.getStyleClass().add("pattern-field");
         Text fieldText = new Text(patternField.displayName());
         fieldText.getStyleClass().add("grey12-12pt-bold");
         HBox outerHBox = new HBox();
@@ -387,9 +427,6 @@ public class PatternDetailsController {
         JFXNode<BorderPane, PropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(config);
         this.propertiesBorderPane = propsFXMLLoader.node();
         this.propertiesController = propsFXMLLoader.controller();
-
-
-
         attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
     }
 
@@ -426,14 +463,16 @@ public class PatternDetailsController {
         // put the edit view in the properties pane
     }
 
+    /**
+     * show bump out and display Add or Edit Description panel
+     * @param actionEvent
+     */
     @FXML
-    private void showAddDefinitionPanel(ActionEvent actionEvent) {
-        // Todo show bump out and display Edit Description panel
+    private void showAddEditDefinitionPanel(ActionEvent actionEvent) {
         LOG.info("Todo show bump out and display Edit Definition panel \n" + actionEvent);
         // publish property open.
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternPanelEvent(actionEvent.getSource(), SHOW_ADD_DEFINITION));
-
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_DEFINITION));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 
 
@@ -441,9 +480,9 @@ public class PatternDetailsController {
     private void showEditFieldsPanel(ActionEvent actionEvent) {
         LOG.info("Todo show bump out and display Edit Fields panel \n" + actionEvent);
 
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternPanelEvent(actionEvent.getSource(), SHOW_EDIT_FIELDS));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_EDIT_FIELDS, patternViewModel.getObservableList(FIELDS_COLLECTION).size()));
 
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 
     @FXML
@@ -454,14 +493,15 @@ public class PatternDetailsController {
     @FXML
     private void showAddFqnPanel(ActionEvent actionEvent) {
         LOG.info("Bumpout Add FQN panel \n" + actionEvent);
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternPanelEvent(actionEvent.getSource(), SHOW_ADD_FQN));
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_FQN));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
+
     @FXML
     private void showAddOtherNamePanel(ActionEvent actionEvent) {
         LOG.info("Bumpout Add Other name panel \n" + actionEvent);
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternPanelEvent(actionEvent.getSource(), SHOW_ADD_OTHER_NAME));
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_OTHER_NAME));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 
     @FXML
@@ -493,8 +533,8 @@ public class PatternDetailsController {
     @FXML
     private void openPropertiesPanel(ActionEvent event) {
         ToggleButton propertyToggle = (ToggleButton) event.getSource();
-        EvtType<PatternPropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? OPEN_PANEL : CLOSE_PANEL;
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(propertyToggle, eventEvtType));
+        EvtType<PropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? OPEN_PANEL : CLOSE_PANEL;
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType));
     }
 
     public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {

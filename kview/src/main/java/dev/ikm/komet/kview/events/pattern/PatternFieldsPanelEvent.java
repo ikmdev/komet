@@ -23,7 +23,8 @@ public class PatternFieldsPanelEvent extends Evt {
 
     public static final EvtType<PatternFieldsPanelEvent> PATTERN_FIELDS = new EvtType<>(Evt.ANY, "PATTERN_FIELDS");
 
-    private PatternField patternField;
+    private final PatternField patternField;
+    private final int currentFieldOrder;
 
     /**
      * Constructs a prototypical Event.
@@ -32,16 +33,18 @@ public class PatternFieldsPanelEvent extends Evt {
      * @param eventType
      * @throws IllegalArgumentException if source is null
      */
-    public PatternFieldsPanelEvent(Object source, EvtType eventType, PatternField patternField) {
+    public PatternFieldsPanelEvent(Object source, EvtType eventType, PatternField patternField, int currentFieldOrder) {
         super(source, eventType);
         this.patternField = patternField;
+        this.currentFieldOrder = currentFieldOrder;
     }
 
     public PatternField getPatternField() {
         return patternField;
     }
 
-    public void setPatternField(PatternField patternField) {
-        this.patternField = patternField;
+    public int getCurrentFieldOrder(){
+        return currentFieldOrder;
     }
+
 }

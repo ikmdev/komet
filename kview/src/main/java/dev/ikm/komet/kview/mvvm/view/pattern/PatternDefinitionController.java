@@ -15,17 +15,27 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
+import static dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent.PATTERN_DEFINITION;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.MEANING_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.PURPOSE_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel.DISPLAY_DEFINITION_EDIT_MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
-import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
+import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
@@ -40,19 +50,16 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
-
-import static dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent.PATTERN_DEFINITION;
-import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.MEANING_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.PURPOSE_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 
 public class PatternDefinitionController {
 
@@ -62,6 +69,9 @@ public class PatternDefinitionController {
 
     @InjectViewModel
     private PatternDefinitionViewModel patternDefinitionViewModel;
+
+    @InjectViewModel
+    private PatternPropertiesViewModel patternPropertiesViewModel;
 
     @FXML
     private VBox selectedPurposeOuterContainer;
@@ -516,7 +526,7 @@ public class PatternDefinitionController {
     private void onCancel(ActionEvent actionEvent) {
         actionEvent.consume();
         //publish close env
-        EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC), new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+        EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         clearView();
     }
 
@@ -532,13 +542,15 @@ public class PatternDefinitionController {
                 patternDefinitionViewModel.getPropertyValue(MEANING_ENTITY),
                 null);
 
+        // pattern properties view model keeping track of UI state elements
+        patternPropertiesViewModel.setPropertyValue(DISPLAY_DEFINITION_EDIT_MODE, patternDefinition.purpose() != null && patternDefinition.meaning() != null);
+
         //publish close env
         EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC),
-                new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+                new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
 
         // publish form submission data
         EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC),
                 new PatternDefinitionEvent(actionEvent.getSource(), PATTERN_DEFINITION, patternDefinition));
-        clearView();
     }
 }
