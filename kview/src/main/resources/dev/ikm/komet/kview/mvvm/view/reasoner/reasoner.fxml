@@ -17,7 +17,7 @@
          <content>
             <VBox prefHeight="900.0" prefWidth="372.0" styleClass="search-vertical-scroll-area">
                <children>
-                  <HBox alignment="CENTER" prefHeight="32.0">
+                  <HBox alignment="CENTER" prefHeight="32.0" styleClass="reasoner-result-container">
                      <children>
                         <GridPane prefHeight="32.0" prefWidth="386.0">
                            <columnConstraints>
@@ -30,12 +30,12 @@
                            </rowConstraints>
                            <children>
                               <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" styleClass="grey1-label" text="Reasoner" GridPane.halignment="RIGHT" />
-                              <Region prefWidth="35.0" styleClass="grey1-x" GridPane.columnIndex="2" GridPane.halignment="CENTER" />
+                              <Region prefWidth="35.0" styleClass="close" GridPane.columnIndex="2" GridPane.halignment="CENTER" />
                            </children>
                         </GridPane>
                      </children>
                   </HBox>
-                  <TitledPane fx:id="classificationDateTitledPane" animated="false" styleClass="classification-date-titled-pane" text="Classification Date">
+                  <TitledPane fx:id="classificationDateTitledPane" alignment="CENTER_RIGHT" animated="false" nodeOrientation="RIGHT_TO_LEFT" styleClass="classification-date" text="Classification Date">
                      <content>
                         <VBox fx:id="classificationDateVBox" styleClass="reasoner-entry-titled-container" />
                      </content>

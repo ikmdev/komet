@@ -45,16 +45,7 @@ public class NextGenReasonserController {
 
     @FXML
     public void initialize() {
-        // we are running it this way for these reasons
-        // 1) if we call the putTitlePanesArrowOnRight before the node is on the scene graph then
-        //      we will get a NPE
-        // 2) we need add the results after the putTitlePanesArrowOnRight method because that method
-        //      causes a side effect on the first result's label styling if the results are added before
-        //      calling putTitlePanesArrowOnRight
-        Platform.runLater(() -> {
-            putTitlePanesArrowOnRight();
-            showResults();
-        });
+        showResults();
     }
 
     /**
@@ -69,8 +60,4 @@ public class NextGenReasonserController {
         classificationDateVBox.getChildren().add(reasonerResultJFXNode.node());
     }
 
-    public void putTitlePanesArrowOnRight() {
-        putArrowOnRight(this.classificationDateTitledPane, 10 /* offset from right */,
-                ".classification-date-titled-pane", ".classification-date-titled-pane > .title > .arrow-button");
-    }
 }

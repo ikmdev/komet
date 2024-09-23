@@ -4082,13 +4082,13 @@ Styling a context menu for kview ui/ux controls
 /*****************************
 * next gen reasoner styles
 *****************************/
-.grey1-label {
+.reasoner-result-container .label {
     -fx-text-fill: -Grey-1;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;    
 }
 
-.grey1-x {
+.reasoner-result-container .close {
     -height: 18px;
     -width: 18px;
     -fx-min-height: -height;
@@ -4102,20 +4102,20 @@ Styling a context menu for kview ui/ux controls
     -fx-shape: "M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z";
 }
 
-.classification-date-titled-pane {
+.titled-pane.classification-date {
     -fx-text-fill: white; 
     -fx-border-width: 1 0 0 0;
     -fx-border-color: -Grey-9;    
 }
 
 
-.classification-date-titled-pane > .title {        
+.titled-pane.classification-date > .title {        
     -fx-background-color: -Grey-11;
     -fx-pref-height: 32;
     -fx-padding: 8 4 4 4;
 }
 
-.classification-date-titled-pane > .title > .arrow-button .arrow {
+.titled-pane.classification-date > .title > .arrow-button .arrow {
     -width-size: 15px;
     -height-size: 9px;
     -fx-min-width: -width-size;
