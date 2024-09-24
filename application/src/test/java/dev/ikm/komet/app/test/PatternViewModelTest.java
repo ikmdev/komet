@@ -69,6 +69,8 @@ public class PatternViewModelTest {
         Concept author = TinkarTerm.USER;
         Concept module = TinkarTerm.MODULE;
         Concept path = TinkarTerm.DEVELOPMENT_PATH;
+
+        // when we don't provide a time for the STAMP, it is taken care of by the framework
         session = composer.open(status, author, module, path);
     }
 
