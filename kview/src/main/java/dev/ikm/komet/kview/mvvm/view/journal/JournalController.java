@@ -399,32 +399,34 @@ public class JournalController {
         Subscriber<ProgressEvent> progressPopupSubscriber = evt -> {
             // if summon event type, load stuff and reference task to progress popup
             if (evt.getEventType() == SUMMON) {
-                Platform.runLater(() -> progressToggleButton.setVisible(true));
-                Task<Void> task = evt.getTask();
-                JFXNode<Pane, ProgressController> progressJFXNode = createProgressBox(task, evt.getCancelButtonText());
-                ProgressController progressController = progressJFXNode.controller();
-                Pane progressPane = progressJFXNode.node();
-                PopOver popOver = new PopOver(progressPane);
+                Platform.runLater(() -> {
+                    progressToggleButton.setVisible(true);
+                    Task<Void> task = evt.getTask();
+                    JFXNode<Pane, ProgressController> progressJFXNode = createProgressBox(task, evt.getCancelButtonText());
+                    ProgressController progressController = progressJFXNode.controller();
+                    Pane progressPane = progressJFXNode.node();
+                    PopOver popOver = new PopOver(progressPane);
 
-                // setup close button
-                progressController.getCloseProgressButton().setOnAction(actionEvent -> {
-                    popOver.hide();
-                    progressController.cleanup();
+                    // setup close button
+                    progressController.getCloseProgressButton().setOnAction(actionEvent -> {
+                        popOver.hide();
+                        progressController.cleanup();
+                    });
+
+                    popOver.setOnHidden(windowEvent -> progressController.cleanup());
+                    popOver.setArrowLocation(PopOver.ArrowLocation.LEFT_TOP);
+                    popOver.show(progressToggleButton);
+
+                    // Create one inside the list for bump out
+                    JFXNode<Pane, ProgressController> progressJFXNode2 = createProgressBox(task, evt.getCancelButtonText());
+                    ProgressController progressController2 = progressJFXNode2.controller();
+                    Pane progressBox2 = progressJFXNode2.node();
+                    progressController2.getCloseProgressButton().setOnAction(actionEvent -> {
+                        progressController2.cleanup();
+                        progressListVBox.getChildren().remove(progressBox2);
+                    });
+                    progressListVBox.getChildren().addFirst(progressBox2);
                 });
-
-                popOver.setOnHidden(windowEvent -> progressController.cleanup());
-                popOver.setArrowLocation(PopOver.ArrowLocation.LEFT_TOP);
-                Platform.runLater(() -> popOver.show(progressToggleButton));
-
-                // Create one inside the list for bump out
-                JFXNode<Pane, ProgressController> progressJFXNode2 = createProgressBox(task, evt.getCancelButtonText());
-                ProgressController progressController2 = progressJFXNode2.controller();
-                Pane progressBox2 = progressJFXNode2.node();
-                progressController2.getCloseProgressButton().setOnAction(actionEvent -> {
-                    progressController2.cleanup();
-                    progressListVBox.getChildren().remove(progressBox2);
-                });
-                Platform.runLater(()->  progressListVBox.getChildren().addFirst(progressBox2));
             }
         };
         journalEventBus.subscribe(PROGRESS_TOPIC, ProgressEvent.class, progressPopupSubscriber);
