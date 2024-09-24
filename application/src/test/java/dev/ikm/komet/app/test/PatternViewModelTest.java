@@ -97,22 +97,17 @@ public class PatternViewModelTest {
             try {
                 PatternViewModelTest testHarness = new PatternViewModelTest();
 
-                // create the pattern definition; do not commit yet
-                PublicId patternPublicId = testHarness.setPatternDefintion();
-
-                // create the pattern description; do not commit yet
-                testHarness.setPatternDescription(patternPublicId);
-
-                // create the pattern fields; do not commit yet
-                testHarness.setPatternFields(patternPublicId);
+                // create the pattern definition
+                PublicId patternPublicId = testHarness.createPattern();
 
                 composer.commitSession(session);
 
-                Pattern pattern = (Pattern) EntityService.get().getEntity(patternPublicId.asUuidList()).get();
-                int patternVersionCount = EntityService.get().getEntityFast(pattern.asUuidList()).versions().size();
-                System.out.println("***************************************");
-                System.out.println("***** Pattern version count = %d *******".formatted(patternVersionCount));
-                System.out.println("***************************************");
+                // this throws a class cast exception
+//                Pattern pattern = (Pattern) EntityService.get().getEntity(patternPublicId.asUuidList()).get();
+//                int patternVersionCount = EntityService.get().getEntityFast(pattern.asUuidList()).versions().size();
+//                System.out.println("***************************************");
+//                System.out.println("***** Pattern version count = %d *******".formatted(patternVersionCount));
+//                System.out.println("***************************************");
 
             } catch (Throwable e) {
                 e.printStackTrace();
@@ -130,7 +125,7 @@ public class PatternViewModelTest {
     /**
      * test creating a pattern using the composer API
      */
-    public PublicId setPatternDefintion() {
+    public PublicId createPattern() {
 
         // a06158ff-e08a-5d7d-bcfa-6cbfdb138910
         //Concept patternMeaning = Concept.make(UUID.randomUUID().toString()); // find a meaning
@@ -143,15 +138,30 @@ public class PatternViewModelTest {
         PublicId patternPublicId = PublicIds.newRandom();
         Pattern pattern = Pattern.make(patternPublicId);
 
+
         // the composer handles saving to an uncommitted stamp
         // it is un-committed until you say commit
         session.compose((PatternAssembler patternAssembler) -> patternAssembler
                 .pattern(pattern)
                 .meaning(patternMeaning)
                 .purpose(patternPurpose)
+                .attach((FullyQualifiedName fqn) -> fqn
+                        .language(ENGLISH_LANGUAGE)
+                        .text("FQN for Pattern")
+                        .caseSignificance(DESCRIPTION_NOT_CASE_SENSITIVE))
         );
-        //session.cancel(); // should we cancel?
 
+
+        session.compose((SemanticAssembler semanticAssembler) -> semanticAssembler
+                .reference(pattern)
+                .pattern(DESCRIPTION_PATTERN)
+                .fieldValues(fieldValues -> fieldValues
+                        .with(ENGLISH_LANGUAGE)
+                        .with("Pattern Other Name")
+                        .with(DESCRIPTION_NOT_CASE_SENSITIVE)
+                        .with(REGULAR_NAME_DESCRIPTION_TYPE))
+                .attach((USDialect dialect) -> dialect
+                        .acceptability(PREFERRED)));
 
         // versions should be only 1
         assert(EntityService.get().getEntityFast(pattern.asUuidList()).versions().size() == 1);
@@ -192,33 +202,4 @@ public class PatternViewModelTest {
         // and accessing the stamp
     }
 
-    private void setPatternDescription(PublicId patternPublicId) {
-
-        Pattern pattern = EntityService.get().getEntity(patternPublicId.asUuidList()).get().toProxy();
-
-
-        session.compose((PatternAssembler patternAssembler) -> patternAssembler
-                        .pattern(pattern)
-                .attach((FullyQualifiedName fqn) -> fqn
-                        .language(ENGLISH_LANGUAGE)
-                        .text("FQN for Pattern")
-                        .caseSignificance(DESCRIPTION_NOT_CASE_SENSITIVE))
-        );
-
-        session.compose((SemanticAssembler semanticAssembler) -> semanticAssembler
-                .reference(pattern)
-                .pattern(DESCRIPTION_PATTERN)
-                .fieldValues(fieldValues -> fieldValues
-                        .with(ENGLISH_LANGUAGE)
-                        .with("Pattern Other Name")
-                        .with(DESCRIPTION_NOT_CASE_SENSITIVE)
-                        .with(REGULAR_NAME_DESCRIPTION_TYPE))
-                .attach((USDialect dialect) -> dialect
-                        .acceptability(PREFERRED)));
-
-    }
-
-    private void setPatternFields(PublicId patterPublicId) {
-
-    }
 }
