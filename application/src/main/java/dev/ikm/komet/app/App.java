@@ -40,8 +40,8 @@ import dev.ikm.komet.framework.window.WindowComponent;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.JournalTileEvent;
-import dev.ikm.komet.kview.fxutils.CssHelper;
 import dev.ikm.komet.kview.fxutils.ResourceHelper;
+import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.mvvm.view.export.ExportController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalViewFactory;
@@ -439,7 +439,7 @@ public class App extends Application {
 
             // Add Komet.css and kview css
             sourceScene.getStylesheets().addAll(
-                    graphicsModule.getClassLoader().getResource(CSS_LOCATION).toString(), CssHelper.defaultStyleSheet());
+                    graphicsModule.getClassLoader().getResource(CSS_LOCATION).toString(), defaultStyleSheet());
 
             // Attach a listener to provide a CSS refresher ability for each Journal window. Right double click settings button (gear)
             attachCSSRefresher(landingPageController.getSettingsToggleButton(), landingPageBorderPane);
@@ -490,7 +490,7 @@ public class App extends Application {
 
             // Add Komet.css and kview css
             sourceScene.getStylesheets().addAll(
-                    graphicsModule.getClassLoader().getResource(CSS_LOCATION).toString(), CssHelper.defaultStyleSheet());
+                    graphicsModule.getClassLoader().getResource(CSS_LOCATION).toString(), defaultStyleSheet());
 
             // Attach a listener to provide a CSS refresher ability for each Journal window. Right double click settings button (gear)
             attachCSSRefresher(journalController.getSettingsToggleButton(), journalController.getJournalBorderPane());
@@ -620,26 +620,27 @@ public class App extends Application {
 
     /**
      * Will refresh a parent root node and all children that have CSS stylesheets.
-     * Komet.css and kview-opt2.css files are updated dynamically.
+     * komet.css and kview.css files are updated dynamically.
      * @param root Parent node to be traversed to refresh all stylesheets.
      */
     private void handleRefreshUserCss(Parent root) {
-
         try {
-            // "Feature" to make css editing/testing easy in the dev environment. Komet css
-            String currentDir = System.getProperty("user.dir").replace("/application", "/framework/src/main/resources");
-            String kometCssSourcePath = currentDir + ResourceHelper.toAbsolutePath("komet.css", Icon.class);
+            // "Feature" to make css editing/testing easy in the dev environment.
+            // Komet CSS file
+            String frameworkResourcesDir = System.getProperty("user.dir").replace("/application", "/framework/src/main/resources");
+            String kometCssSourcePath = frameworkResourcesDir + ResourceHelper.toAbsolutePath("komet.css", Icon.class);
             File kometCssSourceFile = new File(kometCssSourcePath);
 
             // kView CSS file
-            String kViewCssPath = defaultStyleSheet().replace("target/classes", "src/main/resources");
-            File kViewCssFile = new File(kViewCssPath.replace("file:", ""));
+            String kViewResourcesDir = System.getProperty("user.dir").replace("/application", "/kview/src/main/resources");
+            String kViewCssSourcePath = kViewResourcesDir + ResourceHelper.toAbsolutePath("kview.css", BasicController.class);
+            File kviewCssSourceFile = new File(kViewCssSourcePath);
 
-            LOG.info("File exists? %s komet css path = %s".formatted(kometCssSourceFile.exists(), kometCssSourceFile));
-            LOG.info("File exists? %s kview css path = %s".formatted(kViewCssFile.exists(), kViewCssFile));
+            LOG.info("File exists? {}, komet css path = {}", kometCssSourceFile.exists(), kometCssSourceFile);
+            LOG.info("File exists? {}, kview css path = {}", kviewCssSourceFile.exists(), kviewCssSourceFile);
 
             // ensure both exist on the development environment path
-            if (kometCssSourceFile.exists() && kViewCssFile.exists()) {
+            if (kometCssSourceFile.exists() && kviewCssSourceFile.exists()) {
                 Scene scene = root.getScene();
 
                 // Apply Komet css
@@ -647,18 +648,17 @@ public class App extends Application {
                 scene.getStylesheets().add(kometCssSourceFile.toURI().toURL().toString());
 
                 // Recursively refresh any children using the kView css files.
-                refreshPanes(root, kViewCssPath);
+                refreshPanes(root, kviewCssSourceFile.toURI().toURL().toString());
 
-                LOG.info("       Updated komet.css: " + kometCssSourceFile.getAbsolutePath());
-                LOG.info("Updated kview css file: " + kViewCssFile.getAbsolutePath());
+                LOG.info("Updated komet.css file: {}", kometCssSourceFile.getAbsolutePath());
+                LOG.info("Updated kview.css file: {}", kviewCssSourceFile.getAbsolutePath());
             } else {
-                LOG.info("File not found for komet.css: " + kometCssSourceFile.getAbsolutePath());
+                LOG.info("File not found for komet.css: {}", kometCssSourceFile.getAbsolutePath());
             }
         } catch (IOException e) {
             // TODO: Raise an alert
-            e.printStackTrace();
+            LOG.error("Error refreshing CSS files", e);
         }
-
     }
 
     @Override
