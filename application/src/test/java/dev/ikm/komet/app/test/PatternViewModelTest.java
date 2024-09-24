@@ -57,7 +57,8 @@ public class PatternViewModelTest {
     //@BeforeAll
     public static void setUpBefore() {
         LOG.info("Clear caches");
-        File dataStore = new File(System.getProperty("user.home") + "/Solor/LoincFullDataSet_v2_77_8-21-2024");
+        //File dataStore = new File(System.getProperty("user.home") + "/Solor/LoincFullDataSet_v2_77_8-21-2024");
+        File dataStore = new File(System.getProperty("user.home") + "/Solor/September2024_ConnectathonDataset_v1");
         CachingService.clearAll();
         LOG.info("Setup Ephemeral Suite: " + LOG.getName());
         LOG.info(ServiceProperties.jvmUuid());
