@@ -44,7 +44,7 @@ public class NextGenReasonserController {
     }
 
     @FXML
-    public void initialize() {
+    private void initialize() {
         showResults();
     }
 

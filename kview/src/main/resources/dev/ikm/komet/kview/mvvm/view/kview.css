@@ -4143,18 +4143,18 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: -Secondary-05;    
 }
 
-.reasoner-entry-titled-pane {
+.reasoner-entry {
     -fx-text-fill: -Grey-1; 
     -fx-font-size: 13px;        
     -fx-font-weight: bold;    
 }
 
 
-.reasoner-entry-titled-pane > .title {        
+.reasoner-entry > .title {        
     -fx-background-color: -Grey-8;        
 }
 
-.reasoner-entry-titled-pane .content {
+.reasoner-entry .content {
     -fx-background-color: -Grey-8;
     -fx-border-width: 0 0 0 0;
 }
@@ -4163,7 +4163,7 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: white;        
 }
 
-.titled-pane.reasoner-entry-titled-pane:focused > .title .arrow-button .arrow {
+.titled-pane.reasoner-entry:focused > .title .arrow-button .arrow {
     -width-size: 8px;
     -height-size: 8px;
     -fx-min-width: -width-size;
@@ -4177,7 +4177,7 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: white;   
 }
 
-.titled-pane.reasoner-entry-titled-pane > .title > .arrow-button > .arrow {
+.titled-pane.reasoner-entry > .title > .arrow-button > .arrow {
     -width-size: 8px;
     -height-size: 8px;
     -fx-min-width: -width-size;

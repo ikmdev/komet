@@ -563,8 +563,8 @@ public class JournalController {
      * Add a Next Gen Reasoner Search Results, currently tied to the "bell" left nav button
      */
     public void loadNextGenReasonerPanel() {
-        Config nextGenReasonerConfig = new Config(NextGenReasonserController.class.getResource(NEXT_GEN_REASONER_FXML_URL));
-        JFXNode<Pane, NextGenReasonserController> reasonerJFXNode = FXMLMvvmLoader.make(nextGenReasonerConfig);
+        JFXNode<Pane, NextGenReasonserController> reasonerJFXNode = FXMLMvvmLoader.make(
+                NextGenReasonserController.class.getResource(NEXT_GEN_REASONER_FXML_URL));
 
         nextGenReasonserController = reasonerJFXNode.controller();
         nextGenReasonerPanel = reasonerJFXNode.node();
