@@ -89,40 +89,74 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>
-                        -Dtestfx.headless=true
-                        -Dprism.order=sw
-                        -Dprism.text=t2k
-                        -Djava.awt.headless=true
-                        --add-opens=javafx.graphics/com.sun.glass.ui=org.testfx.core
-                        --add-opens=javafx.graphics/com.sun.javafx.application=org.testfx.core
-                        --add-exports=javafx.graphics/com.sun.javafx.application=org.testfx.core
-                        --add-exports=javafx.graphics/com.sun.glass.ui=org.testfx.monocle
-                        --add-exports=javafx.graphics/com.sun.javafx.util=org.testfx.monocle
-                        --add-exports=javafx.base/com.sun.javafx.logging=org.testfx.monocle
-                    </argLine>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>default-test</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
+
+    <!--TestFX configuration for headless and graphical tests-->
+    <properties>
+        <commonArgs>
+            --add-opens=javafx.graphics/com.sun.glass.ui=org.testfx.core
+            --add-opens=javafx.graphics/com.sun.javafx.application=org.testfx.core
+            --add-exports=javafx.graphics/com.sun.javafx.application=org.testfx.core
+            --add-exports=javafx.graphics/com.sun.glass.ui=org.testfx.monocle
+            --add-exports=javafx.graphics/com.sun.javafx.util=org.testfx.monocle
+            --add-exports=javafx.base/com.sun.javafx.logging=org.testfx.monocle
+        </commonArgs>
+    </properties>
+    <profiles>
+        <profile>
+            <id>headless-tests</id>
+            <activation>
+                <property>
+                    <name>headless</name>
+                    <value>true</value>
+                </property>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-<!--                            <useModulePath>true</useModulePath>-->
+                            <argLine>
+                                -Dtestfx.headless=true
+                                -Dprism.order=sw
+                                -Dprism.text=t2k
+                                -Djava.awt.headless=true
+                                ${commonArgs}
+                            </argLine>
+                            <useModulePath>false</useModulePath> <!--When some JPMS issues are resolved, this can be set to true-->
                             <forkCount>1</forkCount>
                             <reuseForks>false</reuseForks>
                         </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>graphical-tests</id>
+            <activation>
+                <property>
+                    <name>headless</name>
+                    <value>false</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>
+                                -Dtestfx.headless=false
+                                ${commonArgs}
+                            </argLine>
+                            <useModulePath>false</useModulePath> <!--When some JPMS issues are resolved, this can be set to true-->
+                            <forkCount>1</forkCount>
+                            <reuseForks>false</reuseForks>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

@@ -80,6 +80,35 @@ To run Komet with JPro in a Docker container, follow these steps:
 
 **Note:** Komet requires sample data to function fully.
 
+## Running Komet GUI Tests Using the TestFX Framework
+The Komet application includes GUI tests built with the TestFX framework. By default, these tests run in headless mode, 
+which is ideal for continuous integration (CI) environments or situations where graphical interaction is unnecessary.
+1. **Running TestFX Tests in Headless Mode (Default)**<br>
+   To execute all unit tests, including the TestFX GUI tests, in headless mode (without launching a GUI window), run:
+   ```bash
+   mvn test
+   ```
+2. **Running TestFX Tests in Graphical Mode (Non-Headless)**<br>
+   If you need to observe the GUI during testing—for instance, when debugging UI components—you can disable 
+   headless mode by setting the headless property to false.<br>
+   To run all tests in non-headless mode:
+   ```bash
+   mvn test -Dheadless=false
+   ```
+3. **Running Specific Tests**<br>
+   To run a specific test class in a specific module, for example the `LoginTest` class in the `kview` module:
+   ```bash
+   mvn test -pl kview -Dtest=LoginTest -Dheadless=false
+   ```
+   To run a specific test method inside a specific class, for example the `testSuccessfulAuthentication` method in the
+   `LoginTest` class in the `kview` module:
+     ```bash
+    mvn test -pl kview -Dtest=LoginTest#testSuccessfulAuthentication -Dheadless=false
+     ```
+**Important Note on Test Execution**<br>
+The tests will only run once after they pass successfully. To trigger the tests again, changes must be made 
+to any part of the project.
+
 ## Issues and Contributions
 Technical and non-technical issues can be reported to the [Issue Tracker](https://github.com/ikmdev/komet/issues).
 
