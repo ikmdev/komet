@@ -34,6 +34,7 @@ import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
+import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.fxutils.window.WindowSupport;
@@ -45,7 +46,7 @@ import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
 import dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
-import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonserController;
+import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
 import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -244,10 +245,12 @@ public class JournalController {
 
     private NextGenSearchController nextGenSearchController;
 
-    private NextGenReasonserController nextGenReasonserController;
+    private NextGenReasonerController nextGenReasonserController;
 
     private Subscriber<MakeConceptWindowEvent> makeConceptWindowEventSubscriber;
     private Subscriber<ShowNavigationalPanelEvent> showNavigationalPanelEventSubscriber;
+
+    private Subscriber<CloseReasonerPanelEvent> closeReasonerPanelEventSubscriber;
 
     @InjectViewModel
     private NextGenSearchViewModel nextGenSearchViewModel;
@@ -304,6 +307,11 @@ public class JournalController {
             navigatorToggleButton.setSelected(true);
         };
         journalEventBus.subscribe(JOURNAL_TOPIC, ShowNavigationalPanelEvent.class, showNavigationalPanelEventSubscriber);
+
+        // listed to the event fired when the user clicks the 'X' on the reasoner slide out
+        // and wire into the toggle group because we already have a listener on this property
+        closeReasonerPanelEventSubscriber = evt -> sidebarToggleGroup.selectToggle(null);
+        journalEventBus.subscribe(JOURNAL_TOPIC, CloseReasonerPanelEvent.class, closeReasonerPanelEventSubscriber);
 
         // initially drop region is invisible
         dropAnimationRegion.setVisible(false);
@@ -562,8 +570,8 @@ public class JournalController {
      * Add a Next Gen Reasoner Search Results, currently tied to the "bell" left nav button
      */
     public void loadNextGenReasonerPanel() {
-        JFXNode<Pane, NextGenReasonserController> reasonerJFXNode = FXMLMvvmLoader.make(
-                NextGenReasonserController.class.getResource(NEXT_GEN_REASONER_FXML_URL));
+        JFXNode<Pane, NextGenReasonerController> reasonerJFXNode = FXMLMvvmLoader.make(
+                NextGenReasonerController.class.getResource(NEXT_GEN_REASONER_FXML_URL));
 
         nextGenReasonserController = reasonerJFXNode.controller();
         nextGenReasonerPanel = reasonerJFXNode.node();

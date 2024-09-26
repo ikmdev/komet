@@ -4148,6 +4148,7 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: -Secondary-05;    
 }
 
+
 .titled-pane.classification-date .content {
     -fx-background-color: -Grey-8;
     -fx-border-width: 0px;
@@ -4175,18 +4176,12 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: white;        
 }
 
-.titled-pane.reasoner-entry:focused > .title .arrow-button .arrow {
-    -width-size: 8px;
-    -height-size: 8px;
-    -fx-min-width: -width-size;
-    -fx-pref-width: -width-size;
-    -fx-max-width: -width-size;
+.titled-pane.reasoner-entry:collapsed > .title > .arrow-button {  
+    -fx-rotate: 90;  
+}
 
-    -fx-min-height: -height-size;
-    -fx-pref-height: -height-size;
-    -fx-max-height: -height-size;
-    -fx-shape: "M7 10L12 15L17 10L7 10Z";
-    -fx-background-color: white;   
+.titled-pane.reasoner-entry:expanded > .title > .arrow-button {        
+     -fx-rotate: 90;     
 }
 
 .titled-pane.reasoner-entry > .title > .arrow-button > .arrow {
@@ -4200,8 +4195,9 @@ Styling a context menu for kview ui/ux controls
     -fx-pref-height: -height-size;
     -fx-max-height: -height-size;
     -fx-shape: "M10 17L15 12L10 7V17Z";
-    -fx-background-color: white;    
-}
+    -fx-background-color: white;       
+} 
+
 
 .reasoner-entry-description {
     -fx-text-fill: black;

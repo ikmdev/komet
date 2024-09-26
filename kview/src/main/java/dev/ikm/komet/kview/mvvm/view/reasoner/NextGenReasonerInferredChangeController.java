@@ -16,14 +16,14 @@
 package dev.ikm.komet.kview.mvvm.view.reasoner;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.TitledPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 
-public class NextGenReasonerResultController {
-    @FXML
-    private TitledPane resultTitlePane;
+public class NextGenReasonerInferredChangeController {
 
-    @FXML
-    private VBox descriptionsVBox;
-
+//    @FXML
+//    private ImageView identicon;
+//
+//    @FXML
+//    private Label conceptLabel;
 }
