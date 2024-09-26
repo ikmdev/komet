@@ -308,7 +308,7 @@ public class JournalController {
         };
         journalEventBus.subscribe(JOURNAL_TOPIC, ShowNavigationalPanelEvent.class, showNavigationalPanelEventSubscriber);
 
-        // listed to the event fired when the user clicks the 'X' on the reasoner slide out
+        // listening to the event fired when the user clicks the 'X' on the reasoner slide out
         // and wire into the toggle group because we already have a listener on this property
         closeReasonerPanelEventSubscriber = evt -> sidebarToggleGroup.selectToggle(null);
         journalEventBus.subscribe(JOURNAL_TOPIC, CloseReasonerPanelEvent.class, closeReasonerPanelEventSubscriber);
