@@ -4096,13 +4096,19 @@ Styling a context menu for kview ui/ux controls
 /*****************************
 * next gen reasoner styles
 *****************************/
-.reasoner-result-container .label {
+
+.reasoner-vertical-scroll-area {
+    -fx-background-color: -Grey-9;  
+}
+
+.reasoner-result-header .label {
     -fx-text-fill: -Grey-1;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;    
+    -fx-background-color: -Grey-9;
 }
 
-.reasoner-result-container .close {
+.reasoner-result-header .close {
     -height: 18px;
     -width: 18px;
     -fx-min-height: -height;
@@ -4121,7 +4127,6 @@ Styling a context menu for kview ui/ux controls
     -fx-border-width: 1 0 0 0;
     -fx-border-color: -Grey-9;    
 }
-
 
 .titled-pane.classification-date > .title {        
     -fx-background-color: -Grey-11;
@@ -4143,15 +4148,22 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: -Secondary-05;    
 }
 
+.titled-pane.classification-date .content {
+    -fx-background-color: -Grey-8;
+    -fx-border-width: 0px;
+}
+
 .reasoner-entry {
     -fx-text-fill: -Grey-1; 
     -fx-font-size: 13px;        
     -fx-font-weight: bold;    
 }
 
-
-.reasoner-entry > .title {        
-    -fx-background-color: -Grey-8;        
+.reasoner-entry.titled-pane > .title {             
+    -fx-text-fill: -Grey-1;     
+    -fx-background-color: -Grey-8;            
+    -fx-font-size: 13px;        
+    -fx-font-weight: bold;      
 }
 
 .reasoner-entry .content {
@@ -4191,12 +4203,8 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: white;    
 }
 
-.reasoner-entry-titled-container {    
-    -fx-background-color: -Grey-8;    
-    -fx-border-width: 0 0 0 0;    
-}
-
-.reasoner-entry-description-label {
+.reasoner-entry-description {
+    -fx-text-fill: black;
     -width: 348px;
     -fx-pref-width: -width;
     -fx-min-width:width;

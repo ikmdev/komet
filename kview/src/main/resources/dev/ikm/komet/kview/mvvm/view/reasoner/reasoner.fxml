@@ -15,9 +15,9 @@
    <children>
       <ScrollPane fitToWidth="true" maxHeight="-Infinity" minWidth="-Infinity" prefWidth="372.0">
          <content>
-            <VBox prefHeight="900.0" prefWidth="372.0" styleClass="search-vertical-scroll-area">
+            <VBox prefHeight="900.0" prefWidth="374.0" styleClass="reasoner-vertical-scroll-area">
                <children>
-                  <HBox alignment="CENTER" prefHeight="32.0" styleClass="reasoner-result-container">
+                  <HBox alignment="CENTER" prefHeight="32.0" styleClass="reasoner-result-header">
                      <children>
                         <GridPane prefHeight="32.0" prefWidth="386.0">
                            <columnConstraints>
@@ -37,7 +37,7 @@
                   </HBox>
                   <TitledPane fx:id="classificationDateTitledPane" alignment="CENTER_RIGHT" animated="false" nodeOrientation="RIGHT_TO_LEFT" styleClass="classification-date" text="Classification Date">
                      <content>
-                        <VBox fx:id="classificationDateVBox" styleClass="reasoner-entry-titled-container" />
+                        <VBox fx:id="classificationDateVBox" />
                      </content>
                   </TitledPane>
                </children>

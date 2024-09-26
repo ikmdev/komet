@@ -22,7 +22,7 @@
                               <Image url="@../images/heart-placeholder.png" />
                            </image>
                         </ImageView>
-                        <Label prefHeight="30.0" styleClass="reasoner-entry-description-label" text="Tetralogy of Fallot (disorder)">
+                        <Label prefHeight="30.0" styleClass="reasoner-entry-description" text="Tetralogy of Fallot (disorder)">
                            <padding>
                               <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                            </padding>
@@ -36,7 +36,7 @@
                               <Image url="@../images/heart-placeholder.png" />
                            </image>
                         </ImageView>
-                        <Label prefHeight="30.0" styleClass="reasoner-entry-description-label" text="Tetralogy of Fallot (disorder)">
+                        <Label prefHeight="30.0" styleClass="reasoner-entry-description" text="Tetralogy of Fallot (disorder)">
                            <padding>
                               <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                            </padding>
@@ -50,7 +50,7 @@
                               <Image url="@../images/heart-placeholder.png" />
                            </image>
                         </ImageView>
-                        <Label prefHeight="30.0" styleClass="reasoner-entry-description-label" text="Tetralogy of Fallot (disorder)">
+                        <Label prefHeight="30.0" styleClass="reasoner-entry-description" text="Tetralogy of Fallot (disorder)">
                            <padding>
                               <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                            </padding>
@@ -64,7 +64,7 @@
                               <Image url="@../images/heart-placeholder.png" />
                            </image>
                         </ImageView>
-                        <Label prefHeight="30.0" styleClass="reasoner-entry-description-label" text="Tetralogy of Fallot (disorder)">
+                        <Label prefHeight="30.0" styleClass="reasoner-entry-description" text="Tetralogy of Fallot (disorder)">
                            <padding>
                               <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                            </padding>
