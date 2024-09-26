@@ -21,9 +21,9 @@ import javafx.scene.image.ImageView;
 
 public class NextGenReasonerInferredChangeController {
 
-//    @FXML
-//    private ImageView identicon;
-//
-//    @FXML
-//    private Label conceptLabel;
+    @FXML
+    private ImageView identicon;
+
+    @FXML
+    private Label conceptLabel;
 }
