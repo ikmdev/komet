@@ -441,10 +441,8 @@ public class PatternDetailsController {
         outerHBox.getChildren().addAll(innerHBox, commentIconRegion);
         fieldVBoxContainer.getChildren().addAll(fieldLabel, fieldText, outerHBox);
         fieldVBoxContainer.setOnMouseClicked(mouseEvent -> showContextMenuPopUp(patternField, fieldVBoxContainer, mouseEvent.getScreenX(), mouseEvent.getScreenY()));
-         return fieldVBoxContainer;
+        return fieldVBoxContainer;
     }
-
-
 
     private void showContextMenuPopUp(PatternField patternField, Node node, double x, double y) {
         contextMenu.show(node, x, y);
