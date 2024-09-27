@@ -326,21 +326,11 @@ public class PatternDetailsController {
     }
 
     private MenuItem createContextMenuItem(String menuText, String iconString, boolean disabled) {
-        /*SVGPath svgImagePath = new SVGPath();
-        svgImagePath.setContent(svgPath);
-        svgImagePath.setFill(Paint.valueOf("WHITE"));
-        svgImagePath.setFillRule(FillRule.EVEN_ODD);*/
-
         Region region = new Region();
         region.getStyleClass().add(iconString);
-
-
         MenuItem menuItem = new MenuItem(menuText);
-//        menuItem.getStyleClass().add("menu-item");
-//        menuItem.setGraphic(svgImagePath);
         menuItem.setGraphic(region);
         menuItem.setDisable(disabled);
-
         return menuItem;
     }
 
