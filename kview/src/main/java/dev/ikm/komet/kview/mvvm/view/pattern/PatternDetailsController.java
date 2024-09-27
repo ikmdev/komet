@@ -277,8 +277,8 @@ public class PatternDetailsController {
         ObservableList<Node> fieldsTilePaneList = fieldsTilePane.getChildren();
         fieldsTilePaneList.addListener((ListChangeListener<Node>) (listener) -> {
             while(listener.next()){
-                if(listener.wasAdded()){
-                    updateFieldValues(listener.getTo()); // Get the field number that has been added.
+                if(listener.wasAdded() || listener.wasRemoved()){
+                    updateFieldValues();
                 }
             }
         });
@@ -304,10 +304,15 @@ public class PatternDetailsController {
                 {"Save to Favorites",  false, new String[]{"menu-item"}, null, createGraphics("favorites-icon")},
                 {MenuHelper.SEPARATOR},
                 {"Add Comment",  false, new String[]{"menu-item"}, null, createGraphics("comment-icon")},
-                {"Remove", true, new String[]{"menu-item"}, null, createGraphics("remove-icon")}
+                {"Remove", true, new String[]{"menu-item"}, (EventHandler<ActionEvent>) this::removeField, createGraphics("remove-icon")}
         };
 
         contextMenu = MenuHelper.getInstance().createContextMenuWithMenuItems(menuItems);
+    }
+
+    private void removeField(ActionEvent actionEvent) {
+        System.out.println("removing" + actionEvent.getSource());
+        fieldsTilePane.getChildren().remove(selectedNodeField);
     }
 
     private Region createGraphics(String iconString) {
@@ -323,25 +328,6 @@ public class PatternDetailsController {
         svgImagePath.setFill(Color.WHITE);
         svgImagePath.setFillRule(FillRule.EVEN_ODD);
         return svgImagePath;
-    }
-
-    private MenuItem createContextMenuItem(String menuText, String iconString, boolean disabled) {
-        /*SVGPath svgImagePath = new SVGPath();
-        svgImagePath.setContent(svgPath);
-        svgImagePath.setFill(Paint.valueOf("WHITE"));
-        svgImagePath.setFillRule(FillRule.EVEN_ODD);*/
-
-        Region region = new Region();
-        region.getStyleClass().add(iconString);
-
-
-        MenuItem menuItem = new MenuItem(menuText);
-//        menuItem.getStyleClass().add("menu-item");
-//        menuItem.setGraphic(svgImagePath);
-        menuItem.setGraphic(region);
-        menuItem.setDisable(disabled);
-
-        return menuItem;
     }
 
     /**
@@ -405,12 +391,11 @@ public class PatternDetailsController {
     }
 
     /**
-     * This method updates the Field label with the correct field number value.     *
-     * @param fieldNumber
+     * This method updates the Field label with the correct field number value.
      */
-    private void updateFieldValues(int fieldNumber) {
+    private void updateFieldValues() {
         ObservableList<Node> fieldVBoxes = fieldsTilePane.getChildren();
-        for(int i=fieldNumber ; i < fieldVBoxes.size(); i++){
+        for(int i=0 ; i < fieldVBoxes.size(); i++){
             Node node = fieldVBoxes.get(i);
             Node labelNode = node.lookup(".pattern-field");
             if(labelNode instanceof Label label){
@@ -444,7 +429,12 @@ public class PatternDetailsController {
         return fieldVBoxContainer;
     }
 
+    private Node selectedNodeField;
+    private PatternField selectedPatternField;
+
     private void showContextMenuPopUp(PatternField patternField, Node node, double x, double y) {
+        selectedNodeField = node;
+        selectedPatternField = patternField;
         contextMenu.show(node, x, y);
     }
 
