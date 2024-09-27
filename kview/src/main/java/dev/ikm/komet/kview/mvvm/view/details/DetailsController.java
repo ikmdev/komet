@@ -266,6 +266,12 @@ public class DetailsController  {
     @FXML
     private Pane timelineSlideoutTrayPane;
 
+    @FXML
+    private ContextMenu reasonerContextMenu;
+
+    @FXML
+    private MenuItem incrementalReasoner;
+
     /**
      * A function from the caller. This class passes a boolean true if classifier button is pressed invoke caller's function to be returned a view.
      */
@@ -513,13 +519,12 @@ public class DetailsController  {
             menuItems = new Object[][]{
                     {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
                     {MenuHelper.SEPARATOR},
-                    {"Add Fully Qualified", true, null, (EventHandler<ActionEvent>) actionEvent ->
-                            eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(latestFqnText.getText() //TODO need to get a source
-                                    ,
+                    {"Add Fully Qualified Name", true, null, (EventHandler<ActionEvent>) actionEvent ->
+                            eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(contextMenu,
                                     AddFullyQualifiedNameEvent.ADD_FQN, getViewProperties())),
                             createConceptEditDescrIcon()},
                     {"Add Other Name", true, null, (EventHandler<ActionEvent>) actionEvent -> {
-                        eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(this,
+                        eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(contextMenu,
                                 AddOtherNameToConceptEvent.ADD_DESCRIPTION));
                     },
                             createConceptEditDescrIcon()},
@@ -538,12 +543,12 @@ public class DetailsController  {
                         }
                         if (currentConcept != null) {
                             // in edit mode, will have a concept and public id
-                            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(this,
+                            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(contextMenu,
                                     // pass the publicId of the Concept
                                     AddOtherNameToConceptEvent.ADD_DESCRIPTION, currentConcept.publicId())); // concept's publicId
                         } else {
                             // in create mode, we won't have a concept and public id yet
-                            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(this,
+                            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(contextMenu,
                                     AddOtherNameToConceptEvent.ADD_DESCRIPTION));
                         }
                     },
@@ -1231,9 +1236,18 @@ public class DetailsController  {
     }
 
     @FXML
-    private void openReasonerSlideout(ActionEvent event) {
-        ToggleButton reasonerToggle = (ToggleButton) event.getSource();
-        reasonerResultsControllerConsumer.accept(reasonerToggle);
+    private void runFullReasoner(ActionEvent actionEvent) {
+        LOG.info("Run full reaonser");
+    }
+
+    @FXML
+    private void runIncrementalReasoner(ActionEvent actionEvent) {
+        LOG.info("Run incremental reasoner");
+    }
+
+    @FXML
+    private void redoNavigation(ActionEvent actionEvent) {
+        LOG.info("Redo navigation");
     }
 
     /**
@@ -1286,6 +1300,11 @@ public class DetailsController  {
         // store and use later.
         stampEdit = popOver;
         this.stampEditController = stampEditController;
+    }
+
+    @FXML
+    private void popupAddContextMenu(ActionEvent actionEvent) {
+        MenuHelper.fireContextMenuEvent(actionEvent, Side.BOTTOM, 0, 0);
     }
 
     private void updateUIStamp(ViewModel stampViewModel) {

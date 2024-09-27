@@ -15,11 +15,32 @@
  */
 package dev.ikm.komet.kview.mvvm.view.descriptionname;
 
+import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_ADD_FQN;
+import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescriptionTypes;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CASE_SIGNIFICANCE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_SUBMITTED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TITLE_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel.DISPLAY_FQN_EDIT_MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel.DISPLAY_OTHER_NAME_EDIT_MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
-import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
+import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
@@ -30,7 +51,11 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.TextField;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -41,14 +66,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
-
-import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescriptionTypes;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
-import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 
 public class DescriptionNameController {
 
@@ -101,6 +118,9 @@ public class DescriptionNameController {
 
     @InjectViewModel
     private DescrNameViewModel descrNameViewModel;
+
+    @InjectViewModel
+    private PatternPropertiesViewModel patternPropertiesViewModel;
 
     public DescriptionNameController() { }
 
@@ -159,7 +179,7 @@ public class DescriptionNameController {
     private void handleCancelButtonEvent(ActionEvent actionEvent) {
         actionEvent.consume();
         EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(),
-                new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+                new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         clearView();
     }
 
@@ -177,9 +197,6 @@ public class DescriptionNameController {
         dialectComboBox3.getSelectionModel().select(Entity.getFast(preferred.nid()));
     }
 
-    public void setEditDescriptionTitleLabel(String addAxiomTitleLabelText) {
-        this.editDescriptionTitleLabel.setText(addAxiomTitleLabelText);
-    }
 
     public void clearView() {
         nameTextField.clear();
@@ -259,17 +276,18 @@ public class DescriptionNameController {
         LOG.info("Ready to update to the concept view model: " + descrNameViewModel);
 
         if (descrNameViewModel.getPropertyValue(NAME_TYPE) == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE) {
+            patternPropertiesViewModel.setPropertyValue(DISPLAY_FQN_EDIT_MODE, true);
             EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new PatternDescriptionEvent(submitButton,
-                    PatternDescriptionEvent.PATTERN_ADD_FQN, descrNameViewModel.create()));
-
+                    PATTERN_ADD_FQN, descrNameViewModel.create()));
         } else if (descrNameViewModel.getPropertyValue(NAME_TYPE) == REGULAR_NAME_DESCRIPTION_TYPE) {
+            patternPropertiesViewModel.setPropertyValue(DISPLAY_OTHER_NAME_EDIT_MODE, true);
             EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new PatternDescriptionEvent(submitButton,
-                    PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME, descrNameViewModel.create()));
+                    PATTERN_ADD_OTHER_NAME, descrNameViewModel.create()));
         }
 
         //publish close env
         EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(),
-                new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+                new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         clearView();
     }
 

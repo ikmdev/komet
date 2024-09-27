@@ -20,7 +20,7 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
-import dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent;
+import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.common.ConceptDragOverAnimationController;
 import dev.ikm.komet.kview.mvvm.view.common.ConceptSearchFormItemController;
@@ -31,9 +31,12 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -55,9 +58,10 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.PATTERN_FIELDS;
-import static dev.ikm.komet.kview.events.pattern.PatternPropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchFieldDefinitionDataTypes;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
@@ -152,23 +156,49 @@ public class PatternFieldsController {
             }
         });
 
-        loadDataTypeComboBox();
+        IntegerProperty totalExistingfields = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
+        SimpleIntegerProperty fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
+        ObservableList<Integer> fieldOrderOptions = patternFieldsViewModel.getObservableList(FIELD_ORDER_OPTIONS);
 
-        ObjectProperty<Integer> fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
-        SimpleStringProperty displayNameProp = patternFieldsViewModel.getProperty(DISPLAY_NAME);
+        StringProperty displayNameProp = patternFieldsViewModel.getProperty(DISPLAY_NAME);
         ObjectProperty<ConceptEntity> dataTypeProp = patternFieldsViewModel.getProperty(DATA_TYPE);
         ObjectProperty<ConceptEntity> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
         ObjectProperty<ConceptEntity> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
 
-        fieldOrderComboBox.valueProperty().bindBidirectional(fieldOrderProp);
+        fieldOrderProp.bind(fieldOrderComboBox.getSelectionModel().selectedItemProperty());
         displayNameTextField.textProperty().bindBidirectional(displayNameProp);
         dataTypeComboBox.valueProperty().bindBidirectional(dataTypeProp);
+        fieldOrderComboBox.setItems(fieldOrderOptions); // Set the items in fieldOrder
 
-        fieldOrderProp.addListener(fieldsValidationListener);
+
         displayNameProp.addListener(fieldsValidationListener);
         dataTypeProp.addListener(fieldsValidationListener);
         purposeProp.addListener(fieldsValidationListener);
         meaningProp.addListener(fieldsValidationListener);
+
+        totalExistingfields.addListener((obs, oldVal, newVal) -> {
+            loadFieldOrderOptions(newVal.intValue());
+        });
+
+        loadDataTypeComboBox();
+        loadFieldOrderOptions(totalExistingfields.get());
+
+    }
+
+    private void loadFieldOrderOptions(int totalFields){
+
+        // get the available dropdown options initially list will be empty.
+        ObservableList<Integer> fieldOrderOptions = patternFieldsViewModel.getObservableList(FIELD_ORDER_OPTIONS);
+        // Clear list
+        fieldOrderOptions.clear();
+        // Create a stream of integers from 1 to (total field + 1)
+        IntStream.rangeClosed(1, totalFields+1)
+                .boxed() // Convert int to Integer
+                .forEach(fieldOrderOptions::add);
+
+        // Select the last item as a default to the user
+        fieldOrderComboBox.getSelectionModel().selectLast();
+
     }
 
     ViewProperties viewProperties;
@@ -248,7 +278,6 @@ public class PatternFieldsController {
                 /* allow for both copying and moving, whatever user chooses */
                 event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
             }
-
             event.consume();
         });
 
@@ -264,7 +293,6 @@ public class PatternFieldsController {
                 int lastIndex = nd.getChildren().size();
                 nd.getChildren().add(lastIndex, dragOverAnimation);
             }
-
             event.consume();
         });
 
@@ -448,7 +476,7 @@ public class PatternFieldsController {
     private void onCancel(ActionEvent actionEvent) {
         //publish close env
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
-                new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+                new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         clearView(actionEvent);
     }
 
@@ -461,22 +489,18 @@ public class PatternFieldsController {
     public void onDone(ActionEvent actionEvent) {
         actionEvent.consume();
         collectFormData();
-
         // save calls validate
         patternFieldsViewModel.save();
         if (patternFieldsViewModel.hasErrorMsgs()) {
             // when there are validators, we potentially will have errors
             return; // do not proceed.
         }
-
         //publish close env
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
-                new PatternPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
-
+                new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
 
         //publish form submission data
         PatternField patternField = new PatternField(
-                patternFieldsViewModel.getValue(FIELD_ORDER),
                 patternFieldsViewModel.getValue(DISPLAY_NAME),
                 patternFieldsViewModel.getValue(DATA_TYPE),
                 patternFieldsViewModel.getValue(PURPOSE_ENTITY),
@@ -485,7 +509,9 @@ public class PatternFieldsController {
         );
 
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
-                new PatternFieldsPanelEvent(actionEvent.getSource(), PATTERN_FIELDS, patternField));
+                new PatternFieldsPanelEvent(actionEvent.getSource(), PATTERN_FIELDS, patternField, patternFieldsViewModel.getValue(FIELD_ORDER)));
+
         clearView(actionEvent);
     }
+
 }
