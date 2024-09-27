@@ -325,14 +325,6 @@ public class PatternDetailsController {
         return svgImagePath;
     }
 
-    private MenuItem createContextMenuItem(String menuText, String iconString, boolean disabled) {
-        Region region = new Region();
-        region.getStyleClass().add(iconString);
-        MenuItem menuItem = new MenuItem(menuText);
-        menuItem.setGraphic(region);
-        menuItem.setDisable(disabled);
-        return menuItem;
-    }
 
     /**
      * This method Retrives language and case semantics.
