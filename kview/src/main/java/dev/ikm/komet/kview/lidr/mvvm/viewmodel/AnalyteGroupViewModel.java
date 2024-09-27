@@ -25,8 +25,8 @@ import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import org.carlfx.cognitive.validator.MessageType;
 import org.carlfx.cognitive.validator.ValidationMessage;
+import org.carlfx.cognitive.validator.ValidationResult;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -49,35 +49,31 @@ public class AnalyteGroupViewModel extends FormViewModel {
 
     public static String SPECIMEN_ENTITIES = "specimenEntities";
 
-    public static String IS_POPULATED = "isPopulated";
-    public static String SAVE_BUTTON_STATE = "buttonState";
+    public static String IS_INVALID = "isInvalid";
 
     public AnalyteGroupViewModel() {
         super();
         addProperty(CONCEPT_TOPIC, (UUID) null)
                 .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
-                .addProperty(SAVE_BUTTON_STATE, true)        // disable property (true) by default
                 .addProperty(ANALYTE_ENTITY, (EntityFacade) null)   // this is an analyte as a concept
                 .addProperty(TARGET_ENTITIES, new ArrayList<>())    // analytes have targets
                 .addProperty(RESULT_ENTITIES, new ArrayList<>())    // this represents the results as a concept
                 .addProperty(SPECIMEN_ENTITIES, new ArrayList<>()); // this is the specimen as a concept
 
         // Is Analyte Group valid? Custom validator will alter button state.
-        addValidator(IS_POPULATED, "Is Populated", (Void prop, ViewModel vm) -> {
+        this.addProperty(IS_INVALID, true)
+            .addValidator(IS_INVALID, "Is not valid", (ValidationResult result, ViewModel vm) -> {
             // if any fields are empty then it is not populated (invalid)
             if (getPropertyValue(ANALYTE_ENTITY) == null
                     || getObservableList(TARGET_ENTITIES).size() == 0
                     || getObservableList(RESULT_ENTITIES).size() == 0
                     || getObservableList(SPECIMEN_ENTITIES).size() == 0) {
-
-                // update is populated
-                setPropertyValue(SAVE_BUTTON_STATE, true); // disable is true
                 // let caller know why it is not valid
-                return new ValidationMessage(SAVE_BUTTON_STATE, MessageType.ERROR, "Analyte Group is not populated");
+                result.error("Analyte Group is not populated");
+                vm.setPropertyValue(IS_INVALID, true);
+            } else {
+                vm.setPropertyValue(IS_INVALID, false);
             }
-            // update is populated
-            setPropertyValue(SAVE_BUTTON_STATE, false); // disable is false (enabled)
-            return VALID;
         });
         //TODO figure out when to set the mode to CREATE | EDIT; possibly set by the view?
         //setValue(MODE, CREATE);

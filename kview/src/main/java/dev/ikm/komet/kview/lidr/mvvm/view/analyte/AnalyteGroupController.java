@@ -147,7 +147,7 @@ public class AnalyteGroupController implements BasicController {
         // order to save/update the device and manufacturer concepts
 
         clearView();
-        doneButton.disableProperty().bind(analyteGroupViewModel.getProperty(SAVE_BUTTON_STATE));
+        doneButton.disableProperty().bind(analyteGroupViewModel.getProperty(IS_INVALID));
 
         // setup drag n drop
         setupDragNDrop(analyteSearchStackPane, (publicId) -> {
@@ -502,7 +502,7 @@ public class AnalyteGroupController implements BasicController {
     @FXML
     public void cancel(ActionEvent event) {
         // close properties bump out via event bus
-        clearView();
+        clearViewAndValidate();
         EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
         evtBus.publish(getConceptTopic(), new LidrPropertyPanelEvent(event.getSource(), CLOSE_PANEL));
     }
@@ -512,6 +512,14 @@ public class AnalyteGroupController implements BasicController {
 
     }
 
+    public void clearViewAndValidate() {
+        clearView();
+        analyteGroupViewModel.validate();
+    }
+    @FXML
+    public void clearView(ActionEvent actionEvent) {
+        clearViewAndValidate();
+    }
     @Override
     public void clearView() {
 
@@ -535,7 +543,7 @@ public class AnalyteGroupController implements BasicController {
 
         // cancel means to clear properties and the model values.
         analyteGroupViewModel.save(true);
-        analyteGroupViewModel.validate();
+
     }
 
     private void clearDragNDropZones(Pane selectedContainer, Runnable task) {

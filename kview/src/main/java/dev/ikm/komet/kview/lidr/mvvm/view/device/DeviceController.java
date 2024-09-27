@@ -30,6 +30,7 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import javafx.beans.property.BooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -53,10 +54,11 @@ import java.util.function.Consumer;
 import static dev.ikm.komet.kview.lidr.events.AddDeviceEvent.ADD_DEVICE;
 import static dev.ikm.komet.kview.lidr.events.LidrPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.DeviceViewModel.DEVICE_ENTITY;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.DeviceViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CONCEPT_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
-public class DeviceController implements BasicController {
+public class DeviceController {
 
     private static final Logger LOG = LoggerFactory.getLogger(DeviceController.class);
     public static final String DRAG_AND_DROP_CONCEPT_S_HERE = "Drag and drop concept(s) here";
@@ -90,35 +92,41 @@ public class DeviceController implements BasicController {
     @FXML
     private VBox searchFormVBox;
 
-
     @InjectViewModel
     private DeviceViewModel deviceViewModel;
 
     EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
-
-    @Override
+    private Consumer<PublicId> deviceDropListener;
     @FXML
-    public void initialize() {
-        //TODO we will need an event bus for the LIDR record
+    private void initialize() {
 
-        // we need an instance of the EditCoordinateRecord in
-        // order to save/update the device and manufacturer concepts
+        // The is invalid property is set when ever a view model's validation occurs.
+        BooleanProperty isInvalidProp = deviceViewModel.getProperty(IS_INVALID);
+        // The done button's disabled property is synced to isValid property.
+        // IMPORTANT: When this Pane is shown it then changes IS_INVALID property to true.
+        // e.g. initialize (IS_INVALID prop set to true via view model) see PropertiesController.initialize().
+        doneButton.disableProperty().bind(isInvalidProp);
 
-        clearView();
-
-        // setup drag n drop
-        setupDragNDrop(outerSearchStackPane, (publicId) -> {
+        // When a user drops a device entity query and update property.
+        deviceDropListener = (publicId) -> {
             // check to see if an analyte was already dragged into the analyte section before saving
             // to the view model
             if (deviceViewModel.getPropertyValue(DEVICE_ENTITY) == null) {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
                 deviceViewModel.setPropertyValue(DEVICE_ENTITY, entity);
-                // save calls validate
-                deviceViewModel.save();
                 addDeviceToForm(entity);
+
+                // This validate will update IS_INVALID property for done button's disable property
+                deviceViewModel.validate();
             }
-        });
+        };
+        // we need an instance of the EditCoordinateRecord in
+        // order to save/update the device and manufacturer concepts
+        clearView();
+
+        // setup drag n drop
+        setupDragNDrop(outerSearchStackPane, deviceDropListener);
     }
 
     public ViewProperties getViewProperties() {
@@ -258,13 +266,14 @@ public class DeviceController implements BasicController {
         closeButton.setGraphic(buttonRegion);
         closeButton.setAlignment(Pos.CENTER_RIGHT);
         selectedConcept.getChildren().add(closeButton);
-        closeButton.setOnMouseClicked(event -> removeDevice());
+        closeButton.setOnMouseClicked(event -> {
+            // This validate will update IS_INVALID property for done button's disable property
+            clearViewAndValidate();
+        });
 
         selectedDeviceContainer.getChildren().add(selectedConcept);
 
         VBox.setMargin(selectedDeviceStackPane, new Insets(0,0, 8,0));
-        doneButton.setDisable(false);
-
         removeDeviceForm();
     }
 
@@ -282,7 +291,6 @@ public class DeviceController implements BasicController {
             VBox.setMargin(selectedDeviceStackPane, new Insets(0));
             deviceOuterVBox.getChildren().add(2, generateDeviceSearchControls());
         }
-        doneButton.setDisable(true);
     }
 
     private Node generateDeviceSearchControls() {
@@ -345,58 +353,47 @@ public class DeviceController implements BasicController {
         deviceVbox.getChildren().add(outerSearchStackPane);
 
         // re-attach the drag and drop capability
-        setupDragNDrop(outerSearchStackPane, (publicId) -> {
-            // check to see if an analyte was already dragged into the analyte section before saving
-            // to the view model
-            if (deviceViewModel.getPropertyValue(DEVICE_ENTITY) == null) {
-                // query public Id to get entity.
-                Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-                deviceViewModel.setPropertyValue(DEVICE_ENTITY, entity);
-                //deviceViewModel.save();
-                // update the UI with the new analyte
-                addDeviceToForm(entity);
-            }
-        });
+        setupDragNDrop(outerSearchStackPane, deviceDropListener);
 
         return deviceVbox;
     }
 
     @FXML
-    public void createDevice(ActionEvent event) {
+    public void selectDevice(ActionEvent event) {
         LOG.info("createDevice -> Todo publish event containing the device record to be added to lidr details view.");
         deviceViewModel.save();
-        if (!deviceViewModel.hasErrorMsgs()) {
+        if (deviceViewModel.hasNoErrorMsgs()) {
             // 1. publish
             // 2. reset screen for next entry
             // 3. publish
             evtBus.publish(getConceptTopic(), new LidrPropertyPanelEvent(event.getSource(), CLOSE_PANEL));
             evtBus.publish(getConceptTopic(), new AddDeviceEvent(event.getSource(), ADD_DEVICE, deviceViewModel.getValue(DEVICE_ENTITY)));
-            clearView();
+            clearView(); // This DOES NOT set IS_INVALID flag to true.
         }
     }
 
     @FXML
     public void cancel(ActionEvent event) {
-        // close properties bump out via event bus
-        clearView();
         EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
         evtBus.publish(getConceptTopic(), new LidrPropertyPanelEvent(event.getSource(), CLOSE_PANEL));
+        // close properties bump out via event bus
+        clearViewAndValidate();
+    }
+    public void clearViewAndValidate() {
+        removeDevice();
+        // This validate will update IS_INVALID property for done button's disable property
+        deviceViewModel.validate();
     }
 
-
-    @Override
-    public void updateView() {
-
-    }
-
-    @Override
-    @FXML
+    /**
+     * Clears screen but does not validate or change IS_INVALID property.
+     */
     public void clearView() {
         removeDevice();
     }
 
-    @Override
-    public void cleanup() {
-
+    @FXML
+    public void clearView(ActionEvent event) {
+        clearViewAndValidate();
     }
 }
