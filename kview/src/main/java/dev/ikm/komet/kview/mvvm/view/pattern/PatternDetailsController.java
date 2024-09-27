@@ -292,10 +292,10 @@ public class PatternDetailsController {
         fqnAddDateLabel.textProperty().bind(dateStrProp);
         // Setup Properties
         setupProperties();
-        setupContextMenuPopUp();
+        setupContextMenuMenuItems();
     }
 
-    private void setupContextMenuPopUp() {
+    private void setupContextMenuMenuItems() {
 
         Object[][] menuItems = new Object[][]{
                 {"Edit", true, new String[]{"menu-item"}, (EventHandler<ActionEvent>) this::showEditFieldsPanel, createGraphics("edit-icon")},
