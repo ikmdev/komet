@@ -92,7 +92,7 @@ public class PropertiesController {
     private ToggleButton historyButton;
 
     @FXML
-    private ToggleButton hierarchyButton;
+    private ToggleButton instancesButton;
 
     @FXML
     private ToggleGroup propertyToggleButtonGroup;
