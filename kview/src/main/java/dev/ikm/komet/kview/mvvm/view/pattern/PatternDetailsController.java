@@ -220,6 +220,7 @@ public class PatternDetailsController {
                 propertiesToggleButton.setSelected(false);
                 if (isOpen(propertiesSlideoutTrayPane)) {
                     slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
+                    //patternViewModel.save();
                 }
             } else if (evt.getEventType() == OPEN_PANEL) {
                 LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
@@ -302,6 +303,9 @@ public class PatternDetailsController {
             patternFieldList.add(fieldPosition, patternField);
             //update the display.
             fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(patternField, evt.getCurrentFieldOrder()));
+
+            // save and therefore validate
+            patternViewModel.save();
         };
 
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);

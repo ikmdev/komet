@@ -117,6 +117,8 @@ public class PatternViewModel extends FormViewModel {
                         ObjectProperty<EntityFacade> meaningEntity = viewModel.getProperty(MEANING_ENTITY);
                         ObjectProperty<DescrName> fqnProperty = viewModel.getProperty(FQN_DESCRIPTION_NAME);
                         ObservableList<PatternField> fieldsProperty = viewModel.getObservableList(FIELDS_COLLECTION);
+                        // reset the error list on each validation check
+                        vr.getMessages().clear();
                         if (purposeEntity.isNull().get()) {
                             vr.error("A purpose is required for a Pattern.  Please add a purpose.");
                         }
@@ -129,7 +131,7 @@ public class PatternViewModel extends FormViewModel {
                         if (fieldsProperty.isEmpty()) {
                             vr.error("At least one field is required for a Pattern.  Please add one or more fields.");
                         }
-                        if (vr.getMessages().size() == 0) {
+                        if (vr.getMessages().isEmpty()) {
                             viewModel.setPropertyValue(IS_INVALID, false);
                         }
                     });
