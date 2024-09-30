@@ -67,5 +67,10 @@
             <artifactId>data-ephemeral-provider</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>dev.ikm.tinkar</groupId>
+            <artifactId>composer</artifactId>
+            <version>1.2.0</version>
+        </dependency>
     </dependencies>
 </project>

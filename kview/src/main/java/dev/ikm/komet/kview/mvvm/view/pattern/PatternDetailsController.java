@@ -140,6 +140,9 @@ public class PatternDetailsController {
     @FXML
     private Text semanticPurposeText;
 
+    @FXML
+    private Button savePatternButton;
+
     // pattern defintion fields
     @FXML
     private Text meaningText;
@@ -567,5 +570,9 @@ public class PatternDetailsController {
         putArrowOnRight(this.fieldsTitledPane);
     }
 
-
+    @FXML
+    private void savePattern(ActionEvent actionEvent) {
+        boolean isValidSave = patternViewModel.createPattern();
+        LOG.info(isValidSave ? "success" : "failed");
+    }
 }
