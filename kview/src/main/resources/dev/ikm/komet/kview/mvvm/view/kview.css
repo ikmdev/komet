@@ -4108,3 +4108,121 @@ Styling a context menu for kview ui/ux controls
     -fx-background-insets: 0;
     -fx-background-radius: 6;
 }
+
+/*****************************
+* next gen reasoner styles
+*****************************/
+
+.reasoner-vertical-scroll-area {
+    -fx-background-color: -Grey-9;  
+}
+
+.reasoner-result-header .label {
+    -fx-text-fill: -Grey-1;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;    
+    -fx-background-color: -Grey-9;
+}
+
+.reasoner-result-header .close {
+    -height: 18px;
+    -width: 18px;
+    -fx-min-height: -height;
+    -fx-pref-height: -height;
+    -fx-max-height: -height;
+    -fx-content-display: graphic-only;
+    -fx-min-width: -width;
+    -fx-pref-width: -width;
+    -fx-max-width: -width;
+    -fx-background-color: -Grey-1;
+    -fx-shape: "M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z";
+}
+
+.titled-pane.classification-date {
+    -fx-text-fill: white; 
+    -fx-border-width: 1 0 0 0;
+    -fx-border-color: -Grey-9;    
+}
+
+.titled-pane.classification-date > .title {        
+    -fx-background-color: -Grey-11;
+    -fx-pref-height: 32;
+    -fx-padding: 8 4 4 4;
+}
+
+.titled-pane.classification-date > .title > .arrow-button .arrow {
+    -width-size: 15px;
+    -height-size: 9px;
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+
+    -fx-min-height: -height-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+    -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
+    -fx-background-color: -Secondary-05;    
+}
+
+
+.titled-pane.classification-date .content {
+    -fx-background-color: -Grey-8;
+    -fx-border-width: 0px;
+}
+
+.reasoner-entry {
+    -fx-text-fill: -Grey-1; 
+    -fx-font-size: 13px;        
+    -fx-font-weight: bold;    
+}
+
+.reasoner-entry.titled-pane > .title {             
+    -fx-text-fill: -Grey-1;     
+    -fx-background-color: -Grey-8;            
+    -fx-font-size: 13px;        
+    -fx-font-weight: bold;      
+}
+
+.reasoner-entry .content {
+    -fx-background-color: -Grey-8;
+    -fx-border-width: 0 0 0 0;
+}
+
+.reasoner-label-container {
+    -fx-background-color: white;        
+}
+
+.titled-pane.reasoner-entry:collapsed > .title > .arrow-button {  
+    -fx-rotate: 90;  
+}
+
+.titled-pane.reasoner-entry:expanded > .title > .arrow-button {        
+     -fx-rotate: 90;     
+}
+
+.titled-pane.reasoner-entry > .title > .arrow-button > .arrow {
+    -width-size: 8px;
+    -height-size: 8px;
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+
+    -fx-min-height: -height-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+    -fx-shape: "M10 17L15 12L10 7V17Z";
+    -fx-background-color: white;       
+} 
+
+
+.reasoner-entry-description {
+    -fx-text-fill: black;
+    -width: 348px;
+    -fx-pref-width: -width;
+    -fx-min-width:width;
+    -fx-max-width:width;
+    -fx-background-color: white; 
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+}
