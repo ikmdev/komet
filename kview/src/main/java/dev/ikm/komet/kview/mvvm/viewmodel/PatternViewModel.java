@@ -65,25 +65,25 @@ public class PatternViewModel extends FormViewModel {
 
     public PatternViewModel() {
         super();
-            addProperty(VIEW_PROPERTIES, (ViewProperties) null)
-                    .addProperty(PATTERN_TOPIC, (UUID) null)
-                    .addProperty(STAMP_VIEW_MODEL, (ViewModel) null)
-                    .addProperty(DEFINITION_VIEW_MODEL, (ViewModel) null)
-                    .addProperty(FQN_DESCRIPTION_NAME, (DescrName) null)
-                    .addProperty(OTHER_NAMES, new ArrayList<DescrName>())
-                    // PATTERN>DEFINITION Purpose and Meaning
-                    .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
-                    .addProperty(MEANING_ENTITY, (EntityFacade) null) // this is/will be the 'meaning' concept entity
-                    .addProperty(PURPOSE_TEXT, "")
-                    .addProperty(MEANING_TEXT, "")
-                    .addProperty(PURPOSE_DATE_STR, "")
-                    .addProperty(MEANING_DATE_STR, "")
-                    // PATTERN>DESCRIPTION FQN and Other Name
-                    .addProperty(FQN_DESCRIPTION_NAME_TEXT, "")
-                    .addProperty(OTHER_NAME_DESCRIPTION_NAME_TEXT, "")
-                    // Ordered collection of Fields
-                    .addProperty(FIELDS_COLLECTION, new ArrayList<PatternField>())
-            ;
+        addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+                .addProperty(PATTERN_TOPIC, (UUID) null)
+                .addProperty(STAMP_VIEW_MODEL, (ViewModel) null)
+                .addProperty(DEFINITION_VIEW_MODEL, (ViewModel) null)
+                .addProperty(FQN_DESCRIPTION_NAME, (DescrName) null)
+                .addProperty(OTHER_NAMES, new ArrayList<DescrName>())
+                // PATTERN>DEFINITION Purpose and Meaning
+                .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
+                .addProperty(MEANING_ENTITY, (EntityFacade) null) // this is/will be the 'meaning' concept entity
+                .addProperty(PURPOSE_TEXT, "")
+                .addProperty(MEANING_TEXT, "")
+                .addProperty(PURPOSE_DATE_STR, "")
+                .addProperty(MEANING_DATE_STR, "")
+                // PATTERN>DESCRIPTION FQN and Other Name
+                .addProperty(FQN_DESCRIPTION_NAME_TEXT, "")
+                .addProperty(OTHER_NAME_DESCRIPTION_NAME_TEXT, "")
+                // Ordered collection of Fields
+                .addProperty(FIELDS_COLLECTION, new ArrayList<PatternField>())
+        ;
     }
 
     public void setPurposeAndMeaningText(PatternDefinition patternDefinition) {
