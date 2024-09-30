@@ -147,7 +147,7 @@ public class PatternDetailsController {
     @FXML
     private Button savePatternButton;
 
-    // pattern defintion fields
+    // pattern definition fields
     @FXML
     private Text meaningText;
 
