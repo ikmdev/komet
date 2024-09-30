@@ -77,6 +77,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -131,6 +132,7 @@ public class WebApp extends Application {
 
     private static final Logger LOG = LoggerFactory.getLogger(WebApp.class);
     public static final String CSS_LOCATION = "dev/ikm/komet/framework/graphics/komet.css";
+    public static final String ICON_LOCATION = "/icons/Komet.png";
     public static final SimpleObjectProperty<AppState> state = new SimpleObjectProperty<>(STARTING);
     public static final SimpleObjectProperty<User> userProperty = new SimpleObjectProperty<>();
     private static Stage primaryStage;
@@ -145,6 +147,7 @@ public class WebApp extends Application {
     private static final boolean IS_DESKTOP = !IS_BROWSER && PlatformUtils.isDesktop();
     private static final boolean IS_MAC = !IS_BROWSER && PlatformUtils.isMac();
     private final StackPane rootPane = createRootPane();
+    private Image appIcon;
 
     /**
      * An entry point to launch the newer UI panels.
@@ -275,6 +278,9 @@ public class WebApp extends Application {
         // Load custom fonts required by the application
         LoadFonts.load();
 
+        // Load the application icon
+        appIcon = new Image(WebApp.class.getResource(ICON_LOCATION).toString(), true);
+
         // Attempt to find the module 'dev.ikm.komet.framework' in the boot layer
         graphicsModule = ModuleLayer.boot()
                 .findModule("dev.ikm.komet.framework")
@@ -335,10 +341,14 @@ public class WebApp extends Application {
                 webAPI = WebAPI.getWebAPI(stage);
             }
 
+            // Set the application icon
+            stage.getIcons().setAll(appIcon);
+
             Scene scene = new Scene(rootPane);
             scene.getStylesheets().addAll(CssHelper.defaultStyleSheet());
             stage.setScene(scene);
 
+            // Handle the login feature based on the platform and the provided feature flag
             handleLoginFeature(ENABLED_WEB_ONLY, stage);
 
             addEventFilters(stage);
@@ -670,6 +680,7 @@ public class WebApp extends Application {
                     CssHelper.defaultStyleSheet());
             attachCSSRefresher(journalController.getSettingsToggleButton(), journalController.getJournalBorderPane());
             Stage journalStage = new Stage();
+            journalStage.getIcons().setAll(appIcon);
             journalStage.setScene(sourceScene);
 
             if (!IS_MAC) {
