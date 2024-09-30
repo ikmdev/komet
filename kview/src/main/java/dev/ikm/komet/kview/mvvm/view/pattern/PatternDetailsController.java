@@ -428,14 +428,12 @@ public class PatternDetailsController {
         commentIconRegion.getStyleClass().add("grey-comment-icon");
         outerHBox.getChildren().addAll(innerHBox, commentIconRegion);
         fieldVBoxContainer.getChildren().addAll(fieldLabel, fieldText, outerHBox);
-        fieldVBoxContainer.setOnMouseClicked(mouseEvent -> showContextMenuPopUp(patternField, fieldVBoxContainer, mouseEvent.getScreenX(), mouseEvent.getScreenY()));
+        fieldVBoxContainer.setOnMouseClicked(mouseEvent -> {
+            selectedPatternField = patternField;
+            selectedNodeField = fieldVBoxContainer;
+            contextMenu.show(fieldVBoxContainer, mouseEvent.getScreenX(),  mouseEvent.getScreenY());
+        });
         return fieldVBoxContainer;
-    }
-
-    private void showContextMenuPopUp(PatternField patternField, Node node, double x, double y) {
-        selectedPatternField = patternField;
-        selectedNodeField = node;
-        contextMenu.show(node, x, y);
     }
 
     private void setupProperties() {
@@ -589,6 +587,4 @@ public class PatternDetailsController {
         putArrowOnRight(this.descriptionsTitledPane);
         putArrowOnRight(this.fieldsTitledPane);
     }
-
-
 }
