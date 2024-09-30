@@ -270,8 +270,6 @@ public class PatternDetailsController {
             //Update the fields collection data.
             ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
             patternFieldList.add(fieldPosition, patternField);
-            //update the display.
-            fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(patternField, evt.getCurrentFieldOrder()));
         };
 
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
@@ -282,6 +280,19 @@ public class PatternDetailsController {
             while(listener.next()){
                 if(listener.wasAdded() || listener.wasRemoved()){
                     updateFieldValues();
+                }
+            }
+        });
+
+        ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
+        patternFieldList.addListener((ListChangeListener<? super PatternField>) changeListner -> {
+            while(changeListner.next()){
+                if(changeListner.wasAdded()){
+                    int fieldPosition = changeListner.getTo()-1;
+                    //update the display.
+                    fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(changeListner.getAddedSubList().getFirst(), changeListner.getTo()));
+                }else if(changeListner.wasRemoved()){
+                    fieldsTilePaneList.remove(changeListner.getTo());
                 }
             }
         });
@@ -307,15 +318,10 @@ public class PatternDetailsController {
                 {"Save to Favorites",  false, new String[]{"menu-item"}, null, createGraphics("favorites-icon")},
                 {MenuHelper.SEPARATOR},
                 {"Add Comment",  false, new String[]{"menu-item"}, null, createGraphics("comment-icon")},
-                {"Remove", true, new String[]{"menu-item"}, (EventHandler<ActionEvent>) this::removeField, createGraphics("remove-icon")}
+                {"Remove", true, new String[]{"menu-item"}, (EventHandler<ActionEvent>) actionEvent -> patternViewModel.getObservableList(FIELDS_COLLECTION).remove(selectedPatternField), createGraphics("remove-icon")}
         };
 
         contextMenu = MenuHelper.getInstance().createContextMenuWithMenuItems(menuItems);
-    }
-
-    private void removeField(ActionEvent actionEvent) {
-        fieldsTilePane.getChildren().remove(selectedNodeField);
-        patternViewModel.getObservableList(FIELDS_COLLECTION).remove(selectedPatternField);
     }
 
     private Region createGraphics(String iconString) {
