@@ -433,6 +433,8 @@ public class PatternDetailsController {
     }
 
     private void showContextMenuPopUp(PatternField patternField, Node node, double x, double y) {
+        selectedPatternField = patternField;
+        selectedNodeField = node;
         contextMenu.show(node, x, y);
     }
 
