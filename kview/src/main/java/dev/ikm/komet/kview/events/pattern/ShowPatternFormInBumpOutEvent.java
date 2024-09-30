@@ -17,6 +17,7 @@ package dev.ikm.komet.kview.events.pattern;
 
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.komet.kview.mvvm.model.PatternField;
 
 /**
  * Events related to displaying properties bump outs (right-side) of pattern details window.
@@ -40,6 +41,7 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
     public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_EDIT_FQN = new EvtType<>(DESCRIPTION_NAME, "SHOW_EDIT_FQN_DESCRIPTION");
     public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_EDIT_OTHER_NAME = new EvtType<>(DESCRIPTION_NAME, "SHOW_EDIT_OTHER_NAME_DESCRIPTION");
     private final int totalFields;
+    private final PatternField selectedPatternField;
     //TODO future: other EvtTypes like show History, show Timeline etc
 
     /**
@@ -51,7 +53,8 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
      */
     public ShowPatternFormInBumpOutEvent(Object source, EvtType eventType) {
         super(source, eventType);
-        this.totalFields =0;
+        this.totalFields = 0;
+        this.selectedPatternField = null;
     }
 
     /**
@@ -62,9 +65,10 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
      * @param totalFields the total number of fields added in the current pattern.
      * @throws IllegalArgumentException if source is null
      */
-    public ShowPatternFormInBumpOutEvent(Object source, EvtType eventType, int totalFields) {
+    public ShowPatternFormInBumpOutEvent(Object source, EvtType eventType, int totalFields, PatternField patternField) {
         super(source, eventType);
         this.totalFields = totalFields;
+        this.selectedPatternField = patternField;
     }
 
     public int getTotalFields() {

@@ -503,7 +503,7 @@ public class PatternDetailsController {
     private void showEditFieldsPanel(ActionEvent actionEvent) {
         LOG.info("Todo show bump out and display Edit Fields panel \n" + actionEvent);
 
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_EDIT_FIELDS, patternViewModel.getObservableList(FIELDS_COLLECTION).size()));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_EDIT_FIELDS, patternViewModel.getObservableList(FIELDS_COLLECTION).size(), selectedPatternField));
 
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
