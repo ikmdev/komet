@@ -124,12 +124,15 @@ public class PatternViewModelTest {
         Pattern pattern = Pattern.make(patternPublicId);
 
 
+
+
         // the composer handles saving to an uncommitted stamp
         // it is un-committed until you say commit
         session.compose((PatternAssembler patternAssembler) -> patternAssembler
                 .pattern(pattern)
                 .meaning(patternMeaning)
                 .purpose(patternPurpose)
+                .fieldDefinition(patternPurpose.toProxy(), patternMeaning.toProxy(), TinkarTerm.LONG, 0)
                 .attach((FullyQualifiedName fqn) -> fqn
                         .language(ENGLISH_LANGUAGE)
                         .text("FQN for Pattern")
