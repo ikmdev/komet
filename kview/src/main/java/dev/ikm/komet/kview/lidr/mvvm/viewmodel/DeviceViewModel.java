@@ -25,7 +25,10 @@ import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.beans.property.ObjectProperty;
 import org.carlfx.cognitive.validator.ValidationMessage;
+import org.carlfx.cognitive.validator.ValidationResult;
+import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
@@ -47,6 +50,7 @@ public class DeviceViewModel extends FormViewModel {
     public static String FULLY_QUALIFIED_NAME = "fqn";
 
     public static String MANUFACTURER_ENTITY = "manufacturer";
+    public static String IS_INVALID = "IS_INVALID";
 
     public DeviceViewModel() {
         super();
@@ -56,7 +60,17 @@ public class DeviceViewModel extends FormViewModel {
                 .addProperty(DEVICE_ENTITY, (EntityFacade) null) // this is/will be the device concept entity
                 // in non-manual mode, a device entity will already have a FQN
                 .addProperty(FULLY_QUALIFIED_NAME, (Object) null) // this is the FQN of the device concept
-                .addProperty(MANUFACTURER_ENTITY, (EntityFacade) null); // this is the manufacturer concept
+                .addProperty(MANUFACTURER_ENTITY, (EntityFacade) null) // this is the manufacturer concept
+                .addProperty(IS_INVALID, true)
+                .addValidator(IS_INVALID, "Is Invalid", (ValidationResult vr, ViewModel viewModel) -> {
+                    ObjectProperty<EntityFacade> deviceEntity = viewModel.getProperty(DEVICE_ENTITY);
+                    if (deviceEntity.isNull().get()) {
+                        vr.error("Device is empty. Please select a device.");
+                        viewModel.setPropertyValue(IS_INVALID, true);
+                    } else {
+                        viewModel.setPropertyValue(IS_INVALID, false);
+                    }
+                });
 
         //TODO add validations, for create LIDR_RECORD, DEVICE_ENTITY and MANUFACTURER_ENTITY all must be populated
 

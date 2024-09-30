@@ -168,7 +168,7 @@
                   <Insets left="12.0" />
                </GridPane.margin>
             </Button>
-            <Button fx:id="doneButton" mnemonicParsing="false" onAction="#createDevice" styleClass="lidr-done-button" text="DONE" GridPane.columnIndex="2" GridPane.halignment="RIGHT">
+            <Button fx:id="doneButton" mnemonicParsing="false" onAction="#selectDevice" styleClass="lidr-done-button" text="DONE" GridPane.columnIndex="2" GridPane.halignment="RIGHT">
                <GridPane.margin>
                   <Insets right="12.0" />
                </GridPane.margin>
