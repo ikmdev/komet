@@ -266,14 +266,9 @@ public class PatternDetailsController {
 
         patternFieldsPanelEventSubscriber = evt -> {
             PatternField patternField = evt.getPatternField();
-            ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
             int fieldPosition = evt.getCurrentFieldOrder()-1;
-            //If the user removes the one or more field/s from details pane while the properties pane is open,
-            // and assigns a greater value then the below if block will place the field at last end of the list.
-            if(fieldPosition >= patternFieldList.size()){
-                fieldPosition = patternFieldList.size();
-            }
             //Update the fields collection data.
+            ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
             patternFieldList.add(fieldPosition, patternField);
             //update the display.
             fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(patternField, evt.getCurrentFieldOrder()));
@@ -438,8 +433,6 @@ public class PatternDetailsController {
     }
 
     private void showContextMenuPopUp(PatternField patternField, Node node, double x, double y) {
-        selectedNodeField = node;
-        selectedPatternField = patternField;
         contextMenu.show(node, x, y);
     }
 

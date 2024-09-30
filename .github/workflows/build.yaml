@@ -27,6 +27,15 @@ jobs:
         uses: ikmdev/maven-clean-install-build-action@main
         with:
           branch_name: ${{env.BRANCH_NAME}}
+          sonarcloud_token: ${{ secrets.SONAR_TOKEN }}
+          sonarcloud_host_url: ${{ 'https://sonarcloud.io/'}}
+          sonarcloud_organization: ${{ github.repository_owner }}
+          sonarcloud_sources: ${{ 'src/main/java' }}
+          sonarcloud_projectKey: ${{ github.repository_owner }}_${{ github.event.repository.name }}
+          sonarcloud_coverage_jacoco_xmlReportPaths: ${{ 'target/site/jacoco/jacoco.xml' }}
+          sonarcloud_java_binaries: ${{ 'target/classes' }}
+          sonarcloud_tests: ${{ '' }}
+
 
       - name: Get Release URL (Tag)
         id: get_tag_release_url
