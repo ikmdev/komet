@@ -25,6 +25,10 @@
             <artifactId>search-provider</artifactId>
         </dependency>
         <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>composer</artifactId>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>navigator</artifactId>
         </dependency>
@@ -66,11 +70,6 @@
             <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>data-ephemeral-provider</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>dev.ikm.tinkar</groupId>
-            <artifactId>composer</artifactId>
-            <version>1.2.0</version>
         </dependency>
     </dependencies>
 </project>
