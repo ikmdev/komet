@@ -34,6 +34,7 @@ import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
+import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.fxutils.window.WindowSupport;
@@ -45,6 +46,7 @@ import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
 import dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
+import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
 import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -178,6 +180,9 @@ public class JournalController {
     private Pane nexGenSearchSlideoutTrayPane;
 
     @FXML
+    private Pane nextGenReasonerSlideoutTrayPane;
+
+    @FXML
     private Pane progressSlideoutTrayPane;
 
     @FXML
@@ -199,6 +204,9 @@ public class JournalController {
     private ToggleButton nextGenSearchToggleButton;
 
     @FXML
+    private ToggleButton nextGenReasonerToggleButton;
+
+    @FXML
     private Button addButton;
 
     @FXML
@@ -212,6 +220,9 @@ public class JournalController {
     private Pane navigatorNodePanel;
     private Pane searchNodePanel;
     private Pane nextGenSearchPanel;
+
+    private Pane nextGenReasonerPanel;
+
     private BorderPane reasonerNodePanel;
 
     private ActivityStream navigatorActivityStream;
@@ -228,11 +239,18 @@ public class JournalController {
     private GraphNavigatorNode navigatorNode;
     private final ObservableList<ConceptPreference> conceptWindows = FXCollections.observableArrayList();
 
-    protected static final String NEXT_GEN_SEARCH_FXML_URL = "next-gen-search.fxml";
+    private static final String NEXT_GEN_SEARCH_FXML_URL = "next-gen-search.fxml";
+
+    private static final String NEXT_GEN_REASONER_FXML_URL = "reasoner.fxml";
 
     private NextGenSearchController nextGenSearchController;
+
+    private NextGenReasonerController nextGenReasonserController;
+
     private Subscriber<MakeConceptWindowEvent> makeConceptWindowEventSubscriber;
     private Subscriber<ShowNavigationalPanelEvent> showNavigationalPanelEventSubscriber;
+
+    private Subscriber<CloseReasonerPanelEvent> closeReasonerPanelEventSubscriber;
 
     @InjectViewModel
     private NextGenSearchViewModel nextGenSearchViewModel;
@@ -289,6 +307,11 @@ public class JournalController {
             navigatorToggleButton.setSelected(true);
         };
         journalEventBus.subscribe(JOURNAL_TOPIC, ShowNavigationalPanelEvent.class, showNavigationalPanelEventSubscriber);
+
+        // listening to the event fired when the user clicks the 'X' on the reasoner slide out
+        // and wire into the toggle group because we already have a listener on this property
+        closeReasonerPanelEventSubscriber = evt -> sidebarToggleGroup.selectToggle(null);
+        journalEventBus.subscribe(JOURNAL_TOPIC, CloseReasonerPanelEvent.class, closeReasonerPanelEventSubscriber);
 
         // initially drop region is invisible
         dropAnimationRegion.setVisible(false);
@@ -470,6 +493,8 @@ public class JournalController {
             return nexGenSearchSlideoutTrayPane;
         } else if (progressToggleButton.equals(selectedToggleButton)) {
             return progressSlideoutTrayPane;
+        } else if (nextGenReasonerToggleButton.equals(selectedToggleButton)) {
+            return nextGenReasonerSlideoutTrayPane;
         }
         return null;
     }
@@ -522,10 +547,10 @@ public class JournalController {
         return navigatorNode;
     }
 
+    /**
+     * Add a Next Gen Search, currently tied to the "comment" left lav button
+     */
     public void loadNextGenSearchPanel() {
-        // +-----------------------------------
-        // ! Add a Next Gen Search
-        // +------------------------------------
         Config nextGenSearchConfig = new Config(NextGenSearchController.class.getResource(NEXT_GEN_SEARCH_FXML_URL))
                 .updateViewModel("nextGenSearchViewModel", (nextGenSearchViewModel) ->
                         nextGenSearchViewModel
@@ -539,6 +564,19 @@ public class JournalController {
         nextGenSearchPanel = nextGenSearchJFXNode.node();
 
         setupSlideOutTrayPane(nextGenSearchPanel, nexGenSearchSlideoutTrayPane);
+    }
+
+    /**
+     * Add a Next Gen Reasoner Results, currently tied to the "bell" left nav button
+     */
+    public void loadNextGenReasonerPanel() {
+        JFXNode<Pane, NextGenReasonerController> reasonerJFXNode = FXMLMvvmLoader.make(
+                NextGenReasonerController.class.getResource(NEXT_GEN_REASONER_FXML_URL));
+
+        nextGenReasonserController = reasonerJFXNode.controller();
+        nextGenReasonerPanel = reasonerJFXNode.node();
+
+        setupSlideOutTrayPane(nextGenReasonerPanel, nextGenReasonerSlideoutTrayPane);
     }
 
     private void loadSearchPanel(PublicIdStringKey<ActivityStream> searchActivityStreamKey,

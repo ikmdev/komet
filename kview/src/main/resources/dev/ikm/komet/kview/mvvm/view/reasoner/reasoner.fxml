@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<Pane stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController">
+   <children>
+      <ScrollPane fitToWidth="true" maxHeight="-Infinity" minWidth="-Infinity" prefWidth="372.0">
+         <content>
+            <VBox prefHeight="900.0" prefWidth="374.0" styleClass="reasoner-vertical-scroll-area">
+               <children>
+                  <HBox alignment="CENTER" prefHeight="32.0" styleClass="reasoner-result-header">
+                     <children>
+                        <GridPane prefHeight="32.0" prefWidth="386.0">
+                           <columnConstraints>
+                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="261.0" minWidth="10.0" prefWidth="210.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="113.0" minWidth="10.0" prefWidth="105.0" />
+                              <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="43.0" minWidth="10.0" prefWidth="43.0" />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                           </rowConstraints>
+                           <children>
+                              <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" styleClass="grey1-label" text="Reasoner" GridPane.halignment="RIGHT" />
+                              <Button mnemonicParsing="false" onAction="#closeReasoner" styleClass="close" GridPane.columnIndex="2">
+                                 <graphic>
+                                    <Region prefWidth="35.0" styleClass="close" />
+                                 </graphic>
+                              </Button>
+                           </children>
+                        </GridPane>
+                     </children>
+                  </HBox>
+                  <TitledPane fx:id="classificationDateTitledPane" alignment="CENTER_RIGHT" animated="false" nodeOrientation="RIGHT_TO_LEFT" styleClass="classification-date" text="Classification Date">
+                     <content>
+                        <VBox fx:id="classificationDateVBox">
+                           <children>
+                              <TitledPane fx:id="conceptSetSizeTitlePane" animated="false" disable="true" expanded="false" layoutX="20.0" layoutY="20.0" nodeOrientation="LEFT_TO_RIGHT" prefWidth="372.0" stylesheets="@../kview.css" text="Concept Set Size: 20,020">
+                                 <content>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" styleClass="reasoner-entry-titled-container">
+                                       <children>
+                                          <VBox fx:id="inferredChangesVBox1" layoutX="18.0" layoutY="14.0" spacing="8.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="4.0" />
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                                 <styleClass>
+                                    <String fx:value="reasoner-entry" />
+                                    <String fx:value="titled-pane" />
+                                 </styleClass>
+                              </TitledPane>
+                              <TitledPane animated="false" disable="true" expanded="false" layoutX="20.0" layoutY="20.0" nodeOrientation="LEFT_TO_RIGHT" prefWidth="372.0" styleClass="reasoner-entry" stylesheets="@../kview.css" text="Cycles">
+                                 <content>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" styleClass="reasoner-entry-titled-container">
+                                       <children>
+                                          <VBox fx:id="inferredChangesVBox11" layoutX="18.0" layoutY="14.0" spacing="8.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="4.0" />
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </TitledPane>
+                              <TitledPane animated="false" disable="true" expanded="false" layoutX="20.0" layoutY="46.0" nodeOrientation="LEFT_TO_RIGHT" prefWidth="372.0" styleClass="reasoner-entry" stylesheets="@../kview.css" text="Orphans">
+                                 <content>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" styleClass="reasoner-entry-titled-container">
+                                       <children>
+                                          <VBox fx:id="inferredChangesVBox111" layoutX="18.0" layoutY="14.0" spacing="8.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="4.0" />
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </TitledPane>
+                              <TitledPane fx:id="equivalenciesTitlePane" animated="false" expanded="false" layoutX="20.0" layoutY="72.0" nodeOrientation="LEFT_TO_RIGHT" prefWidth="372.0" styleClass="reasoner-entry" stylesheets="@../kview.css" text="Equivalencies: 455">
+                                 <content>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" styleClass="reasoner-entry-titled-container">
+                                       <children>
+                                          <VBox fx:id="inferredChangesVBox1111" layoutX="18.0" layoutY="14.0" spacing="8.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="4.0" />
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </TitledPane>
+                              <TitledPane fx:id="inferredChangesTitlePane" animated="false" nodeOrientation="LEFT_TO_RIGHT" prefWidth="372.0" styleClass="reasoner-entry" stylesheets="@../kview.css" text="Inferred changes: 5">
+                                 <content>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" styleClass="reasoner-entry-titled-container">
+                                       <children>
+                                          <VBox fx:id="inferredChangesVBox" layoutX="18.0" layoutY="14.0" spacing="8.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="4.0" />
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </TitledPane>
+                              <TitledPane animated="false" expanded="false" layoutX="20.0" layoutY="98.0" nodeOrientation="LEFT_TO_RIGHT" prefWidth="372.0" styleClass="reasoner-entry" stylesheets="@../kview.css" text="Stamp coordinate">
+                                 <content>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" styleClass="reasoner-entry-titled-container">
+                                       <children>
+                                          <VBox fx:id="inferredChangesVBox11111" layoutX="18.0" layoutY="14.0" spacing="8.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="4.0" />
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </TitledPane>
+                              <TitledPane animated="false" expanded="false" layoutX="20.0" layoutY="178.0" nodeOrientation="LEFT_TO_RIGHT" prefWidth="372.0" styleClass="reasoner-entry" stylesheets="@../kview.css" text="Logic coordinate">
+                                 <content>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" styleClass="reasoner-entry-titled-container">
+                                       <children>
+                                          <VBox fx:id="inferredChangesVBox111111" layoutX="18.0" layoutY="14.0" spacing="8.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="4.0" />
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </TitledPane>
+                              <TitledPane animated="false" expanded="false" layoutX="20.0" layoutY="204.0" nodeOrientation="LEFT_TO_RIGHT" prefWidth="372.0" styleClass="reasoner-entry" stylesheets="@../kview.css" text="Edit coordinate">
+                                 <content>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" styleClass="reasoner-entry-titled-container">
+                                       <children>
+                                          <VBox fx:id="inferredChangesVBox1111111" layoutX="18.0" layoutY="14.0" spacing="8.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="4.0" />
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </TitledPane>
+                           </children></VBox>
+                     </content>
+                  </TitledPane>
+               </children>
+            </VBox>
+         </content>
+      </ScrollPane>
+   </children>
+</Pane>

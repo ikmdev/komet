@@ -23,16 +23,20 @@ import javafx.scene.text.Text;
 
 public class TitledPaneHelper {
     private static final int DEFAULT_BUTTON_SPACING = 34; // pixels to offset the right arrow dropdown
+
+
     /**
+     * pass in the title and arrow css selectors since the behavior will apply to nested TitledPanes
+     * if you don't specific the selector more specifically
      * Code credit
      * https://stackoverflow.com/a/55085777
      * @param pane
      */
-    public static void putArrowOnRight(TitledPane pane, double buttonSpacing) {
+    public static void putArrowOnRight(TitledPane pane, double buttonSpacing, String titleSelector, String arrowSelector) {
         pane.layout();
         pane.applyCss();
-        Region title = (Region) pane.lookup(".title");
-        Region arrow = (Region) title.lookup(".arrow-button");
+        Region title = (Region) pane.lookup(titleSelector);
+        Region arrow = (Region) title.lookup(arrowSelector);
         Text text = (Text) title.lookup(".text");
 
         arrow.translateXProperty().bind(Bindings.createDoubleBinding(() -> {
@@ -67,7 +71,12 @@ public class TitledPaneHelper {
             pane.getGraphic().translateXProperty().bind(textGraphicBinding);
         }
     }
+
+    /**
+     * default params wrapper method for putArrowOnRight
+     * @param pane
+     */
     public static void putArrowOnRight(TitledPane pane) {
-        putArrowOnRight(pane, DEFAULT_BUTTON_SPACING);
+        putArrowOnRight(pane, DEFAULT_BUTTON_SPACING, ".title", ".arrow-button");
     }
 }
