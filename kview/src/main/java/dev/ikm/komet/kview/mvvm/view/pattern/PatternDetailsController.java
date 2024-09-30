@@ -31,6 +31,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FIELDS_COLLECTION;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_DATE_STR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAMES;
@@ -224,6 +225,8 @@ public class PatternDetailsController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PropertyPanelEvent.class, patternPropertiesEventSubscriber);
 
+        savePatternButton.disableProperty().bind(patternViewModel.getProperty(IS_INVALID));
+
         // capture pattern definition information
         purposeText.textProperty().bind(patternViewModel.getProperty(PURPOSE_TEXT));
         purposeText.getStyleClass().add("text-noto-sans-bold-grey-twelve");
@@ -234,9 +237,8 @@ public class PatternDetailsController {
         meaningDate.textProperty().bind(patternViewModel.getProperty(MEANING_DATE_STR));
         purposeDate.textProperty().bind(patternViewModel.getProperty(PURPOSE_DATE_STR));
 
-        patternDefinitionEventSubscriber = evt -> {
-            patternViewModel.setPurposeAndMeaningText(evt.getPatternDefinition());
-        };
+        patternDefinitionEventSubscriber = evt -> patternViewModel.setPurposeAndMeaningText(evt.getPatternDefinition());
+
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
 
         meaningDate.getStyleClass().add("text-noto-sans-normal-grey-eight");

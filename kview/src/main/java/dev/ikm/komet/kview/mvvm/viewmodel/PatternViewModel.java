@@ -119,25 +119,20 @@ public class PatternViewModel extends FormViewModel {
                         ObservableList<PatternField> fieldsProperty = viewModel.getObservableList(FIELDS_COLLECTION);
                         if (purposeEntity.isNull().get()) {
                             vr.error("A purpose is required for a Pattern.  Please add a purpose.");
-                            viewModel.setPropertyValue(IS_INVALID, true);
                         }
                         if (meaningEntity.isNull().get()) {
                             vr.error("A meaning is required for a Pattern.  Please add a meaning.");
-                            viewModel.setPropertyValue(IS_INVALID, true);
-                        }
-                        if (purposeEntity.isNull().get() == false && meaningEntity.isNull().get() == false) {
-                            viewModel.setPropertyValue(IS_INVALID, false);
                         }
                         if (fqnProperty.isNull().get()) {
                             vr.error("A fully qualified name is required for a Pattern.  Please add a fully qualified name.");
-                            viewModel.setPropertyValue(IS_INVALID, true);
                         }
                         if (fieldsProperty.isEmpty()) {
                             vr.error("At least one field is required for a Pattern.  Please add one or more fields.");
-                            viewModel.setPropertyValue(IS_INVALID, true);
+                        }
+                        if (vr.getMessages().size() == 0) {
+                            viewModel.setPropertyValue(IS_INVALID, false);
                         }
                     });
-            ;
     }
 
     public void setPurposeAndMeaningText(PatternDefinition patternDefinition) {
