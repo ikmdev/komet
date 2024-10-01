@@ -34,15 +34,9 @@ import dev.ikm.tinkar.composer.assembler.PatternAssembler;
 import dev.ikm.tinkar.composer.assembler.SemanticAssembler;
 import dev.ikm.tinkar.composer.template.FullyQualifiedName;
 import dev.ikm.tinkar.composer.template.USDialect;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.PatternEntity;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.PatternRecord;
-import dev.ikm.tinkar.entity.PatternRecordBuilder;
-import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +51,8 @@ public class PatternViewModelTest {
     //@BeforeAll
     public static void setUpBefore() {
         LOG.info("Clear caches");
-        File dataStore = new File(System.getProperty("user.home") + "/Solor/LoincFullDataSet_v2_77_8-21-2024");
+        //File dataStore = new File(System.getProperty("user.home") + "/Solor/LoincFullDataSet_v2_77_8-21-2024");
+        File dataStore = new File(System.getProperty("user.home") + "/Solor/September2024_ConnectathonDataset_v1");
         CachingService.clearAll();
         LOG.info("Setup Ephemeral Suite: " + LOG.getName());
         LOG.info(ServiceProperties.jvmUuid());
@@ -69,12 +64,14 @@ public class PatternViewModelTest {
         // set up the composer session
         composer = new Composer("Test Save Pattern Definition");
         State status = State.ACTIVE;
-        long uncommittedStampTime = Long.MAX_VALUE; // is this correct?
 
-        Concept author = Concept.make(UUID.randomUUID().toString());
-        Concept module = Concept.make(UUID.randomUUID().toString());
-        Concept path = Concept.make(UUID.randomUUID().toString());
-        session = composer.open(status, uncommittedStampTime, author, module, path);
+
+        Concept author = TinkarTerm.USER;
+        Concept module = TinkarTerm.MODULE;
+        Concept path = TinkarTerm.DEVELOPMENT_PATH;
+
+        // when we don't provide a time for the STAMP, it is taken care of by the framework
+        session = composer.open(status, author, module, path);
     }
 
 
@@ -84,9 +81,6 @@ public class PatternViewModelTest {
 
     //@AfterAll
     public static void tearDownAfter() {
-        // perform the commit
-        // submit... (really publish??? need to revisit this)
-
         PrimitiveData.stop();
     }
 
@@ -97,22 +91,10 @@ public class PatternViewModelTest {
             try {
                 PatternViewModelTest testHarness = new PatternViewModelTest();
 
-                // create the pattern definition; do not commit yet
-                PublicId patternPublicId = testHarness.setPatternDefintion();
-
-                // create the pattern description; do not commit yet
-                testHarness.setPatternDescription(patternPublicId);
-
-                // create the pattern fields; do not commit yet
-                testHarness.setPatternFields(patternPublicId);
-
+                // create the pattern definition
+                PublicId patternPublicId = testHarness.createPattern();
+                LOG.info(patternPublicId.toString());
                 composer.commitSession(session);
-
-                Pattern pattern = (Pattern) EntityService.get().getEntity(patternPublicId.asUuidList()).get();
-                int patternVersionCount = EntityService.get().getEntityFast(pattern.asUuidList()).versions().size();
-                System.out.println("***************************************");
-                System.out.println("***** Pattern version count = %d *******".formatted(patternVersionCount));
-                System.out.println("***************************************");
 
             } catch (Throwable e) {
                 e.printStackTrace();
@@ -125,12 +107,10 @@ public class PatternViewModelTest {
     }
 
 
-
-
     /**
      * test creating a pattern using the composer API
      */
-    public PublicId setPatternDefintion() {
+    public PublicId createPattern() {
 
         // a06158ff-e08a-5d7d-bcfa-6cbfdb138910
         //Concept patternMeaning = Concept.make(UUID.randomUUID().toString()); // find a meaning
@@ -143,67 +123,22 @@ public class PatternViewModelTest {
         PublicId patternPublicId = PublicIds.newRandom();
         Pattern pattern = Pattern.make(patternPublicId);
 
+
+
+
         // the composer handles saving to an uncommitted stamp
         // it is un-committed until you say commit
         session.compose((PatternAssembler patternAssembler) -> patternAssembler
                 .pattern(pattern)
                 .meaning(patternMeaning)
                 .purpose(patternPurpose)
-        );
-        //session.cancel(); // should we cancel?
-
-
-        // versions should be only 1
-        assert(EntityService.get().getEntityFast(pattern.asUuidList()).versions().size() == 1);
-
-        return patternPublicId;
-
-        // commit vs uncommitted = the timestamp value on the STAMP. long max vs a real date
-        //      you can have as many concepts and patters as you want pointing to that stamp
-        //      when you say commit it changes that timestamp from long.max to that point in time
-
-        // if you create a stamp with the same params in the same transaction, then it will be the same stamp
-
-        // CANCEL the temp transaction and re-save to accomplish
-
-        //Pattern pattern = ?
-
-        // a pattern has fields IN IT... they are not a separate semantic
-        // whereas a concept does NOT have semantics... a semantic that is part of a concept will point to the concept
-        // the pattern field definitions are essentially a list of field definitions that live inside the pattern
-        // you never want to write pattern definitions for the same pattern that have different numbers of field definitions
-        //      e.g. A Person Pattern
-        //          1) they have a first name and last name field... uncommitted transaction...(both Strings)
-        //          (assuming we are in the uncommitted transaction...)
-        //              ^^ we are writing an uncommitted version when we do this
-        //                  * you have to make sure that we take that uncommitted version, save off to memory, cancel that uncommitted transaction
-        //                  * and create a new transaction
-        //                  - goal is to summon the pattern window again and resume working on creating it
-        //          2) then add another pattern version by adding an additional field, e.g. middle initial <- BAD
-        //          3) can the user reorder the fields ? e.g. last name, first name
-        //              ^^^ 2 and 3 are both possible, new pattern versions + different number or order
-        //              shouldn't do this, if you have written semantics against this it will break them
-        //              if you make new pattern version you have to trust the existing viewCalculator queries throughout the codebase
-        //          * a work-around is to retire the old pattern and create a new pattern if you want to reorder or change the
-        //              the fields
-
-
-        // uncommitted transactions are lost on restart because they are java objects... on restart of komet you will lose that transaction
-        // and accessing the stamp
-    }
-
-    private void setPatternDescription(PublicId patternPublicId) {
-
-        Pattern pattern = EntityService.get().getEntity(patternPublicId.asUuidList()).get().toProxy();
-
-
-        session.compose((PatternAssembler patternAssembler) -> patternAssembler
-                        .pattern(pattern)
+                .fieldDefinition(patternPurpose.toProxy(), patternMeaning.toProxy(), TinkarTerm.LONG, 0)
                 .attach((FullyQualifiedName fqn) -> fqn
                         .language(ENGLISH_LANGUAGE)
                         .text("FQN for Pattern")
                         .caseSignificance(DESCRIPTION_NOT_CASE_SENSITIVE))
         );
+
 
         session.compose((SemanticAssembler semanticAssembler) -> semanticAssembler
                 .reference(pattern)
@@ -216,9 +151,10 @@ public class PatternViewModelTest {
                 .attach((USDialect dialect) -> dialect
                         .acceptability(PREFERRED)));
 
+        // versions should be only 1
+        assert(EntityService.get().getEntityFast(pattern.asUuidList()).versions().size() == 1);
+
+        return patternPublicId;
     }
 
-    private void setPatternFields(PublicId patterPublicId) {
-
-    }
 }
