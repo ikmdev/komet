@@ -17,6 +17,7 @@ package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
 import static dev.ikm.tinkar.terms.EntityProxy.Concept;
+import static dev.ikm.tinkar.terms.TinkarTerm.ACCEPTABLE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_PATTERN;
 import static dev.ikm.tinkar.terms.TinkarTerm.ENGLISH_LANGUAGE;
@@ -28,6 +29,7 @@ import dev.ikm.tinkar.composer.Session;
 import dev.ikm.tinkar.composer.assembler.PatternAssembler;
 import dev.ikm.tinkar.composer.assembler.SemanticAssembler;
 import dev.ikm.tinkar.composer.template.FullyQualifiedName;
+import dev.ikm.tinkar.composer.template.Synonym;
 import dev.ikm.tinkar.composer.template.USDialect;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
@@ -67,6 +69,11 @@ public class PatternViewModel extends FormViewModel {
 
     public static String DEFINITION_VIEW_MODEL = "definitionViewModel";
     public static String FQN_DESCRIPTION_NAME = "fqnDescriptionName";
+
+    public static String FQN_CASE_SIGNIFICANCE = "fqnCaseSignificance";
+
+    public static String FQN_LANGUAGE = "fqnLanguage";
+
     public static String OTHER_NAMES = "otherDescriptionNames";
 
     public static String PURPOSE_ENTITY = "purposeEntity";
@@ -80,8 +87,6 @@ public class PatternViewModel extends FormViewModel {
     public static String MEANING_TEXT = "meaningText";
 
     public static String FQN_DESCRIPTION_NAME_TEXT = "fqnDescrNameText";
-
-    public static String OTHER_NAME_DESCRIPTION_NAME_TEXT = "otherNameDescrText";
 
     public static String FIELDS_COLLECTION = "fieldsCollection";
 
@@ -108,7 +113,6 @@ public class PatternViewModel extends FormViewModel {
                     .addProperty(MEANING_DATE_STR, "")
                     // PATTERN>DESCRIPTION FQN and Other Name
                     .addProperty(FQN_DESCRIPTION_NAME_TEXT, "")
-                    .addProperty(OTHER_NAME_DESCRIPTION_NAME_TEXT, "")
                     // Ordered collection of Fields
                     .addProperty(FIELDS_COLLECTION, new ArrayList<PatternField>())
                     .addProperty(IS_INVALID, true)
@@ -193,26 +197,21 @@ public class PatternViewModel extends FormViewModel {
             }
             patternAssembler.purpose(((EntityFacade)getPropertyValue(PURPOSE_ENTITY)).toProxy())
                             .attach((FullyQualifiedName fqn) -> fqn
-                                    .language(ENGLISH_LANGUAGE)
+                                    .language(((EntityFacade)getPropertyValue(FQN_LANGUAGE)).toProxy())
                                     .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
-                                    .caseSignificance(DESCRIPTION_NOT_CASE_SENSITIVE));
+                                    .caseSignificance(((EntityFacade)getPropertyValue(FQN_CASE_SIGNIFICANCE)).toProxy()));
         });
 
         // add the other name description semantics if they exist
         ObservableList<DescrName> otherNamesProperty = getObservableList(OTHER_NAMES);
         if (!otherNamesProperty.isEmpty()) {
-            List<DescrName> otherNames = getProperty(OTHER_NAMES);
-            otherNames.forEach(name ->
-                    session.compose((SemanticAssembler semanticAssembler) -> semanticAssembler
-                            .reference(pattern)
-                            .pattern(DESCRIPTION_PATTERN)
-                            .fieldValues(fieldValues -> fieldValues
-                                    .with(ENGLISH_LANGUAGE)
-                                    .with(name)
-                                    .with(DESCRIPTION_NOT_CASE_SENSITIVE)
-                                    .with(REGULAR_NAME_DESCRIPTION_TYPE))
-                            .attach((USDialect dialect) -> dialect
-                                    .acceptability(PREFERRED)))
+            otherNamesProperty.forEach(otherName ->
+                    session.compose(new Synonym()
+                                    .language(otherName.getLanguage().toProxy())
+                                    .text(otherName.getNameText())
+                                    .caseSignificance(otherName.getCaseSignificance().toProxy()), pattern)
+                            .attach(new USDialect()
+                                    .acceptability(ACCEPTABLE))
             );
         }
 
