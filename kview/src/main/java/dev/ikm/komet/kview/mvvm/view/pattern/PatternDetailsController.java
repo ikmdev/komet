@@ -221,7 +221,6 @@ public class PatternDetailsController {
                 propertiesToggleButton.setSelected(false);
                 if (isOpen(propertiesSlideoutTrayPane)) {
                     slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
-                    //patternViewModel.save();
                 }
             } else if (evt.getEventType() == OPEN_PANEL) {
                 LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
@@ -248,9 +247,6 @@ public class PatternDetailsController {
         patternDefinitionEventSubscriber = evt -> patternViewModel.setPurposeAndMeaningText(evt.getPatternDefinition());
 
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
-
-        meaningDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
-        purposeDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
 
         // capture descriptions information
         StringProperty fqnTextProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
