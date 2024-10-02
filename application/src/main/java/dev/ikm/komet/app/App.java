@@ -362,7 +362,7 @@ public class App extends Application {
             FXMLLoader sourceLoader = new FXMLLoader(getClass().getResource("SelectDataSource.fxml"));
             BorderPane sourceRoot = sourceLoader.load();
             SelectDataSourceController selectDataSourceController = sourceLoader.getController();
-            Scene sourceScene = new Scene(sourceRoot, 600, 400);
+            Scene sourceScene = new Scene(sourceRoot);
 
 
             sourceScene.getStylesheets()
@@ -519,13 +519,13 @@ public class App extends Application {
             }
 
             journalStageWindow.setOnCloseRequest(windowEvent -> {
-                    saveJournalWindowsToPreferences();
-                    // call shutdown method on the view
-                    journalController.shutdown();
-                    journalControllersList.remove(journalController);
-                    // enable Delete menu option
-                    journalWindowSettings.setValue(CAN_DELETE, true);
-                    kViewEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
+                saveJournalWindowsToPreferences();
+                // call shutdown method on the view
+                journalController.shutdown();
+                journalControllersList.remove(journalController);
+                // enable Delete menu option
+                journalWindowSettings.setValue(CAN_DELETE, true);
+                kViewEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -800,7 +800,7 @@ public class App extends Application {
         appPreferences.sync();
         if (createJournalViewMenuItem != null) {
             createJournalViewMenuItem.setDisable(false);
-                KeyCombination newJournalKeyCombo = new KeyCodeCombination(KeyCode.J, KeyCombination.SHORTCUT_DOWN);
+            KeyCombination newJournalKeyCombo = new KeyCodeCombination(KeyCode.J, KeyCombination.SHORTCUT_DOWN);
             createJournalViewMenuItem.setAccelerator(newJournalKeyCombo);
             KometPreferences journalPreferences = appPreferences.node(JOURNAL_WINDOW);
         }
@@ -857,8 +857,8 @@ public class App extends Application {
         MenuItem minimizeWindow = new MenuItem("Minimize");
         KeyCombination minimizeKeyCombo = new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN);
         minimizeWindow.setOnAction(event -> {
-          Stage obj = (Stage) kometRoot.getScene().getWindow();
-          obj.setIconified(true);
+            Stage obj = (Stage) kometRoot.getScene().getWindow();
+            obj.setIconified(true);
         });
         minimizeWindow.setAccelerator(minimizeKeyCombo);
         windowMenu.getItems().add(minimizeWindow);
