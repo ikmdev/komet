@@ -920,6 +920,7 @@ public class WebApp extends Application {
         }
 
         classicKometStage = new Stage();
+        classicKometStage.getIcons().setAll(appIcon);
 
         //Starting up preferences and getting configurations
         Preferences.start();
