@@ -18,6 +18,7 @@ package dev.ikm.komet.kview.mvvm.view.pattern;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
@@ -33,7 +34,6 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
@@ -42,6 +42,7 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -49,6 +50,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
+import javafx.util.converter.IntegerStringConverter;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -60,7 +62,8 @@ import java.net.URL;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
-import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.PATTERN_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.ADD_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELDS;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchFieldDefinitionDataTypes;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
@@ -81,6 +84,8 @@ public class PatternFieldsController {
     @InjectViewModel
     private PatternFieldsViewModel patternFieldsViewModel;
 
+    @FXML
+    private Label addEditLabel;
 
     @FXML
     private TextField displayNameTextField;
@@ -126,6 +131,8 @@ public class PatternFieldsController {
             patternFieldsViewModel.setPropertyValue(IS_INVALID, patternFieldsViewModel.hasErrorMsgs());
         };
 
+        addEditLabel.textProperty().bind(patternFieldsViewModel.getProperty(ADD_EDIT_LABEL));
+
         doneButton.disableProperty().bind(patternFieldsViewModel.getProperty(IS_INVALID));
 
         // load drag over animation for reuse on every drag and drop
@@ -157,7 +164,7 @@ public class PatternFieldsController {
         });
 
         IntegerProperty totalExistingfields = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
-        SimpleIntegerProperty fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
+        ObjectProperty<Integer> fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
         ObservableList<Integer> fieldOrderOptions = patternFieldsViewModel.getObservableList(FIELD_ORDER_OPTIONS);
 
         StringProperty displayNameProp = patternFieldsViewModel.getProperty(DISPLAY_NAME);
@@ -165,16 +172,26 @@ public class PatternFieldsController {
         ObjectProperty<ConceptEntity> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
         ObjectProperty<ConceptEntity> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
 
-        fieldOrderProp.bind(fieldOrderComboBox.getSelectionModel().selectedItemProperty());
         displayNameTextField.textProperty().bindBidirectional(displayNameProp);
         dataTypeComboBox.valueProperty().bindBidirectional(dataTypeProp);
         fieldOrderComboBox.setItems(fieldOrderOptions); // Set the items in fieldOrder
-
+        fieldOrderComboBox.valueProperty().bindBidirectional(fieldOrderProp);
 
         displayNameProp.addListener(fieldsValidationListener);
         dataTypeProp.addListener(fieldsValidationListener);
-        purposeProp.addListener(fieldsValidationListener);
-        meaningProp.addListener(fieldsValidationListener);
+        purposeProp.addListener((obs, oldVal, newVal) -> {
+            if(newVal != null){
+                addPurposeToForm(purposeProp.getValue());
+            }
+            fieldsValidationListener.changed(obs, oldVal, newVal);
+        });
+
+        meaningProp.addListener((obs, oldVal, newVal) -> {
+            if(newVal != null){
+                addMeaningToForm(meaningProp.getValue());
+            }
+            fieldsValidationListener.changed(obs, oldVal, newVal);
+        });
 
         totalExistingfields.addListener((obs, oldVal, newVal) -> {
             loadFieldOrderOptions(newVal.intValue());
@@ -186,7 +203,7 @@ public class PatternFieldsController {
     }
 
     private void loadFieldOrderOptions(int totalFields){
-
+        fieldOrderComboBox.setConverter(new IntegerStringConverter());
         // get the available dropdown options initially list will be empty.
         ObservableList<Integer> fieldOrderOptions = patternFieldsViewModel.getObservableList(FIELD_ORDER_OPTIONS);
         // Clear list
@@ -195,10 +212,7 @@ public class PatternFieldsController {
         IntStream.rangeClosed(1, totalFields+1)
                 .boxed() // Convert int to Integer
                 .forEach(fieldOrderOptions::add);
-
-        // Select the last item as a default to the user
-        fieldOrderComboBox.getSelectionModel().selectLast();
-
+        patternFieldsViewModel.setPropertyValue(FIELD_ORDER, (totalFields+1));
     }
 
     ViewProperties viewProperties;
@@ -465,6 +479,7 @@ public class PatternFieldsController {
 
     @FXML
     private void clearView(ActionEvent actionEvent) {
+        patternFieldsViewModel.setPropertyValue(FIELD_ORDER, 1);
         patternFieldsViewModel.setPropertyValue(DISPLAY_NAME, "");
         patternFieldsViewModel.setPropertyValue(DATA_TYPE, null);
         removePurpose();
@@ -508,8 +523,14 @@ public class PatternFieldsController {
                 patternFieldsViewModel.getValue(COMMENTS)
         );
 
+        // This logic can be improvised.
+        EvtType<PatternFieldsPanelEvent> eventType = EDIT_FIELDS;
+        if(patternFieldsViewModel.getPropertyValue(ADD_EDIT_LABEL).equals("Add Fields")){
+             eventType = ADD_FIELDS;
+        }
+
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
-                new PatternFieldsPanelEvent(actionEvent.getSource(), PATTERN_FIELDS, patternField, patternFieldsViewModel.getValue(FIELD_ORDER)));
+                new PatternFieldsPanelEvent(actionEvent.getSource(), eventType, patternField, patternFieldsViewModel.getValue(FIELD_ORDER)));
 
         clearView(actionEvent);
     }

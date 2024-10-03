@@ -30,6 +30,8 @@ public class PatternFieldsViewModel extends FormViewModel {
 
     private static final Logger LOG = LoggerFactory.getLogger(PatternFieldsViewModel.class);
 
+    public static String ADD_EDIT_LABEL = "addEditLabel";
+
     public static String TOTAL_EXISTING_FIELDS = "totalExistingFields";
 
     public static String FIELD_ORDER_OPTIONS = "fieldOrderOptions";
@@ -50,8 +52,9 @@ public class PatternFieldsViewModel extends FormViewModel {
 
     public PatternFieldsViewModel() {
         super();
-        addProperty(VIEW_PROPERTIES, (ViewProperties) null)
-                .addProperty(FIELD_ORDER, 1) // default to 1, in create mode they will create the first one
+        addProperty(ADD_EDIT_LABEL, "")
+                .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+                .addProperty(FIELD_ORDER, (Integer) 1) // default to 1, in create mode they will create the first one
                 .addProperty(DISPLAY_NAME, "")
                 .addValidator(DISPLAY_NAME, "Display Name", (ReadOnlyStringProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
                     if (prop.isEmpty().get()) {

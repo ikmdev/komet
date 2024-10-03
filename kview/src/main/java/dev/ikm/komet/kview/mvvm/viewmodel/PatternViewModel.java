@@ -63,6 +63,9 @@ public class PatternViewModel extends FormViewModel {
 
     public static String MEANING_DATE_STR = "meaningDateStr";
 
+    // Used to load the values in the PatternField controller from PatternDetailsController.
+    public static String SELECTED_PATTERN_FIELD = "selectedPatternField";
+
     public PatternViewModel() {
         super();
         addProperty(VIEW_PROPERTIES, (ViewProperties) null)
@@ -83,6 +86,7 @@ public class PatternViewModel extends FormViewModel {
                 .addProperty(OTHER_NAME_DESCRIPTION_NAME_TEXT, "")
                 // Ordered collection of Fields
                 .addProperty(FIELDS_COLLECTION, new ArrayList<PatternField>())
+                .addProperty(SELECTED_PATTERN_FIELD, (PatternField) null)
         ;
     }
 
