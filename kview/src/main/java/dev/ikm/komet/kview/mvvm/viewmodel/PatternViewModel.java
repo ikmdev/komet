@@ -135,9 +135,7 @@ public class PatternViewModel extends FormViewModel {
                         if (fieldsProperty.isEmpty()) {
                             vr.error("At least one field is required for a Pattern.  Please add one or more fields.");
                         }
-                        if (vr.getMessages().isEmpty()) {
-                            viewModel.setPropertyValue(IS_INVALID, false);
-                        }
+                        viewModel.setPropertyValue(IS_INVALID, !vr.getMessages().isEmpty());
                     });
     }
 
