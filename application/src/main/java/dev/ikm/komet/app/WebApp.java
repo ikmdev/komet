@@ -91,6 +91,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import one.jpro.platform.auth.core.authentication.User;
+import one.jpro.platform.internal.util.CommandRunner;
 import one.jpro.platform.internal.util.PlatformUtils;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -100,8 +101,10 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -320,7 +323,7 @@ public class WebApp extends Application {
                 launchLandingPage(primaryStage, user);
             } else {
                 state.set(AppState.SELECT_DATA_SOURCE);
-            state.addListener(this::appStateChangeListener);
+                state.addListener(this::appStateChangeListener);
                 launchSelectDataSourcePage(primaryStage);
             }
         };
@@ -1038,7 +1041,6 @@ public class WebApp extends Application {
         KeyCombination quitKeyCombo = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
         menuItemQuit.setOnAction(actionEvent -> quit());
         menuItemQuit.setAccelerator(quitKeyCombo);
-        menuItemQuit.setDisable(IS_BROWSER);
         fileMenu.getItems().add(menuItemQuit);
 
         Menu editMenu = new Menu("Edit");
@@ -1082,13 +1084,51 @@ public class WebApp extends Application {
         aboutWindow.show();
     }
 
-
     private void quit() {
         //TODO: that this call will likely be moved into the landing page functionality
         saveJournalWindowsToPreferences();
         PrimitiveData.stop();
         Preferences.stop();
         Platform.exit();
+        stopServer();
+    }
+
+    /**
+     * Stops the JPro server by running the stop script.
+     */
+    public static void stopServer() {
+        if (IS_BROWSER) {
+            LOG.info("Stopping JPro server...");
+            final String jproMode = WebAPI.getServerInfo().getJProMode();
+            final String[] stopScriptArgs;
+            final CommandRunner stopCommandRunner;
+            final File workingDir;
+            if ("dev".equals(jproMode)) {
+                workingDir = new File(System.getProperty("user.dir")).getParentFile();
+                stopScriptArgs = PlatformUtils.isWindows() ?
+                        new String[]{"cmd", "/c", "mvnw.bat", "-f", "application", "jpro:stop"} :
+                        new String[]{"bash", "./mvnw", "-f", "application", "jpro:stop"};
+                stopCommandRunner = new CommandRunner(stopScriptArgs);
+            } else {
+                workingDir = new File("bin");
+                final String scriptExtension = PlatformUtils.isWindows() ? ".bat" : ".sh";
+                final String stopScriptName = "stop" + scriptExtension;
+                stopScriptArgs = PlatformUtils.isWindows() ?
+                        new String[]{"cmd", "/c", stopScriptName} : new String[]{"bash", stopScriptName};
+                stopCommandRunner = new CommandRunner(stopScriptArgs);
+            }
+            try {
+                stopCommandRunner.setPrintToConsole(true);
+                final int exitCode = stopCommandRunner.run("jpro-stop", workingDir);
+                if (exitCode == 0) {
+                    LOG.info("JPro server stopped successfully.");
+                } else {
+                    LOG.error("Failed to stop JPro server. Exit code: {}", exitCode);
+                }
+            } catch (IOException | InterruptedException ex) {
+                LOG.error("Error stopping the server", ex);
+            }
+        }
     }
 
     private void restoreTab(KometPreferences windowPreferences, String tabPreferenceNodeName, ObservableViewNoOverride windowView, Consumer<Node> nodeConsumer) {
@@ -1120,7 +1160,6 @@ public class WebApp extends Application {
         KeyCombination quitKeyCombo = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
         menuItemQuit.setOnAction(actionEvent -> quit());
         menuItemQuit.setAccelerator(quitKeyCombo);
-        menuItemQuit.setDisable(IS_BROWSER);
         fileMenu.getItems().add(menuItemQuit);
 
         Menu viewMenu = new Menu("View");
