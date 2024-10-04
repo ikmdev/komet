@@ -679,7 +679,7 @@ public class JournalController {
         Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
         Node[] draggables = new Node[draggableToolbar.size()];
 
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
+        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
         //Adding the concept window panel as a child to the desktop pane.
         desktopSurfacePane.getChildren().add(kometNodePanel);
 
@@ -709,8 +709,8 @@ public class JournalController {
         if (conceptWindowSettingsMap != null) {
             kometNodePanel.setPrefHeight((Double)conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
             kometNodePanel.setPrefWidth((Double)conceptWindowSettingsMap.get(CONCEPT_WIDTH));
-            kometNodePanel.setLayoutX((Double)conceptWindowSettingsMap.get(CONCEPT_XPOS));
-            kometNodePanel.setLayoutY((Double)conceptWindowSettingsMap.get(CONCEPT_YPOS));
+            kometNodePanel.setTranslateX((Double)conceptWindowSettingsMap.get(CONCEPT_XPOS));
+            kometNodePanel.setTranslateY((Double)conceptWindowSettingsMap.get(CONCEPT_YPOS));
         }
     }
 
@@ -751,7 +751,7 @@ public class JournalController {
         Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
         Node[] draggables = new Node[draggableToolbar.size()];
 
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
+        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
         //Adding the concept window panel as a child to the desktop pane.
         desktopSurfacePane.getChildren().add(kometNodePanel);
 
@@ -817,7 +817,7 @@ public class JournalController {
         Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
         Node[] draggables = new Node[draggableToolbar.size()];
 
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
+        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
         //Adding the concept window panel as a child to the desktop pane.
         desktopSurfacePane.getChildren().add(kometNodePanel);
 
@@ -888,7 +888,7 @@ public class JournalController {
         Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
         Node[] draggables = new Node[draggableToolbar.size()];
 
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
+        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
         //Adding the concept window panel as a child to the desktop pane.
         desktopSurfacePane.getChildren().add(kometNodePanel);
 
@@ -1118,7 +1118,7 @@ public class JournalController {
                 kometNodePanel.setLayoutX(x);
                 kometNodePanel.setLayoutY(y);
 
-                WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
+                WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
                 if (staggerWindowsX.get() % 3 == 0) {
                     staggerWindowsY.incrementAndGet();
                 }
@@ -1371,7 +1371,7 @@ public class JournalController {
         Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
         Node[] draggables = new Node[draggableToolbar.size()];
 
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
+        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
         //Adding the concept window panel as a child to the desktop pane.
         desktopSurfacePane.getChildren().add(kometNodePanel);
 
