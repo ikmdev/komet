@@ -90,30 +90,55 @@ public class WindowSupport {
     /**
      * Desktop area surface.
      */
-//    private final Pane desktopPane;
+    private final Pane desktopPane;
 
     private boolean enableDrag = true;
 
     private Consumer<MouseEvent> positionWindowPress;
     private Consumer<MouseEvent> positionWindowDrag;
     private Consumer<MouseEvent> positionWindowRelease;
-    private final Consumer<MouseEvent> defaultPositionWindowPress = (mouseEvent ->
-            anchorPtProperty.set(new Point2D(mouseEvent.getSceneX(), mouseEvent.getSceneY())));
 
-    public static WindowSupport apply(final Pane parentNode, Node ... draggableNodes) {
-        return new WindowSupport(parentNode, draggableNodes);
-    }
+    // We will initialize these Consumers in the constructor
+    private final Consumer<MouseEvent> defaultPositionWindowPress;
+    private final Consumer<MouseEvent> defaultPositionWindowDrag;
+    private final Consumer<MouseEvent> defaultPositionWindowRelease;
 
     /**
      * A parent node is a panel (Pane) to view. The draggableNode is typically a title bar that allows the user to
      * drag the window around the journal.
+     *
      * @param parentNode - The window panel to be displayed on the journal view.
+     * @param desktopPane - The workspace pane (e.g., desktopSurfacePane) to keep the window within its bounds.
      * @param draggableNodes The draggable nodes. This typically is a title area to allow the user to position (dragging) the window on the journal.
-     *                      Based on the work from LitFX covalent UI for multiple regions to allow the user to drag the window.
      */
-    public WindowSupport(final Pane parentNode, Node ... draggableNodes) {
+    public WindowSupport(final Pane parentNode, Pane desktopPane, Node... draggableNodes) {
         this.pane = parentNode;
+        this.desktopPane = desktopPane;
         this.draggableNodes = draggableNodes;
+
+        // Initialize Consumers after 'pane' is assigned
+        this.defaultPositionWindowPress = (mouseEvent -> {
+            anchorPtProperty.set(new Point2D(mouseEvent.getSceneX(), mouseEvent.getSceneY()));
+            previousLocationProperty.set(new Point2D(pane.getTranslateX(), pane.getTranslateY()));
+        });
+
+        this.defaultPositionWindowDrag = (mouseEvent -> {
+            if (isEnableDrag()) {
+                if (anchorPtProperty.isNotNull().get() && previousLocationProperty.isNotNull().get()) {
+                    getPane().setTranslateX(previousLocationProperty.get().getX()
+                            + mouseEvent.getSceneX()
+                            - anchorPtProperty.get().getX());
+                    getPane().setTranslateY(previousLocationProperty.get().getY()
+                            + mouseEvent.getSceneY()
+                            - anchorPtProperty.get().getY());
+                    clampWindowPosition(); // Clamp position after dragging
+                }
+            }
+        });
+
+        this.defaultPositionWindowRelease = (mouseEvent ->
+                previousLocationProperty.set(new Point2D(pane.getTranslateX(), pane.getTranslateY())));
+
         for (Node draggableNode : draggableNodes) {
             draggableNode.addEventHandler(MouseEvent.MOUSE_PRESSED, this::handlePositionWindowMousePressed);
             draggableNode.addEventHandler(MouseEvent.MOUSE_DRAGGED, this::handlePositionWindowMouseDragged);
@@ -140,7 +165,7 @@ public class WindowSupport {
         // apply lines first so circles will overlay for corners.
         parentNode.getChildren()
                 .addAll(northEdge, eastEdge, southEdge, westEdge,
-                upperLeft, upperRight, lowerRight, lowerLeft);
+                        upperLeft, upperRight, lowerRight, lowerLeft);
 
         // When bounds change update line segments and circles.
         parentNode.layoutBoundsProperty().addListener(observable -> {
@@ -181,7 +206,14 @@ public class WindowSupport {
             lowerLeft.setCenterY(h);
         });
 
-        //parentNode.addEventHandler(MouseEvent.MOUSE_MOVED, this::handlePositionWindowMouseMoved);
+        // Add listeners to workspace size changes to ensure windows stay within bounds
+        desktopPane.widthProperty().addListener((obs, oldVal, newVal) -> clampWindowPosition());
+        desktopPane.heightProperty().addListener((obs, oldVal, newVal) -> clampWindowPosition());
+
+        // Add listeners to pane's width and height properties
+        pane.widthProperty().addListener((obs, oldVal, newVal) -> clampWindowPosition());
+        pane.heightProperty().addListener((obs, oldVal, newVal) -> clampWindowPosition());
+
         ///////////////////////////////////////////////////
         // Code to resize the window pane in the journal
         //////////////////////////////////////////////////
@@ -189,19 +221,27 @@ public class WindowSupport {
         resizeWidthValue.addListener( obs -> {
             double newWidth = resizeWidthValue.get();
             this.pane.setPrefWidth(Math.max(this.pane.getMinWidth(), newWidth));
+            clampWindowPosition();
         });
 
         // Change stage's bindYToHeight
         resizeHeightValue.addListener( obs -> {
             double newHeight = resizeHeightValue.get();
             this.pane.setPrefHeight(Math.max(this.pane.getMinHeight(), newHeight));
+            clampWindowPosition();
         });
 
-        // Change stage's upper left corner's X
-        paneXCoordValue.addListener(obs -> this.pane.setTranslateX(paneXCoordValue.get()));
+        // Change pane's upper left corner's X
+        paneXCoordValue.addListener(obs -> {
+            this.pane.setTranslateX(paneXCoordValue.get());
+            clampWindowPosition();
+        });
 
         // Change pane's upper left corner's Y
-        paneYCoordValue.addListener(obs -> this.pane.setTranslateY(paneYCoordValue.get()));
+        paneYCoordValue.addListener(obs -> {
+            this.pane.setTranslateY(paneYCoordValue.get());
+            clampWindowPosition();
+        });
 
         // Listener to drag edges of windows
         Line[] lines = new Line[] { northEdge, eastEdge, southEdge, westEdge};
@@ -276,22 +316,6 @@ public class WindowSupport {
             draggableNode.removeEventHandler(MouseEvent.MOUSE_RELEASED, this::handlePositionWindowMouseReleased);
         }
     }
-    private final Consumer<MouseEvent> defaultPositionWindowRelease = (mouseEvent -> {
-        //previousLocation = new Point2D(getTranslateX(),getTranslateY());
-        previousLocationProperty.set(new Point2D(getPane().getTranslateX(), getPane().getTranslateY()));
-    });
-    private final Consumer<MouseEvent> defaultPositionWindowDrag = (mouseEvent -> {
-        if(isEnableDrag()) {
-            if (anchorPtProperty.isNotNull().get() && previousLocationProperty.isNotNull().get()) {
-                getPane().setTranslateX(previousLocationProperty.get().getX()
-                        + mouseEvent.getSceneX()
-                        - anchorPtProperty.get().getX());
-                getPane().setTranslateY(previousLocationProperty.get().getY()
-                        + mouseEvent.getSceneY()
-                        - anchorPtProperty.get().getY());
-            }
-        }
-    });
 
     public boolean isEnableDrag() {
         return enableDrag;
@@ -318,6 +342,8 @@ public class WindowSupport {
             setPositionWindowDrag(defaultPositionWindowDrag);
         }
         getPositionWindowDrag().accept(mouseEvent);
+
+        clampWindowPosition();
     }
 
     /**
@@ -329,7 +355,7 @@ public class WindowSupport {
     }
     public void handlePositionWindowMouseReleased(MouseEvent mouseEvent) {
         if (getPositionWindowRelease() == null) {
-            positionWindowRelease = defaultPositionWindowRelease;
+            setPositionWindowRelease(defaultPositionWindowRelease);
         }
         getPositionWindowRelease().accept(mouseEvent);
     }
@@ -467,7 +493,7 @@ public class WindowSupport {
                 default:
                     break;
             }
-
+            clampWindowPosition();
         });
 
         // after user resizes (mouse release) the previous location is reset
@@ -526,5 +552,44 @@ public class WindowSupport {
     }
     public void setOnMouseReleased(PaneMouseReleased mouseReleased) {
         this.mouseReleased = mouseReleased;
+    }
+
+
+    private void clampWindowPosition() {
+        double desktopPaneWidth = desktopPane.getWidth();
+        double desktopPaneHeight = desktopPane.getHeight();
+        double windowWidth = pane.getWidth();
+        double windowHeight = pane.getHeight();
+
+        // Check if dimensions are valid
+        if (desktopPaneWidth <= 0 || desktopPaneHeight <= 0 || windowWidth <= 0 || windowHeight <= 0) {
+            // Sizes are not initialized yet; skip clamping
+            return;
+        }
+
+        double newX = pane.getTranslateX();
+        double newY = pane.getTranslateY();
+
+        // Clamp X position
+        if (newX < 0) {
+            pane.setTranslateX(0);
+        } else if (newX + windowWidth > desktopPaneWidth) {
+            pane.setTranslateX(desktopPaneWidth - windowWidth);
+        }
+
+        // Clamp Y position
+        if (newY < 0) {
+            pane.setTranslateY(0);
+        } else if (newY + windowHeight > desktopPaneHeight) {
+            pane.setTranslateY(desktopPaneHeight - windowHeight);
+        }
+
+        // Ensure window size does not exceed workspace
+        if (pane.getWidth() > desktopPaneWidth) {
+            pane.setPrefWidth(desktopPaneWidth);
+        }
+        if (pane.getHeight() > desktopPaneHeight) {
+            pane.setPrefHeight(desktopPaneHeight);
+        }
     }
 }
