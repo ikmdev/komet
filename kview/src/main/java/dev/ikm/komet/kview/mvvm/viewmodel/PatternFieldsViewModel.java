@@ -54,7 +54,7 @@ public class PatternFieldsViewModel extends FormViewModel {
         super();
         addProperty(ADD_EDIT_LABEL, "") // Used to update the heading for the properties page.
                 .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
-                .addProperty(FIELD_ORDER, (Integer) 1) // default to 1, in create mode they will create the first one
+                .addProperty(FIELD_ORDER, (Integer) 1) // This has to cast to Integer since the default is Number
                 .addProperty(DISPLAY_NAME, "")
                 .addValidator(DISPLAY_NAME, "Display Name", (ReadOnlyStringProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
                     if (prop.isEmpty().get()) {

@@ -164,7 +164,7 @@ public class PatternFieldsController {
         });
 
         IntegerProperty totalExistingfields = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
-        // This had to be changed to ObjectProperty<Integer>
+        // This had to be changed to ObjectProperty<Integer>. Else give a runtime casting exception.
         ObjectProperty<Integer> fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
         ObservableList<Integer> fieldOrderOptions = patternFieldsViewModel.getObservableList(FIELD_ORDER_OPTIONS);
 
