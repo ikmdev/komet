@@ -34,7 +34,6 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
     public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_EDIT_FIELDS = new EvtType<>(Evt.ANY, "SHOW_EDIT_FIELD");
     public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_ADD_FIELDS = new EvtType<>(Evt.ANY, "SHOW_ADD_FIELDS");
 
-
     ////////// Description Name semantic events
     public static final EvtType<ShowPatternFormInBumpOutEvent> DESCRIPTION_NAME = new EvtType<>(Evt.ANY, "DESCRIPTION_NAME");
     public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_ADD_FQN = new EvtType<>(DESCRIPTION_NAME, "SHOW_ADD_FQN");
@@ -63,7 +62,7 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
 
     /**
      * Constructs a prototypical Event.
-     *
+     * This is a add even and the default value for the patttern Field is null and Field order is 1.
      * @param source    the object on which the Event initially occurred
      * @param eventType in this case the event type is SHOW_ADD_FIELDS event type.
      * @param totalFields the total number of fields added in the current pattern.
@@ -77,7 +76,8 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
     }
 
     /**
-     *
+     * This method is used when we have to edit the Pattern Fields.
+     * The input form is populated using existing field order and the pattern fields information.
      * @param source the object on which the event initially occurred.
      * @param eventType the eventType this should be SHOW_EDIT_FIELDS event type.
      * @param totalFields the total number of fields added in the current pattern.

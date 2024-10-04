@@ -184,6 +184,7 @@ public class PropertiesController {
             if (evt.getEventType() == SHOW_ADD_DEFINITION) {
                 currentEditPane = patternDefinitionPane; // must be available.
             } else if (evt.getEventType() == SHOW_EDIT_FIELDS) {
+                //Set the field values for edit.
                 Optional<ViewModel> viewModel = patternFieldsJFXNode.namedViewModels().stream().filter(namedVm -> namedVm.variableName().equals("patternFieldsViewModel")).map(NamedVm::viewModel).findAny();
                 viewModel.ifPresent(model -> {
                     PatternField patternField = evt.getPatternField();

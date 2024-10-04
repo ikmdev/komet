@@ -52,7 +52,7 @@ public class PatternFieldsViewModel extends FormViewModel {
 
     public PatternFieldsViewModel() {
         super();
-        addProperty(ADD_EDIT_LABEL, "")
+        addProperty(ADD_EDIT_LABEL, "") // Used to update the heading for the properties page.
                 .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
                 .addProperty(FIELD_ORDER, (Integer) 1) // default to 1, in create mode they will create the first one
                 .addProperty(DISPLAY_NAME, "")

@@ -27,8 +27,6 @@ public class PatternFieldsPanelEvent extends Evt {
 
     public static final EvtType<PatternFieldsPanelEvent> ADD_FIELDS = new EvtType<>(Evt.ANY, "ADD_FIELDS");
 
-
-
     private final PatternField patternField;
     private final int currentFieldOrder;
 
