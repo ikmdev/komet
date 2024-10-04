@@ -58,7 +58,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELDS;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*;
