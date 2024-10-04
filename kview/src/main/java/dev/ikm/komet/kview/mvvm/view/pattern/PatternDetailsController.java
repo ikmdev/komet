@@ -15,11 +15,40 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_DEFINITION;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FQN;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_OTHER_NAME;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FIELDS;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
+import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
+import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FIELDS_COLLECTION;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_CASE_SIGNIFICANCE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_LANGUAGE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.IS_INVALID;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_DATE_STR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAMES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_DATE_STR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_TEXT;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.events.pattern.*;
+import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
+import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
+import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
+import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
+import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
@@ -37,8 +66,19 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.TilePane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.FillRule;
 import javafx.scene.shape.SVGPath;
@@ -57,15 +97,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
-import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 
 public class PatternDetailsController {
 
@@ -115,7 +146,10 @@ public class PatternDetailsController {
     @FXML
     private Text semanticPurposeText;
 
-    // pattern defintion fields
+    @FXML
+    private Button savePatternButton;
+
+    // pattern definition fields
     @FXML
     private Text meaningText;
 
@@ -198,6 +232,8 @@ public class PatternDetailsController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PropertyPanelEvent.class, patternPropertiesEventSubscriber);
 
+        savePatternButton.disableProperty().bind(patternViewModel.getProperty(IS_INVALID));
+
         // capture pattern definition information
         purposeText.textProperty().bind(patternViewModel.getProperty(PURPOSE_TEXT));
         purposeText.getStyleClass().add("text-noto-sans-bold-grey-twelve");
@@ -208,13 +244,9 @@ public class PatternDetailsController {
         meaningDate.textProperty().bind(patternViewModel.getProperty(MEANING_DATE_STR));
         purposeDate.textProperty().bind(patternViewModel.getProperty(PURPOSE_DATE_STR));
 
-        patternDefinitionEventSubscriber = evt -> {
-            patternViewModel.setPurposeAndMeaningText(evt.getPatternDefinition());
-        };
-        EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
+        patternDefinitionEventSubscriber = evt -> patternViewModel.setPurposeAndMeaningText(evt.getPatternDefinition());
 
-        meaningDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
-        purposeDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
+        EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
 
         // capture descriptions information
         StringProperty fqnTextProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
@@ -222,11 +254,13 @@ public class PatternDetailsController {
 
         // This will listen to the pattern descriptions event. Adding an FQN, Adding other name.
         patternDescriptionEventSubscriber = evt -> {
+            DescrName descrName = evt.getDescrName();
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_FQN) {
                 // This if is invoked when the data is coming from FQN name screen.
-                DescrName descrName = evt.getDescrName();
                 patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, descrName.getNameText());
                 patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME, descrName);
+                patternViewModel.setPropertyValue(FQN_CASE_SIGNIFICANCE, descrName.getCaseSignificance());
+                patternViewModel.setPropertyValue(FQN_LANGUAGE, descrName.getLanguage());
             } else if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
                 // This if is invoked when the data is coming from Other Name screen.
                 ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
@@ -266,6 +300,11 @@ public class PatternDetailsController {
             int fieldPosition = evt.getCurrentFieldOrder()-1;
             //Update the fields collection data.
             patternFieldList.add(fieldPosition, patternField);
+            //update the display.
+            fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(patternField, evt.getCurrentFieldOrder()));
+
+            // save and therefore validate
+            patternViewModel.save();
         };
 
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
@@ -587,5 +626,9 @@ public class PatternDetailsController {
         putArrowOnRight(this.fieldsTitledPane);
     }
 
-
+    @FXML
+    private void savePattern(ActionEvent actionEvent) {
+        boolean isValidSave = patternViewModel.createPattern();
+        LOG.info(isValidSave ? "success" : "failed");
+    }
 }
