@@ -126,7 +126,7 @@ public class MenuHelper {
      * This method takes list of menuItems in 2D array form.
      * The 2nd array can have the following items in sequence: public NAME = 0; ENABLED = 1; STYLES = 2; ACTION = 3; GRAPHIC = 4;
      * @param menuItems
-     * @return
+     * @return contextMenu  returns the context menu with the list of menu items.
      */
 
     public ContextMenu createContextMenuWithMenuItems(Object [][] menuItems){
