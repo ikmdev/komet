@@ -22,6 +22,7 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Side;
 import javafx.scene.Node;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.input.ContextMenuEvent;
@@ -33,6 +34,13 @@ import javafx.scene.input.PickResult;
 public class MenuHelper {
     public static final String SEPARATOR = "SEPARATOR";
     private static MenuHelper INSTANCE = null;
+
+    public static final int NAME = 0;
+    public static final int ENABLED = 1;
+    public static final int STYLES = 2;
+    public static final int ACTION = 3;
+    public static final int GRAPHIC = 4;
+
     private MenuHelper() {
 
     }
@@ -112,5 +120,43 @@ public class MenuHelper {
         Event event = new ContextMenuEvent(ContextMenuEvent.CONTEXT_MENU_REQUESTED, x, y, scrnX+xOffset, scrnY+yOffset, false, new PickResult(node, x, y));
         Event.fireEvent(node, event);
 
+    }
+
+    /**
+     * This method takes list of menuItems in 2D array form.
+     * The 2nd array can have the following items in sequence: public NAME = 0; ENABLED = 1; STYLES = 2; ACTION = 3; GRAPHIC = 4;
+     * @param menuItems
+     * @return contextMenu  returns the context menu with the list of menu items.
+     */
+
+    public ContextMenu createContextMenuWithMenuItems(Object [][] menuItems){
+        ContextMenu contextMenu = new ContextMenu();
+        contextMenu.getStyleClass().add("kview-context-menu");
+        contextMenu.setHideOnEscape(true);
+        contextMenu.setAutoHide(true);
+        contextMenu.setConsumeAutoHidingEvents(true);
+        for(Object [] menuItemObj : menuItems){
+            if (SEPARATOR.equals(menuItemObj[NAME])){
+                contextMenu.getItems().add(new SeparatorMenuItem());
+                continue;
+            }
+            // uses a default action if one is not given.
+            EventHandler<ActionEvent> menuItemAction = switch (menuItemObj[ACTION]) {
+                case null ->  null;
+                case EventHandler  eventHandler -> eventHandler;
+                default -> null;
+            };
+            // Create a menu item.
+            MenuItem menuItem = createMenuOption(
+                    String.valueOf(menuItemObj[NAME]),                           /* name */
+                    Boolean.parseBoolean(String.valueOf(menuItemObj[ENABLED])),  /* enabled */
+                    (String[]) menuItemObj[STYLES],                              /* styling */
+                    menuItemAction,                                              /* action when selected */
+                    (Node) menuItemObj[GRAPHIC]                                  /* optional graphic */
+            );
+            contextMenu.getItems().add(menuItem);
+
+        }
+        return contextMenu;
     }
 }

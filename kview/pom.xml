@@ -25,6 +25,10 @@
             <artifactId>search-provider</artifactId>
         </dependency>
         <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>composer</artifactId>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>navigator</artifactId>
         </dependency>
