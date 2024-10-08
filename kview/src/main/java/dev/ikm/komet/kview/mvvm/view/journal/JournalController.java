@@ -697,8 +697,9 @@ public class JournalController {
 
         // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
         Optional<String> conceptFolderName;
-        if (conceptWindowSettingsMap != null){
-            conceptFolderName = (Optional<String>) conceptWindowSettingsMap.getOrDefault(CONCEPT_PREF_NAME, CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
+        if (conceptWindowSettingsMap != null) {
+            conceptFolderName = Optional.of(String.valueOf(conceptWindowSettingsMap.getOrDefault(CONCEPT_PREF_NAME,
+                    CONCEPT_FOLDER_PREFIX + UUID.randomUUID())));
         } else {
             conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
             // create a conceptWindowSettingsMap
