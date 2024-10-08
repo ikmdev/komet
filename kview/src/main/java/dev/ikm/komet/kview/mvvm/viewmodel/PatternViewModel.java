@@ -15,34 +15,27 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
-import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 import static dev.ikm.tinkar.terms.EntityProxy.Concept;
+import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
 import static dev.ikm.tinkar.terms.TinkarTerm.ACCEPTABLE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_PATTERN;
-import static dev.ikm.tinkar.terms.TinkarTerm.ENGLISH_LANGUAGE;
-import static dev.ikm.tinkar.terms.TinkarTerm.PREFERRED;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
-import dev.ikm.tinkar.component.FieldDefinition;
-import dev.ikm.tinkar.composer.Composer;
-import dev.ikm.tinkar.composer.Session;
-import dev.ikm.tinkar.composer.assembler.PatternAssembler;
-import dev.ikm.tinkar.composer.assembler.SemanticAssembler;
-import dev.ikm.tinkar.composer.template.FullyQualifiedName;
-import dev.ikm.tinkar.composer.template.Synonym;
-import dev.ikm.tinkar.composer.template.USDialect;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.composer.Composer;
+import dev.ikm.tinkar.composer.Session;
+import dev.ikm.tinkar.composer.assembler.PatternAssembler;
+import dev.ikm.tinkar.composer.template.FullyQualifiedName;
+import dev.ikm.tinkar.composer.template.Synonym;
+import dev.ikm.tinkar.composer.template.USDialect;
+import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleListProperty;
 import javafx.collections.ObservableList;
 import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.validator.ValidationResult;
@@ -53,9 +46,7 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class PatternViewModel extends FormViewModel {
 
@@ -179,11 +170,14 @@ public class PatternViewModel extends FormViewModel {
         PublicId patternPublicId = PublicIds.newRandom();
         Pattern pattern = Pattern.make(patternPublicId);
         Composer composer = new Composer("Save Pattern Definition");
-        State status = State.ACTIVE;
-        Concept author = TinkarTerm.USER;
-        Concept module = TinkarTerm.MODULE;
-        Concept path = TinkarTerm.DEVELOPMENT_PATH;
-        Session session = composer.open(status, author, module, path);
+
+        // get the STAMP values from the nested stampViewModel
+        StampViewModel stampViewModel = getPropertyValue(STAMP_VIEW_MODEL);
+        State status = stampViewModel.getPropertyValue(STATUS);
+        Concept author = stampViewModel.getPropertyValue(AUTHOR);
+        ConceptEntity module = stampViewModel.getPropertyValue(MODULE);
+        ConceptEntity path = stampViewModel.getPropertyValue(PATH);
+        Session session = composer.open(status, author, module.toProxy(), path.toProxy());
 
         // set up pattern with the fully qualified name
         ObservableList<PatternField> fieldsProperty = getObservableList(FIELDS_COLLECTION);
