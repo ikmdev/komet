@@ -138,7 +138,7 @@
                      <center>
                         <ScrollPane fx:id="desktopSurfaceScrollPane" focusTraversable="true" styleClass="desktop-scroll-pane">
                            <AnchorPane fx:id="desktopSurfacePane" maxHeight="1800.0" maxWidth="2800.0" prefHeight="1800.0" prefWidth="2800.0" styleClass="desktop-area">
-                              <Region fx:id="dropAnimationRegion" layoutX="32.0" layoutY="30.0" mouseTransparent="true" prefHeight="200.0" prefWidth="200.0" styleClass="search-drop-region" />
+                              <Region fx:id="desktopDropRegion" layoutX="24.0" layoutY="24.0" mouseTransparent="true" styleClass="desktop-drop-region" />
                            </AnchorPane>
                         </ScrollPane>
                      </center>
