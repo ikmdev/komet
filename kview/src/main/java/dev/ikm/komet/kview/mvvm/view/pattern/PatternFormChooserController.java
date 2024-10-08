@@ -65,7 +65,7 @@ public class PatternFormChooserController {
     @FXML
     private void showFieldsForm(ActionEvent actionEvent) {
         actionEvent.consume();
-        EvtBusFactory.getDefaultEvtBus().publish(patternTopic, new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_EDIT_FIELDS));
+        EvtBusFactory.getDefaultEvtBus().publish(patternTopic, new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_FIELDS));
     }
 
     @FXML

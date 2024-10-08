@@ -62,8 +62,8 @@ import java.net.URL;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
-import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.ADD_FIELDS;
-import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.ADD_FIELD;
+import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchFieldDefinitionDataTypes;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
@@ -180,19 +180,11 @@ public class PatternFieldsController {
 
         displayNameProp.addListener(fieldsValidationListener);
         dataTypeProp.addListener(fieldsValidationListener);
-        purposeProp.addListener((obs, oldVal, newVal) -> {
-            if(newVal != null){
-                addPurposeToForm(purposeProp.getValue());
-            }
-            fieldsValidationListener.changed(obs, oldVal, newVal);
-        });
+        purposeProp.addListener((obs, oldVal, newVal) -> addPurposeToForm(newVal));
+        purposeProp.addListener(fieldsValidationListener);
 
-        meaningProp.addListener((obs, oldVal, newVal) -> {
-            if(newVal != null){
-                addMeaningToForm(meaningProp.getValue());
-            }
-            fieldsValidationListener.changed(obs, oldVal, newVal);
-        });
+        meaningProp.addListener((obs, oldVal, newVal) -> addMeaningToForm(newVal));
+        meaningProp.addListener(fieldsValidationListener);
 
         totalExistingfields.addListener((obs, oldVal, newVal) -> {
             loadFieldOrderOptions(newVal.intValue());
@@ -363,23 +355,25 @@ public class PatternFieldsController {
      * @param entity
      */
     private void addPurposeToForm(Entity entity) {
-        // load concept item
-        Config config = new Config(SELECTED_CONCEPT_FXML_URL);
-        JFXNode<Node, SelectedConceptController> conceptJFXNode = FXMLMvvmLoader.make(config);
-        SelectedConceptController controller = conceptJFXNode.controller();
+        if(entity != null) {
+            // load concept item
+            Config config = new Config(SELECTED_CONCEPT_FXML_URL);
+            JFXNode<Node, SelectedConceptController> conceptJFXNode = FXMLMvvmLoader.make(config);
+            SelectedConceptController controller = conceptJFXNode.controller();
 
-        // set the entity name
-        controller.setConceptName(entity.description());
+            // set the entity name
+            controller.setConceptName(entity.description());
 
-        // attach the behavior to remove the selected concept to the 'X' close button
-        controller.setCloseButtonAction(event -> removePurpose());
+            // attach the behavior to remove the selected concept to the 'X' close button
+            controller.setCloseButtonAction(event -> removePurpose());
 
-        // set concept's unique identicon
-        controller.setIdenticon(Identicon.generateIdenticonImage(entity.publicId()));
+            // set concept's unique identicon
+            controller.setIdenticon(Identicon.generateIdenticonImage(entity.publicId()));
 
-        selectedPurposeStackPane.getChildren().add(conceptJFXNode.node());
+            selectedPurposeStackPane.getChildren().add(conceptJFXNode.node());
 
-        removePurposeForm();
+            removePurposeForm();
+        }
     }
 
 
@@ -424,23 +418,25 @@ public class PatternFieldsController {
      * @param entity
      */
     private void addMeaningToForm(Entity entity) {
-        // load concept item
-        Config config = new Config(SELECTED_CONCEPT_FXML_URL);
-        JFXNode<Node, SelectedConceptController> conceptJFXNode = FXMLMvvmLoader.make(config);
-        SelectedConceptController controller = conceptJFXNode.controller();
+        if(entity != null) {
+            // load concept item
+            Config config = new Config(SELECTED_CONCEPT_FXML_URL);
+            JFXNode<Node, SelectedConceptController> conceptJFXNode = FXMLMvvmLoader.make(config);
+            SelectedConceptController controller = conceptJFXNode.controller();
 
-        // set the entity name
-        controller.setConceptName(entity.description());
+            // set the entity name
+            controller.setConceptName(entity.description());
 
-        // attach the behavior to remove the selected concept to the 'X' close button
-        controller.setCloseButtonAction(event -> removeMeaning());
+            // attach the behavior to remove the selected concept to the 'X' close button
+            controller.setCloseButtonAction(event -> removeMeaning());
 
-        // set concept's unique identicon
-        controller.setIdenticon(Identicon.generateIdenticonImage(entity.publicId()));
+            // set concept's unique identicon
+            controller.setIdenticon(Identicon.generateIdenticonImage(entity.publicId()));
 
-        selectedMeaningStackPane.getChildren().add(conceptJFXNode.node());
+            selectedMeaningStackPane.getChildren().add(conceptJFXNode.node());
 
-        removeMeaningForm();
+            removeMeaningForm();
+        }
     }
 
     private void removeMeaningForm() {
@@ -525,9 +521,9 @@ public class PatternFieldsController {
         );
 
         // This logic can be improvised.
-        EvtType<PatternFieldsPanelEvent> eventType = EDIT_FIELDS;
-        if(patternFieldsViewModel.getPropertyValue(ADD_EDIT_LABEL).equals("Add Fields")){
-             eventType = ADD_FIELDS;
+        EvtType<PatternFieldsPanelEvent> eventType = EDIT_FIELD;
+        if(patternFieldsViewModel.getPropertyValue(ADD_EDIT_LABEL).equals("Add Field")){
+             eventType = ADD_FIELD;
         }
 
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),

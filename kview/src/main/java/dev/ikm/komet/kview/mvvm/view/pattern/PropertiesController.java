@@ -77,8 +77,8 @@ public class PropertiesController {
 
     private static final String EDIT_OTHER_NAME_TITLE_TEXT = "Edit Description: Edit Other Name";
 
-    private static final String EDIT_FIELDS = "Edit Fields";
-    private static final String ADD_FIELDS = "Add Fields";
+    private static final String EDIT_FIELD = "Edit Field";
+    private static final String ADD_FIELD = "Add Field";
 
     private EvtBus eventBus;
 
@@ -188,7 +188,7 @@ public class PropertiesController {
                 Optional<ViewModel> viewModel = patternFieldsJFXNode.namedViewModels().stream().filter(namedVm -> namedVm.variableName().equals("patternFieldsViewModel")).map(NamedVm::viewModel).findAny();
                 viewModel.ifPresent(model -> {
                     PatternField patternField = evt.getPatternField();
-                    model.setPropertyValue(ADD_EDIT_LABEL, EDIT_FIELDS);
+                    model.setPropertyValue(ADD_EDIT_LABEL, EDIT_FIELD);
                     model.setPropertyValue(TOTAL_EXISTING_FIELDS, evt.getTotalFields()-1);
                     model.setPropertyValue(FIELD_ORDER, evt.getFieldOrder());
                     model.setPropertyValue(DISPLAY_NAME, patternField.displayName());
@@ -201,7 +201,7 @@ public class PropertiesController {
             } else if (evt.getEventType() == SHOW_ADD_FIELDS) {
                 Optional<ViewModel> viewModel = patternFieldsJFXNode.namedViewModels().stream().filter(namedVm -> namedVm.variableName().equals("patternFieldsViewModel")).map(NamedVm::viewModel).findAny();
                 viewModel.ifPresent(model -> {
-                    model.setPropertyValue(ADD_EDIT_LABEL, ADD_FIELDS);
+                    model.setPropertyValue(ADD_EDIT_LABEL, ADD_FIELD);
                     model.setPropertyValue(TOTAL_EXISTING_FIELDS, evt.getTotalFields());
                 });
                 currentEditPane = patternFieldsPane;

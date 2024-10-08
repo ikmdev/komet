@@ -58,7 +58,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*;
@@ -265,8 +265,8 @@ public class PatternDetailsController {
         patternFieldsPanelEventSubscriber = evt -> {
             PatternField patternField = evt.getPatternField();
             int fieldPosition = evt.getCurrentFieldOrder()-1;
-            if(evt.getEventType() == EDIT_FIELDS){
-                //if exiting field is edited, then 1st remove it from list before adding the new entry
+            if(evt.getEventType() == EDIT_FIELD){
+                // 1st remove it from list before adding the new entry
                 patternFieldList.remove(patternViewModel.getPropertyValue(SELECTED_PATTERN_FIELD));
             }
             //Update the fields collection data.
@@ -434,7 +434,6 @@ public class PatternDetailsController {
         outerHBox.getChildren().addAll(innerHBox, commentIconRegion);
         fieldVBoxContainer.getChildren().addAll(fieldLabel, fieldText, outerHBox);
         fieldVBoxContainer.setOnMouseClicked(mouseEvent -> {
-            patternViewModel.setPropertyValue(SELECTED_PATTERN_FIELD, patternField);
             ContextMenu contextMenu = createContextMenuForPatternField (patternField);
             contextMenu.show(fieldVBoxContainer, mouseEvent.getScreenX(),  mouseEvent.getScreenY());
         });
@@ -503,6 +502,7 @@ public class PatternDetailsController {
 
     private void showEditFieldsPanel(ActionEvent actionEvent, PatternField selectedPatternField) {
         LOG.info("Todo show bump out and display Edit Fields panel \n" + actionEvent);
+        patternViewModel.setPropertyValue(SELECTED_PATTERN_FIELD, selectedPatternField );
         ObservableList<PatternField> patternFieldsObsList = patternViewModel.getObservableList(FIELDS_COLLECTION);
         int fieldNum = (patternFieldsObsList.indexOf(selectedPatternField)+1);
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_EDIT_FIELDS, patternFieldsObsList.size(), selectedPatternField, fieldNum));
