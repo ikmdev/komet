@@ -385,18 +385,23 @@ public class JournalController {
             boolean success = false;
             if (dragboard.hasString()) {
                 try {
-                    LOG.info("publicId: " + dragboard.getString());
+                    LOG.info("publicId: {}", dragboard.getString());
 
                     HBox hbox = (HBox) event.getGestureSource();
                     PublicId publicId = (PublicId) hbox.getUserData();
-                    Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+                    Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
 
-                    makeConceptWindow(this.windowView, ConceptFacade.make(entity.nid()));
+                    Map<ConceptWindowSettings, Object> conceptWindowSettingsMap = new HashMap<>();
+                    conceptWindowSettingsMap.put(CONCEPT_XPOS, dropAnimationRegion.getLayoutX());
+                    conceptWindowSettingsMap.put(CONCEPT_YPOS, dropAnimationRegion.getLayoutY());
+                    conceptWindowSettingsMap.put(CONCEPT_WIDTH, dropAnimationRegion.getWidth());
+                    conceptWindowSettingsMap.put(CONCEPT_HEIGHT, dropAnimationRegion.getHeight());
+                    makeConceptWindow(windowView, ConceptFacade.make(entity.nid()), conceptWindowSettingsMap);
 
                     consumer.accept(publicId);
                     success = true;
-                } catch (Exception e) {
-                    LOG.error("exception: ", e);
+                } catch (Exception ex) {
+                    LOG.error("Error while dropping concept: ", ex);
                 }
             }
 
@@ -656,8 +661,12 @@ public class JournalController {
         makeConceptWindow(windowView, conceptFacade, NID_TEXT, null);
     }
 
-    private void makeConceptWindow(ObservableViewNoOverride windowView, ConceptFacade conceptFacade, NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
+    private void makeConceptWindow(ObservableViewNoOverride windowView, ConceptFacade conceptFacade, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
+        // This is our overloaded method to call makeConceptWindow when the settings map is available.
+        makeConceptWindow(windowView, conceptFacade, NID_TEXT, conceptWindowSettingsMap);
+    }
 
+    private void makeConceptWindow(ObservableViewNoOverride windowView, ConceptFacade conceptFacade, NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
         // each detail window will publish on their own activity stream.
         String uniqueDetailsTopic = "details-%s".formatted(conceptFacade.nid());
         UUID uuid = UuidT5Generator.get(uniqueDetailsTopic);
@@ -702,15 +711,15 @@ public class JournalController {
         conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, conceptFacade.nid(), kometNodePanel));
 
         //Calls the remove method to remove and concepts that were closed by the user.
-        detailsNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent -> {
-            removeConceptSetting(finalConceptFolderName, detailsNode);
-        });
+        detailsNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent ->
+                removeConceptSetting(finalConceptFolderName, detailsNode));
+
         //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
         if (conceptWindowSettingsMap != null) {
-            kometNodePanel.setPrefHeight((Double)conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
-            kometNodePanel.setPrefWidth((Double)conceptWindowSettingsMap.get(CONCEPT_WIDTH));
             kometNodePanel.setTranslateX((Double)conceptWindowSettingsMap.get(CONCEPT_XPOS));
             kometNodePanel.setTranslateY((Double)conceptWindowSettingsMap.get(CONCEPT_YPOS));
+            kometNodePanel.setPrefWidth((Double)conceptWindowSettingsMap.get(CONCEPT_WIDTH));
+            kometNodePanel.setPrefHeight((Double)conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
         }
     }
 
