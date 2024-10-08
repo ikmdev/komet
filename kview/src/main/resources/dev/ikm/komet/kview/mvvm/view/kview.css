@@ -2864,7 +2864,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-min-width: 212px;
 }
 
-.search-drop-region {
+.desktop-drop-region {
     -height: 940px;
     -width: 672px;
     -fx-min-width: -width;

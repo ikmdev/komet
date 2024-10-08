@@ -152,7 +152,7 @@ public class JournalController {
     private AnchorPane desktopSurfacePane;
 
     @FXML
-    private Region dropAnimationRegion;
+    private Region desktopDropRegion;
 
     @FXML
     private MenuItem newConceptMenuItem;
@@ -316,7 +316,7 @@ public class JournalController {
         journalEventBus.subscribe(JOURNAL_TOPIC, CloseReasonerPanelEvent.class, closeReasonerPanelEventSubscriber);
 
         // initially drop region is invisible
-        dropAnimationRegion.setVisible(false);
+        desktopDropRegion.setVisible(false);
 
         // initialize drag and drop for search results of next gen search
         setupDragNDrop(desktopSurfacePane, (publicId) -> {});
@@ -364,7 +364,7 @@ public class JournalController {
     }
 
     private void setupDragNDrop(Node node, Consumer<PublicId> consumer) {
-        node.setOnDragEntered(event -> dropAnimationRegion.setVisible(true));
+        node.setOnDragEntered(event -> desktopDropRegion.setVisible(true));
 
         node.setOnDragOver(event -> {
             /* data is dragged over the target */
@@ -378,7 +378,7 @@ public class JournalController {
             event.consume();
         });
 
-        node.setOnDragExited(event -> dropAnimationRegion.setVisible(false));
+        node.setOnDragExited(event -> desktopDropRegion.setVisible(false));
 
         node.setOnDragDropped(event -> {
             /* data dropped */
@@ -408,10 +408,10 @@ public class JournalController {
                     Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
 
                     Map<ConceptWindowSettings, Object> conceptWindowSettingsMap = new HashMap<>();
-                    conceptWindowSettingsMap.put(CONCEPT_XPOS, dropAnimationRegion.getLayoutX());
-                    conceptWindowSettingsMap.put(CONCEPT_YPOS, dropAnimationRegion.getLayoutY());
-                    conceptWindowSettingsMap.put(CONCEPT_WIDTH, dropAnimationRegion.getWidth());
-                    conceptWindowSettingsMap.put(CONCEPT_HEIGHT, dropAnimationRegion.getHeight());
+                    conceptWindowSettingsMap.put(CONCEPT_XPOS, desktopDropRegion.getLayoutX());
+                    conceptWindowSettingsMap.put(CONCEPT_YPOS, desktopDropRegion.getLayoutY());
+                    conceptWindowSettingsMap.put(CONCEPT_WIDTH, desktopDropRegion.getWidth());
+                    conceptWindowSettingsMap.put(CONCEPT_HEIGHT, desktopDropRegion.getHeight());
                     makeConceptWindow(windowView, ConceptFacade.make(entity.nid()), conceptWindowSettingsMap);
 
                     consumer.accept(publicId);
@@ -426,7 +426,7 @@ public class JournalController {
             event.setDropCompleted(success);
 
             event.consume();
-            dropAnimationRegion.setVisible(false);
+            desktopDropRegion.setVisible(false);
         });
 
         // by default hide progress toggle button
