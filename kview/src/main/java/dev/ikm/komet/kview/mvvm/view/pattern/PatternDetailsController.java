@@ -37,8 +37,19 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.TilePane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.FillRule;
 import javafx.scene.shape.SVGPath;
@@ -116,7 +127,10 @@ public class PatternDetailsController {
     @FXML
     private Text semanticPurposeText;
 
-    // pattern defintion fields
+    @FXML
+    private Button savePatternButton;
+
+    // pattern definition fields
     @FXML
     private Text meaningText;
 
@@ -199,6 +213,8 @@ public class PatternDetailsController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PropertyPanelEvent.class, patternPropertiesEventSubscriber);
 
+        savePatternButton.disableProperty().bind(patternViewModel.getProperty(IS_INVALID));
+
         // capture pattern definition information
         purposeText.textProperty().bind(patternViewModel.getProperty(PURPOSE_TEXT));
         purposeText.getStyleClass().add("text-noto-sans-bold-grey-twelve");
@@ -209,13 +225,9 @@ public class PatternDetailsController {
         meaningDate.textProperty().bind(patternViewModel.getProperty(MEANING_DATE_STR));
         purposeDate.textProperty().bind(patternViewModel.getProperty(PURPOSE_DATE_STR));
 
-        patternDefinitionEventSubscriber = evt -> {
-            patternViewModel.setPurposeAndMeaningText(evt.getPatternDefinition());
-        };
-        EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
+        patternDefinitionEventSubscriber = evt -> patternViewModel.setPurposeAndMeaningText(evt.getPatternDefinition());
 
-        meaningDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
-        purposeDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
+        EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
 
         // capture descriptions information
         StringProperty fqnTextProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
@@ -223,11 +235,13 @@ public class PatternDetailsController {
 
         // This will listen to the pattern descriptions event. Adding an FQN, Adding other name.
         patternDescriptionEventSubscriber = evt -> {
+            DescrName descrName = evt.getDescrName();
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_FQN) {
                 // This if is invoked when the data is coming from FQN name screen.
-                DescrName descrName = evt.getDescrName();
                 patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, descrName.getNameText());
                 patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME, descrName);
+                patternViewModel.setPropertyValue(FQN_CASE_SIGNIFICANCE, descrName.getCaseSignificance());
+                patternViewModel.setPropertyValue(FQN_LANGUAGE, descrName.getLanguage());
             } else if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
                 // This if is invoked when the data is coming from Other Name screen.
                 ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
@@ -271,6 +285,8 @@ public class PatternDetailsController {
             }
             //Update the fields collection data.
             patternFieldList.add(fieldPosition, patternField);
+             // save and therefore validate
+            patternViewModel.save();
         };
 
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
@@ -596,5 +612,11 @@ public class PatternDetailsController {
         putArrowOnRight(this.patternDefinitionTitledPane);
         putArrowOnRight(this.descriptionsTitledPane);
         putArrowOnRight(this.fieldsTitledPane);
+    }
+
+    @FXML
+    private void savePattern(ActionEvent actionEvent) {
+        boolean isValidSave = patternViewModel.createPattern();
+        LOG.info(isValidSave ? "success" : "failed");
     }
 }
