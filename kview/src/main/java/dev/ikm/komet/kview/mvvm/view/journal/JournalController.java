@@ -26,6 +26,7 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.events.appevents.ProgressEvent;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.framework.tabs.DetachableTab;
 import dev.ikm.komet.framework.tabs.TabGroup;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
@@ -51,6 +52,7 @@ import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
+import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
 import dev.ikm.komet.preferences.ConceptWindowSettings;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
@@ -387,8 +389,22 @@ public class JournalController {
                 try {
                     LOG.info("publicId: {}", dragboard.getString());
 
-                    HBox hbox = (HBox) event.getGestureSource();
-                    PublicId publicId = (PublicId) hbox.getUserData();
+                    ConceptFacade conceptFacade = null;
+                    if (event.getGestureSource() instanceof SearchResultCell searchResultCell) {
+                        SearchPanelController.NidTextRecord nidTextRecord =
+                                (SearchPanelController.NidTextRecord) searchResultCell.getItem();
+                        conceptFacade = ConceptFacade.make(nidTextRecord.nid());
+                    } else if (event.getGestureSource() instanceof MultiParentGraphCell multiParentGraphCell) {
+                        conceptFacade = multiParentGraphCell.getItem();
+                    } else if (event.getGestureSource() instanceof Node sourceNode) {
+                        conceptFacade = (ConceptFacade) sourceNode.getUserData();
+                    }
+
+                    if (conceptFacade == null) {
+                        return;
+                    }
+
+                    PublicId publicId = conceptFacade.publicId();
                     Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
 
                     Map<ConceptWindowSettings, Object> conceptWindowSettingsMap = new HashMap<>();
@@ -410,7 +426,7 @@ public class JournalController {
             event.setDropCompleted(success);
 
             event.consume();
-            Platform.runLater(() -> dropAnimationRegion.setVisible(false));
+            dropAnimationRegion.setVisible(false);
         });
 
         // by default hide progress toggle button
