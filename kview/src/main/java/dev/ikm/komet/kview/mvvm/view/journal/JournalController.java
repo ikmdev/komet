@@ -26,6 +26,7 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.events.appevents.ProgressEvent;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.framework.tabs.DetachableTab;
 import dev.ikm.komet.framework.tabs.TabGroup;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
@@ -51,6 +52,7 @@ import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
+import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
 import dev.ikm.komet.preferences.ConceptWindowSettings;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
@@ -150,7 +152,7 @@ public class JournalController {
     private AnchorPane desktopSurfacePane;
 
     @FXML
-    private Region dropAnimationRegion;
+    private Region desktopDropRegion;
 
     @FXML
     private MenuItem newConceptMenuItem;
@@ -314,7 +316,7 @@ public class JournalController {
         journalEventBus.subscribe(JOURNAL_TOPIC, CloseReasonerPanelEvent.class, closeReasonerPanelEventSubscriber);
 
         // initially drop region is invisible
-        dropAnimationRegion.setVisible(false);
+        desktopDropRegion.setVisible(false);
 
         // initialize drag and drop for search results of next gen search
         setupDragNDrop(desktopSurfacePane, (publicId) -> {});
@@ -362,7 +364,7 @@ public class JournalController {
     }
 
     private void setupDragNDrop(Node node, Consumer<PublicId> consumer) {
-        node.setOnDragEntered(event -> dropAnimationRegion.setVisible(true));
+        node.setOnDragEntered(event -> desktopDropRegion.setVisible(true));
 
         node.setOnDragOver(event -> {
             /* data is dragged over the target */
@@ -376,7 +378,7 @@ public class JournalController {
             event.consume();
         });
 
-        node.setOnDragExited(event -> dropAnimationRegion.setVisible(false));
+        node.setOnDragExited(event -> desktopDropRegion.setVisible(false));
 
         node.setOnDragDropped(event -> {
             /* data dropped */
@@ -385,18 +387,37 @@ public class JournalController {
             boolean success = false;
             if (dragboard.hasString()) {
                 try {
-                    LOG.info("publicId: " + dragboard.getString());
+                    LOG.info("publicId: {}", dragboard.getString());
 
-                    HBox hbox = (HBox) event.getGestureSource();
-                    PublicId publicId = (PublicId) hbox.getUserData();
-                    Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+                    ConceptFacade conceptFacade = null;
+                    if (event.getGestureSource() instanceof SearchResultCell searchResultCell) {
+                        SearchPanelController.NidTextRecord nidTextRecord =
+                                (SearchPanelController.NidTextRecord) searchResultCell.getItem();
+                        conceptFacade = ConceptFacade.make(nidTextRecord.nid());
+                    } else if (event.getGestureSource() instanceof MultiParentGraphCell multiParentGraphCell) {
+                        conceptFacade = multiParentGraphCell.getItem();
+                    } else if (event.getGestureSource() instanceof Node sourceNode) {
+                        conceptFacade = (ConceptFacade) sourceNode.getUserData();
+                    }
 
-                    makeConceptWindow(this.windowView, ConceptFacade.make(entity.nid()));
+                    if (conceptFacade == null) {
+                        return;
+                    }
+
+                    PublicId publicId = conceptFacade.publicId();
+                    Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+
+                    Map<ConceptWindowSettings, Object> conceptWindowSettingsMap = new HashMap<>();
+                    conceptWindowSettingsMap.put(CONCEPT_XPOS, desktopDropRegion.getLayoutX());
+                    conceptWindowSettingsMap.put(CONCEPT_YPOS, desktopDropRegion.getLayoutY());
+                    conceptWindowSettingsMap.put(CONCEPT_WIDTH, desktopDropRegion.getWidth());
+                    conceptWindowSettingsMap.put(CONCEPT_HEIGHT, desktopDropRegion.getHeight());
+                    makeConceptWindow(windowView, ConceptFacade.make(entity.nid()), conceptWindowSettingsMap);
 
                     consumer.accept(publicId);
                     success = true;
-                } catch (Exception e) {
-                    LOG.error("exception: ", e);
+                } catch (Exception ex) {
+                    LOG.error("Error while dropping concept: ", ex);
                 }
             }
 
@@ -405,7 +426,7 @@ public class JournalController {
             event.setDropCompleted(success);
 
             event.consume();
-            Platform.runLater(() -> dropAnimationRegion.setVisible(false));
+            desktopDropRegion.setVisible(false);
         });
 
         // by default hide progress toggle button
@@ -656,8 +677,12 @@ public class JournalController {
         makeConceptWindow(windowView, conceptFacade, NID_TEXT, null);
     }
 
-    private void makeConceptWindow(ObservableViewNoOverride windowView, ConceptFacade conceptFacade, NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
+    private void makeConceptWindow(ObservableViewNoOverride windowView, ConceptFacade conceptFacade, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
+        // This is our overloaded method to call makeConceptWindow when the settings map is available.
+        makeConceptWindow(windowView, conceptFacade, NID_TEXT, conceptWindowSettingsMap);
+    }
 
+    private void makeConceptWindow(ObservableViewNoOverride windowView, ConceptFacade conceptFacade, NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
         // each detail window will publish on their own activity stream.
         String uniqueDetailsTopic = "details-%s".formatted(conceptFacade.nid());
         UUID uuid = UuidT5Generator.get(uniqueDetailsTopic);
@@ -688,8 +713,9 @@ public class JournalController {
 
         // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
         Optional<String> conceptFolderName;
-        if (conceptWindowSettingsMap != null){
-            conceptFolderName = (Optional<String>) conceptWindowSettingsMap.getOrDefault(CONCEPT_PREF_NAME, CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
+        if (conceptWindowSettingsMap != null) {
+            conceptFolderName = Optional.of(String.valueOf(conceptWindowSettingsMap.getOrDefault(CONCEPT_PREF_NAME,
+                    CONCEPT_FOLDER_PREFIX + UUID.randomUUID())));
         } else {
             conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
             // create a conceptWindowSettingsMap
@@ -702,15 +728,15 @@ public class JournalController {
         conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, conceptFacade.nid(), kometNodePanel));
 
         //Calls the remove method to remove and concepts that were closed by the user.
-        detailsNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent -> {
-            removeConceptSetting(finalConceptFolderName, detailsNode);
-        });
+        detailsNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent ->
+                removeConceptSetting(finalConceptFolderName, detailsNode));
+
         //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
         if (conceptWindowSettingsMap != null) {
-            kometNodePanel.setPrefHeight((Double)conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
-            kometNodePanel.setPrefWidth((Double)conceptWindowSettingsMap.get(CONCEPT_WIDTH));
             kometNodePanel.setTranslateX((Double)conceptWindowSettingsMap.get(CONCEPT_XPOS));
             kometNodePanel.setTranslateY((Double)conceptWindowSettingsMap.get(CONCEPT_YPOS));
+            kometNodePanel.setPrefWidth((Double)conceptWindowSettingsMap.get(CONCEPT_WIDTH));
+            kometNodePanel.setPrefHeight((Double)conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
         }
     }
 
