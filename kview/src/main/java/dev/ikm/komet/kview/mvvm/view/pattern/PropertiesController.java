@@ -24,6 +24,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
+import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
 import javafx.event.ActionEvent;
@@ -49,7 +50,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.TOTAL_EXISTING_FIELDS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
@@ -75,6 +76,9 @@ public class PropertiesController {
     private static final String ADD_OTHER_NAME_TITLE_TEXT = "Add Description: Add Other Name";
 
     private static final String EDIT_OTHER_NAME_TITLE_TEXT = "Edit Description: Edit Other Name";
+
+    private static final String EDIT_FIELD = "Edit Field";
+    private static final String ADD_FIELD = "Add Field";
 
     private EvtBus eventBus;
 
@@ -180,8 +184,29 @@ public class PropertiesController {
             if (evt.getEventType() == SHOW_ADD_DEFINITION) {
                 currentEditPane = patternDefinitionPane; // must be available.
             } else if (evt.getEventType() == SHOW_EDIT_FIELDS) {
+                //Set the field values for edit.
                 Optional<ViewModel> viewModel = patternFieldsJFXNode.namedViewModels().stream().filter(namedVm -> namedVm.variableName().equals("patternFieldsViewModel")).map(NamedVm::viewModel).findAny();
-                viewModel.ifPresent(model -> model.setPropertyValue(TOTAL_EXISTING_FIELDS, evt.getTotalFields()));
+                viewModel.ifPresent(model -> {
+                    PatternField patternField = evt.getPatternField();
+                    model.setPropertyValue(ADD_EDIT_LABEL, EDIT_FIELD);
+                    model.setPropertyValue(TOTAL_EXISTING_FIELDS, evt.getTotalFields()-1);
+                    model.setPropertyValue(FIELD_ORDER, evt.getFieldOrder());
+                    model.setPropertyValue(DISPLAY_NAME, patternField.displayName());
+                    model.setPropertyValue(DATA_TYPE, patternField.dataType());
+                    model.setPropertyValue(PURPOSE_ENTITY, patternField.purpose());
+                    model.setPropertyValue(MEANING_ENTITY, patternField.meaning());
+                    model.setPropertyValue(COMMENTS, patternField.comments());
+                    model.setPropertyValue(PREVIOUS_PATTERN_FIELD, patternField);
+                });
+                currentEditPane = patternFieldsPane;
+            } else if (evt.getEventType() == SHOW_ADD_FIELDS) {
+                Optional<ViewModel> viewModel = patternFieldsJFXNode.namedViewModels().stream().filter(namedVm -> namedVm.variableName().equals("patternFieldsViewModel")).map(NamedVm::viewModel).findAny();
+                viewModel.ifPresent(model -> {
+                    PatternField patternField = evt.getPatternField();
+                    model.setPropertyValue(ADD_EDIT_LABEL, ADD_FIELD);
+                    model.setPropertyValue(TOTAL_EXISTING_FIELDS, evt.getTotalFields());
+                    model.setPropertyValue(PREVIOUS_PATTERN_FIELD, patternField);
+                });
                 currentEditPane = patternFieldsPane;
             } else if (evt.getEventType().getSuperType() == DESCRIPTION_NAME) {
                 setupDescriptionNamePane(evt.getEventType());

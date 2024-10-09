@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -29,6 +30,8 @@ import java.util.ArrayList;
 public class PatternFieldsViewModel extends FormViewModel {
 
     private static final Logger LOG = LoggerFactory.getLogger(PatternFieldsViewModel.class);
+
+    public static String ADD_EDIT_LABEL = "addEditLabel";
 
     public static String TOTAL_EXISTING_FIELDS = "totalExistingFields";
 
@@ -46,12 +49,15 @@ public class PatternFieldsViewModel extends FormViewModel {
 
     public static String COMMENTS = "comments";
 
+    public static String PREVIOUS_PATTERN_FIELD = "previousPatternField";
+
     public static final String IS_INVALID = "isInvalid";
 
     public PatternFieldsViewModel() {
         super();
-        addProperty(VIEW_PROPERTIES, (ViewProperties) null)
-                .addProperty(FIELD_ORDER, 1) // default to 1, in create mode they will create the first one
+        addProperty(ADD_EDIT_LABEL, "") // Used to update the heading for the properties page.
+                .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+                .addProperty(FIELD_ORDER, (Integer) 1) // This has to cast to Integer since the default is Number
                 .addProperty(DISPLAY_NAME, "")
                 .addValidator(DISPLAY_NAME, "Display Name", (ReadOnlyStringProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
                     if (prop.isEmpty().get()) {
@@ -80,6 +86,7 @@ public class PatternFieldsViewModel extends FormViewModel {
                 .addProperty(IS_INVALID, true)
                 .addProperty(TOTAL_EXISTING_FIELDS, 0)
                 .addProperty(FIELD_ORDER_OPTIONS, new ArrayList<Integer>())
+                .addProperty(PREVIOUS_PATTERN_FIELD, (PatternField) null)
         ;
     }
 }
