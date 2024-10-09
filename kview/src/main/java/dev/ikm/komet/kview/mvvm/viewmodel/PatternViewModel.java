@@ -15,7 +15,11 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 import static dev.ikm.tinkar.terms.EntityProxy.Concept;
 import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
 import static dev.ikm.tinkar.terms.TinkarTerm.ACCEPTABLE;
@@ -26,7 +30,6 @@ import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.composer.Composer;
 import dev.ikm.tinkar.composer.Session;
 import dev.ikm.tinkar.composer.assembler.PatternAssembler;
@@ -39,7 +42,6 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableList;
 import org.carlfx.cognitive.validator.ValidationMessage;
@@ -49,8 +51,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.OptionalLong;
