@@ -755,18 +755,13 @@ public class PatternDetailsController {
     }
 
     private void updatePatternBanner() {
-        EntityFacade patternFacade = patternViewModel.getPropertyValue(PATTERN);
-
         // update the title to the FQN
-        patternTitleText.setText(patternFacade.description());
+        patternTitleText.setText(patternViewModel.getPatternTitle());
 
         // get the latest stamp time
-        Entity pattern = EntityService.get().getEntityFast(patternFacade.nid());
-        IntIdSet idSet = pattern.stampNids();
-        OptionalLong latestStamp = idSet.intStream().mapToLong(i -> ((StampEntity)EntityService.get().getEntityFast(i)).time()).max();
-        lastUpdatedText.setText(DateTimeUtil.format(latestStamp.getAsLong()));
+        updateUIStamp(getStampViewModel());
 
         // update the public id
-        identifierText.setText(String.valueOf(patternFacade.toProxy().publicId().asUuidList().getLastOptional().get()));
+        identifierText.setText(patternViewModel.getPatternIdentifierText());
     }
 }
