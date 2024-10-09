@@ -40,6 +40,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_DATE_STR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAMES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_DATE_STR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_TEXT;
@@ -63,8 +64,16 @@ import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
+import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
@@ -82,6 +91,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.BorderPane;
@@ -114,6 +124,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalLong;
 import java.util.function.Consumer;
 
 public class PatternDetailsController {
@@ -143,6 +154,9 @@ public class PatternDetailsController {
 
     @FXML
     private Label patternTitleText;
+
+    @FXML
+    private TextField identifierText;
 
     @FXML
     private Text lastUpdatedText;
@@ -248,7 +262,7 @@ public class PatternDetailsController {
 
     @FXML
     private void initialize() {
-
+        identifierText.setText("");
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
         otherNamesVBox.getChildren().clear();
@@ -737,5 +751,22 @@ public class PatternDetailsController {
     private void savePattern(ActionEvent actionEvent) {
         boolean isValidSave = patternViewModel.createPattern();
         LOG.info(isValidSave ? "success" : "failed");
+        updatePatternBanner();
+    }
+
+    private void updatePatternBanner() {
+        EntityFacade patternFacade = patternViewModel.getPropertyValue(PATTERN);
+
+        // update the title to the FQN
+        patternTitleText.setText(patternFacade.description());
+
+        // get the latest stamp time
+        Entity pattern = EntityService.get().getEntityFast(patternFacade.nid());
+        IntIdSet idSet = pattern.stampNids();
+        OptionalLong latestStamp = idSet.intStream().mapToLong(i -> ((StampEntity)EntityService.get().getEntityFast(i)).time()).max();
+        lastUpdatedText.setText(DateTimeUtil.format(latestStamp.getAsLong()));
+
+        // update the public id
+        identifierText.setText(String.valueOf(patternFacade.toProxy().publicId().asUuidList().getLastOptional().get()));
     }
 }
