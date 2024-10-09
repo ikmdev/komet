@@ -278,10 +278,11 @@ public class PatternDetailsController {
         ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
         patternFieldsPanelEventSubscriber = evt -> {
             PatternField patternField = evt.getPatternField();
+            PatternField previousPatternField = evt.getPreviousPatternField();
             int fieldPosition = evt.getCurrentFieldOrder()-1;
-            if(evt.getEventType() == EDIT_FIELD){
+            if(evt.getEventType() == EDIT_FIELD && previousPatternField != null){
                 // 1st remove it from list before adding the new entry
-                patternFieldList.remove(patternViewModel.getPropertyValue(SELECTED_PATTERN_FIELD));
+                patternFieldList.remove(previousPatternField);
             }
             //Update the fields collection data.
             patternFieldList.add(fieldPosition, patternField);

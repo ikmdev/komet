@@ -28,6 +28,7 @@ public class PatternFieldsPanelEvent extends Evt {
     public static final EvtType<PatternFieldsPanelEvent> ADD_FIELD = new EvtType<>(PATTERN_FIELDS, "ADD_FIELD");
 
     private final PatternField patternField;
+    private final PatternField previousPatternField;
     private final int currentFieldOrder;
 
     /**
@@ -37,14 +38,19 @@ public class PatternFieldsPanelEvent extends Evt {
      * @param eventType
      * @throws IllegalArgumentException if source is null
      */
-    public PatternFieldsPanelEvent(Object source, EvtType eventType, PatternField patternField, int currentFieldOrder) {
+    public PatternFieldsPanelEvent(Object source, EvtType eventType, PatternField patternField, PatternField previousPatternField, int currentFieldOrder) {
         super(source, eventType);
         this.patternField = patternField;
+        this.previousPatternField = previousPatternField;
         this.currentFieldOrder = currentFieldOrder;
     }
 
     public PatternField getPatternField() {
         return patternField;
+    }
+
+    public PatternField getPreviousPatternField(){
+        return previousPatternField;
     }
 
     public int getCurrentFieldOrder(){

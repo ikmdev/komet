@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -47,6 +48,8 @@ public class PatternFieldsViewModel extends FormViewModel {
     public static String MEANING_ENTITY = "meaningEntity";
 
     public static String COMMENTS = "comments";
+
+    public static String PREVIOUS_PATTERN_FIELD = "previousPatternField";
 
     public static final String IS_INVALID = "isInvalid";
 
@@ -83,6 +86,7 @@ public class PatternFieldsViewModel extends FormViewModel {
                 .addProperty(IS_INVALID, true)
                 .addProperty(TOTAL_EXISTING_FIELDS, 0)
                 .addProperty(FIELD_ORDER_OPTIONS, new ArrayList<Integer>())
+                .addProperty(PREVIOUS_PATTERN_FIELD, (PatternField) null)
         ;
     }
 }

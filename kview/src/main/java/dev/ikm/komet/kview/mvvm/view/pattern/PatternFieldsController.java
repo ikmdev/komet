@@ -479,6 +479,7 @@ public class PatternFieldsController {
         patternFieldsViewModel.setPropertyValue(FIELD_ORDER, 1);
         patternFieldsViewModel.setPropertyValue(DISPLAY_NAME, "");
         patternFieldsViewModel.setPropertyValue(DATA_TYPE, null);
+        patternFieldsViewModel.setPropertyValue(PREVIOUS_PATTERN_FIELD, null);
         removePurpose();
         removeMeaning();
         patternFieldsViewModel.save(true);
@@ -520,14 +521,16 @@ public class PatternFieldsController {
                 patternFieldsViewModel.getValue(COMMENTS)
         );
 
+        PatternField previousPatternField = patternFieldsViewModel.getValue(PREVIOUS_PATTERN_FIELD);
+
         // This logic can be improvised.
         EvtType<PatternFieldsPanelEvent> eventType = EDIT_FIELD;
-        if(patternFieldsViewModel.getPropertyValue(ADD_EDIT_LABEL).equals("Add Field")){
+        if(previousPatternField == null){
              eventType = ADD_FIELD;
         }
 
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
-                new PatternFieldsPanelEvent(actionEvent.getSource(), eventType, patternField, patternFieldsViewModel.getValue(FIELD_ORDER)));
+                new PatternFieldsPanelEvent(actionEvent.getSource(), eventType, patternField, previousPatternField, patternFieldsViewModel.getValue(FIELD_ORDER)));
 
         clearView(actionEvent);
     }

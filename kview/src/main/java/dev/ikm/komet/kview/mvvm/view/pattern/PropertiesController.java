@@ -196,13 +196,16 @@ public class PropertiesController {
                     model.setPropertyValue(PURPOSE_ENTITY, patternField.purpose());
                     model.setPropertyValue(MEANING_ENTITY, patternField.meaning());
                     model.setPropertyValue(COMMENTS, patternField.comments());
+                    model.setPropertyValue(PREVIOUS_PATTERN_FIELD, patternField);
                 });
                 currentEditPane = patternFieldsPane;
             } else if (evt.getEventType() == SHOW_ADD_FIELDS) {
                 Optional<ViewModel> viewModel = patternFieldsJFXNode.namedViewModels().stream().filter(namedVm -> namedVm.variableName().equals("patternFieldsViewModel")).map(NamedVm::viewModel).findAny();
                 viewModel.ifPresent(model -> {
+                    PatternField patternField = evt.getPatternField();
                     model.setPropertyValue(ADD_EDIT_LABEL, ADD_FIELD);
                     model.setPropertyValue(TOTAL_EXISTING_FIELDS, evt.getTotalFields());
+                    model.setPropertyValue(PREVIOUS_PATTERN_FIELD, patternField);
                 });
                 currentEditPane = patternFieldsPane;
             } else if (evt.getEventType().getSuperType() == DESCRIPTION_NAME) {
