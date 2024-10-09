@@ -210,7 +210,7 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
-                <Label alignment="TOP_CENTER" styleClass="lidr-device-title-label" text="Add Fields" textAlignment="CENTER">
+                <Label fx:id="addEditLabel" alignment="TOP_CENTER" styleClass="lidr-device-title-label" text="Add Fields" textAlignment="CENTER">
                     <GridPane.margin>
                         <Insets left="28.0" />
                     </GridPane.margin>
