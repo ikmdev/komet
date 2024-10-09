@@ -2864,20 +2864,21 @@ Timeline Year line segment (will overlay change circles)
     -fx-min-width: 212px;
 }
 
-.search-drop-region {
-    -height: 840px;
+.desktop-drop-region {
+    -height: 940px;
     -width: 672px;
-    -fx-min-height: -height;
-    -fx-pref-height: -height;
     -fx-min-width: -width;
+    -fx-min-height: -height;
     -fx-pref-width: -width;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-stroke: -Primary-04;
+    -fx-pref-height: -height;
     -fx-border-color: -Primary-04;
+    -fx-border-radius: 8;
     -fx-border-width: 4;
-    -fx-border-style: dashed;
-    -fx-background-color: rgba(255, 255, 255, 0.50);    
+    -fx-border-style: segments(12, 16) phase -8 line-join round line-cap round;
+    -fx-background-radius: 8;
+    -fx-background-insets: 0, 4;
+    /* The second color is obtained as a result of blending the current workspace background color and the white color with 50% opacity */
+    -fx-background-color: white, #e5e9f1;
 }
 
 /* Styles title text inside the content of TitlePane. eg: DESCRIPTION , Fully Qualified Name.*/
