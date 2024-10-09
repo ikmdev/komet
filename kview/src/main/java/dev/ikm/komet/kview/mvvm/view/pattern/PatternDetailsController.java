@@ -639,6 +639,9 @@ public class PatternDetailsController {
 
         stampEditController.updateModel(getViewProperties());
 
+        // default the status=Active, disable inactive
+        stampEditController.selectActiveStatusToggle();
+
         popOver.setOnHidden(windowEvent -> {
             // set Stamp info into Details form
             getStampViewModel().save();

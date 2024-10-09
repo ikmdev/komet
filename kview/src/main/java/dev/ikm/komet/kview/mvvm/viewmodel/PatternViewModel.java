@@ -85,6 +85,8 @@ public class PatternViewModel extends FormViewModel {
 
     public static String MEANING_DATE_STR = "meaningDateStr";
 
+    public static String PATTERN = "pattern";
+
     public static String IS_INVALID = "IS_INVALID";
 
     // Used to load the values in the PatternField controller from PatternDetailsController.
@@ -111,6 +113,7 @@ public class PatternViewModel extends FormViewModel {
                     .addProperty(FIELDS_COLLECTION, new ArrayList<PatternField>())
                     .addProperty(SELECTED_PATTERN_FIELD, (PatternField) null)
                     .addProperty(IS_INVALID, true)
+                    .addProperty(PATTERN, (EntityFacade) null) // once saved, this is the pattern facade
                     .addValidator(IS_INVALID, "Is Invalid", (ValidationResult vr, ViewModel viewModel) -> {
                         ObjectProperty<EntityFacade> purposeEntity = viewModel.getProperty(PURPOSE_ENTITY);
                         ObjectProperty<EntityFacade> meaningEntity = viewModel.getProperty(MEANING_ENTITY);
@@ -210,7 +213,8 @@ public class PatternViewModel extends FormViewModel {
                                     .acceptability(ACCEPTABLE))
             );
         }
-
-        return composer.commitSession(session);
+        boolean isSuccess = composer.commitSession(session);
+        setPropertyValue(PATTERN, pattern);
+        return isSuccess;
     }
 }
