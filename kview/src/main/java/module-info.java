@@ -26,6 +26,7 @@ module dev.ikm.komet.kview {
     requires dev.ikm.komet.classification;
     requires dev.ikm.komet.progress;
     requires org.carlfx.cognitive;
+    requires dev.ikm.tinkar.composer;
 
     opens dev.ikm.komet.kview.mvvm.view.details to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.details;
