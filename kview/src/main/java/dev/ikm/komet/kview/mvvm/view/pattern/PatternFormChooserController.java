@@ -15,10 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.DESCRIPTION_NAME;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_DEFINITION;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FIELDS;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
@@ -27,6 +23,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 
 import java.util.UUID;
+
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*;
 
 public class PatternFormChooserController {
 
@@ -66,7 +65,7 @@ public class PatternFormChooserController {
     @FXML
     private void showFieldsForm(ActionEvent actionEvent) {
         actionEvent.consume();
-        EvtBusFactory.getDefaultEvtBus().publish(patternTopic, new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_EDIT_FIELDS));
+        EvtBusFactory.getDefaultEvtBus().publish(patternTopic, new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_FIELDS));
     }
 
     @FXML

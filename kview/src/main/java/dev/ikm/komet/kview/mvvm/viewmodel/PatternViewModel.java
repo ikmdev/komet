@@ -96,6 +96,9 @@ public class PatternViewModel extends FormViewModel {
 
     public static String IS_INVALID = "IS_INVALID";
 
+    // Used to load the values in the PatternField controller from PatternDetailsController.
+    public static String SELECTED_PATTERN_FIELD = "selectedPatternField";
+
     public PatternViewModel() {
         super();
             addProperty(VIEW_PROPERTIES, (ViewProperties) null)
@@ -115,6 +118,7 @@ public class PatternViewModel extends FormViewModel {
                     .addProperty(FQN_DESCRIPTION_NAME_TEXT, "")
                     // Ordered collection of Fields
                     .addProperty(FIELDS_COLLECTION, new ArrayList<PatternField>())
+                    .addProperty(SELECTED_PATTERN_FIELD, (PatternField) null)
                     .addProperty(IS_INVALID, true)
                     .addValidator(IS_INVALID, "Is Invalid", (ValidationResult vr, ViewModel viewModel) -> {
                         ObjectProperty<EntityFacade> purposeEntity = viewModel.getProperty(PURPOSE_ENTITY);
