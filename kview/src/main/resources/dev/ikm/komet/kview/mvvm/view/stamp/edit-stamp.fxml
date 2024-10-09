@@ -70,7 +70,7 @@
             </ScrollPane>
         </content>
       </TitledPane>
-      <TitledPane fx:id="pathTitledPane" alignment="CENTER_RIGHT" animated="false" maxWidth="1.7976931348623157E308" minHeight="-Infinity" nodeOrientation="RIGHT_TO_LEFT" text="Path: Development">
+      <TitledPane fx:id="pathTitledPane" alignment="CENTER_RIGHT" animated="false" maxWidth="1.7976931348623157E308" minHeight="-Infinity" nodeOrientation="RIGHT_TO_LEFT" text="Path: ">
         <content>
             <ScrollPane maxHeight="150.0" nodeOrientation="LEFT_TO_RIGHT">
                <content>
