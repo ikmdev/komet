@@ -22,8 +22,6 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
@@ -129,10 +127,6 @@ public class DragImageMaker implements DraggableWithImage {
         // Take the snapshot image of the node
         Image snapshotImage = node.snapshot(snapshotParameters, writableImage);
 
-        // Apply the border with rounded corners to the snapshot image
-        Image borderedImage = addRoundedBorderToImage(snapshotImage, 4 * scaleFactor,
-                Color.web("#5DCF16") /* -Primary-04 */, 2 * scaleFactor);
-
         // Calculate dragOffset
         double widthDifference = node.getBoundsInParent().getWidth() - node.getLayoutBounds().getWidth();
         double widthAdjustment = 0;
@@ -142,7 +136,7 @@ public class DragImageMaker implements DraggableWithImage {
         }
         dragOffset = node.getBoundsInParent().getMinX() + widthAdjustment;
 
-        return borderedImage;
+        return snapshotImage;
     }
 
     @Override
@@ -183,52 +177,5 @@ public class DragImageMaker implements DraggableWithImage {
         // Assuming the first screen is the primary one for the window
         final Screen screen = screens.getFirst();
         return screen.getDpi();
-    }
-
-    /**
-     * Adds a solid rounded border to the provided image.
-     *
-     * @param image        the original {@link Image} to which the border will be added
-     * @param borderSize   the thickness of the border in pixels
-     * @param borderColor  the {@link Color} of the border
-     * @param borderRadius the radius of the corners for rounding, in pixels
-     * @return a new {@link Image} with the rounded border applied
-     * @throws NullPointerException if the provided image is {@code null}
-     */
-    private Image addRoundedBorderToImage(Image image, double borderSize, Color borderColor, double borderRadius) {
-        Objects.requireNonNull(image, "The image must not be null.");
-
-        final double originalWidth = image.getWidth();
-        final double originalHeight = image.getHeight();
-
-        final double borderedWidth = originalWidth + borderSize * 2;
-        final double borderedHeight = originalHeight + borderSize * 2;
-
-        // Create a Canvas to draw the border and the original image
-        final Canvas canvas = new Canvas(borderedWidth, borderedHeight);
-        final GraphicsContext gc = canvas.getGraphicsContext2D();
-
-        // Fill the background with transparent color
-        gc.setFill(Color.TRANSPARENT);
-        gc.fillRect(0, 0, borderedWidth, borderedHeight);
-
-        // Draw the rounded border
-        gc.setStroke(borderColor);
-        gc.setLineWidth(borderSize);
-        gc.strokeRoundRect(borderSize / 2.0, borderSize / 2.0,
-                originalWidth + borderSize, originalHeight + borderSize, borderRadius, borderRadius);
-
-        // Draw the original image onto the canvas, offset by the border size
-        gc.drawImage(image, borderSize, borderSize);
-
-        // Snapshot the canvas to create the bordered image
-        final int imageWidth = (int) Math.ceil(borderedWidth);
-        final int imageHeight = (int) Math.ceil(borderedHeight);
-        final WritableImage borderedImage = new WritableImage(imageWidth, imageHeight);
-        final SnapshotParameters params = new SnapshotParameters();
-        params.setFill(Color.TRANSPARENT);
-        canvas.snapshot(params, borderedImage);
-
-        return borderedImage;
     }
 }
