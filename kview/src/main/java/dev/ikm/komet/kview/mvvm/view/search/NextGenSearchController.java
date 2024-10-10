@@ -16,6 +16,8 @@
 package dev.ikm.komet.kview.mvvm.view.search;
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.dnd.DragImageMaker;
+import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -33,6 +35,7 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -41,7 +44,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.input.ClipboardContent;
+import javafx.scene.image.Image;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
@@ -263,21 +266,50 @@ public class NextGenSearchController extends AbstractBasicController {
 
     }
 
-    private void setUpDraggable(Node node, Entity entity) {
+    /**
+     * Configures the specified {@link Node} to support drag-and-drop operations associated with the given {@link Entity}.
+     * <p>
+     * When a drag is detected on the node, this method initializes a dragboard with the entity's identifier and
+     * sets a custom drag image for visual feedback.
+     * </p>
+     *
+     * @param node   the JavaFX {@link Node} to be made draggable
+     * @param entity the {@link Entity} associated with the node, providing data for the drag operation
+     * @throws NullPointerException if either {@code node} or {@code entity} is {@code null}
+     */
+    private void setUpDraggable(Node node, Entity<?> entity) {
+        Objects.requireNonNull(node, "The node must not be null.");
+        Objects.requireNonNull(entity, "The entity must not be null.");
+
+        // Associate the node with the entity's public ID for later retrieval or identification
         node.setUserData(entity.publicId());
 
+        // Set up the drag detection event handler
         node.setOnDragDetected(mouseEvent -> {
+            // Initiate a drag-and-drop gesture with copy or move transfer mode
             Dragboard dragboard = node.startDragAndDrop(TransferMode.COPY_OR_MOVE);
 
-            // put the nid on the dragboard
-            ClipboardContent content = new ClipboardContent();
-            content.putString(entity.publicId().toString());
+            // Create the content to be placed on the dragboard
+            // Here, KometClipboard is used to encapsulate the entity's unique identifier (nid)
+            KometClipboard content = new KometClipboard(EntityFacade.make(entity.nid()));
 
+            // Generate the drag image using DragImageMaker
+            DragImageMaker dragImageMaker = new DragImageMaker(node);
+            Image dragImage = dragImageMaker.getDragImage();
+            // Set the drag image on the dragboard
+            if (dragImage != null) {
+                dragboard.setDragView(dragImage);
+            }
+
+            // Place the content on the dragboard
             dragboard.setContent(content);
-            LOG.info(mouseEvent.toString());
+
+            // Log the drag event details for debugging or auditing
+            LOG.info("Drag detected on node: " + mouseEvent.toString());
+
+            // Consume the mouse event to prevent further processing
             mouseEvent.consume();
         });
-
     }
 
     private OptionalInt parseInt(String possibleInt) {
