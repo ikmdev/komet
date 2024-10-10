@@ -233,8 +233,6 @@ public class ViewModelHelper {
         valueMap.put("roleGroupPublicIDstring",     ROLE_GROUP_PUBLICID_STRING);          //
         valueMap.put("loincPropertyUuid",           LOINC_PROPERTY_UUID);                 // LOINC_PROPERTY_UUID
         valueMap.put("propertyPublicId",            LOINC_ACNC_UUID); // conceptTypeToPublicIdMap.get("Property")
-
-        //86939da1-1f1f-3d56-93f0-15f03439b338
         valueMap.put("loincScaleUuid",              LOINC_SCALE_UUID);                    // LOINC_SCALE_UUID
         valueMap.put("scalePublicId",               removeQuotationMarks.apply(scaleTypeId.idString()));
         return valueMap;
