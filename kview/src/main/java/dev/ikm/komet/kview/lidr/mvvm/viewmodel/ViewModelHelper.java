@@ -64,7 +64,7 @@ public class ViewModelHelper {
     public static final String ROLE_GROUP_PUBLICID_STRING   = "[" + TinkarTerm.ROLE_GROUP.publicId().asUuidArray()[0] + "]";
     public static final String LOINC_PROPERTY_UUID          = "[066462e2-f926-35d5-884a-4e276dad4c2c]";
     public static final String LOINC_SCALE_UUID             = "[087afdd2-23cd-34c3-93a4-09088dfd480c]";
-    public static final String LOINC_ACNC_UUID              = "[7de8ef7f-6287-396e-88fb-d675937923e2]";
+    public static final String LOINC_ACNC_UUID              = "[86939da1-1f1f-3d56-93f0-15f03439b338]";
     public static final String LOINC_QN_UUID                = "[6b8c30c5-63d7-3614-a675-2b5d03c541f4]";
 
 
@@ -233,6 +233,8 @@ public class ViewModelHelper {
         valueMap.put("roleGroupPublicIDstring",     ROLE_GROUP_PUBLICID_STRING);          //
         valueMap.put("loincPropertyUuid",           LOINC_PROPERTY_UUID);                 // LOINC_PROPERTY_UUID
         valueMap.put("propertyPublicId",            LOINC_ACNC_UUID); // conceptTypeToPublicIdMap.get("Property")
+
+        //86939da1-1f1f-3d56-93f0-15f03439b338
         valueMap.put("loincScaleUuid",              LOINC_SCALE_UUID);                    // LOINC_SCALE_UUID
         valueMap.put("scalePublicId",               removeQuotationMarks.apply(scaleTypeId.idString()));
         return valueMap;
