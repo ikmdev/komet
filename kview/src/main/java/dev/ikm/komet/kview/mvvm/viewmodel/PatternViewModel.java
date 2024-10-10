@@ -27,19 +27,18 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
-import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.component.Stamp;
 import dev.ikm.tinkar.composer.Composer;
 import dev.ikm.tinkar.composer.Session;
 import dev.ikm.tinkar.composer.assembler.PatternAssembler;
 import dev.ikm.tinkar.composer.template.FullyQualifiedName;
 import dev.ikm.tinkar.composer.template.Synonym;
 import dev.ikm.tinkar.composer.template.USDialect;
+import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.property.ObjectProperty;
@@ -53,7 +52,6 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.OptionalLong;
 import java.util.UUID;
 
 public class PatternViewModel extends FormViewModel {
@@ -223,7 +221,7 @@ public class PatternViewModel extends FormViewModel {
         }
         boolean isSuccess = composer.commitSession(session);
         setPropertyValue(PATTERN, pattern);
-        stampViewModel.setValue(TIME, getPatternLastStampTime());
+        updateStamp();
         return isSuccess;
     }
 
@@ -231,12 +229,22 @@ public class PatternViewModel extends FormViewModel {
         return ((EntityFacade) getPropertyValue(PATTERN)).description();
     }
 
-    public Long getPatternLastStampTime() {
+    public ViewProperties getViewProperties() {
+        return getPropertyValue(VIEW_PROPERTIES);
+    }
+
+    public void updateStamp() {
         EntityFacade patternFacade = getPropertyValue(PATTERN);
-        Entity pattern = EntityService.get().getEntityFast(patternFacade.nid());
-        IntIdSet idSet = pattern.stampNids();
-        OptionalLong latestStamp = idSet.intStream().mapToLong(i -> ((StampEntity)EntityService.get().getEntityFast(i)).time()).max();
-        return latestStamp.getAsLong();
+        StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
+
+        StampViewModel stampViewModel = getPropertyValue(STAMP_VIEW_MODEL);
+
+        Stamp stamp = stampCalculator.latest(patternFacade).get().stamp();
+        stampViewModel.setValue(STATUS, stamp.state());
+        stampViewModel.setValue(TIME, stamp.time());
+        stampViewModel.setValue(AUTHOR, stamp.author());
+        stampViewModel.setValue(MODULE, stamp.module());
+        stampViewModel.setValue(PATH, stamp.path());
     }
 
     public String getPatternIdentifierText() {
