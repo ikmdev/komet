@@ -68,11 +68,11 @@
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.4.0</tinkar-composer.version>
-        <tinkar-core.version>1.72.0</tinkar-core.version>
+        <tinkar-core.version>1.73.0-SNAPSHOT</tinkar-core.version>
 
         <!-- OWLAPI Variables -->
         <owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
-        <owlapi.version>4.7.1</owlapi.version>
+        <owlapi.version>4.7.3</owlapi.version>
 
         <!-- IKM Evrete Variables -->
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
@@ -84,6 +84,7 @@
         <jpms-record-builder-core.version>36-r7</jpms-record-builder-core.version>
         <eclipse-collections.version>11.1.0-r12</eclipse-collections.version>
         <eclipse-collections-api.version>11.1.0-r11</eclipse-collections-api.version>
+        <jsr305.version>3.0.2-r7</jsr305.version>
 
         <!-- Everything Else -->
         <classgraph.version>4.8.115</classgraph.version>
@@ -292,6 +293,11 @@
                 <groupId>${tinkar-jpms-deps.groupId}</groupId>
                 <artifactId>roaringbitmap</artifactId>
                 <version>${jpms-roaringbitmap.version}</version>
+            </dependency>
+            <dependency><!-- <groupId>com.google.code.findbugs</groupId>-->
+                <groupId>${tinkar-jpms-deps.groupId}</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>${jsr305.version}</version>
             </dependency>
 
             <!-- External dependencies -->
