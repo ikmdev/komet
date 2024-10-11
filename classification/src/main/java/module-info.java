@@ -18,10 +18,10 @@ import dev.ikm.komet.reasoner.ReasonerResultsNodeFactory;
 import dev.ikm.tinkar.reasoner.service.ReasonerService;
 
 module dev.ikm.komet.classification {
-	requires org.eclipse.collections;
-	requires org.eclipse.collections.api;
+	requires dev.ikm.jpms.eclipse.collections;
+	requires dev.ikm.jpms.eclipse.collections.api;
+	requires dev.ikm.jpms.roaringbitmap;
 	requires org.jgrapht.core;
-	requires org.roaringbitmap;
 	requires org.slf4j;
 	
 	requires dev.ikm.tinkar.collection;

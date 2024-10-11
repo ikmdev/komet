@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.build</groupId>
         <artifactId>java-parent</artifactId>
-        <version>1.47.0</version>
+        <version>1.53.0</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
@@ -58,42 +58,48 @@
         <module>application</module>
     </modules>
     <properties>
-        <!-- Utilize for Binding to SLF4J -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Utilize for Binding Log4J to SLF4J -->
+        <log4j.version>3.0.0-alpha1</log4j.version>
+        <slf4j.version>2.0.13</slf4j.version>
         <bind-to-slf4j.version>2.0.13</bind-to-slf4j.version>
+
+        <!-- Tinkar Core Variables -->
+        <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
+        <tinkar-composer.version>1.4.0</tinkar-composer.version>
+        <tinkar-core.version>1.73.0</tinkar-core.version>
+
+        <!-- OWLAPI Variables -->
+        <owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
+        <owlapi.version>4.7.3</owlapi.version>
+
+        <!-- IKM Evrete Variables -->
+        <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
+        <ikm-evrete.version>4.0.3</ikm-evrete.version>
+
+        <!-- JPMS Jar Variables-->
+        <tinkar-jpms-deps.groupId>dev.ikm.jpms</tinkar-jpms-deps.groupId>
+        <jpms-roaringbitmap.version>0.9.31-r8</jpms-roaringbitmap.version>
+        <jpms-record-builder-core.version>36-r7</jpms-record-builder-core.version>
+        <eclipse-collections.version>11.1.0-r12</eclipse-collections.version>
+        <eclipse-collections-api.version>11.1.0-r11</eclipse-collections-api.version>
+        <jsr305.version>3.0.2-r7</jsr305.version>
+
+        <!-- Everything Else -->
         <classgraph.version>4.8.115</classgraph.version>
         <cognitive.version>1.3.0</cognitive.version>
         <common-java5.version>3.0.0-M9</common-java5.version>
         <controlsfx.version>11.1.0</controlsfx.version>
-        <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
-        <ikm-evrete.version>4.0.3</ikm-evrete.version>
-        <tinkar-jpms-deps.groupId>dev.ikm.jpms</tinkar-jpms-deps.groupId>
-        <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
-        <jpms-record-builder-core.version>36-r6</jpms-record-builder-core.version>
-        <jpms-roaringbitmap.version>0.9.31-r7</jpms-roaringbitmap.version>
-        <classgraph.version>4.8.115</classgraph.version>
-        <controlsfx.version>11.1.0</controlsfx.version>
         <ikonli.version>12.2.0</ikonli.version>
         <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
         <jpackage.version>1.6.0</jpackage.version>
-        <jpms-record-builder-core.version>36-r3</jpms-record-builder-core.version>
-        <log4j.version>3.0.0-alpha1</log4j.version>
-        <maven.assembly-plugin.version>3.6.0</maven.assembly-plugin.version>
-        <maven.compiler.version>3.13.0</maven.compiler.version>
         <mockito.version>5.7.0</mockito.version>
         <nsmenufx.version>3.1.0</nsmenufx.version>
         <openjfx.version>21.0.4</openjfx.version>
-        <owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
-        <owlapi.version>4.7.1</owlapi.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <record-builder-processor.version>34</record-builder-processor.version>
         <scenic-view.version>11.0.2</scenic-view.version>
-        <slf4j.version>2.0.13</slf4j.version>
-        <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
-        <tinkar-composer.version>1.2.0</tinkar-composer.version>
-        <tinkar-core.version>1.70.0</tinkar-core.version>
-        <tinkar-jpms-deps.groupId>dev.ikm.jpms</tinkar-jpms-deps.groupId>
-        <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
     </properties>
+
     <dependencyManagement>
         <dependencies>
             <!--Module Dependencies -->
@@ -120,21 +126,6 @@
             <dependency>
                 <groupId>${tinkar-core.groupId}</groupId>
                 <artifactId>reasoner-service</artifactId>
-                <version>${tinkar-core.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>dev.ikm.tinkar.fhir</groupId>
-                <artifactId>fhir-extension</artifactId>
-                <version>${tinkar-core.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${tinkar-core.groupId}</groupId>
-                <artifactId>reasoner-elk-owl</artifactId>
-                <version>${tinkar-core.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${tinkar-core.groupId}</groupId>
-                <artifactId>reasoner-elk-snomed</artifactId>
                 <version>${tinkar-core.version}</version>
             </dependency>
             <dependency>
@@ -197,6 +188,7 @@
                 <artifactId>rules</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
             <!-- Tinkar Core Dependencies -->
             <dependency>
                 <groupId>${tinkar-core.groupId}</groupId>
@@ -253,6 +245,17 @@
                 <artifactId>executor-provider</artifactId>
                 <version>${tinkar-core.version}</version>
             </dependency>
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>reasoner-elk-owl</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>reasoner-elk-snomed</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+
             <!-- IKM Evrete Dependencies -->
             <dependency>
                 <groupId>${ikm-evrete.groupId}</groupId>
@@ -264,11 +267,34 @@
                 <artifactId>evrete-dsl-java</artifactId>
                 <version>${ikm-evrete.version}</version>
             </dependency>
+
+            <!-- JPMS Dependencies -->
             <dependency>
                 <groupId>${tinkar-jpms-deps.groupId}</groupId>
                 <artifactId>record-builder-core</artifactId>
                 <version>${jpms-record-builder-core.version}</version>
             </dependency>
+            <dependency>
+                <groupId>${tinkar-jpms-deps.groupId}</groupId>
+                <artifactId>eclipse-collections</artifactId>
+                <version>${eclipse-collections.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${tinkar-jpms-deps.groupId}</groupId>
+                <artifactId>eclipse-collections-api</artifactId>
+                <version>${eclipse-collections-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${tinkar-jpms-deps.groupId}</groupId>
+                <artifactId>roaringbitmap</artifactId>
+                <version>${jpms-roaringbitmap.version}</version>
+            </dependency>
+            <dependency><!-- <groupId>com.google.code.findbugs</groupId>-->
+                <groupId>${tinkar-jpms-deps.groupId}</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>${jsr305.version}</version>
+            </dependency>
+
             <!-- External dependencies -->
             <dependency>
                 <groupId>org.openjfx</groupId>
@@ -313,11 +339,6 @@
                 <groupId>io.github.classgraph</groupId>
                 <artifactId>classgraph</artifactId>
                 <version>${classgraph.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${tinkar-jpms-deps.groupId}</groupId>
-                <artifactId>roaringbitmap</artifactId>
-                <version>${jpms-roaringbitmap.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.openjfx</groupId>
@@ -447,6 +468,7 @@
                 <artifactId>owlapi-parsers</artifactId>
                 <version>${owlapi.version}</version>
             </dependency>
+
             <!--- Bind To SLF4J Dependencies (Start) -->
             <!-- Binding log4j to slf4j -->
             <dependency>
@@ -537,11 +559,6 @@
                     <artifactId>jpackage-maven-plugin</artifactId>
                     <version>${jpackage.version}</version>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${maven.compiler.version}</version>
-                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -559,7 +576,7 @@
                         <annotationProcessorPath>
                             <groupId>io.soabase.record-builder</groupId>
                             <artifactId>record-builder-processor</artifactId>
-                            <version>${record-builder-processor.version}</version>
+                            <version>${record-builder-core.version}</version>
                         </annotationProcessorPath>
                     </annotationProcessorPaths>
                     <annotationProcessors>
