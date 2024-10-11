@@ -23,18 +23,14 @@ public class ConceptDetailsPattern extends StatePattern {
     public ConceptDetailsPattern() {
         this.initial(BF_NO_FQN)
             .t("toggle press")
-            .t("edit Otn", EDITING_OTN_NO_FQN)
-            .t("add Fqn", ADDING_FQN)
-            .t("add Otn", ADDING_OTN_NO_FQN)
-            .s(ADDING_OTN_NO_FQN)
-            .t("done", BF_NO_FQN)
-            .t("cancel", BF_NO_FQN)
-            .s(ADDING_FQN)
-            .t("cancel", BF_NO_FQN)
-            .t("done", BF_WITH_FQN)
-            .s(BF_WITH_FQN)
+            .t("edit Otn", BF_NO_FQN, EDITING_OTN_NO_FQN)
+            .t("add Fqn", BF_NO_FQN, ADDING_FQN)
+            .t("add Otn", BF_NO_FQN, ADDING_OTN_NO_FQN)
+            .t("done", ADDING_OTN_NO_FQN, BF_NO_FQN)
+            .t("cancel", ADDING_OTN_NO_FQN, BF_NO_FQN)
+            .t("cancel", ADDING_FQN, BF_NO_FQN)
+            .t("done", ADDING_FQN, BF_WITH_FQN)
             .t("add Otn", ADDING_OTN_WITH_FQN)
-            .s(ADDING_OTN_WITH_FQN)
             .t("cancel", ADDING_OTN_WITH_FQN, BF_WITH_FQN)
             .t("done", ADDING_OTN_WITH_FQN, BF_WITH_FQN)
             .t("cancel", EDITING_FQN, BF_WITH_FQN)
@@ -44,6 +40,7 @@ public class ConceptDetailsPattern extends StatePattern {
             .t("cancel", EDITING_OTN_NO_FQN, BF_NO_FQN)
             .t("edit Otn", BF_WITH_FQN, EDITING_OTN_WITH_FQN)
             .t("done", EDITING_OTN_WITH_FQN, BF_WITH_FQN)
-            .t("cancel", EDITING_OTN_WITH_FQN, BF_WITH_FQN);
+            .t("cancel", EDITING_OTN_WITH_FQN, BF_WITH_FQN)
+        ;
     }
 }
