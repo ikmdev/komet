@@ -37,16 +37,34 @@ public class ConceptDetailsStateMachineTest {
     void conceptDetailsStateMachineFlowTest() {
         StateMachine sm = StateMachine.create(new ConceptDetailsPattern());
 
-        // test 1. see current state info
-        debugInfo(sm);
-        Assertions.assertEquals(BF_NO_FQN, sm.currentState());
-
-        // test 2. transition with to edit Otn
-        sm.t("edit Otn");
-        debugInfo(sm);
-        Assertions.assertEquals(EDITING_OTN_NO_FQN, sm.currentState());
-
-        System.out.println(toPlantUml(sm));
+        String expected = """
+                name: initial from: INITIAL to: BF_NO_FQN
+                name: toggle press from: BF_NO_FQN to: BF_NO_FQN
+                name: edit Otn from: BF_NO_FQN to: EDITING_OTN_NO_FQN
+                name: add Fqn from: BF_NO_FQN to: ADDING_FQN
+                name: add Otn from: BF_NO_FQN to: ADDING_OTN_NO_FQN
+                name: done from: ADDING_OTN_NO_FQN to: BF_NO_FQN
+                name: cancel from: ADDING_OTN_NO_FQN to: BF_NO_FQN
+                name: cancel from: ADDING_FQN to: BF_NO_FQN
+                name: done from: ADDING_FQN to: BF_WITH_FQN
+                name: add Otn from: BF_WITH_FQN to: ADDING_OTN_WITH_FQN
+                name: cancel from: ADDING_OTN_WITH_FQN to: BF_WITH_FQN
+                name: done from: ADDING_OTN_WITH_FQN to: BF_WITH_FQN
+                name: cancel from: EDITING_FQN to: BF_WITH_FQN
+                name: done from: EDITING_FQN to: BF_WITH_FQN
+                name: edit fqn from: BF_WITH_FQN to: EDITING_FQN
+                name: done from: EDITING_OTN_NO_FQN to: BF_NO_FQN
+                name: cancel from: EDITING_OTN_NO_FQN to: BF_NO_FQN
+                name: edit Otn from: BF_WITH_FQN to: EDITING_OTN_WITH_FQN
+                name: done from: EDITING_OTN_WITH_FQN to: BF_WITH_FQN
+                name: cancel from: EDITING_OTN_WITH_FQN to: BF_WITH_FQN
+                """;
+        StringBuilder sb = new StringBuilder();
+        sm.getStatePattern().transitions().forEach(transition -> {
+            sb.append("name: %s from: %s to: %s\n".formatted(transition.name(), transition.fromState(), transition.toState()));
+        });
+        System.out.println(sb);
+        Assertions.assertEquals(expected, sb.toString(), "error transitions don't match.");
     }
 
     private void debugInfo(StateMachine stateMachine) {
