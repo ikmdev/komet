@@ -69,8 +69,10 @@ import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
+import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -391,13 +393,23 @@ public class JournalController {
 
                     ConceptFacade conceptFacade = null;
                     if (event.getGestureSource() instanceof SearchResultCell searchResultCell) {
-                        SearchPanelController.NidTextRecord nidTextRecord =
-                                (SearchPanelController.NidTextRecord) searchResultCell.getItem();
-                        conceptFacade = ConceptFacade.make(nidTextRecord.nid());
+                        if (searchResultCell.getItem() instanceof SearchPanelController.NidTextRecord nidTextRecord) {
+                            conceptFacade = Entity.getFast(nidTextRecord.nid());
+                        } else if (searchResultCell.getItem() instanceof
+                                LatestVersionSearchResult latestVersionSearchResult) {
+                            if (latestVersionSearchResult.latestVersion().isPresent()) {
+                                Optional<ConceptEntity> conceptEntity = Entity.getConceptForSemantic(
+                                        latestVersionSearchResult.latestVersion().get().nid());
+                                if (conceptEntity.isPresent()) {
+                                    conceptFacade = conceptEntity.get();
+                                }
+                            }
+                        }
                     } else if (event.getGestureSource() instanceof MultiParentGraphCell multiParentGraphCell) {
                         conceptFacade = multiParentGraphCell.getItem();
                     } else if (event.getGestureSource() instanceof Node sourceNode) {
-                        conceptFacade = (ConceptFacade) sourceNode.getUserData();
+                        PublicId publicId = (PublicId) sourceNode.getUserData();
+                        conceptFacade = ConceptFacade.make(PrimitiveData.nid(publicId));
                     }
 
                     if (conceptFacade == null) {
