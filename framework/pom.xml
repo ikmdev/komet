@@ -29,8 +29,16 @@
         <dependency>
             <groupId>${tinkar-jpms-deps.groupId}</groupId>
             <artifactId>record-builder-core</artifactId>
-            <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>${tinkar-jpms-deps.groupId}</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${tinkar-jpms-deps.groupId}</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+
         <!-- external dependencies -->
         <dependency>
             <groupId>org.carlfx</groupId>
@@ -55,10 +63,6 @@
         <dependency>
             <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>coordinate</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>dev.ikm.tinkar.fhir</groupId>
-            <artifactId>fhir-extension</artifactId>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>

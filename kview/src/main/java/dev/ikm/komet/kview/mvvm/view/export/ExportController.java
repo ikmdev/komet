@@ -40,7 +40,6 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.aggregator.TemporalEntityAggregator;
-import dev.ikm.tinkar.fhir.transformers.FhirCodeSystemTransform;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.InvalidationListener;
 import javafx.concurrent.Task;
@@ -374,16 +373,16 @@ public class ExportController {
                     updateProgress(1,3);
                     updateMessage("Retrieved " + conceptEntities.size()+" concepts to export complete.");
                     StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
-                    FhirCodeSystemTransform fhirCodeSystemTransform = new FhirCodeSystemTransform(fromDate, toDate, stampCalculator, conceptEntities.stream(), (fhirString) -> {
-                        try {
-                            updateProgress(2,3);
-                            saveFhirFormatToDisk(fhirString, exportFile);
-                            updateProgress(3,3);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
-                    fhirCodeSystemTransform.compute();
+//                    FhirCodeSystemTransform fhirCodeSystemTransform = new FhirCodeSystemTransform(fromDate, toDate, stampCalculator, conceptEntities.stream(), (fhirString) -> {
+//                        try {
+//                            updateProgress(2,3);
+//                            saveFhirFormatToDisk(fhirString, exportFile);
+//                            updateProgress(3,3);
+//                        } catch (IOException e) {
+//                            throw new RuntimeException(e);
+//                        }
+//                    });
+//                    fhirCodeSystemTransform.compute();
                 }catch(Exception e){
                     LOG.error("Error Saving FHIR export file", e);
                     updateMessage("Error Saving FHIR export file");
