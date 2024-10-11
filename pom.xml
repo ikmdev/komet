@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.build</groupId>
         <artifactId>java-parent</artifactId>
-        <version>1.52.0</version>
+        <version>1.53.0</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
@@ -68,7 +68,7 @@
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.4.0</tinkar-composer.version>
-        <tinkar-core.version>1.73.0-SNAPSHOT</tinkar-core.version>
+        <tinkar-core.version>1.73.0</tinkar-core.version>
 
         <!-- OWLAPI Variables -->
         <owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
@@ -126,11 +126,6 @@
             <dependency>
                 <groupId>${tinkar-core.groupId}</groupId>
                 <artifactId>reasoner-service</artifactId>
-                <version>${tinkar-core.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>dev.ikm.tinkar.fhir</groupId>
-                <artifactId>fhir-extension</artifactId>
                 <version>${tinkar-core.version}</version>
             </dependency>
             <dependency>

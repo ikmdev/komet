@@ -66,10 +66,6 @@
             <artifactId>coordinate</artifactId>
         </dependency>
         <dependency>
-            <groupId>dev.ikm.tinkar.fhir</groupId>
-            <artifactId>fhir-extension</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-base</artifactId>
         </dependency>

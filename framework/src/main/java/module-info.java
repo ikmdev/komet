@@ -81,7 +81,6 @@ open module dev.ikm.komet.framework {
     requires transitive dev.ikm.tinkar.common;
     requires transitive dev.ikm.tinkar.coordinate;
     requires transitive dev.ikm.tinkar.entity;
-    requires transitive dev.ikm.tinkar.fhir.transformers;
     requires transitive dev.ikm.tinkar.terms;
     requires transitive dev.ikm.jpms.eclipse.collections;
     requires transitive dev.ikm.jpms.eclipse.collections.api;
