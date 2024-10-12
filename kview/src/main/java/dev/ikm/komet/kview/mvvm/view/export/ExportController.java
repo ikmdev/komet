@@ -15,12 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.export;
 
-import static dev.ikm.komet.kview.events.ExportDateTimePopOverEvent.APPLY_POP_OVER;
-import static dev.ikm.komet.kview.events.ExportDateTimePopOverEvent.CANCEL_POP_OVER;
-import static dev.ikm.komet.kview.events.ExportDateTimePopOverEvent.FROM_DATE;
-import static dev.ikm.komet.kview.events.ExportDateTimePopOverEvent.TO_DATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -29,29 +23,17 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ExportDateTimePopOverEvent;
 import dev.ikm.komet.kview.fxutils.ComboBoxHelper;
 import dev.ikm.komet.kview.mvvm.viewmodel.ExportViewModel;
-import dev.ikm.tinkar.common.service.TrackingCallable;
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
+import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.ConceptEntityVersion;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityCountSummary;
 import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.aggregator.TemporalEntityAggregator;
-import dev.ikm.tinkar.fhir.transformers.FhirCodeSystemTransform;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.InvalidationListener;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.skin.DatePickerSkin;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -66,28 +48,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+
+import static dev.ikm.komet.kview.events.ExportDateTimePopOverEvent.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 public class ExportController {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExportController.class);
 
-    protected static final String FHIR_TIME_EXPORT_PICKER_FXML_FILE = "fhir-time-export-picker.fxml";
+    protected static final String TIME_EXPORT_PICKER_FXML_FILE = "time-export-picker.fxml";
 
     private static final String CUSTOM_RANGE = "Custom Range";
 
@@ -140,14 +116,12 @@ public class ExportController {
 
     private static final String CHANGE_SET = "Change set";
 
-    private static final String FHIR = "FHIR";
-
     @FXML
     public void initialize() {
         exportDatasetEventBus = EvtBusFactory.getDefaultEvtBus();
         exportTopic = UUID.randomUUID();
 
-        exportOptions.getItems().addAll(CHANGE_SET, FHIR);
+        exportOptions.getItems().addAll(CHANGE_SET);
         setupDateTimeExportComboBox();
         setupCustomDateRangeLabel();
 
@@ -160,7 +134,7 @@ public class ExportController {
             exportButton.setDisable(!isFormValid);
         };
         exportOptions.getSelectionModel().selectedItemProperty().addListener(formValid);
-
+        exportOptions.setValue(CHANGE_SET);
         // Create PopOver for From Date
         fromDateTimePopOver = createPopover(exportTopic, FROM_DATE, (epochTime) -> {
             this.customFromEpochMillis = epochTime;
@@ -208,7 +182,7 @@ public class ExportController {
     private PopOver createPopover(UUID exportTopic, final int rangeType, Consumer<Long> dateTimeConsumer) {
 
         JFXNode<BorderPane, TimeAndDatePickerController> pickerNodeController = FXMLMvvmLoader
-                .make(getClass().getResource(FHIR_TIME_EXPORT_PICKER_FXML_FILE),
+                .make(getClass().getResource(TIME_EXPORT_PICKER_FXML_FILE),
                         new TimeAndDatePickerController(exportTopic, rangeType));
 
         BorderPane bp = pickerNodeController.node();
@@ -294,16 +268,9 @@ public class ExportController {
             String progressTitle = CUSTOM_RANGE.equals(dateChoice) ?
                     "Export Date Range: %s to %s".formatted(dateTimeFromLabel.getText(), dateTimeToLabel.getText())  : "Export All Data";
             performChangeSetExport(fileChooser, fromDate, toDate, progressTitle);
-        } else if (exportOption.equalsIgnoreCase(FHIR)) {
-            initialFileName += ".json";
-            fileChooser.setTitle("Fhir File Exporter");
-            fileChooser.getExtensionFilters().addAll(
-                    new FileChooser.ExtensionFilter("Fhir Json Files", "*.json"));
-            fileChooser.setInitialFileName(initialFileName);
-            // FHIR export
-            performFhirExport(fileChooser, fromDate, toDate);
+        } else {
+            AlertStreams.dispatchToRoot(new UnsupportedOperationException("Export Type not supported"));
         }
-
     }
 
     private void performChangeSetExport(FileChooser fileChooser, long fromDate, long toDate, String progressTitle) {
@@ -346,83 +313,11 @@ public class ExportController {
         ProgressHelper.progress(javafxTask, "Cancel Export");
     }
 
-    private void performFhirExport(FileChooser fileChooser, long fromDate, long toDate) {
-        //Triggers the file chooser screen (where a user can choose a location)
-        File exportFile = fileChooser.showSaveDialog(exportButton.getScene().getWindow());
-        if (exportFile != null) {
-            Task<Void> exportTask = exportChangeSet(fromDate, toDate, exportFile);
-            ProgressHelper.progress(exportTask, "Cancel Export");
-        }
-    }
-
     private long transformStringInLocalDateTimeToEpochMillis(String localDateTimeFormat) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy, hh:mm a");
         LocalDateTime localDateTime = LocalDateTime.parse(localDateTimeFormat, formatter);
         ZoneId zoneId = ZoneId.of("America/New_York");
         return localDateTime.atZone(zoneId).toInstant().toEpochMilli();
-    }
-
-    private Task<Void> exportChangeSet(long fromDate, long toDate, File exportFile) {
-        TrackingCallable<Void> trackingCallable = new TrackingCallable<>(){
-            @Override
-            protected Void compute() throws Exception {
-                updateTitle("FHIR JSON changeset to file " + exportFile.getName());
-                updateProgress(0,3);
-                updateMessage("Retrieving changeset data in progress.");
-                try{
-                    Set<ConceptEntity<? extends ConceptEntityVersion>> conceptEntities = retrieveDataTask(fromDate, toDate).call();
-                    updateProgress(1,3);
-                    updateMessage("Retrieved " + conceptEntities.size()+" concepts to export complete.");
-                    StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
-                    FhirCodeSystemTransform fhirCodeSystemTransform = new FhirCodeSystemTransform(fromDate, toDate, stampCalculator, conceptEntities.stream(), (fhirString) -> {
-                        try {
-                            updateProgress(2,3);
-                            saveFhirFormatToDisk(fhirString, exportFile);
-                            updateProgress(3,3);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
-                    fhirCodeSystemTransform.compute();
-                }catch(Exception e){
-                    LOG.error("Error Saving FHIR export file", e);
-                    updateMessage("Error Saving FHIR export file");
-                    return null;
-                }
-                exportButton.setDisable(false);
-                return null;
-            }
-        };
-        return TaskWrapper.make(trackingCallable);
-    }
-
-    private TrackingCallable<Set<ConceptEntity<? extends ConceptEntityVersion>>> retrieveDataTask(long fromTimeStamp, long toTimeStamp) {
-        return new TrackingCallable<>(){
-            @Override
-            protected Set<ConceptEntity<? extends ConceptEntityVersion>> compute() {
-                Set<ConceptEntity<? extends ConceptEntityVersion>> concepts = new HashSet<>();
-                TemporalEntityAggregator temporalEntityAggregator = new TemporalEntityAggregator(fromTimeStamp, toTimeStamp);
-                temporalEntityAggregator.aggregate(nid -> {
-                    Entity<EntityVersion> entity = EntityService.get().getEntityFast(nid);
-                    if (entity instanceof ConceptEntity conceptEntity) {
-                        concepts.add(conceptEntity);
-                    } else if (entity instanceof SemanticEntity semanticEntity) {
-                        Entity<EntityVersion> referencedConcept = semanticEntity.referencedComponent();
-                        if (referencedConcept instanceof ConceptEntity concept) {
-                            concepts.add(concept);
-                        }
-                    }
-                });
-                return concepts;
-            }
-        };
-    }
-
-    private void saveFhirFormatToDisk(String fhirString, File exportFile) throws IOException {
-        try (Writer write = new FileWriter(exportFile)) {
-            write.write(fhirString);
-            write.flush();
-        }
     }
 
     @FXML
