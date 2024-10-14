@@ -116,7 +116,7 @@ public class DragImageMaker implements DraggableWithImage {
         final int width = (int) Math.max(Math.ceil(scaledWidth), 1);
         final int height = (int) Math.max(Math.ceil(scaledHeight), 1);
 
-        // Create SnapshotParameters with scaling
+        // Create SnapshotParameters without scaling
         SnapshotParameters snapshotParameters = new SnapshotParameters();
 
         // Create a WritableImage with the scaled dimensions
