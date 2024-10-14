@@ -61,6 +61,12 @@ public class StampEditController extends AbstractBasicController {
     private ToggleGroup statusToggleGroup;
 
     @FXML
+    private RadioButton activeStatus;
+
+    @FXML
+    private RadioButton inactiveStatus;
+
+    @FXML
     private VBox statusVBox;
 
     //////////////// private variables ///////////////////////////
@@ -92,6 +98,15 @@ public class StampEditController extends AbstractBasicController {
             }
 
         }));
+    }
+
+    /**
+     * sets the status to active,
+     * disables the radio button inactive
+     */
+    public void selectActiveStatusToggle() {
+        statusToggleGroup.selectToggle(activeStatus);
+        inactiveStatus.setDisable(true);
     }
 
     private void setupModuleSelections() {
