@@ -1289,6 +1289,9 @@ public class DetailsController  {
 
         stampEditController.updateModel(viewProperties);
 
+        // default the status=Active, disable inactive
+        stampEditController.selectActiveStatusToggle();
+
         popOver.setOnHidden(windowEvent -> {
             // set Stamp info into Details form
             getStampViewModel().save();
