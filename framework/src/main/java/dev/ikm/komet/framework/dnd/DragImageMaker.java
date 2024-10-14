@@ -118,8 +118,6 @@ public class DragImageMaker implements DraggableWithImage {
 
         // Create SnapshotParameters with scaling
         SnapshotParameters snapshotParameters = new SnapshotParameters();
-        snapshotParameters.setTransform(Transform.scale(scaleFactor, scaleFactor));
-        snapshotParameters.setFill(Color.TRANSPARENT);
 
         // Create a WritableImage with the scaled dimensions
         WritableImage writableImage = new WritableImage(width, height);
