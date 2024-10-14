@@ -86,15 +86,17 @@
         <eclipse-collections-api.version>11.1.0-r11</eclipse-collections-api.version>
         <jsr305.version>3.0.2-r7</jsr305.version>
 
-        <!-- Everything Else -->
-        <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
-        <jpms-record-builder-core.version>36-r6</jpms-record-builder-core.version>
-        <jpms-roaringbitmap.version>0.9.31-r7</jpms-roaringbitmap.version>
+        <!-- JPRO Variables -->
         <jpro.version>2024.3.4-KOMET</jpro.version>
         <jpro-platform.version>0.4.1</jpro-platform.version>
+
+        <!-- TestFX Variables -->
         <testfx.version>4.0.18-jpms</testfx.version>
         <openjfx-monocle.version>21.0.2-jpms</openjfx-monocle.version>
         <maven-surefire-plugin.version>3.5.0</maven-surefire-plugin.version>
+
+        <!-- Everything Else -->
+        <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
         <classgraph.version>4.8.115</classgraph.version>
         <cognitive.version>1.3.0</cognitive.version>
         <axonic.version>1.1.4</axonic.version>
@@ -367,11 +369,6 @@
                 <version>${classgraph.version}</version>
             </dependency>
             <dependency>
-                <groupId>${tinkar-jpms-deps.groupId}</groupId>
-                <artifactId>roaringbitmap</artifactId>
-                <version>${jpms-roaringbitmap.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.sandec.jpro</groupId>
                 <artifactId>jpro-webapi</artifactId>
                 <version>${jpro.version}</version>
@@ -379,7 +376,7 @@
             <dependency>
                 <groupId>one.jpro.platform</groupId>
                 <artifactId>jpro-auth-core</artifactId>
-                <version>${jpro-platform.version}</version>
+                <version>0.4.2-ikmdev</version> <!-- A speacial build for Komet using the ikmdev Guava module name -->
             </dependency>
             <dependency>
                 <groupId>one.jpro.platform</groupId>
@@ -622,11 +619,6 @@
                     <groupId>org.panteleyev</groupId>
                     <artifactId>jpackage-maven-plugin</artifactId>
                     <version>${jpackage.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${maven.compiler.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>one.jpro</groupId>
