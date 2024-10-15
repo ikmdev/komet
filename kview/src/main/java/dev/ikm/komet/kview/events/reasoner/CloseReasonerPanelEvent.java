@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.events.pattern;
+package dev.ikm.komet.kview.events.reasoner;
 
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
 
-public class PatternMaxFieldsEvent extends Evt {
+public class CloseReasonerPanelEvent extends Evt {
 
-    public static final EvtType<PatternMaxFieldsEvent> PATTERN_MAX_FIELDS = new EvtType<>(Evt.ANY, "PATTERN_MAX_FIELDS");
-
-    private int maxFields;
+    public static final EvtType<CloseReasonerPanelEvent> CLOSE = new EvtType<>(Evt.ANY, "CLOSE");
 
     /**
      * Constructs a prototypical Event.
@@ -31,15 +29,7 @@ public class PatternMaxFieldsEvent extends Evt {
      * @param eventType
      * @throws IllegalArgumentException if source is null
      */
-    public PatternMaxFieldsEvent(Object source, EvtType eventType) {
+    public CloseReasonerPanelEvent(Object source, EvtType eventType) {
         super(source, eventType);
-    }
-
-    public int getMaxFields() {
-        return maxFields;
-    }
-
-    public void setMaxFields(int maxFields) {
-        this.maxFields = maxFields;
     }
 }

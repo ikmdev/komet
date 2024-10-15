@@ -8,8 +8,10 @@
 <?import javafx.scene.control.ContextMenu?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
@@ -20,10 +22,8 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.shape.SVGPath?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.layout.AnchorPane?>
 
-<BorderPane fx:id="journalBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.journal.JournalController">
+<BorderPane fx:id="journalBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.journal.JournalController">
    <center>
       <BorderPane prefHeight="485.0" prefWidth="544.0" BorderPane.alignment="CENTER">
          <top>
@@ -137,9 +137,8 @@
                      </top>
                      <center>
                         <ScrollPane fx:id="desktopSurfaceScrollPane" focusTraversable="true" styleClass="desktop-scroll-pane">
-                           <AnchorPane fx:id="desktopSurfacePane" maxWidth="2800.0" maxHeight="1800.0" prefWidth="2800.0" prefHeight="1800.0" styleClass="desktop-area">
-                              <Region fx:id="dropAnimationRegion" layoutX="32.0" layoutY="30.0" mouseTransparent="true"
-                                      prefHeight="200.0" prefWidth="200.0" styleClass="search-drop-region"/>
+                           <AnchorPane fx:id="desktopSurfacePane" maxHeight="1800.0" maxWidth="2800.0" prefHeight="1800.0" prefWidth="2800.0" styleClass="desktop-area">
+                              <Region fx:id="desktopDropRegion" layoutX="24.0" layoutY="24.0" mouseTransparent="true" styleClass="desktop-drop-region" />
                            </AnchorPane>
                         </ScrollPane>
                      </center>
@@ -166,6 +165,7 @@
                   <Pane fx:id="searchSlideoutTrayPane" styleClass="slideout-tray-pane" />
                   <Pane fx:id="reasonerSlideoutTrayPane" styleClass="slideout-tray-pane" />
                   <Pane fx:id="nexGenSearchSlideoutTrayPane" layoutX="10.0" layoutY="10.0" maxHeight="1.7976931348623157E308" styleClass="slideout-tray-pane" />
+                  <Pane fx:id="nextGenReasonerSlideoutTrayPane" layoutX="10.0" layoutY="10.0" maxHeight="1.7976931348623157E308" styleClass="slideout-tray-pane" />
                </children>
             </StackPane>
          </left>
@@ -240,7 +240,7 @@
                   </Region>
                </graphic>
             </ToggleButton>
-            <ToggleButton mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+            <ToggleButton fx:id="nextGenReasonerToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
                   <Region prefHeight="200.0" prefWidth="200.0">
                      <styleClass>

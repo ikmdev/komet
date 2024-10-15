@@ -26,6 +26,7 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.events.appevents.ProgressEvent;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.framework.tabs.DetachableTab;
 import dev.ikm.komet.framework.tabs.TabGroup;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
@@ -34,6 +35,7 @@ import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
+import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.fxutils.window.WindowSupport;
@@ -45,10 +47,12 @@ import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
 import dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
+import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
 import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
+import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
 import dev.ikm.komet.preferences.ConceptWindowSettings;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
@@ -65,8 +69,10 @@ import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
+import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -148,7 +154,7 @@ public class JournalController {
     private AnchorPane desktopSurfacePane;
 
     @FXML
-    private Region dropAnimationRegion;
+    private Region desktopDropRegion;
 
     @FXML
     private MenuItem newConceptMenuItem;
@@ -178,6 +184,9 @@ public class JournalController {
     private Pane nexGenSearchSlideoutTrayPane;
 
     @FXML
+    private Pane nextGenReasonerSlideoutTrayPane;
+
+    @FXML
     private Pane progressSlideoutTrayPane;
 
     @FXML
@@ -199,6 +208,9 @@ public class JournalController {
     private ToggleButton nextGenSearchToggleButton;
 
     @FXML
+    private ToggleButton nextGenReasonerToggleButton;
+
+    @FXML
     private Button addButton;
 
     @FXML
@@ -212,6 +224,9 @@ public class JournalController {
     private Pane navigatorNodePanel;
     private Pane searchNodePanel;
     private Pane nextGenSearchPanel;
+
+    private Pane nextGenReasonerPanel;
+
     private BorderPane reasonerNodePanel;
 
     private ActivityStream navigatorActivityStream;
@@ -228,11 +243,18 @@ public class JournalController {
     private GraphNavigatorNode navigatorNode;
     private final ObservableList<ConceptPreference> conceptWindows = FXCollections.observableArrayList();
 
-    protected static final String NEXT_GEN_SEARCH_FXML_URL = "next-gen-search.fxml";
+    private static final String NEXT_GEN_SEARCH_FXML_URL = "next-gen-search.fxml";
+
+    private static final String NEXT_GEN_REASONER_FXML_URL = "reasoner.fxml";
 
     private NextGenSearchController nextGenSearchController;
+
+    private NextGenReasonerController nextGenReasonserController;
+
     private Subscriber<MakeConceptWindowEvent> makeConceptWindowEventSubscriber;
     private Subscriber<ShowNavigationalPanelEvent> showNavigationalPanelEventSubscriber;
+
+    private Subscriber<CloseReasonerPanelEvent> closeReasonerPanelEventSubscriber;
 
     @InjectViewModel
     private NextGenSearchViewModel nextGenSearchViewModel;
@@ -290,8 +312,13 @@ public class JournalController {
         };
         journalEventBus.subscribe(JOURNAL_TOPIC, ShowNavigationalPanelEvent.class, showNavigationalPanelEventSubscriber);
 
+        // listening to the event fired when the user clicks the 'X' on the reasoner slide out
+        // and wire into the toggle group because we already have a listener on this property
+        closeReasonerPanelEventSubscriber = evt -> sidebarToggleGroup.selectToggle(null);
+        journalEventBus.subscribe(JOURNAL_TOPIC, CloseReasonerPanelEvent.class, closeReasonerPanelEventSubscriber);
+
         // initially drop region is invisible
-        dropAnimationRegion.setVisible(false);
+        desktopDropRegion.setVisible(false);
 
         // initialize drag and drop for search results of next gen search
         setupDragNDrop(desktopSurfacePane, (publicId) -> {});
@@ -339,7 +366,7 @@ public class JournalController {
     }
 
     private void setupDragNDrop(Node node, Consumer<PublicId> consumer) {
-        node.setOnDragEntered(event -> dropAnimationRegion.setVisible(true));
+        node.setOnDragEntered(event -> desktopDropRegion.setVisible(true));
 
         node.setOnDragOver(event -> {
             /* data is dragged over the target */
@@ -353,7 +380,7 @@ public class JournalController {
             event.consume();
         });
 
-        node.setOnDragExited(event -> dropAnimationRegion.setVisible(false));
+        node.setOnDragExited(event -> desktopDropRegion.setVisible(false));
 
         node.setOnDragDropped(event -> {
             /* data dropped */
@@ -362,18 +389,47 @@ public class JournalController {
             boolean success = false;
             if (dragboard.hasString()) {
                 try {
-                    LOG.info("publicId: " + dragboard.getString());
+                    LOG.info("publicId: {}", dragboard.getString());
 
-                    HBox hbox = (HBox) event.getGestureSource();
-                    PublicId publicId = (PublicId) hbox.getUserData();
-                    Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+                    ConceptFacade conceptFacade = null;
+                    if (event.getGestureSource() instanceof SearchResultCell searchResultCell) {
+                        if (searchResultCell.getItem() instanceof SearchPanelController.NidTextRecord nidTextRecord) {
+                            conceptFacade = Entity.getFast(nidTextRecord.nid());
+                        } else if (searchResultCell.getItem() instanceof
+                                LatestVersionSearchResult latestVersionSearchResult) {
+                            if (latestVersionSearchResult.latestVersion().isPresent()) {
+                                Optional<ConceptEntity> conceptEntity = Entity.getConceptForSemantic(
+                                        latestVersionSearchResult.latestVersion().get().nid());
+                                if (conceptEntity.isPresent()) {
+                                    conceptFacade = conceptEntity.get();
+                                }
+                            }
+                        }
+                    } else if (event.getGestureSource() instanceof MultiParentGraphCell multiParentGraphCell) {
+                        conceptFacade = multiParentGraphCell.getItem();
+                    } else if (event.getGestureSource() instanceof Node sourceNode) {
+                        PublicId publicId = (PublicId) sourceNode.getUserData();
+                        conceptFacade = ConceptFacade.make(PrimitiveData.nid(publicId));
+                    }
 
-                    makeConceptWindow(this.windowView, ConceptFacade.make(entity.nid()));
+                    if (conceptFacade == null) {
+                        return;
+                    }
+
+                    PublicId publicId = conceptFacade.publicId();
+                    Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+
+                    Map<ConceptWindowSettings, Object> conceptWindowSettingsMap = new HashMap<>();
+                    conceptWindowSettingsMap.put(CONCEPT_XPOS, desktopDropRegion.getLayoutX());
+                    conceptWindowSettingsMap.put(CONCEPT_YPOS, desktopDropRegion.getLayoutY());
+                    conceptWindowSettingsMap.put(CONCEPT_WIDTH, desktopDropRegion.getWidth());
+                    conceptWindowSettingsMap.put(CONCEPT_HEIGHT, desktopDropRegion.getHeight());
+                    makeConceptWindow(windowView, ConceptFacade.make(entity.nid()), conceptWindowSettingsMap);
 
                     consumer.accept(publicId);
                     success = true;
-                } catch (Exception e) {
-                    LOG.error("exception: ", e);
+                } catch (Exception ex) {
+                    LOG.error("Error while dropping concept: ", ex);
                 }
             }
 
@@ -382,7 +438,7 @@ public class JournalController {
             event.setDropCompleted(success);
 
             event.consume();
-            Platform.runLater(() -> dropAnimationRegion.setVisible(false));
+            desktopDropRegion.setVisible(false);
         });
 
         // by default hide progress toggle button
@@ -470,6 +526,8 @@ public class JournalController {
             return nexGenSearchSlideoutTrayPane;
         } else if (progressToggleButton.equals(selectedToggleButton)) {
             return progressSlideoutTrayPane;
+        } else if (nextGenReasonerToggleButton.equals(selectedToggleButton)) {
+            return nextGenReasonerSlideoutTrayPane;
         }
         return null;
     }
@@ -522,10 +580,10 @@ public class JournalController {
         return navigatorNode;
     }
 
+    /**
+     * Add a Next Gen Search, currently tied to the "comment" left lav button
+     */
     public void loadNextGenSearchPanel() {
-        // +-----------------------------------
-        // ! Add a Next Gen Search
-        // +------------------------------------
         Config nextGenSearchConfig = new Config(NextGenSearchController.class.getResource(NEXT_GEN_SEARCH_FXML_URL))
                 .updateViewModel("nextGenSearchViewModel", (nextGenSearchViewModel) ->
                         nextGenSearchViewModel
@@ -539,6 +597,19 @@ public class JournalController {
         nextGenSearchPanel = nextGenSearchJFXNode.node();
 
         setupSlideOutTrayPane(nextGenSearchPanel, nexGenSearchSlideoutTrayPane);
+    }
+
+    /**
+     * Add a Next Gen Reasoner Results, currently tied to the "bell" left nav button
+     */
+    public void loadNextGenReasonerPanel() {
+        JFXNode<Pane, NextGenReasonerController> reasonerJFXNode = FXMLMvvmLoader.make(
+                NextGenReasonerController.class.getResource(NEXT_GEN_REASONER_FXML_URL));
+
+        nextGenReasonserController = reasonerJFXNode.controller();
+        nextGenReasonerPanel = reasonerJFXNode.node();
+
+        setupSlideOutTrayPane(nextGenReasonerPanel, nextGenReasonerSlideoutTrayPane);
     }
 
     private void loadSearchPanel(PublicIdStringKey<ActivityStream> searchActivityStreamKey,
@@ -618,8 +689,12 @@ public class JournalController {
         makeConceptWindow(windowView, conceptFacade, NID_TEXT, null);
     }
 
-    private void makeConceptWindow(ObservableViewNoOverride windowView, ConceptFacade conceptFacade, NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
+    private void makeConceptWindow(ObservableViewNoOverride windowView, ConceptFacade conceptFacade, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
+        // This is our overloaded method to call makeConceptWindow when the settings map is available.
+        makeConceptWindow(windowView, conceptFacade, NID_TEXT, conceptWindowSettingsMap);
+    }
 
+    private void makeConceptWindow(ObservableViewNoOverride windowView, ConceptFacade conceptFacade, NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
         // each detail window will publish on their own activity stream.
         String uniqueDetailsTopic = "details-%s".formatted(conceptFacade.nid());
         UUID uuid = UuidT5Generator.get(uniqueDetailsTopic);
@@ -641,7 +716,7 @@ public class JournalController {
         Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
         Node[] draggables = new Node[draggableToolbar.size()];
 
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
+        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
         //Adding the concept window panel as a child to the desktop pane.
         desktopSurfacePane.getChildren().add(kometNodePanel);
 
@@ -650,8 +725,9 @@ public class JournalController {
 
         // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
         Optional<String> conceptFolderName;
-        if (conceptWindowSettingsMap != null){
-            conceptFolderName = (Optional<String>) conceptWindowSettingsMap.getOrDefault(CONCEPT_PREF_NAME, CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
+        if (conceptWindowSettingsMap != null) {
+            conceptFolderName = Optional.of(String.valueOf(conceptWindowSettingsMap.getOrDefault(CONCEPT_PREF_NAME,
+                    CONCEPT_FOLDER_PREFIX + UUID.randomUUID())));
         } else {
             conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
             // create a conceptWindowSettingsMap
@@ -664,15 +740,15 @@ public class JournalController {
         conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, conceptFacade.nid(), kometNodePanel));
 
         //Calls the remove method to remove and concepts that were closed by the user.
-        detailsNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent -> {
-            removeConceptSetting(finalConceptFolderName, detailsNode);
-        });
+        detailsNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent ->
+                removeConceptSetting(finalConceptFolderName, detailsNode));
+
         //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
         if (conceptWindowSettingsMap != null) {
-            kometNodePanel.setPrefHeight((Double)conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
+            kometNodePanel.setTranslateX((Double)conceptWindowSettingsMap.get(CONCEPT_XPOS));
+            kometNodePanel.setTranslateY((Double)conceptWindowSettingsMap.get(CONCEPT_YPOS));
             kometNodePanel.setPrefWidth((Double)conceptWindowSettingsMap.get(CONCEPT_WIDTH));
-            kometNodePanel.setLayoutX((Double)conceptWindowSettingsMap.get(CONCEPT_XPOS));
-            kometNodePanel.setLayoutY((Double)conceptWindowSettingsMap.get(CONCEPT_YPOS));
+            kometNodePanel.setPrefHeight((Double)conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
         }
     }
 
@@ -713,7 +789,7 @@ public class JournalController {
         Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
         Node[] draggables = new Node[draggableToolbar.size()];
 
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
+        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
         //Adding the concept window panel as a child to the desktop pane.
         desktopSurfacePane.getChildren().add(kometNodePanel);
 
@@ -779,7 +855,7 @@ public class JournalController {
         Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
         Node[] draggables = new Node[draggableToolbar.size()];
 
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
+        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
         //Adding the concept window panel as a child to the desktop pane.
         desktopSurfacePane.getChildren().add(kometNodePanel);
 
@@ -850,7 +926,7 @@ public class JournalController {
         Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
         Node[] draggables = new Node[draggableToolbar.size()];
 
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
+        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
         //Adding the concept window panel as a child to the desktop pane.
         desktopSurfacePane.getChildren().add(kometNodePanel);
 
@@ -1080,7 +1156,7 @@ public class JournalController {
                 kometNodePanel.setLayoutX(x);
                 kometNodePanel.setLayoutY(y);
 
-                WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
+                WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
                 if (staggerWindowsX.get() % 3 == 0) {
                     staggerWindowsY.incrementAndGet();
                 }
@@ -1333,7 +1409,7 @@ public class JournalController {
         Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
         Node[] draggables = new Node[draggableToolbar.size()];
 
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, draggableToolbar.toArray(draggables));
+        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
         //Adding the concept window panel as a child to the desktop pane.
         desktopSurfacePane.getChildren().add(kometNodePanel);
 

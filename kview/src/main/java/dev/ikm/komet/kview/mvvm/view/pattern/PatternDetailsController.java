@@ -15,9 +15,12 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
+
+import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_DEFINITION;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FIELDS;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FQN;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_OTHER_NAME;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FIELDS;
@@ -29,14 +32,23 @@ import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FIELDS_COLLECTION;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_CASE_SIGNIFICANCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_LANGUAGE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_DATE_STR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAMES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_DATE_STR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.SELECTED_PATTERN_FIELD;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STAMP_VIEW_MODEL;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -49,9 +61,11 @@ import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
+import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.terms.State;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
@@ -59,6 +73,7 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
@@ -67,6 +82,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.BorderPane;
@@ -75,6 +91,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.FillRule;
+import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import org.carlfx.cognitive.loader.Config;
@@ -82,11 +101,17 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.loader.NamedVm;
+import org.carlfx.cognitive.viewmodel.ValidationViewModel;
+import org.carlfx.cognitive.viewmodel.ViewModel;
+import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -97,6 +122,8 @@ public class PatternDetailsController {
     private static final Logger LOG = LoggerFactory.getLogger(PatternDetailsController.class);
 
     public static final URL PATTERN_PROPERTIES_VIEW_FXML_URL = PatternDetailsController.class.getResource("pattern-properties.fxml");
+
+    private static final String EDIT_STAMP_OPTIONS_FXML = "edit-stamp.fxml";
 
     private Consumer<ToggleButton> reasonerResultsControllerConsumer;
 
@@ -117,6 +144,21 @@ public class PatternDetailsController {
 
     @FXML
     private Label patternTitleText;
+
+    @FXML
+    private TextField identifierText;
+
+    @FXML
+    private Text lastUpdatedText;
+
+    @FXML
+    private Text moduleText;
+
+    @FXML
+    private Text pathText;
+
+    @FXML
+    private Text statusText;
 
     @FXML
     private TitledPane patternDefinitionTitledPane;
@@ -140,7 +182,10 @@ public class PatternDetailsController {
     @FXML
     private Text semanticPurposeText;
 
-    // pattern defintion fields
+    @FXML
+    private Button savePatternButton;
+
+    // pattern definition fields
     @FXML
     private Text meaningText;
 
@@ -184,8 +229,16 @@ public class PatternDetailsController {
     @FXML
     private TilePane fieldsTilePane;
 
+    /**
+     * Stamp Edit
+     */
+    private PopOver stampEdit;
+    private StampEditController stampEditController;
+
     @InjectViewModel
     private PatternViewModel patternViewModel;
+
+    String copySVGPath = "M11.7266 8.89513L11.7266 10.7756L14.0916 10.7756L14.0916 13.1738L15.9721 13.1738L15.9721 10.7756L18.4034 10.7756L18.4034 8.89513L15.9721 8.89513L15.9721 6.49699L14.0916 6.49699L14.0916 8.89513L11.7266 8.89513Z M2.40039 18.6975L2.40039 11.7384C2.40038 11.2622 2.40037 10.8492 2.4282 10.5086C2.45764 10.1482 2.52284 9.78699 2.70036 9.43858C2.96422 8.92072 3.38526 8.49969 3.90311 8.23583C4.25153 8.0583 4.61277 7.99311 4.9731 7.96366C5.31375 7.93583 5.72667 7.93584 6.2029 7.93586L7.83625 7.93586L7.83625 6.3025C7.83624 5.82625 7.83623 5.41338 7.86406 5.07271C7.8935 4.71238 7.95869 4.35114 8.13622 4.00272C8.40008 3.48486 8.82111 3.06383 9.33897 2.79997C9.68738 2.62245 10.0486 2.55725 10.409 2.52781C10.7497 2.49997 11.1626 2.49999 11.6389 2.5L18.5977 2.5C19.074 2.49999 19.487 2.49997 19.8277 2.52781C20.188 2.55725 20.5493 2.62245 20.8977 2.79997C21.4155 3.06383 21.8366 3.48486 22.1004 4.00272C22.2779 4.35114 22.3431 4.71237 22.3726 5.07271C22.4004 5.41342 22.4004 5.82635 22.4004 6.30267L22.4004 13.2615C22.4004 13.7378 22.4004 14.1507 22.3726 14.4914C22.3431 14.8518 22.2779 15.213 22.1004 15.5614C21.8366 16.0793 21.4155 16.5003 20.8977 16.7642C20.5493 16.9417 20.188 17.0069 19.8277 17.0363C19.487 17.0642 19.0741 17.0642 18.5978 17.0641L16.9645 17.0641L16.9645 18.6976C16.9645 19.1738 16.9646 19.5866 16.9367 19.9273C16.9073 20.2876 16.8421 20.6489 16.6646 20.9973C16.4007 21.5151 15.9797 21.9362 15.4618 22.2C15.1134 22.3776 14.7522 22.4427 14.3918 22.4722C14.0512 22.5 13.6383 22.5 13.162 22.5L6.20291 22.5C5.72666 22.5 5.31377 22.5 4.9731 22.4722C4.61277 22.4427 4.25153 22.3776 3.90311 22.2C3.38526 21.9362 2.96423 21.5151 2.70036 20.9973C2.52284 20.6489 2.45764 20.2876 2.4282 19.9273C2.40037 19.5866 2.40038 19.1737 2.40039 18.6975ZM4.30243 19.7742C4.2816 19.5192 4.28086 19.1836 4.28086 18.6606L4.28086 11.7752C4.28086 11.2522 4.2816 10.9167 4.30243 10.6617C4.32237 10.4176 4.35595 10.3314 4.37588 10.2923C4.45945 10.1283 4.59281 9.99491 4.75683 9.91134C4.79593 9.89142 4.88212 9.85784 5.12623 9.83789C5.38119 9.81706 5.71676 9.81633 6.23975 9.81633L7.83625 9.81633L7.83625 13.2616C7.83624 13.7378 7.83623 14.1508 7.86406 14.4914C7.8935 14.8518 7.95869 15.213 8.13622 15.5614C8.40008 16.0793 8.82111 16.5003 9.33897 16.7642C9.68739 16.9417 10.0486 17.0069 10.409 17.0363C10.7496 17.0642 11.1626 17.0642 11.6388 17.0641L15.0841 17.0641L15.0841 18.6606C15.0841 19.1836 15.0833 19.5192 15.0625 19.7742C15.0426 20.0183 15.009 20.1045 14.9891 20.1436C14.9055 20.3076 14.7721 20.4409 14.6081 20.5245C14.569 20.5444 14.4828 20.578 14.2387 20.598C13.9837 20.6188 13.6482 20.6195 13.1252 20.6195L6.23975 20.6195C5.71676 20.6195 5.38119 20.6188 5.12623 20.598C4.88212 20.578 4.79593 20.5444 4.75683 20.5245C4.59281 20.4409 4.45945 20.3076 4.37588 20.1436C4.35595 20.1045 4.32237 20.0183 4.30243 19.7742ZM9.73829 14.3383C9.71746 14.0833 9.71672 13.7478 9.71672 13.2248L9.71672 6.33936C9.71672 5.81637 9.71745 5.4808 9.73829 5.22584C9.75823 4.98173 9.79181 4.89554 9.81173 4.85644C9.89531 4.69241 10.0287 4.55906 10.1927 4.47548C10.2318 4.45556 10.318 4.42198 10.5621 4.40204C10.817 4.38121 11.1526 4.38047 11.6756 4.38047L18.561 4.38047C19.084 4.38047 19.4196 4.38121 19.6745 4.40204C19.9187 4.42198 20.0048 4.45556 20.0439 4.47548C20.208 4.55906 20.3413 4.69241 20.4249 4.85644C20.4448 4.89554 20.4784 4.98173 20.4984 5.22584C20.5192 5.4808 20.5199 5.81637 20.5199 6.33936L20.5199 13.2248C20.5199 13.7478 20.5192 14.0833 20.4984 14.3383C20.4784 14.5824 20.4448 14.6686 20.4249 14.7077C20.3413 14.8717 20.208 15.0051 20.044 15.0887C20.0049 15.1086 19.9187 15.1422 19.6746 15.1621C19.4196 15.1829 19.084 15.1837 18.561 15.1837L11.6756 15.1837C11.1526 15.1837 10.817 15.1829 10.5621 15.1621C10.318 15.1422 10.2318 15.1086 10.1927 15.0887C10.0287 15.0051 9.89531 14.8717 9.81173 14.7077C9.79181 14.6686 9.75823 14.5824 9.73829 14.3383Z";
 
     private Subscriber<PropertyPanelEvent> patternPropertiesEventSubscriber;
 
@@ -199,7 +252,7 @@ public class PatternDetailsController {
 
     @FXML
     private void initialize() {
-
+        identifierText.setText("");
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
         otherNamesVBox.getChildren().clear();
@@ -221,6 +274,8 @@ public class PatternDetailsController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PropertyPanelEvent.class, patternPropertiesEventSubscriber);
 
+        savePatternButton.disableProperty().bind(patternViewModel.getProperty(IS_INVALID));
+
         // capture pattern definition information
         purposeText.textProperty().bind(patternViewModel.getProperty(PURPOSE_TEXT));
         purposeText.getStyleClass().add("text-noto-sans-bold-grey-twelve");
@@ -231,13 +286,9 @@ public class PatternDetailsController {
         meaningDate.textProperty().bind(patternViewModel.getProperty(MEANING_DATE_STR));
         purposeDate.textProperty().bind(patternViewModel.getProperty(PURPOSE_DATE_STR));
 
-        patternDefinitionEventSubscriber = evt -> {
-            patternViewModel.setPurposeAndMeaningText(evt.getPatternDefinition());
-        };
-        EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
+        patternDefinitionEventSubscriber = evt -> patternViewModel.setPurposeAndMeaningText(evt.getPatternDefinition());
 
-        meaningDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
-        purposeDate.getStyleClass().add("text-noto-sans-normal-grey-eight");
+        EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
 
         // capture descriptions information
         StringProperty fqnTextProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
@@ -245,11 +296,13 @@ public class PatternDetailsController {
 
         // This will listen to the pattern descriptions event. Adding an FQN, Adding other name.
         patternDescriptionEventSubscriber = evt -> {
+            DescrName descrName = evt.getDescrName();
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_FQN) {
                 // This if is invoked when the data is coming from FQN name screen.
-                DescrName descrName = evt.getDescrName();
                 patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, descrName.getNameText());
                 patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME, descrName);
+                patternViewModel.setPropertyValue(FQN_CASE_SIGNIFICANCE, descrName.getCaseSignificance());
+                patternViewModel.setPropertyValue(FQN_LANGUAGE, descrName.getLanguage());
             } else if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
                 // This if is invoked when the data is coming from Other Name screen.
                 ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
@@ -283,14 +336,19 @@ public class PatternDetailsController {
             }
         });
 
+        ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
         patternFieldsPanelEventSubscriber = evt -> {
             PatternField patternField = evt.getPatternField();
+            PatternField previousPatternField = evt.getPreviousPatternField();
             int fieldPosition = evt.getCurrentFieldOrder()-1;
+            if(evt.getEventType() == EDIT_FIELD && previousPatternField != null){
+                // 1st remove it from list before adding the new entry
+                patternFieldList.remove(previousPatternField);
+            }
             //Update the fields collection data.
-            ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
             patternFieldList.add(fieldPosition, patternField);
-            //update the display.
-            fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(patternField, evt.getCurrentFieldOrder()));
+             // save and therefore validate
+            patternViewModel.save();
         };
 
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
@@ -299,8 +357,20 @@ public class PatternDetailsController {
         ObservableList<Node> fieldsTilePaneList = fieldsTilePane.getChildren();
         fieldsTilePaneList.addListener((ListChangeListener<Node>) (listener) -> {
             while(listener.next()){
-                if(listener.wasAdded()){
-                    updateFieldValues(listener.getTo()); // Get the field number that has been added.
+                if(listener.wasAdded() || listener.wasRemoved()){
+                    updateFieldValues();
+                }
+            }
+        });
+
+        patternFieldList.addListener((ListChangeListener<? super PatternField>) changeListner -> {
+            while(changeListner.next()){
+                if(changeListner.wasAdded()){
+                    int fieldPosition = changeListner.getTo()-1;
+                    //update the display.
+                    fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(changeListner.getAddedSubList().getFirst(), changeListner.getTo()));
+                }else if(changeListner.wasRemoved()){
+                    fieldsTilePaneList.remove(changeListner.getTo());
                 }
             }
         });
@@ -314,6 +384,36 @@ public class PatternDetailsController {
         fqnAddDateLabel.textProperty().bind(dateStrProp);
         // Setup Properties
         setupProperties();
+    }
+
+    private ContextMenu createContextMenuForPatternField(PatternField selectedPatternField) {
+
+        Object[][] menuItems = new Object[][]{
+                {"Edit", true, new String[]{"menu-item"}, (EventHandler<ActionEvent>) actionEvent -> showEditFieldsPanel(actionEvent, selectedPatternField), createGraphics("edit-icon")},
+                {MenuHelper.SEPARATOR},
+                {"Copy", false, new String[]{"menu-item"}, null, createSVGGraphic(copySVGPath)},
+                {"Save to Favorites",  false, new String[]{"menu-item"}, null, createGraphics("favorites-icon")},
+                {MenuHelper.SEPARATOR},
+                {"Add Comment",  false, new String[]{"menu-item"}, null, createGraphics("comment-icon")},
+                {"Remove", true, new String[]{"menu-item"}, (EventHandler<ActionEvent>) actionEvent -> patternViewModel.getObservableList(FIELDS_COLLECTION).remove(selectedPatternField)
+                , createGraphics("remove-icon")}
+        };
+        return MenuHelper.getInstance().createContextMenuWithMenuItems(menuItems);
+    }
+
+    private Region createGraphics(String iconString) {
+        Region region = new Region();
+        region.getStyleClass().add(iconString);
+        return region;
+    }
+
+    //The copy image is not dispalyed properly in Region css hence using the SVGPath node.
+    private SVGPath createSVGGraphic(String content){
+        SVGPath svgImagePath = new SVGPath();
+        svgImagePath.setContent(content);
+        svgImagePath.setFill(Color.WHITE);
+        svgImagePath.setFillRule(FillRule.EVEN_ODD);
+        return svgImagePath;
     }
 
     /**
@@ -377,12 +477,11 @@ public class PatternDetailsController {
     }
 
     /**
-     * This method updates the Field label with the correct field number value.     *
-     * @param fieldNumber
+     * This method updates the Field label with the correct field number value.
      */
-    private void updateFieldValues(int fieldNumber) {
+    private void updateFieldValues() {
         ObservableList<Node> fieldVBoxes = fieldsTilePane.getChildren();
-        for(int i=fieldNumber ; i < fieldVBoxes.size(); i++){
+        for(int i=0 ; i < fieldVBoxes.size(); i++){
             Node node = fieldVBoxes.get(i);
             Node labelNode = node.lookup(".pattern-field");
             if(labelNode instanceof Label label){
@@ -412,6 +511,10 @@ public class PatternDetailsController {
         commentIconRegion.getStyleClass().add("grey-comment-icon");
         outerHBox.getChildren().addAll(innerHBox, commentIconRegion);
         fieldVBoxContainer.getChildren().addAll(fieldLabel, fieldText, outerHBox);
+        fieldVBoxContainer.setOnMouseClicked(mouseEvent -> {
+            ContextMenu contextMenu = createContextMenuForPatternField (patternField);
+            contextMenu.show(fieldVBoxContainer, mouseEvent.getScreenX(),  mouseEvent.getScreenY());
+        });
         return fieldVBoxContainer;
     }
 
@@ -475,13 +578,19 @@ public class PatternDetailsController {
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 
+    private void showEditFieldsPanel(ActionEvent actionEvent, PatternField selectedPatternField) {
+        LOG.info("Todo show bump out and display Edit Fields panel \n" + actionEvent);
+        patternViewModel.setPropertyValue(SELECTED_PATTERN_FIELD, selectedPatternField );
+        ObservableList<PatternField> patternFieldsObsList = patternViewModel.getObservableList(FIELDS_COLLECTION);
+        int fieldNum = (patternFieldsObsList.indexOf(selectedPatternField)+1);
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_EDIT_FIELDS, patternFieldsObsList.size(), selectedPatternField, fieldNum));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
+    }
 
     @FXML
-    private void showEditFieldsPanel(ActionEvent actionEvent) {
-        LOG.info("Todo show bump out and display Edit Fields panel \n" + actionEvent);
-
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_EDIT_FIELDS, patternViewModel.getObservableList(FIELDS_COLLECTION).size()));
-
+    private void showAddFieldsPanel(ActionEvent actionEvent) {
+        LOG.info("Todo show bump out and display Add Fields panel \n" + actionEvent);
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_FIELDS, patternViewModel.getObservableList(FIELDS_COLLECTION).size()));
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 
@@ -513,7 +622,68 @@ public class PatternDetailsController {
 
     @FXML
     public void popupStampEdit(ActionEvent event) {
-        //TODO implement this method
+        if (stampEdit != null && stampEditController != null) {
+            stampEdit.show((Node) event.getSource());
+            return;
+        }
+
+        // The stampViewModel is already created for the PatternDetailsController when instantiated
+        // inside the JournalController
+        // Inject Stamp view model into form.
+        Config stampConfig = new Config(StampEditController.class.getResource(EDIT_STAMP_OPTIONS_FXML))
+                .addNamedViewModel(new NamedVm("stampViewModel", getStampViewModel()));
+        JFXNode<Pane, StampEditController> stampJFXNode = FXMLMvvmLoader.make(stampConfig);
+
+        // for now, we are in create mode, but in the future we will check to see if we are in EDIT mode
+
+        Pane editStampPane = stampJFXNode.node();
+        PopOver popOver = new PopOver(editStampPane);
+        popOver.getStyleClass().add("filter-menu-popup");
+        StampEditController stampEditController = stampJFXNode.controller();
+
+        stampEditController.updateModel(getViewProperties());
+
+        // default the status=Active, disable inactive
+        stampEditController.selectActiveStatusToggle();
+
+        popOver.setOnHidden(windowEvent -> {
+            // set Stamp info into Details form
+            getStampViewModel().save();
+            updateUIStamp(getStampViewModel());
+        });
+
+        popOver.show((Node) event.getSource());
+
+        // store and use later.
+        stampEdit = popOver;
+        this.stampEditController = stampEditController;
+    }
+
+    private void updateUIStamp(ViewModel stampViewModel) {
+        long time = stampViewModel.getValue(TIME);
+        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
+        Instant stampInstance = Instant.ofEpochSecond(time/1000);
+        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
+        String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
+
+        lastUpdatedText.setText(lastUpdated);
+        ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
+        if (moduleEntity == null) {
+            LOG.warn("Must select a valid module for Stamp.");
+            return;
+        }
+        String moduleDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleEntity.nid());
+        moduleText.setText(moduleDescr);
+        ConceptEntity pathEntity = stampViewModel.getValue(PATH);
+        String pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
+        pathText.setText(pathDescr);
+        State status = stampViewModel.getValue(STATUS);
+        String statusMsg = status == null ? "Active" : getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
+        statusText.setText(statusMsg);
+    }
+
+    public ValidationViewModel getStampViewModel() {
+        return patternViewModel.getPropertyValue(STAMP_VIEW_MODEL);
     }
 
     @FXML
@@ -567,5 +737,21 @@ public class PatternDetailsController {
         putArrowOnRight(this.fieldsTitledPane);
     }
 
+    @FXML
+    private void savePattern(ActionEvent actionEvent) {
+        boolean isValidSave = patternViewModel.createPattern();
+        LOG.info(isValidSave ? "success" : "failed");
+        updatePatternBanner();
+    }
 
+    private void updatePatternBanner() {
+        // update the title to the FQN
+        patternTitleText.setText(patternViewModel.getPatternTitle());
+
+        // get the latest stamp time
+        updateUIStamp(getStampViewModel());
+
+        // update the public id
+        identifierText.setText(patternViewModel.getPatternIdentifierText());
+    }
 }
