@@ -65,10 +65,6 @@ public class PropertiesController {
 
     private static final URL PATTERN_FIELDS_FXML_URL = PatternFieldsController.class.getResource("pattern-fields.fxml");
 
-    private static final URL PATTERN_FORM_CHOOSER_FXML_URL = PatternFormChooserController.class.getResource("pattern-form-chooser.fxml");
-
-    private static final URL DESCRIPTION_FORM_CHOOSER_FXML_URL = DescriptionFormChooserController.class.getResource("pattern-description-chooser.fxml");
-
     private static final String ADD_FQN_TITLE_TEXT = "Add Description: Add Fully Qualified Name";
 
     private static final String EDIT_FQN_TITLE_TEXT = "Edit Description: Edit Fully Qualified Name";
@@ -114,11 +110,7 @@ public class PropertiesController {
 
     private Pane patternFieldsPane;
 
-    private PatternFormChooserController patternFormChooserController;
-
     private Pane patternFormChooserPane;
-
-    private DescriptionFormChooserController descriptionFormChooserController;
 
     private Pane descriptionNameChooserPane;
 
@@ -133,6 +125,8 @@ public class PropertiesController {
         clearView();
 
         eventBus = EvtBusFactory.getDefaultEvtBus();
+
+        historyButton.setSelected(true);
 
         // +-----------------------------------
         // ! Add definition(s) to a Pattern
@@ -159,17 +153,6 @@ public class PropertiesController {
         patternFieldsController = patternFieldsJFXNode.controller();
         patternFieldsPane = patternFieldsJFXNode.node();
         patternFieldsController.setViewProperties(getViewProperties());
-
-        JFXNode<Pane, PatternFormChooserController> patternFormJFXNode = FXMLMvvmLoader.make(PATTERN_FORM_CHOOSER_FXML_URL,
-                new PatternFormChooserController(patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC)));
-        patternFormChooserController = patternFormJFXNode.controller();
-        patternFormChooserPane = patternFormJFXNode.node();
-
-        Config descrFormconfig = new Config(DESCRIPTION_FORM_CHOOSER_FXML_URL)
-                .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel));
-        JFXNode<Pane, DescriptionFormChooserController> descriptionFormJFXNode = FXMLMvvmLoader.make(descrFormconfig);
-        descriptionFormChooserController = descriptionFormJFXNode.controller();
-        descriptionNameChooserPane = descriptionFormJFXNode.node();
 
         // initially a default selected tab and view is shown
         updateDefaultSelectedViews();
