@@ -70,10 +70,6 @@
         <tinkar-composer.version>1.4.0</tinkar-composer.version>
         <tinkar-core.version>1.74.0</tinkar-core.version>
 
-        <!-- OWLAPI Variables -->
-        <owlapi.groupId>dev.ikm.owlapi</owlapi.groupId>
-        <owlapi.version>4.7.3</owlapi.version>
-
         <!-- IKM Evrete Variables -->
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
         <ikm-evrete.version>4.0.3</ikm-evrete.version>
@@ -123,11 +119,6 @@
                 <groupId>${project.groupId}</groupId>
                 <artifactId>classification</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${tinkar-core.groupId}</groupId>
-                <artifactId>reasoner-service</artifactId>
-                <version>${tinkar-core.version}</version>
             </dependency>
             <dependency>
                 <groupId>${tinkar-core.groupId}</groupId>
@@ -248,12 +239,22 @@
             </dependency>
             <dependency>
                 <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>reasoner-service</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
                 <artifactId>reasoner-elk-owl</artifactId>
                 <version>${tinkar-core.version}</version>
             </dependency>
             <dependency>
                 <groupId>${tinkar-core.groupId}</groupId>
                 <artifactId>reasoner-elk-snomed</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>reasoner-hybrid</artifactId>
                 <version>${tinkar-core.version}</version>
             </dependency>
 
@@ -453,26 +454,6 @@
                 <groupId>net.raumzeitfalle.fx</groupId>
                 <artifactId>scenic-view</artifactId>
                 <version>${scenic-view.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${owlapi.groupId}</groupId>
-                <artifactId>owlapi-api</artifactId>
-                <version>${owlapi.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${owlapi.groupId}</groupId>
-                <artifactId>owlapi-impl</artifactId>
-                <version>${owlapi.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${owlapi.groupId}</groupId>
-                <artifactId>owlapi-apibinding</artifactId>
-                <version>${owlapi.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${owlapi.groupId}</groupId>
-                <artifactId>owlapi-parsers</artifactId>
-                <version>${owlapi.version}</version>
             </dependency>
 
             <!--- Bind To SLF4J Dependencies (Start) -->

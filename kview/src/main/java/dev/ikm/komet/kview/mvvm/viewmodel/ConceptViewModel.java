@@ -15,23 +15,19 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
-import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.framework.builder.AxiomBuilderRecord;
 import dev.ikm.komet.framework.builder.ConceptEntityBuilder;
+import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
-import dev.ikm.tinkar.coordinate.stamp.StampFields;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
-import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.*;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import org.carlfx.cognitive.validator.MessageType;
@@ -50,6 +46,7 @@ import java.util.UUID;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 
 public class ConceptViewModel extends FormViewModel {
@@ -123,7 +120,7 @@ public class ConceptViewModel extends FormViewModel {
         save(); // View Model xfer values. does not save to the database but validates data and then copies data from properties to model values.
 
         // Validation errors will not create record.
-        if (getValidationMessages().size() > 0) {
+        if (!getValidationMessages().isEmpty()) {
             return false;
         }
 
@@ -131,7 +128,7 @@ public class ConceptViewModel extends FormViewModel {
         StampViewModel stampViewModel = getValue(CONCEPT_STAMP_VIEW_MODEL);
         if (stampViewModel != null) {
             stampViewModel.save(); // View Model xfer values
-            if (stampViewModel.getValidationMessages().size() > 0) {
+            if (!stampViewModel.getValidationMessages().isEmpty()) {
                 return false;
             }
         } else {
@@ -143,7 +140,7 @@ public class ConceptViewModel extends FormViewModel {
         Transaction transaction = Transaction.make("New concept for: " + fqnDescrName.getNameText());
 
         // Copy STAMP info
-        ConceptEntity module = stampViewModel.getValue(StampFields.MODULE);
+        ConceptEntity module = stampViewModel.getValue(MODULE);
         ConceptEntity path = stampViewModel.getValue(PATH);
 
         StampEntity stampEntity = transaction.getStamp(State.ACTIVE, editCoordinate.getAuthorNidForChanges(),
@@ -155,7 +152,7 @@ public class ConceptViewModel extends FormViewModel {
         PublicId conceptPublicId = PublicIds.newRandom();
         ConceptRecord conceptRecord = ConceptRecord.build(conceptPublicId.asUuidList().get(0), stampEntity.lastVersion());
 
-        ConceptFacade conceptFacade = ConceptFacade.make(conceptRecord.nid());
+        ConceptFacade conceptFacade = EntityProxy.Concept.make(conceptRecord.publicId()) ;
 
         // add the Fully Qualified Name to the new concept
         saveFQNwithinCreateConcept(transaction, stampEntity, getValue(FULLY_QUALIFIED_NAME), conceptFacade);

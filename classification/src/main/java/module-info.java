@@ -36,6 +36,7 @@ module dev.ikm.komet.classification {
 
 	requires dev.ikm.tinkar.reasoner.elkowl;
 	requires dev.ikm.tinkar.reasoner.elksnomed;
+	requires dev.ikm.tinkar.reasoner.hybrid;
 
 	exports dev.ikm.komet.reasoner;
 
