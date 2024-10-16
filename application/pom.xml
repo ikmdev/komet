@@ -241,6 +241,7 @@
                 <configuration>
                     <mainClassName>dev.ikm.komet.app.WebApp</mainClassName>
                     <useModuleSystem>true</useModuleSystem>
+                    <releaseName>komet</releaseName>
                     <releasePlatforms> <!-- Sets the platforms to be included in the zip generated via jpro:release -->
                         <releasePlatform>linux</releasePlatform> <!-- includes linux x64 builds -->
                         <releasePlatform>linux-aarch64</releasePlatform> <!-- includes linux aarch64 builds -->
