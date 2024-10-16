@@ -449,9 +449,9 @@ public class ClauseView {
         builder.append("⒡ ");
         Optional<ConceptFacade> optionalTypeConcept = this.axiomVertex.propertyAsConcept(TinkarTerm.FEATURE_TYPE);
         Optional<ConceptFacade> optionalConcreteDomainOperator = this.axiomVertex.propertyAsConcept(TinkarTerm.CONCRETE_DOMAIN_OPERATOR);
-        ConceptFacade typeConcept = optionalTypeConcept.get();
-        ConceptFacade concreteDomainOperatorConcept = optionalConcreteDomainOperator.get();
         if (optionalTypeConcept.isPresent()  && optionalConcreteDomainOperator.isPresent()) {
+            ConceptFacade typeConcept = optionalTypeConcept.get();
+            ConceptFacade concreteDomainOperatorConcept = optionalConcreteDomainOperator.get();
             builder.append(calculator().getPreferredDescriptionTextWithFallbackOrNid(typeConcept));
             ConcreteDomainOperators operator = ConcreteDomainOperators.fromConcept(concreteDomainOperatorConcept);
             switch (operator) {
