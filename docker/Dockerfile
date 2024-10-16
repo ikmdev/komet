@@ -1,23 +1,22 @@
 FROM ubuntu:24.04
 
 # Update the package list
-RUN apt-get update
+RUN apt update
 
 # Install xorg and libgtk-3-0 needed to run JPro applications
-RUN apt-get install -y xorg libgtk-3-0
+RUN apt install -y xorg libgtk-3-0
 
-# Install wget and software-properties-common need to add Adoptium APT repository
-RUN apt-get install -y wget software-properties-common
+# Ensure the necessary packages are present
+RUN apt install -y wget software-properties-common
 
-# Add the Adoptium (Eclipse Temurin) APT repository and import the GPG key
-RUN wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | apt-key add - && \
-    add-apt-repository --yes https://packages.adoptium.net/artifactory/deb/
+# Import Azul’s public key:
+RUN apt install -y gnupg ca-certificates curl && \
+    curl -s https://repos.azul.com/azul-repo.key | gpg --dearmor -o /usr/share/keyrings/azul.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | tee /etc/apt/sources.list.d/zulu.list
 
-# Install Temurin 21 JDK
+# Install Azul Zulu JDK
 RUN apt-get update && \
-    apt-get install -y temurin-21-jdk && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y zulu21-jdk
 
 # Copy the JPro distribution to the image
 ADD . jproserver/
