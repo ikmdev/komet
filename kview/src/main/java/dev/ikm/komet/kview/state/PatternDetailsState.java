@@ -16,7 +16,11 @@ public enum PatternDetailsState implements State {
 
     ADDING_OTHER_NAME("AddingOtherName"),
 
-    ADDED_OTHER_NAME("AddedOtherName")
+    ADDED_OTHER_NAME("AddedOtherName"),
+
+    ADDING_FIELD("AddingField"),
+
+    EDITING_FIELD("EditingField")
     ;
 
     final String name;

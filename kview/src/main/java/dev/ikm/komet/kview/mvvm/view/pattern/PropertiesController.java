@@ -16,12 +16,42 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
-import dev.ikm.komet.framework.events.EvtBus;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.DEFINITION_CONFIRMATION;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.DESCRIPTION_NAME;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_DEFINITION;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FQN;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_OTHER_NAME;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_CONTINUE_ADD_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_CONTINUE_EDIT_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FQN;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_OTHER_NAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.DESCRIPTION_NAME_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TITLE_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.ADD_EDIT_LABEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.COMMENTS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.DATA_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.DISPLAY_NAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.FIELD_ORDER;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.MEANING_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.PREVIOUS_PATTERN_FIELD;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.PURPOSE_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.TOTAL_EXISTING_FIELDS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
+import static dev.ikm.komet.kview.state.PatternDetailsState.NEW_PATTERN_INITIAL;
+import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
@@ -37,7 +67,11 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.SVGPath;
 import org.carlfx.axonic.StateMachine;
-import org.carlfx.cognitive.loader.*;
+import org.carlfx.cognitive.loader.Config;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,20 +79,6 @@ import org.slf4j.LoggerFactory;
 import java.net.URL;
 import java.util.Optional;
 import java.util.UUID;
-
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.DEFINITION_CONFIRMATION;
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
-import static dev.ikm.komet.kview.state.PatternDetailsState.NEW_PATTERN_INITIAL;
-import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 
 public class PropertiesController {
 
@@ -68,7 +88,7 @@ public class PropertiesController {
 
     private static final URL CONFIRMATION_FXML_URL = ConfirmationController.class.getResource("confirmation-pane.fxml");
 
-    private static final URL CONTINUE_ADDING_FIELDS_URL = ContinueAddingFieldsController.class.getResource("continue-adding-fields.fxml");
+    private static final URL CONTINUE_ADDING_FIELDS_URL = ContinueAddFieldsController.class.getResource("continue-adding-fields.fxml");
 
     private static final URL PATTERN_DEFINITION_FXML_URL = PatternDefinitionController.class.getResource("pattern-definition.fxml");
     private static final URL PATTERN_DESCRIPTION_FXML_URL = DescriptionNameController.class.getResource("description-name.fxml");
@@ -114,7 +134,7 @@ public class PropertiesController {
 
     private ConfirmationController confirmationController;
 
-    private ContinueAddingFieldsController continueAddingFieldsController;
+    private ContinueAddFieldsController continueAddFieldsController;
 
     private PatternDefinitionController patternDefinitionController;
 
@@ -124,7 +144,7 @@ public class PropertiesController {
 
     private Pane confirmationPane;
 
-    private Pane continueAddingFieldsPane;
+    private Pane continueAddFieldsPane;
 
     private Pane patternDefinitionPane;
 
@@ -158,13 +178,13 @@ public class PropertiesController {
         confirmationPane = confirmationPanelJFXNode.node();
 
         // +-----------------------------------------------------------------------
-        // ! continue adding fields confirmation panel
+        // ! continue fields confirmation panel
         // +-----------------------------------------------------------------------
         Config continueAddFieldsConfig = new Config(CONTINUE_ADDING_FIELDS_URL)
                 .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel));
-        JFXNode<Pane, ContinueAddingFieldsController> continueFieldsJFXNode = FXMLMvvmLoader.make(continueAddFieldsConfig);
-        continueAddingFieldsController = continueFieldsJFXNode.controller();
-        continueAddingFieldsPane = continueFieldsJFXNode.node();
+        JFXNode<Pane, ContinueAddFieldsController> continueFieldsJFXNode = FXMLMvvmLoader.make(continueAddFieldsConfig);
+        continueAddFieldsController = continueFieldsJFXNode.controller();
+        continueAddFieldsPane = continueFieldsJFXNode.node();
 
         // +-----------------------------------
         // ! Add definition(s) to a Pattern
@@ -200,7 +220,6 @@ public class PropertiesController {
         // selecting with form chooser buttons
         showPatternPanelEventSubscriber = evt -> {
             LOG.info("Show Panel by event type: " + evt.getEventType());
-
             // TODO swap based on state (edit definition, ).
             if (evt.getEventType() == SHOW_ADD_DEFINITION) {
                 currentEditPane = patternDefinitionPane; // must be available.
@@ -232,7 +251,10 @@ public class PropertiesController {
             } else if (evt.getEventType().getSuperType() == DESCRIPTION_NAME) {
                 setupDescriptionNamePane(evt.getEventType());
             } else if (evt.getEventType() == SHOW_CONTINUE_ADD_FIELDS) {
-                currentEditPane = continueAddingFieldsPane;
+                currentEditPane = continueAddFieldsPane;
+            } else if (evt.getEventType() == SHOW_CONTINUE_EDIT_FIELDS) {
+                confirmationController.showContinueEditingFields();
+                currentEditPane = confirmationPane;
             }
             this.addEditButton.setSelected(true);
             this.contentBorderPane.setCenter(currentEditPane);
@@ -278,7 +300,7 @@ public class PropertiesController {
         // panel to open.
         StateMachine stateMachine = patternPropertiesViewModel.getPropertyValue(STATE_MACHINE);
         if (stateMachine.currentState().equals(NEW_PATTERN_INITIAL)) {
-            // a brand new pattern shows the add edit view
+            // a brand-new pattern shows the add edit view
             currentEditPane = patternDefinitionPane;
             showAddEditView(new ActionEvent());
         }

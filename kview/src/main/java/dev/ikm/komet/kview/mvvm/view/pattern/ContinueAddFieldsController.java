@@ -15,7 +15,7 @@ import org.carlfx.cognitive.loader.InjectViewModel;
 
 import java.util.UUID;
 
-public class ContinueAddingFieldsController {
+public class ContinueAddFieldsController {
 
     @FXML
     private Label confirmationTitle;
@@ -55,4 +55,5 @@ public class ContinueAddingFieldsController {
     private UUID getPatternTopic() {
         return patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC);
     }
+
 }

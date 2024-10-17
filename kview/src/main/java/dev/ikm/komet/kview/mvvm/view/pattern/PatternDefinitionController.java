@@ -22,6 +22,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.MEANING_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.PURPOSE_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
@@ -53,6 +54,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import org.carlfx.axonic.StateMachine;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -547,6 +549,9 @@ public class PatternDefinitionController {
                 patternDefinitionViewModel.getPropertyValue(PURPOSE_ENTITY),
                 patternDefinitionViewModel.getPropertyValue(MEANING_ENTITY),
                 null);
+
+        StateMachine patternSM = patternPropertiesViewModel.getPropertyValue(STATE_MACHINE);
+        patternSM.t("definitionsDone");
 
         // publish and event so that we can go to the definition confirmation screen
         EvtBusFactory.getDefaultEvtBus().publish(patternDefinitionViewModel.getPropertyValue(PATTERN_TOPIC),

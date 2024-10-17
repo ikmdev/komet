@@ -300,18 +300,19 @@ public class PatternDetailsController {
         // This will listen to the pattern descriptions event. Adding an FQN, Adding other name.
         patternDescriptionEventSubscriber = evt -> {
             DescrName descrName = evt.getDescrName();
+            StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_FQN) {
                 // This if is invoked when the data is coming from FQN name screen.
                 patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, descrName.getNameText());
                 patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME, descrName);
                 patternViewModel.setPropertyValue(FQN_CASE_SIGNIFICANCE, descrName.getCaseSignificance());
                 patternViewModel.setPropertyValue(FQN_LANGUAGE, descrName.getLanguage());
-                StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);
                 patternSM.t("fqnDone");
             } else if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
                 // This if is invoked when the data is coming from Other Name screen.
                 ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
                 descrNameObservableList.add(evt.getDescrName());
+                patternSM.t("otherNameDone");
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
@@ -585,6 +586,8 @@ public class PatternDetailsController {
     private void showAddEditDefinitionPanel(ActionEvent actionEvent) {
         actionEvent.consume();
         LOG.info("Todo show bump out and display Edit Definition panel \n" + actionEvent);
+        StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);
+        patternSM.t("addField");
         // publish property open.
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_DEFINITION));
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
@@ -593,6 +596,8 @@ public class PatternDetailsController {
     private void showEditFieldsPanel(ActionEvent actionEvent, PatternField selectedPatternField) {
         LOG.info("Todo show bump out and display Edit Fields panel \n" + actionEvent);
         actionEvent.consume();
+        StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);
+        patternSM.t("editField");
         patternViewModel.setPropertyValue(SELECTED_PATTERN_FIELD, selectedPatternField );
         ObservableList<PatternField> patternFieldsObsList = patternViewModel.getObservableList(FIELDS_COLLECTION);
         int fieldNum = (patternFieldsObsList.indexOf(selectedPatternField)+1);

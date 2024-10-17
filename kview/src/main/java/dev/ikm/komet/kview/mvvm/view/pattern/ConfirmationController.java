@@ -53,10 +53,19 @@ public class ConfirmationController {
 
     /**
      * update the verbiage on the confirmation screen to show
-     * a Other Name Added confirmation message
+     * an Other Name Added confirmation message
      */
     public void showOtherNameAdded() {
         confirmationTitle.setText("Other Name Added");
+        confirmationMessage.setText("");
+    }
+
+    /**
+     * update the verbiage on the confirmation screen to show
+     * a Continue editing Fields? confirmation message
+     */
+    public void showContinueEditingFields() {
+        confirmationTitle.setText("Continue editing Fields?");
         confirmationMessage.setText("");
     }
 }

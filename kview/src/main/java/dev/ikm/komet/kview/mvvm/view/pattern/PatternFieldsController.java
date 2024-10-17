@@ -20,6 +20,7 @@ import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.ADD_FIE
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_CONTINUE_ADD_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_CONTINUE_EDIT_FIELDS;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchFieldDefinitionDataTypes;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
@@ -534,14 +535,17 @@ public class PatternFieldsController {
         EvtType<PatternFieldsPanelEvent> eventType = EDIT_FIELD;
         if (previousPatternField == null) {
              eventType = ADD_FIELD;
+
+            //publish event to get to the continue adding confirmation panel
+            EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
+                    new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_CONTINUE_ADD_FIELDS));
+        } else {
+            EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
+                    new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_CONTINUE_EDIT_FIELDS));
         }
 
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
                 new PatternFieldsPanelEvent(actionEvent.getSource(), eventType, patternField, previousPatternField, patternFieldsViewModel.getValue(FIELD_ORDER)));
-
-        //publish event to get to the continue adding confirmation panel
-        EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
-                new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_CONTINUE_ADD_FIELDS));
 
         clearView(actionEvent);
     }
