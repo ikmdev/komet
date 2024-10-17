@@ -33,6 +33,7 @@ import dev.ikm.komet.framework.rulebase.ConsequenceAction;
 import dev.ikm.komet.framework.rulebase.ConsequenceMenu;
 import dev.ikm.komet.framework.rulebase.RuleService;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
@@ -182,8 +183,34 @@ public class ClauseView {
     private void setupForPropertyPatternImplication() {
         // TODO get CSS and related gui setup.
         // TODO get style class for property set
-        // rootPane.getStyleClass().add(StyleClasses.DEF_SUFFICIENT_SET.toString());
-        throw new UnsupportedOperationException();
+        if (this.axiomView.premiseType == STATED) {
+            editable = true;
+        }
+        // TODO, when we move LogicalExpression to tinkar-core, then also add logical expression, and use the logical expression...
+        rootBorderPane.getStyleClass()
+                .add(StyleClasses.DEF_FEATURE.toString());
+        int column = 0;
+        openConceptButton.getStyleClass().setAll(StyleClasses.OPEN_CONCEPT_BUTTON.toString());
+        this.axiomView.addToGridPaneNoGrowTopAlign(rootGridPane, openConceptButton, column++);
+        openConceptButton.setOnMouseClicked(this::handleShowFeatureNodeClick);
+        StringBuilder builder = new StringBuilder();
+        builder.append("π: ");
+        Optional<IntIdList> optionalPropertyPattern = this.axiomVertex.property(TinkarTerm.PROPERTY_SET);
+        optionalPropertyPattern.ifPresent(propertyPattern -> {
+            for (int propertyPatternNid : propertyPattern.intStream().toArray()) {
+                builder.append("[" + calculator().getPreferredDescriptionTextWithFallbackOrNid(propertyPatternNid) + "] ");
+            }
+        });
+        builder.append("⇒ ");
+        Optional<ConceptFacade> optionalImplication = this.axiomVertex.propertyAsConcept(TinkarTerm.PROPERTY_PATTERN_IMPLICATION);
+        optionalImplication.ifPresent(implication -> {
+            builder.append("[" + calculator().getPreferredDescriptionTextWithFallbackOrNid(implication.nid()) + "] ");
+        });
+        titleLabel.setText(builder.toString());
+        this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
+        if (this.axiomView.premiseType == STATED) {
+            this.axiomView.addToGridPaneNoGrow(rootGridPane, editButton, column++);
+        }
     }
 
     private void setupForPropertySet() {
@@ -420,11 +447,11 @@ public class ClauseView {
         openConceptButton.setOnMouseClicked(this::handleShowFeatureNodeClick);
         StringBuilder builder = new StringBuilder();
         builder.append("⒡ ");
-        Optional<Concept> optionalTypeConcept = this.axiomVertex.propertyAsConcept(TinkarTerm.FEATURE_TYPE);
-        Optional<Concept> optionalConcreteDomainOperator = this.axiomVertex.propertyAsConcept(TinkarTerm.CONCRETE_DOMAIN_OPERATOR);
-        ConceptFacade typeConcept = (ConceptFacade) optionalTypeConcept.get();
-        ConceptFacade concreteDomainOperatorConcept = (ConceptFacade) optionalConcreteDomainOperator.get();
+        Optional<ConceptFacade> optionalTypeConcept = this.axiomVertex.propertyAsConcept(TinkarTerm.FEATURE_TYPE);
+        Optional<ConceptFacade> optionalConcreteDomainOperator = this.axiomVertex.propertyAsConcept(TinkarTerm.CONCRETE_DOMAIN_OPERATOR);
         if (optionalTypeConcept.isPresent()  && optionalConcreteDomainOperator.isPresent()) {
+            ConceptFacade typeConcept = optionalTypeConcept.get();
+            ConceptFacade concreteDomainOperatorConcept = optionalConcreteDomainOperator.get();
             builder.append(calculator().getPreferredDescriptionTextWithFallbackOrNid(typeConcept));
             ConcreteDomainOperators operator = ConcreteDomainOperators.fromConcept(concreteDomainOperatorConcept);
             switch (operator) {
