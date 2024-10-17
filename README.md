@@ -51,9 +51,9 @@ To run Komet with JPro in a Docker container, follow these steps:
    ```bash
    mvn clean -f application jpro:release
    ```
-   The release zip will be created in the `application/target` directory, named `application-jpro.zip`.
-2. Transfer the `application-jpro.zip` file to the directory where you want to run the Docker container.
-3. Extract the contents of `application-jpro.zip` file and navigate to the extracted folder.
+   The release zip will be created in the `application/target` directory, named `komet-jpro.zip`.
+2. Transfer the `komet-jpro.zip` file to the directory where you want to run the Docker container.
+3. Extract the contents of `komet-jpro.zip` file and navigate to the extracted folder.
 4. To run the application in a Docker container, choose one of the following options:
     * **Option 1**: Build the Docker image and run the Docker container manually
         * Inside the unzipped directory, locate the `Dockerfile`.
