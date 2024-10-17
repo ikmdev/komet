@@ -25,7 +25,7 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
-                <Label alignment="TOP_CENTER" styleClass="lidr-device-title-label" text="No Selection Made" textAlignment="CENTER" GridPane.columnIndex="1">
+                <Label fx:id="confirmationTitle" alignment="TOP_CENTER" styleClass="lidr-device-title-label" text="No Selection Made" textAlignment="CENTER" GridPane.columnIndex="1">
                     <GridPane.margin>
                         <Insets />
                     </GridPane.margin>
@@ -56,6 +56,6 @@
         <String fx:value="analyte-group-container" />
     </styleClass>
     <center>
-        <Label alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="52.0" prefWidth="170.0" text="Make a selection in the view to edit the Pattern." textAlignment="CENTER" wrapText="true" BorderPane.alignment="CENTER" />
+        <Label fx:id="confirmationMessage" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="52.0" prefWidth="170.0" text="Make a selection in the view to edit the Pattern." textAlignment="CENTER" wrapText="true" BorderPane.alignment="CENTER" />
     </center>
 </BorderPane>

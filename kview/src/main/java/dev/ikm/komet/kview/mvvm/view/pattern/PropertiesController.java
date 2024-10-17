@@ -35,6 +35,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.SVGPath;
+import org.carlfx.axonic.StateMachine;
 import org.carlfx.cognitive.loader.*;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.slf4j.Logger;
@@ -44,6 +45,7 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.UUID;
 
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.DEFINITION_CONFIRMATION;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CREATE;
@@ -51,14 +53,19 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
+import static dev.ikm.komet.kview.state.PatternDetailsState.NEW_PATTERN_INITIAL;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 
 public class PropertiesController {
 
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesController.class);
+
+    private static final URL PATTERN_HISTORY_FXML_URL = HistoryController.class.getResource("history.fxml");
+
+    private static final URL CONFIRMATION_FXML_URL = ConfirmationController.class.getResource("confirmation-pane.fxml");
 
     private static final URL PATTERN_DEFINITION_FXML_URL = PatternDefinitionController.class.getResource("pattern-definition.fxml");
     private static final URL PATTERN_DESCRIPTION_FXML_URL = DescriptionNameController.class.getResource("description-name.fxml");
@@ -102,17 +109,21 @@ public class PropertiesController {
 
     private Pane currentEditPane;
 
+    private HistoryController historyController;
+
+    private ConfirmationController confirmationController;
+
     private PatternDefinitionController patternDefinitionController;
 
     private PatternFieldsController patternFieldsController;
 
+    private Pane historyPane;
+
+    private Pane confirmationPane;
+
     private Pane patternDefinitionPane;
 
     private Pane patternFieldsPane;
-
-    private Pane patternFormChooserPane;
-
-    private Pane descriptionNameChooserPane;
 
     private Subscriber<ShowPatternFormInBumpOutEvent> showPatternPanelEventSubscriber;
 
@@ -126,11 +137,23 @@ public class PropertiesController {
 
         eventBus = EvtBusFactory.getDefaultEvtBus();
 
-        historyButton.setSelected(true);
+        // +-----------------------------------------------------------------------
+        // ! history panel selected by default when an existing pattern is summoned
+        // +-----------------------------------------------------------------------
+        Config historyConfig = new Config(PATTERN_HISTORY_FXML_URL);
+        JFXNode<Pane, HistoryController> patternHistoryJFXNode = FXMLMvvmLoader.make(historyConfig);
+        historyController = patternHistoryJFXNode.controller();
+        historyPane = patternHistoryJFXNode.node();
+
+        Config confirmationPanelConfig = new Config(CONFIRMATION_FXML_URL)
+                .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel));
+        JFXNode<Pane, ConfirmationController> confirmationPanelJFXNode = FXMLMvvmLoader.make(confirmationPanelConfig);
+        confirmationController = confirmationPanelJFXNode.controller();
+        confirmationPane = confirmationPanelJFXNode.node();
 
         // +-----------------------------------
         // ! Add definition(s) to a Pattern
-        // +------------------------------------
+        // +-----------------------------------
         Config definitionConfig = new Config(PATTERN_DEFINITION_FXML_URL)
                 .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel))
                 .updateViewModel("patternDefinitionViewModel", (patternDefinitionViewModel) ->
@@ -161,7 +184,7 @@ public class PropertiesController {
         // pencil buttons, or by navigating from the properties toggle and
         // selecting with form chooser buttons
         showPatternPanelEventSubscriber = evt -> {
-            LOG.info("Show Add/Edit View " + evt.getEventType());
+            //LOG.info("Show Add/Edit View " + evt.getEventType());
 
             // TODO swap based on state (edit definition, ).
             if (evt.getEventType() == SHOW_ADD_DEFINITION) {
@@ -193,41 +216,49 @@ public class PropertiesController {
                 currentEditPane = patternFieldsPane;
             } else if (evt.getEventType().getSuperType() == DESCRIPTION_NAME) {
                 setupDescriptionNamePane(evt.getEventType());
-            } else if (evt.getEventType() == DESCRIPTION_NAME) {
+            } /*else if (evt.getEventType() == DESCRIPTION_NAME) {
                 currentEditPane = descriptionNameChooserPane;
-            }
+            }*/
             this.addEditButton.setSelected(true);
-            updateEditPane();
+            this.contentBorderPane.setCenter(currentEditPane);
         };
         eventBus.subscribe(getPatternTopic(), ShowPatternFormInBumpOutEvent.class, showPatternPanelEventSubscriber);
 
         // ONLY for clicking the properties toggle
         showPropertyPanelSubscriber = evt -> {
             if (evt.getSource() instanceof ToggleButton && evt.getEventType() == OPEN_PANEL) {
-                // if they hit the properties button, then give them the form chooser panel
-                // e.g. buttons with choices of Add|Edit Definition, Add|Edit Description, Add|Edit Fields
-                setupBumpOut();
-                updateEditPane();
+                //FIXME why does the window line up off the screen to the left
+                propertyPanelCheck();
+                //updateEditPane();
+            }
+            if (evt.getEventType() == DEFINITION_CONFIRMATION) {
+                currentEditPane = confirmationPane;
+                contentBorderPane.setCenter(currentEditPane);
+                StateMachine patternSM = getStateMachine();
+                patternSM.t("completeDefintions");
+                confirmationController.showDefinitionAdded();
             }
         };
         eventBus.subscribe(getPatternTopic(), PropertyPanelEvent.class, showPropertyPanelSubscriber);
 
-        patternDefinitionEventSubscriber = evt -> {
-            boolean isInEditMode = patternPropertiesViewModel.getPropertyValue(DISPLAY_DEFINITION_EDIT_MODE);
-            this.addEditButton.setText(isInEditMode ? "EDIT" : "ADD");
-        };
-        EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
         this.addEditButton.setSelected(true);
     }
 
-    private void setupBumpOut() {
-        if (patternPropertiesViewModel.shouldShowFormChooser()) {
-            currentEditPane = patternFormChooserPane;
-        } else if (patternPropertiesViewModel.shouldShowDescriptionChooser()) {
-            currentEditPane = descriptionNameChooserPane;
-        } else if (patternPropertiesViewModel.shouldShowFields()) {
-            currentEditPane = patternFieldsPane;
+    private StateMachine getStateMachine() {
+        return patternPropertiesViewModel.getPropertyValue(STATE_MACHINE);
+    }
+
+    private void propertyPanelCheck() {
+        // figure out if we are a new pattern or existing so that we can determine which
+        // panel to open.
+        StateMachine stateMachine = patternPropertiesViewModel.getPropertyValue(STATE_MACHINE);
+        if (stateMachine.currentState().equals(NEW_PATTERN_INITIAL)) {
+            // a brand new pattern shows the add edit view
+            currentEditPane = patternDefinitionPane;
+            showAddEditView(new ActionEvent());
         }
+        //TODO the state of a completed pattern, ie summon an existing pattern
+        // will default to the history pane
     }
 
     private void setupDescriptionNamePane(EvtType eventType) {
@@ -278,6 +309,7 @@ public class PropertiesController {
         }
         JFXNode<Pane, DescriptionNameController> descriptionNameControllerJFXNode = FXMLMvvmLoader.make(descrConfig);
         currentEditPane = descriptionNameControllerJFXNode.node();
+        contentBorderPane.setCenter(currentEditPane);
     }
 
     private void updateDefaultSelectedViews() {
@@ -294,19 +326,13 @@ public class PropertiesController {
         event.consume();
         this.addEditButton.setSelected(true);
         contentBorderPane.setCenter(currentEditPane);
-        if (currentEditPane == descriptionNameChooserPane) {
-            // if we will display EDIT for either FQN or Other Name, the display EDIT, otherwise ADD
-            if ((boolean) patternPropertiesViewModel.getPropertyValue(DISPLAY_FQN_EDIT_MODE)
-                    || (boolean) patternPropertiesViewModel.getPropertyValue(DISPLAY_OTHER_NAME_EDIT_MODE)) {
-                this.addEditButton.setText("EDIT");
-            } else {
-                this.addEditButton.setText("ADD");
-            }
-        }
     }
 
-    private void updateEditPane() {
-        contentBorderPane.setCenter(currentEditPane);
+    @FXML
+    private void showHistoryView(ActionEvent event) {
+        LOG.info("Show Pattern History");
+        this.historyButton.setSelected(true);
+        contentBorderPane.setCenter(historyPane);
     }
 
     public UUID getPatternTopic() {
