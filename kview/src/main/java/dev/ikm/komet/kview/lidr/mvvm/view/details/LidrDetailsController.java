@@ -606,7 +606,7 @@ public class LidrDetailsController {
         deviceSummaryText.setText(entityFacade.description());
 
         // Update manufacturer if one exists
-        Optional<Concept> mfg = DataModelHelper.findDeviceManufacturer(entityFacade.publicId());
+        Optional<ConceptFacade> mfg = DataModelHelper.findDeviceManufacturer(entityFacade.publicId());
         mfg.ifPresentOrElse(concept -> mfgSummaryText.setText(
                 ((ConceptFacade) concept).description()),
                 ()-> mfgSummaryText.setText("")

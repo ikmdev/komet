@@ -313,15 +313,15 @@
                                                       </HBox>
                                                    </children>
                                                 </VBox>
-                                                <ScrollPane fx:id="inferredAxiomScrollPane" prefWidth="791.0" styleClass="axiom-container" HBox.hgrow="ALWAYS">
-                                                   <content>
-                                                      <Label fx:id="notAvailInferredAxiomLabel" alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="37.0" prefWidth="265.0" text="Not Available" textAlignment="CENTER" textFill="#c99c9c">
+                                                <BorderPane fx:id="inferredAxiomPane" prefWidth="791.0" styleClass="axiom-container" HBox.hgrow="ALWAYS">
+                                                   <center>
+                                                      <Label fx:id="notAvailInferredAxiomLabel" alignment="CENTER" prefHeight="37.0" prefWidth="265.0" text="Not Available" textAlignment="CENTER" textFill="#c99c9c">
                                                          <font>
                                                             <Font name="Open Sans Regular" size="18.0" />
                                                          </font>
                                                       </Label>
-                                                   </content>
-                                                </ScrollPane>
+                                                   </center>
+                                                </BorderPane>
                                              </children>
                                           </HBox>
                                           <HBox prefHeight="324.0" prefWidth="856.0">
@@ -378,15 +378,15 @@
                                                       </HBox>
                                                    </children>
                                                 </VBox>
-                                                <ScrollPane fx:id="statedAxiomScrollPane" prefWidth="777.0" styleClass="axiom-container" HBox.hgrow="ALWAYS">
-                                                   <content>
-                                                      <Label fx:id="notAvailStatedAxiomLabel" alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="47.0" prefWidth="264.0" text="Not Available" textFill="#c99c9c">
+                                                <BorderPane fx:id="statedAxiomPane" prefWidth="777.0" styleClass="axiom-container" HBox.hgrow="ALWAYS">
+                                                   <center>
+                                                      <Label fx:id="notAvailStatedAxiomLabel" alignment="CENTER" prefHeight="47.0" prefWidth="264.0" text="Not Available" textFill="#c99c9c">
                                                          <font>
                                                             <Font size="18.0" />
                                                          </font>
                                                       </Label>
-                                                   </content>
-                                                </ScrollPane>
+                                                   </center>
+                                                </BorderPane>
                                              </children>
                                           </HBox>
                                       </items>
