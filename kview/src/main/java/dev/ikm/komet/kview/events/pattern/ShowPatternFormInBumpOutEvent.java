@@ -34,6 +34,8 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
     public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_EDIT_FIELDS = new EvtType<>(Evt.ANY, "SHOW_EDIT_FIELD");
     public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_ADD_FIELDS = new EvtType<>(Evt.ANY, "SHOW_ADD_FIELDS");
 
+    public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_CONTINUE_ADD_FIELDS = new EvtType<>(Evt.ANY, "SHOW_CONTINUE_ADD_FIELDS");
+
     ////////// Description Name semantic events
     //TODO see if we can remove these events
     public static final EvtType<ShowPatternFormInBumpOutEvent> DESCRIPTION_NAME = new EvtType<>(Evt.ANY, "DESCRIPTION_NAME");

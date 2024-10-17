@@ -8,7 +8,13 @@ public enum PatternDetailsState implements State {
 
     DEFINTIONS_DONE("DefintionsDone"),
 
-    ADD_FQN("AddFQN")
+    ADDING_FQN("AddFQN"),
+
+    ADDED_FQN("AddedFQN"),
+
+    ADDING_OTHER_NAME("AddingOtherName"),
+
+    ADDED_OTHER_NAME("AddedOtherName")
     ;
 
     final String name;

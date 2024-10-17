@@ -22,6 +22,7 @@ import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
+import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
@@ -66,6 +67,8 @@ public class PropertiesController {
     private static final URL PATTERN_HISTORY_FXML_URL = HistoryController.class.getResource("history.fxml");
 
     private static final URL CONFIRMATION_FXML_URL = ConfirmationController.class.getResource("confirmation-pane.fxml");
+
+    private static final URL CONTINUE_ADDING_FIELDS_URL = ContinueAddingFieldsController.class.getResource("continue-adding-fields.fxml");
 
     private static final URL PATTERN_DEFINITION_FXML_URL = PatternDefinitionController.class.getResource("pattern-definition.fxml");
     private static final URL PATTERN_DESCRIPTION_FXML_URL = DescriptionNameController.class.getResource("description-name.fxml");
@@ -113,6 +116,8 @@ public class PropertiesController {
 
     private ConfirmationController confirmationController;
 
+    private ContinueAddingFieldsController continueAddingFieldsController;
+
     private PatternDefinitionController patternDefinitionController;
 
     private PatternFieldsController patternFieldsController;
@@ -120,6 +125,8 @@ public class PropertiesController {
     private Pane historyPane;
 
     private Pane confirmationPane;
+
+    private Pane continueAddingFieldsPane;
 
     private Pane patternDefinitionPane;
 
@@ -129,7 +136,7 @@ public class PropertiesController {
 
     private Subscriber<PropertyPanelEvent> showPropertyPanelSubscriber;
 
-    private Subscriber<PatternDefinitionEvent> patternDefinitionEventSubscriber;
+    private Subscriber<PatternDescriptionEvent> patternDescriptionEventSubscriber;
 
     @FXML
     private void initialize() {
@@ -145,11 +152,23 @@ public class PropertiesController {
         historyController = patternHistoryJFXNode.controller();
         historyPane = patternHistoryJFXNode.node();
 
+        // +-----------------------------------------------------------------------
+        // ! confirmation panel reused by several forms
+        // +-----------------------------------------------------------------------
         Config confirmationPanelConfig = new Config(CONFIRMATION_FXML_URL)
                 .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel));
         JFXNode<Pane, ConfirmationController> confirmationPanelJFXNode = FXMLMvvmLoader.make(confirmationPanelConfig);
         confirmationController = confirmationPanelJFXNode.controller();
         confirmationPane = confirmationPanelJFXNode.node();
+
+        // +-----------------------------------------------------------------------
+        // ! continue adding fields confirmation panel
+        // +-----------------------------------------------------------------------
+        Config continueAddFieldsConfig = new Config(CONTINUE_ADDING_FIELDS_URL)
+                .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel));
+        JFXNode<Pane, ContinueAddingFieldsController> continueFieldsJFXNode = FXMLMvvmLoader.make(continueAddFieldsConfig);
+        continueAddingFieldsController = continueFieldsJFXNode.controller();
+        continueAddingFieldsPane = continueFieldsJFXNode.node();
 
         // +-----------------------------------
         // ! Add definition(s) to a Pattern
@@ -216,9 +235,9 @@ public class PropertiesController {
                 currentEditPane = patternFieldsPane;
             } else if (evt.getEventType().getSuperType() == DESCRIPTION_NAME) {
                 setupDescriptionNamePane(evt.getEventType());
-            } /*else if (evt.getEventType() == DESCRIPTION_NAME) {
-                currentEditPane = descriptionNameChooserPane;
-            }*/
+            } else if (evt.getEventType() == SHOW_CONTINUE_ADD_FIELDS) {
+                currentEditPane = continueAddingFieldsPane;
+            }
             this.addEditButton.setSelected(true);
             this.contentBorderPane.setCenter(currentEditPane);
         };
@@ -235,11 +254,22 @@ public class PropertiesController {
                 currentEditPane = confirmationPane;
                 contentBorderPane.setCenter(currentEditPane);
                 StateMachine patternSM = getStateMachine();
-                patternSM.t("completeDefintions");
+                patternSM.t("completeDefinitions");
                 confirmationController.showDefinitionAdded();
             }
         };
         eventBus.subscribe(getPatternTopic(), PropertyPanelEvent.class, showPropertyPanelSubscriber);
+
+        patternDescriptionEventSubscriber = evt -> {
+            if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_FQN) {
+                confirmationController.showFqnAdded();
+            } else if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
+                confirmationController.showOtherNameAdded();
+            }
+            currentEditPane = confirmationPane;
+            contentBorderPane.setCenter(currentEditPane);
+        };
+        eventBus.subscribe(getPatternTopic(), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
 
         this.addEditButton.setSelected(true);
     }
