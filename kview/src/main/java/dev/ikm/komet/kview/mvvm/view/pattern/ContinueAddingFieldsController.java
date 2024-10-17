@@ -29,14 +29,25 @@ public class ContinueAddingFieldsController {
     @InjectViewModel
     private PatternPropertiesViewModel patternPropertiesViewModel;
 
+    /**
+     * when adding a field, the user is directed to a confirmation screen
+     * to add more fields
+     * @param actionEvent
+     */
     @FXML
     private void addField(ActionEvent actionEvent) {
+        actionEvent.consume();
         EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(),
                 new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_FIELDS));
     }
 
+    /**
+     * close properties panel
+     * @param actionEvent
+     */
     @FXML
     private void closeProperties(ActionEvent actionEvent) {
+        actionEvent.consume();
         EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(),
                 new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
     }

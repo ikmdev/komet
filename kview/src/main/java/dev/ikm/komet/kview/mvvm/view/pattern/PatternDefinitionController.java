@@ -519,7 +519,10 @@ public class PatternDefinitionController {
         return purposeVBox;
     }
 
-
+    /**
+     * cancel editing, close the panel
+     * @param actionEvent
+     */
     @FXML
     private void onCancel(ActionEvent actionEvent) {
         actionEvent.consume();
@@ -529,6 +532,11 @@ public class PatternDefinitionController {
     }
 
 
+    /**
+     * completing the action of adding a pattern definition
+     * firing an event so that values will be saved in the viewModel
+     * @param actionEvent
+     */
     @FXML
     public void onDone(ActionEvent actionEvent) {
         actionEvent.consume();

@@ -539,6 +539,7 @@ public class PatternDetailsController {
         this.propertiesController = propsFXMLLoader.controller();
         attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
 
+        //FIXME this doesn't work properly, should leave for a future effort...
         // open the panel, allow the state machine to determine which panel to show
         //EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(propertiesToggleButton, OPEN_PANEL));
     }
@@ -625,6 +626,8 @@ public class PatternDetailsController {
     private void showAddOtherNamePanel(ActionEvent actionEvent) {
         LOG.info("Bumpout Add Other name panel \n" + actionEvent);
         actionEvent.consume();
+        StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);
+        patternSM.t("addOtherName");
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_OTHER_NAME));
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }

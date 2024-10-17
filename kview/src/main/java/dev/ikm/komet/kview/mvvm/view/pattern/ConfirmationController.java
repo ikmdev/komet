@@ -42,20 +42,21 @@ public class ConfirmationController {
         confirmationMessage.setText("");
     }
 
+    /**
+     * update the verbiage on the confirmation screen to show
+     * a Fully Qualified Name Added confirmation message
+     */
     public void showFqnAdded() {
         confirmationTitle.setText("Fully Qualified Name Added");
         confirmationMessage.setText("");
     }
 
+    /**
+     * update the verbiage on the confirmation screen to show
+     * a Other Name Added confirmation message
+     */
     public void showOtherNameAdded() {
         confirmationTitle.setText("Other Name Added");
         confirmationMessage.setText("");
-    }
-
-    public void showContinueAddingFields() {
-        //TODO change the buttons to
-        //CLOSE PANEL (bottom left), ADD FIELD (bottom right)
-        //instead of CLOSE PROPERTIES PANEL (bottom right)
-        // which means the other methods would have to switch back
     }
 }

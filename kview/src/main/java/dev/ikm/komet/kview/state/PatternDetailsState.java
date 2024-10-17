@@ -6,7 +6,9 @@ public enum PatternDetailsState implements State {
 
     NEW_PATTERN_INITIAL("NewPatternInitial"),
 
-    DEFINTIONS_DONE("DefintionsDone"),
+    ADDING_DEFINITIONS("DefintionsDone"),
+
+    ADDED_DEFINTIONS("AddedDefinitions"),
 
     ADDING_FQN("AddFQN"),
 

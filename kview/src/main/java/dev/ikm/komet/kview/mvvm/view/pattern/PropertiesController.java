@@ -203,7 +203,7 @@ public class PropertiesController {
         // pencil buttons, or by navigating from the properties toggle and
         // selecting with form chooser buttons
         showPatternPanelEventSubscriber = evt -> {
-            //LOG.info("Show Add/Edit View " + evt.getEventType());
+            LOG.info("Show Panel by event type: " + evt.getEventType());
 
             // TODO swap based on state (edit definition, ).
             if (evt.getEventType() == SHOW_ADD_DEFINITION) {
@@ -248,13 +248,12 @@ public class PropertiesController {
             if (evt.getSource() instanceof ToggleButton && evt.getEventType() == OPEN_PANEL) {
                 //FIXME why does the window line up off the screen to the left
                 propertyPanelCheck();
-                //updateEditPane();
             }
             if (evt.getEventType() == DEFINITION_CONFIRMATION) {
                 currentEditPane = confirmationPane;
                 contentBorderPane.setCenter(currentEditPane);
                 StateMachine patternSM = getStateMachine();
-                patternSM.t("completeDefinitions");
+                patternSM.t("addDefinitions");
                 confirmationController.showDefinitionAdded();
             }
         };
