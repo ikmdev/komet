@@ -43,6 +43,7 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableList;
+import org.carlfx.axonic.StateMachine;
 import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.validator.ValidationResult;
 import org.carlfx.cognitive.viewmodel.ViewModel;
@@ -65,6 +66,9 @@ public class PatternViewModel extends FormViewModel {
     public static String STAMP_VIEW_MODEL = "stampViewModel";
 
     public static String DEFINITION_VIEW_MODEL = "definitionViewModel";
+
+    public static String STATE_MACHINE = "stateMachine";
+
     public static String FQN_DESCRIPTION_NAME = "fqnDescriptionName";
 
     public static String FQN_CASE_SIGNIFICANCE = "fqnCaseSignificance";
@@ -102,6 +106,7 @@ public class PatternViewModel extends FormViewModel {
         super();
             addProperty(VIEW_PROPERTIES, (ViewProperties) null)
                     .addProperty(PATTERN_TOPIC, (UUID) null)
+                    .addProperty(STATE_MACHINE, (StateMachine) null)
                     .addProperty(STAMP_VIEW_MODEL, (ViewModel) null)
                     .addProperty(DEFINITION_VIEW_MODEL, (ViewModel) null)
                     .addProperty(FQN_DESCRIPTION_NAME, (DescrName) null)
