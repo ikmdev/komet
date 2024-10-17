@@ -32,6 +32,7 @@ import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.text.TextAlignment;
 import org.controlsfx.control.PropertySheet;
@@ -99,6 +100,13 @@ public class KometPropertySheetSkin extends SkinBase<KometPropertySheet> {
         // layout controls
         content = new BorderPane();
         content.setTop(toolbar);
+
+        // Wrap the center content in a ScrollPane
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(true);
+        content.setCenter(scrollPane);
+
         getChildren().add(content);
 
         // setup listeners
@@ -115,10 +123,39 @@ public class KometPropertySheetSkin extends SkinBase<KometPropertySheet> {
         // initialize properly
         refreshProperties();
         updateToolbar();
+
+        // Add event filter to handle scroll events appropriately
+        addScrollEventFilter(scrollPane);
     }
 
+    /**
+     * Refreshes the property sheet content by rebuilding the property container.
+     * This method is called when there are changes in the properties or UI settings.
+     */
     private void refreshProperties() {
-        content.setCenter(buildPropertySheetContainer());
+        Node propertyContent = buildPropertySheetContainer();
+        ScrollPane scrollPane = (ScrollPane) content.getCenter();
+        scrollPane.setContent(propertyContent);
+    }
+
+    /**
+     * Adds an event filter to the specified {@code ScrollPane} to consume scroll events
+     * when the scroll reaches the top or bottom, preventing event propagation to parent containers.
+     *
+     * @param scrollPane the {@code ScrollPane} to which the event filter is added
+     */
+    private void addScrollEventFilter(ScrollPane scrollPane) {
+        scrollPane.addEventFilter(ScrollEvent.SCROLL, event -> {
+            if (event.getDeltaY() == 0) {
+                return;
+            }
+            boolean atTop = scrollPane.getVvalue() == scrollPane.getVmin();
+            boolean atBottom = scrollPane.getVvalue() == scrollPane.getVmax();
+
+            if ((atTop && event.getDeltaY() > 0) || (atBottom && event.getDeltaY() < 0)) {
+                event.consume();
+            }
+        });
     }
 
     /**************************************************************************

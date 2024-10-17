@@ -95,7 +95,6 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -104,11 +103,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import org.carlfx.cognitive.loader.Config;
@@ -134,7 +129,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -230,10 +224,10 @@ public class DetailsController  {
      * Responsible for holding rows of Axiom semantics as Property Sheet (SheetItem) from ControlsFX.
      */
     @FXML
-    private ScrollPane statedAxiomScrollPane;
+    private BorderPane inferredAxiomPane;
 
     @FXML
-    private ScrollPane inferredAxiomScrollPane;
+    private BorderPane statedAxiomPane;
 
     @FXML
     private Label notAvailInferredAxiomLabel;
@@ -282,7 +276,7 @@ public class DetailsController  {
     @InjectViewModel
     private ConceptViewModel conceptViewModel;
     private EvtBus eventBus;
-    
+
     private UUID conceptTopic;
 
     private Subscriber<EditConceptFullyQualifiedNameEvent> fqnSubscriber;
@@ -337,7 +331,6 @@ public class DetailsController  {
             for (PatternEntityVersion pattern : patterns) {
                 MenuItem menuItem = new MenuItem();
                 if (isInMembershipPattern(currentConceptFacade.nid(), pattern.nid(), viewCalculator)) {
-                //if (isInMembershipPattern(currentConceptFacade.nid(), pattern.nid())) {
                     menuItem.setText("Remove from " + pattern.entity().description());
                     menuItem.setOnAction(evt -> removeFromMembershipPattern(currentConceptFacade.nid(), pattern.entity(), viewCalculator));
                     addedMenuItems.add(menuItem);
@@ -515,7 +508,7 @@ public class DetailsController  {
         Object[][] menuItems;
         // show the 'Add Fully Qualified' option when it is a new concept in create mode and there is no fully qualified name
         if (this.conceptViewModel.getPropertyValue(MODE).equals(CREATE) &&
-            (getConceptViewModel().getPropertyValue(FULLY_QUALIFIED_NAME) == null)) {
+                (getConceptViewModel().getPropertyValue(FULLY_QUALIFIED_NAME) == null)) {
             menuItems = new Object[][]{
                     {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
                     {MenuHelper.SEPARATOR},
@@ -829,9 +822,9 @@ public class DetailsController  {
             List<TextFlow> rows = generateOtherNameRow(otherName);
             rows.forEach(textFlowPane -> {
                 textFlowPane.setOnMouseClicked(event -> {
-                eventBus.publish(conceptTopic,
-                        new EditOtherNameConceptEvent(textFlowPane,
-                                EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherName.getSemanticPublicId()));
+                    eventBus.publish(conceptTopic,
+                            new EditOtherNameConceptEvent(textFlowPane,
+                                    EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherName.getSemanticPublicId()));
                 });
             });
             otherNamesVBox.getChildren().addAll(rows);
@@ -861,8 +854,8 @@ public class DetailsController  {
                     .fieldValues()
                     .stream()
                     .anyMatch( fieldValue ->
-                (fieldValue instanceof ConceptFacade facade) &&
-                        facade.nid() == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid());
+                            (fieldValue instanceof ConceptFacade facade) &&
+                                    facade.nid() == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid());
 
 
             if (isFQN) {
@@ -1069,8 +1062,8 @@ public class DetailsController  {
                     if(descriptionTypeConceptValue instanceof EntityFacade descriptionTypeConcept ){
                         int typeId = descriptionTypeConcept.nid();
                         return (typeId == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() ||
-                           typeId == REGULAR_NAME_DESCRIPTION_TYPE.nid() ||
-                            typeId == DEFINITION_DESCRIPTION_TYPE.nid());
+                                typeId == REGULAR_NAME_DESCRIPTION_TYPE.nid() ||
+                                typeId == DEFINITION_DESCRIPTION_TYPE.nid());
                     }
                     return false;
                 }).forEach(semanticEntity -> {
@@ -1141,18 +1134,14 @@ public class DetailsController  {
         KometPropertySheet inferredPropertySheet = new KometPropertySheet(viewProperties, true);
         Latest<SemanticEntityVersion> inferredSemanticVersion = viewCalculator.getInferredAxiomSemanticForEntity(entityFacade.nid());
         makeSheetItem(viewProperties, inferredPropertySheet, inferredSemanticVersion);
-        inferredAxiomScrollPane.setFitToWidth(true);
-        inferredAxiomScrollPane.setFitToHeight(true);
-        inferredAxiomScrollPane.setContent(inferredPropertySheet);
+        inferredAxiomPane.setCenter(inferredPropertySheet);
 
 
         // Create a SheetItem (AXIOM stated semantic version)
         KometPropertySheet statedPropertySheet = new KometPropertySheet(viewProperties, true);
         Latest<SemanticEntityVersion> statedSemanticVersion    = viewCalculator.getStatedAxiomSemanticForEntity(entityFacade.nid());
         makeSheetItem(viewProperties, statedPropertySheet, statedSemanticVersion);
-        statedAxiomScrollPane.setFitToWidth(true);
-        statedAxiomScrollPane.setFitToHeight(true);
-        statedAxiomScrollPane.setContent(statedPropertySheet);
+        statedAxiomPane.setCenter(statedPropertySheet);
 
         //TODO discuss the blue theme color related to AXIOMs
 
@@ -1182,8 +1171,8 @@ public class DetailsController  {
         originationText.setText("");
         statusText.setText("");
         authorTooltip.setText("");
-        inferredAxiomScrollPane.setContent(notAvailInferredAxiomLabel);
-        statedAxiomScrollPane.setContent(notAvailStatedAxiomLabel);
+        notAvailInferredAxiomLabel.setVisible(true);
+        notAvailStatedAxiomLabel.setVisible(true);
         otherNamesVBox.getChildren().clear();
     }
     @FXML
