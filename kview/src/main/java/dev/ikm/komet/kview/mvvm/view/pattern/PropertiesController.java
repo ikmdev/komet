@@ -86,8 +86,6 @@ public class PropertiesController {
     private static final String EDIT_FIELD = "Edit Field";
     private static final String ADD_FIELD = "Add Field";
 
-    private EvtBus eventBus;
-
     @InjectViewModel
     private PatternPropertiesViewModel patternPropertiesViewModel;
 
@@ -141,8 +139,6 @@ public class PropertiesController {
     @FXML
     private void initialize() {
         clearView();
-
-        eventBus = EvtBusFactory.getDefaultEvtBus();
 
         // +-----------------------------------------------------------------------
         // ! history panel selected by default when an existing pattern is summoned
@@ -241,7 +237,7 @@ public class PropertiesController {
             this.addEditButton.setSelected(true);
             this.contentBorderPane.setCenter(currentEditPane);
         };
-        eventBus.subscribe(getPatternTopic(), ShowPatternFormInBumpOutEvent.class, showPatternPanelEventSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), ShowPatternFormInBumpOutEvent.class, showPatternPanelEventSubscriber);
 
         // ONLY for clicking the properties toggle
         showPropertyPanelSubscriber = evt -> {
@@ -257,7 +253,7 @@ public class PropertiesController {
                 confirmationController.showDefinitionAdded();
             }
         };
-        eventBus.subscribe(getPatternTopic(), PropertyPanelEvent.class, showPropertyPanelSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), PropertyPanelEvent.class, showPropertyPanelSubscriber);
 
         patternDescriptionEventSubscriber = evt -> {
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_FQN) {
@@ -268,7 +264,7 @@ public class PropertiesController {
             currentEditPane = confirmationPane;
             contentBorderPane.setCenter(currentEditPane);
         };
-        eventBus.subscribe(getPatternTopic(), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
 
         this.addEditButton.setSelected(true);
     }
