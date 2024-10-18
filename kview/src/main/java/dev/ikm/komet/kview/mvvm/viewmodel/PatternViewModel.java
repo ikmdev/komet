@@ -155,6 +155,11 @@ public class PatternViewModel extends FormViewModel {
                     });
     }
 
+    public boolean isPatternPopulated() {
+        ObjectProperty<Pattern> patternObjectProperty = getProperty(PATTERN);
+        return patternObjectProperty.isNotNull().get();
+    }
+
     public void setPurposeAndMeaningText(PatternDefinition patternDefinition) {
         setPropertyValue(PURPOSE_ENTITY, patternDefinition.purpose());
         setPropertyValue(MEANING_ENTITY, patternDefinition.meaning());
