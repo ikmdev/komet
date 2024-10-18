@@ -30,8 +30,6 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel.DISPLAY_FQN_EDIT_MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel.DISPLAY_OTHER_NAME_EDIT_MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
@@ -276,18 +274,13 @@ public class DescriptionNameController {
         LOG.info("Ready to update to the concept view model: " + descrNameViewModel);
 
         if (descrNameViewModel.getPropertyValue(NAME_TYPE) == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE) {
-            patternPropertiesViewModel.setPropertyValue(DISPLAY_FQN_EDIT_MODE, true);
             EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new PatternDescriptionEvent(submitButton,
                     PATTERN_ADD_FQN, descrNameViewModel.create()));
         } else if (descrNameViewModel.getPropertyValue(NAME_TYPE) == REGULAR_NAME_DESCRIPTION_TYPE) {
-            patternPropertiesViewModel.setPropertyValue(DISPLAY_OTHER_NAME_EDIT_MODE, true);
             EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new PatternDescriptionEvent(submitButton,
                     PATTERN_ADD_OTHER_NAME, descrNameViewModel.create()));
         }
 
-        //publish close env
-        EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(),
-                new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         clearView();
     }
 
