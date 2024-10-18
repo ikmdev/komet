@@ -175,10 +175,10 @@ public class DetailsController  {
      * Responsible for holding rows of Axiom semantics as Property Sheet (SheetItem) from ControlsFX.
      */
     @FXML
-    private ScrollPane statedAxiomScrollPane;
+    private BorderPane inferredAxiomPane;
 
     @FXML
-    private ScrollPane inferredAxiomScrollPane;
+    private BorderPane statedAxiomPane;
 
     @FXML
     private Label notAvailInferredAxiomLabel;
@@ -227,12 +227,12 @@ public class DetailsController  {
     @InjectViewModel
     private ConceptViewModel conceptViewModel;
     private EvtBus eventBus;
-    
+
     private UUID conceptTopic;
 
-    private Subscriber<EditConceptFullyQualifiedNameEvent> editFQNSubscriber;
+    private Subscriber<EditConceptFullyQualifiedNameEvent> fqnSubscriber;
 
-    private Subscriber<ConceptDescriptionEvent> conceptDescriptionEventSubscriberSubscriber;
+    private Subscriber<AddFullyQualifiedNameEvent> addFqnSubscriber;
 
     private Subscriber<EditOtherNameConceptEvent> editOtherNameConceptEventSubscriber;
     private Subscriber<EditConceptEvent> editConceptEventSubscriber;
@@ -282,7 +282,6 @@ public class DetailsController  {
             for (PatternEntityVersion pattern : patterns) {
                 MenuItem menuItem = new MenuItem();
                 if (isInMembershipPattern(currentConceptFacade.nid(), pattern.nid(), viewCalculator)) {
-                //if (isInMembershipPattern(currentConceptFacade.nid(), pattern.nid())) {
                     menuItem.setText("Remove from " + pattern.entity().description());
                     menuItem.setOnAction(evt -> removeFromMembershipPattern(currentConceptFacade.nid(), pattern.entity(), viewCalculator));
                     addedMenuItems.add(menuItem);
@@ -318,19 +317,19 @@ public class DetailsController  {
         eventBus = EvtBusFactory.getDefaultEvtBus();
 
         // when the user clicks a fully qualified name, open the PropertiesPanel
-        editFQNSubscriber = evt -> {
+        fqnSubscriber = evt -> {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
         };
-        eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, editFQNSubscriber);
+        eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, fqnSubscriber);
 
-        conceptDescriptionEventSubscriberSubscriber = evt -> {
+        addFqnSubscriber = evt -> {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
         };
-        eventBus.subscribe(conceptTopic, ConceptDescriptionEvent.class, conceptDescriptionEventSubscriberSubscriber);
+        eventBus.subscribe(conceptTopic, AddFullyQualifiedNameEvent.class, addFqnSubscriber);
 
         // when the user clicks one of the other names, open the PropertiesPanel
         editOtherNameConceptEventSubscriber = evt -> {
@@ -460,13 +459,13 @@ public class DetailsController  {
         Object[][] menuItems;
         // show the 'Add Fully Qualified' option when it is a new concept in create mode and there is no fully qualified name
         if (this.conceptViewModel.getPropertyValue(MODE).equals(CREATE) &&
-            (getConceptViewModel().getPropertyValue(FULLY_QUALIFIED_NAME) == null)) {
+                (getConceptViewModel().getPropertyValue(FULLY_QUALIFIED_NAME) == null)) {
             menuItems = new Object[][]{
                     {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
                     {MenuHelper.SEPARATOR},
                     {"Add Fully Qualified Name", true, null, (EventHandler<ActionEvent>) actionEvent ->
-                            eventBus.publish(conceptTopic, new ConceptDescriptionEvent(contextMenu,
-                                    ConceptDescriptionEvent.ADD_CONCEPT_FQN, null, getViewProperties())),
+                            eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(contextMenu,
+                                    AddFullyQualifiedNameEvent.ADD_FQN, getViewProperties())),
                             createConceptEditDescrIcon()},
                     {"Add Other Name", true, null, (EventHandler<ActionEvent>) actionEvent -> {
                         eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(contextMenu,
@@ -752,7 +751,6 @@ public class DetailsController  {
         latestFqnText.setText(fullyQualifiedName);
 
         latestFqnText.setOnMouseClicked(event -> {
-           conceptViewModel.setPropertyValue(MODE, EDIT);
             eventBus.publish(conceptTopic,
                     new EditConceptFullyQualifiedNameEvent(latestFqnText,
                             EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId));
@@ -775,9 +773,9 @@ public class DetailsController  {
             List<TextFlow> rows = generateOtherNameRow(otherName);
             rows.forEach(textFlowPane -> {
                 textFlowPane.setOnMouseClicked(event -> {
-                eventBus.publish(conceptTopic,
-                        new EditOtherNameConceptEvent(textFlowPane,
-                                EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherName.getSemanticPublicId()));
+                    eventBus.publish(conceptTopic,
+                            new EditOtherNameConceptEvent(textFlowPane,
+                                    EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherName.getSemanticPublicId()));
                 });
             });
             otherNamesVBox.getChildren().addAll(rows);
@@ -807,8 +805,8 @@ public class DetailsController  {
                     .fieldValues()
                     .stream()
                     .anyMatch( fieldValue ->
-                (fieldValue instanceof ConceptFacade facade) &&
-                        facade.nid() == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid());
+                            (fieldValue instanceof ConceptFacade facade) &&
+                                    facade.nid() == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid());
 
 
             if (isFQN) {
@@ -1015,8 +1013,8 @@ public class DetailsController  {
                     if(descriptionTypeConceptValue instanceof EntityFacade descriptionTypeConcept ){
                         int typeId = descriptionTypeConcept.nid();
                         return (typeId == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() ||
-                           typeId == REGULAR_NAME_DESCRIPTION_TYPE.nid() ||
-                            typeId == DEFINITION_DESCRIPTION_TYPE.nid());
+                                typeId == REGULAR_NAME_DESCRIPTION_TYPE.nid() ||
+                                typeId == DEFINITION_DESCRIPTION_TYPE.nid());
                     }
                     return false;
                 }).forEach(semanticEntity -> {
@@ -1087,18 +1085,14 @@ public class DetailsController  {
         KometPropertySheet inferredPropertySheet = new KometPropertySheet(viewProperties, true);
         Latest<SemanticEntityVersion> inferredSemanticVersion = viewCalculator.getInferredAxiomSemanticForEntity(entityFacade.nid());
         makeSheetItem(viewProperties, inferredPropertySheet, inferredSemanticVersion);
-        inferredAxiomScrollPane.setFitToWidth(true);
-        inferredAxiomScrollPane.setFitToHeight(true);
-        inferredAxiomScrollPane.setContent(inferredPropertySheet);
+        inferredAxiomPane.setCenter(inferredPropertySheet);
 
 
         // Create a SheetItem (AXIOM stated semantic version)
         KometPropertySheet statedPropertySheet = new KometPropertySheet(viewProperties, true);
         Latest<SemanticEntityVersion> statedSemanticVersion    = viewCalculator.getStatedAxiomSemanticForEntity(entityFacade.nid());
         makeSheetItem(viewProperties, statedPropertySheet, statedSemanticVersion);
-        statedAxiomScrollPane.setFitToWidth(true);
-        statedAxiomScrollPane.setFitToHeight(true);
-        statedAxiomScrollPane.setContent(statedPropertySheet);
+        statedAxiomPane.setCenter(statedPropertySheet);
 
         //TODO discuss the blue theme color related to AXIOMs
 
@@ -1128,8 +1122,8 @@ public class DetailsController  {
         originationText.setText("");
         statusText.setText("");
         authorTooltip.setText("");
-        inferredAxiomScrollPane.setContent(notAvailInferredAxiomLabel);
-        statedAxiomScrollPane.setContent(notAvailStatedAxiomLabel);
+        notAvailInferredAxiomLabel.setVisible(true);
+        notAvailStatedAxiomLabel.setVisible(true);
         otherNamesVBox.getChildren().clear();
     }
     @FXML
@@ -1155,12 +1149,12 @@ public class DetailsController  {
 
             if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
                 // show the Add FQN
-                eventBus.publish(conceptTopic, new ConceptDescriptionEvent(propertyToggle,
-                        ConceptDescriptionEvent.ADD_CONCEPT_FQN, null, getViewProperties()));
+                eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(propertyToggle,
+                        AddFullyQualifiedNameEvent.ADD_FQN, getViewProperties()));
             } else if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))){
                 // show the button form
-                eventBus.publish(conceptTopic, new ConceptDescriptionEvent(propertyToggle,
-                        ConceptDescriptionEvent.EDIT_CONCEPT_FQN, fqnPublicId, getViewProperties()));
+                eventBus.publish(conceptTopic, new OpenPropertiesPanelEvent(propertyToggle,
+                        OpenPropertiesPanelEvent.OPEN_PROPERTIES_PANEL, fqnPublicId, fqnTitleText.getText()));
             }
         } else {
             LOG.info("Close Properties slideout");
