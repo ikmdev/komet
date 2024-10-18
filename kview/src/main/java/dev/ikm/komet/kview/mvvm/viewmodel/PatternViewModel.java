@@ -130,6 +130,10 @@ public class PatternViewModel extends FormViewModel {
                         ObjectProperty<EntityFacade> meaningEntity = viewModel.getProperty(MEANING_ENTITY);
                         ObjectProperty<DescrName> fqnProperty = viewModel.getProperty(FQN_DESCRIPTION_NAME);
                         ObservableList<PatternField> fieldsProperty = viewModel.getObservableList(FIELDS_COLLECTION);
+                        ViewModel stampViewModel = viewModel.getPropertyValue(STAMP_VIEW_MODEL);
+                        ObjectProperty<?> stampModule = stampViewModel.getProperty(MODULE);
+                        ObjectProperty<?> stampPath = stampViewModel.getProperty(PATH);
+                        ObjectProperty<?> stampStatus = stampViewModel.getProperty(STATUS);
                         // reset the error list on each validation check
                         vr.getMessages().clear();
                         if (purposeEntity.isNull().get()) {
@@ -143,6 +147,9 @@ public class PatternViewModel extends FormViewModel {
                         }
                         if (fieldsProperty.isEmpty()) {
                             vr.error("At least one field is required for a Pattern.  Please add one or more fields.");
+                        }
+                        if (stampModule.isNull().get() || stampPath.isNull().get() || stampStatus.isNull().get()) {
+                            vr.error("STAMP values are required.  Please fill out the STAMP information.");
                         }
                         viewModel.setPropertyValue(IS_INVALID, !vr.getMessages().isEmpty());
                     });

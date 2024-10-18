@@ -528,6 +528,7 @@ public class PatternDetailsController {
         // Setup Property screen bump out
         // Load Concept Properties View Panel (FXML & Controller)
         Config config = new Config(PATTERN_PROPERTIES_VIEW_FXML_URL)
+                .addNamedViewModel(new NamedVm("patternViewModel", patternViewModel))
                 .updateViewModel("patternPropertiesViewModel",
                         (patternPropertiesViewModel) -> patternPropertiesViewModel
                                 .setPropertyValue(PATTERN_TOPIC, patternViewModel.getPropertyValue(PATTERN_TOPIC))
@@ -673,6 +674,7 @@ public class PatternDetailsController {
         popOver.setOnHidden(windowEvent -> {
             // set Stamp info into Details form
             getStampViewModel().save();
+            patternViewModel.save();
             updateUIStamp(getStampViewModel());
         });
 

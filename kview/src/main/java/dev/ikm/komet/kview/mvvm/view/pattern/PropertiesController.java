@@ -58,6 +58,7 @@ import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Toggle;
@@ -109,6 +110,8 @@ public class PropertiesController {
     @InjectViewModel
     private PatternPropertiesViewModel patternPropertiesViewModel;
 
+    @InjectViewModel
+    private PatternViewModel patternViewModel;
 
     @FXML
     private SVGPath commentsButton;
@@ -258,6 +261,7 @@ public class PropertiesController {
             }
             this.addEditButton.setSelected(true);
             this.contentBorderPane.setCenter(currentEditPane);
+            patternViewModel.save();
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), ShowPatternFormInBumpOutEvent.class, showPatternPanelEventSubscriber);
 
@@ -274,6 +278,7 @@ public class PropertiesController {
                 patternSM.t("addDefinitions");
                 confirmationController.showDefinitionAdded();
             }
+            patternViewModel.save();
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), PropertyPanelEvent.class, showPropertyPanelSubscriber);
 
@@ -285,6 +290,7 @@ public class PropertiesController {
             }
             currentEditPane = confirmationPane;
             contentBorderPane.setCenter(currentEditPane);
+            patternViewModel.save();
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
 
