@@ -83,10 +83,11 @@
         <jsr305.version>3.0.2-r7</jsr305.version>
 
         <!-- JPRO Variables -->
-        <jpro.version>2024.3.4-KOMET</jpro.version>
+        <jpro.ikmdev.release>ikmdev</jpro.ikmdev.release>
+        <jpro.version>2024.3.4-${jpro.ikmdev.release}</jpro.version>
         <jpro-platform.version>0.4.2</jpro-platform.version>
         <!-- A special build for Komet using the ikmdev Guava module name -->
-        <jpro-auth-core.version>${jpro-platform.version}-ikmdev</jpro-auth-core.version>
+        <jpro-auth-core.version>${jpro-platform.version}-${jpro.ikmdev.release}</jpro-auth-core.version>
 
         <!-- TestFX Variables -->
         <testfx.version>4.0.18-jpms</testfx.version>
