@@ -135,11 +135,16 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.*;
  * such as starting, login, data source selection, running, and shutdown.
  * </p>
  * <p>
- * <h2>Platform-Specific Features:</h2>
+ * <h4>Platform-Specific Features:</h4>
  * <ul>
  *   <li><strong>Web Support:</strong> Utilizes JPro's {@link WebAPI} to support running the application in a web browser.</li>
  *   <li><strong>macOS Integration:</strong> Configures macOS-specific properties and menus.</li>
  * </ul>
+ * </p>
+ * <p>
+ * <h4>Event Bus and Subscriptions:</h4>
+ * The application uses an event bus ({@link EvtBus}) for inter-component communication. It subscribes to various events like
+ * {@code CreateJournalEvent} and {@code SignInUserEvent} to handle user actions and state changes.
  * </p>
  *
  * @see Application
