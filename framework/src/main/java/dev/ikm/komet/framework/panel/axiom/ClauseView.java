@@ -195,7 +195,7 @@ public class ClauseView {
         openConceptButton.setOnMouseClicked(this::handleShowFeatureNodeClick);
         StringBuilder builder = new StringBuilder();
         builder.append("π: ");
-        Optional<IntIdList> optionalPropertyPattern = this.axiomVertex.property(TinkarTerm.PROPERTY_SET);
+        Optional<IntIdList> optionalPropertyPattern = this.axiomVertex.property(TinkarTerm.PROPERTY_SEQUENCE);
         optionalPropertyPattern.ifPresent(propertyPattern -> {
             for (int propertyPatternNid : propertyPattern.intStream().toArray()) {
                 builder.append("[" + calculator().getPreferredDescriptionTextWithFallbackOrNid(propertyPatternNid) + "] ");
