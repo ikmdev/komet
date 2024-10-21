@@ -15,13 +15,47 @@
  */
 package dev.ikm.komet.app;
 
+/**
+ * Represents the various states of the Komet application lifecycle.
+ * <p>
+ * The {@code AppState} enum defines the different stages that the application transitions through,
+ * from initialization to shutdown. These states help manage the application's behavior
+ * and user interactions at each phase of its execution.
+ * </p>
+ */
 public enum AppState {
+    /**
+     * The application is in the process of starting up.
+     */
     STARTING,
-    LOGIN,
-    SELECT_DATA_SOURCE,
-    SELECTED_DATA_SOURCE,
-    LOADING_DATA_SOURCE,
-    RUNNING,
-    SHUTDOWN;
 
+    /**
+     * The application is handling user authentication.
+     */
+    LOGIN,
+
+    /**
+     * The application is prompting the user to select a data source.
+     */
+    SELECT_DATA_SOURCE,
+
+    /**
+     * A data source has been selected by the user.
+     */
+    SELECTED_DATA_SOURCE,
+
+    /**
+     * The application is currently loading data from the selected source.
+     */
+    LOADING_DATA_SOURCE,
+
+    /**
+     * The application is fully operational and running.
+     */
+    RUNNING,
+
+    /**
+     * The application is in the process of shutting down.
+     */
+    SHUTDOWN;
 }

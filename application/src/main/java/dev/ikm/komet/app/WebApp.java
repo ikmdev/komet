@@ -101,10 +101,8 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -129,7 +127,25 @@ import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
 /**
- * JavaFX App
+ * Main application class for the Komet application, extending JavaFX {@link Application}.
+ * <p>
+ * The {@code WebApp} class serves as the entry point for launching the Komet application,
+ * which is a JavaFX-based application supporting both desktop and web platforms via JPro.
+ * It manages initialization, startup, and shutdown processes, and handles various application states
+ * such as starting, login, data source selection, running, and shutdown.
+ * </p>
+ * <p>
+ * <h2>Platform-Specific Features:</h2>
+ * <ul>
+ *   <li><strong>Web Support:</strong> Utilizes JPro's {@link WebAPI} to support running the application in a web browser.</li>
+ *   <li><strong>macOS Integration:</strong> Configures macOS-specific properties and menus.</li>
+ * </ul>
+ * </p>
+ *
+ * @see Application
+ * @see AppState
+ * @see LoginFeatureFlag
+ * @see KometPreferences
  */
 public class WebApp extends Application {
 
@@ -164,11 +180,20 @@ public class WebApp extends Application {
 
     private EvtBus kViewEventBus;
 
+    /**
+     * Main method that serves as the entry point for the JavaFX application.
+     *
+     * @param args Command line arguments for the application.
+     */
     public static void main(String[] args) {
         // Launch the JavaFX application
         launch(args);
     }
 
+    /**
+     * Configures system properties specific to macOS to ensure proper integration
+     * with the macOS application menu.
+     */
     private static void configureMacOSProperties() {
         // Ensures that the macOS application menu is used instead of a screen menu bar
         System.setProperty("apple.laf.useScreenMenuBar", "false");
@@ -177,6 +202,13 @@ public class WebApp extends Application {
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Komet");
     }
 
+    /**
+     * Adds a shutdown hook to the Java Virtual Machine (JVM) to ensure that data is saved and resources
+     * are released gracefully before the application exits.
+     * This method should be called during the application's initialization phase to ensure that the shutdown
+     * hook is registered before the application begins execution. By doing so, it guarantees that critical
+     * cleanup operations are performed even if the application is terminated unexpectedly.
+     */
     private static void addShutdownHook() {
         // Adding a shutdown hook that ensures data is saved and resources are released before the application exits
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
