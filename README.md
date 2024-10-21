@@ -139,8 +139,8 @@ to any part of the project.
 This section details on the basic design methodology used for developing nex-gen Komet UI.
 1. Komet UI application is moving towards the nex-gen implementation which follows Model-View-View-Model (MVVM) design pattern.
 2. Komet application design is event-based where the subscriber to an event listens for a particular event and when it is triggered,
-   desired logic can be executed in the listener code.
-   Example:
+desired logic can be executed in the listener code.
+Example:
    ```java
    import java.util.UUID;
    
@@ -197,27 +197,27 @@ This section details on the basic design methodology used for developing nex-gen
    }
    ```
 4. Komet's design also includes the cognitive framework to implement MVVM architecture framework.
-   You can find more information along with the examples [here](https://github.com/carldea/cognitive/wiki)
-    1. Gradle:
-       ```
-       implementation 'org.carlfx:cognitive:1.3.0'
-       ```
-    2. Maven
-       ```
-       <dependency>
-       <groupId>org.carlfx</groupId>
-       <artifactId>cognitive</artifactId>
-       <version>1.3.0</version>
-       </dependency>
-       ```
-    3. Project using Java Modules (JPMS) will want to do the following in the consuming module:
-        ```
-          requires org.carlfx.cognitive;
-        ```
+You can find more information along with the examples [here](https://github.com/carldea/cognitive/wiki)
+   1. Gradle:
+      ```
+      implementation 'org.carlfx:cognitive:1.3.0'
+      ```
+   2. Maven
+      ```
+      <dependency>
+      <groupId>org.carlfx</groupId>
+      <artifactId>cognitive</artifactId>
+      <version>1.3.0</version>
+      </dependency>
+      ```
+   3. Project using Java Modules (JPMS) will want to do the following in the consuming module:
+      ```
+      requires org.carlfx.cognitive;
+      ```
 
 ## Configuration Options
 1. No specific configuration is required to run the installed version of Komet.
-2. To run Komet from an IDE (developerment environment), you will have to do some VM configuration as below:
+2. To run Komet from an IDE (development environment), you will have to do some VM configuration as below:
    ```
    -Xmx10g --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
    ```
