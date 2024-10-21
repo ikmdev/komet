@@ -127,8 +127,6 @@
                         <configuration>
                             <argLine>
                                 -Dtestfx.headless=true
-                                -Dprism.order=sw
-                                -Dprism.text=t2k
                                 -Djava.awt.headless=true
                                 ${commonArgs}
                             </argLine>
