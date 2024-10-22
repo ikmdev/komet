@@ -2275,6 +2275,10 @@ Timeline Year line segment (will overlay change circles)
  * Start of Pattern UI elements                                                  *
  *********************************************************************************/
 
+.grey3-background {
+    -fx-background-color: -Grey-3;
+}
+
 .search-device-text-input {
     -fx-border-radius: 4;
     -fx-border-width: 1px;
