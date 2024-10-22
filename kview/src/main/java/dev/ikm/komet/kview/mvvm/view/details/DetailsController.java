@@ -230,9 +230,9 @@ public class DetailsController  {
 
     private UUID conceptTopic;
 
-    private Subscriber<EditConceptFullyQualifiedNameEvent> fqnSubscriber;
+    private Subscriber<EditConceptFullyQualifiedNameEvent> editConceptFullyQualifiedNameEventSubscriber;
 
-    private Subscriber<AddFullyQualifiedNameEvent> addFqnSubscriber;
+    private Subscriber<AddFullyQualifiedNameEvent> addFullyQualifiedNameEventSubscriber;
 
     private Subscriber<EditOtherNameConceptEvent> editOtherNameConceptEventSubscriber;
     private Subscriber<EditConceptEvent> editConceptEventSubscriber;
@@ -317,19 +317,19 @@ public class DetailsController  {
         eventBus = EvtBusFactory.getDefaultEvtBus();
 
         // when the user clicks a fully qualified name, open the PropertiesPanel
-        fqnSubscriber = evt -> {
+        editConceptFullyQualifiedNameEventSubscriber = evt -> {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
         };
-        eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, fqnSubscriber);
+        eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, editConceptFullyQualifiedNameEventSubscriber);
 
-        addFqnSubscriber = evt -> {
+        addFullyQualifiedNameEventSubscriber = evt -> {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
         };
-        eventBus.subscribe(conceptTopic, AddFullyQualifiedNameEvent.class, addFqnSubscriber);
+        eventBus.subscribe(conceptTopic, AddFullyQualifiedNameEvent.class, addFullyQualifiedNameEventSubscriber);
 
         // when the user clicks one of the other names, open the PropertiesPanel
         editOtherNameConceptEventSubscriber = evt -> {
@@ -753,7 +753,7 @@ public class DetailsController  {
         latestFqnText.setOnMouseClicked(event -> {
             eventBus.publish(conceptTopic,
                     new EditConceptFullyQualifiedNameEvent(latestFqnText,
-                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId));
+                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, getViewProperties(), fqnDescrName));
         });
         // these should never be null, if the drop-downs are populated then the
         // submit button will not be enabled on the Add FQN form
@@ -963,7 +963,7 @@ public class DetailsController  {
         latestFqnText.setOnMouseClicked(event -> {
             eventBus.publish(conceptTopic,
                     new EditConceptFullyQualifiedNameEvent(latestFqnText,
-                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId));
+                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, viewProperties, fqnPublicId));
         });
 
         String descrSemanticStr = String.join(" | ", fieldDescriptions);
@@ -972,7 +972,6 @@ public class DetailsController  {
         } else {
             fqnDescriptionSemanticText.setText("");
         }
-
         // update date
         Instant stampInstance = Instant.ofEpochSecond(semanticEntityVersion.stamp().time()/1000);
         ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);

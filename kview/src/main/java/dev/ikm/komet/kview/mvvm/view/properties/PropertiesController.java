@@ -15,11 +15,11 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.events.*;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -128,7 +128,7 @@ public class PropertiesController implements Serializable {
 
     private Subscriber<EditOtherNameConceptEvent> editOtherNameSubscriber;
 
-    private Subscriber<EditConceptFullyQualifiedNameEvent> fqnSubscriber;
+    private Subscriber<EditConceptFullyQualifiedNameEvent> editConceptFullyQualifiedNameEventSubscriber;
 
     private Subscriber<AddFullyQualifiedNameEvent> addFqnSubscriber;
 
@@ -269,25 +269,28 @@ public class PropertiesController implements Serializable {
         // when we receive an event because the user clicked the
         // Fully Qualified Name in the Concept, we want to change the Pane in the
         // Edit Concept bump out to be the Edit Fully Qualified Name form
-        fqnSubscriber = evt -> {
+        editConceptFullyQualifiedNameEventSubscriber = evt -> {
             // don't go into edit mode if there is no FQN yet
-            if (evt.getPublicId() == null) {
+            if (evt.getPublicId() == null && evt.getDescrName() == null) {
                 // default to adding an FQN is there isn't one
                 eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(evt,
-                        AddFullyQualifiedNameEvent.ADD_FQN, getViewProperties()));
+                        AddFullyQualifiedNameEvent.ADD_FQN, evt.getViewProperties()));
                 return;
             }
             // check if the center pane is already showing, we don't want duplicate entries in the dropdowns
             if (!contentBorderPane.getCenter().equals(editFqnPane)) {
+                editFullyQualifiedNameController.updateModel(evt.getViewProperties(), null);
                 contentBorderPane.setCenter(editFqnPane);
                 editButton.setSelected(true);
                 editButton.setText("EDIT");
                 if (evt.getPublicId() != null) {
                     editFullyQualifiedNameController.setConceptAndPopulateForm(evt.getPublicId());
+                }else {
+                    editFullyQualifiedNameController.setConceptAndPopulateForm(evt.getDescrName());
                 }
             }
         };
-        eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, fqnSubscriber);
+        eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, editConceptFullyQualifiedNameEventSubscriber);
 
         // this event happens on during the creation of a new concept
         // a new concept will not have a fully qualified name and will need one
