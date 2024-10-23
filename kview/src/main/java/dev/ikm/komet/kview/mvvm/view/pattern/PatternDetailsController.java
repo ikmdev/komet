@@ -45,6 +45,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_DATE_S
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.SELECTED_PATTERN_FIELD;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STAMP_VIEW_MODEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
@@ -63,6 +64,7 @@ import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
+import dev.ikm.tinkar.component.Pattern;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.State;
@@ -96,6 +98,7 @@ import javafx.scene.shape.FillRule;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import org.carlfx.axonic.StateMachine;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -224,7 +227,7 @@ public class PatternDetailsController {
     private MenuItem addOtherNameMenuItem;
 
     @FXML
-    private Button editFieldsButton;
+    private Button addFieldsButton;
 
     @FXML
     private TilePane fieldsTilePane;
@@ -256,6 +259,7 @@ public class PatternDetailsController {
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
         otherNamesVBox.getChildren().clear();
+
         // listen for open and close events
         patternPropertiesEventSubscriber = (evt) -> {
             if (evt.getEventType() == CLOSE_PANEL) {
@@ -297,16 +301,19 @@ public class PatternDetailsController {
         // This will listen to the pattern descriptions event. Adding an FQN, Adding other name.
         patternDescriptionEventSubscriber = evt -> {
             DescrName descrName = evt.getDescrName();
+            StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_FQN) {
                 // This if is invoked when the data is coming from FQN name screen.
                 patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, descrName.getNameText());
                 patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME, descrName);
                 patternViewModel.setPropertyValue(FQN_CASE_SIGNIFICANCE, descrName.getCaseSignificance());
                 patternViewModel.setPropertyValue(FQN_LANGUAGE, descrName.getLanguage());
+                patternSM.t("fqnDone");
             } else if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
                 // This if is invoked when the data is coming from Other Name screen.
                 ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
                 descrNameObservableList.add(evt.getDescrName());
+                patternSM.t("otherNameDone");
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
@@ -522,15 +529,22 @@ public class PatternDetailsController {
         // Setup Property screen bump out
         // Load Concept Properties View Panel (FXML & Controller)
         Config config = new Config(PATTERN_PROPERTIES_VIEW_FXML_URL)
+                .addNamedViewModel(new NamedVm("patternViewModel", patternViewModel))
                 .updateViewModel("patternPropertiesViewModel",
                         (patternPropertiesViewModel) -> patternPropertiesViewModel
                                 .setPropertyValue(PATTERN_TOPIC, patternViewModel.getPropertyValue(PATTERN_TOPIC))
-                                .setPropertyValue(VIEW_PROPERTIES, patternViewModel.getPropertyValue(VIEW_PROPERTIES) ));
+                                .setPropertyValue(VIEW_PROPERTIES, patternViewModel.getPropertyValue(VIEW_PROPERTIES) )
+                                .setPropertyValue(STATE_MACHINE, patternViewModel.getPropertyValue(STATE_MACHINE))
+                );
 
         JFXNode<BorderPane, PropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(config);
         this.propertiesBorderPane = propsFXMLLoader.node();
         this.propertiesController = propsFXMLLoader.controller();
         attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
+
+        //FIXME this doesn't work properly, should leave for a future effort...
+        // open the panel, allow the state machine to determine which panel to show
+        //EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(propertiesToggleButton, OPEN_PANEL));
     }
 
     public ViewProperties getViewProperties() {
@@ -572,7 +586,10 @@ public class PatternDetailsController {
      */
     @FXML
     private void showAddEditDefinitionPanel(ActionEvent actionEvent) {
+        actionEvent.consume();
         LOG.info("Todo show bump out and display Edit Definition panel \n" + actionEvent);
+        StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);
+        patternSM.t("addField");
         // publish property open.
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_DEFINITION));
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
@@ -580,6 +597,9 @@ public class PatternDetailsController {
 
     private void showEditFieldsPanel(ActionEvent actionEvent, PatternField selectedPatternField) {
         LOG.info("Todo show bump out and display Edit Fields panel \n" + actionEvent);
+        actionEvent.consume();
+        StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);
+        patternSM.t("editField");
         patternViewModel.setPropertyValue(SELECTED_PATTERN_FIELD, selectedPatternField );
         ObservableList<PatternField> patternFieldsObsList = patternViewModel.getObservableList(FIELDS_COLLECTION);
         int fieldNum = (patternFieldsObsList.indexOf(selectedPatternField)+1);
@@ -602,6 +622,9 @@ public class PatternDetailsController {
     @FXML
     private void showAddFqnPanel(ActionEvent actionEvent) {
         LOG.info("Bumpout Add FQN panel \n" + actionEvent);
+        actionEvent.consume();
+        StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);
+        patternSM.t("addFqn");
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_FQN));
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
@@ -609,6 +632,9 @@ public class PatternDetailsController {
     @FXML
     private void showAddOtherNamePanel(ActionEvent actionEvent) {
         LOG.info("Bumpout Add Other name panel \n" + actionEvent);
+        actionEvent.consume();
+        StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);
+        patternSM.t("addOtherName");
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_OTHER_NAME));
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
@@ -649,6 +675,7 @@ public class PatternDetailsController {
         popOver.setOnHidden(windowEvent -> {
             // set Stamp info into Details form
             getStampViewModel().save();
+            patternViewModel.save();
             updateUIStamp(getStampViewModel());
         });
 
@@ -660,13 +687,14 @@ public class PatternDetailsController {
     }
 
     private void updateUIStamp(ViewModel stampViewModel) {
-        long time = stampViewModel.getValue(TIME);
-        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
-        Instant stampInstance = Instant.ofEpochSecond(time/1000);
-        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-        String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
-
-        lastUpdatedText.setText(lastUpdated);
+        if (patternViewModel.isPatternPopulated()) {
+            Long time = stampViewModel.getValue(TIME);
+            DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
+            Instant stampInstance = Instant.ofEpochSecond(time/1000);
+            ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
+            String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
+            lastUpdatedText.setText(lastUpdated);
+        }
         ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
         if (moduleEntity == null) {
             LOG.warn("Must select a valid module for Stamp.");

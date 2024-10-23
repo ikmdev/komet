@@ -491,7 +491,7 @@
                                                 <Insets top="4.0" />
                                              </HBox.margin>
                                           </Separator>
-                                          <Button fx:id="editFieldsButton" mnemonicParsing="false" onAction="#showAddFieldsPanel" styleClass="add-pencil-button" text="Button">
+                                          <Button fx:id="addFieldsButton" mnemonicParsing="false" onAction="#showAddFieldsPanel" styleClass="add-pencil-button" text="Button">
                                              <graphic>
                                                 <Region prefHeight="200.0" prefWidth="200.0" styleClass="add-pencil" stylesheets="@../kview.css" />
                                              </graphic>
