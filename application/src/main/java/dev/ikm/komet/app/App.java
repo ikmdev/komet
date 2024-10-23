@@ -362,6 +362,7 @@ public class App extends Application {
             FXMLLoader sourceLoader = new FXMLLoader(getClass().getResource("SelectDataSource.fxml"));
             BorderPane sourceRoot = sourceLoader.load();
             SelectDataSourceController selectDataSourceController = sourceLoader.getController();
+            selectDataSourceController.getCancelButton().setOnAction(actionEvent -> Platform.exit());
             Scene sourceScene = new Scene(sourceRoot);
 
 

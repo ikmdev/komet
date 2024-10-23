@@ -609,6 +609,12 @@ public class WebApp extends Application {
         try {
             FXMLLoader sourceLoader = new FXMLLoader(getClass().getResource("SelectDataSource.fxml"));
             BorderPane sourceRoot = sourceLoader.load();
+            SelectDataSourceController sourceController = sourceLoader.getController();
+            sourceController.getCancelButton().setOnAction(actionEvent -> {
+                // Exit the application if the user cancels the data source selection
+                Platform.exit();
+                stopServer();
+            });
             rootPane.getChildren().setAll(sourceRoot);
             stage.setTitle("KOMET Startup");
 

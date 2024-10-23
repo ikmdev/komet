@@ -86,11 +86,6 @@ public class SelectDataSourceController {
     @FXML // fx:id="fileListView"
     private ListView<DataUriOption> fileListView; // Value injected by FXMLLoader
 
-    @FXML
-    void cancelButtonPressed(ActionEvent event) {
-        Platform.exit();
-    }
-
     // This method is called by the FXMLLoader when initialization is complete
     @FXML
     void initialize() {
@@ -200,5 +195,12 @@ public class SelectDataSourceController {
         dataServicePropertyStringMap.forEach((dataServiceProperty, simpleStringProperty) -> {
             dataServiceController.setDataServiceProperty(dataServiceProperty, simpleStringProperty.getValue());
         });
+    }
+
+    /**
+     * Returns the cancel button.
+     */
+    public Button getCancelButton() {
+        return cancelButton;
     }
 }
