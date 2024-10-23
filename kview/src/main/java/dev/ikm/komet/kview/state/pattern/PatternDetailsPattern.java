@@ -8,6 +8,7 @@ import static dev.ikm.komet.kview.state.PatternDetailsState.ADDING_FQN;
 import static dev.ikm.komet.kview.state.PatternDetailsState.ADDING_OTHER_NAME;
 import static dev.ikm.komet.kview.state.PatternDetailsState.ADDING_DEFINITIONS;
 import static dev.ikm.komet.kview.state.PatternDetailsState.EDITING_FIELD;
+import static dev.ikm.komet.kview.state.PatternDetailsState.EDITING_FQN;
 import static dev.ikm.komet.kview.state.PatternDetailsState.NEW_PATTERN_INITIAL;
 import org.carlfx.axonic.StatePattern;
 
@@ -37,6 +38,9 @@ public class PatternDetailsPattern extends StatePattern {
 
                 // after we add the FQN, we want to be in the state ADDED_FQN
                 .t("fqnDone", ADDING_FQN, ADDED_FQN)
+
+                .t("editFqn", EDITING_FQN, ADDED_FQN)
+                .t("editFqn", ADDED_OTHER_NAME, ADDED_FQN)
 
                 // we can navigate to add other name from the second pencil>context menu
                 // therefore it can come from these other states

@@ -251,9 +251,9 @@
                                                 </Text>
                                                 <VBox>
                                                    <children>
-                                                      <TextFlow styleClass="fqn-container" VBox.vgrow="SOMETIMES">
+                                                      <TextFlow fx:id="fqnTextFlow" styleClass="fqn-container" VBox.vgrow="SOMETIMES">
                                                          <children>
-                                                            <Text fx:id="latestFqnText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" />
+                                                            <Text fx:id="fqnText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" />
                                                          </children>
                                                       </TextFlow>
                                                       <TextFlow styleClass="fqn-container" VBox.vgrow="SOMETIMES">

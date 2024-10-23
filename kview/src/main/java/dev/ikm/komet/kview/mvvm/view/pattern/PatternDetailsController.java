@@ -24,6 +24,7 @@ import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.S
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FQN;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_OTHER_NAME;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FQN;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
@@ -64,7 +65,6 @@ import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
-import dev.ikm.tinkar.component.Pattern;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.State;
@@ -87,6 +87,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -203,7 +204,10 @@ public class PatternDetailsController {
 
     // pattern description fields
     @FXML
-    private Text latestFqnText; // fqn = fully qualified name
+    private TextFlow fqnTextFlow;
+
+    @FXML
+    private Text fqnText; // fqn = fully qualified name
 
     @FXML
     private Text fqnDescriptionSemanticText;
@@ -296,7 +300,7 @@ public class PatternDetailsController {
 
         // capture descriptions information
         StringProperty fqnTextProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
-        latestFqnText.textProperty().bind(fqnTextProperty);
+        fqnText.textProperty().bind(fqnTextProperty);
 
         // This will listen to the pattern descriptions event. Adding an FQN, Adding other name.
         patternDescriptionEventSubscriber = evt -> {
@@ -391,6 +395,8 @@ public class PatternDetailsController {
         fqnAddDateLabel.textProperty().bind(dateStrProp);
         // Setup Properties
         setupProperties();
+
+        fqnTextFlow.addEventHandler(MouseEvent.MOUSE_PRESSED, this::editFqn);
     }
 
     private ContextMenu createContextMenuForPatternField(PatternField selectedPatternField) {
@@ -781,5 +787,24 @@ public class PatternDetailsController {
 
         // update the public id
         identifierText.setText(patternViewModel.getPatternIdentifierText());
+    }
+
+    private void editFqn(MouseEvent mouseEvent) {
+        mouseEvent.consume();
+        StringProperty fqnProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
+        if (fqnProperty.isNotNull().get() && fqnProperty.isNotEmpty().get()) {
+            fqnTextFlow.getStyleClass().add("green-highlight");
+
+            StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);
+            patternSM.t("editFqn");
+            //TODO change title to edit
+            //patternViewModel
+            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC),
+                    new ShowPatternFormInBumpOutEvent(mouseEvent.getSource(), SHOW_EDIT_FQN));
+            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC),
+                    new PropertyPanelEvent(mouseEvent.getSource(), OPEN_PANEL));
+        } else {
+            fqnTextFlow.getStyleClass().removeAll("green-highlight");
+        }
     }
 }

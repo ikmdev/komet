@@ -20,7 +20,9 @@ public enum PatternDetailsState implements State {
 
     ADDING_FIELD("AddingField"),
 
-    EDITING_FIELD("EditingField")
+    EDITING_FIELD("EditingField"),
+
+    EDITING_FQN("EditingFqn")
     ;
 
     final String name;
