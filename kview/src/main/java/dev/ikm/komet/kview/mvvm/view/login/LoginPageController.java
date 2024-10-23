@@ -114,19 +114,14 @@ public class LoginPageController implements Initializable {
             usernameErrorLabel.setText(usernameErrorMessage);
             passwordErrorLabel.setText(passwordErrorMessage);
         } else {
-            // Perform authentication
-            final String username = loginViewModel.getValue(USERNAME);
-            final String password = loginViewModel.getValue(PASSWORD);
-            loginViewModel.authenticate(username, password);
-
             // Clear the error labels
             usernameErrorLabel.setText("");
             passwordErrorLabel.setText("");
 
-            // Clear view model's values to remove passwords from memory
-            loginViewModel.setValue(USERNAME, "");
-            loginViewModel.setValue(PASSWORD, "");
-            loginViewModel.save(true);
+            // Perform authentication
+            final String username = loginViewModel.getValue(USERNAME);
+            final String password = loginViewModel.getValue(PASSWORD);
+            loginViewModel.authenticate(username, password);
         }
     }
 }

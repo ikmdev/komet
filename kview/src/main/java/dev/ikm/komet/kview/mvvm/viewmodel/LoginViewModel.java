@@ -201,6 +201,11 @@ public class LoginViewModel extends ValidationViewModel {
                         // publish the user via the sign in event
                         eventBus.publish(USER_TOPIC, new SignInUserEvent(this, SIGN_IN_USER, user));
                     });
+
+                    // Clear view model's values to remove passwords from memory
+                    setValue(USERNAME, "");
+                    setValue(PASSWORD, "");
+                    reset();
                 })
                 .exceptionally(throwable -> {
                     LOG.error("Authentication failed: {}", throwable.getCause().getMessage());
