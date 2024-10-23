@@ -17,31 +17,57 @@ package dev.ikm.komet.kview.events;
 
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.tinkar.common.id.PublicId;
 
 public class EditOtherNameConceptEvent extends Evt {
 
     public static final EvtType<EditOtherNameConceptEvent> EDIT_OTHER_NAME = new EvtType<>(Evt.ANY, "EDIT_OTHER_NAME");
 
-    private PublicId publicId;
+    private final PublicId publicId;
 
+    private final DescrName descrName;
+
+    private final ViewProperties viewProperties;
 
     /**
      * Constructs EditOtherNameConceptEvent with needed PublicId payload
      * @param source    source of the event
      * @param eventType     type of the event
+     * @param viewProperties the view properties for UI.
      * @param publicId  payload needed to for the Edit Other Name Form
      */
-    public EditOtherNameConceptEvent(Object source, EvtType eventType, PublicId publicId) {
+    public EditOtherNameConceptEvent(Object source, EvtType eventType, ViewProperties viewProperties, PublicId publicId) {
         super(source, eventType);
+        this.viewProperties = viewProperties;
         this.publicId = publicId;
+        this.descrName = null;
+    }
+
+    /**
+     * Constructs EditOtherNameConceptEvent with needed PublicId payload
+     * @param source    source of the event
+     * @param eventType     type of the event
+     * @param viewProperties the view properties for UI.
+     * @param descrName the model object.
+     */
+    public EditOtherNameConceptEvent(Object source, EvtType eventType, ViewProperties viewProperties, DescrName descrName) {
+        super(source, eventType);
+        this.viewProperties = viewProperties;
+        this.publicId = null;
+        this.descrName =descrName;
     }
 
     public PublicId getPublicId() {
         return publicId;
     }
 
-    public void setPublicId(PublicId publicId) {
-        this.publicId = publicId;
+    public ViewProperties getViewProperties() {
+        return viewProperties;
+    }
+
+    public DescrName getDescrName() {
+        return descrName;
     }
 }

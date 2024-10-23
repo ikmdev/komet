@@ -126,7 +126,7 @@ public class PropertiesController implements Serializable {
 
     private Subscriber<AddOtherNameToConceptEvent> addOtherNameSubscriber;
 
-    private Subscriber<EditOtherNameConceptEvent> editOtherNameSubscriber;
+    private Subscriber<EditOtherNameConceptEvent> editOtherNameConceptEventSubscriber;
 
     private Subscriber<EditConceptFullyQualifiedNameEvent> editConceptFullyQualifiedNameEventSubscriber;
 
@@ -255,15 +255,17 @@ public class PropertiesController implements Serializable {
         // Add Axiom button, we want to change the Pane in the
         // Edit Concept bump out to be the Add Axiom form
 
-        editOtherNameSubscriber = evt -> {
+        editOtherNameConceptEventSubscriber = evt -> {
             contentBorderPane.setCenter(editOtherNamePane);
             editButton.setSelected(true);
             editButton.setText("EDIT");
             if (evt.getPublicId() != null) {
                 editDescriptionFormController.setConceptAndPopulateForm(evt.getPublicId());
+            }else {
+                editDescriptionFormController.setConceptAndPopulateForm(evt.getDescrName());
             }
         };
-        eventBus.subscribe(conceptTopic, EditOtherNameConceptEvent.class, editOtherNameSubscriber);
+        eventBus.subscribe(conceptTopic, EditOtherNameConceptEvent.class, editOtherNameConceptEventSubscriber);
 
 
         // when we receive an event because the user clicked the

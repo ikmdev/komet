@@ -376,7 +376,9 @@ public class DetailsController  {
                 if (evt.getEventType() == CreateConceptEvent.ADD_FQN) {
                     getConceptViewModel().setPropertyValue(FULLY_QUALIFIED_NAME, descrName);
                 } else if (evt.getEventType() == CreateConceptEvent.ADD_OTHER_NAME) {
-                    getConceptViewModel().getObservableList(OTHER_NAMES).add(descrName);
+                    otherNames.add(descrName);
+                }else if (evt.getEventType() == CreateConceptEvent.EDIT_OTHER_NAME){ // Since we are
+                    updateOtherNamesDescription(otherNames);
                 }
                 // Attempts to write data
                 boolean isWritten = conceptViewModel.createConcept(viewProperties.calculator().viewCoordinateRecord().editCoordinate());
@@ -390,8 +392,8 @@ public class DetailsController  {
                 setUpDescriptionContextMenu(addDescriptionButton);
                 //TODO revisit: why should the mode ever be edit inside a create event?
             } else if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))){
-                conceptViewModel.addOtherName(viewProperties.calculator().viewCoordinateRecord().editCoordinate(), descrName);
-                getConceptViewModel().getObservableList(OTHER_NAMES).add(descrName);
+                    conceptViewModel.addOtherName(viewProperties.calculator().viewCoordinateRecord().editCoordinate(), descrName);
+                    otherNames.add(descrName);
             }
 
         };
@@ -775,7 +777,7 @@ public class DetailsController  {
                 textFlowPane.setOnMouseClicked(event -> {
                     eventBus.publish(conceptTopic,
                             new EditOtherNameConceptEvent(textFlowPane,
-                                    EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherName.getSemanticPublicId()));
+                                    EditOtherNameConceptEvent.EDIT_OTHER_NAME, viewProperties, otherName));
                 });
             });
             otherNamesVBox.getChildren().addAll(rows);
@@ -821,7 +823,7 @@ public class DetailsController  {
                     textFlowPane.setOnMouseClicked(event -> {
                         eventBus.publish(conceptTopic,
                                 new EditOtherNameConceptEvent(textFlowPane,
-                                        EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId));
+                                        EditOtherNameConceptEvent.EDIT_OTHER_NAME, viewProperties, otherNamePublicId));
                     });
                 });
                 otherNamesVBox.getChildren().addAll(rows);

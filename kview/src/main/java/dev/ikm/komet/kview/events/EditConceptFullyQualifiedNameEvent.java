@@ -34,8 +34,9 @@ public class EditConceptFullyQualifiedNameEvent extends Evt  {
      * Constructs a prototypical Event.
      *
      * @param source    the object on which the Event initially occurred
-     * @param eventType
-     * @param publicId
+     * @param eventType the edit event type
+     * @param viewProperties the view properties for UI.
+     * @param publicId publicId of the concept being edited.
      * @throws IllegalArgumentException if source is null
      */
     public EditConceptFullyQualifiedNameEvent(Object source, EvtType eventType, ViewProperties viewProperties, PublicId publicId) {
@@ -49,7 +50,8 @@ public class EditConceptFullyQualifiedNameEvent extends Evt  {
      * Constructs a prototypical Event.
      *
      * @param source    the object on which the Event initially occurred
-     * @param eventType the edit event type.
+     * @param eventType the edit event type
+     * @param viewProperties viewProperties for the display
      * @param descrName the model object.
      * @throws IllegalArgumentException if source is null
      */

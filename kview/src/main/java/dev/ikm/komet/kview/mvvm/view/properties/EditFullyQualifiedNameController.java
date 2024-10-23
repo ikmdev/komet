@@ -46,7 +46,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescriptionTypes;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
@@ -105,9 +104,6 @@ public class EditFullyQualifiedNameController implements BasicController {
     @FXML
     private Button cancelButton;
 
-    @FXML
-    private ComboBox<ConceptEntity> nameDescriptionType;
-
     private EvtBus eventBus;
 
     @InjectViewModel
@@ -125,6 +121,8 @@ public class EditFullyQualifiedNameController implements BasicController {
         clearView();
         setEditFullyQualifiedNameTitleLabel("Edit Description: Fully Qualified Name");
         populateDialectComboBoxes();
+
+        fqnViewModel.setPropertyValue(NAME_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
 
         // bind with viewmodel.
         fqnText.textProperty().bindBidirectional(fqnViewModel.getProperty(NAME_TEXT));
@@ -372,13 +370,11 @@ public class EditFullyQualifiedNameController implements BasicController {
      * @param descrName model values that need to be prepopulated.
      */
     public void setConceptAndPopulateForm(DescrName descrName) {
-        setupComboBox(nameDescriptionType, fetchDescriptionTypes()); // Hard coded
         setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
         setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
         setupComboBox(caseSignificanceComboBox, fqnViewModel.findAllCaseSignificants(getViewProperties()));
         setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
         fqnViewModel.setPropertyValue(NAME_TEXT, descrName.getNameText())
-                .setPropertyValue(NAME_TYPE, descrName.getNameType())
                 .setPropertyValue(CASE_SIGNIFICANCE, descrName.getCaseSignificance())
                 .setPropertyValue(STATUS, descrName.getStatus())
                 .setPropertyValue(MODULE, descrName.getModule())
