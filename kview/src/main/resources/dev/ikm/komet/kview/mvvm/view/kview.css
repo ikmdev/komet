@@ -2275,6 +2275,10 @@ Timeline Year line segment (will overlay change circles)
  * Start of Pattern UI elements                                                  *
  *********************************************************************************/
 
+.grey3-background {
+    -fx-background-color: -Grey-3;
+}
+
 .search-device-text-input {
     -fx-border-radius: 4;
     -fx-border-width: 1px;
@@ -4115,6 +4119,80 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: #545D72;
     -fx-background-insets: 0;
     -fx-background-radius: 6;
+}
+
+/*****************************
+* Login page styles
+*****************************/
+
+.login-page {
+    -fx-background-color: -Secondary-07;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 8;
+}
+
+.login-page > .left-vbox {
+    -fx-alignment: center;
+    -fx-spacing: 32px;
+}
+
+.login-page > .left-vbox > .label {
+    -fx-font-size: 22px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -Grey-White;
+}
+
+.login-page .center-pane {
+    -fx-background-color: -Grey-2;
+    -fx-background-radius: 16 0 0 16;
+    -fx-padding: 32px;
+    -fx-alignment: center-left;
+}
+
+.login-page .center-vbox {
+    -fx-alignment: center-left;
+}
+
+.login-page .center-vbox > .header-label {
+    -fx-font-size: 16px;
+    -fx-font-weight: 500;
+    -fx-text-fill: -Grey-Black;
+    -fx-padding: 0 0 24 0;
+}
+
+.login-page .center-vbox > .text-field {
+    -fx-font-size: 14px;
+    -fx-pref-height: 36px;
+    -fx-font-weight: 500;
+}
+
+.login-page .center-pane .error-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: 500;
+    -fx-text-fill: -Accent-color-red;
+    -fx-padding: 0 0 8 0;
+}
+
+.login-page .center-vbox > .signin-button {
+    -fx-font-size: 14px;
+    -fx-text-fill: -Grey-White;
+    -fx-font-weight: 500;
+    -fx-pref-height: 36px;
+    -fx-background-color: -Primary-06;
+    -fx-max-width: infinity;
+}
+
+.login-page .center-vbox > .signin-button:hover {
+    -fx-background-color: -Primary-07;
+}
+
+.login-page .center-vbox > .signin-button:pressed {
+    -fx-background-color: -Primary-05;
+}
+
+.login-page .center-vbox > .signin-button:disabled {
+    -fx-background-color: -Grey-7;
 }
 
 /*****************************

@@ -86,11 +86,6 @@ public class SelectDataSourceController {
     @FXML // fx:id="fileListView"
     private ListView<DataUriOption> fileListView; // Value injected by FXMLLoader
 
-    @FXML
-    void cancelButtonPressed(ActionEvent event) {
-        Platform.exit();
-    }
-
     // This method is called by the FXMLLoader when initialization is complete
     @FXML
     void initialize() {
@@ -191,12 +186,21 @@ public class SelectDataSourceController {
         progressTab.setGraphic(kometNode.getTitleNode());
         progressTabPane.getTabs().add(progressTab);
 
-        Platform.runLater(() -> App.state.set(AppState.SELECTED_DATA_SOURCE));
+        App.state.set(AppState.SELECTED_DATA_SOURCE);
+        // TODO: The following line will be removed in the future, when the WebApp class will be merged with the App class.
+        WebApp.state.set(AppState.SELECTED_DATA_SOURCE);
     }
 
     private void saveDataServiceProperties(DataServiceController<?> dataServiceController) {
         dataServicePropertyStringMap.forEach((dataServiceProperty, simpleStringProperty) -> {
             dataServiceController.setDataServiceProperty(dataServiceProperty, simpleStringProperty.getValue());
         });
+    }
+
+    /**
+     * Returns the cancel button.
+     */
+    public Button getCancelButton() {
+        return cancelButton;
     }
 }

@@ -18,7 +18,7 @@
                <children>
                   <HBox alignment="CENTER" prefWidth="515.0">
                      <children>
-                        <ToggleButton fx:id="addEditButton" mnemonicParsing="false" onAction="#showAddEditView" styleClass="properties-tab" text="ADD" textAlignment="JUSTIFY">
+                        <ToggleButton fx:id="addEditButton" mnemonicParsing="false" onAction="#showAddEditView" styleClass="properties-tab" text="ADD/EDIT" textAlignment="JUSTIFY">
                            <graphic>
                               <SVGPath content="M11.7167 8L12.5 8.78333L4.93333 16.3333H4.16667V15.5667L11.7167 8ZM14.7167 3C14.5083 3 14.2917 3.08333 14.1333 3.24167L12.6083 4.76667L15.7333 7.89167L17.2583 6.36667C17.5833 6.04167 17.5833 5.5 17.2583 5.19167L15.3083 3.24167C15.1417 3.075 14.9333 3 14.7167 3ZM11.7167 5.65833L2.5 14.875V18H5.625L14.8417 8.78333L11.7167 5.65833Z" styleClass="svg-tab" />
                            </graphic>
@@ -34,7 +34,7 @@
                               <SVGPath content="M10.0001 11.3332H5.83342V15.4998H10.0001V17.1665H4.16675V8.83317H5.83342V9.6665H10.0001V11.3332ZM6.66675 3.83317V5.49984H3.33341V3.83317H6.66675ZM8.33342 2.1665H1.66675V7.1665H8.33342V2.1665ZM16.6667 9.6665V11.3332H13.3334V9.6665H16.6667ZM18.3334 7.99984H11.6667V12.9998H18.3334V7.99984ZM16.6667 15.4998V17.1665H13.3334V15.4998H16.6667ZM18.3334 13.8332H11.6667V18.8332H18.3334V13.8332Z" styleClass="svg-tab" />
                            </graphic>
                         </ToggleButton>
-                        <ToggleButton fx:id="historyButton" mnemonicParsing="false" selected="true" styleClass="properties-tab" text="HISTORY" toggleGroup="$propertyToggleButtonGroup">
+                        <ToggleButton fx:id="historyButton" mnemonicParsing="false" onAction="#showHistoryView" selected="true" styleClass="properties-tab" text="HISTORY" toggleGroup="$propertyToggleButtonGroup">
                            <graphic>
                               <SVGPath content="M10.8333 3C6.69159 3 3.33325 6.35833 3.33325 10.5H0.833252L4.07492 13.7417L4.13325 13.8583L7.49992 10.5H4.99992C4.99992 7.275 7.60825 4.66667 10.8333 4.66667C14.0583 4.66667 16.6666 7.275 16.6666 10.5C16.6666 13.725 14.0583 16.3333 10.8333 16.3333C9.22492 16.3333 7.76659 15.675 6.71659 14.6167L5.53325 15.8C6.89158 17.1583 8.75825 18 10.8333 18C14.9749 18 18.3333 14.6417 18.3333 10.5C18.3333 6.35833 14.9749 3 10.8333 3ZM9.99992 7.16667V11.3333L13.5666 13.45L14.1666 12.4417L11.2499 10.7083V7.16667H9.99992Z" styleClass="svg-tab" />
                            </graphic>
