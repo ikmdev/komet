@@ -66,7 +66,7 @@ viewed historically.
 After building Komet, you can run it with JPro on your local machine by following these steps:
 1. Execute the following command to run the Komet application in your web browser:
    ```bash
-   mvn -f application jpro:run
+   mvn -f application -Pjpro jpro:run
    ```
    The default web browser should open automatically, displaying the Komet application. If it doesn't, navigate
    to `http://localhost:8080` in your browser.
@@ -77,7 +77,7 @@ After building Komet, you can run it with JPro on your local machine by followin
 To run Komet with JPro in a Docker container, follow these steps:
 1. Create the application release zip for deployment using the following command:
    ```bash
-   mvn clean -f application jpro:release
+   mvn clean -f application -Pjpro jpro:release
    ```
    The release zip will be created in the `application/target` directory, named `komet-jpro.zip`.
 2. Transfer the `komet-jpro.zip` file to the directory where you want to run the Docker container.
