@@ -28,6 +28,7 @@ module dev.ikm.komet.kview {
     requires org.carlfx.cognitive;
     requires org.carlfx.axonic;
     requires dev.ikm.tinkar.composer;
+    requires one.jpro.platform.auth.core;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
@@ -99,6 +100,9 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.export;
     exports dev.ikm.komet.kview.mvvm.view.export;
     exports dev.ikm.komet.kview.mvvm.view;
+
+    opens dev.ikm.komet.kview.mvvm.view.login;
+    exports dev.ikm.komet.kview.mvvm.view.login;
 
     exports dev.ikm.komet.kview.mvvm.view.descriptionname;
     opens dev.ikm.komet.kview.mvvm.view.descriptionname to javafx.fxml, org.carlfx.cognitive;
