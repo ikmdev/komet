@@ -17,38 +17,50 @@ package dev.ikm.komet.kview.events;
 
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.tinkar.common.id.PublicId;
 
 public class EditConceptFullyQualifiedNameEvent extends Evt  {
 
     public static final EvtType<EditConceptFullyQualifiedNameEvent> EDIT_FQN = new EvtType<>(Evt.ANY, "EDIT_FQN");
 
-    private PublicId publicId;
+    private final PublicId publicId;
 
+    private final DescrName descrName;
 
-    public EditConceptFullyQualifiedNameEvent(Object source, EvtType eventType) {
-        super(source, eventType);
-    }
     /**
      * Constructs a prototypical Event.
      *
      * @param source    the object on which the Event initially occurred
-     * @param eventType
-     * @param publicId
+     * @param eventType the edit event type
+     * @param publicId publicId of the concept being edited.
      * @throws IllegalArgumentException if source is null
      */
     public EditConceptFullyQualifiedNameEvent(Object source, EvtType eventType, PublicId publicId) {
         super(source, eventType);
         this.publicId = publicId;
+        this.descrName = null;
+    }
+
+    /**
+     * Constructs a prototypical Event.
+     *
+     * @param source    the object on which the Event initially occurred
+     * @param eventType the edit event type
+     * @param descrName the model object.
+     * @throws IllegalArgumentException if source is null
+     */
+    public EditConceptFullyQualifiedNameEvent(Object source, EvtType eventType, DescrName descrName) {
+        super(source, eventType);
+        this.publicId = null;
+        this.descrName = descrName;
     }
 
     public PublicId getPublicId() {
         return publicId;
     }
 
-    public void setPublicId(PublicId publicId) {
-        this.publicId = publicId;
+    public DescrName getDescrName() {
+        return descrName;
     }
-
-
 }

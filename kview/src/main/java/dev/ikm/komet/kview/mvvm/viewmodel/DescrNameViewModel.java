@@ -243,6 +243,17 @@ public class DescrNameViewModel extends FormViewModel {
         );
     }
 
+    public void updateData(DescrName editDescrName) {
+        editDescrName.setParentConcept(getValue(PARENT_PUBLIC_ID));
+        editDescrName.setNameText(getValue(NAME_TEXT));
+        editDescrName.setNameType(getValue(NAME_TYPE));
+        editDescrName.setCaseSignificance(getValue(CASE_SIGNIFICANCE));
+        editDescrName.setStatus(getValue(STATUS));
+        editDescrName.setModule(getValue(MODULE));
+        editDescrName.setLanguage(getValue(LANGUAGE));
+        editDescrName.setSemanticPublicId(getValue(SEMANTIC_PUBLIC_ID));
+    }
+
     public void updateOtherName(PublicId publicId) {
         Transaction transaction = Transaction.make();
 

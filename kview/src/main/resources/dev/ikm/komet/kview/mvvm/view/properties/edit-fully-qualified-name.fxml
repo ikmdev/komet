@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane minWidth="100.0" prefWidth="487.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane minWidth="100.0" prefWidth="487.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
     <top>
         <HBox alignment="TOP_CENTER" styleClass="edit-concept-label-container" BorderPane.alignment="TOP_CENTER">
             <children>
@@ -80,7 +80,7 @@
                     <GridPane.margin>
                         <Insets right="15.0" />
                     </GridPane.margin></TextField>
-                <ComboBox editable="true" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Fully Qualified Name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+                <ComboBox disable="true" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Fully Qualified Name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
                     <GridPane.margin>
                         <Insets right="15.0" />
                     </GridPane.margin></ComboBox>
