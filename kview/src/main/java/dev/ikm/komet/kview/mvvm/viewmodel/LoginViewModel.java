@@ -106,7 +106,7 @@ public class LoginViewModel extends ValidationViewModel {
                 .addValidator(USERNAME, USERNAME.name(), (ReadOnlyStringProperty prop, ViewModel viewModel) -> {
                     if (prop.isEmpty().get() || prop.isNotEmpty().get() && prop.get().length() < 5) {
                         return new ValidationMessage(USERNAME, MessageType.ERROR,
-                                "%s is required and must be greater then 5 characters.".formatted(USERNAME.getPropertyName()));
+                                "%s is required and must be greater than 5 characters.".formatted(USERNAME.getPropertyName()));
                     }
                     // Clear any previous authentication errors
                     setPropertyValue(AUTH_ERROR, "");
@@ -130,7 +130,7 @@ public class LoginViewModel extends ValidationViewModel {
                 .addValidator(PASSWORD, PASSWORD.name(), (ReadOnlyStringProperty prop, ViewModel vm) -> {
                     if (prop.isEmpty().get() || prop.isNotEmpty().get() && prop.get().length() < 5) {
                         return new ValidationMessage(PASSWORD, MessageType.ERROR,
-                                "%s is required and must be greater then 5 characters.".formatted(PASSWORD.getPropertyName()));
+                                "%s is required and must be greater than 5 characters.".formatted(PASSWORD.getPropertyName()));
                     }
                     // Clear any previous authentication errors
                     setPropertyValue(AUTH_ERROR, "");
