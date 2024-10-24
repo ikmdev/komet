@@ -142,6 +142,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -417,9 +418,11 @@ public class JournalController {
     }
 
     private void setupDragNDrop(Node node, Consumer<PublicId> consumer) {
-        node.setOnDragEntered(event -> desktopDropRegion.setVisible(true));
-
         node.setOnDragOver(event -> {
+            boolean isMouseOverNode = isMouseOverNode(node, event);
+            desktopDropRegion.setVisible(isMouseOverNode);
+            desktopDropRegion.setManaged(isMouseOverNode);
+
             /* data is dragged over the target */
             /* accept it only if it is not dragged from the same node
              * and if it has a string data */
@@ -500,6 +503,10 @@ public class JournalController {
         // add a vbox list for progress popups.
         setupSlideOutTrayPane(progressListVBox, progressSlideoutTrayPane);
         SlideOutTrayHelper.slideIn(progressSlideoutTrayPane);
+    }
+
+    private boolean isMouseOverNode(Node node, DragEvent event) {
+        return event.getPickResult().getIntersectedNode() == node;
     }
 
     private void setupProgressListener() {
