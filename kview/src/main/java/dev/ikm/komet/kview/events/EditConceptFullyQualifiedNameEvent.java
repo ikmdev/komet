@@ -28,19 +28,16 @@ public class EditConceptFullyQualifiedNameEvent extends Evt  {
 
     private final DescrName descrName;
 
-//    private final ViewProperties viewProperties;
     /**
      * Constructs a prototypical Event.
      *
      * @param source    the object on which the Event initially occurred
      * @param eventType the edit event type
-//     * @param viewProperties the view properties for UI.
      * @param publicId publicId of the concept being edited.
      * @throws IllegalArgumentException if source is null
      */
     public EditConceptFullyQualifiedNameEvent(Object source, EvtType eventType, PublicId publicId) {
         super(source, eventType);
-//        this.viewProperties = viewProperties;
         this.publicId = publicId;
         this.descrName = null;
     }
@@ -50,13 +47,11 @@ public class EditConceptFullyQualifiedNameEvent extends Evt  {
      *
      * @param source    the object on which the Event initially occurred
      * @param eventType the edit event type
-//     * @param viewProperties viewProperties for the display
      * @param descrName the model object.
      * @throws IllegalArgumentException if source is null
      */
     public EditConceptFullyQualifiedNameEvent(Object source, EvtType eventType, DescrName descrName) {
         super(source, eventType);
-//        this.viewProperties = viewProperties;
         this.publicId = null;
         this.descrName = descrName;
     }
@@ -68,8 +63,4 @@ public class EditConceptFullyQualifiedNameEvent extends Evt  {
     public DescrName getDescrName() {
         return descrName;
     }
-
-//    public ViewProperties getViewProperties() {
-//        return viewProperties;
-//    }
 }

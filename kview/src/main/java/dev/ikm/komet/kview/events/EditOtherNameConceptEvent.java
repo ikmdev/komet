@@ -28,18 +28,14 @@ public class EditOtherNameConceptEvent extends Evt {
 
     private final DescrName descrName;
 
- //   private final ViewProperties viewProperties;
-
     /**
      * Constructs EditOtherNameConceptEvent with needed PublicId payload
      * @param source    source of the event
      * @param eventType     type of the event
-  //   * @param viewProperties the view properties for UI.
      * @param publicId  payload needed to for the Edit Other Name Form
      */
     public EditOtherNameConceptEvent(Object source, EvtType eventType, PublicId publicId) {
         super(source, eventType);
-//        this.viewProperties = viewProperties;
         this.publicId = publicId;
         this.descrName = null;
     }
@@ -48,12 +44,10 @@ public class EditOtherNameConceptEvent extends Evt {
      * Constructs EditOtherNameConceptEvent with needed PublicId payload
      * @param source    source of the event
      * @param eventType     type of the event
-  //   * @param viewProperties the view properties for UI.
      * @param descrName the model object.
      */
     public EditOtherNameConceptEvent(Object source, EvtType eventType, DescrName descrName) {
         super(source, eventType);
-    //    this.viewProperties = viewProperties;
         this.publicId = null;
         this.descrName =descrName;
     }
@@ -61,10 +55,6 @@ public class EditOtherNameConceptEvent extends Evt {
     public PublicId getPublicId() {
         return publicId;
     }
-
-  //  public ViewProperties getViewProperties() {
-  //      return viewProperties;
-  //  }
 
     public DescrName getDescrName() {
         return descrName;
