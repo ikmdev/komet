@@ -17,7 +17,6 @@ package dev.ikm.komet.kview.events;
 
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
-import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.tinkar.common.id.PublicId;
 
@@ -29,19 +28,19 @@ public class EditConceptFullyQualifiedNameEvent extends Evt  {
 
     private final DescrName descrName;
 
-    private final ViewProperties viewProperties;
+//    private final ViewProperties viewProperties;
     /**
      * Constructs a prototypical Event.
      *
      * @param source    the object on which the Event initially occurred
      * @param eventType the edit event type
-     * @param viewProperties the view properties for UI.
+//     * @param viewProperties the view properties for UI.
      * @param publicId publicId of the concept being edited.
      * @throws IllegalArgumentException if source is null
      */
-    public EditConceptFullyQualifiedNameEvent(Object source, EvtType eventType, ViewProperties viewProperties, PublicId publicId) {
+    public EditConceptFullyQualifiedNameEvent(Object source, EvtType eventType, PublicId publicId) {
         super(source, eventType);
-        this.viewProperties = viewProperties;
+//        this.viewProperties = viewProperties;
         this.publicId = publicId;
         this.descrName = null;
     }
@@ -51,13 +50,13 @@ public class EditConceptFullyQualifiedNameEvent extends Evt  {
      *
      * @param source    the object on which the Event initially occurred
      * @param eventType the edit event type
-     * @param viewProperties viewProperties for the display
+//     * @param viewProperties viewProperties for the display
      * @param descrName the model object.
      * @throws IllegalArgumentException if source is null
      */
-    public EditConceptFullyQualifiedNameEvent(Object source, EvtType eventType, ViewProperties viewProperties, DescrName descrName) {
+    public EditConceptFullyQualifiedNameEvent(Object source, EvtType eventType, DescrName descrName) {
         super(source, eventType);
-        this.viewProperties = viewProperties;
+//        this.viewProperties = viewProperties;
         this.publicId = null;
         this.descrName = descrName;
     }
@@ -70,7 +69,7 @@ public class EditConceptFullyQualifiedNameEvent extends Evt  {
         return descrName;
     }
 
-    public ViewProperties getViewProperties() {
-        return viewProperties;
-    }
+//    public ViewProperties getViewProperties() {
+//        return viewProperties;
+//    }
 }

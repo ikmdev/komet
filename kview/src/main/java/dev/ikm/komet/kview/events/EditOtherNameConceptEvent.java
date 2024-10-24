@@ -17,7 +17,6 @@ package dev.ikm.komet.kview.events;
 
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
-import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.tinkar.common.id.PublicId;
 
@@ -29,18 +28,18 @@ public class EditOtherNameConceptEvent extends Evt {
 
     private final DescrName descrName;
 
-    private final ViewProperties viewProperties;
+ //   private final ViewProperties viewProperties;
 
     /**
      * Constructs EditOtherNameConceptEvent with needed PublicId payload
      * @param source    source of the event
      * @param eventType     type of the event
-     * @param viewProperties the view properties for UI.
+  //   * @param viewProperties the view properties for UI.
      * @param publicId  payload needed to for the Edit Other Name Form
      */
-    public EditOtherNameConceptEvent(Object source, EvtType eventType, ViewProperties viewProperties, PublicId publicId) {
+    public EditOtherNameConceptEvent(Object source, EvtType eventType, PublicId publicId) {
         super(source, eventType);
-        this.viewProperties = viewProperties;
+//        this.viewProperties = viewProperties;
         this.publicId = publicId;
         this.descrName = null;
     }
@@ -49,12 +48,12 @@ public class EditOtherNameConceptEvent extends Evt {
      * Constructs EditOtherNameConceptEvent with needed PublicId payload
      * @param source    source of the event
      * @param eventType     type of the event
-     * @param viewProperties the view properties for UI.
+  //   * @param viewProperties the view properties for UI.
      * @param descrName the model object.
      */
-    public EditOtherNameConceptEvent(Object source, EvtType eventType, ViewProperties viewProperties, DescrName descrName) {
+    public EditOtherNameConceptEvent(Object source, EvtType eventType, DescrName descrName) {
         super(source, eventType);
-        this.viewProperties = viewProperties;
+    //    this.viewProperties = viewProperties;
         this.publicId = null;
         this.descrName =descrName;
     }
@@ -63,9 +62,9 @@ public class EditOtherNameConceptEvent extends Evt {
         return publicId;
     }
 
-    public ViewProperties getViewProperties() {
-        return viewProperties;
-    }
+  //  public ViewProperties getViewProperties() {
+  //      return viewProperties;
+  //  }
 
     public DescrName getDescrName() {
         return descrName;

@@ -276,12 +276,12 @@ public class PropertiesController implements Serializable {
             if (evt.getPublicId() == null && evt.getDescrName() == null) {
                 // default to adding an FQN is there isn't one
                 eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(evt,
-                        AddFullyQualifiedNameEvent.ADD_FQN, evt.getViewProperties()));
+                        AddFullyQualifiedNameEvent.ADD_FQN, getViewProperties()));
                 return;
             }
             // check if the center pane is already showing, we don't want duplicate entries in the dropdowns
             if (!contentBorderPane.getCenter().equals(editFqnPane)) {
-                editFullyQualifiedNameController.updateModel(evt.getViewProperties(), null);
+                editFullyQualifiedNameController.updateModel(getViewProperties(), null);
                 contentBorderPane.setCenter(editFqnPane);
                 editButton.setSelected(true);
                 editButton.setText("EDIT");

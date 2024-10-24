@@ -80,7 +80,7 @@ public class EditDescriptionsController implements BasicController {
 
         editFullyQualifiedNameButton.setOnMouseClicked(event ->
                 eventBus.publish(conceptTopic, new EditConceptFullyQualifiedNameEvent(event,
-                        EditConceptFullyQualifiedNameEvent.EDIT_FQN, viewProperties, fqnPublicId.get())));
+                        EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId.get())));
 
         closePropertiesPanelButton.setOnMouseClicked(event ->
             eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(event,

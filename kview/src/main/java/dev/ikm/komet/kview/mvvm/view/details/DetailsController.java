@@ -755,7 +755,7 @@ public class DetailsController  {
         latestFqnText.setOnMouseClicked(event -> {
             eventBus.publish(conceptTopic,
                     new EditConceptFullyQualifiedNameEvent(latestFqnText,
-                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, getViewProperties(), fqnDescrName));
+                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnDescrName));
         });
         // these should never be null, if the drop-downs are populated then the
         // submit button will not be enabled on the Add FQN form
@@ -777,7 +777,7 @@ public class DetailsController  {
                 textFlowPane.setOnMouseClicked(event -> {
                     eventBus.publish(conceptTopic,
                             new EditOtherNameConceptEvent(textFlowPane,
-                                    EditOtherNameConceptEvent.EDIT_OTHER_NAME, viewProperties, otherName));
+                                    EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherName));
                 });
             });
             otherNamesVBox.getChildren().addAll(rows);
@@ -823,7 +823,7 @@ public class DetailsController  {
                     textFlowPane.setOnMouseClicked(event -> {
                         eventBus.publish(conceptTopic,
                                 new EditOtherNameConceptEvent(textFlowPane,
-                                        EditOtherNameConceptEvent.EDIT_OTHER_NAME, viewProperties, otherNamePublicId));
+                                        EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId));
                     });
                 });
                 otherNamesVBox.getChildren().addAll(rows);
@@ -965,7 +965,7 @@ public class DetailsController  {
         latestFqnText.setOnMouseClicked(event -> {
             eventBus.publish(conceptTopic,
                     new EditConceptFullyQualifiedNameEvent(latestFqnText,
-                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, viewProperties, fqnPublicId));
+                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId));
         });
 
         String descrSemanticStr = String.join(" | ", fieldDescriptions);
