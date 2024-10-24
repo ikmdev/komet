@@ -1146,11 +1146,11 @@ public class WebApp extends Application {
             final String[] stopScriptArgs;
             final CommandRunner stopCommandRunner;
             final File workingDir;
-            if ("dev".equals(jproMode)) {
+            if ("dev".equalsIgnoreCase(jproMode)) {
                 workingDir = new File(System.getProperty("user.dir")).getParentFile();
                 stopScriptArgs = PlatformUtils.isWindows() ?
-                        new String[]{"cmd", "/c", "mvnw.bat", "-f", "application", "jpro:stop"} :
-                        new String[]{"bash", "./mvnw", "-f", "application", "jpro:stop"};
+                        new String[]{"cmd", "/c", "mvnw.bat", "-f", "application", "-Pjpro", "jpro:stop"} :
+                        new String[]{"bash", "./mvnw", "-f", "application", "-Pjpro", "jpro:stop"};
                 stopCommandRunner = new CommandRunner(stopScriptArgs);
             } else {
                 workingDir = new File("bin");
