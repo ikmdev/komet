@@ -15,14 +15,15 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import dev.ikm.komet.kview.mvvm.view.BasicController;
-import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
-import dev.ikm.komet.kview.events.EditConceptEvent;
-import dev.ikm.komet.kview.mvvm.model.DescrName;
-import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.events.CreateConceptEvent;
+import dev.ikm.komet.kview.events.EditConceptEvent;
+import dev.ikm.komet.kview.mvvm.model.DescrName;
+import dev.ikm.komet.kview.mvvm.view.BasicController;
+import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -44,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
@@ -120,8 +122,14 @@ public class EditFullyQualifiedNameController implements BasicController {
         setEditFullyQualifiedNameTitleLabel("Edit Description: Fully Qualified Name");
         populateDialectComboBoxes();
 
-        // initialize the view model with values in the existing FQN
-        copyUIToViewModelProperties();
+        fqnViewModel.setPropertyValue(NAME_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+
+        // bind with viewmodel.
+        fqnText.textProperty().bindBidirectional(fqnViewModel.getProperty(NAME_TEXT));
+        moduleComboBox.valueProperty().bindBidirectional(fqnViewModel.getProperty(MODULE));
+        caseSignificanceComboBox.valueProperty().bindBidirectional(fqnViewModel.getProperty(CASE_SIGNIFICANCE));
+        statusComboBox.valueProperty().bindBidirectional(fqnViewModel.getProperty(STATUS));
+        languageComboBox.valueProperty().bindBidirectional(fqnViewModel.getProperty(LANGUAGE));
 
         InvalidationListener invalidationListener = obs -> validateForm();
 
@@ -153,17 +161,6 @@ public class EditFullyQualifiedNameController implements BasicController {
                 isFqnTextEmpty || !isModuleComboBoxSelected
                         || !isCaseSignificanceComboBoxSelected || !isLanguageComboBoxComboBoxSelected
                         || !isStatusComboBoxComboBoxSelected);
-    }
-
-    private void copyUIToViewModelProperties() {
-        if (fqnViewModel != null) {
-            fqnViewModel.setPropertyValue(NAME_TEXT, fqnText.getText())
-                    .setPropertyValue(NAME_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
-                    .setPropertyValue(CASE_SIGNIFICANCE, caseSignificanceComboBox.getSelectionModel().getSelectedItem())
-                    .setPropertyValue(STATUS, statusComboBox.getSelectionModel().getSelectedItem())
-                    .setPropertyValue(MODULE, moduleComboBox.getSelectionModel().getSelectedItem())
-                    .setPropertyValue(LANGUAGE, languageComboBox.getSelectionModel().getSelectedItem());
-        }
     }
 
     private void populateDialectComboBoxes() {
@@ -321,7 +318,6 @@ public class EditFullyQualifiedNameController implements BasicController {
     private void updateFQN(ActionEvent actionEvent) {
         actionEvent.consume();
 
-        copyUIToViewModelProperties();
         fqnViewModel.save();
         // validate
         if (fqnViewModel.hasErrorMsgs()) {
@@ -332,8 +328,14 @@ public class EditFullyQualifiedNameController implements BasicController {
 
         DescrName fqnDescrName = fqnViewModel.create();
 
-        // delegate the transaction logic to the view model
-        fqnViewModel.updateFullyQualifiedName(this.publicId);
+
+        if(this.publicId != null) {
+            // delegate the transaction logic to the view model
+            fqnViewModel.updateFullyQualifiedName(this.publicId);
+        }else{
+            // Concept is edited before the transaction is saved. Hence the pubicId would not be generated.
+            eventBus.publish(conceptTopic, new CreateConceptEvent(this, CreateConceptEvent.ADD_FQN, fqnDescrName));
+        }
 
         LOG.info("transaction complete");
         clearView();
@@ -362,4 +364,20 @@ public class EditFullyQualifiedNameController implements BasicController {
 
     @Override
     public void cleanup() { }
+
+    /**
+     * This method prepopulates and sets up the form in edit mode.
+     * @param descrName model values that need to be prepopulated.
+     */
+    public void setConceptAndPopulateForm(DescrName descrName) {
+        setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
+        setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
+        setupComboBox(caseSignificanceComboBox, fqnViewModel.findAllCaseSignificants(getViewProperties()));
+        setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
+        fqnViewModel.setPropertyValue(NAME_TEXT, descrName.getNameText())
+                .setPropertyValue(CASE_SIGNIFICANCE, descrName.getCaseSignificance())
+                .setPropertyValue(STATUS, descrName.getStatus())
+                .setPropertyValue(MODULE, descrName.getModule())
+                .setPropertyValue(LANGUAGE, descrName.getLanguage());
+    }
 }

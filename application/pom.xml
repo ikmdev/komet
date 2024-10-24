@@ -88,6 +88,21 @@
             <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>data-ephemeral-provider</artifactId>
         </dependency>
+        <!-- Start JPro related dependencies -->
+        <dependency>
+            <groupId>com.sandec.jpro</groupId>
+            <artifactId>jpro-webapi</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>one.jpro.platform</groupId>
+            <artifactId>jpro-auth-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>one.jpro.platform</groupId>
+            <artifactId>jpro-internal-util</artifactId>
+        </dependency>
+        <!-- End JPro related dependencies -->
         <dependency>
             <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>composer</artifactId>
@@ -146,7 +161,7 @@
                         <!-- Default configuration for running -->
                         <id>default-cli</id>
                         <phase>package</phase>
-                        <!--                        <phase>none</phase>-->
+                        <!-- <phase>none</phase> -->
                         <goals>
                             <goal>jlink</goal>
                         </goals>
@@ -454,6 +469,48 @@
                                 </configuration>
                             </execution>
                         </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>jpro</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>one.jpro</groupId>
+                        <artifactId>jpro-maven-plugin</artifactId>
+                        <configuration>
+                            <mainClassName>dev.ikm.komet.app.WebApp</mainClassName>
+                            <useModuleSystem>true</useModuleSystem>
+                            <releaseName>komet</releaseName>
+                            <releasePlatforms>
+                                <!-- Sets the platforms to be included in the zip generated via jpro:release -->
+                                <releasePlatform>linux</releasePlatform> <!-- includes linux x64 builds -->
+                                <releasePlatform>linux-aarch64</releasePlatform> <!-- includes linux aarch64 builds -->
+                            </releasePlatforms>
+                            <jproReleaseFiles>
+                                <JProReleaseFile>
+                                    <inputFile>${project.basedir}/../docker/Dockerfile</inputFile>
+                                    <outputFile>/</outputFile>
+                                </JProReleaseFile>
+                                <JProReleaseFile>
+                                    <inputFile>${project.basedir}/../docker/docker-compose.yml</inputFile>
+                                    <outputFile>/</outputFile>
+                                </JProReleaseFile>
+                            </jproReleaseFiles>
+                            <JVMArgs>
+                                <JVMArg>-Xmx16g</JVMArg>
+                                <JVMArg>--add-opens</JVMArg>
+                                <JVMArg>javafx.graphics/javafx.scene=org.controlsfx.controls</JVMArg>
+                                <JVMArg>--add-exports</JVMArg>
+                                <JVMArg>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</JVMArg>
+                                <JVMArg>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</JVMArg>
+                            </JVMArgs>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

@@ -25,7 +25,7 @@ import dev.ikm.tinkar.entity.StampService;
 
 module dev.ikm.komet.application {
 
-    exports dev.ikm.komet.app to javafx.graphics;
+    exports dev.ikm.komet.app;
     opens dev.ikm.komet.app to javafx.fxml;
 
     // TODO Not happy that I have to specify these here... Can't dynamically add modules?
@@ -33,6 +33,12 @@ module dev.ikm.komet.application {
     requires dev.ikm.tinkar.provider.mvstore;
     requires dev.ikm.tinkar.provider.ephemeral;
     // End not happy...
+
+    // JPro related modules
+    requires jpro.webapi;
+    requires one.jpro.platform.auth.core;
+    requires one.jpro.platform.internal.util;
+    opens jpro.html;
 
     requires javafx.controls;
     requires javafx.fxml;
