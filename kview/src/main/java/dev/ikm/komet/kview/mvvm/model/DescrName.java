@@ -54,6 +54,13 @@ public class DescrName {
         this.semanticPublicId = semanticPublicId;
     }
 
+    public DescrName(String nameText, ConceptFacade nameType, ConceptEntity caseSignificance, ConceptEntity language) {
+        this.nameText = nameText;
+        this.nameType = nameType;
+        this.caseSignificance = caseSignificance;
+        this.language = language;
+    }
+
     public PublicId getParentConcept() {
         return parentConcept;
     }

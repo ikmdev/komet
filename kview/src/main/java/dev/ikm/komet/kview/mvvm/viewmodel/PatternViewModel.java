@@ -38,9 +38,9 @@ import dev.ikm.tinkar.composer.template.Synonym;
 import dev.ikm.tinkar.composer.template.USDialect;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableList;
 import org.carlfx.axonic.StateMachine;
@@ -268,4 +268,15 @@ public class PatternViewModel extends FormViewModel {
         EntityFacade patternFacade = getPropertyValue(PATTERN);
         return String.valueOf(patternFacade.toProxy().publicId().asUuidList().getLastOptional().get());
     }
+
+    public DescrName createFqn() {
+        return new DescrName(
+                getPropertyValue(FQN_DESCRIPTION_NAME_TEXT),
+                TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE,
+                getPropertyValue(FQN_CASE_SIGNIFICANCE),
+                getPropertyValue(FQN_LANGUAGE)
+        );
+    }
+
+
 }

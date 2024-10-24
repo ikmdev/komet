@@ -43,9 +43,14 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.MEANING_
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.PREVIOUS_PATTERN_FIELD;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.PURPOSE_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.TOTAL_EXISTING_FIELDS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_CASE_SIGNIFICANCE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_LANGUAGE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
 import static dev.ikm.komet.kview.state.PatternDetailsState.NEW_PATTERN_INITIAL;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -55,10 +60,12 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
+import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Toggle;
@@ -136,6 +143,8 @@ public class PropertiesController {
     private HistoryController historyController;
 
     private ConfirmationController confirmationController;
+
+    private DescriptionNameController descriptionNameController;
 
     private ContinueAddFieldsController continueAddFieldsController;
 
@@ -361,8 +370,14 @@ public class PropertiesController {
             });
         }
         JFXNode<Pane, DescriptionNameController> descriptionNameControllerJFXNode = FXMLMvvmLoader.make(descrConfig);
+        descriptionNameController = descriptionNameControllerJFXNode.controller();
         currentEditPane = descriptionNameControllerJFXNode.node();
         contentBorderPane.setCenter(currentEditPane);
+
+        // this needs to be called after the initialize() method of the controller being loaded
+        if (eventType == SHOW_EDIT_FQN) {
+            descriptionNameController.populateFormWithFqn(patternViewModel.createFqn());
+        }
     }
 
     private void updateDefaultSelectedViews() {

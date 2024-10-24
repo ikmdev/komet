@@ -37,6 +37,7 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
+import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
 import dev.ikm.tinkar.entity.ConceptEntity;
@@ -282,6 +283,12 @@ public class DescriptionNameController {
         }
 
         clearView();
+    }
+
+    public void populateFormWithFqn(DescrName descrName) {
+        descrNameViewModel.setPropertyValue(NAME_TEXT, descrName.getNameText());
+        descrNameViewModel.setPropertyValue(CASE_SIGNIFICANCE, descrName.getCaseSignificance());
+        descrNameViewModel.setPropertyValue(LANGUAGE, descrName.getLanguage());
     }
 
 }
