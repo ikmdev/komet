@@ -21,10 +21,12 @@ import static dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameContr
 import static dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController.ADD_OTHER_NAME_TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController.EDIT_FQN_TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController.EDIT_OTHER_NAME_TITLE_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.DESCRIPTION_NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.PARENT_PROCESS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
@@ -155,7 +157,7 @@ public class PropertiesController implements Serializable {
 
     private Subscriber<EditOtherNameConceptEvent> editOtherNameConceptEventSubscriber;
 
-    private Subscriber<EditConceptFullyQualifiedNameEvent> fqnSubscriber;
+    private Subscriber<EditConceptFullyQualifiedNameEvent> editConceptFullyQualifiedNameEventSubscriber;
 
     private Subscriber<AddFullyQualifiedNameEvent> addFqnSubscriber;
 
@@ -255,7 +257,10 @@ public class PropertiesController implements Serializable {
         descrConfig.updateViewModel("descrNameViewModel", (descrNameViewModel) ->
             descrNameViewModel
                     .setPropertyValue(VIEW_PROPERTIES, viewProperties)
-                    .setPropertyValue(TOPIC, conceptTopic));
+                    .setPropertyValue(TOPIC, conceptTopic)
+                    .setPropertyValue(PARENT_PROCESS, CONCEPT)
+        );
+
 
         // when we receive an event because the user clicked the
         // Add Other Name button from the Properties > Edit bump out, we want to change the Pane in the
@@ -338,7 +343,7 @@ public class PropertiesController implements Serializable {
         // when we receive an event because the user clicked the
         // Fully Qualified Name in the Concept, we want to change the Pane in the
         // Edit Concept bump out to be the Edit Fully Qualified Name form
-        fqnSubscriber = evt -> {
+        editConceptFullyQualifiedNameEventSubscriber = evt -> {
             descrConfig.updateViewModel("descrNameViewModel", (descrNameViewModel) -> {
                 descrNameViewModel.setPropertyValue(MODE, CREATE) // still creating, pattern not created yet
                         .setPropertyValue(NAME_TYPE, FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
@@ -350,6 +355,16 @@ public class PropertiesController implements Serializable {
             descriptionNameController = descriptionNameControllerJFXNode.controller();
             currentEditPane = descriptionNameControllerJFXNode.node();
             contentBorderPane.setCenter(currentEditPane);
+
+            if (evt.getPublicId() != null) {
+                descriptionNameController.setConceptAndPopulateForm(evt.getPublicId());
+            }else {
+                descriptionNameController.setConceptAndPopulateForm(evt.getDescrName());
+            }
+
+            //FIXME how did we repopulate this in the old controllers?
+            //descriptionNameController.populateFormWithFqn(patternViewModel.createFqn());
+
             // don't go into edit mode if there is no FQN yet
 //            if (evt.getPublicId() == null) {
 //                // default to adding an FQN is there isn't one
@@ -367,7 +382,7 @@ public class PropertiesController implements Serializable {
 //                }
 //            }
         };
-        eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, fqnSubscriber);
+        eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, editConceptFullyQualifiedNameEventSubscriber);
 
         // this event happens on during the creation of a new concept
         // a new concept will not have a fully qualified name and will need one

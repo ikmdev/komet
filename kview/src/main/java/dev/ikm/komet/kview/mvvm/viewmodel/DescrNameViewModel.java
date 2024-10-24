@@ -70,9 +70,16 @@ public class DescrNameViewModel extends FormViewModel {
 
     public static final String TOPIC = "topic";
 
+    public static final String PARENT_PROCESS = "parentProcess"; // are we in Concept or Pattern?
+
+    public static final String CONCEPT = "concept";
+
+    public static final String PATTERN = "pattern";
+
     public DescrNameViewModel() {
         super(); // defaults to View mode
                 addProperty(TOPIC, (UUID) null)
+                .addProperty(PARENT_PROCESS, "")
                 .addProperty(NAME_TEXT, "")
                 .addValidator(NAME_TEXT, "Name Text", (ReadOnlyStringProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
                     if (prop.isEmpty().get()) {

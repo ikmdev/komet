@@ -21,29 +21,45 @@ import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescriptionTypes;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CASE_SIGNIFICANCE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_SUBMITTED;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.PARENT_PROCESS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
+import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.events.CreateConceptEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
+import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.PatternEntity;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
@@ -64,7 +80,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class DescriptionNameController {
 
@@ -80,6 +98,8 @@ public class DescriptionNameController {
 
     @FXML
     private TextField nameTextField;
+
+    private PublicId publicId;
 
     @FXML
     private ComboBox<ConceptEntity> nameDescriptionType;
@@ -288,21 +308,125 @@ public class DescriptionNameController {
         }
         LOG.info("Ready to update to the concept view model: " + descrNameViewModel);
 
-        if (descrNameViewModel.getPropertyValue(NAME_TYPE) == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE) {
-            EvtBusFactory.getDefaultEvtBus().publish(getTopic(), new PatternDescriptionEvent(submitButton,
-                    PATTERN_ADD_FQN, descrNameViewModel.create()));
-        } else if (descrNameViewModel.getPropertyValue(NAME_TYPE) == REGULAR_NAME_DESCRIPTION_TYPE) {
-            EvtBusFactory.getDefaultEvtBus().publish(getTopic(), new PatternDescriptionEvent(submitButton,
-                    PATTERN_ADD_OTHER_NAME, descrNameViewModel.create()));
+        if (descrNameViewModel.getPropertyValue(PARENT_PROCESS) == PATTERN) {
+            if (descrNameViewModel.getPropertyValue(NAME_TYPE) == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE) {
+                EvtBusFactory.getDefaultEvtBus().publish(getTopic(), new PatternDescriptionEvent(submitButton,
+                        PATTERN_ADD_FQN, descrNameViewModel.create()));
+            } else if (descrNameViewModel.getPropertyValue(NAME_TYPE) == REGULAR_NAME_DESCRIPTION_TYPE) {
+                EvtBusFactory.getDefaultEvtBus().publish(getTopic(), new PatternDescriptionEvent(submitButton,
+                        PATTERN_ADD_OTHER_NAME, descrNameViewModel.create()));
+            }
+        } else if (descrNameViewModel.getPropertyValue(PARENT_PROCESS) == CONCEPT) {
+            if (descrNameViewModel.getPropertyValue(NAME_TYPE) == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE) {
+                DescrName fqnDescrName = descrNameViewModel.create();
+                EvtBusFactory.getDefaultEvtBus().publish(getTopic(), new CreateConceptEvent(this, CreateConceptEvent.ADD_FQN, fqnDescrName));
+
+                clearView();
+                close();
+            }
         }
 
         clearView();
+    }
+
+    private void close() {
+        // close the properties bump out
+        EvtBusFactory.getDefaultEvtBus().publish(getTopic(), new ClosePropertiesPanelEvent(submitButton,
+                ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
     }
 
     public void populateFormWithFqn(DescrName descrName) {
         descrNameViewModel.setPropertyValue(NAME_TEXT, descrName.getNameText());
         descrNameViewModel.setPropertyValue(CASE_SIGNIFICANCE, descrName.getCaseSignificance());
         descrNameViewModel.setPropertyValue(LANGUAGE, descrName.getLanguage());
+    }
+
+    public void setConceptAndPopulateForm(PublicId publicId) {
+        this.publicId = publicId;
+
+        ViewCalculator viewCalculator = getViewProperties().calculator();
+
+        int nid = EntityService.get().nidForPublicId(publicId);
+
+        // this is the Other Name
+        Latest<SemanticEntityVersion> latestEntityVersion = viewCalculator.latest(nid);
+
+        StampEntity stampEntity = latestEntityVersion.get().stamp();
+
+        //FIX ME: we need to get the Fully Qualified Name and not the Other Name
+        // populate the other name text field (e.g. 'Chronic lung disease')
+        String otherName = viewCalculator.getDescriptionText(nid).get();
+        this.nameTextField.setText(otherName);
+
+
+        // get all descendant modules
+        IntIdSet moduleDescendents = getViewProperties().calculator().descendentsOf(TinkarTerm.MODULE.nid());
+        Set<ConceptEntity> allModules =
+                moduleDescendents.intStream()
+                        .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
+                        .collect(Collectors.toSet());
+        setupComboBox(moduleComboBox, allModules);
+
+        // populate the current module and select it (e.g. 'SNOMED CT core module')
+        ConceptEntity currentModule = (ConceptEntity) stampEntity.module();
+        moduleComboBox.getSelectionModel().select(currentModule);
+
+        // get all statuses
+        IntIdSet statusDescendents = getViewProperties().calculator().descendentsOf(TinkarTerm.STATUS_VALUE.nid());
+        Set<ConceptEntity> allStatuses = statusDescendents.intStream()
+                .mapToObj(statusNid -> (ConceptEntity) Entity.getFast(statusNid))
+                .collect(Collectors.toSet());
+        setupComboBox(statusComboBox, allStatuses);
+
+        // populate the current status (ACTIVE | INACTIVE) and select it
+        ConceptEntity currentStatus = Entity.getFast(stampEntity.state().nid());
+        statusComboBox.getSelectionModel().select(currentStatus);
+
+        // populate all case significance choices
+        IntIdSet caseSenseDescendents = getViewProperties().calculator().descendentsOf(DESCRIPTION_CASE_SIGNIFICANCE.nid());
+        Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
+                .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
+                .collect(Collectors.toSet());
+        setupComboBox(caseSignificanceComboBox, allCaseDescendents);
+
+        // get case concept's case sensitivity (e.g. 'Case insensitive')
+        PatternEntity<PatternEntityVersion> patternEntity = latestEntityVersion.get().pattern();
+        PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
+        int indexCaseSig = patternEntityVersion.indexForMeaning(DESCRIPTION_CASE_SIGNIFICANCE);
+        ConceptFacade caseSigConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexCaseSig);
+        ConceptEntity caseSigConcept = Entity.getFast(caseSigConceptFacade.nid());
+        caseSignificanceComboBox.getSelectionModel().select(caseSigConcept);
+
+        // get all available languages
+        IntIdSet languageDescendents = getViewProperties().calculator().descendentsOf(TinkarTerm.LANGUAGE.nid());
+        Set<ConceptEntity> allLangs = languageDescendents.intStream()
+                .mapToObj(langNid -> (ConceptEntity) Entity.getFast(langNid))
+                .collect(Collectors.toSet());
+        setupComboBox(languageComboBox, allLangs);
+
+        // get the language (e.g. 'English language')
+        int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
+        ConceptFacade langConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexLang);
+
+        ConceptEntity langConcept = Entity.getFast(langConceptFacade.nid());
+        languageComboBox.getSelectionModel().select(langConcept);
+
+        //initial state of edit screen, the submit button should be disabled
+        submitButton.setDisable(true);
+
+        LOG.info(publicId.toString());
+    }
+
+    public void setConceptAndPopulateForm(DescrName descrName) {
+        setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
+        setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
+        setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants(getViewProperties()));
+        setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
+        descrNameViewModel.setPropertyValue(NAME_TEXT, descrName.getNameText())
+                .setPropertyValue(CASE_SIGNIFICANCE, descrName.getCaseSignificance())
+                .setPropertyValue(STATUS, descrName.getStatus())
+                .setPropertyValue(MODULE, descrName.getModule())
+                .setPropertyValue(LANGUAGE, descrName.getLanguage());
     }
 
 }

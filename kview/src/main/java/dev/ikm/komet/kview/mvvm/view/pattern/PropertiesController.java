@@ -32,10 +32,13 @@ import static dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameContr
 import static dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController.ADD_OTHER_NAME_TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController.EDIT_FQN_TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController.EDIT_OTHER_NAME_TITLE_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.DESCRIPTION_NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.PARENT_PROCESS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
@@ -336,7 +339,9 @@ public class PropertiesController {
                 .updateViewModel("descrNameViewModel", (descrNameViewModel) ->
                     descrNameViewModel
                         .setPropertyValue(VIEW_PROPERTIES, getViewProperties())
-                        .setPropertyValue(TOPIC, getPatternTopic()));
+                        .setPropertyValue(TOPIC, getPatternTopic())
+                        .setPropertyValue(PARENT_PROCESS, PATTERN)
+                );
 
         if (eventType == SHOW_ADD_FQN) {
             descrConfig.updateViewModel("descrNameViewModel", (descrNameViewModel) -> {
