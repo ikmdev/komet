@@ -38,13 +38,6 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
 
     public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_CONTINUE_EDIT_FIELDS = new EvtType<>(Evt.ANY, "SHOW_CONTINUE_EDIT_FIELDS");
 
-    ////////// Description Name semantic events
-    public static final EvtType<ShowPatternFormInBumpOutEvent> DESCRIPTION_NAME = new EvtType<>(Evt.ANY, "DESCRIPTION_NAME");
-    public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_ADD_FQN = new EvtType<>(DESCRIPTION_NAME, "SHOW_ADD_FQN");
-    public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_ADD_OTHER_NAME = new EvtType<>(DESCRIPTION_NAME, "SHOW_ADD_OTHER_NAME_DESCRIPTION");
-
-    public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_EDIT_FQN = new EvtType<>(DESCRIPTION_NAME, "SHOW_EDIT_FQN_DESCRIPTION");
-    public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_EDIT_OTHER_NAME = new EvtType<>(DESCRIPTION_NAME, "SHOW_EDIT_OTHER_NAME_DESCRIPTION");
     private final int totalFields;
     private final PatternField patternField;
     private final int fieldOrder;

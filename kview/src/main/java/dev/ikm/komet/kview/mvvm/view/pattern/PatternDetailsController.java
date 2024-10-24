@@ -16,15 +16,15 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
+import static dev.ikm.komet.kview.events.descriptionname.DescriptionNameEvent.SHOW_ADD_FQN;
+import static dev.ikm.komet.kview.events.descriptionname.DescriptionNameEvent.SHOW_ADD_OTHER_NAME;
+import static dev.ikm.komet.kview.events.descriptionname.DescriptionNameEvent.SHOW_EDIT_FQN;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_DEFINITION;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FIELDS;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FQN;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_OTHER_NAME;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FIELDS;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FQN;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
@@ -55,6 +55,7 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.events.descriptionname.DescriptionNameEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
@@ -631,7 +632,7 @@ public class PatternDetailsController {
         actionEvent.consume();
         StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);
         patternSM.t("addFqn");
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_FQN));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new DescriptionNameEvent(actionEvent.getSource(), SHOW_ADD_FQN));
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 
@@ -641,7 +642,7 @@ public class PatternDetailsController {
         actionEvent.consume();
         StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);
         patternSM.t("addOtherName");
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_OTHER_NAME));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new DescriptionNameEvent(actionEvent.getSource(), SHOW_ADD_OTHER_NAME));
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 
@@ -800,7 +801,7 @@ public class PatternDetailsController {
             //TODO change title to edit
             //patternViewModel
             EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC),
-                    new ShowPatternFormInBumpOutEvent(mouseEvent.getSource(), SHOW_EDIT_FQN));
+                    new DescriptionNameEvent(mouseEvent.getSource(), SHOW_EDIT_FQN));
             EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC),
                     new PropertyPanelEvent(mouseEvent.getSource(), OPEN_PANEL));
         } else {

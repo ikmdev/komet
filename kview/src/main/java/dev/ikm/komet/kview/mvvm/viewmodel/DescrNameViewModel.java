@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.CASE_SIGNIFICANCE_OPTIONS;
@@ -67,9 +68,12 @@ public class DescrNameViewModel extends FormViewModel {
 
     public static final String IS_INVALID = "isInvalid";
 
+    public static final String TOPIC = "topic";
+
     public DescrNameViewModel() {
         super(); // defaults to View mode
-                addProperty(NAME_TEXT, "")
+                addProperty(TOPIC, (UUID) null)
+                .addProperty(NAME_TEXT, "")
                 .addValidator(NAME_TEXT, "Name Text", (ReadOnlyStringProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
                     if (prop.isEmpty().get()) {
                         validationResult.error("${%s} is required".formatted(NAME_TEXT));

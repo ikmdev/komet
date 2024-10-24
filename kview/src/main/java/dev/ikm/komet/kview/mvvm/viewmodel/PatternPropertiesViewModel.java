@@ -22,6 +22,7 @@ import java.util.UUID;
 
 public class PatternPropertiesViewModel extends FormViewModel {
 
+    public static final String PATTERN_TOPIC = "patternTopic";
     public static String STATE_MACHINE = "stateMachine";
 
 

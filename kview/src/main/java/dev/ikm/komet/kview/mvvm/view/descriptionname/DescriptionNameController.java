@@ -29,8 +29,8 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TITLE_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -67,6 +67,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class DescriptionNameController {
+
+    public static final String ADD_FQN_TITLE_TEXT = "Add Description: Add Fully Qualified Name";
+
+    public static final String EDIT_FQN_TITLE_TEXT = "Edit Description: Edit Fully Qualified Name";
+
+    public static final String ADD_OTHER_NAME_TITLE_TEXT = "Add Description: Add Other Name";
+
+    public static final String EDIT_OTHER_NAME_TITLE_TEXT = "Edit Description: Edit Other Name";
 
     private static final Logger LOG = LoggerFactory.getLogger(DescriptionNameController.class);
 
@@ -177,7 +185,7 @@ public class DescriptionNameController {
     @FXML
     private void handleCancelButtonEvent(ActionEvent actionEvent) {
         actionEvent.consume();
-        EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(),
+        EvtBusFactory.getDefaultEvtBus().publish(getTopic(),
                 new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         clearView();
     }
@@ -212,8 +220,14 @@ public class DescriptionNameController {
     private ViewProperties getViewProperties() {
         return descrNameViewModel.getPropertyValue(VIEW_PROPERTIES);
     }
-    private UUID getPatternTopic() {
-        return descrNameViewModel.getPropertyValue(PATTERN_TOPIC);
+
+    /**
+     * the DescriptionNameController can be used by Concepts and Patterns
+     * and therefore use a different topic for the instance in which was created
+     * @return
+     */
+    private UUID getTopic() {
+        return descrNameViewModel.getPropertyValue(TOPIC);
     }
 
 
@@ -275,10 +289,10 @@ public class DescriptionNameController {
         LOG.info("Ready to update to the concept view model: " + descrNameViewModel);
 
         if (descrNameViewModel.getPropertyValue(NAME_TYPE) == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE) {
-            EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new PatternDescriptionEvent(submitButton,
+            EvtBusFactory.getDefaultEvtBus().publish(getTopic(), new PatternDescriptionEvent(submitButton,
                     PATTERN_ADD_FQN, descrNameViewModel.create()));
         } else if (descrNameViewModel.getPropertyValue(NAME_TYPE) == REGULAR_NAME_DESCRIPTION_TYPE) {
-            EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new PatternDescriptionEvent(submitButton,
+            EvtBusFactory.getDefaultEvtBus().publish(getTopic(), new PatternDescriptionEvent(submitButton,
                     PATTERN_ADD_OTHER_NAME, descrNameViewModel.create()));
         }
 

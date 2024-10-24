@@ -16,23 +16,28 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
+import static dev.ikm.komet.kview.events.descriptionname.DescriptionNameEvent.DESCRIPTION_NAME;
+import static dev.ikm.komet.kview.events.descriptionname.DescriptionNameEvent.SHOW_ADD_FQN;
+import static dev.ikm.komet.kview.events.descriptionname.DescriptionNameEvent.SHOW_ADD_OTHER_NAME;
+import static dev.ikm.komet.kview.events.descriptionname.DescriptionNameEvent.SHOW_EDIT_FQN;
+import static dev.ikm.komet.kview.events.descriptionname.DescriptionNameEvent.SHOW_EDIT_OTHER_NAME;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.DEFINITION_CONFIRMATION;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.DESCRIPTION_NAME;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_DEFINITION;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FIELDS;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FQN;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_OTHER_NAME;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_CONTINUE_ADD_FIELDS;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_CONTINUE_EDIT_FIELDS;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FIELDS;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FQN;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_OTHER_NAME;
+import static dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController.ADD_FQN_TITLE_TEXT;
+import static dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController.ADD_OTHER_NAME_TITLE_TEXT;
+import static dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController.EDIT_FQN_TITLE_TEXT;
+import static dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController.EDIT_OTHER_NAME_TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.DESCRIPTION_NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TITLE_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.ADD_EDIT_LABEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.COMMENTS;
@@ -43,29 +48,23 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.MEANING_
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.PREVIOUS_PATTERN_FIELD;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.PURPOSE_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.TOTAL_EXISTING_FIELDS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_CASE_SIGNIFICANCE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_LANGUAGE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
 import static dev.ikm.komet.kview.state.PatternDetailsState.NEW_PATTERN_INITIAL;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.events.descriptionname.DescriptionNameEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
-import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Toggle;
@@ -99,17 +98,17 @@ public class PropertiesController {
     private static final URL CONTINUE_ADDING_FIELDS_URL = ContinueAddFieldsController.class.getResource("continue-adding-fields.fxml");
 
     private static final URL PATTERN_DEFINITION_FXML_URL = PatternDefinitionController.class.getResource("pattern-definition.fxml");
-    private static final URL PATTERN_DESCRIPTION_FXML_URL = DescriptionNameController.class.getResource("description-name.fxml");
+    private static final URL DESCRIPTION_FXML_URL = DescriptionNameController.class.getResource("description-name.fxml");
 
     private static final URL PATTERN_FIELDS_FXML_URL = PatternFieldsController.class.getResource("pattern-fields.fxml");
 
-    private static final String ADD_FQN_TITLE_TEXT = "Add Description: Add Fully Qualified Name";
-
-    private static final String EDIT_FQN_TITLE_TEXT = "Edit Description: Edit Fully Qualified Name";
-
-    private static final String ADD_OTHER_NAME_TITLE_TEXT = "Add Description: Add Other Name";
-
-    private static final String EDIT_OTHER_NAME_TITLE_TEXT = "Edit Description: Edit Other Name";
+//    private static final String ADD_FQN_TITLE_TEXT = "Add Description: Add Fully Qualified Name";
+//
+//    private static final String EDIT_FQN_TITLE_TEXT = "Edit Description: Edit Fully Qualified Name";
+//
+//    private static final String ADD_OTHER_NAME_TITLE_TEXT = "Add Description: Add Other Name";
+//
+//    private static final String EDIT_OTHER_NAME_TITLE_TEXT = "Edit Description: Edit Other Name";
 
     private static final String EDIT_FIELD = "Edit Field";
     private static final String ADD_FIELD = "Add Field";
@@ -164,6 +163,8 @@ public class PropertiesController {
 
     private Subscriber<ShowPatternFormInBumpOutEvent> showPatternPanelEventSubscriber;
 
+    private Subscriber<DescriptionNameEvent> descriptionNameEventSubscriber;
+
     private Subscriber<PropertyPanelEvent> showPropertyPanelSubscriber;
 
     private Subscriber<PatternDescriptionEvent> patternDescriptionEventSubscriber;
@@ -204,7 +205,7 @@ public class PropertiesController {
         Config definitionConfig = new Config(PATTERN_DEFINITION_FXML_URL)
                 .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel))
                 .updateViewModel("patternDefinitionViewModel", (patternDefinitionViewModel) ->
-                        patternDefinitionViewModel.setPropertyValue(PATTERN_TOPIC, patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC)));
+                        patternDefinitionViewModel.setPropertyValue(TOPIC, patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC)));
         JFXNode<Pane, PatternDefinitionController> patternDefinitionControllerJFXNode = FXMLMvvmLoader.make(definitionConfig);
         patternDefinitionController = patternDefinitionControllerJFXNode.controller();
         patternDefinitionPane = patternDefinitionControllerJFXNode.node();
@@ -260,8 +261,6 @@ public class PropertiesController {
                     model.setPropertyValue(PREVIOUS_PATTERN_FIELD, patternField);
                 });
                 currentEditPane = patternFieldsPane;
-            } else if (evt.getEventType().getSuperType() == DESCRIPTION_NAME) {
-                setupDescriptionNamePane(evt.getEventType());
             } else if (evt.getEventType() == SHOW_CONTINUE_ADD_FIELDS) {
                 currentEditPane = continueAddFieldsPane;
             } else if (evt.getEventType() == SHOW_CONTINUE_EDIT_FIELDS) {
@@ -273,6 +272,9 @@ public class PropertiesController {
             patternViewModel.save();
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), ShowPatternFormInBumpOutEvent.class, showPatternPanelEventSubscriber);
+
+        descriptionNameEventSubscriber = evt -> setupDescriptionNamePane(evt.getEventType());
+        EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), DescriptionNameEvent.class, descriptionNameEventSubscriber);
 
         // ONLY for clicking the properties toggle
         showPropertyPanelSubscriber = evt -> {
@@ -328,14 +330,14 @@ public class PropertiesController {
             throw new RuntimeException("Event is not a ShowPatternPanelEvent.DESCRIPTION_NAME");
         }
 
-        Config descrConfig = new Config(PATTERN_DESCRIPTION_FXML_URL);
+        Config descrConfig = new Config(DESCRIPTION_FXML_URL);
         descrConfig
                 .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel))
-                .updateViewModel("descrNameViewModel", (descrNameViewModel) -> {
+                .updateViewModel("descrNameViewModel", (descrNameViewModel) ->
                     descrNameViewModel
                         .setPropertyValue(VIEW_PROPERTIES, getViewProperties())
-                        .setPropertyValue(PATTERN_TOPIC, getPatternTopic());
-        });
+                        .setPropertyValue(TOPIC, getPatternTopic()));
+
         if (eventType == SHOW_ADD_FQN) {
             descrConfig.updateViewModel("descrNameViewModel", (descrNameViewModel) -> {
                 descrNameViewModel.setPropertyValue(MODE, CREATE)
@@ -404,7 +406,7 @@ public class PropertiesController {
     }
 
     public UUID getPatternTopic() {
-        return patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC);
+        return patternPropertiesViewModel.getPropertyValue(TOPIC);
     }
 
     public ViewProperties getViewProperties() {

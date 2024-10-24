@@ -25,6 +25,7 @@ import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.*;
+import dev.ikm.komet.kview.events.descriptionname.DescriptionNameEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
@@ -69,6 +70,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static dev.ikm.komet.framework.events.FrameworkTopics.RULES_TOPIC;
+import static dev.ikm.komet.kview.events.descriptionname.DescriptionNameEvent.SHOW_ADD_FQN;
+import static dev.ikm.komet.kview.events.descriptionname.DescriptionNameEvent.SHOW_ADD_OTHER_NAME;
 import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
