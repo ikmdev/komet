@@ -101,6 +101,7 @@
         <axonic.version>1.1.4</axonic.version>
         <common-java5.version>3.0.0-M9</common-java5.version>
         <controlsfx.version>11.1.0</controlsfx.version>
+        <cssfx.version>11.5.1-jpms</cssfx.version>
         <ikonli.version>12.2.0</ikonli.version>
         <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
         <jpackage.version>1.6.0</jpackage.version>
@@ -348,24 +349,25 @@
                 <artifactId>axonic</artifactId>
                 <version>${axonic.version}</version>
             </dependency>
-            <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-fxml -->
             <dependency>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-fxml</artifactId>
                 <version>${openjfx.version}</version>
             </dependency>
-            <!-- https://mvnrepository.com/artifact/com.dlsc.gemsfx/gemsfx -->
-            <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-web -->
             <dependency>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-web</artifactId>
                 <version>${openjfx.version}</version>
             </dependency>
-            <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-swing -->
             <dependency>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-swing</artifactId>
                 <version>${openjfx.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>one.jpro.platform.jpms</groupId>
+                <artifactId>cssfx</artifactId>
+                <version>${cssfx.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.github.classgraph</groupId>
