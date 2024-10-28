@@ -45,6 +45,7 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.CreateConceptEvent;
+import dev.ikm.komet.kview.events.EditConceptEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
@@ -320,18 +321,13 @@ public class DescriptionNameController {
                         PATTERN_ADD_OTHER_NAME, descrNameViewModel.create()));
             }
         } else if (descrNameViewModel.getPropertyValue(PARENT_PROCESS) == CONCEPT) {
-            if ((descrNameViewModel.getPropertyValue(NAME_TYPE) == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
-                && (descrNameViewModel.getPropertyValue(MODE) == CREATE)) {
+            if (descrNameViewModel.getPropertyValue(NAME_TYPE) == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE) {
                 DescrName fqnDescrName = descrNameViewModel.create();
-                EvtBusFactory.getDefaultEvtBus().publish(getTopic(), new CreateConceptEvent(this, CreateConceptEvent.ADD_FQN, fqnDescrName));
-
-                clearView();
-                close();
-            } else if ((descrNameViewModel.getPropertyValue(NAME_TYPE) == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
-                    && (descrNameViewModel.getPropertyValue(MODE) == EDIT)) {
-                DescrName fqnDescrName = descrNameViewModel.create();
-                //TODO why is there no EDIT_FQN in CreateConceptEvent??? how did we do it before?
-
+                if (descrNameViewModel.getPropertyValue(MODE) == CREATE) {
+                    EvtBusFactory.getDefaultEvtBus().publish(getTopic(), new CreateConceptEvent(this, CreateConceptEvent.ADD_FQN, fqnDescrName));
+                } else if (descrNameViewModel.getPropertyValue(MODE) == EDIT) {
+                    EvtBusFactory.getDefaultEvtBus().publish(getTopic(), new EditConceptEvent(this, EditConceptEvent.EDIT_FQN, fqnDescrName));
+                }
                 clearView();
                 close();
             }
