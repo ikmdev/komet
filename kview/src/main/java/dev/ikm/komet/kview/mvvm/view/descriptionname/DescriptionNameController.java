@@ -34,6 +34,9 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
@@ -317,9 +320,17 @@ public class DescriptionNameController {
                         PATTERN_ADD_OTHER_NAME, descrNameViewModel.create()));
             }
         } else if (descrNameViewModel.getPropertyValue(PARENT_PROCESS) == CONCEPT) {
-            if (descrNameViewModel.getPropertyValue(NAME_TYPE) == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE) {
+            if ((descrNameViewModel.getPropertyValue(NAME_TYPE) == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
+                && (descrNameViewModel.getPropertyValue(MODE) == CREATE)) {
                 DescrName fqnDescrName = descrNameViewModel.create();
                 EvtBusFactory.getDefaultEvtBus().publish(getTopic(), new CreateConceptEvent(this, CreateConceptEvent.ADD_FQN, fqnDescrName));
+
+                clearView();
+                close();
+            } else if ((descrNameViewModel.getPropertyValue(NAME_TYPE) == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
+                    && (descrNameViewModel.getPropertyValue(MODE) == EDIT)) {
+                DescrName fqnDescrName = descrNameViewModel.create();
+                //TODO why is there no EDIT_FQN in CreateConceptEvent??? how did we do it before?
 
                 clearView();
                 close();

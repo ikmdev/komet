@@ -27,9 +27,11 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.DESCRIPTION_
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.PARENT_PROCESS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.PARENT_PUBLIC_ID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.events.EvtBus;
@@ -345,10 +347,11 @@ public class PropertiesController implements Serializable {
         // Edit Concept bump out to be the Edit Fully Qualified Name form
         editConceptFullyQualifiedNameEventSubscriber = evt -> {
             descrConfig.updateViewModel("descrNameViewModel", (descrNameViewModel) -> {
-                descrNameViewModel.setPropertyValue(MODE, CREATE) // still creating, pattern not created yet
+                descrNameViewModel.setPropertyValue(MODE, EDIT)
                         .setPropertyValue(NAME_TYPE, FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
                         .setPropertyValue(TITLE_TEXT, EDIT_FQN_TITLE_TEXT)
                         .setPropertyValue(DESCRIPTION_NAME_TYPE, "Fully Qualified Name")
+                        .setPropertyValue(PARENT_PUBLIC_ID, evt.getPublicId())
                 ;
             });
             JFXNode<Pane, DescriptionNameController> descriptionNameControllerJFXNode = FXMLMvvmLoader.make(descrConfig);
