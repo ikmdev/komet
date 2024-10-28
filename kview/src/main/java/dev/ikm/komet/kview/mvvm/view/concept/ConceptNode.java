@@ -13,14 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.mvvm.view.details;
+package dev.ikm.komet.kview.mvvm.view.concept;
 
-import dev.ikm.komet.kview.mvvm.view.properties.PropertiesController;
-import dev.ikm.komet.kview.mvvm.view.timeline.TimelineController;
+import static dev.ikm.komet.framework.activity.ActivityStreamOption.PUBLISH;
+import static dev.ikm.komet.framework.activity.ActivityStreamOption.SYNCHRONIZE;
+import static dev.ikm.komet.kview.fxutils.CssHelper.defaultStyleSheet;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CONCEPT_STAMP_VIEW_MODEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import dev.ikm.komet.framework.ExplorationNodeAbstract;
 import dev.ikm.komet.framework.TopPanelFactory;
 import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.mvvm.view.properties.PropertiesController;
+import dev.ikm.komet.kview.mvvm.view.timeline.TimelineController;
+import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.flow.FlowSubscriber;
 import dev.ikm.tinkar.entity.Entity;
@@ -35,6 +44,7 @@ import javafx.scene.layout.BorderPane;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.loader.NamedVm;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,14 +53,8 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
 
-import static dev.ikm.komet.kview.fxutils.CssHelper.defaultStyleSheet;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
-import static dev.ikm.komet.framework.activity.ActivityStreamOption.PUBLISH;
-import static dev.ikm.komet.framework.activity.ActivityStreamOption.SYNCHRONIZE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-
-public class DetailsNode extends ExplorationNodeAbstract {
-    private static final Logger LOG = LoggerFactory.getLogger(DetailsNode.class);
+public class ConceptNode extends ExplorationNodeAbstract {
+    private static final Logger LOG = LoggerFactory.getLogger(ConceptNode.class);
 
     protected final SimpleObjectProperty<EntityFacade> entityFocusProperty = new SimpleObjectProperty<>();
     protected FlowSubscriber<Integer> invalidationSubscriber;
@@ -60,7 +64,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
     protected static final String STYLE_ID = "kview-details-node";
     protected static final String TITLE = "Concept Details";
     private BorderPane detailsViewBorderPane;
-    private DetailsController detailsViewController;
+    private ConceptController detailsViewController;
 
     /////// Properties slide out //////////////////////////////
     protected static final String CONCEPT_PROPERTIES_VIEW_FXML_FILE = "properties.fxml";
@@ -73,10 +77,10 @@ public class DetailsNode extends ExplorationNodeAbstract {
     private TimelineController timelineViewController;
 
 
-    public DetailsNode(ViewProperties viewProperties, KometPreferences nodePreferences) {
+    public ConceptNode(ViewProperties viewProperties, KometPreferences nodePreferences) {
         this(viewProperties, nodePreferences, false);
     }
-    public DetailsNode(ViewProperties viewProperties, KometPreferences nodePreferences, boolean displayOnJournalView) {
+    public ConceptNode(ViewProperties viewProperties, KometPreferences nodePreferences, boolean displayOnJournalView) {
         super(viewProperties, nodePreferences);
         init(displayOnJournalView);
         registerListeners(viewProperties);
@@ -99,11 +103,15 @@ public class DetailsNode extends ExplorationNodeAbstract {
             // 1) inside fxml                     - apply(file, ...view models)
             // 2) not in fxml view class    - apply(file, view, ...view models)
             // 3) not in fxml view instance - apply(file, view instance, ...view models)
+            StampViewModel stampViewModel = new StampViewModel();
+            ConceptViewModel conceptViewModel = new ConceptViewModel();
+            conceptViewModel.setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalWindowTopic)
+                    .setPropertyValue(CONCEPT_STAMP_VIEW_MODEL, stampViewModel)
+                    .setPropertyValue(VIEW_PROPERTIES, getViewProperties());
             Config config = new Config(getClass().getResource(CONCEPT_DETAILS_VIEW_FXML_FILE))
-                    .controller(new DetailsController(conceptTopic))
-                    .updateViewModel("conceptViewModel", viewModel ->
-                        viewModel.setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalWindowTopic));
-            JFXNode<BorderPane, DetailsController> jfxNode = FXMLMvvmLoader.make(config);
+                    .controller(new ConceptController(conceptTopic))
+                    .addNamedViewModel(new NamedVm("conceptViewModel", conceptViewModel));
+            JFXNode<BorderPane, ConceptController> jfxNode = FXMLMvvmLoader.make(config);
 
             this.detailsViewBorderPane = jfxNode.node();
             this.detailsViewController = jfxNode.controller();
@@ -126,10 +134,12 @@ public class DetailsNode extends ExplorationNodeAbstract {
             }
 
             // Load Concept Properties View Panel (FXML & Controller)
-            FXMLLoader propsFXMLLoader = new FXMLLoader(PropertiesController.class.getResource(CONCEPT_PROPERTIES_VIEW_FXML_FILE));
-            propsFXMLLoader.setController(new PropertiesController(conceptTopic));
-            this.propertiesViewBorderPane = propsFXMLLoader.load();
-            this.propertiesViewController = propsFXMLLoader.getController();
+            Config conceptPropertiesConfig = new Config(PropertiesController.class.getResource(CONCEPT_PROPERTIES_VIEW_FXML_FILE))
+                    .controller(new PropertiesController(conceptTopic))
+                    .addNamedViewModel(new NamedVm("conceptViewModel", conceptViewModel));
+            JFXNode<BorderPane, PropertiesController> propsJfxNode = FXMLMvvmLoader.make(conceptPropertiesConfig);
+            this.propertiesViewBorderPane = propsJfxNode.node();
+            this.propertiesViewController = propsJfxNode.controller();
             // style the same as the details view
             this.propertiesViewBorderPane.getStylesheets().add(styleSheet);
             this.propertiesViewController.updateModel(viewProperties, null);
@@ -243,7 +253,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
      * Returns the associated view to update the UI.
      * @return DetailsController The attached view to the Details view (fxml)
      */
-    public DetailsController getDetailsViewController() {
+    public ConceptController getDetailsViewController() {
         return detailsViewController;
     }
 
@@ -324,8 +334,8 @@ public class DetailsNode extends ExplorationNodeAbstract {
     }
 
     @Override
-    public Class<DetailsNodeFactory> factoryClass() {
-        return DetailsNodeFactory.class;
+    public Class<ConceptNodeFactory> factoryClass() {
+        return ConceptNodeFactory.class;
     }
     public enum DetailNodeKey {
         ENTITY_FOCUS,

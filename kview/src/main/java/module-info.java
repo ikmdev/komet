@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
+import dev.ikm.komet.kview.mvvm.view.concept.ConceptNodeFactory;
 import dev.ikm.komet.kview.mvvm.view.properties.PropertiesNodeFactory;
 import dev.ikm.komet.framework.KometNodeFactory;
 
@@ -33,8 +33,8 @@ module dev.ikm.komet.kview {
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
 
-    opens dev.ikm.komet.kview.mvvm.view.details to javafx.fxml, org.carlfx.cognitive;
-    exports dev.ikm.komet.kview.mvvm.view.details;
+    opens dev.ikm.komet.kview.mvvm.view.concept to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.concept;
 
     opens dev.ikm.komet.kview.mvvm.view.properties to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.properties;
@@ -111,7 +111,7 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.pattern to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.events.pattern;
 
-    provides KometNodeFactory with DetailsNodeFactory, PropertiesNodeFactory;
+    provides KometNodeFactory with ConceptNodeFactory, PropertiesNodeFactory;
 
     uses dev.ikm.komet.framework.events.EvtBus;
 }

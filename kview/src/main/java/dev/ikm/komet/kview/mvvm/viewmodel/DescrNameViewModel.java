@@ -15,15 +15,20 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.CASE_SIGNIFICANCE_OPTIONS;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
-import dev.ikm.tinkar.entity.transaction.Transaction;
-import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.ConceptEntityVersion;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -31,8 +36,6 @@ import org.carlfx.cognitive.validator.MessageType;
 import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.validator.ValidationResult;
 import org.carlfx.cognitive.viewmodel.ViewModel;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,12 +45,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.CASE_SIGNIFICANCE_OPTIONS;
-
 public class DescrNameViewModel extends FormViewModel {
 
     private static final Logger LOG = LoggerFactory.getLogger(DescrNameViewModel.class);
 
+    public static String STAMP_VIEW_MODEL = "stampViewModel";
     public static final String NAME_TEXT = "nameText";
     public static final String NAME_TYPE = "nameType";
     public static final String CASE_SIGNIFICANCE = "caseSignificance";
@@ -78,51 +80,39 @@ public class DescrNameViewModel extends FormViewModel {
 
     public DescrNameViewModel() {
         super(); // defaults to View mode
-                addProperty(TOPIC, (UUID) null)
-                .addProperty(PARENT_PROCESS, "")
-                .addProperty(NAME_TEXT, "")
-                .addValidator(NAME_TEXT, "Name Text", (ReadOnlyStringProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
-                    if (prop.isEmpty().get()) {
-                        validationResult.error("${%s} is required".formatted(NAME_TEXT));
-                    }
-                })
-                .addProperty(NAME_TYPE, (ConceptEntity) null)
-                .addValidator(NAME_TYPE, "Name Type", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
-                    if (prop.isNull().get()) {
-                        validationResult.error("${%s} is required".formatted(NAME_TYPE));
-                    }
-                })
-
-                .addProperty(CASE_SIGNIFICANCE, (ConceptEntity) null)
-                .addValidator(CASE_SIGNIFICANCE, "Case Significance", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
-                    if (prop.isNull().get()) {
-                        validationResult.error("${%s} is required".formatted(CASE_SIGNIFICANCE));
-                    }
-                })
-                .addProperty(STATUS, (ConceptEntity) null)
-                .addValidator(STATUS, "Status", (ReadOnlyObjectProperty prop,ValidationResult validationResult, ViewModel viewModel) -> {
-                    if (prop.isNull().get()) {
-                        validationResult.error("${%s} is required".formatted(STATUS));
-                    }
-                })
-                .addProperty(MODULE, (ConceptEntity) null)
-                .addValidator(MODULE, "Module", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
-                    if (prop.isNull().get()) {
-                        validationResult.error("${%s} is required".formatted(MODULE));
-                    }
-                })
-                .addProperty(LANGUAGE, (ConceptEntity) null)
-                .addValidator(LANGUAGE, "Language", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
-                    if (prop.isNull().get()) {
-                        validationResult.error("${%s} is required".formatted(LANGUAGE));
-                    }
-                })
-                .addProperty(IS_SUBMITTED, false)
-                .addProperty(PARENT_PUBLIC_ID, (PublicId) null)
-                .addProperty(SEMANTIC_PUBLIC_ID, (PublicId) null)
-                .addProperty(TITLE_TEXT, "")
-                .addProperty(DESCRIPTION_NAME_TYPE, "")
-                .addProperty(IS_INVALID, true)
+        addProperty(TOPIC, (UUID) null)
+        .addProperty(STAMP_VIEW_MODEL, (ViewModel) null)
+        .addProperty(PARENT_PROCESS, "")
+        .addProperty(NAME_TEXT, "")
+        .addValidator(NAME_TEXT, "Name Text", (ReadOnlyStringProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
+            if (prop.isEmpty().get()) {
+                validationResult.error("${%s} is required".formatted(NAME_TEXT));
+            }
+        })
+        .addProperty(NAME_TYPE, (ConceptEntity) null)
+        .addValidator(NAME_TYPE, "Name Type", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
+            if (prop.isNull().get()) {
+                validationResult.error("${%s} is required".formatted(NAME_TYPE));
+            }
+        })
+        .addProperty(CASE_SIGNIFICANCE, (ConceptEntity) null)
+        .addValidator(CASE_SIGNIFICANCE, "Case Significance", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
+            if (prop.isNull().get()) {
+                validationResult.error("${%s} is required".formatted(CASE_SIGNIFICANCE));
+            }
+        })
+        .addProperty(LANGUAGE, (ConceptEntity) null)
+        .addValidator(LANGUAGE, "Language", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
+            if (prop.isNull().get()) {
+                validationResult.error("${%s} is required".formatted(LANGUAGE));
+            }
+        })
+        .addProperty(IS_SUBMITTED, false)
+        .addProperty(PARENT_PUBLIC_ID, (PublicId) null)
+        .addProperty(SEMANTIC_PUBLIC_ID, (PublicId) null)
+        .addProperty(TITLE_TEXT, "")
+        .addProperty(DESCRIPTION_NAME_TYPE, "")
+        .addProperty(IS_INVALID, true)
         ;
     }
 
@@ -189,66 +179,17 @@ public class DescrNameViewModel extends FormViewModel {
         }
     }
 
-    public void updateFullyQualifiedName(PublicId publicId) {
-        Transaction transaction = Transaction.make();
-
-        StampEntity stampEntity = transaction.getStamp(
-                State.fromConcept(getValue(STATUS)), // active, inactive, etc
-                System.currentTimeMillis(),
-                TinkarTerm.USER.nid(),
-                ((ConceptEntity)getValue(MODULE)).nid(), // SNOMED CT, LOINC, etc
-                TinkarTerm.DEVELOPMENT_PATH.nid()); //TODO should this path come from the parent concept's path?
-
-
-        // existing semantic
-        SemanticEntity theSemantic = EntityService.get().getEntityFast(publicId.asUuidList());
-
-
-        // the versions that we will first populate with the existing versions of the semantic
-        RecordListBuilder versions = RecordListBuilder.make();
-
-        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(publicId, TinkarTerm.DESCRIPTION_PATTERN.nid(),
-                theSemantic.referencedComponentNid(), versions);
-
-        // we are grabbing the form data
-        // populating the field values for the new version we are writing
-        MutableList<Object> descriptionFields = Lists.mutable.empty();
-        descriptionFields.add(getValue(LANGUAGE));
-        descriptionFields.add(getValue(NAME_TEXT));
-        descriptionFields.add(getValue(CASE_SIGNIFICANCE));
-        descriptionFields.add(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
-
-        // iterating over the existing versions and adding them to a new record list builder
-        theSemantic.versions().forEach(version -> versions.add(version));
-
-        // adding the new (edit form) version here
-        versions.add(SemanticVersionRecordBuilder.builder()
-                .chronology(descriptionSemantic)
-                .stampNid(stampEntity.nid())
-                .fieldValues(descriptionFields.toImmutable())
-                .build());
-
-        // apply the updated versions to the new semantic record
-        SemanticRecord newSemanticRecord = SemanticRecordBuilder.builder(descriptionSemantic).versions(versions.toImmutable()).build();
-
-        // put the new semantic record in the transaction
-        transaction.addComponent(newSemanticRecord);
-
-        // perform the save
-        Entity.provider().putEntity(newSemanticRecord);
-
-        // commit the transaction
-        CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        TinkExecutor.threadPool().submit(commitTransactionTask);
-    }
 
     public DescrName create() {
+        StampViewModel stampViewModel = getPropertyValue(STAMP_VIEW_MODEL);
         return new DescrName(getValue(PARENT_PUBLIC_ID),
                 getValue(NAME_TEXT),
                 getValue(NAME_TYPE),
                 getValue(CASE_SIGNIFICANCE),
-                getValue(STATUS),
-                getValue(MODULE),
+                stampViewModel != null && stampViewModel.getProperty(STATUS) != null
+                        ? stampViewModel.getPropertyValue(STATUS) : null,
+                stampViewModel != null && stampViewModel.getProperty(MODULE) != null
+                        ? stampViewModel.getPropertyValue(MODULE) : null,
                 getValue(LANGUAGE),
                 getValue(SEMANTIC_PUBLIC_ID)
         );
@@ -259,63 +200,8 @@ public class DescrNameViewModel extends FormViewModel {
         editDescrName.setNameText(getValue(NAME_TEXT));
         editDescrName.setNameType(getValue(NAME_TYPE));
         editDescrName.setCaseSignificance(getValue(CASE_SIGNIFICANCE));
-        editDescrName.setStatus(getValue(STATUS));
-        editDescrName.setModule(getValue(MODULE));
         editDescrName.setLanguage(getValue(LANGUAGE));
         editDescrName.setSemanticPublicId(getValue(SEMANTIC_PUBLIC_ID));
     }
 
-    public void updateOtherName(PublicId publicId) {
-        Transaction transaction = Transaction.make();
-
-        StampEntity stampEntity = transaction.getStamp(
-                State.fromConcept(getValue(STATUS)), // active, inactive, etc
-                System.currentTimeMillis(),
-                TinkarTerm.USER.nid(),
-                ((ConceptEntity)getValue(MODULE)).nid(), // SNOMED CT, LOINC, etc
-                TinkarTerm.DEVELOPMENT_PATH.nid()); //TODO should this path come from the parent concept's path?
-
-        // existing semantic
-        SemanticEntity theSemantic = EntityService.get().getEntityFast(publicId.asUuidList());
-
-
-        // the versions that we will first populate with the existing versions of the semantic
-        RecordListBuilder versions = RecordListBuilder.make();
-
-        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(publicId, TinkarTerm.DESCRIPTION_PATTERN.nid(),
-                theSemantic.referencedComponentNid(), versions);
-
-        // we grabbing the form data
-        // populating the field values for the new version we are writing
-        MutableList<Object> descriptionFields = Lists.mutable.empty();
-        descriptionFields.add(getValue(LANGUAGE));
-        descriptionFields.add(getValue(NAME_TEXT));
-        descriptionFields.add(getValue(CASE_SIGNIFICANCE));
-        descriptionFields.add(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
-
-        // iterating over the existing versions and adding them to a new record list builder
-        theSemantic.versions().forEach(version -> versions.add(version));
-
-        // adding the new (edit form) version here
-        versions.add(SemanticVersionRecordBuilder.builder()
-                .chronology(descriptionSemantic)
-                .stampNid(stampEntity.nid())
-                .fieldValues(descriptionFields.toImmutable())
-                .build());
-
-        // apply the updated versions to the new semantic record
-        SemanticRecord newSemanticRecord = SemanticRecordBuilder.builder(descriptionSemantic).versions(versions.toImmutable()).build();
-
-        // put the new semantic record in the transaction
-        transaction.addComponent(newSemanticRecord);
-
-        // perform the save
-        Entity.provider().putEntity(newSemanticRecord);
-
-        // commit the transaction
-        CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        TinkExecutor.threadPool().submit(commitTransactionTask);
-
-        LOG.info("transaction complete");
-    }
 }

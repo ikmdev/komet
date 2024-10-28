@@ -21,7 +21,6 @@ import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CONCEPT_TOPIC;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.DEVICE_ENTITY;
@@ -31,7 +30,7 @@ import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERT
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel.PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
@@ -77,7 +76,6 @@ import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
-import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
@@ -85,9 +83,9 @@ import dev.ikm.komet.kview.fxutils.window.WindowSupport;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.lidr.mvvm.view.details.LidrDetailsController;
 import dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel;
-import dev.ikm.komet.kview.mvvm.view.details.ConceptPreference;
-import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
-import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
+import dev.ikm.komet.kview.mvvm.view.concept.ConceptPreference;
+import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
+import dev.ikm.komet.kview.mvvm.view.concept.ConceptNodeFactory;
 import dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
 import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
@@ -187,7 +185,7 @@ import java.util.prefs.BackingStoreException;
  * and a concept details panel. Activity streams are dynamically created to be used in context to a journal instance.
  * This makes the navigator (published data) able to update windows downstream such as the Concept Details Panel
  * This is associated with the FXML file journal.fxml.
- * @see DetailsNode
+ * @see ConceptNode
  * @see JournalViewFactory
  */
 public class JournalController {
@@ -759,17 +757,17 @@ public class JournalController {
         final PublicIdStringKey<ActivityStream> detailsActivityStreamKey = new PublicIdStringKey(PublicIds.of(uuid.toString()), uniqueDetailsTopic);
         ActivityStream detailActivityStream = ActivityStreams.create(detailsActivityStreamKey);
         activityStreams.add(detailsActivityStreamKey);
-        KometNodeFactory detailsNodeFactory = new DetailsNodeFactory();
-        DetailsNode detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
+        KometNodeFactory detailsNodeFactory = new ConceptNodeFactory();
+        ConceptNode conceptNode = (ConceptNode) detailsNodeFactory.create(windowView,
                 detailsActivityStreamKey,
                 ActivityStreamOption.PUBLISH.keyForOption(),
                 AlertStreams.ROOT_ALERT_STREAM_KEY,
                 true,
                 journalTopic);
-        detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
+        conceptNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
 
         //Getting the concept window pane
-        Pane kometNodePanel = (Pane) detailsNode.getNode();
+        Pane kometNodePanel = (Pane) conceptNode.getNode();
         //Appling the CSS from draggable-region to the panel (makes it movable/sizable).
         Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
         Node[] draggables = new Node[draggableToolbar.size()];
@@ -779,7 +777,7 @@ public class JournalController {
         desktopSurfacePane.getChildren().add(kometNodePanel);
 
         // This will refresh the Concept details, history, timeline
-        detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
+        conceptNode.handleActivity(Lists.immutable.of(conceptFacade));
 
         // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
         Optional<String> conceptFolderName;
@@ -798,8 +796,8 @@ public class JournalController {
         conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, conceptFacade.nid(), kometNodePanel));
 
         //Calls the remove method to remove and concepts that were closed by the user.
-        detailsNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent ->
-                removeConceptSetting(finalConceptFolderName, detailsNode));
+        conceptNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent ->
+                removeConceptSetting(finalConceptFolderName, conceptNode));
 
         //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
         if (conceptWindowSettingsMap != null) {
@@ -824,26 +822,26 @@ public class JournalController {
         final PublicIdStringKey<ActivityStream> detailsActivityStreamKey = new PublicIdStringKey(PublicIds.of(uuid.toString()), uniqueDetailsTopic);
         ActivityStream detailActivityStream = ActivityStreams.create(detailsActivityStreamKey);
         activityStreams.add(detailsActivityStreamKey);
-        KometNodeFactory detailsNodeFactory = new DetailsNodeFactory();
-        DetailsNode detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
+        KometNodeFactory detailsNodeFactory = new ConceptNodeFactory();
+        ConceptNode conceptNode = (ConceptNode) detailsNodeFactory.create(windowView,
                 detailsActivityStreamKey,
                 ActivityStreamOption.PUBLISH.keyForOption(),
                 AlertStreams.ROOT_ALERT_STREAM_KEY,
                 true,
                 journalTopic);
-        detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
+        conceptNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
         // For Create mode for Creating a concept.
-        detailsNode.getDetailsViewController()
+        conceptNode.getDetailsViewController()
                 .getConceptViewModel()
                 .setPropertyValue(MODE, CREATE);
 
-        detailsNode.getDetailsViewController().updateModel(viewProperties);
-        detailsNode.getDetailsViewController().updateView();
+        conceptNode.getDetailsViewController().updateModel(viewProperties);
+        conceptNode.getDetailsViewController().updateView();
 
         //Getting the concept window pane
-        Pane kometNodePanel = (Pane) detailsNode.getNode();
-        //Appling the CSS from draggable-region to the panel (makes it movable/sizable).
+        Pane kometNodePanel = (Pane) conceptNode.getNode();
+        //Applying the CSS from draggable-region to the panel (makes it movable/sizable).
         Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
         Node[] draggables = new Node[draggableToolbar.size()];
 
@@ -870,8 +868,8 @@ public class JournalController {
         conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, -1, kometNodePanel));
 
         //Calls the remove method to remove and concepts that were closed by the user.
-        detailsNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent -> {
-            removeConceptSetting(finalConceptFolderName, detailsNode);
+        conceptNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent -> {
+            removeConceptSetting(finalConceptFolderName, conceptNode);
         });
         //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
         if (conceptWindowSettingsMap != null) {
@@ -1039,12 +1037,12 @@ public class JournalController {
     /**
      * Removes the concept details node (Pane) from the scene graph, closes activity streams, and removes preferences from locally.
      * @param conceptDirectoryName - The unique concept dir name used in each journal window.
-     * @param detailsNode - The Concept detailsNode - referencing both JavaFX Node and view.
+     * @param conceptNode - The Concept detailsNode - referencing both JavaFX Node and view.
      */
-    private void removeConceptSetting(String conceptDirectoryName, DetailsNode detailsNode) {
+    private void removeConceptSetting(String conceptDirectoryName, ConceptNode conceptNode) {
         // locate concept by unique directory name and remove from list.
         conceptWindows.removeIf(c -> c.getDirectoryName().equals(conceptDirectoryName));
-        detailsNode.close();
+        conceptNode.close();
         removeConceptPreferences(conceptDirectoryName);
     }
     private void removeLidrSetting(String conceptDirectoryName) {
@@ -1193,18 +1191,18 @@ public class JournalController {
                 final PublicIdStringKey<ActivityStream> detailsActivityStreamKey = new PublicIdStringKey(PublicIds.of(uuid.toString()), uniqueDetailsTopic);
                 ActivityStream detailActivityStream = ActivityStreams.create(detailsActivityStreamKey);
                 activityStreams.add(detailsActivityStreamKey);
-                KometNodeFactory detailsNodeFactory = new DetailsNodeFactory();
-                DetailsNode detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
+                KometNodeFactory detailsNodeFactory = new ConceptNodeFactory();
+                ConceptNode conceptNode = (ConceptNode) detailsNodeFactory.create(windowView,
                         detailsActivityStreamKey,
                         ActivityStreamOption.PUBLISH.keyForOption(),
                         AlertStreams.ROOT_ALERT_STREAM_KEY,
                         true,
                         journalTopic);
-                detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
-                Pane kometNodePanel = (Pane) detailsNode.getNode();
+                conceptNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
+                Pane kometNodePanel = (Pane) conceptNode.getNode();
 
                 // Make the window compact sized.
-                detailsNode.getDetailsViewController().compactSizeWindow();
+                conceptNode.getDetailsViewController().compactSizeWindow();
 
                 Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
                 Node[] draggables = new Node[draggableToolbar.size()];
@@ -1220,7 +1218,7 @@ public class JournalController {
                 }
                 desktopSurfacePane.getChildren().add(kometNodePanel);
                 // This will refresh the Concept details, history, timeline
-                detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
+                conceptNode.handleActivity(Lists.immutable.of(conceptFacade));
             }));
         };
 

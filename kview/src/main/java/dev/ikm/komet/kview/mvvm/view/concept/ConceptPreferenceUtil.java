@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.mvvm.view.details;
+package dev.ikm.komet.kview.mvvm.view.concept;
 
 import dev.ikm.komet.preferences.NidTextEnum;
 import java.util.List;

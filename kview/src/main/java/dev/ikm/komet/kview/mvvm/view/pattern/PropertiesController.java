@@ -208,7 +208,7 @@ public class PropertiesController {
         Config definitionConfig = new Config(PATTERN_DEFINITION_FXML_URL)
                 .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel))
                 .updateViewModel("patternDefinitionViewModel", (patternDefinitionViewModel) ->
-                        patternDefinitionViewModel.setPropertyValue(TOPIC, patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC)));
+                        patternDefinitionViewModel.setPropertyValue(PATTERN_TOPIC, patternViewModel.getPropertyValue(PATTERN_TOPIC)));
         JFXNode<Pane, PatternDefinitionController> patternDefinitionControllerJFXNode = FXMLMvvmLoader.make(definitionConfig);
         patternDefinitionController = patternDefinitionControllerJFXNode.controller();
         patternDefinitionPane = patternDefinitionControllerJFXNode.node();
@@ -219,7 +219,7 @@ public class PropertiesController {
         Config fieldsConfig = new Config(PATTERN_FIELDS_FXML_URL)
                 .updateViewModel("patternFieldsViewModel", (patternFieldsViewModel) ->
                         patternFieldsViewModel
-                                .setPropertyValue(PATTERN_TOPIC, patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC))
+                                .setPropertyValue(PATTERN_TOPIC, patternViewModel.getPropertyValue(PATTERN_TOPIC))
                                 .setPropertyValue(VIEW_PROPERTIES, getViewProperties()));
 
         JFXNode<Pane, PatternFieldsController> patternFieldsJFXNode = FXMLMvvmLoader.make(fieldsConfig);
@@ -411,7 +411,7 @@ public class PropertiesController {
     }
 
     public UUID getPatternTopic() {
-        return patternPropertiesViewModel.getPropertyValue(TOPIC);
+        return patternViewModel.getPropertyValue(PATTERN_TOPIC);
     }
 
     public ViewProperties getViewProperties() {

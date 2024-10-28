@@ -13,8 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.mvvm.view.details;
+package dev.ikm.komet.kview.mvvm.view.concept;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.RULES_TOPIC;
+import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
+import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.addToMembershipPattern;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.isInMembershipPattern;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.removeFromMembershipPattern;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.AXIOM;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CONCEPT_STAMP_VIEW_MODEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.EDIT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.FULLY_QUALIFIED_NAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.OTHER_NAMES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
+import static dev.ikm.tinkar.terms.TinkarTerm.DEFINITION_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
+import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
+import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.AxiomChangeEvent;
 import dev.ikm.komet.framework.events.EvtBus;
@@ -24,8 +54,14 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.events.*;
-import dev.ikm.komet.kview.events.descriptionname.DescriptionNameEvent;
+import dev.ikm.komet.kview.events.AddFullyQualifiedNameEvent;
+import dev.ikm.komet.kview.events.AddOtherNameToConceptEvent;
+import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.events.CreateConceptEvent;
+import dev.ikm.komet.kview.events.EditConceptEvent;
+import dev.ikm.komet.kview.events.EditConceptFullyQualifiedNameEvent;
+import dev.ikm.komet.kview.events.EditOtherNameConceptEvent;
+import dev.ikm.komet.kview.events.OpenPropertiesPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
@@ -34,10 +70,25 @@ import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.component.Stamp;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.terms.*;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
+import dev.ikm.tinkar.entity.FieldDefinitionRecord;
+import dev.ikm.tinkar.entity.FieldRecord;
+import dev.ikm.tinkar.entity.PatternEntity;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableList;
@@ -46,13 +97,31 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import org.carlfx.cognitive.loader.*;
+import org.carlfx.cognitive.loader.Config;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
@@ -65,29 +134,17 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.RULES_TOPIC;
-import static dev.ikm.komet.kview.events.descriptionname.DescriptionNameEvent.SHOW_ADD_FQN;
-import static dev.ikm.komet.kview.events.descriptionname.DescriptionNameEvent.SHOW_ADD_OTHER_NAME;
-import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
-import static dev.ikm.tinkar.terms.TinkarTerm.*;
-
-public class DetailsController  {
-    private static final Logger LOG = LoggerFactory.getLogger(DetailsController.class);
+public class ConceptController {
+    private static final Logger LOG = LoggerFactory.getLogger(ConceptController.class);
     private static final String EDIT_STAMP_OPTIONS_FXML = "edit-stamp.fxml";
     @FXML
     private Button closeConceptButton;
@@ -259,15 +316,18 @@ public class DetailsController  {
     private PopOver stampEdit;
     private StampEditController stampEditController;
 
-    public DetailsController() {
+    public ConceptController() {
     }
 
-    public DetailsController(UUID conceptTopic) {
+    public ConceptController(UUID conceptTopic) {
         this.conceptTopic = conceptTopic;
     }
 
     @FXML
     public void initialize() {
+//        if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))) {
+//            setUpStampViewModel();
+//        }
         identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
             // query all available memberships (semantics having the purpose as 'membership', and no fields)
             // query current concept's membership semantic records.
@@ -395,6 +455,7 @@ public class DetailsController  {
                 setUpDescriptionContextMenu(addDescriptionButton);
                 //TODO revisit: why should the mode ever be edit inside a create event?
             } else if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))){
+                setUpStampViewModel();
                 conceptViewModel.addOtherName(viewProperties.calculator().viewCoordinateRecord().editCoordinate(), descrName);
                 otherNames.add(descrName);
             }
@@ -411,10 +472,11 @@ public class DetailsController  {
                 return;
             }
             if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))) {
-                if (evt.getEventType() == EditConceptEvent.EDIT_FQN) {
-                    // the listener will fire on the FQN when we update this
-                    getConceptViewModel().setPropertyValue(FULLY_QUALIFIED_NAME, descrName);
-                }
+                setUpStampViewModel();
+            }
+            if (evt.getEventType() == EditConceptEvent.EDIT_FQN) {
+                // the listener will fire on the FQN when we update this
+                getConceptViewModel().setPropertyValue(FULLY_QUALIFIED_NAME, descrName);
             }
         };
         eventBus.subscribe(conceptTopic, EditConceptEvent.class, editConceptEventSubscriber);
@@ -424,6 +486,19 @@ public class DetailsController  {
         changeSetTypeEventSubscriber = evt -> updateAxioms();
         eventBus.subscribe(RULES_TOPIC, AxiomChangeEvent.class, changeSetTypeEventSubscriber);
 
+    }
+
+    private void setUpStampViewModel() {
+        ConceptFacade concept = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
+        StampViewModel stampViewModel = conceptViewModel.getPropertyValue(CONCEPT_STAMP_VIEW_MODEL);
+        StampCalculator stampCalculator = ((ViewProperties)conceptViewModel.getPropertyValue(VIEW_PROPERTIES))
+                .calculator().stampCalculator();
+        Stamp stamp = stampCalculator.latest(concept.nid()).get();
+        stampViewModel.setValue(STATUS, stamp.state());
+        stampViewModel.setValue(MODULE, stamp.module());
+        stampViewModel.setValue(PATH, stamp.path());
+        stampViewModel.setValue(AUTHOR, stamp.author());
+        stampViewModel.setValue(TIME, stamp.time());
     }
 
     public ViewProperties getViewProperties() {
@@ -598,8 +673,8 @@ public class DetailsController  {
         // aligns with the details view
         contentRegion.prefHeightProperty().bind(slideoutTrayPane.heightProperty());
     }
-    private Consumer<DetailsController> onCloseConceptWindow;
-    public void setOnCloseConceptWindow(Consumer<DetailsController> onClose) {
+    private Consumer<ConceptController> onCloseConceptWindow;
+    public void setOnCloseConceptWindow(Consumer<ConceptController> onClose) {
         this.onCloseConceptWindow = onClose;
     }
     @FXML

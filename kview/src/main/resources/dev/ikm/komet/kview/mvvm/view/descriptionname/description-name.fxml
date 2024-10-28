@@ -38,9 +38,6 @@
                         <rowConstraints>
                             <RowConstraints maxHeight="40.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                             <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                            <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                            <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                            <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
                         <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
                         <RowConstraints />
                         <RowConstraints />
@@ -48,42 +45,24 @@
                         </rowConstraints>
                         <children>
                             <Label styleClass="add-description-label" text="Name" />
-                            <Label styleClass="add-description-label" text="Type" GridPane.rowIndex="1" />
-                            <Label prefWidth="100.0" styleClass="add-description-label" text="Case Significance" wrapText="true" GridPane.rowIndex="2" />
-                            <Label styleClass="add-description-label" text="Language" GridPane.rowIndex="5" />
-                            <Label styleClass="add-description-label" text="Status" GridPane.rowIndex="3" />
-                            <Label styleClass="add-description-label" text="Module" GridPane.rowIndex="4" />
+                            <Label prefWidth="100.0" styleClass="add-description-label" text="Case Significance" wrapText="true" GridPane.rowIndex="1" />
+                            <Label styleClass="add-description-label" text="Language" GridPane.rowIndex="2" />
                             <TextField fx:id="nameTextField" prefHeight="25.0" promptText="Enter name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
                            <GridPane.margin>
                               <Insets right="15.0" />
                            </GridPane.margin>
                         </TextField>
-                            <ComboBox fx:id="nameDescriptionType" disable="true" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select type" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+                            <ComboBox fx:id="caseSignificanceComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select Case Significance" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
                            <GridPane.margin>
                               <Insets right="15.0" />
                            </GridPane.margin>
                         </ComboBox>
-                            <ComboBox fx:id="caseSignificanceComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select Case Significance" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
+                            <ComboBox fx:id="languageComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select Language" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
                            <GridPane.margin>
                               <Insets right="15.0" />
                            </GridPane.margin>
                         </ComboBox>
-                            <ComboBox fx:id="languageComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select Language" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5">
-                           <GridPane.margin>
-                              <Insets right="15.0" />
-                           </GridPane.margin>
-                        </ComboBox>
-                            <ComboBox fx:id="statusComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select Status" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
-                           <GridPane.margin>
-                              <Insets right="15.0" />
-                           </GridPane.margin>
-                        </ComboBox>
-                            <ComboBox fx:id="moduleComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select Module" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4">
-                           <GridPane.margin>
-                              <Insets right="15.0" />
-                           </GridPane.margin>
-                        </ComboBox>
-                        <VBox GridPane.columnSpan="2" GridPane.rowIndex="6">
+                        <VBox GridPane.columnSpan="2" GridPane.rowIndex="3">
                            <children>
                               <HBox depthTest="ENABLE" styleClass="dialect-container" VBox.vgrow="ALWAYS">
                                  <children>
@@ -156,7 +135,7 @@
                               </HBox>
                            </children>
                         </VBox>
-                        <VBox GridPane.columnSpan="2147483647" GridPane.rowIndex="7">
+                        <VBox GridPane.columnSpan="2147483647" GridPane.rowIndex="4">
                            <children>
                               <Label styleClass="lidr-device-label" text="Comments" />
                               <TextFlow prefHeight="63.0" prefWidth="200.0" styleClass="comments-textflow">
