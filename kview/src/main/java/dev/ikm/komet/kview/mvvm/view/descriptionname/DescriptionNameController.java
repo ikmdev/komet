@@ -412,7 +412,7 @@ public class DescriptionNameController {
         languageComboBox.getSelectionModel().select(langConcept);
 
         //initial state of edit screen, the submit button should be disabled
-        submitButton.setDisable(true);
+        //submitButton.setDisable(true);
 
         LOG.info(publicId.toString());
     }
