@@ -111,6 +111,9 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.pattern to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.events.pattern;
 
+    exports dev.ikm.komet.kview.mvvm.view.navigation;
+    opens dev.ikm.komet.kview.mvvm.view.navigation to javafx.fxml, org.carlfx.cognitive;
+
     provides KometNodeFactory with DetailsNodeFactory, PropertiesNodeFactory;
 
     uses dev.ikm.komet.framework.events.EvtBus;

@@ -21,7 +21,6 @@ import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CONCEPT_TOPIC;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.DEVICE_ENTITY;
@@ -77,7 +76,6 @@ import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
-import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
@@ -88,6 +86,7 @@ import dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel;
 import dev.ikm.komet.kview.mvvm.view.details.ConceptPreference;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
+import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
 import dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
 import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
@@ -277,6 +276,8 @@ public class JournalController {
     private Pane searchNodePanel;
     private Pane nextGenSearchPanel;
 
+    private Pane patternConceptNavigationPanel;
+
     private Pane nextGenReasonerPanel;
 
     private BorderPane reasonerNodePanel;
@@ -297,11 +298,15 @@ public class JournalController {
 
     private static final String NEXT_GEN_SEARCH_FXML_URL = "next-gen-search.fxml";
 
+    private static final String CONCEPT_PATTERN_NAV_FXML_URL = "navigation-concept-pattern.fxml";
+
     private static final String NEXT_GEN_REASONER_FXML_URL = "reasoner.fxml";
 
     private NextGenSearchController nextGenSearchController;
 
     private NextGenReasonerController nextGenReasonserController;
+
+    private ConceptPatternNavController conceptPatternNavController;
 
     private Subscriber<MakeConceptWindowEvent> makeConceptWindowEventSubscriber;
     private Subscriber<ShowNavigationalPanelEvent> showNavigationalPanelEventSubscriber;
@@ -620,7 +625,8 @@ public class JournalController {
         navigatorActivityStream = ActivityStreams.create(navigationActivityStreamKey);
         activityStreams.add(navigationActivityStreamKey);
 
-        loadNavigationPanel(navigationActivityStreamKey, this.windowView, navigationFactory);
+        //loadNavigationPanel(navigationActivityStreamKey, this.windowView, navigationFactory);
+        loadPatternNavigationPanel(navigationActivityStreamKey, this.windowView, navigationFactory);
 
         String uniqueSearchTopic = "search-%s".formatted(journalName);
         UUID uuidSearch = UuidT5Generator.get(uniqueSearchTopic);
@@ -1081,7 +1087,7 @@ public class JournalController {
      * @param windowView Any window view information
      * @param navigationFactory The navigation factory to create the navigation panel to be used in the sidebar.
      */
-    private void loadNavigationPanel(PublicIdStringKey<ActivityStream> navigationActivityStreamKey,
+    private Pane loadNavigationPanel(PublicIdStringKey<ActivityStream> navigationActivityStreamKey,
                                      ObservableViewNoOverride windowView,
                                      KometNodeFactory navigationFactory) {
 
@@ -1145,8 +1151,18 @@ public class JournalController {
             }
         });
 
-        navigatorNodePanel = (Pane) navigatorNode.getNode();
-        setupSlideOutTrayPane(navigatorNodePanel, navSlideoutTrayPane);
+        return (Pane) navigatorNode.getNode();
+    }
+
+    private void loadPatternNavigationPanel(PublicIdStringKey<ActivityStream> navigationActivityStreamKey,
+                                            ObservableViewNoOverride windowView, KometNodeFactory navigationFactory) {
+        //Pane navigatorNodePanel = loadNavigationPanel(navigationActivityStreamKey, windowView, navigationFactory);
+        Config patternConceptConfig = new Config(ConceptPatternNavController.class.getResource(CONCEPT_PATTERN_NAV_FXML_URL))
+                .controller(new ConceptPatternNavController(/*navigatorNodePanel*/));
+        JFXNode<Pane, ConceptPatternNavController> conPatJFXNode = FXMLMvvmLoader.make(patternConceptConfig);
+        patternConceptNavigationPanel = conPatJFXNode.node();
+        conceptPatternNavController = conPatJFXNode.controller();
+        setupSlideOutTrayPane(patternConceptNavigationPanel, navSlideoutTrayPane);
     }
 
     private  void loadReasonerPanel(PublicIdStringKey<ActivityStream> activityStreamKey,
