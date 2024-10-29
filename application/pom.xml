@@ -115,10 +115,13 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-fxml -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>one.jpro.platform.jpms</groupId>
+            <artifactId>cssfx</artifactId>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.dlsc.gemsfx/gemsfx -->
         <dependency>
