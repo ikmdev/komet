@@ -1156,9 +1156,10 @@ public class JournalController {
 
     private void loadPatternNavigationPanel(PublicIdStringKey<ActivityStream> navigationActivityStreamKey,
                                             ObservableViewNoOverride windowView, KometNodeFactory navigationFactory) {
-        //Pane navigatorNodePanel = loadNavigationPanel(navigationActivityStreamKey, windowView, navigationFactory);
+        //TODO load the classic concept nav pane into this one: IIA-975
+        Pane navigatorNodePanel = loadNavigationPanel(navigationActivityStreamKey, windowView, navigationFactory);
         Config patternConceptConfig = new Config(ConceptPatternNavController.class.getResource(CONCEPT_PATTERN_NAV_FXML_URL))
-                .controller(new ConceptPatternNavController(/*navigatorNodePanel*/));
+                .controller(new ConceptPatternNavController(navigatorNodePanel));
         JFXNode<Pane, ConceptPatternNavController> conPatJFXNode = FXMLMvvmLoader.make(patternConceptConfig);
         patternConceptNavigationPanel = conPatJFXNode.node();
         conceptPatternNavController = conPatJFXNode.controller();
