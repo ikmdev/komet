@@ -48,6 +48,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 
 public class ConceptViewModel extends FormViewModel {
     private static final Logger LOG = LoggerFactory.getLogger(ConceptViewModel.class);
@@ -311,12 +312,18 @@ public class ConceptViewModel extends FormViewModel {
 
         Transaction transaction = Transaction.make();
 
+        StampViewModel stampViewModel = getValue(CONCEPT_STAMP_VIEW_MODEL);
+        // Copy STAMP info
+        int moduleNid = stampViewModel.getValue(MODULE);
+        int pathNid = stampViewModel.getValue(PATH);
+        State status = stampViewModel.getPropertyValue(STATUS);
+
         StampEntity stampEntity = transaction.getStamp(
-                State.fromConcept(otherName.getStatus()), // active, inactive, etc
+                status, // active, inactive, etc
                 System.currentTimeMillis(),
                 TinkarTerm.USER.nid(),
-                otherName.getModule().nid(), // SNOMED CT, LOINC, etc
-                TinkarTerm.DEVELOPMENT_PATH.nid()); // Should this be defaulted???
+                moduleNid, // SNOMED CT, LOINC, etc
+                pathNid);
 
         // get the public id of the referenced concept
         PublicId conceptRecordPublicId =  otherName.getParentConcept();

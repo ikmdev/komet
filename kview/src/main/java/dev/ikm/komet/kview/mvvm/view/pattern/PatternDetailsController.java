@@ -313,6 +313,7 @@ public class PatternDetailsController {
                 patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME, descrName);
                 patternViewModel.setPropertyValue(FQN_CASE_SIGNIFICANCE, descrName.getCaseSignificance());
                 patternViewModel.setPropertyValue(FQN_LANGUAGE, descrName.getLanguage());
+                clearFqnHighlight();
                 patternSM.t("fqnDone");
             } else if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
                 // This if is invoked when the data is coming from Other Name screen.
@@ -807,5 +808,9 @@ public class PatternDetailsController {
         } else {
             fqnTextFlow.getStyleClass().removeAll("green-highlight");
         }
+    }
+
+    private void clearFqnHighlight() {
+        fqnTextFlow.getStyleClass().remove("green-highlight");
     }
 }
