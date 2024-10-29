@@ -307,9 +307,14 @@
     -fx-background-radius: 2;
 
 }
+
+.axiom-container > .property-sheet .property-pane {
+    -fx-background-color: transparent;
+}
+
 .lidr-sub-container .scroll-pane,
 .analyte-group-container .scroll-pane,
-.scroll-pane.axiom-container {
+.axiom-container .scroll-pane {
     -fx-background-color: transparent;
     -fx-border-insets: 1;
     -fx-background-radius: 0 0 10 10;
@@ -317,7 +322,7 @@
 
 .lidr-sub-container .scroll-pane > .viewport,
 .analyte-group-container .scroll-pane > .viewport,
-.scroll-pane.axiom-container > .viewport {
+.axiom-container .scroll-pane > .viewport {
     -fx-background-color: transparent;
     -fx-background-radius: 0 0 10 10;
 }
@@ -1965,7 +1970,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-3;
 }
 
-.lidr-device-title-label {    
+.lidr-device-title-label {
     -fx-text-alignment: center;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 13px;
@@ -1974,7 +1979,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-weight: 500;
 }
 
-.lidr-device-label {    
+.lidr-device-label {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
@@ -1986,9 +1991,9 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-radius: 4;
     -fx-border-width: 1px;
     -fx-border-color: -Grey-5;
-    -fx-pref-width: 340.0;    
+    -fx-pref-width: 340.0;
     -fx-pref-height: 24.0;
-    -fx-alignment: center; 
+    -fx-alignment: center;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
@@ -2049,7 +2054,7 @@ Timeline Year line segment (will overlay change circles)
 .lidr-device-drag-and-drop-hbox {
     -width-size: 274px;
     -height-size: 32px;
-    -fx-pref-width: -width-size;    
+    -fx-pref-width: -width-size;
     -fx-pref-height: -height-size;
     -fx-max-height: -height-size;
     -fx-background-color: -Grey-2;
@@ -2105,14 +2110,14 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-radius: 4 4 4 4;
     -fx-border-color: -Secondary-05;
     -fx-border-width: 1px;
-    -fx-background-color: -Grey-2;    
+    -fx-background-color: -Grey-2;
     -fx-text-fill: -Secondary-05;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
     -fx-font-weight: 600;
     /* there is no letter-spacing in javafx... possibly work around this */
-    
+
 }
 
 .lidr-done-button {
@@ -2130,7 +2135,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-7;
 }
 
-.lidr-separator {    
+.lidr-separator {
     -fx-text-fill: -Grey-7;
     -fx-background-color: -Grey-7;
     -fx-border-color: -Grey-7;
@@ -2142,7 +2147,7 @@ Timeline Year line segment (will overlay change circles)
 .lidr-text-field {
     -fx-pref-height: 32px;
     -fx-pref-width: 416px;
-    -fx-text-fill: -Grey-8;    
+    -fx-text-fill: -Grey-8;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
@@ -2155,7 +2160,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-radius: 4;
     -fx-border-width: 1px;
     -fx-border-color: -Grey-5;
-    -fx-background-color: -Grey-1;     
+    -fx-background-color: -Grey-1;
 }
 
 .lidr-combo-box .list-cell {
@@ -2163,10 +2168,10 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
-    -fx-font-weight: 500;   
+    -fx-font-weight: 500;
 }
 
-.lidr-combo-box.combo-box-base > .arrow-button > .arrow {    
+.lidr-combo-box.combo-box-base > .arrow-button > .arrow {
     -fx-background-color: -Secondary-05;
     -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
 }
@@ -2175,7 +2180,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-pref-height: 32px;
     -fx-border-radius: 4;
     -fx-background-color: -Secondary-05;
-    -fx-text-fill: white;    
+    -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
@@ -2274,9 +2279,9 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-radius: 4;
     -fx-border-width: 1px;
     -fx-border-color: -Grey-5;
-    -fx-pref-width: 340.0;    
+    -fx-pref-width: 340.0;
     -fx-pref-height: 24.0;
-    -fx-alignment: center; 
+    -fx-alignment: center;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
@@ -2468,7 +2473,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-size: 14px;
     -fx-font-style: normal;
     -fx-font-weight: 500;
-    
+
     -fx-min-width: -width-size;
     -fx-pref-width: -width-size;
     -fx-max-width: -width-size;
@@ -2570,7 +2575,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-max-height: -height-size;
     -fx-max-width: -width-size;
     -fx-background-color: -Secondary-05;
-    -fx-shape: "M20 13H13V20H11V13H4V11H11V4H13V11H20V13Z";    
+    -fx-shape: "M20 13H13V20H11V13H4V11H11V4H13V11H20V13Z";
 }
 
 .blue-arrow-combo-box {
@@ -2599,7 +2604,7 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .comment-placeholder-text {
-    -fx-fill: -Grey-8;    
+    -fx-fill: -Grey-8;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
@@ -2702,7 +2707,7 @@ Timeline Year line segment (will overlay change circles)
 
 .search-entry-title-pane {
     -fx-border-radius: 4px;
-    -fx-border-color: -Secondary-05;    
+    -fx-border-color: -Secondary-05;
 }
 
 .titled-pane.search-entry-title-pane > .title > .text {
@@ -2760,7 +2765,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-shape: "M12 17C14.7614 17 17 14.7614 17 12C17 9.23858 14.7614 7 12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17Z";
 }
 
-.search-retired-label {    
+.search-retired-label {
     -fx-background-radius: 2;
     -fx-background-color: -Medium-opaque-red;
 
@@ -2772,7 +2777,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-padding: 6 3 6 3;
 }
 
-.search-context-menu-container.context-menu {    
+.search-context-menu-container.context-menu {
     -fx-background-radius: 4;
     -fx-background-color: -Grey-11;
     -fx-text-fill: white;
@@ -2854,8 +2859,8 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .search-context-menu-container .separator:horizontal .line {
-    -fx-border-color: -Grey-9; 
-    -fx-border-width: 0.5px;   
+    -fx-border-color: -Grey-9;
+    -fx-border-width: 0.5px;
     -fx-border-insets: 0 6 0 6;
 }
 
@@ -2901,7 +2906,7 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .pattern-titled-pane > .title {
-    -fx-background-color: -Grey-2;    
+    -fx-background-color: -Grey-2;
     -fx-pref-height: 32;
     -fx-padding: 8 4 4 4;
 }
@@ -2917,7 +2922,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-pref-height: -height-size;
     -fx-max-height: -height-size;
     -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
-    -fx-background-color: -Secondary-05;    
+    -fx-background-color: -Secondary-05;
 }
 
 /********************************************************************************
@@ -3062,7 +3067,7 @@ Timeline Year line segment (will overlay change circles)
 .dialect-container {
     -fx-padding: 10 10 0 0;
     -fx-background-color: white;
-    -fx-border-radius: 4; /* FIXME not working on the hbox at the moment */    
+    -fx-border-radius: 4; /* FIXME not working on the hbox at the moment */
 }
 
 .dialect-combobox {
@@ -3506,7 +3511,7 @@ Styling a context menu for kview ui/ux controls
 
 .add-icon-menu-graphic,
 .concept-edit-description-menu-icon {
-    -fx-background-color: white;    
+    -fx-background-color: white;
     -width-size: 18px;
     -height-size: 18px;
     -fx-min-height: -height-size;
@@ -4117,13 +4122,13 @@ Styling a context menu for kview ui/ux controls
 *****************************/
 
 .reasoner-vertical-scroll-area {
-    -fx-background-color: -Grey-9;  
+    -fx-background-color: -Grey-9;
 }
 
 .reasoner-result-header .label {
     -fx-text-fill: -Grey-1;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;    
+    -fx-font-size: 14px;
     -fx-background-color: -Grey-9;
 }
 
@@ -4142,12 +4147,12 @@ Styling a context menu for kview ui/ux controls
 }
 
 .titled-pane.classification-date {
-    -fx-text-fill: white; 
+    -fx-text-fill: white;
     -fx-border-width: 1 0 0 0;
-    -fx-border-color: -Grey-9;    
+    -fx-border-color: -Grey-9;
 }
 
-.titled-pane.classification-date > .title {        
+.titled-pane.classification-date > .title {
     -fx-background-color: -Grey-11;
     -fx-pref-height: 32;
     -fx-padding: 8 4 4 4;
@@ -4164,7 +4169,7 @@ Styling a context menu for kview ui/ux controls
     -fx-pref-height: -height-size;
     -fx-max-height: -height-size;
     -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
-    -fx-background-color: -Secondary-05;    
+    -fx-background-color: -Secondary-05;
 }
 
 
@@ -4174,16 +4179,16 @@ Styling a context menu for kview ui/ux controls
 }
 
 .reasoner-entry {
-    -fx-text-fill: -Grey-1; 
-    -fx-font-size: 13px;        
-    -fx-font-weight: bold;    
+    -fx-text-fill: -Grey-1;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
 }
 
-.reasoner-entry.titled-pane > .title {             
-    -fx-text-fill: -Grey-1;     
-    -fx-background-color: -Grey-8;            
-    -fx-font-size: 13px;        
-    -fx-font-weight: bold;      
+.reasoner-entry.titled-pane > .title {
+    -fx-text-fill: -Grey-1;
+    -fx-background-color: -Grey-8;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
 }
 
 .reasoner-entry .content {
@@ -4192,15 +4197,15 @@ Styling a context menu for kview ui/ux controls
 }
 
 .reasoner-label-container {
-    -fx-background-color: white;        
+    -fx-background-color: white;
 }
 
-.titled-pane.reasoner-entry:collapsed > .title > .arrow-button {  
-    -fx-rotate: 90;  
+.titled-pane.reasoner-entry:collapsed > .title > .arrow-button {
+    -fx-rotate: 90;
 }
 
-.titled-pane.reasoner-entry:expanded > .title > .arrow-button {        
-     -fx-rotate: 90;     
+.titled-pane.reasoner-entry:expanded > .title > .arrow-button {
+     -fx-rotate: 90;
 }
 
 .titled-pane.reasoner-entry > .title > .arrow-button > .arrow {
@@ -4214,8 +4219,8 @@ Styling a context menu for kview ui/ux controls
     -fx-pref-height: -height-size;
     -fx-max-height: -height-size;
     -fx-shape: "M10 17L15 12L10 7V17Z";
-    -fx-background-color: white;       
-} 
+    -fx-background-color: white;
+}
 
 
 .reasoner-entry-description {
@@ -4224,7 +4229,7 @@ Styling a context menu for kview ui/ux controls
     -fx-pref-width: -width;
     -fx-min-width:width;
     -fx-max-width:width;
-    -fx-background-color: white; 
+    -fx-background-color: white;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 12px;
     -fx-font-style: normal;
