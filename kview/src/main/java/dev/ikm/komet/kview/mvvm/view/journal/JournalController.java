@@ -29,6 +29,7 @@ import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
@@ -765,6 +766,14 @@ public class JournalController {
                 true,
                 journalTopic);
         conceptNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
+        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
+        // For Create mode for Creating a concept.
+        conceptNode.getDetailsViewController()
+                .getConceptViewModel()
+                .setPropertyValue(MODE, EDIT);
+
+        conceptNode.getDetailsViewController().updateModel(viewProperties);
+        conceptNode.getDetailsViewController().updateView();
 
         //Getting the concept window pane
         Pane kometNodePanel = (Pane) conceptNode.getNode();

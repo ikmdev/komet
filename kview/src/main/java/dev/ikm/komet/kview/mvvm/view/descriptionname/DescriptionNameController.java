@@ -339,11 +339,13 @@ public class DescriptionNameController {
         this.nameTextField.setText(otherName);
 
         // populate all case significance choices
-        IntIdSet caseSenseDescendents = getViewProperties().calculator().descendentsOf(DESCRIPTION_CASE_SIGNIFICANCE.nid());
-        Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
-                .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
-                .collect(Collectors.toSet());
-        setupComboBox(caseSignificanceComboBox, allCaseDescendents);
+        if (caseSignificanceComboBox.getItems().isEmpty()) {
+            IntIdSet caseSenseDescendents = getViewProperties().calculator().descendentsOf(DESCRIPTION_CASE_SIGNIFICANCE.nid());
+            Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
+                    .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
+                    .collect(Collectors.toSet());
+            setupComboBox(caseSignificanceComboBox, allCaseDescendents);
+        }
 
         // get case concept's case sensitivity (e.g. 'Case insensitive')
         PatternEntity<PatternEntityVersion> patternEntity = latestEntityVersion.get().pattern();
@@ -354,11 +356,13 @@ public class DescriptionNameController {
         caseSignificanceComboBox.getSelectionModel().select(caseSigConcept);
 
         // get all available languages
-        IntIdSet languageDescendents = getViewProperties().calculator().descendentsOf(TinkarTerm.LANGUAGE.nid());
-        Set<ConceptEntity> allLangs = languageDescendents.intStream()
-                .mapToObj(langNid -> (ConceptEntity) Entity.getFast(langNid))
-                .collect(Collectors.toSet());
-        setupComboBox(languageComboBox, allLangs);
+        if (languageComboBox.getItems().isEmpty()) {
+            IntIdSet languageDescendents = getViewProperties().calculator().descendentsOf(TinkarTerm.LANGUAGE.nid());
+            Set<ConceptEntity> allLangs = languageDescendents.intStream()
+                    .mapToObj(langNid -> (ConceptEntity) Entity.getFast(langNid))
+                    .collect(Collectors.toSet());
+            setupComboBox(languageComboBox, allLangs);
+        }
 
         // get the language (e.g. 'English language')
         int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
@@ -371,8 +375,12 @@ public class DescriptionNameController {
     }
 
     public void setConceptAndPopulateForm(DescrName descrName) {
-        setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants(getViewProperties()));
-        setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
+        if (caseSignificanceComboBox.getItems().isEmpty()) {
+            setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants(getViewProperties()));
+        }
+        if (languageComboBox.getItems().isEmpty()) {
+            setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
+        }
         descrNameViewModel.setPropertyValue(NAME_TEXT, descrName.getNameText())
                 .setPropertyValue(CASE_SIGNIFICANCE, descrName.getCaseSignificance())
                 .setPropertyValue(LANGUAGE, descrName.getLanguage());

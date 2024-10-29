@@ -325,7 +325,7 @@ public class ConceptController {
 
     @FXML
     public void initialize() {
-//        if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))) {
+//        if (conceptViewModel.getPropertyValue(CURRENT_ENTITY) != null) {
 //            setUpStampViewModel();
 //        }
         identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
