@@ -21,7 +21,6 @@ import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CONCEPT_TOPIC;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.DEVICE_ENTITY;
@@ -77,7 +76,6 @@ import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
-import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
@@ -377,6 +375,24 @@ public class JournalController {
 
         // setup scalable desktop
         setupScalableDesktop();
+
+        desktopSurfacePane.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onMouseClickedOnDesktopSurfacePane(event));
+    }
+
+    private void onMouseClickedOnDesktopSurfacePane(MouseEvent mouseEvent) {
+        if (mouseEvent.getTarget() == desktopSurfacePane) { // We are indeed just clicking on the background and none of its children
+            collapseTrayPanes();
+        }
+    }
+
+    private void collapseTrayPanes() {
+        Toggle selectedToggle = sidebarToggleGroup.getSelectedToggle();
+        if (selectedToggle == null) { // There's no actual toggle button selected so no need to actually collapse anything
+            return;
+        }
+
+        slideIn(selectedToggle);
+        selectedToggle.setSelected(false);
     }
 
     private void setupScalableDesktop() {
