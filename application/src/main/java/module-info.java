@@ -26,6 +26,7 @@ import dev.ikm.tinkar.entity.StampService;
 module dev.ikm.komet.application {
 
     exports dev.ikm.komet.app;
+    exports dev.ikm.komet.app.util;
     opens dev.ikm.komet.app to javafx.fxml;
 
     // TODO Not happy that I have to specify these here... Can't dynamically add modules?
@@ -43,6 +44,7 @@ module dev.ikm.komet.application {
     requires javafx.controls;
     requires javafx.fxml;
     requires nsmenufx;
+    requires fr.brouillard.oss.cssfx;
     requires org.carlfx.cognitive;
     requires org.controlsfx.controls;
     requires dev.ikm.komet.classification;
