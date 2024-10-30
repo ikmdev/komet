@@ -58,7 +58,6 @@ public class SemanticPanel extends ComponentIsFinalPanel<
             HBox referencedComponentInfo = new HBox(3);
             referencedComponentInfo.setAlignment(Pos.CENTER_LEFT);
 
-
             ContextMenu contextMenu = new ContextMenu();
             collapsiblePane.setContextMenu(contextMenu);
             MenuItem versionChronologyMenuItem = new MenuItem("Version chronology for: " +
