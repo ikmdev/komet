@@ -1,15 +1,20 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
+
+import java.util.stream.IntStream;
 
 public class ConceptPatternNavController {
 
@@ -58,23 +63,23 @@ public class ConceptPatternNavController {
 
     public VBox addPatternComponent() {
         //FIXME this is mocked up
-        JFXNode<Pane, PatternNavEntryController> patternNavEntryJFXNode = FXMLMvvmLoader
-                .make(PatternNavEntryController.class.getResource(PATTERN_NAV_ENTRY_FXML));
-        Node pattern = patternNavEntryJFXNode.node();
-        PatternNavEntryController controller = patternNavEntryJFXNode.controller();
         VBox resultsVBox = new VBox();
-        resultsVBox.getChildren().add(pattern);
-
+        IntStream.range(0, 3).forEachOrdered(n -> {
+            JFXNode<Pane, PatternNavEntryController> patternNavEntryJFXNode = FXMLMvvmLoader
+                    .make(PatternNavEntryController.class.getResource(PATTERN_NAV_ENTRY_FXML));
+            HBox pattern = (HBox) patternNavEntryJFXNode.node();
+            PatternNavEntryController controller = patternNavEntryJFXNode.controller();
+            resultsVBox.setSpacing(4); // space between pattern entries
+            pattern.setAlignment(Pos.CENTER);
+            Region leftPadding = new Region();
+            leftPadding.setPrefWidth(12); // pad each entry with an empty region
+            leftPadding.setPrefHeight(1);
+            if (n > 0) {
+                controller.setPatternName("Test Performed Pattern");
+            }
+            resultsVBox.getChildren().addAll(new HBox(leftPadding, pattern));
+        });
         return resultsVBox;
     }
-
-    private void showClassicConceptNavigation(Pane classic) {
-
-    }
-
-    public void showPatternNavigation() {
-
-    }
-
 
 }
