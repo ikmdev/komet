@@ -12,7 +12,7 @@
 
 <Pane stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController">
     <children>
-        <ScrollPane fitToWidth="true" maxHeight="-Infinity" minWidth="-Infinity" prefWidth="372.0">
+        <ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" minWidth="-Infinity" prefHeight="9000.0" prefWidth="372.0">
             <content>
                 <VBox prefHeight="900.0" prefWidth="372.0" styleClass="search-vertical-scroll-area">
                     <children>
