@@ -14,7 +14,6 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
@@ -158,16 +157,7 @@
             </BorderPane>
          </center>
          <left>
-            <StackPane BorderPane.alignment="CENTER">
-               <children>
-                  <Pane fx:id="progressSlideoutTrayPane" styleClass="slideout-tray-pane" />
-                  <Pane fx:id="navSlideoutTrayPane" styleClass="slideout-tray-pane" />
-                  <Pane fx:id="searchSlideoutTrayPane" styleClass="slideout-tray-pane" />
-                  <Pane fx:id="reasonerSlideoutTrayPane" styleClass="slideout-tray-pane" />
-                  <Pane fx:id="nexGenSearchSlideoutTrayPane" layoutX="10.0" layoutY="10.0" maxHeight="1.7976931348623157E308" styleClass="slideout-tray-pane" />
-                  <Pane fx:id="nextGenReasonerSlideoutTrayPane" layoutX="10.0" layoutY="10.0" maxHeight="1.7976931348623157E308" styleClass="slideout-tray-pane" />
-               </children>
-            </StackPane>
+            <StackPane fx:id="trayPaneContainer" BorderPane.alignment="CENTER" />
          </left>
       </BorderPane>
    </center>
