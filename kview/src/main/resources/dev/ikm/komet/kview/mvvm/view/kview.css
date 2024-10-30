@@ -4305,8 +4305,8 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: black;
     -width: 348px;
     -fx-pref-width: -width;
-    -fx-min-width:width;
-    -fx-max-width:width;
+    -fx-min-width: -width;
+    -fx-max-width: -width;
     -fx-background-color: white;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 12px;

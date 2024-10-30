@@ -191,6 +191,9 @@ import java.util.prefs.BackingStoreException;
 public class JournalController {
     private static final Logger LOG = LoggerFactory.getLogger(JournalController.class);
 
+    @FXML
+    private StackPane trayPaneContainer;
+
     /**
      * Top level journal root pane for Scene.
      */
@@ -221,22 +224,16 @@ public class JournalController {
     @FXML
     private ToggleGroup sidebarToggleGroup;
 
-    @FXML
     private Pane navSlideoutTrayPane;
 
-    @FXML
     private Pane searchSlideoutTrayPane;
 
-    @FXML
     private Pane reasonerSlideoutTrayPane;
 
-    @FXML
     private Pane nexGenSearchSlideoutTrayPane;
 
-    @FXML
     private Pane nextGenReasonerSlideoutTrayPane;
 
-    @FXML
     private Pane progressSlideoutTrayPane;
 
     @FXML
@@ -322,6 +319,8 @@ public class JournalController {
     public void initialize() {
         reasonerNodePanel = new BorderPane();
 
+        createTrayPanes();
+
         // When user clicks on sidebar tray's toggle buttons.
         sidebarToggleGroup.selectedToggleProperty().addListener((observableValue, oldValue, newValue) -> {
 
@@ -393,6 +392,40 @@ public class JournalController {
 
         slideIn(selectedToggle);
         selectedToggle.setSelected(false);
+    }
+
+    private void createTrayPanes() {
+        progressSlideoutTrayPane = newTrayPane();
+        navSlideoutTrayPane = newTrayPane();
+        searchSlideoutTrayPane = newTrayPane();
+        reasonerSlideoutTrayPane = newTrayPane();
+
+        // nexGenSearchSlideoutTrayPane
+        nexGenSearchSlideoutTrayPane = new VerticallyFilledPane();
+        nexGenSearchSlideoutTrayPane.setLayoutX(10);
+        nexGenSearchSlideoutTrayPane.setLayoutY(10);
+        nexGenSearchSlideoutTrayPane.setMaxHeight(Double.MAX_VALUE);
+
+        // nextGenReasonerSlideoutTrayPane
+        nextGenReasonerSlideoutTrayPane = new VerticallyFilledPane();
+        nextGenReasonerSlideoutTrayPane.setLayoutX(10);
+        nextGenReasonerSlideoutTrayPane.setLayoutY(10);
+        nextGenReasonerSlideoutTrayPane.setMaxHeight(Double.MAX_VALUE);
+
+        trayPaneContainer.getChildren().addAll(
+                progressSlideoutTrayPane,
+                navSlideoutTrayPane,
+                searchSlideoutTrayPane,
+                reasonerSlideoutTrayPane,
+                nexGenSearchSlideoutTrayPane,
+                nextGenReasonerSlideoutTrayPane
+        );
+    }
+
+    private Pane newTrayPane() {
+        Pane pane = new VerticallyFilledPane();
+        pane.getStyleClass().add("slideout-tray-pane");
+        return pane;
     }
 
     private void setupScalableDesktop() {

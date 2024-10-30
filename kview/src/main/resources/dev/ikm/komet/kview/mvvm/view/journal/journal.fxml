@@ -14,7 +14,6 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
@@ -23,7 +22,6 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.shape.SVGPath?>
 
-<?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
 <BorderPane fx:id="journalBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.journal.JournalController">
    <center>
       <BorderPane prefHeight="485.0" prefWidth="544.0" BorderPane.alignment="CENTER">
@@ -159,16 +157,7 @@
             </BorderPane>
          </center>
          <left>
-            <StackPane BorderPane.alignment="CENTER">
-               <children>
-                  <VerticallyFilledPane fx:id="progressSlideoutTrayPane" styleClass="slideout-tray-pane" />
-                  <VerticallyFilledPane fx:id="navSlideoutTrayPane" styleClass="slideout-tray-pane" />
-                  <VerticallyFilledPane fx:id="searchSlideoutTrayPane" styleClass="slideout-tray-pane" />
-                  <VerticallyFilledPane fx:id="reasonerSlideoutTrayPane" styleClass="slideout-tray-pane" />
-                  <VerticallyFilledPane fx:id="nexGenSearchSlideoutTrayPane" layoutX="10.0" layoutY="10.0" maxHeight="1.7976931348623157E308" styleClass="slideout-tray-pane" />
-                  <VerticallyFilledPane fx:id="nextGenReasonerSlideoutTrayPane" layoutX="10.0" layoutY="10.0" maxHeight="1.7976931348623157E308" styleClass="slideout-tray-pane" />
-               </children>
-            </StackPane>
+            <StackPane fx:id="trayPaneContainer" BorderPane.alignment="CENTER" />
          </left>
       </BorderPane>
    </center>
