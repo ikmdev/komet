@@ -625,7 +625,6 @@ public class JournalController {
         navigatorActivityStream = ActivityStreams.create(navigationActivityStreamKey);
         activityStreams.add(navigationActivityStreamKey);
 
-        //loadNavigationPanel(navigationActivityStreamKey, this.windowView, navigationFactory);
         loadPatternNavigationPanel(navigationActivityStreamKey, this.windowView, navigationFactory);
 
         String uniqueSearchTopic = "search-%s".formatted(journalName);
@@ -1156,7 +1155,8 @@ public class JournalController {
 
     private void loadPatternNavigationPanel(PublicIdStringKey<ActivityStream> navigationActivityStreamKey,
                                             ObservableViewNoOverride windowView, KometNodeFactory navigationFactory) {
-        //TODO load the classic concept nav pane into this one: IIA-975
+        //FIXME load the classic concept nav pane into this one: IIA-975, it is loading but the concept icons are missing
+        // and the styling seems off
         Pane navigatorNodePanel = loadNavigationPanel(navigationActivityStreamKey, windowView, navigationFactory);
         Config patternConceptConfig = new Config(ConceptPatternNavController.class.getResource(CONCEPT_PATTERN_NAV_FXML_URL))
                 .controller(new ConceptPatternNavController(navigatorNodePanel));
