@@ -374,6 +374,24 @@ public class JournalController {
 
         // setup scalable desktop
         setupScalableDesktop();
+
+        desktopSurfacePane.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onMouseClickedOnDesktopSurfacePane(event));
+    }
+
+    private void onMouseClickedOnDesktopSurfacePane(MouseEvent mouseEvent) {
+        if (mouseEvent.getTarget() == desktopSurfacePane) { // We are indeed just clicking on the background and none of its children
+            collapseTrayPanes();
+        }
+    }
+
+    private void collapseTrayPanes() {
+        Toggle selectedToggle = sidebarToggleGroup.getSelectedToggle();
+        if (selectedToggle == null) { // There's no actual toggle button selected so no need to actually collapse anything
+            return;
+        }
+
+        slideIn(selectedToggle);
+        selectedToggle.setSelected(false);
     }
 
     private void createTrayPanes() {
