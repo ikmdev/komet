@@ -625,7 +625,7 @@ public class JournalController {
         navigatorActivityStream = ActivityStreams.create(navigationActivityStreamKey);
         activityStreams.add(navigationActivityStreamKey);
 
-        loadPatternNavigationPanel(navigationActivityStreamKey, this.windowView, navigationFactory);
+        loadNavigationPanel(navigationActivityStreamKey, this.windowView, navigationFactory);
 
         String uniqueSearchTopic = "search-%s".formatted(journalName);
         UUID uuidSearch = UuidT5Generator.get(uniqueSearchTopic);
@@ -1086,9 +1086,9 @@ public class JournalController {
      * @param windowView Any window view information
      * @param navigationFactory The navigation factory to create the navigation panel to be used in the sidebar.
      */
-    private Pane loadNavigationPanel(PublicIdStringKey<ActivityStream> navigationActivityStreamKey,
-                                     ObservableViewNoOverride windowView,
-                                     KometNodeFactory navigationFactory) {
+    private Pane loadClassicConceptNavigator(PublicIdStringKey<ActivityStream> navigationActivityStreamKey,
+                                             ObservableViewNoOverride windowView,
+                                             KometNodeFactory navigationFactory) {
 
         // Create navigator panel and publish on the navigation activity stream
         navigatorNode = (GraphNavigatorNode) navigationFactory.create(windowView,
@@ -1153,11 +1153,11 @@ public class JournalController {
         return (Pane) navigatorNode.getNode();
     }
 
-    private void loadPatternNavigationPanel(PublicIdStringKey<ActivityStream> navigationActivityStreamKey,
-                                            ObservableViewNoOverride windowView, KometNodeFactory navigationFactory) {
+    private void loadNavigationPanel(PublicIdStringKey<ActivityStream> navigationActivityStreamKey,
+                                     ObservableViewNoOverride windowView, KometNodeFactory navigationFactory) {
         //FIXME load the classic concept nav pane into this one: IIA-975, it is loading but the concept icons are missing
         // and the styling seems off
-        Pane navigatorNodePanel = loadNavigationPanel(navigationActivityStreamKey, windowView, navigationFactory);
+        Pane navigatorNodePanel = loadClassicConceptNavigator(navigationActivityStreamKey, windowView, navigationFactory);
         Config patternConceptConfig = new Config(ConceptPatternNavController.class.getResource(CONCEPT_PATTERN_NAV_FXML_URL))
                 .controller(new ConceptPatternNavController(navigatorNodePanel));
         JFXNode<Pane, ConceptPatternNavController> conPatJFXNode = FXMLMvvmLoader.make(patternConceptConfig);
