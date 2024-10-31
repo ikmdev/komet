@@ -221,8 +221,7 @@ public class PropertiesController {
                 });
                 currentEditPane = patternFieldsPane;
             } else if (evt.getEventType() == SHOW_ADD_FIELDS) {
-                Optional<ViewModel> viewModel = patternFieldsJFXNode.namedViewModels().stream().filter(namedVm -> namedVm.variableName().equals("patternFieldsViewModel")).map(NamedVm::viewModel).findAny();
-                viewModel.ifPresent(model -> {
+                patternFieldsJFXNode.updateViewModel("patternFieldsViewModel", (model) -> {
                     PatternField patternField = evt.getPatternField();
                     model.setPropertyValue(ADD_EDIT_LABEL, ADD_FIELD);
                     model.setPropertyValue(TOTAL_EXISTING_FIELDS, evt.getTotalFields());
@@ -232,10 +231,9 @@ public class PropertiesController {
             } else if (evt.getEventType().getSuperType() == DESCRIPTION_NAME) {
                 setupDescriptionNamePane(evt.getEventType());
             } else if (evt.getEventType() == SHOW_CONTINUE_ADD_FIELDS) {
-                Optional<ViewModel> viewModel = continueFieldsJFXNode.namedViewModels().stream().filter(namedVm -> namedVm.variableName().equals("patternPropertiesViewModel")).map(NamedVm::viewModel).findAny();
-                viewModel.ifPresent(model -> {
-                    model.setPropertyValue(TOTAL_EXISTING_FIELDS, evt.getTotalFields());
-                });
+                continueFieldsJFXNode.updateViewModel("patternPropertiesViewModel", (model) ->
+                        model.setPropertyValue(TOTAL_EXISTING_FIELDS, evt.getTotalFields())
+                );
                 currentEditPane = continueAddFieldsPane;
             } else if (evt.getEventType() == SHOW_CONTINUE_EDIT_FIELDS) {
                 confirmationController.showContinueEditingFields();
