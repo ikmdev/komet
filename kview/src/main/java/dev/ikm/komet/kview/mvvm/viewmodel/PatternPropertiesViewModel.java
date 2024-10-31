@@ -15,10 +15,12 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import org.carlfx.axonic.StateMachine;
 
 import java.util.UUID;
+
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.TOTAL_EXISTING_FIELDS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 
 public class PatternPropertiesViewModel extends FormViewModel {
 
@@ -28,8 +30,10 @@ public class PatternPropertiesViewModel extends FormViewModel {
     public PatternPropertiesViewModel() {
         super();
             addProperty(PATTERN_TOPIC, (UUID) null)
-                .addProperty(STATE_MACHINE, (StateMachine) null)
+                    .addProperty(STATE_MACHINE, (StateMachine) null)
+                    .addProperty(TOTAL_EXISTING_FIELDS, 0)
         ;
     }
+
 
 }
