@@ -143,6 +143,12 @@ public class EditDescriptionFormController implements BasicController {
         caseSignificanceComboBox.valueProperty().addListener(invalidationListener);
         statusComboBox.valueProperty().addListener(invalidationListener);
         languageComboBox.valueProperty().addListener(invalidationListener);
+
+        setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
+        setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
+        setupComboBox(caseSignificanceComboBox, otherNameViewModel.findAllCaseSignificants(getViewProperties()));
+        setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
+
         validateForm();
     }
 
@@ -291,7 +297,6 @@ public class EditDescriptionFormController implements BasicController {
                 moduleDescendents.intStream()
                         .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
                         .collect(Collectors.toSet());
-        setupComboBox(moduleComboBox, allModules);
 
         // populate the current module and select it (e.g. 'SNOMED CT core module')
         ConceptEntity currentModule = (ConceptEntity) stampEntity.module();
@@ -302,7 +307,6 @@ public class EditDescriptionFormController implements BasicController {
         Set<ConceptEntity> allStatuses = statusDescendents.intStream()
                 .mapToObj(statusNid -> (ConceptEntity) Entity.getFast(statusNid))
                 .collect(Collectors.toSet());
-        setupComboBox(statusComboBox, allStatuses);
 
         // populate the current status (ACTIVE | INACTIVE) and select it
         ConceptEntity currentStatus = Entity.getFast(stampEntity.state().nid());
@@ -313,7 +317,6 @@ public class EditDescriptionFormController implements BasicController {
         Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
                 .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
                 .collect(Collectors.toSet());
-        setupComboBox(caseSignificanceComboBox, allCaseDescendents);
 
         // get case concept's case sensitivity (e.g. 'Case insensitive')
         PatternEntity<PatternEntityVersion> patternEntity = latestEntityVersion.get().pattern();
@@ -328,7 +331,6 @@ public class EditDescriptionFormController implements BasicController {
         Set<ConceptEntity> allLangs = languageDescendents.intStream()
                 .mapToObj(langNid -> (ConceptEntity) Entity.getFast(langNid))
                 .collect(Collectors.toSet());
-        setupComboBox(languageComboBox, allLangs);
 
         // get the language (e.g. 'English language')
         int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
@@ -377,10 +379,10 @@ public class EditDescriptionFormController implements BasicController {
      */
     public void setConceptAndPopulateForm(DescrName descrName) {
         editDescrName = descrName;
-        setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
+        /*setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
         setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
         setupComboBox(caseSignificanceComboBox, otherNameViewModel.findAllCaseSignificants(getViewProperties()));
-        setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
+        setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));*/
         otherNameViewModel.setPropertyValue(NAME_TEXT, descrName.getNameText())
                 .setPropertyValue(CASE_SIGNIFICANCE, descrName.getCaseSignificance())
                 .setPropertyValue(STATUS, descrName.getStatus())
