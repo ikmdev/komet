@@ -4312,3 +4312,46 @@ Styling a context menu for kview ui/ux controls
     -fx-font-size: 12px;
     -fx-font-style: normal;
 }
+
+/********************************************************************************
+ * Start of Journal > Concept/Pattern Navigator                                 *
+ ********************************************************************************/
+
+.grey-vertical-scroll-area {
+    -fx-background-color: -Grey-9;
+}
+
+.nav-toggle {    
+    -fx-border-width: 1;
+    -fx-border-color: -Grey-7;
+    -fx-background-color: -Grey-2;
+    -fx-text-fill: -Secondary-05;
+}
+
+.nav-toggle-left {
+    -fx-border-radius: 1 0 0 1;
+}
+
+.nav-toggle-right {
+    -fx-border-radius: 0 1 1 0;
+}
+
+.nav-toggle:selected {
+    -fx-border-radius: 6 0 0 6;
+    -fx-border-width: 1;
+    -fx-border-color: -Grey-7;
+    -fx-background-color: -Primary-03;
+    -fx-text-fill: -Grey-12;
+}
+
+.add-new-instance-icon {
+    -fx-scale-shape: false;
+    -fx-background-color: white;
+    -fx-shape: "M9.99996 1.6665C5.40746 1.6665 1.66663 5.40733 1.66663 9.99984C1.66663 14.5923 5.40746 18.3332 9.99996 18.3332C14.5925 18.3332 18.3333 14.5923 18.3333 9.99984C18.3333 5.40733 14.5925 1.6665 9.99996 1.6665ZM9.99996 3.33317C13.6917 3.33317 16.6666 6.30807 16.6666 9.99984C16.6666 13.6916 13.6917 16.6665 9.99996 16.6665C6.30819 16.6665 3.33329 13.6916 3.33329 9.99984C3.33329 6.30807 6.30819 3.33317 9.99996 3.33317ZM9.16663 5.83317V9.1665H5.83329V10.8332H9.16663V14.1665H10.8333V10.8332H14.1666V9.1665H10.8333V5.83317H9.16663Z";
+}
+
+.remove-icon {
+    -fx-scale-shape: false;
+    -fx-background-color: white;
+    -fx-shape: "M12.5 2.5V3.33333H16.6667V5H15.8334V15.8333C15.8334 16.75 15.0834 17.5 14.1667 17.5H5.83337C4.91671 17.5 4.16671 16.75 4.16671 15.8333V5H3.33337V3.33333H7.50004V2.5H12.5ZM5.83337 15.8333H14.1667V5H5.83337V15.8333ZM7.50004 6.66667H9.16671V14.1667H7.50004V6.66667ZM12.5 6.66667H10.8334V14.1667H12.5V6.66667Z";    
+}

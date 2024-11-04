@@ -1,3 +1,18 @@
+/*
+ * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package dev.ikm.komet.app.util;
 
 import fr.brouillard.oss.cssfx.CSSFX;
@@ -60,10 +75,15 @@ public interface CssUtils {
      */
     static void addStylesheets(Scene scene, String... cssFiles) {
         final String workingDir = System.getProperty("user.dir");
-        final Path workingDirPath = Paths.get(workingDir);
+        Path workingDirPath = Paths.get(workingDir);
 
-        final Path frameworkResourcesDir = workingDirPath.resolveSibling("framework/src/main/resources");
-        final Path kviewResourcesDir = workingDirPath.resolveSibling("kview/src/main/resources");
+        if (workingDirPath.getFileName().toString().equals("application")) {
+            // Running from the application module, move up one level
+            workingDirPath = workingDirPath.getParent();
+        }
+
+        final Path frameworkResourcesDir = workingDirPath.resolve("framework/src/main/resources");
+        final Path kviewResourcesDir = workingDirPath.resolve("kview/src/main/resources");
 
         List<String> cssUris = new ArrayList<>();
         boolean loadedFromFileSystem = false;
