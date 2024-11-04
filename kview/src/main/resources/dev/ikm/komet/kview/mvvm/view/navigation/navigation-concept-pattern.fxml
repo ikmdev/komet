@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <ScrollPane prefWidth="372.0">
+         <content>
+            <VBox prefHeight="900.0" prefWidth="372.0" styleClass="grey-vertical-scroll-area">
+               <children>
+                  <HBox alignment="CENTER" prefHeight="56.0">
+                     <children>
+                        <GridPane HBox.hgrow="ALWAYS">
+                          <columnConstraints>
+                              <ColumnConstraints hgrow="NEVER" maxWidth="60.0" minWidth="60.0" prefWidth="60.0" />
+                            <ColumnConstraints hgrow="ALWAYS" maxWidth="286.0" minWidth="10.0" prefWidth="252.0" />
+                            <ColumnConstraints hgrow="NEVER" maxWidth="60.0" minWidth="60.0" prefWidth="60.0" />
+                          </columnConstraints>
+                          <rowConstraints>
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                          </rowConstraints>
+                           <children>
+                              <HBox alignment="CENTER" GridPane.columnIndex="1">
+                                 <children>
+                                    <ToggleButton fx:id="conceptsToggleButton" mnemonicParsing="false" onAction="#showConcepts" prefWidth="103.0" selected="true" text="CONCEPTS">
+                                       <toggleGroup>
+                                          <ToggleGroup fx:id="conPatToggleGroup" />
+                                       </toggleGroup>
+                                       <styleClass>
+                                          <String fx:value="nav-toggle" />
+                                          <String fx:value="nav-toggle-left" />
+                                       </styleClass>
+                                    </ToggleButton>
+                                    <ToggleButton mnemonicParsing="false" onAction="#showPatterns" prefWidth="103.0" text="PATTERNS" toggleGroup="$conPatToggleGroup">
+                                       <styleClass>
+                                          <String fx:value="nav-toggle" />
+                                          <String fx:value="nav-toggle-right" />
+                                       </styleClass></ToggleButton>
+                                 </children>
+                              </HBox>
+                              <Button mnemonicParsing="false" styleClass="search-button" GridPane.columnIndex="2">
+                                 <graphic>
+                                    <Region focusTraversable="true">
+                                       <styleClass>
+                                          <String fx:value="icon" />
+                                          <String fx:value="search-button-region" />
+                                       </styleClass>
+                                    </Region>
+                                 </graphic>
+                              </Button>
+                           </children>
+                        </GridPane>
+                     </children>
+                  </HBox>
+                  <BorderPane fx:id="navContentPane" />
+               </children>
+            </VBox>
+         </content>
+      </ScrollPane>
+   </children>
+</Pane>

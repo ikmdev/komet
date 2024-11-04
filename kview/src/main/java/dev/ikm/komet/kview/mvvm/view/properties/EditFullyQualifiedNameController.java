@@ -200,6 +200,7 @@ public class EditFullyQualifiedNameController implements BasicController {
     }
 
     private void setupComboBox(ComboBox comboBox, Collection<ConceptEntity> conceptEntities) {
+        comboBox.getItems().clear();
         comboBox.setConverter(new StringConverter<ConceptEntity>() {
 
             @Override

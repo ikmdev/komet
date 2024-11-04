@@ -86,6 +86,7 @@ import dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel;
 import dev.ikm.komet.kview.mvvm.view.details.ConceptPreference;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
+import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
 import dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
 import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
@@ -272,6 +273,8 @@ public class JournalController {
     private Pane searchNodePanel;
     private Pane nextGenSearchPanel;
 
+    private Pane patternConceptNavigationPanel;
+
     private Pane nextGenReasonerPanel;
 
     private BorderPane reasonerNodePanel;
@@ -292,11 +295,15 @@ public class JournalController {
 
     private static final String NEXT_GEN_SEARCH_FXML_URL = "next-gen-search.fxml";
 
+    private static final String CONCEPT_PATTERN_NAV_FXML_URL = "navigation-concept-pattern.fxml";
+
     private static final String NEXT_GEN_REASONER_FXML_URL = "reasoner.fxml";
 
     private NextGenSearchController nextGenSearchController;
 
     private NextGenReasonerController nextGenReasonserController;
+
+    private ConceptPatternNavController conceptPatternNavController;
 
     private Subscriber<MakeConceptWindowEvent> makeConceptWindowEventSubscriber;
     private Subscriber<ShowNavigationalPanelEvent> showNavigationalPanelEventSubscriber;
@@ -1130,9 +1137,9 @@ public class JournalController {
      * @param windowView Any window view information
      * @param navigationFactory The navigation factory to create the navigation panel to be used in the sidebar.
      */
-    private void loadNavigationPanel(PublicIdStringKey<ActivityStream> navigationActivityStreamKey,
-                                     ObservableViewNoOverride windowView,
-                                     KometNodeFactory navigationFactory) {
+    private Pane loadClassicConceptNavigator(PublicIdStringKey<ActivityStream> navigationActivityStreamKey,
+                                             ObservableViewNoOverride windowView,
+                                             KometNodeFactory navigationFactory) {
 
         // Create navigator panel and publish on the navigation activity stream
         navigatorNode = (GraphNavigatorNode) navigationFactory.create(windowView,
@@ -1194,8 +1201,20 @@ public class JournalController {
             }
         });
 
-        navigatorNodePanel = (Pane) navigatorNode.getNode();
-        setupSlideOutTrayPane(navigatorNodePanel, navSlideoutTrayPane);
+        return (Pane) navigatorNode.getNode();
+    }
+
+    private void loadNavigationPanel(PublicIdStringKey<ActivityStream> navigationActivityStreamKey,
+                                     ObservableViewNoOverride windowView, KometNodeFactory navigationFactory) {
+        //FIXME load the classic concept nav pane into this one: IIA-975, it is loading but the concept icons are missing
+        // and the styling seems off
+        Pane navigatorNodePanel = loadClassicConceptNavigator(navigationActivityStreamKey, windowView, navigationFactory);
+        Config patternConceptConfig = new Config(ConceptPatternNavController.class.getResource(CONCEPT_PATTERN_NAV_FXML_URL))
+                .controller(new ConceptPatternNavController(navigatorNodePanel));
+        JFXNode<Pane, ConceptPatternNavController> conPatJFXNode = FXMLMvvmLoader.make(patternConceptConfig);
+        patternConceptNavigationPanel = conPatJFXNode.node();
+        conceptPatternNavController = conPatJFXNode.controller();
+        setupSlideOutTrayPane(patternConceptNavigationPanel, navSlideoutTrayPane);
     }
 
     private  void loadReasonerPanel(PublicIdStringKey<ActivityStream> activityStreamKey,
