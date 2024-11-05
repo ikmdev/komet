@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.TitledPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -26,11 +27,15 @@ public class PatternNavEntryController {
     @FXML
     private ContextMenu contextMenu;
 
+//    @FXML
+//    private VBox instancesVBox;
+
     @FXML
-    private VBox instancesVBox;
+    private TitledPane instancesTitledPane;
 
     @FXML
     private void initialize() {
+        instancesTitledPane.setExpanded(false);
         showContextButton.setVisible(false);
         contextMenu.setHideOnEscape(true);
         patternEntryHBox.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(true));
@@ -45,4 +50,8 @@ public class PatternNavEntryController {
     public void setPatternName(String patternName) {
         this.patternName.setText(patternName);
     }
+
+//    public VBox getInstancesVBox() {
+//        return this.instancesVBox;
+//    }
 }
