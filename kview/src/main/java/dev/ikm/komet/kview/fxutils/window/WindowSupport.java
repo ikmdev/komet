@@ -139,6 +139,8 @@ public class WindowSupport {
         this.defaultPositionWindowRelease = (mouseEvent ->
                 previousLocationProperty.set(new Point2D(pane.getTranslateX(), pane.getTranslateY())));
 
+        parentNode.addEventFilter(MouseEvent.MOUSE_PRESSED, this::handleParentNodeMousePressedFilter);
+
         for (Node draggableNode : draggableNodes) {
             draggableNode.addEventHandler(MouseEvent.MOUSE_PRESSED, this::handlePositionWindowMousePressed);
             draggableNode.addEventHandler(MouseEvent.MOUSE_DRAGGED, this::handlePositionWindowMouseDragged);
@@ -279,6 +281,10 @@ public class WindowSupport {
         wireListeners();
     }
 
+    private void handleParentNodeMousePressedFilter(MouseEvent mouseEvent) {
+        pane.toFront();
+    }
+
     public double getResizeWidthValue() {
         return resizeWidthValue.get();
     }
@@ -329,7 +335,6 @@ public class WindowSupport {
         if (getPositionWindowPress() == null) {
             setPositionWindowPress(defaultPositionWindowPress);
         }
-        pane.toFront();
         getPositionWindowPress().accept(mouseEvent);
     }
 
