@@ -36,7 +36,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="456.0" prefHeight="560.0" prefWidth="727.0" style="-fx-background-color: transparent;" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
+<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="560.0" prefWidth="727.0" style="-fx-background-color: transparent;" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0" style="-fx-background-color: transparent;">
          <top>
