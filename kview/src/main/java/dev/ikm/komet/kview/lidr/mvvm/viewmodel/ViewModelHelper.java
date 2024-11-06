@@ -15,13 +15,13 @@
  */
 package dev.ikm.komet.kview.lidr.mvvm.viewmodel;
 
-import dev.ikm.komet.kview.data.schema.STAMPDetail;
-import dev.ikm.komet.kview.data.schema.SemanticDetail;
 import dev.ikm.komet.kview.data.persistence.ConceptWriter;
 import dev.ikm.komet.kview.data.persistence.STAMPWriter;
 import dev.ikm.komet.kview.data.persistence.SemanticWriter;
-import dev.ikm.komet.kview.lidr.mvvm.model.LidrRecord;
+import dev.ikm.komet.kview.data.schema.STAMPDetail;
+import dev.ikm.komet.kview.data.schema.SemanticDetail;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
+import dev.ikm.komet.kview.lidr.mvvm.model.LidrRecord;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -32,7 +32,6 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpression;
 import dev.ikm.tinkar.ext.lang.owl.SctOwlUtilities;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
@@ -50,7 +49,6 @@ import java.util.regex.Pattern;
 
 import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.*;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ResultsViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 
 
@@ -120,7 +118,7 @@ public class ViewModelHelper {
             }
             LOG.error("Error(s) with validation message(s)\n" + sb);
         }
-        State status = stampViewModel.getValue(STATUS);
+        Concept status = stampViewModel.getValue(STATUS);
         PublicId statusPublicId = status != null ? status.publicId() : TinkarTerm.ACTIVE_STATE.publicId();
         Concept author = stampViewModel.getValue(AUTHOR);
         PublicId authorPublicId = author != null ? author.publicId() : TinkarTerm.USER.publicId();

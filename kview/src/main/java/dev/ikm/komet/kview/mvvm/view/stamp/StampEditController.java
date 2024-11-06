@@ -31,8 +31,7 @@ import org.carlfx.cognitive.viewmodel.ViewModel;
 import java.util.List;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 
 public class StampEditController extends AbstractBasicController {
 
@@ -77,9 +76,10 @@ public class StampEditController extends AbstractBasicController {
     @Override
     public void initialize() {
         clearView();
-        // setup modules and path radio button selection
+        // setup status modules and path radio button selection
         setupModuleSelections();
         setupPathSelections();
+        setupStatusSelections();
 
         // When user selects a radio button
         moduleToggleGroup.selectedToggleProperty().addListener((observableValue, toggle, t1) -> {
@@ -96,17 +96,44 @@ public class StampEditController extends AbstractBasicController {
             if (path != null) {
                 pathTitledPane.setText("Path: " + path.description());
             }
+        }));
 
+        statusToggleGroup.selectedToggleProperty().addListener(((observableValue, toggle, t1) -> {
+            ConceptEntity status = (ConceptEntity) t1.getUserData();
+            getStampViewModel().setPropertyValue(STATUS, status);
+            if (status != null) {
+                statusTitledPane.setText("Status: " + status.description());
+            }
         }));
     }
 
     /**
-     * sets the status to active,
+     * In Create mode sets the status to active,
      * disables the radio button inactive
      */
     public void selectActiveStatusToggle() {
-        statusToggleGroup.selectToggle(activeStatus);
-        inactiveStatus.setDisable(true);
+        if(stampViewModel.getPropertyValue(MODE) == CREATE){
+            inactiveStatus.setDisable(true);
+            activeStatus.setSelected(true);
+        }
+    }
+
+    /**
+     * Set the user data as part of the radio button.
+     */
+    private void setupStatusSelections() {
+        List<ConceptEntity> statuses = stampViewModel.getObservableList(STATUSES_PROPERTY);
+        statuses.forEach(status -> {
+            RadioButton rb = activeStatus;
+            if(status.description().equalsIgnoreCase("Inactive")){
+                rb = inactiveStatus;
+            }
+            rb.setUserData(status);
+            ObjectProperty<ConceptEntity> statusProperty = getStampViewModel().getProperty(STATUS);
+            if (statusProperty.isNotNull().get() && statusProperty.get().nid() == status.nid()) {
+                rb.setSelected(true);
+            }
+        });
     }
 
     private void setupModuleSelections() {
@@ -124,6 +151,7 @@ public class StampEditController extends AbstractBasicController {
             moduleVBox.getChildren().add(rb);
         });
     }
+
     private void setupPathSelections() {
         // populate paths
         List<ConceptEntity> paths = stampViewModel.getObservableList(PATHS_PROPERTY);

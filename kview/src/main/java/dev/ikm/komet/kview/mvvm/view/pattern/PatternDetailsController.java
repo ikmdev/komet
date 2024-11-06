@@ -28,7 +28,7 @@ import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
@@ -72,6 +72,7 @@ import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
 import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
@@ -609,6 +610,7 @@ public class PatternDetailsController {
     public void popupStampEdit(ActionEvent event) {
         if (stampEdit != null && stampEditController != null) {
             stampEdit.show((Node) event.getSource());
+            stampEditController.selectActiveStatusToggle();
             return;
         }
 
@@ -664,8 +666,9 @@ public class PatternDetailsController {
         ConceptEntity pathEntity = stampViewModel.getValue(PATH);
         String pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
         pathText.setText(pathDescr);
-        State status = stampViewModel.getValue(STATUS);
-        String statusMsg = status == null ? "Active" : getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
+
+        ConceptEntity status = stampViewModel.getValue(STATUS);
+        String statusMsg = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
         statusText.setText(statusMsg);
     }
 
@@ -716,6 +719,12 @@ public class PatternDetailsController {
     }
 
     public void updateView() {
+        EntityFacade entityFacade = patternViewModel.getValue(CURRENT_ENTITY);
+        if(entityFacade == null){
+            getStampViewModel().setPropertyValue(MODE, CREATE);
+        }else {
+            getStampViewModel().setPropertyValue(MODE, EDIT);
+        }
     }
 
     public void putTitlePanesArrowOnRight() {

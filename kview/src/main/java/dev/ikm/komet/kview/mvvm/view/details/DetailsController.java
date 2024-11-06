@@ -76,8 +76,7 @@ import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
@@ -1199,6 +1198,7 @@ public class DetailsController  {
     public void popupStampEdit(ActionEvent event) {
         if (stampEdit !=null && stampEditController != null) {
             stampEdit.show((Node) event.getSource());
+            stampEditController.selectActiveStatusToggle();
             return;
         }
         // Prefetch modules and paths for view to populate radio buttons in form.
@@ -1269,8 +1269,9 @@ public class DetailsController  {
         ConceptEntity pathEntity = stampViewModel.getValue(PATH);
         String pathDescr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
         pathText.setText(pathDescr);
-        State status = stampViewModel.getValue(STATUS);
-        String statusMsg = status == null ? "Active" : viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
+
+        ConceptEntity status = stampViewModel.getValue(STATUS);
+        String statusMsg = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
         statusText.setText(statusMsg);
     }
 
