@@ -102,6 +102,7 @@ import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.app.AppState.*;
+import static dev.ikm.komet.app.util.CssFile.*;
 import static dev.ikm.komet.app.util.CssUtils.*;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
