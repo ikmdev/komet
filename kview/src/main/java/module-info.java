@@ -97,9 +97,11 @@ module dev.ikm.komet.kview {
 
 
     // TODO a temporary export screen for next gen ui.
+    opens dev.ikm.komet.kview.mvvm.view;
+    exports dev.ikm.komet.kview.mvvm.view;
+
     opens dev.ikm.komet.kview.mvvm.view.export;
     exports dev.ikm.komet.kview.mvvm.view.export;
-    exports dev.ikm.komet.kview.mvvm.view;
 
     opens dev.ikm.komet.kview.mvvm.view.login;
     exports dev.ikm.komet.kview.mvvm.view.login;
