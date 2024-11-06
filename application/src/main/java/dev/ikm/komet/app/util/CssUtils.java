@@ -21,26 +21,28 @@ import javafx.scene.Scene;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
+import java.net.URL;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
- * Utility interface for managing and applying CSS stylesheets.
+ * Utility class for managing and applying CSS stylesheets in JavaFX applications.
  * <p>
- * This interface provides static methods to add CSS stylesheets to JavaFX scenes.
- * It attempts to load CSS files from the local file system for development purposes
- * and falls back to the JRT (Java Runtime) file system for production environments.
+ * This class provides static methods to add CSS stylesheets to JavaFX {@link Scene} objects.
+ * It first attempts to load CSS files from the local file system for development purposes
+ * and falls back to loading them from the classpath resources for production environments.
  * Additionally, it integrates with CSSFX to enable live-reloading of CSS files during development.
  * </p>
  * <p>
- * Supported CSS files are declared as constants within this interface. To add more CSS files,
- * declare additional constants and update the relevant methods accordingly.
+ * Supported CSS files are declared within the {@link CssFile} enum. To include additional CSS files,
+ * declare new enum constants in {@link CssFile} and ensure they are referenced appropriately in the methods.
  * </p>
  *
  * <p><strong>Usage Example:</strong></p>
  * <pre>{@code
+ * import static dev.ikm.komet.app.util.CssFile.*;
  * import dev.ikm.komet.app.util.CssUtils;
  * import javafx.scene.Scene;
  * import javafx.scene.layout.BorderPane;
@@ -50,174 +52,157 @@ import java.util.List;
  * BorderPane root = new BorderPane();
  * Scene scene = new Scene(root, 800, 600);
  *
- * // Apply CSS stylesheets
- * CssUtils.addStylesheets(scene, CssUtils.KOMET_CSS, CssUtils.KVIEW_CSS);
+ * // Apply CSS stylesheets using the CssFile enum
+ * CssUtils.addStylesheets(scene, KOMET_CSS, KVIEW_CSS);
  *
  * // Set up and show the stage
  * primaryStage.setScene(scene);
  * primaryStage.show();
  * }</pre>
+ *
+ * @see CssFile
  */
-public interface CssUtils {
+public final class CssUtils {
 
-    Logger LOG = LoggerFactory.getLogger(CssUtils.class);
-
-    // Constants for CSS file names
-    String KOMET_CSS = "komet.css";
-    String KVIEW_CSS = "kview.css";
+    private static final Logger LOG = LoggerFactory.getLogger(CssUtils.class);
 
     /**
-     * Adds the specified CSS files to the given JavaFX Scene. It attempts to load them from the local file system
-     * for development mode and falls back to the JRT file system for production mode. Also sets up CSSFX for live-reloading.
-     *
-     * @param scene    The JavaFX Scene to which the stylesheets will be added.
-     * @param cssFiles Variable number of CSS file names to be added.
+     * The name of the application project module. Used to determine the working directory.
      */
-    static void addStylesheets(Scene scene, String... cssFiles) {
-        final String workingDir = System.getProperty("user.dir");
-        Path workingDirPath = Paths.get(workingDir);
+    private static final String APPLICATION_PROJECT_NAME = "application";
 
-        if (workingDirPath.getFileName().toString().equals("application")) {
-            // Running from the application module, move up one level
-            workingDirPath = workingDirPath.getParent();
+    /**
+     * Private constructor to prevent instantiation of this utility class.
+     */
+    private CssUtils() {
+        throw new UnsupportedOperationException("CssUtils class should not be instantiated.");
+    }
+
+    /**
+     * Adds the specified CSS files to the given JavaFX {@link Scene}. This method attempts to load the CSS files
+     * from the local file system first, which is suitable for development environments where CSS files may change frequently.
+     * If the CSS files are not found in the local file system, it falls back to loading them from the classpath resources,
+     * which is appropriate for production environments. Additionally, this method sets up CSSFX to enable live-reloading
+     * of CSS files when changes are detected in the local file system.
+     *
+     * @param scene    the JavaFX {@link Scene} to which the stylesheets will be added
+     * @param cssFiles a variable number of {@link CssFile} enums representing the CSS files to be added
+     * @throws NullPointerException if the {@code scene} parameter is {@code null}
+     */
+    public static void addStylesheets(Scene scene, CssFile... cssFiles) {
+        Objects.requireNonNull(scene, "The scene parameter cannot be null.");
+
+        if (cssFiles == null || cssFiles.length == 0) {
+            LOG.warn("No CSS files provided to addStylesheets.");
+            return;
         }
 
-        final Path frameworkResourcesDir = workingDirPath.resolve("framework/src/main/resources");
-        final Path kviewResourcesDir = workingDirPath.resolve("kview/src/main/resources");
+        final Path workingDirPath = determineWorkingDirectory();
+        final List<String> cssUris = new ArrayList<>();
+        final List<CssFile> loadedFromFileSystemList = new ArrayList<>();
 
-        List<String> cssUris = new ArrayList<>();
-        boolean loadedFromFileSystem = false;
+        for (CssFile cssFile : cssFiles) {
+            Path cssPath = cssFile.resolveAbsolutePath(workingDirPath);
+            LOG.debug("Attempting to load CSS '{}' from path: {}", cssFile.getFileName(), cssPath);
 
-        for (String cssFile : cssFiles) {
-            Path cssPath = determineCssPath(cssFile, frameworkResourcesDir, kviewResourcesDir);
-
-            if (cssPath != null && Files.exists(cssPath)) {
+            if (Files.exists(cssPath)) {
                 String cssUri = cssPath.toUri().toString();
                 cssUris.add(cssUri);
-                loadedFromFileSystem = true;
-                LOG.info("Loaded CSS from local file system: {}", cssUri);
+                loadedFromFileSystemList.add(cssFile);
+                LOG.info("Loaded CSS '{}' from local file system: {}", cssFile.getFileName(), cssUri);
             } else {
-                // Attempt to load from JRT (production mode)
-                String moduleName = getModuleNameForCss(cssFile);
-                String resourcePath = getResourcePathForCss(cssFile);
-
-                if (moduleName != null && resourcePath != null) {
-                    try {
-                        FileSystem jrtFileSystem = FileSystems.getFileSystem(URI.create("jrt:/"));
-                        Path cssResourcePathInJrt = jrtFileSystem.getPath("/modules", moduleName, resourcePath);
-                        if (Files.exists(cssResourcePathInJrt)) {
-                            String cssResourceUri = cssResourcePathInJrt.toUri().toString();
-                            cssUris.add(cssResourceUri);
-                            LOG.info("Loaded CSS from JRT file system: {}", cssResourceUri);
-                        } else {
-                            LOG.warn("CSS file '{}' not found in JRT file system at '{}'", cssFile, cssResourcePathInJrt);
-                        }
-                    } catch (FileSystemNotFoundException e) {
-                        LOG.warn("Error accessing JRT file system for CSS file '{}': {}", cssFile, e.getMessage());
-                    }
-                } else {
-                    LOG.warn("No module mapping found for CSS file '{}'", cssFile);
-                }
+                LOG.warn("CSS file '{}' not found at local file system path '{}'", cssFile.getFileName(), cssPath);
+                loadFromResource(cssFile, cssUris);
             }
         }
 
         if (!cssUris.isEmpty()) {
             scene.getStylesheets().addAll(cssUris);
+            LOG.info("Added {} stylesheet(s) to the scene.", cssUris.size());
+        } else {
+            LOG.warn("No CSS stylesheets were added to the scene.");
         }
 
-        if (loadedFromFileSystem) {
-            setupCssMonitor(cssFiles, frameworkResourcesDir, kviewResourcesDir);
+        if (!loadedFromFileSystemList.isEmpty()) {
+            setupCssMonitor(loadedFromFileSystemList.toArray(new CssFile[0]), workingDirPath);
         }
     }
 
     /**
-     * Determines the file system path of the CSS file based on its name.
+     * Determines the working directory based on the current system property {@code user.dir}.
+     * If the working directory corresponds to the application module, it moves up one directory level.
+     * This adjustment is useful when running the application from within an IDE or specific project structure.
      *
-     * @param cssFile               The name of the CSS file.
-     * @param frameworkResourcesDir The framework resources directory.
-     * @param kviewResourcesDir     The kview resources directory.
-     * @return The Path to the CSS file, or null if the file name is unrecognized.
+     * @return the {@link Path} representing the determined working directory
      */
-    private static Path determineCssPath(String cssFile, Path frameworkResourcesDir, Path kviewResourcesDir) {
-        return switch (cssFile) {
-            case KOMET_CSS -> frameworkResourcesDir.resolve(
-                    Paths.get("dev", "ikm", "komet", "framework", "graphics", KOMET_CSS));
-            case KVIEW_CSS -> kviewResourcesDir.resolve(
-                    Paths.get("dev", "ikm", "komet", "kview", "mvvm", "view", KVIEW_CSS));
-            // Add more cases here for additional CSS files
-            default -> {
-                LOG.warn("Unknown CSS file '{}', unable to determine path", cssFile);
-                yield null;
+    private static Path determineWorkingDirectory() {
+        Path workingDirPath = Paths.get(System.getProperty("user.dir"));
+        LOG.info("Working directory: {}", workingDirPath);
+
+        if (workingDirPath.getFileName().toString().equalsIgnoreCase(APPLICATION_PROJECT_NAME)) {
+            // Running from the application module, move up one level
+            Path parent = workingDirPath.getParent();
+            if (parent != null) {
+                workingDirPath = parent;
+                LOG.info("Adjusted working directory to parent: {}", workingDirPath);
+            } else {
+                LOG.warn("Cannot move up from working directory '{}'. Using as is.", workingDirPath);
             }
-        };
+        }
+
+        return workingDirPath;
     }
 
     /**
-     * Returns the module name associated with the given CSS file.
+     * Loads the specified CSS file from the class loader resources and adds its URI to the provided list.
+     * This method is used as a fallback when the CSS file is not found in the local file system.
      *
-     * @param cssFile The name of the CSS file.
-     * @return The module name, or null if the file name is unrecognized.
+     * @param cssFile the {@link CssFile} enum representing the CSS file to load
+     * @param cssUris the list to which the CSS URI will be added if the resource is found
      */
-    private static String getModuleNameForCss(String cssFile) {
-        return switch (cssFile) {
-            case KOMET_CSS -> "dev.ikm.komet.framework";
-            case KVIEW_CSS -> "dev.ikm.komet.kview";
-            // Add more cases here for additional CSS files
-            default -> {
-                LOG.warn("Unknown CSS file '{}', no module mapping", cssFile);
-                yield null;
-            }
-        };
+    private static void loadFromResource(CssFile cssFile, List<String> cssUris) {
+        String resourcePath = cssFile.getResourcePath();
+
+        // Attempt to retrieve the resource URL using the class loader
+        URL resourceUrl = CssUtils.class.getClassLoader().getResource(resourcePath);
+        if (resourceUrl != null) {
+            String cssResourceUri = resourceUrl.toExternalForm();
+            cssUris.add(cssResourceUri);
+            LOG.info("Loaded CSS '{}' from class loader resource: {}", cssFile.getFileName(), cssResourceUri);
+        } else {
+            LOG.error("CSS resource '{}' not found in class loader.", resourcePath);
+        }
     }
 
     /**
-     * Returns the resource path within the module for the given CSS file.
+     * Sets up CSSFX to monitor changes in the specified CSS files that were loaded from the local file system.
+     * This enables live-reloading of CSS stylesheets during development, allowing for immediate visual feedback
+     * when CSS files are modified.
      *
-     * @param cssFile The name of the CSS file.
-     * @return The resource path, or null if the file name is unrecognized.
+     * @param cssFiles   the array of {@link CssFile} enums that were loaded from the file system
+     * @param workingDir the working directory {@link Path} used to resolve the CSS file paths
      */
-    private static String getResourcePathForCss(String cssFile) {
-        return switch (cssFile) {
-            case KOMET_CSS -> "dev/ikm/komet/framework/graphics/" + KOMET_CSS;
-            case KVIEW_CSS -> "dev/ikm/komet/kview/mvvm/view/" + KVIEW_CSS;
-            // Add more cases here for additional CSS files
-            default -> {
-                LOG.warn("Unknown CSS file '{}', no resource path mapping", cssFile);
-                yield null;
-            }
-        };
-    }
-
-    /**
-     * Sets up CSSFX to monitor CSS changes in development mode.
-     *
-     * @param cssFiles              The list of CSS file names.
-     * @param frameworkResourcesDir The framework resources directory.
-     * @param kviewResourcesDir     The kview resources directory.
-     */
-    private static void setupCssMonitor(String[] cssFiles, Path frameworkResourcesDir, Path kviewResourcesDir) {
+    private static void setupCssMonitor(CssFile[] cssFiles, Path workingDir) {
         final URIToPathConverter myCssConverter = uri -> {
-            for (String cssFile : cssFiles) {
-                if (uri.contains(cssFile)) {
-                    Path cssPath = switch (cssFile) {
-                        case KOMET_CSS: yield frameworkResourcesDir.resolve(
-                                Paths.get("dev", "ikm", "komet", "framework", "graphics", KOMET_CSS));
-                        case KVIEW_CSS: yield kviewResourcesDir.resolve(
-                                Paths.get("dev", "ikm", "komet", "kview", "mvvm", "view", KVIEW_CSS));
-                        // Add more cases here for additional CSS files
-                        default:
-                            LOG.warn("Unknown CSS file '{}', unable to set up CSSFX converter", cssFile);
-                            yield null;
-                    };
-
-                    if (cssPath != null && Files.exists(cssPath)) {
+            for (CssFile cssFile : cssFiles) {
+                if (uri.endsWith(cssFile.getFileName())) { // More precise matching
+                    Path cssPath = cssFile.resolvePathForMonitoring(workingDir);
+                    if (Files.exists(cssPath)) {
+                        LOG.debug("CSSFX will monitor changes for: {}", cssPath);
                         return cssPath;
+                    } else {
+                        LOG.warn("CSSFX could not find the path to monitor for CSS file '{}': {}", cssFile.getFileName(), cssPath);
                     }
                 }
             }
             return null;
         };
 
-        CSSFX.addConverter(myCssConverter).start();
+        try {
+            CSSFX.addConverter(myCssConverter).start();
+            LOG.info("CSSFX has been initialized for live-reloading of CSS files.");
+        } catch (Exception e) {
+            LOG.error("Failed to initialize CSSFX: {}", e.getMessage(), e);
+        }
     }
 }
