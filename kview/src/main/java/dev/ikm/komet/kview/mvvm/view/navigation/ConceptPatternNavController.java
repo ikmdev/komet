@@ -4,7 +4,6 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel.PATTERN_COLLECTION;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel;
-import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
@@ -17,21 +16,22 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.TreeItem;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +58,7 @@ public class ConceptPatternNavController {
 
     private Pane patternNavigationPane;
 
-    private ListView<EntityFacade> patternListView;
+    private VBox patternsVBox;
 
 
     private Pane classicConceptNavigator;
@@ -73,42 +73,39 @@ public class ConceptPatternNavController {
     @FXML
     public void initialize() {
         patternNavigationPane = new Pane();
-        patternListView = new ListView<>();
+        patternsVBox = new VBox();
 
-        patternNavigationPane.getChildren().add(patternListView);
-        patternListView.getItems().clear();
+        patternNavigationPane.getChildren().add(patternsVBox);
+        patternsVBox.getChildren().clear();
 
-        patternListView.setCellFactory(p -> {
-                    return new ListCell<>() {
-                        private final HBox patternHBox;
-                        {
-                            setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-                            patternHBox = new HBox();
-                        }
-
-                        @Override
-                        protected void updateItem(EntityFacade item, boolean empty) {
-                            super.updateItem(item, empty);
-
-                            if (item == null || empty) {
-                                setGraphic(null);
-                            } else {
-                                //will need the EntityFacade as the underlying value..???
-                                //FIXME
-                                //patternHBox.setFill(item);
-                                JFXNode<Pane, PatternNavEntryController> patternNavEntryJFXNode = FXMLMvvmLoader
-                                        .make(PatternNavEntryController.class.getResource(PATTERN_NAV_ENTRY_FXML));
-                                HBox patternHBox = (HBox) patternNavEntryJFXNode.node();
-
-                                setGraphic(patternHBox);
-                            }
-                        }
-
-
-
-
-                    };
-                });
+        //FIXME save this for the instances
+//        patternListView.setCellFactory(p -> {
+//                    return new ListCell<>() {
+//                        private final HBox patternHBox;
+//                        {
+//                            setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+//                            patternHBox = new HBox();
+//                        }
+//
+//                        @Override
+//                        protected void updateItem(EntityFacade item, boolean empty) {
+//                            super.updateItem(item, empty);
+//
+//                            if (item == null || empty) {
+//                                setGraphic(null);
+//                            } else {
+//                                //will need the EntityFacade as the underlying value..???
+//                                //FIXME
+//                                //patternHBox.setFill(item);
+//                                JFXNode<Pane, PatternNavEntryController> patternNavEntryJFXNode = FXMLMvvmLoader
+//                                        .make(PatternNavEntryController.class.getResource(PATTERN_NAV_ENTRY_FXML));
+//                                HBox patternHBox = (HBox) patternNavEntryJFXNode.node();
+//
+//                                setGraphic(patternHBox);
+//                            }
+//                        }
+//                    };
+//                });
 
         // default to classic concept navigation
         navContentPane.setCenter(classicConceptNavigator);
@@ -185,47 +182,85 @@ public class ConceptPatternNavController {
                 });
             });
             patternItems.sort((o1, o2) -> {
-                if ((Integer)o1.nid() instanceof Integer nid1 && (Integer)o2.nid() instanceof Integer nid2) {
+                if ((Integer) o1.nid() instanceof Integer nid1 && (Integer) o2.nid() instanceof Integer nid2) {
                     return NaturalOrder.compareStrings(viewProperties.calculator().getDescriptionTextOrNid(nid1),
                             viewProperties.calculator().getDescriptionTextOrNid(nid2));
                 } else {
                     return NaturalOrder.compareStrings(o1.toString(), o2.toString());
                 }
             });
-            Platform.runLater(() -> this.patternListView.setItems(patternItems));
+            Platform.runLater(() -> {
+                //this.patternsVBox.setItems(patternItems)
+                //TODO do a .sorted() in front of the forEach and move the above sort into it
+                patternItems.stream().forEach(patternItem -> { // each pattern row
+                    // load the pattern instances into an observable list
+                    ObservableList<SemanticRecord> patternChildren = FXCollections.observableArrayList();
+                    int patternNid = patternItem.nid();
+                    AtomicInteger childCount = new AtomicInteger();
+                    //Platform.runLater(() -> {
+                    // populate the collection of instance for each pattern
+                        PrimitiveData.get().forEachSemanticNidOfPattern(patternNid, semanticNid -> {
+                            if (childCount.incrementAndGet() < maxChildrenInPatternViewer) {
+                                patternChildren.add(EntityService.get().getEntityFast(semanticNid));
+                            }
+                        });
+                    //});
+                    // load the pattern entry FXML and controller
+                    JFXNode<Pane, PatternNavEntryController> patternNavEntryJFXNode = FXMLMvvmLoader
+                            .make(PatternNavEntryController.class.getResource(PATTERN_NAV_ENTRY_FXML));
+                    HBox patternHBox = (HBox) patternNavEntryJFXNode.node();
+                    PatternNavEntryController patternNavEntryController = patternNavEntryJFXNode.controller();
 
-            for (EntityFacade patternItem : patternListView.getItems()) {
-                ObservableList<SemanticRecord> patternChildren = FXCollections.observableArrayList();
-                int patternNid = patternItem.nid();
-                AtomicInteger childCount = new AtomicInteger();
+                    patternsVBox.setSpacing(4); // space between pattern entries
+                    patternHBox.setAlignment(Pos.CENTER);
+                    Region leftPadding = new Region();
+                    leftPadding.setPrefWidth(12); // pad each entry with an empty region
+                    leftPadding.setPrefHeight(1);
+                    patternsVBox.getChildren().addAll(new HBox(leftPadding, patternHBox));
+                    // set the pattern's name
+                    patternNavEntryController.setPatternName(patternItem.description());
 
-                ListView instancesListView = new ListView<>();
-                instancesListView.getItems().clear();
-                PrimitiveData.get().forEachSemanticNidOfPattern(patternNid, semanticNid -> {
-                    if (childCount.incrementAndGet() < maxChildrenInPatternViewer) {
-                        patternChildren.add(EntityService.get().getEntityFast(semanticNid));
-                    }
+                    // populate the pattern instances as a list view
+                    ListView<SemanticRecord> patternInstances = patternNavEntryController.getPatternInstancesListView();
+
+                    // set the cell factory for each pattern's instances list
+                    patternInstances.setCellFactory(p -> new ListCell<>() {
+                        private final Label label;
+
+                        {
+                            setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+                            label = new Label();
+                        }
+
+                        @Override
+                        protected void updateItem(SemanticRecord item, boolean empty) {
+                            super.updateItem(item, empty);
+
+                            if (item == null || empty) {
+                                setGraphic(null);
+                            } else {
+
+                                String name = viewProperties.calculator().getRegularDescriptionText(item).orElse("");
+                                label.setText(name);
+                                label.getStyleClass().add("search-entry-description-label");
+                                setGraphic(label);
+                            }
+                        }
+                    });
+
+                    Platform.runLater(() -> {
+                        patternInstances.setItems(patternChildren);
+                        //if (patternChildren.size() == 0) {
+                        //    patternNavEntryController.disableInstancesListView();
+                        //}
+                    });
+
+
+
                 });
-                Platform.runLater(() -> instancesListView.setItems(patternChildren));
-                // need to add the child ListView into the parent ListView...
 
-            }
+            });
         });
     }
-
-
-
-    // need to create a listView, and set the cell factory to populate it in code
-
-    private List<Label> createInstances(List<SemanticRecord> listOfSemantics) {
-        List<Label> instances = new ArrayList<>(listOfSemantics.size());
-        listOfSemantics.forEach(s -> {
-            Label instanceName = new Label(s.description());
-            instanceName.getStyleClass().add("search-entry-description-label");
-            instances.add(instanceName);
-        });
-        return instances;
-    }
-
 
 }

@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -34,6 +35,9 @@ public class PatternNavEntryController {
     private TitledPane instancesTitledPane;
 
     @FXML
+    private ListView patternInstancesListView;
+
+    @FXML
     private void initialize() {
         instancesTitledPane.setExpanded(false);
         showContextButton.setVisible(false);
@@ -49,6 +53,15 @@ public class PatternNavEntryController {
 
     public void setPatternName(String patternName) {
         this.patternName.setText(patternName);
+    }
+
+    public ListView getPatternInstancesListView() {
+        return this.patternInstancesListView;
+    }
+
+    public void disableInstancesListView() {
+        patternInstancesListView.setVisible(false);
+        patternInstancesListView.setDisable(true);
     }
 
 //    public VBox getInstancesVBox() {
