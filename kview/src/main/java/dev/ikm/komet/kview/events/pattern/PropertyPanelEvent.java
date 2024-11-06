@@ -24,6 +24,15 @@ public class PropertyPanelEvent extends Evt {
 
     public static final EvtType<PropertyPanelEvent> CLOSE_PANEL = new EvtType<>(Evt.ANY, "CLOSE_PANEL");
 
+    public static final EvtType<PropertyPanelEvent> CONFIRMATION_PANEL = new EvtType<>(Evt.ANY, "CONFIRMATION_PANEL");
+
+    public static final EvtType<PropertyPanelEvent> DEFINITION_CONFIRMATION = new EvtType<>(CONFIRMATION_PANEL, "DEFINITION_CONFIRMATION");
+
+    public static final EvtType<PropertyPanelEvent> FQN_CONFIRMATION = new EvtType<>(CONFIRMATION_PANEL, "FQN_CONFIRMATION");
+
+    public static final EvtType<PropertyPanelEvent> OTHER_NAME_CONFIRMATION = new EvtType<>(CONFIRMATION_PANEL, "OTHER_NAME_CONFIRMATION");
+
+    public static final EvtType<PropertyPanelEvent> ADD_FIELDS_CONFIRMATION = new EvtType<>(CONFIRMATION_PANEL, "ADD_FIELDS_CONFIRMATION");
 
     /**
      *

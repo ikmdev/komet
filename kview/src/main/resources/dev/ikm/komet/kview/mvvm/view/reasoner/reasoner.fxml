@@ -16,9 +16,9 @@
 
 <Pane stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController">
    <children>
-      <ScrollPane fitToWidth="true" maxHeight="-Infinity" minWidth="-Infinity" prefWidth="372.0">
+      <ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="9000" minWidth="-Infinity" prefHeight="9000.0" prefWidth="372.0">
          <content>
-            <VBox prefHeight="900.0" prefWidth="374.0" styleClass="reasoner-vertical-scroll-area">
+            <VBox prefWidth="374.0" styleClass="reasoner-vertical-scroll-area">
                <children>
                   <HBox alignment="CENTER" prefHeight="32.0" styleClass="reasoner-result-header">
                      <children>
@@ -42,7 +42,7 @@
                         </GridPane>
                      </children>
                   </HBox>
-                  <TitledPane fx:id="classificationDateTitledPane" alignment="CENTER_RIGHT" animated="false" nodeOrientation="RIGHT_TO_LEFT" styleClass="classification-date" text="Classification Date">
+                  <TitledPane fx:id="classificationDateTitledPane" alignment="CENTER_RIGHT" animated="false" maxHeight="1.7976931348623157E308" nodeOrientation="RIGHT_TO_LEFT" styleClass="classification-date" text="Classification Date" VBox.vgrow="ALWAYS">
                      <content>
                         <VBox fx:id="classificationDateVBox">
                            <children>

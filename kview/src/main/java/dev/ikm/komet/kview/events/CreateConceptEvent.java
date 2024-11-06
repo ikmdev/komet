@@ -23,6 +23,7 @@ public class CreateConceptEvent extends Evt {
 
     public static final EvtType<CreateConceptEvent> ADD_FQN = new EvtType<>(Evt.ANY, "ADD_FQN");
     public static final EvtType<CreateConceptEvent> ADD_OTHER_NAME = new EvtType<>(Evt.ANY, "ADD_OTHER_NAME");
+    public static final EvtType<CreateConceptEvent> EDIT_OTHER_NAME = new EvtType<>(Evt.ANY, "EDIT_OTHER_NAME");
 
     private DescrName model;
 

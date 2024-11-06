@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.shape.Circle?>
+
+<BorderPane stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.ContinueAddFieldsController">
+   <top>
+      <GridPane BorderPane.alignment="CENTER">
+         <columnConstraints>
+            <ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="-Infinity" minWidth="10.0" prefWidth="56.0" />
+            <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" maxWidth="750.0" minWidth="10.0" prefWidth="358.0" />
+            <ColumnConstraints halignment="RIGHT" hgrow="NEVER" maxWidth="-Infinity" minWidth="10.0" prefWidth="56.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <Label fx:id="confirmationTitle" alignment="TOP_CENTER" styleClass="lidr-device-title-label" text="Continue adding Fields?" textAlignment="CENTER" GridPane.columnIndex="1">
+               <GridPane.margin>
+                  <Insets />
+               </GridPane.margin>
+            </Label>
+            <StackPane GridPane.columnIndex="2" GridPane.halignment="RIGHT">
+               <children>
+                  <Circle fill="#4a7ad2" radius="10.0" stroke="BLACK" strokeType="INSIDE" styleClass="edit-concept-about-circle-icon" />
+                  <Region maxHeight="105.0" maxWidth="20.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" styleClass="lidr-device-about-icon" StackPane.alignment="CENTER">
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                  </Region>
+               </children>
+            </StackPane>
+         </children>
+      </GridPane>
+   </top>
+   <bottom>
+      <HBox alignment="CENTER" BorderPane.alignment="CENTER_RIGHT">
+         <children>
+            <Region prefHeight="54.0" prefWidth="12.0" HBox.hgrow="NEVER" />
+            <Button fx:id="closePanelButton" contentDisplay="CENTER" mnemonicParsing="false" onAction="#closeProperties" styleClass="lidr-cancel-clear-button" text="CLOSE PANEL" textAlignment="CENTER" HBox.hgrow="ALWAYS" />
+            <Region prefHeight="54.0" prefWidth="12.0" HBox.hgrow="ALWAYS" />
+            <Button fx:id="addFieldButton" alignment="CENTER_RIGHT" contentDisplay="RIGHT" mnemonicParsing="false" onAction="#addField" styleClass="lidr-done-button" text="ADD FIELD" />
+            <Region prefHeight="54.0" prefWidth="12.0" HBox.hgrow="NEVER" />
+         </children>
+      </HBox>
+   </bottom>
+   <styleClass>
+      <String fx:value="lidr-device" />
+      <String fx:value="analyte-group-container" />
+   </styleClass>
+</BorderPane>

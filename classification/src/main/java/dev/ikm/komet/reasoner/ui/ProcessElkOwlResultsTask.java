@@ -232,7 +232,7 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 						sufficientSets.incrementAndGet();
 
 						// Sufficient sets are copied exactly to the inferred form.
-						statedDefinition.nodesOfType(LogicalAxiomSemantic.SUFFICIENT_SET)
+						statedDefinition.nodesOfType(LogicalAxiomSemantic.SUFFICIENT_SET.axiomClass)
 								.forEach((sufficientSetNode) -> {
 									LogicalAxiom cloneRootAxiom = inferredBuilder.addCloneOfNode(sufficientSetNode);
 								});

@@ -34,6 +34,10 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
     public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_EDIT_FIELDS = new EvtType<>(Evt.ANY, "SHOW_EDIT_FIELD");
     public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_ADD_FIELDS = new EvtType<>(Evt.ANY, "SHOW_ADD_FIELDS");
 
+    public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_CONTINUE_ADD_FIELDS = new EvtType<>(Evt.ANY, "SHOW_CONTINUE_ADD_FIELDS");
+
+    public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_CONTINUE_EDIT_FIELDS = new EvtType<>(Evt.ANY, "SHOW_CONTINUE_EDIT_FIELDS");
+
     ////////// Description Name semantic events
     public static final EvtType<ShowPatternFormInBumpOutEvent> DESCRIPTION_NAME = new EvtType<>(Evt.ANY, "DESCRIPTION_NAME");
     public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_ADD_FQN = new EvtType<>(DESCRIPTION_NAME, "SHOW_ADD_FQN");
@@ -45,20 +49,6 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
     private final PatternField patternField;
     private final int fieldOrder;
     //TODO future: other EvtTypes like show History, show Timeline etc
-
-    /**
-     * Constructs a prototypical Event.
-     *
-     * @param source    the object on which the Event initially occurred
-     * @param eventType
-     * @throws IllegalArgumentException if source is null
-     */
-    public ShowPatternFormInBumpOutEvent(Object source, EvtType eventType) {
-        super(source, eventType);
-        this.totalFields =0;
-        patternField = null;
-        this.fieldOrder = 1;
-    }
 
     /**
      * Constructs a prototypical Event.

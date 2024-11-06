@@ -43,6 +43,7 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableList;
+import org.carlfx.axonic.StateMachine;
 import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.validator.ValidationResult;
 import org.carlfx.cognitive.viewmodel.ViewModel;
@@ -65,6 +66,9 @@ public class PatternViewModel extends FormViewModel {
     public static String STAMP_VIEW_MODEL = "stampViewModel";
 
     public static String DEFINITION_VIEW_MODEL = "definitionViewModel";
+
+    public static String STATE_MACHINE = "stateMachine";
+
     public static String FQN_DESCRIPTION_NAME = "fqnDescriptionName";
 
     public static String FQN_CASE_SIGNIFICANCE = "fqnCaseSignificance";
@@ -102,6 +106,7 @@ public class PatternViewModel extends FormViewModel {
         super();
             addProperty(VIEW_PROPERTIES, (ViewProperties) null)
                     .addProperty(PATTERN_TOPIC, (UUID) null)
+                    .addProperty(STATE_MACHINE, (StateMachine) null)
                     .addProperty(STAMP_VIEW_MODEL, (ViewModel) null)
                     .addProperty(DEFINITION_VIEW_MODEL, (ViewModel) null)
                     .addProperty(FQN_DESCRIPTION_NAME, (DescrName) null)
@@ -125,6 +130,10 @@ public class PatternViewModel extends FormViewModel {
                         ObjectProperty<EntityFacade> meaningEntity = viewModel.getProperty(MEANING_ENTITY);
                         ObjectProperty<DescrName> fqnProperty = viewModel.getProperty(FQN_DESCRIPTION_NAME);
                         ObservableList<PatternField> fieldsProperty = viewModel.getObservableList(FIELDS_COLLECTION);
+                        ViewModel stampViewModel = viewModel.getPropertyValue(STAMP_VIEW_MODEL);
+                        ObjectProperty<?> stampModule = stampViewModel.getProperty(MODULE);
+                        ObjectProperty<?> stampPath = stampViewModel.getProperty(PATH);
+                        ObjectProperty<?> stampStatus = stampViewModel.getProperty(STATUS);
                         // reset the error list on each validation check
                         vr.getMessages().clear();
                         if (purposeEntity.isNull().get()) {
@@ -139,8 +148,16 @@ public class PatternViewModel extends FormViewModel {
                         if (fieldsProperty.isEmpty()) {
                             vr.error("At least one field is required for a Pattern.  Please add one or more fields.");
                         }
+                        if (stampModule.isNull().get() || stampPath.isNull().get() || stampStatus.isNull().get()) {
+                            vr.error("STAMP values are required.  Please fill out the STAMP information.");
+                        }
                         viewModel.setPropertyValue(IS_INVALID, !vr.getMessages().isEmpty());
                     });
+    }
+
+    public boolean isPatternPopulated() {
+        ObjectProperty<Pattern> patternObjectProperty = getProperty(PATTERN);
+        return patternObjectProperty.isNotNull().get();
     }
 
     public void setPurposeAndMeaningText(PatternDefinition patternDefinition) {

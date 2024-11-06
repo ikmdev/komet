@@ -40,8 +40,6 @@ import dev.ikm.komet.framework.window.WindowComponent;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.JournalTileEvent;
-import dev.ikm.komet.kview.fxutils.ResourceHelper;
-import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.mvvm.view.export.ExportController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalViewFactory;
@@ -71,7 +69,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -105,12 +102,11 @@ import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.app.AppState.*;
+import static dev.ikm.komet.app.util.CssUtils.*;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
-import static dev.ikm.komet.kview.fxutils.CssHelper.defaultStyleSheet;
-import static dev.ikm.komet.kview.fxutils.CssHelper.refreshPanes;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
@@ -123,12 +119,10 @@ public class App extends Application {
     private static final String OS_NAME_MAC = "mac";
 
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
-    public static final String CSS_LOCATION = "dev/ikm/komet/framework/graphics/komet.css";
     public static final SimpleObjectProperty<AppState> state = new SimpleObjectProperty<>(STARTING);
     private static Stage primaryStage;
 
     private static Stage classicKometStage;
-    private static Module graphicsModule;
     private static long windowCount = 1;
     private static KometPreferencesStage kometPreferencesStage;
 
@@ -258,10 +252,6 @@ public class App extends Application {
 //        logDirectory.mkdirs();
         LOG.info("Starting Komet");
         LoadFonts.load();
-        graphicsModule = ModuleLayer.boot()
-                .findModule("dev.ikm.komet.framework")
-                // Optional<Module> at this point
-                .orElseThrow();
 
         // get the instance of the event bus
         kViewEventBus = EvtBusFactory.getInstance(EvtBus.class);
@@ -362,12 +352,10 @@ public class App extends Application {
             FXMLLoader sourceLoader = new FXMLLoader(getClass().getResource("SelectDataSource.fxml"));
             BorderPane sourceRoot = sourceLoader.load();
             SelectDataSourceController selectDataSourceController = sourceLoader.getController();
-            Scene sourceScene = new Scene(sourceRoot, 600, 400);
+            selectDataSourceController.getCancelButton().setOnAction(actionEvent -> Platform.exit());
+            Scene sourceScene = new Scene(sourceRoot);
+            addStylesheets(sourceScene, KOMET_CSS, KVIEW_CSS);
 
-
-            sourceScene.getStylesheets()
-
-                    .add(graphicsModule.getClassLoader().getResource(CSS_LOCATION).toString());
             stage.setScene(sourceScene);
             stage.setTitle("KOMET Startup");
 
@@ -392,7 +380,6 @@ public class App extends Application {
             stage.show();
             state.set(AppState.SELECT_DATA_SOURCE);
             state.addListener(this::appStateChangeListener);
-
         } catch (IOException e) {
             LOG.error(e.getLocalizedMessage(), e);
             Platform.exit();
@@ -437,13 +424,6 @@ public class App extends Application {
             LandingPageController landingPageController = landingPageLoader.getController();
             Scene sourceScene = new Scene(landingPageBorderPane, 1200, 800);
 
-            // Add Komet.css and kview css
-            sourceScene.getStylesheets().addAll(
-                    graphicsModule.getClassLoader().getResource(CSS_LOCATION).toString(), defaultStyleSheet());
-
-            // Attach a listener to provide a CSS refresher ability for each Journal window. Right double click settings button (gear)
-            attachCSSRefresher(landingPageController.getSettingsToggleButton(), landingPageBorderPane);
-
             kViewStage.setScene(sourceScene);
             kViewStage.setTitle("Landing Page");
 
@@ -487,13 +467,7 @@ public class App extends Application {
             BorderPane journalBorderPane = journalLoader.load();
             journalController = journalLoader.getController();
             Scene sourceScene = new Scene(journalBorderPane, 1200, 800);
-
-            // Add Komet.css and kview css
-            sourceScene.getStylesheets().addAll(
-                    graphicsModule.getClassLoader().getResource(CSS_LOCATION).toString(), defaultStyleSheet());
-
-            // Attach a listener to provide a CSS refresher ability for each Journal window. Right double click settings button (gear)
-            attachCSSRefresher(journalController.getSettingsToggleButton(), journalController.getJournalBorderPane());
+            addStylesheets(sourceScene, KOMET_CSS, KVIEW_CSS);
 
             journalStageWindow.setScene(sourceScene);
 
@@ -519,13 +493,13 @@ public class App extends Application {
             }
 
             journalStageWindow.setOnCloseRequest(windowEvent -> {
-                    saveJournalWindowsToPreferences();
-                    // call shutdown method on the view
-                    journalController.shutdown();
-                    journalControllersList.remove(journalController);
-                    // enable Delete menu option
-                    journalWindowSettings.setValue(CAN_DELETE, true);
-                    kViewEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
+                saveJournalWindowsToPreferences();
+                // call shutdown method on the view
+                journalController.shutdown();
+                journalControllersList.remove(journalController);
+                // enable Delete menu option
+                journalWindowSettings.setValue(CAN_DELETE, true);
+                kViewEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -600,64 +574,6 @@ public class App extends Application {
             appPreferences.sync();
         } catch (BackingStoreException e) {
             LOG.error("error writing journal window flag to preferences", e);
-        }
-    }
-
-
-    /**
-     * This attaches a listener for the right mouse double click to refresh CSS stylesheet files.
-     * @param node The node the user will right mouse button double click
-     * @param root The root Parent node to refresh CSS stylesheets.
-     */
-    private void attachCSSRefresher(Node node, Parent root) {
-        // CSS refresher 'easter egg'. Right Click settings button to refresh Css Styling
-        node.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
-            if (mouseEvent.getClickCount() == 2 && mouseEvent.isSecondaryButtonDown()) {
-                handleRefreshUserCss(root);
-            }
-        });
-    }
-
-    /**
-     * Will refresh a parent root node and all children that have CSS stylesheets.
-     * komet.css and kview.css files are updated dynamically.
-     * @param root Parent node to be traversed to refresh all stylesheets.
-     */
-    private void handleRefreshUserCss(Parent root) {
-        try {
-            // "Feature" to make css editing/testing easy in the dev environment.
-            // Komet CSS file
-            String frameworkResourcesDir = System.getProperty("user.dir").replace("/application", "/framework/src/main/resources");
-            String kometCssSourcePath = frameworkResourcesDir + ResourceHelper.toAbsolutePath("komet.css", Icon.class);
-            File kometCssSourceFile = new File(kometCssSourcePath);
-
-            // kView CSS file
-            String kViewResourcesDir = System.getProperty("user.dir").replace("/application", "/kview/src/main/resources");
-            String kViewCssSourcePath = kViewResourcesDir + ResourceHelper.toAbsolutePath("kview.css", BasicController.class);
-            File kviewCssSourceFile = new File(kViewCssSourcePath);
-
-            LOG.info("File exists? {}, komet css path = {}", kometCssSourceFile.exists(), kometCssSourceFile);
-            LOG.info("File exists? {}, kview css path = {}", kviewCssSourceFile.exists(), kviewCssSourceFile);
-
-            // ensure both exist on the development environment path
-            if (kometCssSourceFile.exists() && kviewCssSourceFile.exists()) {
-                Scene scene = root.getScene();
-
-                // Apply Komet css
-                scene.getStylesheets().clear();
-                scene.getStylesheets().add(kometCssSourceFile.toURI().toURL().toString());
-
-                // Recursively refresh any children using the kView css files.
-                refreshPanes(root, kviewCssSourceFile.toURI().toURL().toString());
-
-                LOG.info("Updated komet.css file: {}", kometCssSourceFile.getAbsolutePath());
-                LOG.info("Updated kview.css file: {}", kviewCssSourceFile.getAbsolutePath());
-            } else {
-                LOG.info("File not found for komet.css: {}", kometCssSourceFile.getAbsolutePath());
-            }
-        } catch (IOException e) {
-            // TODO: Raise an alert
-            LOG.error("Error refreshing CSS files", e);
         }
     }
 
@@ -754,8 +670,7 @@ public class App extends Application {
 
         //Loading/setting the Komet screen
         Scene kometScene = new Scene(kometRoot, 1800, 1024);
-        kometScene.getStylesheets()
-                .add(graphicsModule.getClassLoader().getResource(CSS_LOCATION).toString());
+        addStylesheets(kometScene, KOMET_CSS);
 
         // if NOT on Mac OS
         if(System.getProperty("os.name")!=null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
@@ -800,7 +715,7 @@ public class App extends Application {
         appPreferences.sync();
         if (createJournalViewMenuItem != null) {
             createJournalViewMenuItem.setDisable(false);
-                KeyCombination newJournalKeyCombo = new KeyCodeCombination(KeyCode.J, KeyCombination.SHORTCUT_DOWN);
+            KeyCombination newJournalKeyCombo = new KeyCodeCombination(KeyCode.J, KeyCombination.SHORTCUT_DOWN);
             createJournalViewMenuItem.setAccelerator(newJournalKeyCombo);
             KometPreferences journalPreferences = appPreferences.node(JOURNAL_WINDOW);
         }
@@ -857,8 +772,8 @@ public class App extends Application {
         MenuItem minimizeWindow = new MenuItem("Minimize");
         KeyCombination minimizeKeyCombo = new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN);
         minimizeWindow.setOnAction(event -> {
-          Stage obj = (Stage) kometRoot.getScene().getWindow();
-          obj.setIconified(true);
+            Stage obj = (Stage) kometRoot.getScene().getWindow();
+            obj.setIconified(true);
         });
         minimizeWindow.setAccelerator(minimizeKeyCombo);
         windowMenu.getItems().add(minimizeWindow);

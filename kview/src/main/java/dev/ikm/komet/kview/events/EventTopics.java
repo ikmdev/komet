@@ -16,6 +16,6 @@
 package dev.ikm.komet.kview.events;
 
 public enum EventTopics {
-    JOURNAL_TOPIC
-
+    JOURNAL_TOPIC,
+    USER_TOPIC,
 }
