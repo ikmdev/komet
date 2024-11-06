@@ -115,6 +115,8 @@ public class StampEditController extends AbstractBasicController {
         if(stampViewModel.getPropertyValue(MODE) == CREATE){
             inactiveStatus.setDisable(true);
             activeStatus.setSelected(true);
+        }else{
+            inactiveStatus.setDisable(false);
         }
     }
 
