@@ -751,7 +751,6 @@ public class PatternDetailsController {
         if (patternViewModel.isPatternPopulated()) {
             updateTimeText(getStampViewModel().getValue(TIME));
         }
-       // updateUIStamp(getStampViewModel());
 
         // update the public id
         identifierText.setText(patternViewModel.getPatternIdentifierText());
