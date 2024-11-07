@@ -17,7 +17,6 @@ package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.coordinate.stamp.StampFields;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -36,7 +35,7 @@ public class StampViewModel extends FormViewModel {
 
     public final static String MODULES_PROPERTY = "modules";
     public final static String PATHS_PROPERTY = "paths";
-    public final static String INCOMPLETE = "Incomplete";
+
     public StampViewModel() {
         super(); // Default to ViewMode
         addProperty(STATUS, State.ACTIVE)
@@ -59,7 +58,6 @@ public class StampViewModel extends FormViewModel {
             }
             return VALID;
         });
-
     }
 
     @Override

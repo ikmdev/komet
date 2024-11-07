@@ -1199,6 +1199,7 @@ public class DetailsController  {
     public void popupStampEdit(ActionEvent event) {
         if (stampEdit !=null && stampEditController != null) {
             stampEdit.show((Node) event.getSource());
+            stampEditController.selectActiveStatusToggle();
             return;
         }
         // Prefetch modules and paths for view to populate radio buttons in form.
