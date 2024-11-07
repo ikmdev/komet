@@ -41,6 +41,7 @@ import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.list.ImmutableList;
 
+import java.text.NumberFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,10 +51,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ConceptPatternNavController {
 
-    public static final String PATTERN_NAV_ENTRY_FXML = "pattern-nav-entry-listview.fxml";
+    public static final String PATTERN_NAV_ENTRY_FXML = "pattern-nav-entry.fxml";
 
-    //FIXME remove this and have a scrollpane instead for the instances' listView
-    private static final int maxChildrenInPatternViewer = 10;
+    private static final int maxChildrenInPatternViewer = 150;
 
     @FXML
     private ToggleGroup conPatToggleGroup;
@@ -89,50 +89,9 @@ public class ConceptPatternNavController {
         patternNavigationPane.getChildren().add(patternsVBox);
         patternsVBox.getChildren().clear();
 
-        //FIXME save this for the instances
-//        patternListView.setCellFactory(p -> {
-//                    return new ListCell<>() {
-//                        private final HBox patternHBox;
-//                        {
-//                            setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-//                            patternHBox = new HBox();
-//                        }
-//
-//                        @Override
-//                        protected void updateItem(EntityFacade item, boolean empty) {
-//                            super.updateItem(item, empty);
-//
-//                            if (item == null || empty) {
-//                                setGraphic(null);
-//                            } else {
-//                                //will need the EntityFacade as the underlying value..???
-//                                //FIXME
-//                                //patternHBox.setFill(item);
-//                                JFXNode<Pane, PatternNavEntryController> patternNavEntryJFXNode = FXMLMvvmLoader
-//                                        .make(PatternNavEntryController.class.getResource(PATTERN_NAV_ENTRY_FXML));
-//                                HBox patternHBox = (HBox) patternNavEntryJFXNode.node();
-//
-//                                setGraphic(patternHBox);
-//                            }
-//                        }
-//                    };
-//                });
-
         // default to classic concept navigation
         navContentPane.setCenter(classicConceptNavigator);
         loadAllPatterns();
-
-        /*
-        Cognitive notes:
-
-        ListView already has an internal observable list...
-
-        for MVVM we can have a parallel list, and we can bidirectionally bind them but that will be a ton of objects in memory so we won't do that
-        since this is read only
-
-        (cell factory is a HBox for each instance...)
-         */
-
     }
 
     static final EntityProxy identifierPatternProxy = EntityProxy.make("Identifier pattern",
@@ -236,14 +195,19 @@ public class ConceptPatternNavController {
                     ObservableList<Object> patternChildren = FXCollections.observableArrayList();
                     int patternNid = patternItem.nid();
                     AtomicInteger childCount = new AtomicInteger();
-                    //Platform.runLater(() -> {
+
                     // populate the collection of instance for each pattern
-                        PrimitiveData.get().forEachSemanticNidOfPattern(patternNid, semanticNid -> {
-                            if (childCount.incrementAndGet() < maxChildrenInPatternViewer) {
-                                patternChildren.add(semanticNid);
-                            }
-                        });
-                    //});
+                    PrimitiveData.get().forEachSemanticNidOfPattern(patternNid, semanticNid -> {
+                        if (childCount.incrementAndGet() < maxChildrenInPatternViewer) {
+                            patternChildren.add(semanticNid);
+                        }
+                    });
+                    if (childCount.get() >= maxChildrenInPatternViewer) {
+                        NumberFormat numberFormat = NumberFormat.getInstance();
+                        patternChildren.add(numberFormat.format(childCount.get() - maxChildrenInPatternViewer) + " additional semantics suppressed...");
+                    }
+                    boolean hasChildren = patternChildren.size() > 0;
+
                     // load the pattern entry FXML and controller
                     JFXNode<Pane, PatternNavEntryController> patternNavEntryJFXNode = FXMLMvvmLoader
                             .make(PatternNavEntryController.class.getResource(PATTERN_NAV_ENTRY_FXML));
@@ -255,6 +219,9 @@ public class ConceptPatternNavController {
                     Region leftPadding = new Region();
                     leftPadding.setPrefWidth(12); // pad each entry with an empty region
                     leftPadding.setPrefHeight(1);
+                    if (!hasChildren) {
+                        patternNavEntryController.disableInstancesListView();
+                    }
                     patternsVBox.getChildren().addAll(new HBox(leftPadding, patternHBox));
                     // set the pattern's name
                     patternNavEntryController.setPatternName(patternItem.description());
@@ -335,22 +302,15 @@ public class ConceptPatternNavController {
                                         imageView.setFitHeight(24);
                                         label.setGraphic(imageView);
                                     }
-                                    label.getStyleClass().add("search-entry-description-label");
+                                    label.getStyleClass().add("pattern-instance");
                                     setGraphic(label);
                                 }
                             }
                         }
                     });
-
-                    Platform.runLater(() -> {
-                        patternInstances.setItems(patternChildren);
-                        //FIXME need a way to not show the ListView when there are no instances
-                        //if (patternChildren.size() == 0) {
-                        //    patternNavEntryController.disableInstancesListView();
-                        //}
-                    });
-
-
+                    if (hasChildren) {
+                        Platform.runLater(() -> patternInstances.setItems(patternChildren));
+                    }
 
                 });
 

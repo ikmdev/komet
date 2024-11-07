@@ -28,8 +28,6 @@ public class PatternNavEntryController {
     @FXML
     private ContextMenu contextMenu;
 
-//    @FXML
-//    private VBox instancesVBox;
 
     @FXML
     private TitledPane instancesTitledPane;
@@ -60,11 +58,8 @@ public class PatternNavEntryController {
     }
 
     public void disableInstancesListView() {
-        patternInstancesListView.setVisible(false);
-        patternInstancesListView.setDisable(true);
+        instancesTitledPane.setVisible(false);
+        instancesTitledPane.setManaged(false);
     }
 
-//    public VBox getInstancesVBox() {
-//        return this.instancesVBox;
-//    }
 }
