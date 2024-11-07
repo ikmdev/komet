@@ -38,7 +38,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="456.0" prefHeight="650.0" prefWidth="727.0" styleClass="concept-detail-pane" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="650.0" prefWidth="727.0" styleClass="concept-detail-pane" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane" prefHeight="600.0" prefWidth="762.0">
          <top>
@@ -138,7 +138,7 @@
             </HBox>
          </top>
          <right>
-            <HBox BorderPane.alignment="CENTER">
+            <HBox styleClass="main-right-container" BorderPane.alignment="CENTER">
                <children>
                   <Pane fx:id="propertiesSlideoutTrayPane" styleClass="slideout-tray-pane" />
                   <Pane fx:id="timelineSlideoutTrayPane" styleClass="slideout-tray-pane" />
@@ -146,7 +146,7 @@
             </HBox>
          </right>
          <center>
-            <BorderPane prefWidth="762.0" BorderPane.alignment="CENTER">
+            <BorderPane styleClass="main-center-container" prefWidth="762.0" BorderPane.alignment="CENTER">
                <center>
                   <VBox focusTraversable="true" maxHeight="1.7976931348623157E308" opacity="0.92" prefWidth="762.0">
                      <children>
@@ -397,7 +397,6 @@
                                  </font>
                                  <styleClass>
                                     <String fx:value="kview-titled-pane" />
-                                    <String fx:value="rounded-bottom" />
                                  </styleClass>
                             </TitledPane>
                               <Pane prefHeight="200.0" prefWidth="200.0">
@@ -434,10 +433,6 @@
                      <opaqueInsets>
                         <Insets />
                      </opaqueInsets>
-                     <styleClass>
-                        <String fx:value="concept-detail-pane" />
-                        <String fx:value="rounded-bottom" />
-                     </styleClass>
                   </VBox>
                </center>
                <top>

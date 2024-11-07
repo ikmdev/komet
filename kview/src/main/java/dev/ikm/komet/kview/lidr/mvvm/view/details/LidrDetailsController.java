@@ -81,11 +81,6 @@ import static dev.ikm.komet.kview.lidr.events.ShowPanelEvent.SHOW_ADD_ANALYTE_GR
 import static dev.ikm.komet.kview.lidr.events.ShowPanelEvent.SHOW_ADD_DEVICE;
 import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.ORDINAL_CONCEPT;
 import static dev.ikm.komet.kview.lidr.mvvm.view.details.LidrRecordDetailsController.LIDR_RECORD_FXML;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CONCEPT_TOPIC;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CREATE;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.EDIT;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.*;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ViewModelHelper.addNewLidrRecord;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ViewModelHelper.toStampDetail;
@@ -494,6 +489,11 @@ public class LidrDetailsController {
             updateStampViewModel(EDIT, stamp);
         }
 
+        if(entityFacade == null){
+            getStampViewModel().setPropertyValue(MODE, CREATE);
+        }else {
+            getStampViewModel().setPropertyValue(MODE, EDIT);
+        }
         // Display info for top banner area
         updateDeviceBanner();
 
@@ -678,6 +678,7 @@ public class LidrDetailsController {
     public void popupStampEdit(ActionEvent event) {
         if (stampEdit !=null && stampEditController != null) {
             stampEdit.show((Node) event.getSource());
+            stampEditController.selectActiveStatusToggle();
             return;
         }
 
@@ -693,6 +694,8 @@ public class LidrDetailsController {
         StampEditController stampEditController = stampJFXNode.controller();
 
         stampEditController.updateModel(getViewProperties());
+        stampEditController.selectActiveStatusToggle();
+
         popOver.setOnHidden(windowEvent -> {
             // set Stamp info into Details form
             getStampViewModel().save();
@@ -722,6 +725,7 @@ public class LidrDetailsController {
         }
         String moduleDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleEntity.nid());
         moduleText.setText(moduleDescr);
+
         ConceptEntity pathEntity = stampViewModel.getValue(PATH);
         String pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
         pathText.setText(pathDescr);
