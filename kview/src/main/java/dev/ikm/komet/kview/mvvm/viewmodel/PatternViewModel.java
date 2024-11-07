@@ -195,8 +195,7 @@ public class PatternViewModel extends FormViewModel {
 
         // get the STAMP values from the nested stampViewModel
         StampViewModel stampViewModel = getPropertyValue(STAMP_VIEW_MODEL);
-        ConceptEntity status = stampViewModel.getPropertyValue(STATUS);
-        State state = State.fromConcept(status);
+        State state = stampViewModel.getPropertyValue(STATUS);
         Concept author = stampViewModel.getPropertyValue(AUTHOR);
         ConceptEntity module = stampViewModel.getPropertyValue(MODULE);
         ConceptEntity path = stampViewModel.getPropertyValue(PATH);

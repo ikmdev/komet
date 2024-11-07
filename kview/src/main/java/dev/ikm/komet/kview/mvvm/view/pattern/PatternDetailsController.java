@@ -29,6 +29,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.State;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
@@ -660,9 +661,8 @@ public class PatternDetailsController {
         ConceptEntity pathEntity = stampViewModel.getValue(PATH);
         String pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
         pathText.setText(pathDescr);
-
-        ConceptEntity status = stampViewModel.getValue(STATUS);
-        String statusMsg = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
+        State status = stampViewModel.getValue(STATUS);
+        String statusMsg = status == null ? "Active" : getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
         statusText.setText(statusMsg);
     }
 

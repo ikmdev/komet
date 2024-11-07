@@ -18,6 +18,7 @@ package dev.ikm.komet.kview.mvvm.viewmodel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import org.carlfx.cognitive.validator.MessageType;
@@ -29,24 +30,21 @@ import java.util.Collections;
 import java.util.List;
 
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
-import static dev.ikm.tinkar.terms.TinkarTerm.ACTIVE_STATE;
-import static dev.ikm.tinkar.terms.TinkarTerm.INACTIVE_STATE;
 
 public class StampViewModel extends FormViewModel {
 
     public final static String MODULES_PROPERTY = "modules";
     public final static String PATHS_PROPERTY = "paths";
-    public final static String STATUSES_PROPERTY = "statuses";
+
     public StampViewModel() {
         super(); // Default to ViewMode
-        addProperty(STATUS, (ConceptEntity) null)
+        addProperty(STATUS, State.ACTIVE)
                 .addProperty(AUTHOR, TinkarTerm.USER)
                 .addProperty(TIME, System.currentTimeMillis())
                 .addProperty(MODULE, (ConceptEntity) null)
                 .addProperty(PATH, (ConceptEntity) null)
                 .addProperty(MODULES_PROPERTY, Collections.emptyList(), true)
-                .addProperty(PATHS_PROPERTY, Collections.emptyList(), true)
-                .addProperty(STATUSES_PROPERTY, Collections.emptyList(), true);
+                .addProperty(PATHS_PROPERTY, Collections.emptyList(), true);
 
         addValidator(MODULE, "Module", (ReadOnlyObjectProperty nidProp, ViewModel vm) -> {
             if (nidProp.isNull().get()) {
@@ -60,7 +58,6 @@ public class StampViewModel extends FormViewModel {
             }
             return VALID;
         });
-        this.setPropertyValue(STATUSES_PROPERTY, loadOnlyActiveInactiveStatues(), true);
     }
 
     @Override
@@ -101,16 +98,5 @@ public class StampViewModel extends FormViewModel {
             addValidator(PATHS_PROPERTY, "Path Entities", (Void prop, ViewModel vm) -> new ValidationMessage(MessageType.ERROR, "PrimitiveData services are not up. Attempting to retrieve ${%s}. Must call start().".formatted(PATHS_PROPERTY), th));
             return List.of();
         }
-    }
-
-    /**
-     *  We are loading only active and Inactive states in the stamp editor.
-     * @return list of statuses
-     */
-    private List<ConceptEntity> loadOnlyActiveInactiveStatues() {
-        List<ConceptEntity> statuses = new ArrayList<>();
-        statuses.add((ConceptEntity) Entity.getFast(ACTIVE_STATE));
-        statuses.add((ConceptEntity) Entity.getFast(INACTIVE_STATE));
-        return statuses;
     }
 }

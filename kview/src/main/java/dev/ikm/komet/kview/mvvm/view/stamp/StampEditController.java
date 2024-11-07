@@ -18,6 +18,7 @@ package dev.ikm.komet.kview.mvvm.view.stamp;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.terms.State;
 import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.NodeOrientation;
@@ -99,10 +100,10 @@ public class StampEditController extends AbstractBasicController {
         }));
 
         statusToggleGroup.selectedToggleProperty().addListener(((observableValue, toggle, t1) -> {
-            ConceptEntity status = (ConceptEntity) t1.getUserData();
+            State status = (State) t1.getUserData();
             getStampViewModel().setPropertyValue(STATUS, status);
             if (status != null) {
-                statusTitledPane.setText("Status: " + status.description());
+                statusTitledPane.setText("Status: " + status.name());
             }
         }));
     }
@@ -124,18 +125,8 @@ public class StampEditController extends AbstractBasicController {
      * Set the user data as part of the radio button.
      */
     private void setupStatusSelections() {
-        List<ConceptEntity> statuses = stampViewModel.getObservableList(STATUSES_PROPERTY);
-        statuses.forEach(status -> {
-            RadioButton rb = activeStatus;
-            if(status.description().equalsIgnoreCase("Inactive")){
-                rb = inactiveStatus;
-            }
-            rb.setUserData(status);
-            ObjectProperty<ConceptEntity> statusProperty = getStampViewModel().getProperty(STATUS);
-            if (statusProperty.isNotNull().get() && statusProperty.get().nid() == status.nid()) {
-                rb.setSelected(true);
-            }
-        });
+        inactiveStatus.setUserData(State.INACTIVE);
+        activeStatus.setUserData(State.ACTIVE);
     }
 
     private void setupModuleSelections() {

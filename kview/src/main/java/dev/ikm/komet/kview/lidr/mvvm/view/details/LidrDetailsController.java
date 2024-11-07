@@ -729,10 +729,7 @@ public class LidrDetailsController {
         ConceptEntity pathEntity = stampViewModel.getValue(PATH);
         String pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
         pathText.setText(pathDescr);
-
-        ConceptEntity statusEntity = stampViewModel.getValue(STATUS);
-        String statusDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(statusEntity.nid());
-        statusText.setText(statusDescr);
+        statusText.setText(stampViewModel.getValue(STATUS).toString());
     }
 
     public void compactSizeWindow() {
