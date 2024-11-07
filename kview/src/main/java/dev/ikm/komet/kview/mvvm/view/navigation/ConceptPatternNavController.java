@@ -188,8 +188,6 @@ public class ConceptPatternNavController {
                 }
             });
             Platform.runLater(() -> {
-                //this.patternsVBox.setItems(patternItems)
-                //TODO do a .sorted() in front of the forEach and move the above sort into it
                 patternItems.stream().forEach(patternItem -> { // each pattern row
                     // load the pattern instances into an observable list
                     ObservableList<Object> patternChildren = FXCollections.observableArrayList();
