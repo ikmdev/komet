@@ -721,7 +721,7 @@ public class PatternDetailsController {
     }
 
     public void updateView() {
-        EntityFacade entityFacade = patternViewModel.getValue(PATTERN);
+        EntityFacade entityFacade = patternViewModel.getPropertyValue(PATTERN);
         if(entityFacade == null){
             getStampViewModel().setPropertyValue(MODE, CREATE);
         }else {
