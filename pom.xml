@@ -85,7 +85,7 @@
         <!-- JPRO Variables -->
         <jpro.ikmdev.release>ikmdev</jpro.ikmdev.release>
         <jpro.version>2024.3.4-${jpro.ikmdev.release}</jpro.version>
-        <jpro-platform.version>0.4.2</jpro-platform.version>
+        <jpro-platform.version>0.4.3</jpro-platform.version>
         <!-- A special build for Komet using the ikmdev Guava module name -->
         <jpro-auth-core.version>${jpro-platform.version}-${jpro.ikmdev.release}</jpro-auth-core.version>
 
