@@ -18,7 +18,7 @@
    <children>
       <ScrollPane prefWidth="372.0">
          <content>
-            <VBox prefHeight="900.0" prefWidth="372.0" styleClass="grey-vertical-scroll-area">
+            <VBox maxHeight="1.7976931348623157E308" prefHeight="9000.0" prefWidth="372.0" styleClass="grey-vertical-scroll-area">
                <children>
                   <HBox alignment="CENTER" prefHeight="56.0">
                      <children>
