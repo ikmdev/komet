@@ -55,6 +55,20 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
      * This is a add even and the default value for the patttern Field is null and Field order is 1.
      * @param source    the object on which the Event initially occurred
      * @param eventType in this case the event type is SHOW_ADD_FIELDS event type.
+     * @throws IllegalArgumentException if source is null
+     */
+    public ShowPatternFormInBumpOutEvent(Object source, EvtType eventType) {
+        super(source, eventType);
+        this.totalFields = 0;
+        this.patternField = null;
+        this.fieldOrder = 1;
+    }
+
+    /**
+     * Constructs a prototypical Event.
+     * This is a add even and the default value for the patttern Field is null and Field order is 1.
+     * @param source    the object on which the Event initially occurred
+     * @param eventType in this case the event type is SHOW_ADD_FIELDS event type.
      * @param totalFields the total number of fields added in the current pattern.
      * @throws IllegalArgumentException if source is null
      */

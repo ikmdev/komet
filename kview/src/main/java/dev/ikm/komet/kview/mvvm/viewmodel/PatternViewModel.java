@@ -233,7 +233,7 @@ public class PatternViewModel extends FormViewModel {
             );
         }
         boolean isSuccess = composer.commitSession(session);
-        setPropertyValue(PATTERN, pattern);
+        this.setPropertyValue(PATTERN, pattern);
         updateStamp();
         return isSuccess;
     }

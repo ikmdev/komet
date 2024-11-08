@@ -254,7 +254,11 @@ public class PatternDetailsController {
         // capture descriptions information
         StringProperty fqnTextProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
         latestFqnText.textProperty().bind(fqnTextProperty);
-
+        latestFqnText.setOnMouseClicked(mouseEvent -> {
+            System.out.println(" LatestFQN TEXT CLICKED");
+            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(mouseEvent.getSource(), SHOW_EDIT_FQN));
+            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(mouseEvent.getSource(), OPEN_PANEL));
+        });
         // This will listen to the pattern descriptions event. Adding an FQN, Adding other name.
         patternDescriptionEventSubscriber = evt -> {
             DescrName descrName = evt.getDescrName();
@@ -584,7 +588,7 @@ public class PatternDetailsController {
         StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);
         patternSM.t("addFqn");
         ObservableList<PatternField> patternFieldsObsList = patternViewModel.getObservableList(FIELDS_COLLECTION);
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_FQN, patternFieldsObsList.size()));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_FQN));
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 
@@ -721,7 +725,7 @@ public class PatternDetailsController {
     }
 
     public void updateView() {
-        EntityFacade entityFacade = patternViewModel.getValue(PATTERN);
+        EntityFacade entityFacade = patternViewModel.getPropertyValue(PATTERN);
         if(entityFacade == null){
             getStampViewModel().setPropertyValue(MODE, CREATE);
         }else {
