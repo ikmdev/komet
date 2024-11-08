@@ -36,14 +36,14 @@ public enum CssFile {
     KOMET_CSS(
             "komet.css",
             "dev.ikm.komet.framework",
-            "dev/ikm/komet/framework/graphics/komet.css",
+            "dev/ikm/komet/framework/graphics/",
             Paths.get("framework", "src", "main", "resources")
     ),
 
     KVIEW_CSS(
             "kview.css",
             "dev.ikm.komet.kview",
-            "dev/ikm/komet/kview/mvvm/view/kview.css",
+            "dev/ikm/komet/kview/mvvm/view/",
             Paths.get("kview", "src", "main", "resources")
     );
 
@@ -96,7 +96,7 @@ public enum CssFile {
      * @return the resource path
      */
     public String getResourcePath() {
-        return resourcePath;
+        return resourcePath + fileName;
     }
 
     /**
@@ -105,7 +105,7 @@ public enum CssFile {
      * @return the relative Path
      */
     public Path getRelativePath() {
-        return Path.of(resourcePath);
+        return Path.of(getResourcePath());
     }
 
     /**
