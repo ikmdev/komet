@@ -2744,7 +2744,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: white;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 1, 1, 1, 1);
     -fx-pref-width: 302px;
-    -fx-pref-height: 30;
+    -fx-pref-height: 30;    
 }
 
 .search-semantic-entry-text {
@@ -2938,6 +2938,21 @@ Timeline Year line segment (will overlay change circles)
     -fx-max-height: -height-size;
     -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
     -fx-background-color: -Secondary-05;
+}
+
+.pattern-instance {
+    -fx-border-radius: 2px;
+    -fx-fill: -Grey-11;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: 400;
+    -fx-background-color: white;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 1, 1, 1, 1);    
+    -fx-min-width: 280px;
+    -fx-pref-width: 280px;
+    -fx-max-width: 280px;
+    -fx-pref-height: 30;    
 }
 
 /********************************************************************************

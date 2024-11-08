@@ -1208,9 +1208,13 @@ public class JournalController {
                                      ObservableViewNoOverride windowView, KometNodeFactory navigationFactory) {
         //FIXME load the classic concept nav pane into this one: IIA-975, it is loading but the concept icons are missing
         // and the styling seems off
+        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
         Pane navigatorNodePanel = loadClassicConceptNavigator(navigationActivityStreamKey, windowView, navigationFactory);
         Config patternConceptConfig = new Config(ConceptPatternNavController.class.getResource(CONCEPT_PATTERN_NAV_FXML_URL))
-                .controller(new ConceptPatternNavController(navigatorNodePanel));
+                .controller(new ConceptPatternNavController(navigatorNodePanel))
+                .updateViewModel("patternNavViewModel", (patternNavViewModel) ->
+                                patternNavViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                        );
         JFXNode<Pane, ConceptPatternNavController> conPatJFXNode = FXMLMvvmLoader.make(patternConceptConfig);
         patternConceptNavigationPanel = conPatJFXNode.node();
         conceptPatternNavController = conPatJFXNode.controller();
