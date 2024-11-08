@@ -67,11 +67,6 @@ public final class CssUtils {
     private static final Logger LOG = LoggerFactory.getLogger(CssUtils.class);
 
     /**
-     * The name of the application project module. Used to determine the working directory.
-     */
-    private static final String APPLICATION_PROJECT_NAME = "application";
-
-    /**
      * Private constructor to prevent instantiation of this utility class.
      */
     private CssUtils() {
@@ -97,7 +92,9 @@ public final class CssUtils {
             return;
         }
 
-        final Path workingDirPath = determineWorkingDirectory();
+        final Path workingDirPath = Paths.get(System.getProperty("user.dir"));
+        LOG.info("Working directory: {}", workingDirPath);
+
         final List<String> cssUris = new ArrayList<>();
         final List<CssFile> loadedFromFileSystemList = new ArrayList<>();
 
@@ -126,31 +123,6 @@ public final class CssUtils {
         if (!loadedFromFileSystemList.isEmpty()) {
             setupCssMonitor(loadedFromFileSystemList.toArray(new CssFile[0]), workingDirPath);
         }
-    }
-
-    /**
-     * Determines the working directory based on the current system property {@code user.dir}.
-     * If the working directory corresponds to the application module, it moves up one directory level.
-     * This adjustment is useful when running the application from within an IDE or specific project structure.
-     *
-     * @return the {@link Path} representing the determined working directory
-     */
-    private static Path determineWorkingDirectory() {
-        Path workingDirPath = Paths.get(System.getProperty("user.dir"));
-        LOG.info("Working directory: {}", workingDirPath);
-
-        if (workingDirPath.getFileName().toString().equalsIgnoreCase(APPLICATION_PROJECT_NAME)) {
-            // Running from the application module, move up one level
-            Path parent = workingDirPath.getParent();
-            if (parent != null) {
-                workingDirPath = parent;
-                LOG.info("Adjusted working directory to parent: {}", workingDirPath);
-            } else {
-                LOG.warn("Cannot move up from working directory '{}'. Using as is.", workingDirPath);
-            }
-        }
-
-        return workingDirPath;
     }
 
     /**

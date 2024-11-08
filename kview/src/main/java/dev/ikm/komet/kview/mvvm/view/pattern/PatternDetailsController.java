@@ -28,6 +28,7 @@ import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
@@ -609,6 +610,7 @@ public class PatternDetailsController {
     public void popupStampEdit(ActionEvent event) {
         if (stampEdit != null && stampEditController != null) {
             stampEdit.show((Node) event.getSource());
+            stampEditController.selectActiveStatusToggle();
             return;
         }
 
@@ -647,12 +649,7 @@ public class PatternDetailsController {
 
     private void updateUIStamp(ViewModel stampViewModel) {
         if (patternViewModel.isPatternPopulated()) {
-            Long time = stampViewModel.getValue(TIME);
-            DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
-            Instant stampInstance = Instant.ofEpochSecond(time/1000);
-            ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-            String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
-            lastUpdatedText.setText(lastUpdated);
+            updateTimeText(stampViewModel.getValue(TIME));
         }
         ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
         if (moduleEntity == null) {
@@ -667,6 +664,14 @@ public class PatternDetailsController {
         State status = stampViewModel.getValue(STATUS);
         String statusMsg = status == null ? "Active" : getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
         statusText.setText(statusMsg);
+    }
+
+    private void updateTimeText(Long time) {
+        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
+        Instant stampInstance = Instant.ofEpochSecond(time/1000);
+        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
+        String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
+        lastUpdatedText.setText(lastUpdated);
     }
 
     public ValidationViewModel getStampViewModel() {
@@ -716,6 +721,12 @@ public class PatternDetailsController {
     }
 
     public void updateView() {
+        EntityFacade entityFacade = patternViewModel.getValue(PATTERN);
+        if(entityFacade == null){
+            getStampViewModel().setPropertyValue(MODE, CREATE);
+        }else {
+            getStampViewModel().setPropertyValue(MODE, EDIT);
+        }
     }
 
     public void putTitlePanesArrowOnRight() {
@@ -729,6 +740,7 @@ public class PatternDetailsController {
         boolean isValidSave = patternViewModel.createPattern();
         LOG.info(isValidSave ? "success" : "failed");
         updatePatternBanner();
+        updateView();
     }
 
     private void updatePatternBanner() {
@@ -736,7 +748,9 @@ public class PatternDetailsController {
         patternTitleText.setText(patternViewModel.getPatternTitle());
 
         // get the latest stamp time
-        updateUIStamp(getStampViewModel());
+        if (patternViewModel.isPatternPopulated()) {
+            updateTimeText(getStampViewModel().getValue(TIME));
+        }
 
         // update the public id
         identifierText.setText(patternViewModel.getPatternIdentifierText());
