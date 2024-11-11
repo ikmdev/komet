@@ -1215,8 +1215,8 @@ public class JournalController {
                 .updateViewModel("patternNavViewModel", (patternNavViewModel) ->
                                 patternNavViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
                         );
-        JFXNode<Pane, ConceptPatternNavController> conPatJFXNode = FXMLMvvmLoader.make(patternConceptConfig);
-        patternConceptNavigationPanel = (StackPane) conPatJFXNode.node();
+        JFXNode<StackPane, ConceptPatternNavController> conPatJFXNode = FXMLMvvmLoader.make(patternConceptConfig);
+        patternConceptNavigationPanel = conPatJFXNode.node();
         conceptPatternNavController = conPatJFXNode.controller();
         setupSlideOutTrayPane(patternConceptNavigationPanel, navSlideoutTrayPane);
     }
