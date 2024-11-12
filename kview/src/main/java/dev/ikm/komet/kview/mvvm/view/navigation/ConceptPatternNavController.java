@@ -19,6 +19,7 @@ import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.application.Platform;
+import javafx.beans.binding.DoubleBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -27,6 +28,7 @@ import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
@@ -74,6 +76,12 @@ public class ConceptPatternNavController {
 
     private Pane classicConceptNavigator;
 
+    @FXML
+    private ScrollPane scrollPane;
+
+    @FXML
+    private VBox scrollPaneContent;
+
     @InjectViewModel
     private PatternNavViewModel patternNavViewModel;
 
@@ -91,7 +99,20 @@ public class ConceptPatternNavController {
 
         // default to classic concept navigation
         navContentPane.setCenter(classicConceptNavigator);
+
         loadAllPatterns();
+
+        // ScrollPane content should be at a minimum as high (height wise) as the ScrollPane viewport (ScrollPane's visible area) height
+        scrollPaneContent.minHeightProperty().bind(new DoubleBinding() {
+            {
+                super.bind(scrollPane.viewportBoundsProperty());
+            }
+
+            @Override
+            protected double computeValue() {
+                return scrollPane.getViewportBounds().getHeight();
+            }
+        });
     }
 
     static final EntityProxy identifierPatternProxy = EntityProxy.make("Identifier pattern",
