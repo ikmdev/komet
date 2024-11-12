@@ -36,13 +36,13 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="560.0" prefWidth="727.0" style="-fx-background-color: transparent;" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
+<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="560.0" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
    <center>
-      <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0" style="-fx-background-color: transparent;">
+      <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0">
          <top>
-            <VBox style="-fx-background-color: transparent;" BorderPane.alignment="CENTER">
+            <VBox BorderPane.alignment="CENTER">
                <children>
-                  <FlowPane style="-fx-background-color: transparent;" styleClass="rounded-top">
+                  <FlowPane styleClass="rounded-top">
                      <children>
                         <HBox prefHeight="18.0" spacing="4.0" style="-fx-background-color: -Natural-Grey-Main;">
                            <styleClass>
@@ -166,7 +166,7 @@
             </HBox>
          </right>
          <center>
-            <BorderPane prefWidth="762.0" BorderPane.alignment="CENTER">
+            <BorderPane prefWidth="762.0" styleClass="main-pane-content" BorderPane.alignment="CENTER">
                <center>
                   <VBox focusTraversable="true" maxHeight="1.7976931348623157E308" opacity="0.92" prefWidth="762.0">
                      <children>
@@ -692,5 +692,6 @@
    <styleClass>
       <String fx:value="concept-detail-pane" />
       <String fx:value="lidr-container" />
+      <String fx:value="pattern-window" />
    </styleClass>
 </BorderPane>
