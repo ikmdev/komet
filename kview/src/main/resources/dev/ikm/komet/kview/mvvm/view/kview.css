@@ -2305,8 +2305,8 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .search-button-region {
-    -width-size: 20;
-    -height-size: 20;
+    -width-size: 16;
+    -height-size: 16;
     -fx-fill: none;
     -fx-background-color: white;
     -fx-min-height: -height-size;
@@ -4347,24 +4347,30 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: -Grey-9;
 }
 
-.nav-toggle {    
-    -fx-border-width: 1;
+.nav-toggle.toggle-button {
     -fx-border-color: -Grey-7;
     -fx-background-color: -Grey-2;
     -fx-text-fill: -Secondary-05;
+
+    -fx-background-insets: 0;
+
+    -fx-font-weight: 600;
 }
 
-.nav-toggle-left {
-    -fx-border-radius: 1 0 0 1;
-}
+.nav-toggle-left.toggle-button {
+    -fx-border-width: 1 0 1 1;
 
-.nav-toggle-right {
-    -fx-border-radius: 0 1 1 0;
-}
-
-.nav-toggle:selected {
     -fx-border-radius: 6 0 0 6;
+    -fx-background-radius: 6 0 0 6;
+}
+
+.nav-toggle-right.toggle-button {
     -fx-border-width: 1;
+    -fx-border-radius: 0 6 6 0;
+    -fx-background-radius: 0 6 6 0;
+}
+
+.nav-toggle:selected.toggle-button {
     -fx-border-color: -Grey-7;
     -fx-background-color: -Primary-03;
     -fx-text-fill: -Grey-12;
