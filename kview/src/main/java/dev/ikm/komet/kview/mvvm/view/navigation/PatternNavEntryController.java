@@ -10,11 +10,12 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.image.ImageView;
 
 public class PatternNavEntryController {
+
+    private static final int LIST_VIEW_CELL_SIZE = 36;
 
     @FXML
     private HBox patternEntryHBox;
@@ -51,6 +52,17 @@ public class PatternNavEntryController {
             }
         });
         showContextButton.setOnAction(event -> contextMenu.show(showContextButton, Side.BOTTOM, 0, 0));
+
+        patternInstancesListView.setFixedCellSize(LIST_VIEW_CELL_SIZE);
+
+        patternInstancesListView.itemsProperty().addListener(observable -> updateListViewPrefHeight());
+    }
+
+    private void updateListViewPrefHeight() {
+        int itemsNumber = patternInstancesListView.getItems().size();
+        double newPrefHeight = itemsNumber * LIST_VIEW_CELL_SIZE;
+        double maxHeight = patternInstancesListView.getMaxHeight();
+        patternInstancesListView.setPrefHeight(Math.min(newPrefHeight, maxHeight));
     }
 
     private class NoSelectionModel<T> extends MultipleSelectionModel<T> {

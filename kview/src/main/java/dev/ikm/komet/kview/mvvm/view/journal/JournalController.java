@@ -273,7 +273,7 @@ public class JournalController {
     private Pane searchNodePanel;
     private Pane nextGenSearchPanel;
 
-    private Pane patternConceptNavigationPanel;
+    private StackPane patternConceptNavigationPanel;
 
     private Pane nextGenReasonerPanel;
 
@@ -1215,7 +1215,7 @@ public class JournalController {
                 .updateViewModel("patternNavViewModel", (patternNavViewModel) ->
                                 patternNavViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
                         );
-        JFXNode<Pane, ConceptPatternNavController> conPatJFXNode = FXMLMvvmLoader.make(patternConceptConfig);
+        JFXNode<StackPane, ConceptPatternNavController> conPatJFXNode = FXMLMvvmLoader.make(patternConceptConfig);
         patternConceptNavigationPanel = conPatJFXNode.node();
         conceptPatternNavController = conPatJFXNode.controller();
         setupSlideOutTrayPane(patternConceptNavigationPanel, navSlideoutTrayPane);

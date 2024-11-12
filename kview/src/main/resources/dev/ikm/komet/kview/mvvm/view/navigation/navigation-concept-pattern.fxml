@@ -9,16 +9,15 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
-   <children>
-      <ScrollPane prefWidth="372.0">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+      <ScrollPane hbarPolicy="NEVER" minHeight="0.0" prefWidth="372.0">
          <content>
-            <VBox maxHeight="1.7976931348623157E308" prefHeight="9000.0" prefWidth="372.0" styleClass="grey-vertical-scroll-area">
+            <VBox maxHeight="1.7976931348623157E308" prefWidth="372.0" styleClass="grey-vertical-scroll-area">
                <children>
                   <HBox alignment="CENTER" prefHeight="56.0">
                      <children>
@@ -47,7 +46,8 @@
                                        <styleClass>
                                           <String fx:value="nav-toggle" />
                                           <String fx:value="nav-toggle-right" />
-                                       </styleClass></ToggleButton>
+                                       </styleClass>
+                                    </ToggleButton>
                                  </children>
                               </HBox>
                               <Button mnemonicParsing="false" styleClass="search-button" GridPane.columnIndex="2">
@@ -69,5 +69,4 @@
             </VBox>
          </content>
       </ScrollPane>
-   </children>
-</Pane>
+</StackPane>

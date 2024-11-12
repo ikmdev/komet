@@ -23,7 +23,7 @@ jobs:
 
 
       - name: Deploy Artifacts To Nexus
-        uses: ikmdev/maven-nexus-deploy-action@main
+        uses: ikmdev/maven-nexus-deploy-action@v1
         with:
             nexus_repo_password: ${{secrets.EC2_NEXUS_PASSWORD}}
             repo_name: ${{github.event.workflow_run.head_repository.full_name}}
