@@ -4381,3 +4381,31 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: white;
     -fx-shape: "M12.5 2.5V3.33333H16.6667V5H15.8334V15.8333C15.8334 16.75 15.0834 17.5 14.1667 17.5H5.83337C4.91671 17.5 4.16671 16.75 4.16671 15.8333V5H3.33337V3.33333H7.50004V2.5H12.5ZM5.83337 15.8333H14.1667V5H5.83337V15.8333ZM7.50004 6.66667H9.16671V14.1667H7.50004V6.66667ZM12.5 6.66667H10.8334V14.1667H12.5V6.66667Z";    
 }
+
+/*******************************************************************************
+ *                                                                             *
+ * Pattern Window                                                              *
+ *                                                                             *
+ ******************************************************************************/
+
+.pattern-window.concept-detail-pane {
+    -fx-background-color: transparent;
+}
+
+.pattern-window.concept-detail-pane .main-pane-content {
+    -fx-background-color: white;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Lidr Window                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+
+.lidr-window.concept-detail-pane {
+    -fx-background-color: transparent;
+}
+
+.lidr-window.concept-detail-pane .main-pane-content {
+    -fx-background-color: white;
+}
