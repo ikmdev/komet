@@ -96,8 +96,8 @@
         <!-- Everything Else -->
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
         <classgraph.version>4.8.115</classgraph.version>
-        <cognitive.version>1.5.0</cognitive.version>
-        <axonic.version>1.1.4</axonic.version>
+        <cognitive.version>1.5.1</cognitive.version>
+        <axonic.version>1.1.5</axonic.version>
         <common-java5.version>3.0.0-M9</common-java5.version>
         <controlsfx.version>11.1.0</controlsfx.version>
         <cssfx.version>11.5.1-jpms</cssfx.version>
@@ -552,10 +552,9 @@
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
         </dependency>
-        <!-- Binding tools-logging to slf4j -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
         </dependency>
         <!-- Bind To SLF4J Dependencies (End) -->
         <dependency>
