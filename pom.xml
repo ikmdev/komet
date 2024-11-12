@@ -83,11 +83,10 @@
         <jsr305.version>3.0.2-r7</jsr305.version>
 
         <!-- JPRO Variables -->
-        <jpro.ikmdev.release>ikmdev</jpro.ikmdev.release>
-        <jpro.version>2024.3.4-${jpro.ikmdev.release}</jpro.version>
-        <jpro-platform.version>0.4.3</jpro-platform.version>
+        <jpro.version>2024.4.1</jpro.version>
+        <jpro-platform.version>0.4.4</jpro-platform.version>
         <!-- A special build for Komet using the ikmdev Guava module name -->
-        <jpro-auth-core.version>${jpro-platform.version}-${jpro.ikmdev.release}</jpro-auth-core.version>
+        <jpro-auth-core.version>${jpro-platform.version}-ikmdev</jpro-auth-core.version>
 
         <!-- TestFX Variables -->
         <testfx.version>4.0.18-jpms</testfx.version>
@@ -97,8 +96,8 @@
         <!-- Everything Else -->
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
         <classgraph.version>4.8.115</classgraph.version>
-        <cognitive.version>1.5.0</cognitive.version>
-        <axonic.version>1.1.4</axonic.version>
+        <cognitive.version>1.5.1</cognitive.version>
+        <axonic.version>1.1.5</axonic.version>
         <common-java5.version>3.0.0-M9</common-java5.version>
         <controlsfx.version>11.1.0</controlsfx.version>
         <cssfx.version>11.5.1-jpms</cssfx.version>
@@ -111,18 +110,6 @@
         <scenic-view.version>11.0.2</scenic-view.version>
     </properties>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>jpro-repository</id>
-            <url>https://sandec.jfrog.io/artifactory/repo</url>
-        </pluginRepository>
-    </pluginRepositories>
-    <repositories>
-        <repository>
-            <id>jpro-repository</id>
-            <url>https://sandec.jfrog.io/artifactory/repo</url>
-        </repository>
-    </repositories>
     <dependencyManagement>
         <dependencies>
             <!--Module Dependencies -->
@@ -375,7 +362,7 @@
                 <version>${classgraph.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.sandec.jpro</groupId>
+                <groupId>one.jpro</groupId>
                 <artifactId>jpro-webapi</artifactId>
                 <version>${jpro.version}</version>
             </dependency>
@@ -547,7 +534,6 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j2-impl</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -564,11 +550,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
-        </dependency>
-        <!-- Binding tools-logging to slf4j -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
         </dependency>
         <!-- Bind To SLF4J Dependencies (End) -->
         <dependency>
