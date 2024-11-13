@@ -120,8 +120,8 @@ public class ViewModelHelper {
             }
             LOG.error("Error(s) with validation message(s)\n" + sb);
         }
-        State status = stampViewModel.getValue(STATUS);
-        PublicId statusPublicId = status != null ? status.publicId() : TinkarTerm.ACTIVE_STATE.publicId();
+        State state = stampViewModel.getValue(STATUS);
+        PublicId statusPublicId = state != null ? state.publicId() : TinkarTerm.ACTIVE_STATE.publicId();
         Concept author = stampViewModel.getValue(AUTHOR);
         PublicId authorPublicId = author != null ? author.publicId() : TinkarTerm.USER.publicId();
         Long time = stampViewModel.getValue(TIME);

@@ -15,14 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
-import static dev.ikm.tinkar.terms.EntityProxy.Concept;
-import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
-import static dev.ikm.tinkar.terms.TinkarTerm.ACCEPTABLE;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
@@ -38,7 +30,6 @@ import dev.ikm.tinkar.composer.template.Synonym;
 import dev.ikm.tinkar.composer.template.USDialect;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.property.ObjectProperty;
@@ -54,6 +45,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.UUID;
+
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
+import static dev.ikm.tinkar.terms.EntityProxy.Concept;
+import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
+import static dev.ikm.tinkar.terms.TinkarTerm.ACCEPTABLE;
 
 public class PatternViewModel extends FormViewModel {
 
@@ -199,11 +195,11 @@ public class PatternViewModel extends FormViewModel {
 
         // get the STAMP values from the nested stampViewModel
         StampViewModel stampViewModel = getPropertyValue(STAMP_VIEW_MODEL);
-        State status = stampViewModel.getPropertyValue(STATUS);
+        State state = stampViewModel.getPropertyValue(STATUS);
         Concept author = stampViewModel.getPropertyValue(AUTHOR);
         ConceptEntity module = stampViewModel.getPropertyValue(MODULE);
         ConceptEntity path = stampViewModel.getPropertyValue(PATH);
-        Session session = composer.open(status, author, module.toProxy(), path.toProxy());
+        Session session = composer.open(state, author, module.toProxy(), path.toProxy());
 
         // set up pattern with the fully qualified name
         ObservableList<PatternField> fieldsProperty = getObservableList(FIELDS_COLLECTION);

@@ -75,15 +75,25 @@
 .properties-tab-container,
 .timeline-toolbar-container {
     -fx-background-color: -Grey-3;
-    -fx-padding: 0 4 4 4;
+}
+
+.main-center-container {
+    -fx-background-color: -Grey-White;
+    -fx-background-radius: 4px;
+
+    -fx-background-insets: 0 5px 5px 5px;
+    -fx-padding: 5px;
+}
+
+.main-right-container .properties-tab-outer-container {
+    -fx-padding: 0 5px 5px 0;
 }
 
 .concept-detail-pane {
-    -fx-padding: 0 4 4 4;
     -fx-border-insets: 0;
-    -fx-background-color: -Grey-3;
-    -fx-background-radius: 10 10 10 10;
-    -fx-border-radius: 10 10 10 10;
+    -fx-background-color: -Secondary-06;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
 }
 
 .concept-detail-pane .content-description-insets {
@@ -91,7 +101,7 @@
 }
 
 .concept-detail-banner-background {
-    -fx-background-color: -Grey-White;
+    -fx-background-color: transparent;
 }
 
 .identicon-frame {
@@ -157,6 +167,11 @@
 /* alternative content using a border and a grad to transparent background - why should TitledPane content have a colour? */
 .titled-pane > *.content {
     -fx-border-insets: -1 0 0 0;
+}
+
+.main-center-container .titled-pane .content {
+    -fx-border-width: 0;
+    -fx-background-color: transparent;
 }
 
 /* a add pencil button for add/edit */
@@ -341,17 +356,13 @@
 .properties-tabs {
     -fx-border-insets: 0;
     -fx-background-color: -Grey-3;
-    -fx-background-radius: 10 10 0 0;
-    -fx-border-radius: 10 10 0 0;
-    -fx-border-style: solid;
-    -fx-border-width: 0.083333em;
-    -fx-border-color: -Grey-8;
+    -fx-background-radius: 4 4 0 0;
 }
 
 .properties-tab.toggle-button {
     -fx-pref-width: 84;
-    -fx-pref-height: 40;
-    -fx-max-height: 40;
+    -fx-pref-height: 45;
+    -fx-max-height: 45;
     -fx-label-padding: 0px 4px;
     -fx-position-shape: true;
     -fx-scale-shape: false;
@@ -402,12 +413,12 @@
 
 .properties-tab-container-content {
     -fx-background-color: -Grey-4;
-    -fx-border-insets: -1 0 0 0;
-    -fx-background-radius: 0 0 10 10;
-    -fx-border-radius: 0 0 10 10;
-    -fx-border-style: solid;
-    -fx-border-width: 0.083333em;
-    -fx-border-color: -Grey-8;
+    -fx-background-radius: 0 0 4 4;
+
+    -fx-border-color: -Grey-7;
+    -fx-border-width: 1px 0 0 0;
+
+    -fx-padding: 3px 0 0 0;
 }
 
 .toggle-button.left-pill, .toggle-button.center-pill, .toggle-button.right-pill {
@@ -2294,8 +2305,8 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .search-button-region {
-    -width-size: 20;
-    -height-size: 20;
+    -width-size: 16;
+    -height-size: 16;
     -fx-fill: none;
     -fx-background-color: white;
     -fx-min-height: -height-size;
@@ -2733,7 +2744,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: white;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 1, 1, 1, 1);
     -fx-pref-width: 302px;
-    -fx-pref-height: 30;
+    -fx-pref-height: 30;    
 }
 
 .search-semantic-entry-text {
@@ -2927,6 +2938,21 @@ Timeline Year line segment (will overlay change circles)
     -fx-max-height: -height-size;
     -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
     -fx-background-color: -Secondary-05;
+}
+
+.pattern-instance {
+    -fx-border-radius: 2px;
+    -fx-fill: -Grey-11;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: 400;
+    -fx-background-color: white;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 1, 1, 1, 1);    
+    -fx-min-width: 280px;
+    -fx-pref-width: 280px;
+    -fx-max-width: 280px;
+    -fx-pref-height: 30;    
 }
 
 /********************************************************************************
@@ -4321,24 +4347,30 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: -Grey-9;
 }
 
-.nav-toggle {    
-    -fx-border-width: 1;
+.nav-toggle.toggle-button {
     -fx-border-color: -Grey-7;
     -fx-background-color: -Grey-2;
     -fx-text-fill: -Secondary-05;
+
+    -fx-background-insets: 0;
+
+    -fx-font-weight: 600;
 }
 
-.nav-toggle-left {
-    -fx-border-radius: 1 0 0 1;
-}
+.nav-toggle-left.toggle-button {
+    -fx-border-width: 1 0 1 1;
 
-.nav-toggle-right {
-    -fx-border-radius: 0 1 1 0;
-}
-
-.nav-toggle:selected {
     -fx-border-radius: 6 0 0 6;
+    -fx-background-radius: 6 0 0 6;
+}
+
+.nav-toggle-right.toggle-button {
     -fx-border-width: 1;
+    -fx-border-radius: 0 6 6 0;
+    -fx-background-radius: 0 6 6 0;
+}
+
+.nav-toggle:selected.toggle-button {
     -fx-border-color: -Grey-7;
     -fx-background-color: -Primary-03;
     -fx-text-fill: -Grey-12;
@@ -4354,4 +4386,32 @@ Styling a context menu for kview ui/ux controls
     -fx-scale-shape: false;
     -fx-background-color: white;
     -fx-shape: "M12.5 2.5V3.33333H16.6667V5H15.8334V15.8333C15.8334 16.75 15.0834 17.5 14.1667 17.5H5.83337C4.91671 17.5 4.16671 16.75 4.16671 15.8333V5H3.33337V3.33333H7.50004V2.5H12.5ZM5.83337 15.8333H14.1667V5H5.83337V15.8333ZM7.50004 6.66667H9.16671V14.1667H7.50004V6.66667ZM12.5 6.66667H10.8334V14.1667H12.5V6.66667Z";    
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Pattern Window                                                              *
+ *                                                                             *
+ ******************************************************************************/
+
+.pattern-window.concept-detail-pane {
+    -fx-background-color: transparent;
+}
+
+.pattern-window.concept-detail-pane .main-pane-content {
+    -fx-background-color: white;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Lidr Window                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+
+.lidr-window.concept-detail-pane {
+    -fx-background-color: transparent;
+}
+
+.lidr-window.concept-detail-pane .main-pane-content {
+    -fx-background-color: white;
 }

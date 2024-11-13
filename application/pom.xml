@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.40.0-SNAPSHOT</version>
+        <version>1.43.0-SNAPSHOT</version>
     </parent>
     <artifactId>application</artifactId>
     <dependencies>
@@ -90,7 +90,7 @@
         </dependency>
         <!-- Start JPro related dependencies -->
         <dependency>
-            <groupId>com.sandec.jpro</groupId>
+            <groupId>one.jpro</groupId>
             <artifactId>jpro-webapi</artifactId>
             <scope>compile</scope>
         </dependency>
@@ -481,6 +481,18 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>jpro-repository</id>
+                    <url>https://sandec.jfrog.io/artifactory/repo</url>
+                </pluginRepository>
+            </pluginRepositories>
+            <repositories>
+                <repository>
+                    <id>jpro-repository</id>
+                    <url>https://sandec.jfrog.io/artifactory/repo</url>
+                </repository>
+            </repositories>
             <build>
                 <plugins>
                     <plugin>
