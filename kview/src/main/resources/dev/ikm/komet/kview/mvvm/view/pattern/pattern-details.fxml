@@ -185,30 +185,30 @@
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                        </rowConstraints>
                                        <children>
-                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 600; -fx-fill: -Grey-12;" text="SEMANTIC MEANING:" wrappingWidth="121.474609375">
+                                          <Text GridPane.columnIndex="1" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 600; -fx-fill: -Grey-12;" text="SEMANTIC MEANING:" wrappingWidth="121.474609375">
                                              <font>
                                                 <Font name="Noto Sans Batak Regular" size="12.0" />
                                              </font>
                                           </Text>
                                           <Label />
-                                          <Text fx:id="semanticMeaningText" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="227.6090087890625">
+                                          <Text GridPane.columnIndex="1" fx:id="semanticMeaningText" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="227.6090087890625">
                                              <font>
                                                 <Font name="Noto Sans Batak Regular" size="13.0" />
                                              </font>
                                           </Text>
-                                          <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 500; -fx-fill: -Grey-12;" text="SEMANTIC PURPOSE" wrappingWidth="117.490234375" GridPane.columnIndex="1">
+                                          <Text GridPane.columnIndex="0" fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 500; -fx-fill: -Grey-12;" text="SEMANTIC PURPOSE" wrappingWidth="117.490234375" >
                                              <font>
                                                 <Font name="Open Sans Bold" size="14.0" />
                                              </font>
                                           </Text>
-                                          <Text fx:id="purposeDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-normal-grey-eight" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                          <Text GridPane.columnIndex="0" GridPane.rowIndex="2" fx:id="purposeDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-normal-grey-eight" >
                                              <font>
                                                 <Font name="Noto Sans Batak Regular" size="13.0" />
                                              </font>
                                           </Text>
-                                          <Text fx:id="meaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" GridPane.rowIndex="1" />
-                                          <Text fx:id="meaningDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-normal-grey-eight" GridPane.rowIndex="2" />
-                                          <Text fx:id="purposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                          <Text GridPane.columnIndex="1" GridPane.rowIndex="1" fx:id="meaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve"  />
+                                          <Text GridPane.columnIndex="1" GridPane.rowIndex="2" fx:id="meaningDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-normal-grey-eight"  />
+                                          <Text  GridPane.columnIndex="0" GridPane.rowIndex="1" fx:id="purposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" />
                                        </children>
                                     </GridPane>
                                  </content>
