@@ -24,7 +24,7 @@ jobs:
             distribution: 'zulu'
 
       - name: Build IKMDEV Code
-        uses: ikmdev/maven-clean-install-build-action@v1
+        uses: ikmdev/maven-clean-install-build-action@v1.1.0
         with:
           branch_name: ${{env.BRANCH_NAME}}
           sonarcloud_token: ${{ secrets.SONAR_TOKEN }}
