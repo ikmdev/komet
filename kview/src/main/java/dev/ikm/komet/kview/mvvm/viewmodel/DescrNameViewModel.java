@@ -67,6 +67,8 @@ public class DescrNameViewModel extends FormViewModel {
 
     public static final String IS_INVALID = "isInvalid";
 
+    public static final String PREVIOUS_DESCRIPTION_DATA = "previousDescriptionData";
+
     public DescrNameViewModel() {
         super(); // defaults to View mode
                 addProperty(NAME_TEXT, "")
@@ -112,7 +114,8 @@ public class DescrNameViewModel extends FormViewModel {
                 .addProperty(TITLE_TEXT, "")
                 .addProperty(DESCRIPTION_NAME_TYPE, "")
                 .addProperty(IS_INVALID, true)
-        ;
+                .addProperty(PREVIOUS_DESCRIPTION_DATA, (DescrName) null)
+            ;
     }
 
     public Set<ConceptEntity> findAllLanguages(ViewProperties viewProperties) {
