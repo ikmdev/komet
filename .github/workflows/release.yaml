@@ -24,7 +24,7 @@ jobs:
 
       - name: Release IKMDEV Code
         id: release_ikmdev_codes
-        uses: ikmdev/maven-release-action@komet_v1
+        uses: ikmdev/maven-release-action@v1.1.0
         with:
           ikmdevops_pat: ${{secrets.IKMDEVOPS_PAT_TOKEN}}
           github_token: ${{secrets.GITHUB_TOKEN}}
