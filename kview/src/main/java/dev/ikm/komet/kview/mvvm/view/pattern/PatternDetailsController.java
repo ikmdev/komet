@@ -16,18 +16,65 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
+import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_DEFINITION;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FQN;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_OTHER_NAME;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FQN;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
+import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
+import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.EDIT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FIELDS_COLLECTION;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_CASE_SIGNIFICANCE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_LANGUAGE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.IS_INVALID;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_DATE_STR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAMES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_DATE_STR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.SELECTED_PATTERN_FIELD;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STAMP_VIEW_MODEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.events.pattern.*;
+import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
+import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
+import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
+import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
+import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.binding.Bindings;
@@ -41,15 +88,31 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.TilePane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.FillRule;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import org.carlfx.axonic.StateMachine;
-import org.carlfx.cognitive.loader.*;
+import org.carlfx.cognitive.loader.Config;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
@@ -746,12 +809,46 @@ public class PatternDetailsController {
     }
 
     public void updateView() {
-        EntityFacade entityFacade = patternViewModel.getPropertyValue(PATTERN);
-        if(entityFacade == null){
-            getStampViewModel().setPropertyValue(MODE, CREATE);
-        }else {
-            getStampViewModel().setPropertyValue(MODE, EDIT);
+        ObjectProperty<EntityFacade> patternProperty = patternViewModel.getProperty(PATTERN);
+        EntityFacade patternFacade = patternProperty.getValue();
+        if (patternFacade == null) {
+            getPatternViewModel().setPropertyValue(MODE, CREATE);
+        } else {
+            getPatternViewModel().setPropertyValue(MODE, EDIT);
+            if (!patternTitleText.textProperty().isBound()) {
+                patternTitleText.textProperty().bind(patternProperty.map(p -> p.description()));
+            }
+            // bind stamp
+            lastUpdatedText.textProperty().bind(getStampViewModel().getProperty(TIME).map(t -> {
+                DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
+                Instant stampInstance = Instant.ofEpochSecond((long)t/1000);
+                ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
+                return DATE_TIME_FORMATTER.format(stampTime);
+            }));
+
+            moduleText.textProperty().bind(getStampViewModel().getProperty(MODULE).map(m -> ((ConceptEntity) m).description()));
+            pathText.textProperty().bind(getStampViewModel().getProperty(PATH).map(p -> ((ConceptEntity) p).description()));
+            statusText.textProperty().bind(getStampViewModel().getProperty(STATUS).map(s -> s.toString()));
+
+            //FIXME bind purpose and meaning
+            //patternFacade
+            //ViewCalculator viewCalculator = getViewProperties().calculator();
+            //Latest<PatternVersionRecord> latestPatternVerRec = viewCalculator.latest(patternFacade.nid());
+            //Latest<SemanticEntityVersion> latestStatedSemantic = this.viewCalculator.latest(statedSemanticNids[0]);
+
+            //purposeProperty.set(Entity.getFast(patternVersionRecord.semanticPurposeNid()));
+            //meaningProperty.set(Entity.getFast(patternVersionRecord.semanticMeaningNid()));
+            patternViewModel.getProperty(PURPOSE_ENTITY).bind(patternViewModel.getProperty(PATTERN).map(p -> {
+                Latest<PatternVersionRecord> latestPatternVerRec = getViewProperties().calculator().latest(((EntityFacade) p).nid());
+                return Entity.getFast(latestPatternVerRec.get().semanticPurposeNid());
+            }));
+
+            //FIXME how do I get all the descriptions?
+            //getViewProperties().calculator().getRegularDescriptionText(patternFacade.nid());
         }
+
+        // show the public id
+        identifierText.setText(patternViewModel.getPatternIdentifierText());
     }
 
     public void putTitlePanesArrowOnRight() {
@@ -764,20 +861,7 @@ public class PatternDetailsController {
     private void savePattern(ActionEvent actionEvent) {
         boolean isValidSave = patternViewModel.createPattern();
         LOG.info(isValidSave ? "success" : "failed");
-        updatePatternBanner();
         updateView();
     }
 
-    private void updatePatternBanner() {
-        // update the title to the FQN
-        patternTitleText.setText(patternViewModel.getPatternTitle());
-
-        // get the latest stamp time
-        if (patternViewModel.isPatternPopulated()) {
-            updateTimeText(getStampViewModel().getValue(TIME));
-        }
-
-        // update the public id
-        identifierText.setText(patternViewModel.getPatternIdentifierText());
-    }
 }

@@ -28,8 +28,11 @@ import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.STAMP_VIEW_M
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
@@ -55,6 +58,10 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
 import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 import static java.io.File.separator;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
@@ -76,6 +83,7 @@ import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
+import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
@@ -115,12 +123,15 @@ import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -306,6 +317,9 @@ public class JournalController {
     private ConceptPatternNavController conceptPatternNavController;
 
     private Subscriber<MakeConceptWindowEvent> makeConceptWindowEventSubscriber;
+
+    private Subscriber<MakePatternWindowEvent> makePatternWindowEventSubscriber;
+
     private Subscriber<ShowNavigationalPanelEvent> showNavigationalPanelEventSubscriber;
 
     private Subscriber<CloseReasonerPanelEvent> closeReasonerPanelEventSubscriber;
@@ -357,6 +371,12 @@ public class JournalController {
             }
         };
         journalEventBus.subscribe(JOURNAL_TOPIC, MakeConceptWindowEvent.class, makeConceptWindowEventSubscriber);
+
+        makePatternWindowEventSubscriber = evt -> {
+            LOG.info("FIXME... edit pattern window");
+            makePatternWindow(evt.getPatternFacade(), evt.getViewProperties());
+        };
+        journalEventBus.subscribe(JOURNAL_TOPIC, MakePatternWindowEvent.class, makePatternWindowEventSubscriber);
 
         showNavigationalPanelEventSubscriber = evt -> {
             try {
@@ -963,9 +983,9 @@ public class JournalController {
         JFXNode<Pane, LidrDetailsController> lidrJFXNode = FXMLMvvmLoader.make(lidrConfig);
         lidrJFXNode.controller().updateView();
 
-        //Getting the concept window pane
+        //Getting the lidr window pane
         Pane kometNodePanel = lidrJFXNode.node();
-        //Appling the CSS from draggable-region to the panel (makes it movable/sizable).
+        //Applying the CSS from draggable-region to the panel (makes it movable/sizable).
         Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
         Node[] draggables = new Node[draggableToolbar.size()];
 
@@ -1533,7 +1553,7 @@ public class JournalController {
         Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
                 .addNamedViewModel(new NamedVm("patternViewModel", patternViewModel));
 
-        // create lidr window
+        // create pattern window
         JFXNode<Pane, PatternDetailsController> patternJFXNode = FXMLMvvmLoader.make(patternConfig);
         patternJFXNode.controller().updateView();
 
@@ -1579,5 +1599,53 @@ public class JournalController {
 
         //FIXME opening the panel too soon creates a broken UI for the pattern window
         //EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(patternConfig, OPEN_PANEL));
+    }
+
+
+    private void makePatternWindow(EntityFacade patternFacade, ViewProperties viewProperties) {
+        //FIXME need purpose and meaning of the pattern, the STAMP values, the descriptions, the fields, the name and public id
+        Entity patternEntity = EntityService.get().getEntity(patternFacade.nid()).get();
+
+        // populate STAMP values
+        Latest<EntityVersion> patternStamp = viewProperties.calculator().stampCalculator().latest(patternEntity);
+
+        StampViewModel stampViewModel = new StampViewModel();
+        stampViewModel.setPropertyValue(STATUS, patternStamp.get().stamp().state())
+            .setPropertyValue(TIME, patternStamp.get().stamp().time())
+            .setPropertyValue(AUTHOR, patternStamp.get().stamp().author())
+            .setPropertyValue(MODULE, patternStamp.get().stamp().module())
+            .setPropertyValue(PATH, patternStamp.get().stamp().path())
+            ;
+
+        stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
+                .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
+
+        //TODO add 'edit' states to the state machine
+        StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
+
+        ValidationViewModel patternViewModel = new PatternViewModel()
+                .setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                .setPropertyValue(MODE, EDIT)
+                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
+                .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
+                .setPropertyValue(STATE_MACHINE, patternSM)
+                .setPropertyValue(PATTERN, patternFacade)
+                ;
+        Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
+                .addNamedViewModel(new NamedVm("patternViewModel", patternViewModel));
+
+        // create pattern window
+        JFXNode<Pane, PatternDetailsController> patternJFXNode = FXMLMvvmLoader.make(patternConfig);
+        patternJFXNode.controller().updateView();
+
+        //Getting the pattern window pane
+        Pane kometNodePanel = patternJFXNode.node();
+        //Applying the CSS from draggable-region to the panel (makes it movable/sizable).
+        Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
+        Node[] draggables = new Node[draggableToolbar.size()];
+
+        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
+        //Adding the pattern window panel as a child to the desktop pane.
+        desktopSurfacePane.getChildren().add(kometNodePanel);
     }
 }

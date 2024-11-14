@@ -1,9 +1,12 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel.PATTERN_COLLECTION;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
@@ -33,6 +36,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -153,40 +157,6 @@ public class ConceptPatternNavController {
         navContentPane.setCenter(patternNavigationPane);
     }
 
-    public void loadPatternsIntoPane(Map<EntityFacade, List<SemanticRecord>> patterns) {
-        if (patterns.isEmpty()) {
-            return;
-        }
-        patternNavViewModel.setPropertyValue(PATTERN_COLLECTION, patterns);
-
-        //VBox resultsVBox = new VBox(); //FIXME turn into a ListView
-
-
-        patterns.forEach((pattern, listOfSemantics) -> {
-            JFXNode<Pane, PatternNavEntryController> patternNavEntryJFXNode = FXMLMvvmLoader
-                    .make(PatternNavEntryController.class.getResource(PATTERN_NAV_ENTRY_FXML));
-            HBox patternHBox = (HBox) patternNavEntryJFXNode.node();
-
-
-            PatternNavEntryController controller = patternNavEntryJFXNode.controller();
-
-
-//            resultsVBox.setSpacing(4); // space between pattern entries
-//            patternHBox.setAlignment(Pos.CENTER);
-//            Region leftPadding = new Region();
-//            leftPadding.setPrefWidth(12); // pad each entry with an empty region
-//            leftPadding.setPrefHeight(1);
-
-            controller.setPatternName(pattern.description());
-
-//            controller.getInstancesVBox().getChildren().clear();
-//            controller.getInstancesVBox().getChildren().addAll(createInstances(listOfSemantics));
-
-
-            //resultsVBox.getChildren().addAll(new HBox(leftPadding, patternHBox));
-        });
-    }
-
     public void loadAllPatterns() {
         ViewProperties viewProperties = patternNavViewModel.getPropertyValue(VIEW_PROPERTIES);
 
@@ -241,6 +211,18 @@ public class ConceptPatternNavController {
                     if (!hasChildren) {
                         patternNavEntryController.disableInstancesListView();
                     }
+
+                    // add listener for double click to summon the pattern into the journal view
+                    patternHBox.setOnMouseClicked(mouseEvent -> {
+                        // double left click creates the concept window
+                        if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
+                            if (mouseEvent.getClickCount() == 2) {
+                                EvtBusFactory.getDefaultEvtBus().publish(JOURNAL_TOPIC, new MakePatternWindowEvent(this,
+                                        MakePatternWindowEvent.OPEN_PATTERN, patternItem, viewProperties));
+                            }
+                        }
+                    });
+
                     patternsVBox.getChildren().addAll(new HBox(leftPadding, patternHBox));
                     // set the pattern's name
                     patternNavEntryController.setPatternName(patternItem.description());
