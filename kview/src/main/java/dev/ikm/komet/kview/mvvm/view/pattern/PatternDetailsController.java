@@ -926,7 +926,9 @@ public class PatternDetailsController {
             ImmutableList<? extends FieldDefinitionForEntity> fieldDefinitions = latestDescriptionPattern.fieldDefinitions();
 
             ObservableList<PatternField> patternFieldObsList = patternViewModel.getObservableList(FIELDS_COLLECTION);
-            patternFieldObsList.addAll(convertFieldDefinitions(fieldDefinitions));
+
+            List<PatternField> patternFields = convertFieldDefinitions(fieldDefinitions);
+            patternFields.forEach(patternField -> patternFieldObsList.add(patternField));
 
             // show the public id
             identifierText.setText(patternViewModel.getPatternIdentifierText());
