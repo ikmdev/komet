@@ -769,6 +769,8 @@ public class PatternDetailsController {
         LOG.info(isValidSave ? "success" : "failed");
         updatePatternBanner();
         updateView();
+        actionEvent.consume();
+        EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternCreationEvent(actionEvent.getSource(), PATTERN_CREATION_EVENT));
     }
 
     private void updatePatternBanner() {
