@@ -37,9 +37,10 @@ import javafx.scene.control.*;
 import javafx.scene.control.skin.DatePickerSkin;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import one.jpro.platform.file.ExtensionFilter;
+import one.jpro.platform.file.picker.FileSavePicker;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
@@ -47,7 +48,6 @@ import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -229,21 +229,23 @@ public class ExportController {
 
     @FXML
     private void handleCancelButtonEvent(ActionEvent cancelEvent) {
-        cancelEvent.consume();
         Stage stage = (Stage) cancelButton.getScene().getWindow();
         stage.close();
     }
 
+    /**
+     * Handles the export button event. This method is triggered when the export button is clicked.
+     * It performs the export operation based on the selected export options and date range.
+     *
+     * @param exportEvent the action event triggered by clicking the export button
+     */
     @FXML
-    private void handleExport(ActionEvent exportEvent) {
-        exportEvent.consume();
-
+    private void handleExportButtonEvent(ActionEvent exportEvent) {
         String exportOption = exportOptions.getSelectionModel().getSelectedItem();
-        FileChooser fileChooser = new FileChooser();
+        FileSavePicker fileSavePicker = FileSavePicker.create(exportButton);
         //Date formatter for the desired date template
         String pattern = "yyyyMMdd-HHmm";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-
 
         // get the from and to dates as millisecond long values
         long fromDate = transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM);
@@ -260,56 +262,76 @@ public class ExportController {
                 : exportName.getText();
         if (exportOption.equalsIgnoreCase(CHANGE_SET)) {
             initialFileName += ".zip";
-            fileChooser.setTitle("Export file name as");
+            fileSavePicker.setInitialFileName(initialFileName);
+            fileSavePicker.setTitle("Export file name as");
             //Making sure the zip is the only thing that is zipped up
-            fileChooser.getExtensionFilters().addAll(
-                    new FileChooser.ExtensionFilter("Zip Files", "*.zip"));
-            fileChooser.setInitialFileName(initialFileName);
+            ExtensionFilter zipExtensionFilter = new ExtensionFilter("Zip Files", ".zip");
+            fileSavePicker.getExtensionFilters().addAll(zipExtensionFilter);
+            fileSavePicker.setSelectedExtensionFilter(zipExtensionFilter); // TODO: To be removed in the next JPro File module release
             String progressTitle = CUSTOM_RANGE.equals(dateChoice) ?
                     "Export Date Range: %s to %s".formatted(dateTimeFromLabel.getText(), dateTimeToLabel.getText())  : "Export All Data";
-            performChangeSetExport(fileChooser, fromDate, toDate, progressTitle);
+            performChangeSetExport(fileSavePicker, fromDate, toDate, progressTitle);
         } else {
             AlertStreams.dispatchToRoot(new UnsupportedOperationException("Export Type not supported"));
         }
+
+        // Close the export dialog
+        Stage stage = (Stage) exportButton.getScene().getWindow();
+        stage.close();
     }
 
-    private void performChangeSetExport(FileChooser fileChooser, long fromDate, long toDate, String progressTitle) {
-        File exportFile = fileChooser.showSaveDialog(exportButton.getScene().getWindow());
-        if (exportFile != null) {
-            //Calls a tinkar-core class that is responsible for transforming entities from the database to
+    /**
+     * Performs the export of a change set within the specified date range.
+     *
+     * @param fileSavePicker the file save picker to select the export file
+     * @param fromDate the start date of the export range in epoch milliseconds
+     * @param toDate the end date of the export range in epoch milliseconds
+     * @param progressTitle the title for the progress indicator
+     */
+    private void performChangeSetExport(FileSavePicker fileSavePicker, long fromDate, long toDate, String progressTitle) {
+        fileSavePicker.setOnFileSelected(exportFile -> {
+            if (exportFile == null) {
+                LOG.warn("Export file is null");
+                AlertStreams.dispatchToRoot(new IllegalArgumentException("Export file cannot be null"));
+                return CompletableFuture.failedFuture(new IllegalArgumentException("Export file cannot be null"));
+            }
 
-            CompletableFuture<EntityCountSummary> completableFuture = EntityService.get().temporalExport(exportFile, fromDate, toDate)
-                    .whenComplete((entityCountSummary, th) -> {
-                        if (th != null) {
-                            LOG.error("Export failed to complete", th);
-                        }else {
-                            LOG.info("Export Completed");
-                        }
-                    });
-            notifyProgressIndicator(completableFuture, progressTitle);
-        }
+            CompletableFuture<EntityCountSummary> exportFuture = EntityService.get()
+                    .temporalExport(exportFile, fromDate, toDate);
+            notifyProgressIndicator(exportFuture, progressTitle);
+            return exportFuture.thenAccept(entityCountSummary ->
+                    LOG.info("Export completed successfully to file {}", exportFile.getAbsolutePath()));
+        });
     }
 
-    private void notifyProgressIndicator(CompletableFuture<EntityCountSummary> completableFuture, String title) {
-        Task<EntityCountSummary> javafxTask = new Task() {
+    /**
+     * Notifies the progress indicator of the export operation.
+     *
+     * @param exportFuture the future representing the export operation
+     * @param title the title for the progress indicator
+     */
+    private void notifyProgressIndicator(CompletableFuture<EntityCountSummary> exportFuture, String title) {
+        Task<EntityCountSummary> javafxTask = new Task<>() {
+
             @Override
             protected EntityCountSummary call() throws Exception {
                 updateTitle(title);
-                updateProgress(-1, 1);
-                completableFuture.whenComplete((entityCountSummary, th) -> {
-                    if (th != null) {
-                        updateMessage( "Export failed to complete");
-                        updateProgress(0.0, 0.0);
-                    }else {
-                        updateMessage("Export Completed!");
-                        updateProgress(1.0, 1.0);
-                    }
-                });
-                EntityCountSummary entityCountSummary = completableFuture.get();
+                updateProgress(-1.0, 1.0); // Indeterminate progress
 
+                final EntityCountSummary entityCountSummary;
+                try {
+                    entityCountSummary = exportFuture.get();
+                    updateProgress(1.0, 1.0);
+                    updateMessage("Export completed!");
+                } catch (Exception ex) {
+                    updateMessage("Export failed!");
+                    updateProgress(0.0, 0.0);
+                    throw ex;
+                }
                 return entityCountSummary;
             }
         };
+
         ProgressHelper.progress(javafxTask, "Cancel Export");
     }
 
