@@ -1623,16 +1623,14 @@ public class JournalController {
         //TODO add 'edit' states to the state machine
         StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
 
-        ValidationViewModel patternViewModel = new PatternViewModel()
-                .setPropertyValue(VIEW_PROPERTIES, viewProperties)
-                .setPropertyValue(MODE, EDIT)
-                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
-                .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
-                .setPropertyValue(STATE_MACHINE, patternSM)
-                .setPropertyValue(PATTERN, patternFacade)
-                ;
         Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
-                .addNamedViewModel(new NamedVm("patternViewModel", patternViewModel));
+                .updateViewModel("patternViewModel", (patternViewModel) ->
+                        patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                        .setPropertyValue(MODE, EDIT)
+                        .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
+                        .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
+                        .setPropertyValue(STATE_MACHINE, patternSM)
+                        .setPropertyValue(PATTERN, patternFacade));
 
         // create pattern window
         JFXNode<Pane, PatternDetailsController> patternJFXNode = FXMLMvvmLoader.make(patternConfig);
