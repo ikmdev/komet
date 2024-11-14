@@ -318,9 +318,12 @@ public class PropertiesController {
         if (eventType.getSuperType() != DESCRIPTION_NAME) {
             throw new RuntimeException("Event is not a ShowPatternPanelEvent.DESCRIPTION_NAME");
         }
+        DescrName descrName = event.getDescrName();
         descrNameViewModel
             .setPropertyValue(VIEW_PROPERTIES, getViewProperties())
-            .setPropertyValue(PATTERN_TOPIC, getPatternTopic());
+            .setPropertyValue(PATTERN_TOPIC, getPatternTopic())
+            .setPropertyValue(PREVIOUS_DESCRIPTION_DATA, descrName);
+
         if (eventType == SHOW_ADD_FQN) {
             descrNameViewModel.setPropertyValue(MODE, CREATE)
                 .setPropertyValue(NAME_TYPE, FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
@@ -328,7 +331,6 @@ public class PropertiesController {
                 .setPropertyValue(DESCRIPTION_NAME_TYPE, "Fully Qualified Name")
             ;
         } else if (eventType == SHOW_EDIT_FQN) {
-            DescrName descrName = event.getDescrName();
             descrNameViewModel.setPropertyValue(MODE, CREATE) // still creating, pattern not created yet
                 .setPropertyValue(NAME_TYPE, FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
                 .setPropertyValue(TITLE_TEXT, EDIT_FQN_TITLE_TEXT)
@@ -347,7 +349,6 @@ public class PropertiesController {
                 .setPropertyValue(DESCRIPTION_NAME_TYPE, "Other Name")
             ;
         } else if (eventType == SHOW_EDIT_OTHER_NAME) {
-            DescrName descrName = event.getDescrName();
             descrNameViewModel.setPropertyValue(MODE, CREATE) // still creating, pattern not created yet
                 .setPropertyValue(NAME_TYPE, REGULAR_NAME_DESCRIPTION_TYPE)
                 .setPropertyValue(TITLE_TEXT, EDIT_OTHER_NAME_TITLE_TEXT)
