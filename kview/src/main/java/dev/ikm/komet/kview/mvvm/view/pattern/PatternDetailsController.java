@@ -58,7 +58,6 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
-import static dev.ikm.tinkar.terms.TinkarTerm.ACTIVE_STATE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DEFINITION_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SENSITIVE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
@@ -66,7 +65,6 @@ import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_INITIAL_CHARACTER_CASE
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE;
 import static dev.ikm.tinkar.terms.TinkarTerm.ENGLISH_LANGUAGE;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.ITALIAN_LANGUAGE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
 import static dev.ikm.tinkar.terms.TinkarTerm.NOT_APPLICABLE;
@@ -86,22 +84,22 @@ import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.component.Concept;
+import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
@@ -141,6 +139,7 @@ import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -156,6 +155,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -920,12 +920,26 @@ public class PatternDetailsController {
                 }
             });
 
-            //FIXME add fields???
-            //patternEntity.
+            // load the pattern fields
+            StampCalculator stampCalc = Calculators.Stamp.DevelopmentLatestActiveOnly();
+            PatternEntityVersion latestDescriptionPattern = (PatternEntityVersion) stampCalc.latest(patternFacade).get();
+            ImmutableList<? extends FieldDefinitionForEntity> fieldDefinitions = latestDescriptionPattern.fieldDefinitions();
+
+            ObservableList<PatternField> patternFieldObsList = patternViewModel.getObservableList(FIELDS_COLLECTION);
+            patternFieldObsList.addAll(convertFieldDefinitions(fieldDefinitions));
 
             // show the public id
             identifierText.setText(patternViewModel.getPatternIdentifierText());
         }
+    }
+
+    private List<PatternField> convertFieldDefinitions(ImmutableList<? extends FieldDefinitionForEntity> fieldDefinitions) {
+        List<PatternField> patternFieldList = new ArrayList<>(fieldDefinitions.size());
+        AtomicInteger idx = new AtomicInteger();
+        idx.set(0);
+        fieldDefinitions.stream().forEach(f ->
+                patternFieldList.add(idx.getAndIncrement(), new PatternField(f.meaning().description(), f.dataType(), f.purpose(), f.meaning(), "")));
+        return patternFieldList;
     }
 
     public ConceptEntity getLanguageConcept(PatternEntityVersion patternEntityVersion, ViewCalculator viewCalculator, SemanticEntityVersion semanticEntityVersion) {
