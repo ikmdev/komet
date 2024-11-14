@@ -25,6 +25,8 @@ public class PatternDescriptionEvent extends Evt {
 
     public static final EvtType<PatternDescriptionEvent> PATTERN_ADD_OTHER_NAME = new EvtType<>(Evt.ANY, "PATTERN_ADD_OTHER_NAME");
 
+    public static final EvtType<PatternDescriptionEvent> PATTERN_EDIT_OTHER_NAME = new EvtType<>(Evt.ANY, "PATTERN_ADD_OTHER_NAME");
+
     private DescrName descrName;
 
     /**
