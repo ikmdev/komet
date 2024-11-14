@@ -266,12 +266,10 @@ public class PatternDetailsController {
                         List<TextFlow> rows = generateOtherNameRow(descrName);
                         otherNamesVBox.getChildren().addAll(rows);
                     } else if (change.wasRemoved()) {
-                        //clear all the vbox items/children since it is an overhead to track the
-                        //vBox child that has been modified.
-                        otherNamesVBox.getChildren().clear();
-                        //add the existing items back in vbox.
+                        //when the modified record is removed from list, there is no easy way to track it in the VBOX.
+                        // Hence, we recreate set all the records.
                         List<TextFlow> rows = generateOtherNameRows();
-                        otherNamesVBox.getChildren().addAll(rows);
+                        otherNamesVBox.getChildren().setAll(rows);
                     }
                 }
             }
