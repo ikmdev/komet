@@ -1,21 +1,17 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel.PATTERN_COLLECTION;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.SemanticRecord;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.application.Platform;
@@ -24,34 +20,31 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.NumberFormat;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
+import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel.PATTERN_COLLECTION;
+
 public class ConceptPatternNavController {
+    private static final Logger LOG = LoggerFactory.getLogger(ConceptPatternNavController.class);
 
     public static final String PATTERN_NAV_ENTRY_FXML = "pattern-nav-entry.fxml";
 
@@ -85,6 +78,8 @@ public class ConceptPatternNavController {
     @InjectViewModel
     private PatternNavViewModel patternNavViewModel;
 
+    private Subscriber<PatternCreationEvent> patternCreationEventSubscriber;
+
     public ConceptPatternNavController(Pane navigatorNodePanel) {
         classicConceptNavigator = navigatorNodePanel;
     }
@@ -99,6 +94,16 @@ public class ConceptPatternNavController {
 
         // default to classic concept navigation
         navContentPane.setCenter(classicConceptNavigator);
+
+        patternCreationEventSubscriber = (evt) -> {
+            LOG.info("A New Pattern has been added/created. Reloading all the Patterns.");
+            if(evt.getEventType() == PATTERN_CREATION_EVENT){
+                LOG.info("A New Pattern has been added/created. Reloading all the Patterns.");
+                patternsVBox.getChildren().clear();
+                loadAllPatterns();
+            }
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(SAVE_PATTERN_TOPIC, PatternCreationEvent.class, patternCreationEventSubscriber);
 
         loadAllPatterns();
 
