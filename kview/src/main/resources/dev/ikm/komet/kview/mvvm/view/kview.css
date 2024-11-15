@@ -4351,15 +4351,17 @@ Styling a context menu for kview ui/ux controls
     -fx-border-color: -Grey-7;
     -fx-background-color: -Grey-2;
     -fx-text-fill: -Secondary-05;
-
     -fx-background-insets: 0;
-
-    -fx-font-weight: 600;
+    -fx-font-family: "Noto Sans";
+    -fx-letter-spacing: 0.2px;
+    -fx-text-transform: uppercase;
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: bold;
 }
 
 .nav-toggle-left.toggle-button {
     -fx-border-width: 1 0 1 1;
-
     -fx-border-radius: 6 0 0 6;
     -fx-background-radius: 6 0 0 6;
 }
