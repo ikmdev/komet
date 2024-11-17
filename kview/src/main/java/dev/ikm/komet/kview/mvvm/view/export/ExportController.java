@@ -52,6 +52,7 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -274,10 +275,6 @@ public class ExportController {
         } else {
             AlertStreams.dispatchToRoot(new UnsupportedOperationException("Export Type not supported"));
         }
-
-        // Close the export dialog
-        Stage stage = (Stage) exportButton.getScene().getWindow();
-        stage.close();
     }
 
     /**
@@ -299,8 +296,18 @@ public class ExportController {
             CompletableFuture<EntityCountSummary> exportFuture = EntityService.get()
                     .temporalExport(exportFile, fromDate, toDate);
             notifyProgressIndicator(exportFuture, progressTitle);
+
+            // Close the export dialog
+            Stage stage = (Stage) exportButton.getScene().getWindow();
+            stage.close();
+
             return exportFuture.thenAccept(entityCountSummary ->
-                    LOG.info("Export completed successfully to file {}", exportFile.getAbsolutePath()));
+                            LOG.info("Export completed successfully to file {}", exportFile.getAbsolutePath()))
+                    .exceptionally(ex -> {
+                        LOG.error("Export failed", ex);
+                        AlertStreams.dispatchToRoot(new RuntimeException("Export failed", ex));
+                        return null;
+                    });
         });
     }
 
