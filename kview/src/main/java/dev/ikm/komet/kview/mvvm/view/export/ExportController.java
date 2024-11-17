@@ -343,7 +343,7 @@ public class ExportController {
     }
 
     private long transformStringInLocalDateTimeToEpochMillis(String localDateTimeFormat) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy, hh:mm a");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy, hh:mm a", Locale.ENGLISH);
         LocalDateTime localDateTime = LocalDateTime.parse(localDateTimeFormat, formatter);
         ZoneId zoneId = ZoneId.of("America/New_York");
         return localDateTime.atZone(zoneId).toInstant().toEpochMilli();
@@ -360,7 +360,7 @@ public class ExportController {
     }
 
     private String transformLocalDateTimeToStr(LocalDateTime localDateTime) {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy, hh:mm a");
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy, hh:mm a", Locale.ENGLISH);
         ZoneId zoneId = ZoneId.of("America/New_York");
         ZonedDateTime zonedDateTime = localDateTime.atZone(zoneId);
         return dateTimeFormatter.format(zonedDateTime);
