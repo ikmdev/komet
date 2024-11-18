@@ -69,11 +69,11 @@
                         </GridPane>
                      </children>
                   </HBox>
-               <ScrollPane fx:id="scrollPane" hbarPolicy="NEVER" minHeight="0.0" prefWidth="372.0" vbarPolicy="ALWAYS">
+               <ScrollPane fx:id="scrollPane" hbarPolicy="NEVER" prefHeight="600.0" prefWidth="372.0" styleClass="add-scrollbar-patterns">
                   <content>
                       <VBox fx:id="scrollPaneContent" maxHeight="1.7976931348623157E308" prefWidth="372.0" styleClass="grey-vertical-scroll-area">
                           <children>
-                            <BorderPane fx:id="navContentPane" VBox.vgrow="ALWAYS" />
+                            <BorderPane fx:id="navContentPane" VBox.vgrow="NEVER" />
                           </children>
                       </VBox>
                   </content>
