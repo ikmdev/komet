@@ -66,6 +66,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_EDIT_OTHER_NAME;
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
+import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
@@ -255,6 +258,26 @@ public class PatternDetailsController {
         StringProperty fqnTextProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
         latestFqnText.textProperty().bind(fqnTextProperty);
 
+        // Update Other names section based on changes in List.
+        ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
+        descrNameObservableList.addListener(new ListChangeListener<DescrName>() {
+            @Override
+            public void onChanged(Change<? extends DescrName> change) {
+                while(change.next()){
+                    if(change.wasAdded()){
+                        DescrName descrName = change.getAddedSubList().getFirst();
+                        List<TextFlow> rows = generateOtherNameRow(descrName);
+                        otherNamesVBox.getChildren().addAll(rows);
+                    } else if (change.wasRemoved()) {
+                        //when the modified record is removed from list, there is no easy way to track it in the VBOX.
+                        // Hence, we recreate set all the records.
+                        List<TextFlow> rows = generateOtherNameRows();
+                        otherNamesVBox.getChildren().setAll(rows);
+                    }
+                }
+            }
+        });
+
         // This will listen to the pattern descriptions event. Adding an FQN, Adding other name.
         patternDescriptionEventSubscriber = evt -> {
             DescrName descrName = evt.getDescrName();
@@ -268,7 +291,13 @@ public class PatternDetailsController {
                 patternSM.t("fqnDone");
             } else if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
                 // This if is invoked when the data is coming from Other Name screen.
-                ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
+                descrNameObservableList.add(evt.getDescrName());
+                patternSM.t("otherNameDone");
+            }else if(evt.getEventType() == PATTERN_EDIT_OTHER_NAME){
+                // triggers the OTHER_NAME list listener to clear the UI and
+                // add back all the items back from the list except for the one removed.
+                descrNameObservableList.remove(evt.getDescrName());
+                // add the modified item back to the UI by
                 descrNameObservableList.add(evt.getDescrName());
                 patternSM.t("otherNameDone");
             }
@@ -287,21 +316,6 @@ public class PatternDetailsController {
         latestFqnText.setOnMouseClicked(mouseEvent -> {
             EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(mouseEvent.getSource(), SHOW_EDIT_FQN, fqnNameProp.getValue()));
             EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(mouseEvent.getSource(), OPEN_PANEL));
-        });
-
-        // Update Other names section based on changes in List.
-        ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
-        descrNameObservableList.addListener(new ListChangeListener<DescrName>() {
-            @Override
-            public void onChanged(Change<? extends DescrName> change) {
-                while(change.next()){
-                    if(change.wasAdded()){
-                        DescrName descrName = change.getAddedSubList().getFirst();
-                        List<TextFlow> rows = generateOtherNameRow(descrName);
-                        otherNamesVBox.getChildren().addAll(rows);
-                    }
-                }
-            }
         });
 
         ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
@@ -354,6 +368,14 @@ public class PatternDetailsController {
         setupProperties();
     }
 
+    private List<TextFlow> generateOtherNameRows() {
+        List<TextFlow> rows = new ArrayList<>();
+        patternViewModel.getObservableList(OTHER_NAMES).forEach( descrName -> {
+            rows.addAll(generateOtherNameRow((DescrName) descrName));
+        });
+        return rows;
+    }
+
     private ContextMenu createContextMenuForPatternField(PatternField selectedPatternField) {
 
         Object[][] menuItems = new Object[][]{
@@ -402,7 +424,6 @@ public class PatternDetailsController {
     }
 
     private List<TextFlow> generateOtherNameRow(DescrName otherName) {
-
         List<TextFlow> textFlows = new ArrayList<>();
         // create textflow to hold regular name label
         TextFlow row1 = new TextFlow();
@@ -410,7 +431,10 @@ public class PatternDetailsController {
         String nameLabel = String.valueOf(obj);
         Text otherNameLabel = new Text(nameLabel);
         otherNameLabel.getStyleClass().add("text-noto-sans-bold-grey-twelve");
-
+        otherNameLabel.setOnMouseClicked(mouseEvent -> {
+            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(mouseEvent.getSource(), SHOW_EDIT_OTHER_NAME, otherName));
+            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(mouseEvent.getSource(), OPEN_PANEL));
+        });
         //Text area of semantics used for the Other name text
         Text semanticDescrText = new Text();
         semanticDescrText.setText(" (%s)".formatted(generateDescriptionSemantics(otherName)));
@@ -745,6 +769,8 @@ public class PatternDetailsController {
         LOG.info(isValidSave ? "success" : "failed");
         updatePatternBanner();
         updateView();
+        actionEvent.consume();
+        EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternCreationEvent(actionEvent.getSource(), PATTERN_CREATION_EVENT));
     }
 
     private void updatePatternBanner() {
