@@ -120,6 +120,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -529,9 +530,21 @@ public class PatternDetailsController {
         row2.getChildren().addAll(semanticDescrText);
 
         // update date
-        String dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
+        String dateAddedStr = "";
+        if (otherName.getStamp() == null) {
+            dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
+        } else {
+            Long otherNameMilis = otherName.getStamp().time();
+            if (otherNameMilis.equals(PREMUNDANE_TIME)) {
+                dateAddedStr = "Premundane";
+            } else {
+                LocalDate localDate = Instant.ofEpochMilli(otherNameMilis).atZone(ZoneId.systemDefault()).toLocalDate();
+                dateAddedStr = localDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
+            }
+        }
+
         TextFlow row3 = new TextFlow();
-        Text dateAddedLabel = new Text("Date Added:");
+        Text dateAddedLabel = new Text("Date Added: ");
         dateAddedLabel.getStyleClass().add("text-noto-sans-normal-grey-eight");
         Text dateLabel = new Text(dateAddedStr);
         dateLabel.getStyleClass().add("text-noto-sans-normal-grey-eight");
@@ -573,7 +586,18 @@ public class PatternDetailsController {
         outerHBox.setSpacing(8);
         HBox innerHBox = new HBox();
         Label dateAddedLabel = new Label("Date Added: ");
-        String dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
+        String dateAddedStr = "";
+        if (patternField.stamp() == null) {
+            dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
+        } else {
+            Long fieldMilis = patternField.stamp().time();
+            if (fieldMilis.equals(PREMUNDANE_TIME)) {
+                dateAddedStr = "Premundane";
+            } else {
+                LocalDate localDate = Instant.ofEpochMilli(fieldMilis).atZone(ZoneId.systemDefault()).toLocalDate();
+                dateAddedStr = localDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
+            }
+        }
         Label dateLabel = new Label(dateAddedStr);
         double dateWidth = 90;
         dateLabel.prefWidth(dateWidth);

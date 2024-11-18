@@ -304,12 +304,13 @@ public class PatternViewModel extends FormViewModel {
 
                     ConceptEntity caseEntity = getCaseConcept(patternEntity, viewCalculator, semanticEntityVersion);
 
-
+                    // put the stamp in the DescrName (or just the time)
+                    Stamp stamp = semanticEntityVersion.stamp();
                     ConceptEntity langEntity = getLanguageConcept(patternEntityVersion, viewCalculator, semanticEntityVersion);
 
                     DescrName descrName = new DescrName(null, otherNameDescription, REGULAR_NAME_DESCRIPTION_TYPE,
                             caseEntity, null, null,
-                            langEntity, semanticEntityVersion.publicId());
+                            langEntity, semanticEntityVersion.publicId(), stamp);
                     descrNameObservableList.add(descrName);
                 }
             });
@@ -329,8 +330,12 @@ public class PatternViewModel extends FormViewModel {
         List<PatternField> patternFieldList = new ArrayList<>(fieldDefinitions.size());
         AtomicInteger idx = new AtomicInteger();
         idx.set(0);
-        fieldDefinitions.stream().forEach(f ->
-                patternFieldList.add(idx.getAndIncrement(), new PatternField(f.meaning().description(), f.dataType(), f.purpose(), f.meaning(), "")));
+        fieldDefinitions.stream().forEach(f -> {
+            StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
+            EntityVersion latest = (EntityVersion) stampCalculator.latest(f.meaning()).get();
+
+            patternFieldList.add(idx.getAndIncrement(), new PatternField(f.meaning().description(), f.dataType(), f.purpose(), f.meaning(), "", latest.stamp()));
+        });
         return patternFieldList;
     }
 
@@ -453,10 +458,10 @@ public class PatternViewModel extends FormViewModel {
         // get the STAMP values from the nested stampViewModel
         StampViewModel stampViewModel = getPropertyValue(STAMP_VIEW_MODEL);
         State state = stampViewModel.getPropertyValue(STATUS);
-        Concept author = stampViewModel.getPropertyValue(AUTHOR);
+        EntityProxy.Concept author = stampViewModel.getPropertyValue(AUTHOR);
         ConceptEntity module = stampViewModel.getPropertyValue(MODULE);
         ConceptEntity path = stampViewModel.getPropertyValue(PATH);
-        Session session = composer.open(state, (EntityProxy.Concept) author, module.toProxy(), path.toProxy());
+        Session session = composer.open(state, author, module.toProxy(), path.toProxy());
 
         // set up pattern with the fully qualified name
         ObservableList<PatternField> fieldsProperty = getObservableList(FIELDS_COLLECTION);
