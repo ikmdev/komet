@@ -174,6 +174,7 @@ import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
+import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -1555,7 +1556,6 @@ public class JournalController {
 
         // create pattern window
         JFXNode<Pane, PatternDetailsController> patternJFXNode = FXMLMvvmLoader.make(patternConfig);
-        patternJFXNode.controller().updateView();
 
         //Getting the concept window pane
         Pane kometNodePanel = patternJFXNode.node();
@@ -1624,17 +1624,19 @@ public class JournalController {
         StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
 
         Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
-                .updateViewModel("patternViewModel", (patternViewModel) ->
-                        patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                .updateViewModel("patternViewModel", (PatternViewModel patternViewModel) -> {
+                    patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
                         .setPropertyValue(MODE, EDIT)
                         .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
                         .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
                         .setPropertyValue(STATE_MACHINE, patternSM)
-                        .setPropertyValue(PATTERN, patternFacade));
+                        .setPropertyValue(PATTERN, patternFacade);
+                });
 
         // create pattern window
         JFXNode<Pane, PatternDetailsController> patternJFXNode = FXMLMvvmLoader.make(patternConfig);
-        patternJFXNode.controller().updateView();
+        Optional<PatternViewModel> optPatternViewModel = patternJFXNode.getViewModel("patternViewModel");
+        optPatternViewModel.ifPresent(patternViewModel -> patternViewModel.populatePattern());
 
         //Getting the pattern window pane
         Pane kometNodePanel = patternJFXNode.node();

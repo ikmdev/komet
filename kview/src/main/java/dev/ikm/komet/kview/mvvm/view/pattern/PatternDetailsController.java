@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
+import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_EDIT_OTHER_NAME;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
@@ -25,55 +26,42 @@ import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.S
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_OTHER_NAME;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FIELDS;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FQN;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_OTHER_NAME;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FIELDS_COLLECTION;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_CASE_SIGNIFICANCE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DATE_ADDED_STR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_LANGUAGE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_DATE_STR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAMES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_DATE_STR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.SELECTED_PATTERN_FIELD;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STAMP_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
-import static dev.ikm.tinkar.terms.TinkarTerm.DEFINITION_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SENSITIVE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE;
-import static dev.ikm.tinkar.terms.TinkarTerm.ENGLISH_LANGUAGE;
-import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
-import static dev.ikm.tinkar.terms.TinkarTerm.NOT_APPLICABLE;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
@@ -84,27 +72,13 @@ import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
-import dev.ikm.tinkar.component.Concept;
-import dev.ikm.tinkar.coordinate.Calculators;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
-import dev.ikm.tinkar.entity.PatternEntity;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.PatternVersionRecord;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -140,7 +114,6 @@ import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
-import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -151,28 +124,8 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_EDIT_OTHER_NAME;
-import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
-import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
-import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
-import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 
 public class PatternDetailsController {
 
@@ -291,7 +244,6 @@ public class PatternDetailsController {
      */
     private PopOver stampEdit;
     private StampEditController stampEditController;
-
     @InjectViewModel
     private PatternViewModel patternViewModel;
 
@@ -334,23 +286,11 @@ public class PatternDetailsController {
 
         savePatternButton.disableProperty().bind(patternViewModel.getProperty(IS_INVALID));
 
-        // capture pattern definition information
-        purposeText.textProperty().bind(patternViewModel.getProperty(PURPOSE_TEXT));
-        purposeText.getStyleClass().add("text-noto-sans-bold-grey-twelve");
-
-        meaningText.textProperty().bind(patternViewModel.getProperty(MEANING_TEXT));
-        meaningText.getStyleClass().add("text-noto-sans-bold-grey-twelve");
-
-        meaningDate.textProperty().bind(patternViewModel.getProperty(MEANING_DATE_STR));
-        purposeDate.textProperty().bind(patternViewModel.getProperty(PURPOSE_DATE_STR));
 
         patternDefinitionEventSubscriber = evt -> patternViewModel.setPurposeAndMeaningText(evt.getPatternDefinition());
 
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDefinitionEvent.class, patternDefinitionEventSubscriber);
 
-        // capture descriptions information
-        StringProperty fqnTextProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT);
-        latestFqnText.textProperty().bind(fqnTextProperty);
 
         // Update Other names section based on changes in List.
         ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
@@ -398,12 +338,59 @@ public class PatternDetailsController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
 
+
+
+        // bind view model
+        if (!patternTitleText.textProperty().isBound()) {
+            patternTitleText.textProperty().bind(patternViewModel.getProperty(PATTERN).map(p -> ((EntityFacade) p).description()));
+        }
+        // bind stamp
+        lastUpdatedText.textProperty().bind(getStampViewModel().getProperty(TIME).map(t -> {
+            if (!t.equals(PREMUNDANE_TIME)) {
+                DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
+                Instant stampInstance = Instant.ofEpochSecond((long) t / 1000);
+                ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
+                return DATE_TIME_FORMATTER.format(stampTime);
+            } else {
+                return "Premundane";
+            }
+        }));
+
+        moduleText.textProperty().bind(getStampViewModel().getProperty(MODULE).map(m -> ((ConceptEntity) m).description()));
+        pathText.textProperty().bind(getStampViewModel().getProperty(PATH).map(p -> ((ConceptEntity) p).description()));
+        statusText.textProperty().bind(getStampViewModel().getProperty(STATUS).map(s -> s.toString()));
+
+        // show the public id
+        //identifierText.setText(patternViewModel.getPatternIdentifierText());
+        identifierText.textProperty().bind(patternViewModel.getProperty(PATTERN).map(patternFacade ->
+                String.valueOf(((EntityFacade)patternFacade).toProxy().publicId().asUuidList().getLastOptional().get())));
+
+        // capture pattern definition information
+        purposeText.textProperty().bind(patternViewModel.getProperty(PURPOSE_TEXT));
+        purposeText.getStyleClass().add("text-noto-sans-bold-grey-twelve");
+
+        meaningText.textProperty().bind(patternViewModel.getProperty(MEANING_TEXT));
+        meaningText.getStyleClass().add("text-noto-sans-bold-grey-twelve");
+
+        meaningDate.textProperty().bind(patternViewModel.getProperty(MEANING_DATE_STR));
+        purposeDate.textProperty().bind(patternViewModel.getProperty(PURPOSE_DATE_STR));
+
+        // capture descriptions information
+        latestFqnText.textProperty().bind(patternViewModel.getProperty(FQN_DESCRIPTION_NAME_TEXT));
         // Bind FQN property with description text, date and FQN menu item.
         ObjectProperty<DescrName> fqnNameProp = patternViewModel.getProperty(FQN_DESCRIPTION_NAME);
         // Generate description semantic and show
         fqnDescriptionSemanticText.textProperty().bind(fqnNameProp.map(descrName -> " (%s)".formatted(generateDescriptionSemantics(descrName))).orElse(""));
-        // display current date else blank.
-        fqnAddDateLabel.textProperty().bind(fqnNameProp.map((fqnName) -> LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"))).orElse(""));
+
+        if (patternViewModel.getPropertyValue(MODE).equals(CREATE)) {
+            //FIXME this code was designed for edit... if it is an existing pattern it was overwriting the date added with the current date;
+            // we might need to change it to a change listener...
+
+            // display current date else blank.
+            fqnAddDateLabel.textProperty().bind(fqnNameProp.map((fqnName) -> LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"))).orElse(""));
+        } else {
+            fqnAddDateLabel.textProperty().bind(patternViewModel.getProperty(FQN_DATE_ADDED_STR));
+        }
         // hide menu item if FQN is added.
         addFqnMenuItem.visibleProperty().bind(fqnNameProp.isNull());
         //
@@ -412,6 +399,23 @@ public class PatternDetailsController {
             EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(mouseEvent.getSource(), OPEN_PANEL));
         });
 
+        Label fqnAddDateLabel = new Label();
+        ObjectProperty<DescrName> objectProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME);
+        StringBinding dateStrProp = Bindings
+                .when(objectProperty.isNotNull())
+                .then(LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")))
+                .otherwise("");
+        fqnAddDateLabel.textProperty().bind(dateStrProp);
+
+        //Listen to the changes in the fieldsTilePane and update the field numbers.
+        ObservableList<Node> fieldsTilePaneList = fieldsTilePane.getChildren();
+        fieldsTilePaneList.addListener((ListChangeListener<Node>) (listener) -> {
+            while(listener.next()){
+                if(listener.wasAdded() || listener.wasRemoved()){
+                    updateFieldValues();
+                }
+            }
+        });
         ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
         patternFieldsPanelEventSubscriber = evt -> {
             PatternField patternField = evt.getPatternField();
@@ -423,21 +427,10 @@ public class PatternDetailsController {
             }
             //Update the fields collection data.
             patternFieldList.add(fieldPosition, patternField);
-             // save and therefore validate
+            // save and therefore validate
             patternViewModel.save();
         };
-
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
-
-        //Listen to the changes int he fieldsTilePane and update the field numbers.
-        ObservableList<Node> fieldsTilePaneList = fieldsTilePane.getChildren();
-        fieldsTilePaneList.addListener((ListChangeListener<Node>) (listener) -> {
-            while(listener.next()){
-                if(listener.wasAdded() || listener.wasRemoved()){
-                    updateFieldValues();
-                }
-            }
-        });
 
         patternFieldList.addListener((ListChangeListener<? super PatternField>) changeListner -> {
             while(changeListner.next()){
@@ -451,13 +444,6 @@ public class PatternDetailsController {
             }
         });
 
-        Label fqnAddDateLabel = new Label();
-        ObjectProperty<DescrName> objectProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME);
-        StringBinding dateStrProp = Bindings
-                .when(objectProperty.isNotNull())
-                .then(LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")))
-                .otherwise("");
-        fqnAddDateLabel.textProperty().bind(dateStrProp);
         // Setup Properties
         setupProperties();
     }
@@ -842,153 +828,6 @@ public class PatternDetailsController {
         contentRegion.prefHeightProperty().bind(slideoutTrayPane.heightProperty());
     }
 
-    public void updateView() {
-        ObjectProperty<EntityFacade> patternProperty = patternViewModel.getProperty(PATTERN);
-        EntityFacade patternFacade = patternProperty.getValue();
-        if (patternFacade == null) {
-            getPatternViewModel().setPropertyValue(MODE, CREATE);
-        } else {
-            ViewCalculator viewCalculator = getViewProperties().calculator();
-            PatternEntity patternEntity = EntityService.get().getEntityFast(patternFacade.nid());
-            getPatternViewModel().setPropertyValue(MODE, EDIT);
-            if (!patternTitleText.textProperty().isBound()) {
-                patternTitleText.textProperty().bind(patternProperty.map(p -> p.description()));
-            }
-            // bind stamp
-            lastUpdatedText.textProperty().bind(getStampViewModel().getProperty(TIME).map(t -> {
-                DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
-                Instant stampInstance = Instant.ofEpochSecond((long)t/1000);
-                ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-                return DATE_TIME_FORMATTER.format(stampTime);
-            }));
-
-            moduleText.textProperty().bind(getStampViewModel().getProperty(MODULE).map(m -> ((ConceptEntity) m).description()));
-            pathText.textProperty().bind(getStampViewModel().getProperty(PATH).map(p -> ((ConceptEntity) p).description()));
-            statusText.textProperty().bind(getStampViewModel().getProperty(STATUS).map(s -> s.toString()));
-
-            // bind purpose
-            //FIXME... when you bump out the DEFINITIONS, the purpose and meaning aren't populated
-            //do we need to pass it to the patternPropertiesViewModel???
-            patternViewModel.getProperty(PURPOSE_ENTITY).bind(patternViewModel.getProperty(PATTERN).map(p -> {
-                Latest<PatternVersionRecord> latestPatternVerRec = viewCalculator.latest(((EntityFacade) p).nid());
-                return Entity.getFast(latestPatternVerRec.get().semanticPurposeNid());
-            }));
-            patternViewModel.getProperty(PURPOSE_TEXT).bind(patternViewModel.getProperty(PURPOSE_ENTITY).map(
-                    pe -> ((EntityFacade)pe).description()));
-
-            // bind meaning
-            patternViewModel.getProperty(MEANING_ENTITY).bind(patternViewModel.getProperty(PATTERN).map(p -> {
-                Latest<PatternVersionRecord> latestPatternVerRec = viewCalculator.latest(((EntityFacade) p).nid());
-                return Entity.getFast(latestPatternVerRec.get().semanticMeaningNid());
-            }));
-            patternViewModel.getProperty(MEANING_TEXT).bind(patternViewModel.getProperty(MEANING_ENTITY).map(
-                    me -> ((EntityFacade)me).description()));
-
-            Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(viewCalculator, patternFacade);
-
-            ObservableList<DescrName> descrNameObservableList = patternViewModel.getObservableList(OTHER_NAMES);
-            descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
-
-                boolean isFQN = semanticEntityVersion
-                        .fieldValues()
-                        .stream()
-                        .anyMatch( fieldValue ->
-                                (fieldValue instanceof ConceptFacade facade) &&
-                                        facade.nid() == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid());
-                PatternEntityVersion patternEntityVersion = (PatternEntityVersion) viewCalculator.latest(patternEntity).get();
-                if (isFQN) {
-                    String fqnNameDescription = (String) semanticEntityVersion.fieldValues().stream().filter(fv -> fv instanceof String)
-                            .collect(Collectors.toList()).getFirst();
-
-                    ConceptEntity caseEntity = getCaseConcept(patternEntity, viewCalculator, semanticEntityVersion);
-                    ConceptEntity langEntity = getLanguageConcept(patternEntityVersion, viewCalculator, semanticEntityVersion);
-
-                    DescrName fqnDescrName = new DescrName(null, fqnNameDescription, FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE,
-                            caseEntity, null, null,
-                            langEntity, semanticEntityVersion.publicId());
-                    patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME, fqnDescrName);
-                    patternViewModel.setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, fqnDescrName.getNameText());
-                } else {
-                    String otherNameDescription = (String) semanticEntityVersion.fieldValues().stream().filter(fv -> fv instanceof String)
-                            .collect(Collectors.toList()).getFirst();
-
-                    ConceptEntity caseEntity = getCaseConcept(patternEntity, viewCalculator, semanticEntityVersion);
-
-
-                    ConceptEntity langEntity = getLanguageConcept(patternEntityVersion, viewCalculator, semanticEntityVersion);
-
-                    DescrName descrName = new DescrName(null, otherNameDescription, REGULAR_NAME_DESCRIPTION_TYPE,
-                            caseEntity, null, null,
-                            langEntity, semanticEntityVersion.publicId());
-                    descrNameObservableList.add(descrName);
-                }
-            });
-
-            // load the pattern fields
-            StampCalculator stampCalc = Calculators.Stamp.DevelopmentLatestActiveOnly();
-            PatternEntityVersion latestDescriptionPattern = (PatternEntityVersion) stampCalc.latest(patternFacade).get();
-            ImmutableList<? extends FieldDefinitionForEntity> fieldDefinitions = latestDescriptionPattern.fieldDefinitions();
-
-            ObservableList<PatternField> patternFieldObsList = patternViewModel.getObservableList(FIELDS_COLLECTION);
-
-            List<PatternField> patternFields = convertFieldDefinitions(fieldDefinitions);
-            patternFields.forEach(patternField -> patternFieldObsList.add(patternField));
-
-            // show the public id
-            identifierText.setText(patternViewModel.getPatternIdentifierText());
-        }
-    }
-
-    private List<PatternField> convertFieldDefinitions(ImmutableList<? extends FieldDefinitionForEntity> fieldDefinitions) {
-        List<PatternField> patternFieldList = new ArrayList<>(fieldDefinitions.size());
-        AtomicInteger idx = new AtomicInteger();
-        idx.set(0);
-        fieldDefinitions.stream().forEach(f ->
-                patternFieldList.add(idx.getAndIncrement(), new PatternField(f.meaning().description(), f.dataType(), f.purpose(), f.meaning(), "")));
-        return patternFieldList;
-    }
-
-    public ConceptEntity getLanguageConcept(PatternEntityVersion patternEntityVersion, ViewCalculator viewCalculator, SemanticEntityVersion semanticEntityVersion) {
-        int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
-
-        Object langConcept = (indexLang != -1)
-                ? semanticEntityVersion.fieldValues().get(indexLang)
-                : ENGLISH_LANGUAGE;
-
-        String langText = viewCalculator.getRegularDescriptionText(((ConceptFacade) langConcept).nid())
-                .orElse(String.valueOf(((ConceptFacade) langConcept).nid())).toUpperCase();
-
-        Set<ConceptEntity> possibleLanguages = fetchDescendentsOfConcept(getViewProperties(), LANGUAGE.publicId());
-
-        Optional<ConceptEntity> langEntity = possibleLanguages.stream().filter(lang -> lang.toString().equalsIgnoreCase(langText)).findFirst();
-
-        return langEntity.orElse(Entity.getFast(ENGLISH_LANGUAGE));
-    }
-
-    public ConceptEntity getCaseConcept(PatternEntity patternEntity, ViewCalculator viewCalculator, SemanticEntityVersion semanticEntityVersion) {
-        PatternEntityVersion patternEntityVersion = (PatternEntityVersion) viewCalculator.latest(patternEntity).get();
-        int indexCaseSig = patternEntityVersion.indexForMeaning(DESCRIPTION_CASE_SIGNIFICANCE);
-
-
-        Object caseSigConcept = (indexCaseSig != -1)
-                ? (Concept) semanticEntityVersion.fieldValues().get(indexCaseSig)
-                : NOT_APPLICABLE;
-
-        String casSigText = viewCalculator.getRegularDescriptionText(((ConceptFacade) caseSigConcept).nid())
-                .orElse(String.valueOf(((ConceptFacade) caseSigConcept).nid())).toUpperCase();
-
-        //FIXME: need a better way to query the Description semantic
-        return switch (casSigText) {
-            case "DESCRIPTION_NOT_CASE_SENSITIVE":
-                yield Entity.getFast(DESCRIPTION_NOT_CASE_SENSITIVE.nid());
-            case "DESCRIPTION_CASE_SENSITIVE":
-                yield Entity.getFast(DESCRIPTION_CASE_SENSITIVE.nid());
-            case "DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE":
-                yield Entity.getFast(DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE.nid());
-            default:
-                yield Entity.getFast(NOT_APPLICABLE.nid());
-        };
-    }
 
     public void putTitlePanesArrowOnRight() {
         putArrowOnRight(this.patternDefinitionTitledPane);
@@ -996,73 +835,13 @@ public class PatternDetailsController {
         putArrowOnRight(this.fieldsTitledPane);
     }
 
-    private Map<SemanticEntityVersion, List<String>> latestDescriptionSemantics(final ViewCalculator viewCalculator, EntityFacade conceptFacade) {
-        Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = new HashMap<>();
 
-        // FQN - English | Case Sensitive
-        // REG - English | Case Sensitive
-
-        //Get latest description semantic version of the passed in concept (entityfacade)
-        //Latest<SemanticEntityVersion> latestDescriptionSemanticVersion = viewCalculator.getDescription(conceptFacade);
-
-        //There should always be one FQN
-        //There can be 0 or more Regular Names
-        //Loop through, conditionally sort semantics by their description type concept object
-        //Update UI via the descriptionRegularName function on the
-        viewCalculator.getDescriptionsForComponent(conceptFacade).stream()
-                .filter(semanticEntity -> {
-                    // semantic -> semantic version -> pattern version(index meaning field from DESCR_Type)
-                    Latest<SemanticEntityVersion> semanticVersion = viewCalculator.latest(semanticEntity);
-
-                    PatternEntity<PatternEntityVersion> patternEntity = semanticEntity.pattern();
-                    PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
-
-                    int indexForDescrType = patternEntityVersion.indexForMeaning(TinkarTerm.DESCRIPTION_TYPE);
-
-                    // Filter (include) semantics where they contain descr type having FQN, Regular name, Definition Descr.
-                    Object descriptionTypeConceptValue = semanticVersion.get().fieldValues().get(indexForDescrType);
-                    if(descriptionTypeConceptValue instanceof EntityFacade descriptionTypeConcept ){
-                        int typeId = descriptionTypeConcept.nid();
-                        return (typeId == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() ||
-                                typeId == REGULAR_NAME_DESCRIPTION_TYPE.nid() ||
-                                typeId == DEFINITION_DESCRIPTION_TYPE.nid());
-                    }
-                    return false;
-                }).forEach(semanticEntity -> {
-                    // Each description obtain the latest semantic version, pattern version and their field values based on index
-                    Latest<SemanticEntityVersion> semanticVersion = viewCalculator.latest(semanticEntity);
-                    PatternEntity<PatternEntityVersion> patternEntity = semanticEntity.pattern();
-                    PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
-
-                    int indexCaseSig = patternEntityVersion.indexForMeaning(DESCRIPTION_CASE_SIGNIFICANCE);
-                    int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
-
-                    List<String> descrFields = new ArrayList<>();
-                    descriptionSemanticsMap.put(semanticVersion.get(), descrFields);
-                    Object caseSigConcept = semanticVersion.get().fieldValues().get(indexCaseSig);
-                    Object langConcept = semanticVersion.get().fieldValues().get(indexLang);
-
-                    // e.g. FQN - English | Case Sensitive
-                    String casSigText = viewCalculator.getRegularDescriptionText(((ConceptFacade) caseSigConcept).nid())
-                            .orElse(String.valueOf(((ConceptFacade) caseSigConcept).nid()));
-                    String langText = viewCalculator.getRegularDescriptionText(((ConceptFacade) langConcept).nid())
-                            .orElse(String.valueOf(((ConceptFacade) langConcept).nid()));
-
-                    descrFields.add(casSigText);
-                    descrFields.add(langText);
-                });
-        return descriptionSemanticsMap;
-
-    }
 
 
     @FXML
     private void savePattern(ActionEvent actionEvent) {
         boolean isValidSave = patternViewModel.createPattern();
         LOG.info(isValidSave ? "success" : "failed");
-        updateView();
-        actionEvent.consume();
-        EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternCreationEvent(actionEvent.getSource(), PATTERN_CREATION_EVENT));
     }
 
 }
