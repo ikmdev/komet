@@ -1624,7 +1624,6 @@ public class JournalController {
         //TODO add 'edit' states to the state machine
         StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
 
-//        UUID journalWindowTopic = nodePreferences().getUuid(KometNode.PreferenceKey.CURRENT_JOURNAL_WINDOW_TOPIC).get()
         Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
                 .updateViewModel("patternViewModel", (PatternViewModel patternViewModel) -> {
                     patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
