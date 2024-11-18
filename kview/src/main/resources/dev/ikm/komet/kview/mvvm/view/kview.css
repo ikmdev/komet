@@ -2902,6 +2902,12 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: white, #e5e9f1;
 }
 
+.draggable-node:snapshot {
+    -fx-border-color: -Primary-05;
+    -fx-border-radius: 0;
+    -fx-border-width: 4;
+}
+
 /* Styles title text inside the content of TitlePane. eg: DESCRIPTION , Fully Qualified Name.*/
 .pattern-title {
     -fx-text-alignment: center;
