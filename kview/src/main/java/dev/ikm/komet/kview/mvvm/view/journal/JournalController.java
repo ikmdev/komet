@@ -27,6 +27,7 @@ import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.DEVICE_ENTIT
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.STAMP_VIEW_MODEL;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
@@ -92,6 +93,8 @@ import dev.ikm.komet.kview.fxutils.window.WindowSupport;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.lidr.mvvm.view.details.LidrDetailsController;
 import dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.view.details.ConceptPreference;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
@@ -130,10 +133,13 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -525,6 +531,8 @@ public class JournalController {
                     LOG.info("publicId: {}", dragboard.getString());
 
                     ConceptFacade conceptFacade = null;
+                    PatternFacade patternFacade = null;
+                    DragAndDropType dragAndDropType = null;
                     if (event.getGestureSource() instanceof SearchResultCell searchResultCell) {
                         if (searchResultCell.getItem() instanceof SearchPanelController.NidTextRecord nidTextRecord) {
                             conceptFacade = Entity.getFast(nidTextRecord.nid());
@@ -541,24 +549,36 @@ public class JournalController {
                     } else if (event.getGestureSource() instanceof MultiParentGraphCell multiParentGraphCell) {
                         conceptFacade = multiParentGraphCell.getItem();
                     } else if (event.getGestureSource() instanceof Node sourceNode) {
-                        PublicId publicId = (PublicId) sourceNode.getUserData();
-                        conceptFacade = ConceptFacade.make(PrimitiveData.nid(publicId));
+                        // could be a concept or a pattern
+                        DragAndDropInfo dragAndDropInfo = (DragAndDropInfo) sourceNode.getUserData();
+                        if (dragAndDropInfo.type().equals(DragAndDropType.CONCEPT)) {
+                            dragAndDropType = DragAndDropType.CONCEPT;
+                            conceptFacade = ConceptFacade.make(PrimitiveData.nid((PublicId) sourceNode.getUserData()));
+                        } else if (dragAndDropInfo.type().equals(DragAndDropType.PATTERN)) {
+                            dragAndDropType = DragAndDropType.PATTERN;
+                            patternFacade = PatternFacade.make(PrimitiveData.nid((PublicId) sourceNode.getUserData()));
+                        }
+                        LOG.info("wait a sec");
                     }
 
-                    if (conceptFacade == null) {
+                    if (conceptFacade == null && patternFacade == null) {
                         return;
                     }
+                    PublicId publicId = null;
+                    if (dragAndDropType.equals(DragAndDropType.CONCEPT)) {
+                        publicId = conceptFacade.publicId();
+                        Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
 
-                    PublicId publicId = conceptFacade.publicId();
-                    Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-
-                    Map<ConceptWindowSettings, Object> conceptWindowSettingsMap = new HashMap<>();
-                    conceptWindowSettingsMap.put(CONCEPT_XPOS, desktopDropRegion.getLayoutX());
-                    conceptWindowSettingsMap.put(CONCEPT_YPOS, desktopDropRegion.getLayoutY());
-                    conceptWindowSettingsMap.put(CONCEPT_WIDTH, desktopDropRegion.getWidth());
-                    conceptWindowSettingsMap.put(CONCEPT_HEIGHT, desktopDropRegion.getHeight());
-                    makeConceptWindow(windowView, ConceptFacade.make(entity.nid()), conceptWindowSettingsMap);
-
+                        Map<ConceptWindowSettings, Object> conceptWindowSettingsMap = new HashMap<>();
+                        conceptWindowSettingsMap.put(CONCEPT_XPOS, desktopDropRegion.getLayoutX());
+                        conceptWindowSettingsMap.put(CONCEPT_YPOS, desktopDropRegion.getLayoutY());
+                        conceptWindowSettingsMap.put(CONCEPT_WIDTH, desktopDropRegion.getWidth());
+                        conceptWindowSettingsMap.put(CONCEPT_HEIGHT, desktopDropRegion.getHeight());
+                        makeConceptWindow(windowView, ConceptFacade.make(entity.nid()), conceptWindowSettingsMap);
+                    } else if (dragAndDropType.equals(DragAndDropType.PATTERN)) {
+                        publicId = patternFacade.publicId();
+                        makePatternWindow(patternFacade, windowView.makeOverridableViewProperties());
+                    }
                     consumer.accept(publicId);
                     success = true;
                 } catch (Exception ex) {
