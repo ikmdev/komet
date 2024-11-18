@@ -77,7 +77,7 @@
     -fx-background-color: -Grey-3;
 }
 
-.main-center-container {
+.concept-window .main-center-container {
     -fx-background-color: -Grey-White;
     -fx-background-radius: 4px;
 
@@ -101,7 +101,8 @@
 }
 
 .concept-detail-banner-background {
-    -fx-background-color: transparent;
+    -fx-background-color: -Grey-1;
+    -fx-background-radius: 4px 4px 0 0;
 }
 
 .identicon-frame {
@@ -169,7 +170,7 @@
     -fx-border-insets: -1 0 0 0;
 }
 
-.main-center-container .titled-pane .content {
+.concept-window .main-center-container .titled-pane .content {
     -fx-border-width: 0;
     -fx-background-color: transparent;
 }
@@ -1913,7 +1914,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Natural-Grey-Main;
     -fx-background-radius: 4 4 0 0;
     -fx-border-radius: 4 4 0 0;
-    -fx-padding: 2 16 0 16;
+    -fx-padding: 4 16 2 16;
 }
 .lidr-tab-icon {
     -fx-background-color: -Grey-White;
@@ -1930,11 +1931,11 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .lidr-detail-pane {
-    -fx-padding: 0 4 4 4;
+    -fx-padding: 0 0 4 0;
     -fx-border-insets: 0;
     -fx-background-color: -Grey-3;
-    -fx-background-radius: 0 0 10 10;
-    -fx-border-radius: 0 0 10 10;
+    -fx-background-radius: 0 0 4 4;
+    -fx-border-radius: 0 0 4 4;
 }
 
 /* Result(s) added accordions */
@@ -4398,8 +4399,56 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: transparent;
 }
 
-.pattern-window.concept-detail-pane .main-pane-content {
-    -fx-background-color: white;
+.pattern-window.concept-detail-pane .main-center-container {
+    -fx-background-color: -Natural-Grey-Main;
+    -fx-background-radius: 0 0 4px 4px;
+
+    -fx-padding: 0 5px 5px 5px;
+}
+
+.pattern-window.concept-detail-pane .main-center-container .properties-tab-container {
+    -fx-background-color: transparent;
+}
+
+.pattern-window.concept-detail-pane .main-center-container .titled-pane .content {
+    -fx-border-width: 0;
+}
+
+.pattern-window.concept-detail-pane .main-center-container .titled-pane {
+    -fx-padding: 0;
+    -fx-border-width: 1 0 0 0;
+    -fx-border-insets: 0;
+}
+
+.pattern-window.concept-detail-pane .main-center-container .titled-pane .title {
+    -fx-padding: 8 4 4 6;
+}
+
+.pattern-window.concept-detail-pane {
+    -fx-border-insets: 0;
+
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.pattern-window .main-right-container {
+    -fx-background-color: -Natural-Grey-Main;
+
+    -fx-padding: 0;
+    -fx-background-insets: 0 0 0 -3px;
+
+    -fx-background-radius: 0 0 4px 0;
+}
+
+.pattern-window.concept-detail-pane .main-right-container .properties-tab-container-content {
+    -fx-background-color: -Grey-3;
+    -fx-border-color: -Natural-Grey-Main;
+
+    -fx-border-width: 1px 0 0 0;
+}
+
+.pattern-window.concept-detail-pane .main-right-container .properties-tab-container-content .lidr-device {
+    -fx-background-radius: 0 0 4px 4px;
 }
 
 /*******************************************************************************
@@ -4412,6 +4461,6 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: transparent;
 }
 
-.lidr-window.concept-detail-pane .main-pane-content {
+.lidr-window.concept-detail-pane .main-center-container {
     -fx-background-color: white;
 }
