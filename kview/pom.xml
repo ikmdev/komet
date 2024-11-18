@@ -48,6 +48,10 @@
             <groupId>one.jpro.platform</groupId>
             <artifactId>jpro-auth-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>one.jpro.platform</groupId>
+            <artifactId>jpro-file</artifactId>
+        </dependency>
         <!--        testing -->
         <dependency>
             <groupId>one.jpro.platform.jpms</groupId>
