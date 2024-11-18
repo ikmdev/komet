@@ -34,6 +34,7 @@
     -Grey-1: #FBFBFC;
     -Grey-White: #FFF;
     -Natural-Grey-Main: #5E5E5E;
+    -Natural-Grey-Dark: #4A4A4A;
 
     -Accent-color-yellow: #F3BE00;
     -Accent-color-orange: #FDAD15;
@@ -2720,11 +2721,14 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .search-entry-text {
-    -fx-font-family: "Noto Sans";
+    -fx-font: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
-    -fx-font-weight: 600;
-    -fx-fill: -Secondary-06;
+    -fx-font-weight: bold;
+    -fx-line-height: 16px;
+    -fx-letter-spacing: 0.2px;
+    -fx-fill: -Natural-Grey-Dark;
+
 }
 
 .search-entry-expanded {

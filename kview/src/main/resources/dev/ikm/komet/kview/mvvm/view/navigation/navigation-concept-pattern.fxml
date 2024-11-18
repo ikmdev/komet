@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
+<StackPane maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
    <Pane minHeight="0.0" prefWidth="372.0">
       <children>
             <VBox maxHeight="1.7976931348623157E308" prefWidth="372.0" styleClass="grey-vertical-scroll-area">
@@ -73,7 +73,7 @@
                   <content>
                       <VBox fx:id="scrollPaneContent" maxHeight="1.7976931348623157E308" prefWidth="372.0" styleClass="grey-vertical-scroll-area">
                           <children>
-                            <BorderPane fx:id="navContentPane" VBox.vgrow="NEVER" />
+                            <BorderPane fx:id="navContentPane" prefWidth="372.0" VBox.vgrow="NEVER" />
                           </children>
                       </VBox>
                   </content>
