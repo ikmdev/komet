@@ -421,25 +421,11 @@ public class PatternViewModel extends FormViewModel {
         PatternEntityVersion patternEntityVersion = (PatternEntityVersion) viewCalculator.latest(patternEntity).get();
         int indexCaseSig = patternEntityVersion.indexForMeaning(DESCRIPTION_CASE_SIGNIFICANCE);
 
-
         Object caseSigConcept = (indexCaseSig != -1)
                 ? (Concept) semanticEntityVersion.fieldValues().get(indexCaseSig)
                 : NOT_APPLICABLE;
 
-        String casSigText = viewCalculator.getRegularDescriptionText(((ConceptFacade) caseSigConcept).nid())
-                .orElse(String.valueOf(((ConceptFacade) caseSigConcept).nid())).toUpperCase();
-
-        //FIXME: need a better way to query the Description semantic
-        return switch (casSigText) {
-            case "DESCRIPTION_NOT_CASE_SENSITIVE":
-                yield Entity.getFast(DESCRIPTION_NOT_CASE_SENSITIVE.nid());
-            case "DESCRIPTION_CASE_SENSITIVE":
-                yield Entity.getFast(DESCRIPTION_CASE_SENSITIVE.nid());
-            case "DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE":
-                yield Entity.getFast(DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE.nid());
-            default:
-                yield Entity.getFast(NOT_APPLICABLE.nid());
-        };
+        return Entity.getFast(((ConceptFacade) caseSigConcept).nid());
     }
 
 
