@@ -534,6 +534,7 @@ public class JournalController {
                     PatternFacade patternFacade = null;
                     DragAndDropType dragAndDropType = null;
                     if (event.getGestureSource() instanceof SearchResultCell searchResultCell) {
+                        dragAndDropType = CONCEPT;
                         if (searchResultCell.getItem() instanceof SearchPanelController.NidTextRecord nidTextRecord) {
                             conceptFacade = Entity.getFast(nidTextRecord.nid());
                         } else if (searchResultCell.getItem() instanceof
@@ -548,15 +549,16 @@ public class JournalController {
                         }
                     } else if (event.getGestureSource() instanceof MultiParentGraphCell multiParentGraphCell) {
                         conceptFacade = multiParentGraphCell.getItem();
+                        dragAndDropType = CONCEPT;
                     } else if (event.getGestureSource() instanceof Node sourceNode) {
                         // could be a concept or a pattern
                         DragAndDropInfo dragAndDropInfo = (DragAndDropInfo) sourceNode.getUserData();
                         if (dragAndDropInfo.type().equals(DragAndDropType.CONCEPT)) {
                             dragAndDropType = DragAndDropType.CONCEPT;
-                            conceptFacade = ConceptFacade.make(PrimitiveData.nid((PublicId) sourceNode.getUserData()));
+                            conceptFacade = ConceptFacade.make(PrimitiveData.nid(dragAndDropInfo.publicId()));
                         } else if (dragAndDropInfo.type().equals(DragAndDropType.PATTERN)) {
                             dragAndDropType = DragAndDropType.PATTERN;
-                            patternFacade = PatternFacade.make(PrimitiveData.nid((PublicId) sourceNode.getUserData()));
+                            patternFacade = PatternFacade.make(PrimitiveData.nid(dragAndDropInfo.publicId()));
                         }
                         LOG.info("wait a sec");
                     }
