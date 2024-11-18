@@ -240,12 +240,12 @@ public class PatternViewModel extends FormViewModel {
             EntityVersion purposeLatest = stampCalculator.latest(purposeEntity).get();
             Long purposeMilis = purposeLatest.stamp().time();
             if (purposeMilis.equals(PREMUNDANE_TIME)) {
-                setPropertyValue(PURPOSE_DATE_STR, "Premundane");
+                setPropertyValue(PURPOSE_DATE_STR, "Date Added: Premundane");
             } else {
                 LocalDate purposeDate =
                         Instant.ofEpochMilli(purposeMilis).atZone(ZoneId.systemDefault()).toLocalDate();
                 String purposeDateStr = purposeDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-                setPropertyValue(PURPOSE_DATE_STR, purposeDateStr);
+                setPropertyValue(PURPOSE_DATE_STR, "Date Added: " +  purposeDateStr);
             }
 
 
@@ -255,12 +255,12 @@ public class PatternViewModel extends FormViewModel {
             EntityVersion meaningLatest = stampCalculator.latest(purposeEntity).get();
             Long meaningMillis = meaningLatest.stamp().time();
             if (meaningMillis.equals(PREMUNDANE_TIME)) {
-                setPropertyValue(MEANING_DATE_STR, "Premundane");
+                setPropertyValue(MEANING_DATE_STR, "Date Added: Premundane");
             } else {
                 LocalDate meaningDate =
                         Instant.ofEpochMilli(meaningMillis).atZone(ZoneId.systemDefault()).toLocalDate();
                 String meaningDateStr = meaningDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-                setPropertyValue(MEANING_DATE_STR, meaningDateStr);
+                setPropertyValue(MEANING_DATE_STR, "Date Added: " + meaningDateStr);
             }
 
             Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(viewCalculator, patternFacade);
