@@ -1605,7 +1605,6 @@ public class JournalController {
 
 
     private void makePatternWindow(EntityFacade patternFacade, ViewProperties viewProperties) {
-        //FIXME need purpose and meaning of the pattern, the STAMP values, the descriptions, the fields, the name and public id
         Entity patternEntity = EntityService.get().getEntity(patternFacade.nid()).get();
 
         // populate STAMP values
