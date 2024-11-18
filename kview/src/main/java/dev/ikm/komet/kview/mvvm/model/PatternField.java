@@ -15,17 +15,19 @@
  */
 package dev.ikm.komet.kview.mvvm.model;
 
+import dev.ikm.tinkar.component.Stamp;
 import dev.ikm.tinkar.terms.EntityFacade;
 
 /**
  * object to capture data for a Pattern>Field
+ *
  * @param displayName display name
- * @param dataType tinkar data type
- * @param purpose purpose concept
- * @param meaning meaning concept
- * @param comments user comments
+ * @param dataType    tinkar data type
+ * @param purpose     purpose concept
+ * @param meaning     meaning concept
+ * @param comments    user comments
+ * @param time
  */
 public record PatternField(String displayName, EntityFacade dataType,
-                          EntityFacade purpose, EntityFacade meaning, String comments) {
-
+                           EntityFacade purpose, EntityFacade meaning, String comments, Stamp stamp) {
 }
