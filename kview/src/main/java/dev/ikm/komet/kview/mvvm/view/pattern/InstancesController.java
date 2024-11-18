@@ -6,6 +6,8 @@ import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 
 public class InstancesController {
+    public static final String INSTANCES_PROPERTY = "instances";
+
     @InjectViewModel
     private SimpleViewModel simpleViewModel;
 

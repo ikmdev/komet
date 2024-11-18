@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -219,8 +220,10 @@ public class PropertiesController {
         // +-----------------------------------
         // ! Instances Toggle selected
         // +-----------------------------------
-        Config instancesConfig = new Config(INSTANCES_URL)
-                .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel));
+        Config instancesConfig = new Config(INSTANCES_URL).updateViewModel("simpleViewModel", (viewModel -> {
+            viewModel.addProperty(InstancesController.INSTANCES_PROPERTY, new ArrayList());
+        }));
+
         JFXNode<Pane, InstancesController> instancesDefinitionControllerJFXNode = FXMLMvvmLoader.make(instancesConfig);
         instancesController = instancesDefinitionControllerJFXNode.controller();
         instancesPane = instancesDefinitionControllerJFXNode.node();
