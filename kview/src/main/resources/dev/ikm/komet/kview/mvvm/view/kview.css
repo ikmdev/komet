@@ -2728,12 +2728,12 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .search-entry-expanded {
-    -fx-border-radius: 4px;
+    -fx-border-radius: 1px;
     -fx-border-color: -Secondary-05;
 }
 
 .search-entry-title-pane {
-    -fx-border-radius: 4px;
+    -fx-border-radius: 1px;
     -fx-border-color: -Secondary-05;
 }
 
