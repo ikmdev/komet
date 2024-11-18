@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel.PATTERN_COLLECTION;
 import dev.ikm.komet.framework.Identicon;
@@ -223,7 +224,8 @@ public class ConceptPatternNavController {
                         // double left click creates the concept window
                         if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                             if (mouseEvent.getClickCount() == 2) {
-                                EvtBusFactory.getDefaultEvtBus().publish(JOURNAL_TOPIC, new MakePatternWindowEvent(this,
+                                EvtBusFactory.getDefaultEvtBus().publish(patternNavViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                                        new MakePatternWindowEvent(this,
                                         MakePatternWindowEvent.OPEN_PATTERN, patternItem, viewProperties));
                             }
                         }

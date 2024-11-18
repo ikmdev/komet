@@ -30,6 +30,7 @@ import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERT
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
@@ -378,7 +379,7 @@ public class JournalController {
             LOG.info("FIXME... edit pattern window");
             makePatternWindow(evt.getPatternFacade(), evt.getViewProperties());
         };
-        journalEventBus.subscribe(JOURNAL_TOPIC, MakePatternWindowEvent.class, makePatternWindowEventSubscriber);
+        journalEventBus.subscribe(journalTopic, MakePatternWindowEvent.class, makePatternWindowEventSubscriber);
 
         showNavigationalPanelEventSubscriber = evt -> {
             try {
@@ -1228,14 +1229,14 @@ public class JournalController {
 
     private void loadNavigationPanel(PublicIdStringKey<ActivityStream> navigationActivityStreamKey,
                                      ObservableViewNoOverride windowView, KometNodeFactory navigationFactory) {
-        //FIXME load the classic concept nav pane into this one: IIA-975, it is loading but the concept icons are missing
-        // and the styling seems off
+
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
         Pane navigatorNodePanel = loadClassicConceptNavigator(navigationActivityStreamKey, windowView, navigationFactory);
         Config patternConceptConfig = new Config(ConceptPatternNavController.class.getResource(CONCEPT_PATTERN_NAV_FXML_URL))
                 .controller(new ConceptPatternNavController(navigatorNodePanel))
                 .updateViewModel("patternNavViewModel", (patternNavViewModel) ->
                                 patternNavViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                                        .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
                         );
         JFXNode<StackPane, ConceptPatternNavController> conPatJFXNode = FXMLMvvmLoader.make(patternConceptConfig);
         patternConceptNavigationPanel = conPatJFXNode.node();
@@ -1624,6 +1625,7 @@ public class JournalController {
         //TODO add 'edit' states to the state machine
         StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
 
+//        UUID journalWindowTopic = nodePreferences().getUuid(KometNode.PreferenceKey.CURRENT_JOURNAL_WINDOW_TOPIC).get()
         Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
                 .updateViewModel("patternViewModel", (PatternViewModel patternViewModel) -> {
                     patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
@@ -1631,6 +1633,7 @@ public class JournalController {
                         .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
                         .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
                         .setPropertyValue(STATE_MACHINE, patternSM)
+                        .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
                         .setPropertyValue(PATTERN, patternFacade);
                 });
 
