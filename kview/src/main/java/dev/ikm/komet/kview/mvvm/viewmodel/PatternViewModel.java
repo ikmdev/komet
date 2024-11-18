@@ -288,6 +288,8 @@ public class PatternViewModel extends FormViewModel {
                     setPropertyValue(FQN_DESCRIPTION_NAME, fqnDescrName);
                     setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, fqnDescrName.getNameText());
 
+                    setPropertyValue(FQN_LANGUAGE, langEntity.description());
+
                     EntityVersion fqnLatest = (EntityVersion) stampCalculator.latest(semanticEntityVersion.entity()).get();
                     Long fqnMillis = fqnLatest.stamp().time();
                     if (fqnMillis.equals(PREMUNDANE_TIME)) {

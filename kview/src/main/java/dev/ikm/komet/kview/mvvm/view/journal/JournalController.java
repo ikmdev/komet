@@ -132,6 +132,7 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -1612,7 +1613,7 @@ public class JournalController {
         StampViewModel stampViewModel = new StampViewModel();
         stampViewModel.setPropertyValue(STATUS, patternStamp.get().stamp().state())
             .setPropertyValue(TIME, patternStamp.get().stamp().time())
-            .setPropertyValue(AUTHOR, patternStamp.get().stamp().author())
+            .setPropertyValue(AUTHOR, TinkarTerm.USER)
             .setPropertyValue(MODULE, patternStamp.get().stamp().module())
             .setPropertyValue(PATH, patternStamp.get().stamp().path())
             ;
