@@ -2956,7 +2956,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Secondary-05;
 }
 
-.pattern-instance {
+.pattern-instance-hbox {
     -fx-border-radius: 2px;
     -fx-fill: -Grey-11;
     -fx-font-family: "Noto Sans";
@@ -2965,11 +2965,37 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-weight: 400;
     -fx-background-color: white;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 1, 1, 1, 1);    
-    -fx-min-width: 280px;
-    -fx-pref-width: 280px;
-    -fx-max-width: 280px;
-    -fx-pref-height: 30;    
+    -fx-min-width: 285px;
+    -fx-pref-width: 285px;
+    -fx-max-width: 285px;
+    -fx-pref-height: 30;
+    -fx-padding: 5;
+    -fx-alignment: center;
 }
+
+.pattern-instance-hbox .pattern-instance {
+    -fx-min-width: 260px;
+    -fx-pref-width: 260px;
+    -fx-max-width: 260px;
+
+}
+.pattern-instance-hbox .pattern-instance-hover-icon {
+         visibility: hidden;
+}
+.pattern-instance-hbox:hover .pattern-instance-hover-icon {
+      visibility: visible;
+}
+
+.pattern-instance-hover-icon {
+     -fx-min-width: 16px;
+     -fx-max-width: 16px;
+     -fx-max-height: 16px;
+     -fx-min-height: 16px;
+     -fx-background-color: #9A9DA0;
+     -fx-shape: "M0 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0";
+}
+
+
 
 /********************************************************************************
  * End of Journal > Search Concept UI elements                                  *
