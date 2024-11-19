@@ -15,6 +15,19 @@
  */
 package dev.ikm.komet.reasoner;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.ServiceLoader.Provider;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+import org.eclipse.collections.api.list.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import dev.ikm.komet.framework.ExplorationNodeAbstract;
 import dev.ikm.komet.framework.TopPanelFactory;
 import dev.ikm.komet.framework.activity.ActivityStreams;
@@ -35,23 +48,12 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.ServiceLoader.Provider;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 public class ReasonerResultsNode extends ExplorationNodeAbstract {
 
@@ -77,32 +79,39 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 			this.contentPane.setTop(topPanelParts.topPanel());
 			Platform.runLater(() -> {
 				ArrayList<MenuItem> collectionMenuItems = new ArrayList<>();
+				ArrayList<CheckMenuItem> reasonerServiceMenuItems = new ArrayList<>();
 				collectionMenuItems.add(new SeparatorMenuItem());
-
 				List<ReasonerService> rss = PluggableService.load(ReasonerService.class).stream().map(Provider::get)
 						.sorted(Comparator.comparing(ReasonerService::getName)).toList();
 				for (ReasonerService rs : rss) {
 					LOG.info("Reasoner service add: " + rs);
-					MenuItem item = new MenuItem("Use " + rs.getName());
+					CheckMenuItem item = new CheckMenuItem("Use " + rs.getName());
 					item.setOnAction(x -> {
 						this.reasonerService = rs;
+						reasonerServiceMenuItems.forEach(xi -> xi.setSelected(false));
+						item.setSelected(true);
 						LOG.info("Reasoner service selected: " + rs.getName());
 					});
 					collectionMenuItems.add(item);
-					if (this.reasonerService == null)
+					reasonerServiceMenuItems.add(item);
+					if (this.reasonerService == null) {
 						this.reasonerService = rs;
+						item.setSelected(true);
+					} else if (rs.getName().equals("ElkSnomedReasonerService")) {
+						reasonerServiceMenuItems.forEach(xi -> xi.setSelected(false));
+						this.reasonerService = rs;
+						item.setSelected(true);
+					}
 				}
 				if (this.reasonerService == null)
 					throw new RuntimeException("No ReasonerService available");
 				LOG.info("Default ReasonerService: " + this.reasonerService.getName());
 				collectionMenuItems.add(new SeparatorMenuItem());
-
 				{
 					MenuItem item = new MenuItem("Run full reasoner");
 					item.setOnAction(this::elkOwlReasoner);
 					collectionMenuItems.add(item);
 				}
-
 				{
 					MenuItem item = new MenuItem("Run incremental reasoner");
 					item.setOnAction(this::elkOwlReasonerIncremental);
@@ -173,7 +182,6 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 			LOG.info("Concept count: " + conceptCount + " " + task.durationString());
 		});
 	}
-
 
 	private void elkOwlReasonerIncremental(ActionEvent actionEvent) {
 		reinferAllHierarchy = false;
