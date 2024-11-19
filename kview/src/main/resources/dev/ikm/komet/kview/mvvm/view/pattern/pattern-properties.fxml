@@ -29,7 +29,7 @@
                               <Insets bottom="55.0" />
                            </opaqueInsets>
                         </ToggleButton>
-                        <ToggleButton fx:id="instancesButton" mnemonicParsing="false" styleClass="properties-tab" text="INSTANCES" toggleGroup="$propertyToggleButtonGroup">
+                        <ToggleButton fx:id="instancesButton" onAction="#showInstances" mnemonicParsing="false" styleClass="properties-tab" text="INSTANCES" toggleGroup="$propertyToggleButtonGroup">
                            <graphic>
                               <SVGPath content="M10.0001 11.3332H5.83342V15.4998H10.0001V17.1665H4.16675V8.83317H5.83342V9.6665H10.0001V11.3332ZM6.66675 3.83317V5.49984H3.33341V3.83317H6.66675ZM8.33342 2.1665H1.66675V7.1665H8.33342V2.1665ZM16.6667 9.6665V11.3332H13.3334V9.6665H16.6667ZM18.3334 7.99984H11.6667V12.9998H18.3334V7.99984ZM16.6667 15.4998V17.1665H13.3334V15.4998H16.6667ZM18.3334 13.8332H11.6667V18.8332H18.3334V13.8332Z" styleClass="svg-tab" />
                            </graphic>
