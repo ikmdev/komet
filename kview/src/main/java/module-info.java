@@ -29,6 +29,7 @@ module dev.ikm.komet.kview {
     requires org.carlfx.axonic;
     requires dev.ikm.tinkar.composer;
     requires one.jpro.platform.auth.core;
+    requires one.jpro.platform.file;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;

@@ -41,41 +41,4 @@ public class PatternNavViewModel extends FormViewModel {
         .addProperty(PATTERN_COLLECTION, new ArrayList<EntityFacade>());
     }
 
-//    public void loadAllPatterns() {
-//        ViewProperties viewProperties = getPropertyValue(VIEW_PROPERTIES);
-//        //this.rootTreeItem.getChildren().clear();
-//        TinkExecutor.threadPool().execute(() -> {
-//            ArrayList<TreeItem<Object>> patternItems = new ArrayList<>();
-//            PrimitiveData.get().forEachPatternNid(patternNid -> {
-//                Latest<PatternEntityVersion> latestPattern = viewProperties.calculator().latest(patternNid);
-//                latestPattern.ifPresent(patternEntityVersion -> {
-//                    patternItems.add(new TreeItem<>(patternNid));
-//                });
-//            });
-//            patternItems.sort((o1, o2) -> {
-//                if (o1.getValue() instanceof Integer nid1 && o2.getValue() instanceof Integer nid2) {
-//                    return NaturalOrder.compareStrings(viewProperties.calculator().getDescriptionTextOrNid(nid1),
-//                            viewProperties.calculator().getDescriptionTextOrNid(nid2));
-//                } else {
-//                    return NaturalOrder.compareStrings(o1.toString(), o2.toString());
-//                }
-//            });
-//            Platform.runLater(() -> this.rootTreeItem.getChildren().setAll(patternItems));
-//            for (TreeItem<Object> patternItem : patternItems) {
-//                ArrayList<TreeItem<Object>> patternChildren = new ArrayList<>();
-//                int patternNid = (Integer) patternItem.getValue();
-//                AtomicInteger childCount = new AtomicInteger();
-//                PrimitiveData.get().forEachSemanticNidOfPattern(patternNid, semanticNid -> {
-//                    if (childCount.incrementAndGet() < maxChildrenInPatternViewer) {
-//                        patternChildren.add(new TreeItem<>(semanticNid));
-//                    }
-//                });
-//                if (childCount.get() >= maxChildrenInPatternViewer) {
-//                    NumberFormat numberFormat = NumberFormat.getInstance();
-//                    patternChildren.add(new TreeItem<>(numberFormat.format(childCount.get() - maxChildrenInPatternViewer) + " additional semantics suppressed..."));
-//                }
-//                Platform.runLater(() -> patternItem.getChildren().setAll(patternChildren));
-//            }
-//        });
-//    }
 }
