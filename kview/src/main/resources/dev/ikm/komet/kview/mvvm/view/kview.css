@@ -1,3 +1,8 @@
+@font-face {
+    font-family: 'Noto Sans';
+    src: url('noto-sans.regular.ttf');
+}
+
 .root {
     -fx-kview-titled-pane-text-color: #4581deff;
     -fx-kview-titled-pane-background-color: #dbe9ffff;
