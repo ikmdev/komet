@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -75,6 +76,8 @@ public class PropertiesController {
     private static final URL PATTERN_DESCRIPTION_FXML_URL = DescriptionNameController.class.getResource("description-name.fxml");
 
     private static final URL PATTERN_FIELDS_FXML_URL = PatternFieldsController.class.getResource("pattern-fields.fxml");
+
+    private static final URL INSTANCES_URL = PatternFieldsController.class.getResource("instances.fxml");
 
     private static final String ADD_FQN_TITLE_TEXT = "Add Description: Add Fully Qualified Name";
 
@@ -123,6 +126,8 @@ public class PropertiesController {
 
     private PatternFieldsController patternFieldsController;
 
+    private InstancesController instancesController;
+
     private Pane historyPane;
 
     private Pane confirmationPane;
@@ -130,6 +135,8 @@ public class PropertiesController {
     private Pane continueAddFieldsPane;
 
     private Pane patternDefinitionPane;
+
+    private Pane instancesPane;
 
     private Pane descriptionPane;
 
@@ -209,6 +216,17 @@ public class PropertiesController {
         patternFieldsController = patternFieldsJFXNode.controller();
         patternFieldsPane = patternFieldsJFXNode.node();
         patternFieldsController.setViewProperties(getViewProperties());
+
+        // +-----------------------------------
+        // ! Instances Toggle selected
+        // +-----------------------------------
+        Config instancesConfig = new Config(INSTANCES_URL).updateViewModel("simpleViewModel", (viewModel -> {
+            viewModel.addProperty(InstancesController.INSTANCES_PROPERTY, new ArrayList());
+        }));
+
+        JFXNode<Pane, InstancesController> instancesDefinitionControllerJFXNode = FXMLMvvmLoader.make(instancesConfig);
+        instancesController = instancesDefinitionControllerJFXNode.controller();
+        instancesPane = instancesDefinitionControllerJFXNode.node();
 
         // initially a default selected tab and view is shown
         updateDefaultSelectedViews();
@@ -380,6 +398,12 @@ public class PropertiesController {
     }
 
     @FXML
+    private void showInstances(ActionEvent actionEvent) {
+        LOG.info("Show Instances " + actionEvent);
+        contentBorderPane.setCenter(instancesPane);
+    }
+
+    @FXML
     private void showHistoryView(ActionEvent event) {
         LOG.info("Show Pattern History");
         this.historyButton.setSelected(true);
@@ -395,4 +419,5 @@ public class PropertiesController {
     }
     public void clearView() {
     }
+
 }
