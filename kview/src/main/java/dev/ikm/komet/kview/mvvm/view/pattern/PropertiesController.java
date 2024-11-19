@@ -220,9 +220,7 @@ public class PropertiesController {
         // +-----------------------------------
         // ! Instances Toggle selected
         // +-----------------------------------
-        Config instancesConfig = new Config(INSTANCES_URL).updateViewModel("simpleViewModel", (viewModel -> {
-            viewModel.addProperty(InstancesController.INSTANCES_PROPERTY, new ArrayList());
-        }));
+        Config instancesConfig = new Config(INSTANCES_URL).addNamedViewModel(new NamedVm("patternViewModel", patternViewModel));
 
         JFXNode<Pane, InstancesController> instancesDefinitionControllerJFXNode = FXMLMvvmLoader.make(instancesConfig);
         instancesController = instancesDefinitionControllerJFXNode.controller();
