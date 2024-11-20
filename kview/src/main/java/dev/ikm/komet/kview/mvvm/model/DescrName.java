@@ -16,8 +16,10 @@
 package dev.ikm.komet.kview.mvvm.model;
 
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.component.Stamp;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 
 public class DescrName {
 
@@ -25,6 +27,8 @@ public class DescrName {
     private PublicId parentConcept;
 
     private String nameText;
+
+    private Stamp stamp;
 
     private ConceptFacade nameType;
 
@@ -52,6 +56,19 @@ public class DescrName {
         this.module = module;
         this.language = language;
         this.semanticPublicId = semanticPublicId;
+    }
+
+    public DescrName(PublicId parentConcept, String nameText, ConceptFacade nameType, ConceptEntity caseSignificance,
+                     ConceptEntity status, ConceptEntity module, ConceptEntity language, PublicId semanticPublicId, Stamp stamp) {
+        this.parentConcept = parentConcept;
+        this.nameText = nameText;
+        this.nameType = nameType;
+        this.caseSignificance = caseSignificance;
+        this.status = status;
+        this.module = module;
+        this.language = language;
+        this.semanticPublicId = semanticPublicId;
+        this.stamp = stamp;
     }
 
     public PublicId getParentConcept() {
@@ -116,5 +133,9 @@ public class DescrName {
 
     public void setSemanticPublicId(PublicId semanticPublicId) {
         this.semanticPublicId = semanticPublicId;
+    }
+
+    public Stamp getStamp() {
+        return stamp;
     }
 }

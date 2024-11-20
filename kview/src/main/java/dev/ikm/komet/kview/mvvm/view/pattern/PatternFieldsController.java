@@ -518,8 +518,8 @@ public class PatternFieldsController {
                 patternFieldsViewModel.getValue(DATA_TYPE),
                 patternFieldsViewModel.getValue(PURPOSE_ENTITY),
                 patternFieldsViewModel.getValue(MEANING_ENTITY),
-                patternFieldsViewModel.getValue(COMMENTS)
-        );
+                patternFieldsViewModel.getValue(COMMENTS),
+                null);
 
         PatternField previousPatternField = patternFieldsViewModel.getValue(PREVIOUS_PATTERN_FIELD);
 
