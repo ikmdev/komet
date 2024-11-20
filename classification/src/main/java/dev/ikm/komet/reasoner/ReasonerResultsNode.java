@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.ServiceLoader.Provider;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -45,9 +46,10 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -57,9 +59,10 @@ import javafx.scene.layout.HBox;
 
 public class ReasonerResultsNode extends ExplorationNodeAbstract {
 
+	private static final Logger LOG = LoggerFactory.getLogger(ReasonerResultsNode.class);
+
 	public static boolean reinferAllHierarchy = false;
 
-	private static final Logger LOG = LoggerFactory.getLogger(ReasonerResultsNode.class);
 	protected static final String STYLE_ID = "classification-results-node";
 	protected static final String TITLE = "Reasoner Results";
 	private final BorderPane contentPane = new BorderPane();
@@ -78,21 +81,21 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 					activityStreamKeyProperty, optionForActivityStreamKeyProperty, centerBox);
 			this.contentPane.setTop(topPanelParts.topPanel());
 			Platform.runLater(() -> {
-				ArrayList<MenuItem> collectionMenuItems = new ArrayList<>();
+				ArrayList<MenuItem> menuItems = new ArrayList<>();
 				ArrayList<CheckMenuItem> reasonerServiceMenuItems = new ArrayList<>();
-				collectionMenuItems.add(new SeparatorMenuItem());
+				menuItems.add(new SeparatorMenuItem());
 				List<ReasonerService> rss = PluggableService.load(ReasonerService.class).stream().map(Provider::get)
 						.sorted(Comparator.comparing(ReasonerService::getName)).toList();
 				for (ReasonerService rs : rss) {
 					LOG.info("Reasoner service add: " + rs);
 					CheckMenuItem item = new CheckMenuItem("Use " + rs.getName());
-					item.setOnAction(x -> {
+					item.setOnAction(ae -> {
 						this.reasonerService = rs;
 						reasonerServiceMenuItems.forEach(xi -> xi.setSelected(false));
 						item.setSelected(true);
 						LOG.info("Reasoner service selected: " + rs.getName());
 					});
-					collectionMenuItems.add(item);
+					menuItems.add(item);
 					reasonerServiceMenuItems.add(item);
 					if (this.reasonerService == null) {
 						this.reasonerService = rs;
@@ -106,26 +109,33 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 				if (this.reasonerService == null)
 					throw new RuntimeException("No ReasonerService available");
 				LOG.info("Default ReasonerService: " + this.reasonerService.getName());
-				collectionMenuItems.add(new SeparatorMenuItem());
+				menuItems.add(new SeparatorMenuItem());
 				{
 					MenuItem item = new MenuItem("Run full reasoner");
-					item.setOnAction(this::elkOwlReasoner);
-					collectionMenuItems.add(item);
+					item.setOnAction(ae -> {
+						reinferAllHierarchy = false;
+						runFullReasoner();
+					});
+					menuItems.add(item);
 				}
 				{
 					MenuItem item = new MenuItem("Run incremental reasoner");
-					item.setOnAction(this::elkOwlReasonerIncremental);
-					collectionMenuItems.add(item);
+					item.setOnAction(ae -> {
+						reinferAllHierarchy = false;
+						runIncrementalReasoner();
+					});
+					menuItems.add(item);
 				}
-
 				{
 					MenuItem item = new MenuItem("Run redo hierarchy reasoner");
-					item.setOnAction(this::elkOwlReasonerRedo);
-					collectionMenuItems.add(item);
+					item.setOnAction(ae -> {
+						reinferAllHierarchy = true;
+						runFullReasoner();
+					});
+					menuItems.add(item);
 				}
-
 				ObservableList<MenuItem> topMenuItems = topPanelParts.viewPropertiesMenuButton().getItems();
-				topMenuItems.addAll(collectionMenuItems);
+				topMenuItems.addAll(menuItems);
 			});
 		});
 
@@ -143,18 +153,19 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 
 	}
 
-	private void elkOwlReasonerRedo(ActionEvent actionEvent) {
-		reinferAllHierarchy = true;
-		fullReasoner();
+	private boolean confirmRun(String reasoner_msg) {
+		String msg = "Run " + reasoner_msg + " reasoner using " + reasonerService.getName();
+		Alert dlg = new Alert(Alert.AlertType.CONFIRMATION, msg, ButtonType.OK, ButtonType.CANCEL);
+		dlg.setHeaderText(null);
+		Optional<ButtonType> res = dlg.showAndWait();
+		if (res.isPresent() && res.get() == ButtonType.CANCEL)
+			return false;
+		return true;
 	}
 
-	private void elkOwlReasoner(ActionEvent actionEvent) {
-		reinferAllHierarchy = false;
-		fullReasoner();
-	}
-
-	private void fullReasoner() {
-
+	private void runFullReasoner() {
+		if (!confirmRun("full"))
+			return;
 		TinkExecutor.threadPool().execute(() -> {
 			// TODO use a factory for the service and then create here
 			reasonerService.init(getViewProperties().calculator(), TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
@@ -163,7 +174,7 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 
 			// publish event of task
 			TaskWrapper<ReasonerService> javafxTask = TaskWrapper.make(task);
-			Future reasonerFuture = ProgressHelper.progress(javafxTask, "Cancel Reasoner");
+			Future<ReasonerService> reasonerFuture = ProgressHelper.progress(javafxTask, "Cancel Reasoner");
 			int conceptCount = 0;
 			try {
 				reasonerFuture.get();
@@ -183,14 +194,15 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 		});
 	}
 
-	private void elkOwlReasonerIncremental(ActionEvent actionEvent) {
-		reinferAllHierarchy = false;
+	private void runIncrementalReasoner() {
+		if (!confirmRun("incremental"))
+			return;
 		TinkExecutor.threadPool().execute(() -> {
 			RunElkOwlReasonerIncrementalTask task = new RunElkOwlReasonerIncrementalTask(reasonerService,
 					resultsController::setResults);
 			// publish event of task
 			TaskWrapper<ReasonerService> javafxTask = TaskWrapper.make(task);
-			Future reasonerFuture = ProgressHelper.progress(javafxTask, "Cancel Reasoner");
+			Future<ReasonerService> reasonerFuture = ProgressHelper.progress(javafxTask, "Cancel Reasoner");
 			int conceptCount = 0;
 			try {
 				reasonerFuture.get();
