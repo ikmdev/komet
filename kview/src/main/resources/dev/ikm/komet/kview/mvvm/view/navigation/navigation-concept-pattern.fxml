@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.String?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.ToggleButton?>
@@ -9,15 +10,16 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
-      <ScrollPane fx:id="scrollPane" hbarPolicy="NEVER" minHeight="0.0" prefWidth="372.0">
-         <content>
-            <VBox fx:id="scrollPaneContent" maxHeight="1.7976931348623157E308" prefWidth="372.0" styleClass="grey-vertical-scroll-area">
+<StackPane maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
+   <Pane minHeight="0.0" prefWidth="372.0">
+      <children>
+            <VBox maxHeight="1.7976931348623157E308" prefWidth="372.0" styleClass="grey-vertical-scroll-area">
                <children>
                   <HBox alignment="CENTER" prefHeight="56.0">
                      <children>
@@ -59,14 +61,25 @@
                                        </styleClass>
                                     </Region>
                                  </graphic>
+                              <GridPane.margin>
+                                 <Insets left="15.0" />
+                              </GridPane.margin>
                               </Button>
                            </children>
                         </GridPane>
                      </children>
                   </HBox>
-                  <BorderPane fx:id="navContentPane" VBox.vgrow="ALWAYS" />
+               <ScrollPane fx:id="scrollPane" hbarPolicy="NEVER" prefHeight="600.0" prefWidth="372.0" styleClass="add-scrollbar-patterns">
+                  <content>
+                      <VBox fx:id="scrollPaneContent" maxHeight="1.7976931348623157E308" prefWidth="372.0" styleClass="grey-vertical-scroll-area">
+                          <children>
+                            <BorderPane fx:id="navContentPane" prefWidth="372.0" VBox.vgrow="NEVER" />
+                          </children>
+                      </VBox>
+                  </content>
+               </ScrollPane>
                </children>
             </VBox>
-         </content>
-      </ScrollPane>
+      </children>
+   </Pane>
 </StackPane>
