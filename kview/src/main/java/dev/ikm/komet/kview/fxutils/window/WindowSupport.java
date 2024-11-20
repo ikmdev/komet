@@ -222,14 +222,14 @@ public class WindowSupport {
         // Change stage's bindXToWidth
         resizeWidthValue.addListener( obs -> {
             double newWidth = resizeWidthValue.get();
-            this.pane.setPrefWidth(Math.max(this.pane.getMinWidth(), newWidth));
+            this.pane.setPrefWidth(newWidth);
             clampWindowPosition();
         });
 
         // Change stage's bindYToHeight
         resizeHeightValue.addListener( obs -> {
             double newHeight = resizeHeightValue.get();
-            this.pane.setPrefHeight(Math.max(this.pane.getMinHeight(), newHeight));
+            this.pane.setPrefHeight(newHeight);
             clampWindowPosition();
         });
 
@@ -513,10 +513,13 @@ public class WindowSupport {
         Point2D desktopPoint = pane.localToParent(mouseEvent.getX(), mouseEvent.getY());
         double screenY = desktopPoint.getY();
         double distance = wt.anchorPathPaneXYCoordValue.get().getY() - screenY;
-
-        wt.paneYCoordValue.set(wt.anchorPathPaneXYCoordValue.get().getY() - distance);
         double newHeight = wt.anchorHeightSizeValue.get() + distance;
-        wt.resizeHeightValue.set(newHeight);
+        double minHeight = pane.minHeight(pane.getWidth());
+
+        if (newHeight >= minHeight) {
+            wt.paneYCoordValue.set(wt.anchorPathPaneXYCoordValue.get().getY() - distance);
+            wt.resizeHeightValue.set(newHeight);
+        }
     }
 
     private void resizeSouth(MouseEvent mouseEvent, WindowSupport wt) {
@@ -540,10 +543,13 @@ public class WindowSupport {
         //double offset = wt.currentSegmentIndex.intValue() == 8 ? 10 : 0; // TODO magic numbers fix.
         double offset = 0; // TODO magic numbers fix.
         double distance = wt.anchorPathPaneXYCoordValue.get().getX() - screenX + offset; // offset left side segment 8 (10 pixels)
-        wt.paneXCoordValue.set(wt.anchorPathPaneXYCoordValue.get().getX() - distance);
-
         double newWidth = wt.anchorWidthSizeValue.get() + distance;
-        wt.resizeWidthValue.set(newWidth);
+        double minWidth = pane.minWidth(pane.getHeight());
+
+        if (newWidth >= minWidth) {
+            wt.paneXCoordValue.set(wt.anchorPathPaneXYCoordValue.get().getX() - distance);
+            wt.resizeWidthValue.set(newWidth);
+        }
     }
 
     // ================================= SET-UP MOUSE EVENTS ==========================
