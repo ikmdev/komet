@@ -78,7 +78,7 @@
     -fx-background-color: -Grey-3;
 }
 
-.main-center-container {
+.concept-window .main-center-container {
     -fx-background-color: -Grey-White;
     -fx-background-radius: 4px;
 
@@ -102,7 +102,8 @@
 }
 
 .concept-detail-banner-background {
-    -fx-background-color: transparent;
+    -fx-background-color: -Grey-1;
+    -fx-background-radius: 4px 4px 0 0;
 }
 
 .identicon-frame {
@@ -170,7 +171,7 @@
     -fx-border-insets: -1 0 0 0;
 }
 
-.main-center-container .titled-pane .content {
+.concept-window .main-center-container .titled-pane .content {
     -fx-border-width: 0;
     -fx-background-color: transparent;
 }
@@ -419,7 +420,7 @@
     -fx-border-color: -Grey-7;
     -fx-border-width: 1px 0 0 0;
 
-    -fx-padding: 3px 0 0 0;
+    -fx-padding: 0;
 }
 
 .toggle-button.left-pill, .toggle-button.center-pill, .toggle-button.right-pill {
@@ -1914,7 +1915,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Natural-Grey-Main;
     -fx-background-radius: 4 4 0 0;
     -fx-border-radius: 4 4 0 0;
-    -fx-padding: 2 16 0 16;
+    -fx-padding: 4 16 2 16;
 }
 .lidr-tab-icon {
     -fx-background-color: -Grey-White;
@@ -1931,11 +1932,11 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .lidr-detail-pane {
-    -fx-padding: 0 4 4 4;
+    -fx-padding: 0 0 4 0;
     -fx-border-insets: 0;
     -fx-background-color: -Grey-3;
-    -fx-background-radius: 0 0 10 10;
-    -fx-border-radius: 0 0 10 10;
+    -fx-background-radius: 0 0 4 4;
+    -fx-border-radius: 0 0 4 4;
 }
 
 /* Result(s) added accordions */
@@ -4427,28 +4428,165 @@ Styling a context menu for kview ui/ux controls
 
 /*******************************************************************************
  *                                                                             *
- * Pattern Window                                                              *
+ * Pattern Window & Lidr Window                                                *
  *                                                                             *
  ******************************************************************************/
 
-.pattern-window.concept-detail-pane {
-    -fx-background-color: transparent;
-}
-
-.pattern-window.concept-detail-pane .main-pane-content {
-    -fx-background-color: white;
-}
-
-/*******************************************************************************
- *                                                                             *
- * Lidr Window                                                                 *
- *                                                                             *
- ******************************************************************************/
-
+.pattern-window.concept-detail-pane,
 .lidr-window.concept-detail-pane {
     -fx-background-color: transparent;
 }
 
-.lidr-window.concept-detail-pane .main-pane-content {
+.pattern-window.concept-detail-pane .main-center-container,
+.lidr-window.concept-detail-pane .main-center-container {
+    -fx-background-color: -Natural-Grey-Main;
+    -fx-background-radius: 0 0 4px 4px;
+
+    -fx-padding: 0 5px 5px 5px;
+}
+
+.pattern-window.concept-detail-pane .main-center-container .properties-tab-container,
+.lidr-window.concept-detail-pane .main-center-container .properties-tab-container {
+    -fx-background-color: transparent;
+}
+
+.pattern-window.concept-detail-pane .main-center-container .titled-pane .content,
+.lidr-window.concept-detail-pane .main-center-container .titled-pane .content {
+    -fx-border-width: 0;
+}
+
+.pattern-window.concept-detail-pane .main-center-container .titled-pane,
+.lidr-window.concept-detail-pane .main-center-container .titled-pane {
+    -fx-padding: 0;
+    -fx-border-width: 1 0 0 0;
+    -fx-border-insets: 0;
+}
+
+.pattern-window.concept-detail-pane .main-center-container .titled-pane .title,
+.lidr-window.concept-detail-pane .main-center-container .titled-pane .title {
+    -fx-padding: 8 4 4 6;
+}
+
+.pattern-window.concept-detail-pane,
+.lidr-window.concept-detail-pane {
+    -fx-border-insets: 0;
+
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.pattern-window .main-right-container,
+.lidr-window .main-right-container {
+    -fx-background-color: -Natural-Grey-Main;
+
+    -fx-padding: 0;
+    -fx-background-insets: 0 0 0 -3px;
+
+    -fx-background-radius: 0 0 4px 0;
+}
+
+.pattern-window.concept-detail-pane .main-right-container .properties-tab-container-content,
+.lidr-window.concept-detail-pane .main-right-container .properties-tab-container-content {
+    -fx-background-color: -Grey-3;
+    -fx-border-color: -Natural-Grey-Main;
+
+    -fx-border-width: 1px 0 0 0;
+}
+
+.pattern-window.concept-detail-pane .main-right-container .properties-tab-container-content .lidr-device,
+.lidr-window.concept-detail-pane .main-right-container .properties-tab-container-content .lidr-device {
+    -fx-background-radius: 0 0 4px 4px;
+}
+
+/************************  Instances Toggle ***********************************/
+
+.instances-main-container {
+    -fx-background-color: -Grey-4;
+    -fx-padding: 15px 0 0 0;
+}
+
+.instances-main-container .main-top-container {
+    -fx-padding: 0 0 15px 0;
+}
+
+.instances-main-container .icon-container {
+    -fx-padding: 0 20px 0 0;
+}
+
+.instances-main-container .help-icon {
+    -fx-background-color: #4A7AD2;
+
+    -fx-max-height: 20px;
+    -fx-max-width: 20px;
+
+    -fx-alignment: top-right;
+
+    -fx-padding: 4px 6px 4px 6px;
+
+    -fx-background-radius: 2em; /* high value so this pane ends up being a circle */
+}
+.instances-main-container .help-icon .question-mark {
+    -fx-shape: "M9.20629 13.0298V12.6733C9.21069 11.9778 9.28771 11.4122 9.43736 10.9765C9.58701 10.5408 9.80708 10.1733 10.0976 9.87395C10.3925 9.57026 10.7578 9.27976 11.1935 9.00248C11.5192 8.79121 11.7921 8.56894 12.0122 8.33566C12.2367 8.09799 12.4061 7.8383 12.5205 7.55661C12.6394 7.27052 12.6988 6.96022 12.6988 6.62572C12.6988 6.15036 12.5866 5.73443 12.3621 5.37792C12.142 5.0214 11.8427 4.74631 11.4642 4.55265C11.0857 4.35459 10.6654 4.25556 10.2032 4.25556C9.76307 4.25556 9.35154 4.35239 8.96861 4.54605C8.59009 4.73531 8.27979 5.017 8.03771 5.39112C7.80004 5.76084 7.6702 6.21859 7.64819 6.76436H6.40039C6.4224 6.03813 6.60286 5.40873 6.94176 4.87616C7.28067 4.34359 7.73402 3.93205 8.3018 3.64156C8.86958 3.34667 9.50338 3.19922 10.2032 3.19922C10.9338 3.19922 11.5764 3.35107 12.131 3.65477C12.6856 3.95406 13.1191 4.36559 13.4316 4.88936C13.7441 5.40873 13.9004 6.00512 13.9004 6.67853C13.9004 7.12307 13.83 7.528 13.6891 7.89332C13.5483 8.25864 13.337 8.59535 13.0553 8.90344C12.778 9.21154 12.4303 9.50204 12.0122 9.77492C11.6161 10.039 11.3014 10.3009 11.0681 10.5606C10.8348 10.8203 10.6676 11.1174 10.5663 11.4519C10.4651 11.782 10.4101 12.1891 10.4013 12.6733V13.0298H9.20629ZM9.84009 17.0042C9.58041 17.0042 9.35594 16.9118 9.16668 16.7269C8.98182 16.5377 8.88939 16.3132 8.88939 16.0535C8.88939 15.7894 8.98182 15.565 9.16668 15.3801C9.35594 15.1953 9.58041 15.1028 9.84009 15.1028C10.0998 15.1028 10.322 15.1953 10.5069 15.3801C10.6962 15.565 10.7908 15.7894 10.7908 16.0535C10.7908 16.2252 10.7468 16.3836 10.6588 16.5289C10.5751 16.6741 10.4607 16.7908 10.3154 16.8788C10.1746 16.9624 10.0161 17.0042 9.84009 17.0042Z";
     -fx-background-color: white;
 }
+
+.instances-main-container .top-container .text-field {
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+    -fx-background-radius: 5px;
+
+    -fx-border-radius: 5px;
+    -fx-border-color: -Grey-7;
+
+    -fx-font-family: "Noto Sans";
+}
+
+.instances-main-container .top-container .search-icon-container {
+    -fx-padding: 0 8px 0 0;
+
+    -fx-max-height: 20px;
+    -fx-max-width: 20px;
+}
+
+.instances-main-container .top-container .search-icon {
+    -fx-shape: "M7.50065 4.16871C7.27964 4.16871 7.06768 4.25651 6.9114 4.41279C6.75512 4.56907 6.66732 4.78103 6.66732 5.00204C6.66732 5.22306 6.75512 5.43502 6.9114 5.5913C7.06768 5.74758 7.27964 5.83538 7.50065 5.83538C7.72166 5.83538 7.93363 5.74758 8.08991 5.5913C8.24619 5.43502 8.33398 5.22306 8.33398 5.00204C8.33398 4.78103 8.24619 4.56907 8.08991 4.41279C7.93363 4.25651 7.72166 4.16871 7.50065 4.16871ZM5.14232 4.16871C5.31449 3.68076 5.63377 3.25824 6.05615 2.95937C6.47853 2.6605 6.98322 2.5 7.50065 2.5C8.01808 2.5 8.52277 2.6605 8.94515 2.95937C9.36754 3.25824 9.68682 3.68076 9.85898 4.16871H15.834C16.055 4.16871 16.267 4.25651 16.4232 4.41279C16.5795 4.56907 16.6673 4.78103 16.6673 5.00204C16.6673 5.22306 16.5795 5.43502 16.4232 5.5913C16.267 5.74758 16.055 5.83538 15.834 5.83538H9.85898C9.68682 6.32332 9.36754 6.74585 8.94515 7.04472C8.52277 7.34359 8.01808 7.50408 7.50065 7.50408C6.98322 7.50408 6.47853 7.34359 6.05615 7.04472C5.63377 6.74585 5.31449 6.32332 5.14232 5.83538H4.16732C3.9463 5.83538 3.73434 5.74758 3.57806 5.5913C3.42178 5.43502 3.33398 5.22306 3.33398 5.00204C3.33398 4.78103 3.42178 4.56907 3.57806 4.41279C3.73434 4.25651 3.9463 4.16871 4.16732 4.16871H5.14232ZM12.5007 9.16871C12.2796 9.16871 12.0677 9.25651 11.9114 9.41279C11.7551 9.56907 11.6673 9.78103 11.6673 10.002C11.6673 10.2231 11.7551 10.435 11.9114 10.5913C12.0677 10.7476 12.2796 10.8354 12.5007 10.8354C12.7217 10.8354 12.9336 10.7476 13.0899 10.5913C13.2462 10.435 13.334 10.2231 13.334 10.002C13.334 9.78103 13.2462 9.56907 13.0899 9.41279C12.9336 9.25651 12.7217 9.16871 12.5007 9.16871ZM10.1423 9.16871C10.3145 8.68077 10.6338 8.25824 11.0562 7.95937C11.4785 7.6605 11.9832 7.5 12.5007 7.5C13.0181 7.5 13.5228 7.6605 13.9452 7.95937C14.3675 8.25824 14.6868 8.68077 14.859 9.16871H15.834C16.055 9.16871 16.267 9.25651 16.4232 9.41279C16.5795 9.56907 16.6673 9.78103 16.6673 10.002C16.6673 10.2231 16.5795 10.435 16.4232 10.5913C16.267 10.7476 16.055 10.8354 15.834 10.8354H14.859C14.6868 11.3233 14.3675 11.7458 13.9452 12.0447C13.5228 12.3436 13.0181 12.5041 12.5007 12.5041C11.9832 12.5041 11.4785 12.3436 11.0562 12.0447C10.6338 11.7458 10.3145 11.3233 10.1423 10.8354H4.16732C3.9463 10.8354 3.73434 10.7476 3.57806 10.5913C3.42178 10.435 3.33398 10.2231 3.33398 10.002C3.33398 9.78103 3.42178 9.56907 3.57806 9.41279C3.73434 9.25651 3.9463 9.16871 4.16732 9.16871H10.1423ZM7.50065 14.1687C7.27964 14.1687 7.06768 14.2565 6.9114 14.4128C6.75512 14.5691 6.66732 14.781 6.66732 15.002C6.66732 15.2231 6.75512 15.435 6.9114 15.5913C7.06768 15.7476 7.27964 15.8354 7.50065 15.8354C7.72166 15.8354 7.93363 15.7476 8.08991 15.5913C8.24619 15.435 8.33398 15.2231 8.33398 15.002C8.33398 14.781 8.24619 14.5691 8.08991 14.4128C7.93363 14.2565 7.72166 14.1687 7.50065 14.1687ZM5.14232 14.1687C5.31449 13.6808 5.63377 13.2582 6.05615 12.9594C6.47853 12.6605 6.98322 12.5 7.50065 12.5C8.01808 12.5 8.52277 12.6605 8.94515 12.9594C9.36754 13.2582 9.68682 13.6808 9.85898 14.1687H15.834C16.055 14.1687 16.267 14.2565 16.4232 14.4128C16.5795 14.5691 16.6673 14.781 16.6673 15.002C16.6673 15.2231 16.5795 15.435 16.4232 15.5913C16.267 15.7476 16.055 15.8354 15.834 15.8354H9.85898C9.68682 16.3233 9.36754 16.7458 8.94515 17.0447C8.52277 17.3436 8.01808 17.5041 7.50065 17.5041C6.98322 17.5041 6.47853 17.3436 6.05615 17.0447C5.63377 16.7458 5.31449 16.3233 5.14232 15.8354H4.16732C3.9463 15.8354 3.73434 15.7476 3.57806 15.5913C3.42178 15.435 3.33398 15.2231 3.33398 15.002C3.33398 14.781 3.42178 14.5691 3.57806 14.4128C3.73434 14.2565 3.9463 14.1687 4.16732 14.1687H5.14232Z";
+
+    -fx-max-height: 16px;
+    -fx-max-width: 16px;
+
+    -fx-background-color: #4A7AD2;
+}
+
+.instances-main-container .title-container {
+    -fx-spacing: 0.25em;  /* 3 */
+    -fx-alignment: top-center;
+    -fx-padding: 0 0 5px 0;
+}
+
+.instances-main-container .title {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 1.25em; /* 15 */
+    -fx-text-fill: -Grey-11;
+
+    -fx-alignment: center;
+}
+
+.instances-main-container .title-description {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 1.083333em; /* 13 */
+    -fx-text-fill: -Grey-9;
+}
+
+.instances-main-container .top-container {
+    -fx-padding: 5px 35px 0 35px;
+}
+
+.instances-main-container .list-view-container {
+    -fx-padding: 0 35px 20px 35px;
+}
+
+.instances-main-container .list-view-container .list-view {
+    -fx-background-color: -Grey-7;
+    -fx-background-radius: 5px;
+}
+

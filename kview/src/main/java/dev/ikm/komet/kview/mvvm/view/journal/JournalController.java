@@ -15,6 +15,55 @@
  */
 package dev.ikm.komet.kview.mvvm.view.journal;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
+import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
+import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CONCEPT_TOPIC;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.DEVICE_ENTITY;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.STAMP_VIEW_MODEL;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.CONCEPT_FOLDER_PREFIX;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_HEIGHT;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_XPOS;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_YPOS;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_HEIGHT;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_PREF_NAME;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_WIDTH;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_XPOS;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_YPOS;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_TYPE;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_VALUE;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_FOLDER_PREFIX;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_COUNT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_NAMES;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
+import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
+import static java.io.File.separator;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -35,6 +84,7 @@ import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
+import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
@@ -74,12 +124,16 @@ import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -91,49 +145,55 @@ import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.input.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.carlfx.axonic.StateMachine;
-import org.carlfx.cognitive.loader.*;
+import org.carlfx.cognitive.loader.Config;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
+import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.prefs.BackingStoreException;
-
-import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
-import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
-import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
-import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.*;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.*;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
-import static dev.ikm.komet.preferences.JournalWindowSettings.*;
-import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
-import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
-import static java.io.File.separator;
 
 /**
  * This view is responsible for updating the kView journal window by loading a navigation panel
@@ -260,6 +320,9 @@ public class JournalController {
     private ConceptPatternNavController conceptPatternNavController;
 
     private Subscriber<MakeConceptWindowEvent> makeConceptWindowEventSubscriber;
+
+    private Subscriber<MakePatternWindowEvent> makePatternWindowEventSubscriber;
+
     private Subscriber<ShowNavigationalPanelEvent> showNavigationalPanelEventSubscriber;
 
     private Subscriber<CloseReasonerPanelEvent> closeReasonerPanelEventSubscriber;
@@ -311,6 +374,12 @@ public class JournalController {
             }
         };
         journalEventBus.subscribe(JOURNAL_TOPIC, MakeConceptWindowEvent.class, makeConceptWindowEventSubscriber);
+
+        makePatternWindowEventSubscriber = evt -> {
+            LOG.info("FIXME... edit pattern window");
+            makePatternWindow(evt.getPatternFacade(), evt.getViewProperties());
+        };
+        journalEventBus.subscribe(journalTopic, MakePatternWindowEvent.class, makePatternWindowEventSubscriber);
 
         showNavigationalPanelEventSubscriber = evt -> {
             try {
@@ -917,9 +986,9 @@ public class JournalController {
         JFXNode<Pane, LidrDetailsController> lidrJFXNode = FXMLMvvmLoader.make(lidrConfig);
         lidrJFXNode.controller().updateView();
 
-        //Getting the concept window pane
+        //Getting the lidr window pane
         Pane kometNodePanel = lidrJFXNode.node();
-        //Appling the CSS from draggable-region to the panel (makes it movable/sizable).
+        //Applying the CSS from draggable-region to the panel (makes it movable/sizable).
         Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
         Node[] draggables = new Node[draggableToolbar.size()];
 
@@ -1160,14 +1229,14 @@ public class JournalController {
 
     private void loadNavigationPanel(PublicIdStringKey<ActivityStream> navigationActivityStreamKey,
                                      ObservableViewNoOverride windowView, KometNodeFactory navigationFactory) {
-        //FIXME load the classic concept nav pane into this one: IIA-975, it is loading but the concept icons are missing
-        // and the styling seems off
+
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
         Pane navigatorNodePanel = loadClassicConceptNavigator(navigationActivityStreamKey, windowView, navigationFactory);
         Config patternConceptConfig = new Config(ConceptPatternNavController.class.getResource(CONCEPT_PATTERN_NAV_FXML_URL))
                 .controller(new ConceptPatternNavController(navigatorNodePanel))
                 .updateViewModel("patternNavViewModel", (patternNavViewModel) ->
                                 patternNavViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                                        .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
                         );
         JFXNode<StackPane, ConceptPatternNavController> conPatJFXNode = FXMLMvvmLoader.make(patternConceptConfig);
         patternConceptNavigationPanel = conPatJFXNode.node();
@@ -1487,9 +1556,8 @@ public class JournalController {
         Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
                 .addNamedViewModel(new NamedVm("patternViewModel", patternViewModel));
 
-        // create lidr window
+        // create pattern window
         JFXNode<Pane, PatternDetailsController> patternJFXNode = FXMLMvvmLoader.make(patternConfig);
-        patternJFXNode.controller().updateView();
 
         //Getting the concept window pane
         Pane kometNodePanel = patternJFXNode.node();
@@ -1533,5 +1601,53 @@ public class JournalController {
 
         //FIXME opening the panel too soon creates a broken UI for the pattern window
         //EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(patternConfig, OPEN_PANEL));
+    }
+
+
+    private void makePatternWindow(EntityFacade patternFacade, ViewProperties viewProperties) {
+        Entity patternEntity = EntityService.get().getEntity(patternFacade.nid()).get();
+
+        // populate STAMP values
+        Latest<EntityVersion> patternStamp = viewProperties.calculator().stampCalculator().latest(patternEntity);
+
+        StampViewModel stampViewModel = new StampViewModel();
+        stampViewModel.setPropertyValue(STATUS, patternStamp.get().stamp().state())
+            .setPropertyValue(TIME, patternStamp.get().stamp().time())
+            .setPropertyValue(AUTHOR, TinkarTerm.USER)
+            .setPropertyValue(MODULE, patternStamp.get().stamp().module())
+            .setPropertyValue(PATH, patternStamp.get().stamp().path())
+            ;
+
+        stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
+                .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
+
+        //TODO add 'edit' states to the state machine
+        StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
+
+        Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
+                .updateViewModel("patternViewModel", (PatternViewModel patternViewModel) -> {
+                    patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                        .setPropertyValue(MODE, EDIT)
+                        .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
+                        .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
+                        .setPropertyValue(STATE_MACHINE, patternSM)
+                        .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
+                        .setPropertyValue(PATTERN, patternFacade);
+                });
+
+        // create pattern window
+        JFXNode<Pane, PatternDetailsController> patternJFXNode = FXMLMvvmLoader.make(patternConfig);
+        Optional<PatternViewModel> optPatternViewModel = patternJFXNode.getViewModel("patternViewModel");
+        optPatternViewModel.ifPresent(patternViewModel -> patternViewModel.populatePattern());
+
+        //Getting the pattern window pane
+        Pane kometNodePanel = patternJFXNode.node();
+        //Applying the CSS from draggable-region to the panel (makes it movable/sizable).
+        Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
+        Node[] draggables = new Node[draggableToolbar.size()];
+
+        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
+        //Adding the pattern window panel as a child to the desktop pane.
+        desktopSurfacePane.getChildren().add(kometNodePanel);
     }
 }
