@@ -36,8 +36,8 @@ import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.komet.reasoner.ui.RunElkOwlReasonerIncrementalTask;
-import dev.ikm.komet.reasoner.ui.RunElkOwlReasonerTask;
+import dev.ikm.komet.reasoner.ui.RunReasonerIncrementalTask;
+import dev.ikm.komet.reasoner.ui.RunReasonerTask;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.TinkExecutor;
@@ -170,7 +170,7 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 			// TODO use a factory for the service and then create here
 			reasonerService.init(getViewProperties().calculator(), TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
 					TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
-			RunElkOwlReasonerTask task = new RunElkOwlReasonerTask(reasonerService, resultsController::setResults);
+			RunReasonerTask task = new RunReasonerTask(reasonerService, resultsController::setResults);
 
 			// publish event of task
 			TaskWrapper<ReasonerService> javafxTask = TaskWrapper.make(task);
@@ -198,7 +198,7 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 		if (!confirmRun("incremental"))
 			return;
 		TinkExecutor.threadPool().execute(() -> {
-			RunElkOwlReasonerIncrementalTask task = new RunElkOwlReasonerIncrementalTask(reasonerService,
+			RunReasonerIncrementalTask task = new RunReasonerIncrementalTask(reasonerService,
 					resultsController::setResults);
 			// publish event of task
 			TaskWrapper<ReasonerService> javafxTask = TaskWrapper.make(task);
