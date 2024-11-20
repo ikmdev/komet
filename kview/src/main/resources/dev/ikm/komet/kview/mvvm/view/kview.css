@@ -226,18 +226,6 @@
     -fx-shape: "M0.666748 4.83341V3.16675L3.16675 3.16675V0.666748H4.83341L4.83341 3.16675H7.33341V4.83342H4.83341L4.83341 7.33342H3.16675V4.83342L0.666748 4.83341Z  M13.9667 1.74175C14.1251 1.58341 14.3417 1.50008 14.5501 1.50008C14.7667 1.50008 14.9751 1.57508 15.1417 1.74175L17.0917 3.69175C17.4167 4.00008 17.4167 4.54175 17.0917 4.86675L15.5667 6.39175L12.4417 3.26675L13.9667 1.74175Z M2.33341 13.3751L11.5501 4.15842L14.6751 7.28341L5.45841 16.5001H2.33341V13.3751ZM12.3334 7.28341L11.5501 6.50008L4.00008 14.0667V14.8334H4.76675L12.3334 7.28341Z"
 }
 
-.add-scrollbar-patterns{
-    -fx-display: flex;
-    -fx-height: 571px;
-    -fx-padding: 0px 3px;
-    -fx-align-items: flex-start;
-    -fx-gap: 8px;
-    -fx-position: absolute;
-    -fx-right: 0px;
-    -fx-top: 67px;
-    -fx-background-color: #FFFFFF
-}
-
 .add-date-time-calendar {
      -fx-background-color: -Secondary-05;
      -width-size: 24px;
@@ -2955,6 +2943,11 @@ Timeline Year line segment (will overlay change circles)
     -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
     -fx-background-color: -Secondary-05;
 }
+
+.add-scrollbar-patterns{
+    -fx-background-color: -Grey-10;
+}
+
 
 .pattern-instance-hbox {
     -fx-border-radius: 2px;
