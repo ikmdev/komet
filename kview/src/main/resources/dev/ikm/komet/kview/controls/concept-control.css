@@ -1,7 +1,6 @@
 @import "../mvvm/view/kview.css";
 
 .concept-control {
-    -fx-padding: 0 0 16 0;
 }
 
 .concept-control > .title-label {
@@ -62,6 +61,7 @@
     -fx-shape: "M20 13H13V20H11V13H4V11H11V4H13V11H20V13Z";
 }
 
+.concept-control > .concept-drop-area,
 .concept-control > .concept-container > .concept-drop-area {
     -fx-background-color: -Grey-2;
     -fx-text-fill: -Grey-8;
@@ -71,6 +71,7 @@
     -fx-border-color: -Primary-04;
 }
 
+.concept-control > .concept-drop-area > .label > .concept-drag-and-drop-icon,
 .concept-control > .concept-container > .concept-drop-area > .label > .concept-drag-and-drop-icon {
     -fx-background-color: -Grey-8;
     -width-size: 20;

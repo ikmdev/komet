@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.kview.controls.ComponentSetControl;
 import dev.ikm.komet.kview.controls.ConceptControl;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.Entity;
@@ -9,18 +10,23 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.transform.Scale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,11 +36,17 @@ public class ConceptControlSkin extends SkinBase<ConceptControl> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConceptControl.class);
     private static final String SEARCH_TEXT_VALUE = "search.text.value";
+    private static final DataFormat CONTROL_DRAG_FORMAT;
+    static {
+        DataFormat dataFormat = DataFormat.lookupMimeType("text/concept-control-format");
+        CONTROL_DRAG_FORMAT = dataFormat == null ? new DataFormat("text/concept-control-format") : dataFormat;
+    }
 
     private final Label titleLabel;
     private final StackPane selectedConceptContainer;
     private final StackPane conceptContainer;
     private final HBox aboutToDropHBox;
+    private final HBox aboutToRearrangeHBox;
 
     public ConceptControlSkin(ConceptControl control) {
         super(control);
@@ -42,17 +54,20 @@ public class ConceptControlSkin extends SkinBase<ConceptControl> {
         titleLabel = new Label();
         titleLabel.getStyleClass().add("title-label");
         titleLabel.textProperty().bind(control.titleProperty());
+        titleLabel.managedProperty().bind(titleLabel.visibleProperty());
+        titleLabel.visibleProperty().bind(titleLabel.textProperty().isNotEmpty());
 
         selectedConceptContainer = new StackPane();
         selectedConceptContainer.getStyleClass().add("selected-concept-container");
         selectedConceptContainer.managedProperty().bind(selectedConceptContainer.visibleProperty());
 
         aboutToDropHBox = createDragOverAnimation();
+        aboutToRearrangeHBox = createDragOverAnimation();
         conceptContainer = new StackPane(createSearchBox(), aboutToDropHBox);
         conceptContainer.getStyleClass().add("concept-container");
         conceptContainer.managedProperty().bind(conceptContainer.visibleProperty());
         selectedConceptContainer.visibleProperty().bind(conceptContainer.visibleProperty().not());
-        getChildren().addAll(titleLabel, selectedConceptContainer, conceptContainer);
+        getChildren().addAll(titleLabel, selectedConceptContainer, conceptContainer, aboutToRearrangeHBox);
 
         setupDragNDrop();
 
@@ -72,19 +87,29 @@ public class ConceptControlSkin extends SkinBase<ConceptControl> {
 
     @Override
     protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
-        super.layoutChildren(contentX, contentY, contentWidth, contentHeight);
-        double labelPrefWidth = titleLabel.prefWidth(-1);
-        double labelPrefHeight = titleLabel.prefHeight(labelPrefWidth);
+        double labelPrefWidth = titleLabel.isManaged() ? titleLabel.prefWidth(-1) : 0;
+        double labelPrefHeight = titleLabel.isManaged() ? titleLabel.prefHeight(labelPrefWidth) : 0;
         Insets padding = getSkinnable().getPadding();
-        titleLabel.resizeRelocate(contentX + padding.getLeft(), contentY + padding.getTop(), labelPrefWidth, labelPrefHeight);
-        selectedConceptContainer.resizeRelocate(contentX, contentY + labelPrefHeight, contentWidth, contentHeight - padding.getBottom());
-        conceptContainer.resizeRelocate(contentX + padding.getLeft(), contentY + padding.getTop() + labelPrefHeight, contentWidth, contentHeight - padding.getBottom());
+        double x = contentX + padding.getLeft();
+        double y = contentY + padding.getTop();
+        titleLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
+        y += labelPrefHeight;
+        selectedConceptContainer.resizeRelocate(x, y, contentWidth - padding.getRight() - x, contentHeight - padding.getBottom() - y);
+        conceptContainer.resizeRelocate(x, y, contentWidth - padding.getRight() - x, contentHeight - padding.getBottom() - y);
+        aboutToRearrangeHBox.resizeRelocate(x, y, contentWidth - padding.getRight() - x, contentHeight - padding.getBottom() - y);
     }
 
+    /**
+     * There are two type of DND operations:
+     * - Drop a concept over an empty ConceptControl (dragboard string is publicId)
+     * - Rearrange non-empty ConceptControls that belong to a ComponentSetControl (dragboard string is CONTROL_DRAG_KEY)
+     */
     private void setupDragNDrop() {
         ConceptControl control = getSkinnable();
         control.setOnDragOver(event -> {
-            if (event.getGestureSource() != control && event.getDragboard().hasString()) {
+            if (event.getDragboard().hasContent(CONTROL_DRAG_FORMAT)) {
+                event.acceptTransferModes(TransferMode.MOVE);
+            } else if (event.getGestureSource() != control && event.getDragboard().hasString()) {
                 event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
             }
             event.consume();
@@ -93,21 +118,54 @@ public class ConceptControlSkin extends SkinBase<ConceptControl> {
         control.setOnDragEntered(event -> {
             if (event.getGestureSource() != control && event.getDragboard().hasString()) {
                 conceptContainer.setOpacity(.90);
+                if (event.getDragboard().hasContent(CONTROL_DRAG_FORMAT)) {
+                    if (hasAllowedDND(control)) {
+                        aboutToRearrangeHBox.setVisible(true);
+                    }
+                } else {
+                    aboutToDropHBox.setVisible(true);
+                }
             }
-            aboutToDropHBox.setVisible(true);
             event.consume();
         });
 
         control.setOnDragExited(event -> {
             conceptContainer.setOpacity(1);
+            aboutToRearrangeHBox.setVisible(false);
             aboutToDropHBox.setVisible(false);
             event.consume();
+        });
+
+        control.setOnDragDetected(ev -> {
+            if (hasAllowedDND(control)) {
+                Dragboard dragboard = control.startDragAndDrop(TransferMode.MOVE);
+                ClipboardContent clipboardContent = new ClipboardContent();
+                clipboardContent.put(CONTROL_DRAG_FORMAT, "concept-control");
+                control.setUserData(control.getEntity().publicId());
+                clipboardContent.putString(control.getEntity().toString());
+                dragboard.setContent(clipboardContent);
+                SnapshotParameters p = new SnapshotParameters();
+                p.setTransform(new Scale(10, 10));
+                WritableImage snapshot = control.snapshot(p, null);
+                dragboard.setDragView(scale(snapshot, (int) (snapshot.getWidth() / 10), (int) (snapshot.getHeight() / 10)));
+            }
+            ev.consume();
         });
 
         control.setOnDragDropped(event -> {
             boolean success = false;
             Dragboard dragboard = event.getDragboard();
-            if (dragboard.hasString()) {
+            if (event.getDragboard().hasContent(CONTROL_DRAG_FORMAT) &&
+                    event.getGestureSource() instanceof ConceptControl cc && haveAllowedDND(control, cc)) {
+                if (control.getParent() instanceof ComponentSetControl componentSetControl) {
+                    ComponentSetControlSkin skin = (ComponentSetControlSkin) componentSetControl.getSkin();
+                    int sourceIndex = skin.getChildren().indexOf(cc);
+                    int targetIndex = skin.getChildren().indexOf(control);
+                    final Node node = skin.getChildren().remove(sourceIndex);
+                    skin.getChildren().add(targetIndex, node);
+                    success = true;
+                }
+            } else if (dragboard.hasString() && !(event.getGestureSource() instanceof ConceptControl)) {
                 try {
                     LOG.info("publicId: {}", dragboard.getString());
                     if (event.getGestureSource() instanceof Node source &&
@@ -128,6 +186,18 @@ public class ConceptControlSkin extends SkinBase<ConceptControl> {
             event.setDropCompleted(success);
             event.consume();
         });
+    }
+
+    private boolean hasAllowedDND(ConceptControl control) {
+        return control != null && control.getEntity() != null && control.getParent() instanceof ComponentSetControl cs &&
+                cs.getEntitiesList().size() > 1;
+    }
+
+    private boolean haveAllowedDND(ConceptControl source, ConceptControl target) {
+        // only allowed if both source and target have the same parent
+        return hasAllowedDND(source) && source.getParent() instanceof ComponentSetControl cc1 &&
+                hasAllowedDND(target) && target.getParent() instanceof ComponentSetControl cc2 &&
+                cc1 == cc2;
     }
 
     private HBox createSearchBox() {
@@ -194,7 +264,11 @@ public class ConceptControlSkin extends SkinBase<ConceptControl> {
         buttonRegion.getStyleClass().add("selected-concept-discard-region");
         Button closeButton = new Button(null, buttonRegion);
         closeButton.getStyleClass().add("selected-concept-discard-button");
-        closeButton.setOnMouseClicked(event -> getSkinnable().setEntity(null));
+        closeButton.setOnMouseClicked(event -> {
+            if (getSkinnable().getOnRemoveAction() != null) {
+                getSkinnable().getOnRemoveAction().handle(new ActionEvent());
+            }
+        });
         closeButton.setAlignment(Pos.CENTER_RIGHT);
 
         HBox selectedConcept = new HBox(imageViewWrapper, conceptNameLabel, spacer, closeButton);
@@ -204,6 +278,14 @@ public class ConceptControlSkin extends SkinBase<ConceptControl> {
 
         selectedConceptContainer.getChildren().add(selectedConcept);
         conceptContainer.setVisible(false);
+    }
+
+    private Image scale(Image source, int targetWidth, int targetHeight) {
+        ImageView imageView = new ImageView(source);
+        imageView.setPreserveRatio(true);
+        imageView.setFitWidth(targetWidth);
+        imageView.setFitHeight(targetHeight);
+        return imageView.snapshot(null, null);
     }
 
     private static String getString(String key) {

@@ -101,6 +101,18 @@ public class ConceptControl extends Control {
         onAddConceptActionProperty.set(value);
     }
 
+    // onRemoveActionProperty
+    private final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty = new SimpleObjectProperty<>(this, "onRemoveAction", e -> setEntity(null));
+    public final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty() {
+       return onRemoveActionProperty;
+    }
+    public final EventHandler<ActionEvent> getOnRemoveAction() {
+       return onRemoveActionProperty.get();
+    }
+    public final void setOnRemoveAction(EventHandler<ActionEvent> value) {
+        onRemoveActionProperty.set(value);
+    }
+
     @Override
     protected Skin<?> createDefaultSkin() {
         return new ConceptControlSkin(this);
