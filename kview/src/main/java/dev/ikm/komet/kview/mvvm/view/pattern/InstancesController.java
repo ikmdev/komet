@@ -50,10 +50,6 @@ public class InstancesController {
     @FXML
     private Label patternMetaTitle;
 
-    public ListView getPatternInstancesListView() {
-        return this.instancesListView;
-    }
-
     @FXML
     private void initialize() {
         loadInstances();
@@ -66,7 +62,6 @@ public class InstancesController {
             }
         }));
     }
-
 
     private void loadInstances() {
         // load the pattern instances into an observable list
@@ -88,96 +83,15 @@ public class InstancesController {
         }
         boolean hasChildren = patternChildren.size() > 0;
 
-        // populate the pattern instances as a list view
-        ListView<Object> patternInstances = getPatternInstancesListView();
-
         // set the cell factory for each pattern's instances list
-        patternInstances.setCellFactory(p -> new ListCell<>() {
-            private final Label label;
+        instancesListView.setCellFactory(p -> new InstancesCell<>(patternViewModel));
 
-            {
-                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-                label = new Label();
-            }
-
-            @Override
-            protected void updateItem(Object item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(null);
-                ViewProperties viewProperties = patternViewModel.getViewProperties();
-                if (item != null && !empty) {
-                    if (item instanceof String stringItem) {
-                        setContentDisplay(ContentDisplay.TEXT_ONLY);
-                        setText(stringItem);
-                    } else if (item instanceof Integer nid) {
-                        String entityDescriptionText = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(nid);
-                        Entity entity = Entity.getFast(nid);
-                        if (entity instanceof SemanticEntity<?> semanticEntity) {
-                            if (semanticEntity.patternNid() == IDENTIFIER_PATTERN_PROXY.nid()) {
-                                //TODO Move better string descriptions to language calculator
-                                Latest<? extends SemanticEntityVersion> latestId = viewProperties.calculator().latest(semanticEntity);
-                                ImmutableList fields = latestId.get().fieldValues();
-                                entityDescriptionText = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
-                                        ": " + fields.get(1);
-                            } else if (semanticEntity.patternNid() == INFERRED_DEFINITION_PATTERN_PROXY.nid()) {
-                                entityDescriptionText =
-                                        "Inferred definition for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                            } else if (semanticEntity.patternNid() == INFERRED_NAVIGATION_PATTERN_PROXY.nid()) {
-                                entityDescriptionText =
-                                        "Inferred is-a relationships for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                            } else if (semanticEntity.patternNid() == PATH_MEMBERSHIP_PROXY.nid()) {
-                                entityDescriptionText =
-                                        viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                            } else if (semanticEntity.patternNid() == STATED_DEFINITION_PATTERN_PROXY.nid()) {
-                                entityDescriptionText =
-                                        "Stated definition for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                            } else if (semanticEntity.patternNid() == STATED_NAVIGATION_PATTERN_PROXY.nid()) {
-                                entityDescriptionText =
-                                        "Stated is-a relationships for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                            } else if (semanticEntity.patternNid() == UK_DIALECT_PATTERN_PROXY.nid()) {
-                                Latest<? extends SemanticEntityVersion> latestAcceptability = viewProperties.calculator().latest(semanticEntity);
-                                ImmutableList fields = latestAcceptability.get().fieldValues();
-                                entityDescriptionText =
-                                        "UK dialect " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
-                                                ": " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                            } else if (semanticEntity.patternNid() == US_DIALECT_PATTERN_PROXY.nid()) {
-                                Latest<? extends SemanticEntityVersion> latestAcceptability = viewProperties.calculator().latest(semanticEntity);
-                                ImmutableList fields = latestAcceptability.get().fieldValues();
-                                entityDescriptionText =
-                                        "US dialect " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
-                                                ": " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                            } else if (semanticEntity.patternNid() == VERSION_CONTROL_PATH_ORIGIN_PATTERN_PROXY.nid()) {
-                                Latest<? extends SemanticEntityVersion> latestPathOrigins = viewProperties.calculator().latest(semanticEntity);
-                                ImmutableList fields = latestPathOrigins.get().fieldValues();
-                                entityDescriptionText =
-                                        viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()) +
-                                                " origin: " + DateTimeUtil.format((Instant) fields.get(1)) +
-                                                " on " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0));
-                            }
-                        }
-
-                        setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-                        label.setText(entityDescriptionText);
-                        if (!entityDescriptionText.isEmpty()) {
-                            Image identicon = Identicon.generateIdenticonImage(entity.publicId());
-                            ImageView imageView = new ImageView(identicon);
-                            imageView.setFitWidth(24);
-                            imageView.setFitHeight(24);
-                            label.setGraphic(imageView);
-                        }
-                        label.getStyleClass().add("pattern-instance");
-                        setGraphic(label);
-                    }
-                }
-            }
-        });
         if (hasChildren) {
-            Platform.runLater(() -> patternInstances.setItems(patternChildren));
+            instancesListView.setItems(patternChildren);
         }
     }
 
     private void setMetaTitle(String description) {
-
     }
 
 }
