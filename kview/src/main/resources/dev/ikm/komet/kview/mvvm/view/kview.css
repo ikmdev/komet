@@ -2906,6 +2906,12 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: white, #e5e9f1;
 }
 
+.draggable-node:snapshot {
+    -fx-border-color: -Primary-05;
+    -fx-border-radius: 0;
+    -fx-border-width: 4;
+}
+
 /* Styles title text inside the content of TitlePane. eg: DESCRIPTION , Fully Qualified Name.*/
 .pattern-title {
     -fx-text-alignment: center;
@@ -2967,6 +2973,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-alignment: center;
 }
 
+  
 .pattern-instance-hbox .pattern-instance {
     -fx-min-width: 260px;
     -fx-pref-width: 260px;
@@ -4582,11 +4589,58 @@ Styling a context menu for kview ui/ux controls
 }
 
 .instances-main-container .list-view-container {
-    -fx-padding: 0 35px 20px 35px;
+    -fx-padding: 0 35px 17px 35px;
 }
 
-.instances-main-container .list-view-container .list-view {
+.instances-main-container .list-view-container .list-view,
+.instances-main-container .list-view-container .list-view:focused {
     -fx-background-color: -Grey-7;
     -fx-background-radius: 5px;
+    -fx-background-insets: 0;
+
+    -fx-border-width: 0;
+
+    -fx-padding: 10px 8px 10px 8px;
 }
+
+.list-view-container .list-view .instance-cell {
+    -fx-padding: 0 0 8px 0;
+
+    -fx-background-color: transparent;
+}
+
+.list-view-container .list-view .instance-cell .pattern-instance {
+    -fx-padding: 6px 8px 6px 10px;
+    -fx-background-radius: 2px;
+    -fx-background-color: white;
+
+    -fx-effect: dropshadow(gaussian , rgba(0, 0, 0, 0.2), 2, 0, 0 , 2 );
+
+    -fx-pref-height: 30;
+
+    -fx-fill-height: true;
+    -fx-alignment: center_left;
+}
+
+.list-view-container .list-view .pattern-instance .icon {
+    -fx-padding: 0 10px 0 0;
+}
+
+.list-view-container .list-view .pattern-instance .text-container {
+    -fx-spacing: 1px;
+}
+
+.list-view-container .list-view .pattern-instance .title {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #2E3240;
+    -fx-font-size: 1em;
+}
+
+.list-view-container .list-view .pattern-instance .sub-title {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #6E7989;
+    -fx-font-size: 0.916667em;
+}
+
+
 

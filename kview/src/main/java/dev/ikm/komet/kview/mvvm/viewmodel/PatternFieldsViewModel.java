@@ -27,6 +27,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
+
 public class PatternFieldsViewModel extends FormViewModel {
 
     private static final Logger LOG = LoggerFactory.getLogger(PatternFieldsViewModel.class);
@@ -42,10 +45,6 @@ public class PatternFieldsViewModel extends FormViewModel {
     public static String DISPLAY_NAME = "displayName";
 
     public static String DATA_TYPE = "dataType";
-
-    public static String PURPOSE_ENTITY = "purposeEntity";
-
-    public static String MEANING_ENTITY = "meaningEntity";
 
     public static String COMMENTS = "comments";
 

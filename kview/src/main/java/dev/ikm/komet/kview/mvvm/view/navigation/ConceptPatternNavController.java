@@ -1,35 +1,67 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
+import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.IDENTIFIER_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.INFERRED_DEFINITION_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.INFERRED_NAVIGATION_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.PATH_MEMBERSHIP_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.STATED_DEFINITION_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.STATED_NAVIGATION_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.UK_DIALECT_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.US_DIALECT_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.VERSION_CONTROL_PATH_ORIGIN_PATTERN_PROXY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel.PATTERN_COLLECTION;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.dnd.DragImageMaker;
+import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
-import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.PatternEntity;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.application.Platform;
-import javafx.beans.binding.DoubleBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.Node;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.*;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
@@ -39,15 +71,8 @@ import org.slf4j.LoggerFactory;
 
 import java.text.NumberFormat;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
-import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel.PATTERN_COLLECTION;
 
 public class ConceptPatternNavController {
     private static final Logger LOG = LoggerFactory.getLogger(ConceptPatternNavController.class);
@@ -114,32 +139,7 @@ public class ConceptPatternNavController {
         loadAllPatterns();
     }
 
-    static final EntityProxy identifierPatternProxy = EntityProxy.make("Identifier pattern",
-            new UUID[] {UUID.fromString("65dd3f06-71ff-5650-8fb3-ce4019e50642")});
 
-    static final EntityProxy inferredDefinitionPatternProxy = EntityProxy.make("Inferred definition pattern",
-            new UUID[] {UUID.fromString("9f011812-15c9-5b1b-85f8-bb262bc1b2a2")});
-
-    static final EntityProxy inferredNavigationPatternProxy = EntityProxy.make("Inferred navigation pattern",
-            new UUID[] {UUID.fromString("a53cc42d-c07e-5934-96b3-2ede3264474e")});
-
-    static final EntityProxy pathMembershipProxy = EntityProxy.make("Path membership",
-            new UUID[] {UUID.fromString("add1db57-72fe-53c8-a528-1614bda20ec6")});
-
-    static final EntityProxy statedDefinitionPatternProxy = EntityProxy.make("Stated definition pattern",
-            new UUID[] {UUID.fromString("e813eb92-7d07-5035-8d43-e81249f5b36e")});
-
-    static final EntityProxy statedNavigationPatternProxy = EntityProxy.make("Stated navigation pattern",
-            new UUID[] {UUID.fromString("d02957d6-132d-5b3c-adba-505f5778d998")});
-
-    static final EntityProxy ukDialectPatternProxy = EntityProxy.make("UK Dialect Pattern",
-            new UUID[] {UUID.fromString("561f817a-130e-5e56-984d-910e9991558c")});
-
-    static final EntityProxy usDialectPatternProxy = EntityProxy.make("US Dialect Pattern",
-            new UUID[] {UUID.fromString("08f9112c-c041-56d3-b89b-63258f070074")});
-
-    static final EntityProxy versionControlPathOriginPatternProxy = EntityProxy.make("Version control path origin pattern",
-            new UUID[] {UUID.fromString("70f89dd5-2cdb-59bb-bbaa-98527513547c")});
 
 
     @FXML
@@ -218,6 +218,8 @@ public class ConceptPatternNavController {
                             }
                         }
                     });
+                    PatternEntity patternEntity = EntityService.get().getEntityFast(patternItem.nid());
+                    setUpDraggable(patternHBox, patternEntity, PATTERN);
 
                     patternsVBox.getChildren().addAll(new HBox(leftPadding, patternHBox));
                     // set the pattern's name
@@ -246,40 +248,40 @@ public class ConceptPatternNavController {
                                     String entityDescriptionText = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(nid);
                                     Entity entity = Entity.getFast(nid);
                                     if (entity instanceof SemanticEntity<?> semanticEntity) {
-                                        if (semanticEntity.patternNid() == identifierPatternProxy.nid()) {
+                                        if (semanticEntity.patternNid() == IDENTIFIER_PATTERN_PROXY.nid()) {
                                             //TODO Move better string descriptions to language calculator
                                             Latest<? extends SemanticEntityVersion> latestId = viewProperties.calculator().latest(semanticEntity);
                                             ImmutableList fields = latestId.get().fieldValues();
                                             entityDescriptionText = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
                                                     ": " + fields.get(1);
-                                        } else if (semanticEntity.patternNid() == inferredDefinitionPatternProxy.nid()) {
+                                        } else if (semanticEntity.patternNid() == INFERRED_DEFINITION_PATTERN_PROXY.nid()) {
                                             entityDescriptionText =
                                                     "Inferred definition for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                                        } else if (semanticEntity.patternNid() == inferredNavigationPatternProxy.nid()) {
+                                        } else if (semanticEntity.patternNid() == INFERRED_NAVIGATION_PATTERN_PROXY.nid()) {
                                             entityDescriptionText =
                                                     "Inferred is-a relationships for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                                        } else if (semanticEntity.patternNid() == pathMembershipProxy.nid()) {
+                                        } else if (semanticEntity.patternNid() == PATH_MEMBERSHIP_PROXY.nid()) {
                                             entityDescriptionText =
                                                     viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                                        } else if (semanticEntity.patternNid() == statedDefinitionPatternProxy.nid()) {
+                                        } else if (semanticEntity.patternNid() == STATED_DEFINITION_PATTERN_PROXY.nid()) {
                                             entityDescriptionText =
                                                     "Stated definition for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                                        } else if (semanticEntity.patternNid() == statedNavigationPatternProxy.nid()) {
+                                        } else if (semanticEntity.patternNid() == STATED_NAVIGATION_PATTERN_PROXY.nid()) {
                                             entityDescriptionText =
                                                     "Stated is-a relationships for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                                        } else if (semanticEntity.patternNid() == ukDialectPatternProxy.nid()) {
+                                        } else if (semanticEntity.patternNid() == UK_DIALECT_PATTERN_PROXY.nid()) {
                                             Latest<? extends SemanticEntityVersion> latestAcceptability = viewProperties.calculator().latest(semanticEntity);
                                             ImmutableList fields = latestAcceptability.get().fieldValues();
                                             entityDescriptionText =
                                                     "UK dialect " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
                                                             ": " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                                        } else if (semanticEntity.patternNid() == usDialectPatternProxy.nid()) {
+                                        } else if (semanticEntity.patternNid() == US_DIALECT_PATTERN_PROXY.nid()) {
                                             Latest<? extends SemanticEntityVersion> latestAcceptability = viewProperties.calculator().latest(semanticEntity);
                                             ImmutableList fields = latestAcceptability.get().fieldValues();
                                             entityDescriptionText =
                                                     "US dialect " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
                                                             ": " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                                        } else if (semanticEntity.patternNid() == versionControlPathOriginPatternProxy.nid()) {
+                                        } else if (semanticEntity.patternNid() == VERSION_CONTROL_PATH_ORIGIN_PATTERN_PROXY.nid()) {
                                             Latest<? extends SemanticEntityVersion> latestPathOrigins = viewProperties.calculator().latest(semanticEntity);
                                             ImmutableList fields = latestPathOrigins.get().fieldValues();
                                             entityDescriptionText =
@@ -317,6 +319,41 @@ public class ConceptPatternNavController {
                 });
 
             });
+        });
+    }
+
+    private void setUpDraggable(Node node, Entity<?> entity, DragAndDropType dropType) {
+        Objects.requireNonNull(node, "The node must not be null.");
+        Objects.requireNonNull(entity, "The entity must not be null.");
+
+        // Associate the node with the entity's public ID and type for later retrieval or identification
+        node.setUserData(new DragAndDropInfo(dropType, entity.publicId()));
+
+        // Set up the drag detection event handler
+        node.setOnDragDetected(mouseEvent -> {
+            // Initiate a drag-and-drop gesture with copy or move transfer mode
+            Dragboard dragboard = node.startDragAndDrop(TransferMode.COPY_OR_MOVE);
+
+            // Create the content to be placed on the dragboard
+            // Here, KometClipboard is used to encapsulate the entity's unique identifier (nid)
+            KometClipboard content = new KometClipboard(EntityFacade.make(entity.nid()));
+
+            // Generate the drag image using DragImageMaker
+            DragImageMaker dragImageMaker = new DragImageMaker(node);
+            Image dragImage = dragImageMaker.getDragImage();
+            // Set the drag image on the dragboard
+            if (dragImage != null) {
+                dragboard.setDragView(dragImage);
+            }
+
+            // Place the content on the dragboard
+            dragboard.setContent(content);
+
+            // Log the drag event details for debugging or auditing
+            LOG.info("Drag detected on node: " + mouseEvent.toString());
+
+            // Consume the mouse event to prevent further processing
+            mouseEvent.consume();
         });
     }
 

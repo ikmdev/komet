@@ -18,8 +18,10 @@ package dev.ikm.komet.framework.dnd;
 
 import dev.ikm.komet.framework.Dialogs;
 import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.image.Image;
@@ -61,6 +63,7 @@ import java.util.Objects;
 public class DragImageMaker implements DraggableWithImage {
 
     private static final double STANDARD_DPI = 96.0;
+    private static final PseudoClass SNAPSHOT_PSEUDO_CLASS = PseudoClass.getPseudoClass("snapshot");
 
     /**
      * The {@link Node} from which the drag image is generated.
@@ -85,6 +88,7 @@ public class DragImageMaker implements DraggableWithImage {
     public DragImageMaker(Node node) {
         Objects.requireNonNull(node, "The node must not be null.");
         this.node = node;
+        this.node.getStyleClass().add("draggable-node");
     }
 
     @Override
@@ -98,6 +102,17 @@ public class DragImageMaker implements DraggableWithImage {
                     "Node is not attached to any scene.",
                     "Cannot take a snapshot of the node.");
             return null;
+        }
+
+        // Change the pseudo-class state to 'snapshot'
+        node.pseudoClassStateChanged(SNAPSHOT_PSEUDO_CLASS, true);
+
+        // Apply CSS and layout pass to the node to ensure the snapshot is accurate
+        node.applyCss();
+
+        Parent parent = node.getParent();
+        if (parent != null) {
+            parent.layout();
         }
 
         // Get the screen DPI where the scene is displayed
@@ -126,6 +141,9 @@ public class DragImageMaker implements DraggableWithImage {
 
         // Take the snapshot image of the node
         Image snapshotImage = node.snapshot(snapshotParameters, writableImage);
+
+        // Revert the pseudo-class state
+        node.pseudoClassStateChanged(SNAPSHOT_PSEUDO_CLASS, false);
 
         // Calculate dragOffset
         double widthDifference = node.getBoundsInParent().getWidth() - node.getLayoutBounds().getWidth();
