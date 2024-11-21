@@ -15,21 +15,12 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
-import static dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent.PATTERN_DEFINITION;
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.DEFINITION_CONFIRMATION;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.MEANING_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel.PURPOSE_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.ConceptEntity;
@@ -49,17 +40,19 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import org.carlfx.axonic.StateMachine;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
+
+import static dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent.PATTERN_DEFINITION;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.DEFINITION_CONFIRMATION;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 
 public class PatternDefinitionController {
 
@@ -155,30 +148,34 @@ public class PatternDefinitionController {
         doneButton.disableProperty().bind(patternDefinitionViewModel.getProperty(IS_INVALID));
 
         setupDragNDrop(purposeStackPane, (publicId) -> {
-            // check to see if a pattern > purpose was already dragged into the purpose section before saving
-            // to the view model
-            if (patternDefinitionViewModel.getPropertyValue(PURPOSE_ENTITY) == null) {
-                // query public Id to get entity.
-                Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-                patternDefinitionViewModel.setPropertyValue(PURPOSE_ENTITY, entity);
-                addPurposeToForm(entity);
-            }
+            // query public Id to get entity.
+            Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+            patternDefinitionViewModel.setPropertyValue(PURPOSE_ENTITY, entity);
         });
 
         setupDragNDrop(meaningStackPane, (publicId) -> {
-            // check to see if a pattern > purpose was already dragged into the purpose section before saving
-            // to the view model
-            if (patternDefinitionViewModel.getPropertyValue(MEANING_ENTITY) == null) {
-                // query public Id to get entity.
-                Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-                patternDefinitionViewModel.setPropertyValue(MEANING_ENTITY, entity);
-                addMeaningToForm(entity);
+            // query public Id to get entity.
+            Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+            patternDefinitionViewModel.setPropertyValue(MEANING_ENTITY, entity);
+        });
+        ObjectProperty<ConceptEntity> purposeProp = patternDefinitionViewModel.getProperty(PURPOSE_ENTITY);
+        ObjectProperty<ConceptEntity> meaningProp = patternDefinitionViewModel.getProperty(MEANING_ENTITY);
+        purposeProp.addListener(fieldsValidationListener);
+        purposeProp.addListener((obs, oldVal, newVal) -> {
+            if(newVal !=null){
+                addPurposeToForm(newVal);
+            }else{
+                removePurposeForm();
             }
         });
-        ObjectProperty<ConceptEntity> purposeProp = patternDefinitionViewModel.getProperty(PatternFieldsViewModel.PURPOSE_ENTITY);
-        ObjectProperty<ConceptEntity> meaningProp = patternDefinitionViewModel.getProperty(PatternFieldsViewModel.MEANING_ENTITY);
-        purposeProp.addListener(fieldsValidationListener);
         meaningProp.addListener(fieldsValidationListener);
+        meaningProp.addListener((obs, oldVal, newVal) -> {
+            if(newVal !=null){
+                addMeaningToForm(newVal);
+            }else{
+                removeMeaningForm();
+            }
+        });
     }
 
     private void setupDragNDrop(Node node, Consumer<PublicId> consumer) {
@@ -193,7 +190,6 @@ public class PatternDefinitionController {
                 /* allow for both copying and moving, whatever user chooses */
                 event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
             }
-
             event.consume();
         });
 
@@ -209,7 +205,6 @@ public class PatternDefinitionController {
                 int lastIndex = nd.getChildren().size();
                 nd.getChildren().add(lastIndex, createDragOverAnimation());
             }
-
             event.consume();
         });
 
@@ -234,21 +229,17 @@ public class PatternDefinitionController {
             if (dragboard.hasString()) {
                 try {
                     LOG.info("publicId: " + dragboard.getString());
-
                     HBox hbox = (HBox) event.getGestureSource();
                     PublicId publicId = (PublicId) hbox.getUserData();
-
                     consumer.accept(publicId);
                     success = true;
                 } catch (Exception e) {
                     LOG.error("exception: ", e);
                 }
             }
-
             /* let the source know whether the string was successfully
              * transferred and used */
             event.setDropCompleted(success);
-
             event.consume();
         });
     }
@@ -319,9 +310,7 @@ public class PatternDefinitionController {
         selectedPurposeContainer.getChildren().add(selectedPurpose);
 
         VBox.setMargin(selectedPurposeStackPane, new Insets(0,0, 0,0));
-
         VBox.setMargin(selectedPurposeOuterContainer, new Insets(0, 0, 16, 0));
-
         removePurposeForm();
     }
 
@@ -374,7 +363,6 @@ public class PatternDefinitionController {
 
         VBox.setMargin(selectedMeaningStackPane, new Insets(0,0, 0,0));
         VBox.setMargin(selectedMeaningOuterContainer, new Insets(0, 0, 16, 0));
-
         removeMeaningForm();
 
     }
@@ -431,14 +419,9 @@ public class PatternDefinitionController {
 
         // re-attach the drag and drop capability
         setupDragNDrop(selectedMeaningStackPane, (publicId) -> {
-            // check to see if a pattern > meaning was already dragged into the meaning section before saving
-            // to the view model
-            if (patternDefinitionViewModel.getPropertyValue(MEANING_ENTITY) == null) {
-                // query public Id to get entity.
-                Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-                patternDefinitionViewModel.setPropertyValue(MEANING_ENTITY, entity);
-                addMeaningToForm(entity);
-            }
+            // query public Id to get entity.
+            Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+            patternDefinitionViewModel.setPropertyValue(MEANING_ENTITY, entity);
         });
 
         return meaningVBox;
@@ -508,14 +491,9 @@ public class PatternDefinitionController {
 
         // re-attach the drag and drop capability
         setupDragNDrop(selectedPurposeStackPane, (publicId) -> {
-            // check to see if a pattern > purpose was already dragged into the purpose section before saving
-            // to the view model
-            if (patternDefinitionViewModel.getPropertyValue(PURPOSE_ENTITY) == null) {
                 // query public Id to get entity.
                 Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
                 patternDefinitionViewModel.setPropertyValue(PURPOSE_ENTITY, entity);
-                addPurposeToForm(entity);
-            }
         });
 
         return purposeVBox;

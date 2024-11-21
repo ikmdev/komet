@@ -18,6 +18,7 @@ package dev.ikm.komet.kview.events.pattern;
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
+import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 
 /**
@@ -31,6 +32,7 @@ import dev.ikm.komet.kview.mvvm.model.PatternField;
 public class ShowPatternFormInBumpOutEvent extends Evt {
 
     public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_ADD_DEFINITION = new EvtType<>(Evt.ANY, "SHOW_ADD_DEFINITION");
+    public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_EDIT_DEFINITION = new EvtType<>(Evt.ANY, "SHOW_EDIT_DEFINITION");
 
     public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_EDIT_FIELDS = new EvtType<>(Evt.ANY, "SHOW_EDIT_FIELD");
     public static final EvtType<ShowPatternFormInBumpOutEvent> SHOW_ADD_FIELDS = new EvtType<>(Evt.ANY, "SHOW_ADD_FIELDS");
@@ -50,6 +52,7 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
     private final PatternField patternField;
     private final int fieldOrder;
     private final DescrName descrName;
+    private final PatternDefinition patternDefinition;
     //TODO future: other EvtTypes like show History, show Timeline etc
 
     /**
@@ -61,6 +64,25 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
      */
     public ShowPatternFormInBumpOutEvent(Object source, EvtType eventType) {
         super(source, eventType);
+        this.patternDefinition = null;
+        this.descrName = null;
+        this.totalFields = 0;
+        this.patternField = null;
+        this.fieldOrder = 1;
+    }
+
+
+    /**
+     * Constructs a prototypical Event.
+     * This is an add even and the default value for the pattern description is null.
+     * @param source    the object on which the Event initially occurred
+     * @param eventType in this case the event type is SHOW_ADD_FIELDS event type.
+     * @param patternDefinition in case of edit this value will NOT be null.
+     * @throws IllegalArgumentException if source is null
+     */
+    public ShowPatternFormInBumpOutEvent(Object source, EvtType eventType, PatternDefinition patternDefinition) {
+        super(source, eventType);
+        this.patternDefinition = patternDefinition;
         this.descrName = null;
         this.totalFields = 0;
         this.patternField = null;
@@ -78,6 +100,7 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
      */
     public ShowPatternFormInBumpOutEvent(Object source, EvtType eventType, DescrName descrName) {
         super(source, eventType);
+        this.patternDefinition = null;
         this.descrName = descrName;
         this.totalFields = 0;
         this.patternField = null;
@@ -94,6 +117,7 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
      */
     public ShowPatternFormInBumpOutEvent(Object source, EvtType eventType, int totalFields) {
         super(source, eventType);
+        this.patternDefinition = null;
         this.totalFields = totalFields;
         this.patternField = null;
         this.fieldOrder = 1;
@@ -111,6 +135,7 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
      */
     public ShowPatternFormInBumpOutEvent(Object source, EvtType eventType, int totalFields, PatternField patternField, int fieldOrder) {
         super(source, eventType);
+        this.patternDefinition = null;
         this.totalFields = totalFields;
         this.patternField = patternField;
         this.fieldOrder = fieldOrder;
@@ -131,5 +156,9 @@ public class ShowPatternFormInBumpOutEvent extends Evt {
 
     public DescrName getDescrName() {
         return descrName;
+    }
+
+    public PatternDefinition getPatternDefinition() {
+        return patternDefinition;
     }
 }

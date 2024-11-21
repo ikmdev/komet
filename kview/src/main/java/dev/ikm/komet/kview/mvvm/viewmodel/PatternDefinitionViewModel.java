@@ -23,14 +23,13 @@ import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
+
 
 public class PatternDefinitionViewModel extends FormViewModel {
 
     private static final Logger LOG = LoggerFactory.getLogger(PatternDefinitionViewModel.class);
-
-    public static String PURPOSE_ENTITY = "purposeEntity";
-
-    public static String MEANING_ENTITY = "meaningEntity";
 
     public static final String IS_INVALID = "isInvalid";
 
