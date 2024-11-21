@@ -34,6 +34,7 @@
     -Grey-1: #FBFBFC;
     -Grey-White: #FFF;
     -Natural-Grey-Main: #5E5E5E;
+    -Natural-Grey-Dark: #4A4A4A;
 
     -Accent-color-yellow: #F3BE00;
     -Accent-color-orange: #FDAD15;
@@ -2709,20 +2710,23 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .search-entry-text {
-    -fx-font-family: "Noto Sans";
+    -fx-font: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
-    -fx-font-weight: 600;
-    -fx-fill: -Secondary-06;
+    -fx-font-weight: bold;
+    -fx-line-height: 16px;
+    -fx-letter-spacing: 0.2px;
+    -fx-fill: -Natural-Grey-Dark;
+
 }
 
 .search-entry-expanded {
-    -fx-border-radius: 4px;
+    -fx-border-radius: 1px;
     -fx-border-color: -Secondary-05;
 }
 
 .search-entry-title-pane {
-    -fx-border-radius: 4px;
+    -fx-border-radius: 1px;
     -fx-border-color: -Secondary-05;
 }
 
@@ -2941,7 +2945,12 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Secondary-05;
 }
 
-.pattern-instance {
+.add-scrollbar-patterns{
+    -fx-background-color: -Grey-10;
+}
+
+
+.pattern-instance-hbox {
     -fx-border-radius: 2px;
     -fx-fill: -Grey-11;
     -fx-font-family: "Noto Sans";
@@ -2950,11 +2959,37 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-weight: 400;
     -fx-background-color: white;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 1, 1, 1, 1);    
-    -fx-min-width: 280px;
-    -fx-pref-width: 280px;
-    -fx-max-width: 280px;
-    -fx-pref-height: 30;    
+    -fx-min-width: 285px;
+    -fx-pref-width: 285px;
+    -fx-max-width: 285px;
+    -fx-pref-height: 30;
+    -fx-padding: 5;
+    -fx-alignment: center;
 }
+
+.pattern-instance-hbox .pattern-instance {
+    -fx-min-width: 260px;
+    -fx-pref-width: 260px;
+    -fx-max-width: 260px;
+
+}
+.pattern-instance-hbox .pattern-instance-hover-icon {
+         visibility: hidden;
+}
+.pattern-instance-hbox:hover .pattern-instance-hover-icon {
+      visibility: visible;
+}
+
+.pattern-instance-hover-icon {
+     -fx-min-width: 16px;
+     -fx-max-width: 16px;
+     -fx-max-height: 16px;
+     -fx-min-height: 16px;
+     -fx-background-color: #9A9DA0;
+     -fx-shape: "M0 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0";
+}
+
+
 
 /********************************************************************************
  * End of Journal > Search Concept UI elements                                  *
@@ -4352,15 +4387,17 @@ Styling a context menu for kview ui/ux controls
     -fx-border-color: -Grey-7;
     -fx-background-color: -Grey-2;
     -fx-text-fill: -Secondary-05;
-
     -fx-background-insets: 0;
-
-    -fx-font-weight: 600;
+    -fx-font-family: "Noto Sans";
+    -fx-letter-spacing: 0.2px;
+    -fx-text-transform: uppercase;
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: bold;
 }
 
 .nav-toggle-left.toggle-button {
     -fx-border-width: 1 0 1 1;
-
     -fx-border-radius: 6 0 0 6;
     -fx-background-radius: 6 0 0 6;
 }

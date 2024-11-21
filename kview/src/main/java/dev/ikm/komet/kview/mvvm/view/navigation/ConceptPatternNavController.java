@@ -229,7 +229,6 @@ public class ConceptPatternNavController {
                     // set the cell factory for each pattern's instances list
                     patternInstances.setCellFactory(p -> new ListCell<>() {
                         private final Label label;
-
                         {
                             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
                             label = new Label();
@@ -299,8 +298,14 @@ public class ConceptPatternNavController {
                                         imageView.setFitHeight(24);
                                         label.setGraphic(imageView);
                                     }
+                                    HBox hbox = new HBox();
+                                    hbox.getStyleClass().add("pattern-instance-hbox");
+                                    hbox.getChildren().add(label);
+                                    StackPane stackPane = new StackPane();
+                                    hbox.getChildren().add(stackPane);
+                                    stackPane.getStyleClass().add("pattern-instance-hover-icon");
                                     label.getStyleClass().add("pattern-instance");
-                                    setGraphic(label);
+                                    setGraphic(hbox);
                                 }
                             }
                         }
