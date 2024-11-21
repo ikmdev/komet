@@ -39,8 +39,9 @@ public class ContinueAddFieldsController {
     @FXML
     private void addField(ActionEvent actionEvent) {
         actionEvent.consume();
+        int totalExistingFields = patternPropertiesViewModel.getPropertyValue(TOTAL_EXISTING_FIELDS);
         EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(),
-                new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_FIELDS, patternPropertiesViewModel.getPropertyValue(TOTAL_EXISTING_FIELDS)));
+                new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_FIELDS, totalExistingFields));
     }
 
     /**

@@ -30,6 +30,7 @@ module dev.ikm.komet.kview {
     requires dev.ikm.tinkar.composer;
     requires one.jpro.platform.auth.core;
     requires one.jpro.platform.file;
+    requires dev.ikm.jpms.google.common;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
