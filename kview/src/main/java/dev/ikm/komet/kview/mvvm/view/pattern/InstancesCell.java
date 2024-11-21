@@ -1,11 +1,23 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.IDENTIFIER_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.INFERRED_DEFINITION_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.INFERRED_NAVIGATION_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.PATH_MEMBERSHIP_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.STATED_DEFINITION_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.STATED_NAVIGATION_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.UK_DIALECT_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.US_DIALECT_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.VERSION_CONTROL_PATH_ORIGIN_PATTERN_PROXY;
+import com.google.common.base.CaseFormat;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -21,19 +33,12 @@ import javafx.scene.layout.VBox;
 import org.eclipse.collections.api.list.ImmutableList;
 
 import java.time.Instant;
-
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.IDENTIFIER_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.INFERRED_DEFINITION_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.INFERRED_NAVIGATION_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.PATH_MEMBERSHIP_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.STATED_DEFINITION_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.STATED_NAVIGATION_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.UK_DIALECT_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.US_DIALECT_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.VERSION_CONTROL_PATH_ORIGIN_PATTERN_PROXY;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 
 public class InstancesCell<T> extends ListCell<T> {
-    private static final String MOCKUP_SUB_TITLE = "Active, Last Updated June 8th 2024";
 
     private final HBox mainContainer;
     private final VBox textContainer;
@@ -90,9 +95,16 @@ public class InstancesCell<T> extends ListCell<T> {
                 setGraphic(null);
                 setText(stringItem);
             } else if (item instanceof Integer nid) {
+                StampCalculator stampCalculator = viewProperties.calculator().stampCalculator();
 
                 String entityDescriptionText = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(nid);
                 Entity entity = Entity.getFast(nid);
+
+                // generate the subtitle of status and last updated
+                EntityVersion latest = (EntityVersion) stampCalculator.latest(entity).get();
+                LocalDate date = Instant.ofEpochMilli(latest.stamp().time()).atZone(ZoneId.systemDefault()).toLocalDate();
+                String instanceSubTitle = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, latest.stamp().state().toString())
+                        + ", Last Updated " + DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(date);
                 if (entity instanceof SemanticEntity<?> semanticEntity) {
                     if (semanticEntity.patternNid() == IDENTIFIER_PATTERN_PROXY.nid()) {
                         //TODO Move better string descriptions to language calculator
@@ -144,7 +156,7 @@ public class InstancesCell<T> extends ListCell<T> {
                     iconImageView.setImage(identicon);
                 }
 
-                subTitle.setText(MOCKUP_SUB_TITLE);
+                subTitle.setText(instanceSubTitle);
 
                 setText(null);
                 setGraphic(mainContainer);

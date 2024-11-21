@@ -1,40 +1,18 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.IDENTIFIER_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.INFERRED_DEFINITION_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.INFERRED_NAVIGATION_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.PATH_MEMBERSHIP_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.STATED_DEFINITION_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.STATED_NAVIGATION_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.UK_DIALECT_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.US_DIALECT_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.VERSION_CONTROL_PATH_ORIGIN_PATTERN_PROXY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
-import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.common.service.PrimitiveData;
-import dev.ikm.tinkar.common.util.time.DateTimeUtil;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import org.carlfx.cognitive.loader.InjectViewModel;
-import org.eclipse.collections.api.list.ImmutableList;
 
 import java.text.NumberFormat;
-import java.time.Instant;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class InstancesController {
