@@ -85,7 +85,7 @@ public class ConceptPatternNavController {
     @FXML
     private BorderPane navContentPane;
 
-    private Pane patternNavigationPane;
+    private ScrollPane patternNavigationPane;
 
     private VBox patternsVBox;
 
@@ -109,10 +109,10 @@ public class ConceptPatternNavController {
 
     @FXML
     public void initialize() {
-        patternNavigationPane = new Pane();
+        patternNavigationPane = new ScrollPane();
         patternsVBox = new VBox();
 
-        patternNavigationPane.getChildren().add(patternsVBox);
+        patternNavigationPane.setContent(patternsVBox);
         patternsVBox.getChildren().clear();
 
         // default to classic concept navigation
@@ -129,18 +129,6 @@ public class ConceptPatternNavController {
         EvtBusFactory.getDefaultEvtBus().subscribe(SAVE_PATTERN_TOPIC, PatternCreationEvent.class, patternCreationEventSubscriber);
 
         loadAllPatterns();
-
-        // ScrollPane content should be at a minimum as high (height wise) as the ScrollPane viewport (ScrollPane's visible area) height
-        scrollPaneContent.minHeightProperty().bind(new DoubleBinding() {
-            {
-                super.bind(scrollPane.viewportBoundsProperty());
-            }
-
-            @Override
-            protected double computeValue() {
-                return scrollPane.getViewportBounds().getHeight();
-            }
-        });
     }
 
 
