@@ -72,7 +72,7 @@ import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchFieldDefinitio
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 
 public class PatternFieldsController {
 

@@ -24,9 +24,11 @@ import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
+import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import javafx.event.ActionEvent;
@@ -56,8 +58,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 import static dev.ikm.komet.kview.state.PatternDetailsState.NEW_PATTERN_INITIAL;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
@@ -235,8 +236,14 @@ public class PropertiesController {
         showPatternFormInBumpOutEventSubscriber = evt -> {
             LOG.info("Show Panel by event type: " + evt.getEventType());
             // TODO swap based on state (edit definition, ).
-            if (evt.getEventType() == SHOW_ADD_DEFINITION) {
+            if (evt.getEventType() == SHOW_ADD_DEFINITION || evt.getEventType() == SHOW_EDIT_DEFINITION) {
                 currentEditPane = patternDefinitionPane; // must be available.
+                PatternDefinition patternDefinition = evt.getPatternDefinition();
+                Optional<PatternDefinitionViewModel> optionalDefinitionViewModel = patternDefinitionControllerJFXNode.getViewModel("patternDefinitionViewModel");
+                optionalDefinitionViewModel.ifPresent(definitionViewModel -> {
+                    definitionViewModel.setPropertyValue(PURPOSE_ENTITY, patternDefinition.purpose());
+                    definitionViewModel.setPropertyValue(MEANING_ENTITY, patternDefinition.meaning());
+                });
             } else if (evt.getEventType() == SHOW_EDIT_FIELDS) {
                 //Set the field values for edit.
                 Optional<ViewModel> viewModel = patternFieldsJFXNode.namedViewModels().stream().filter(namedVm -> namedVm.variableName().equals("patternFieldsViewModel")).map(NamedVm::viewModel).findAny();
