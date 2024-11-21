@@ -24,6 +24,8 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.events.SearchSortOptionEvent;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -65,6 +67,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static dev.ikm.komet.framework.events.FrameworkTopics.SEARCH_SORT_TOPIC;
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.*;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 
 
 public class NextGenSearchController extends AbstractBasicController {
@@ -259,7 +262,7 @@ public class NextGenSearchController extends AbstractBasicController {
             }
             VBox.setMargin(node, new Insets(2, 0, 2, 0));
 
-            setUpDraggable(node, entity);
+            setUpDraggable(node, entity, CONCEPT);
 
             resultsVBox.getChildren().add(node);
         });
@@ -277,12 +280,12 @@ public class NextGenSearchController extends AbstractBasicController {
      * @param entity the {@link Entity} associated with the node, providing data for the drag operation
      * @throws NullPointerException if either {@code node} or {@code entity} is {@code null}
      */
-    private void setUpDraggable(Node node, Entity<?> entity) {
+    private void setUpDraggable(Node node, Entity<?> entity, DragAndDropType dropType) {
         Objects.requireNonNull(node, "The node must not be null.");
         Objects.requireNonNull(entity, "The entity must not be null.");
 
-        // Associate the node with the entity's public ID for later retrieval or identification
-        node.setUserData(entity.publicId());
+        // Associate the node with the entity's public ID and type for later retrieval or identification
+        node.setUserData(new DragAndDropInfo(dropType, entity.publicId()));
 
         // Set up the drag detection event handler
         node.setOnDragDetected(mouseEvent -> {
@@ -366,7 +369,7 @@ public class NextGenSearchController extends AbstractBasicController {
         }
         controller.setWindowView(windowView);
         VBox.setMargin(node, new Insets(2, 0, 2, 0));
-        setUpDraggable(node, entity);
+        setUpDraggable(node, entity, CONCEPT);
         return node;
     }
 
@@ -405,7 +408,7 @@ public class NextGenSearchController extends AbstractBasicController {
             }
             controller.setRetired(!entityVersion.active());
             VBox.setMargin(entry.get(), new Insets(8, 0, 8, 0));
-            setUpDraggable(entry.get(), entity);
+            setUpDraggable(entry.get(), entity, CONCEPT);
         });
 
         return entry.get();
