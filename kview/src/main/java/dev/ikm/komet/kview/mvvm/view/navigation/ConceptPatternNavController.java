@@ -137,6 +137,8 @@ public class ConceptPatternNavController {
         EvtBusFactory.getDefaultEvtBus().subscribe(SAVE_PATTERN_TOPIC, PatternCreationEvent.class, patternCreationEventSubscriber);
 
         loadAllPatterns();
+
+        System.out.println("TESTING");
     }
 
 
