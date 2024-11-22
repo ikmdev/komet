@@ -48,15 +48,15 @@ import java.util.function.Consumer;
  * subclass relationships between classes in order to complete the class
  * hierarchy. For example, .. (left for the reader :P)
  */
-public class RunElkOwlReasonerTask extends TrackingCallable<ReasonerService> {
+public class RunReasonerTask extends TrackingCallable<ReasonerService> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(RunElkOwlReasonerTask.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RunReasonerTask.class);
 
 	private final ReasonerService reasonerService;
 
 	private final Consumer<ClassifierResults> classifierResultsConsumer;
 
-	public RunElkOwlReasonerTask(ReasonerService reasonerService,
+	public RunReasonerTask(ReasonerService reasonerService,
 			Consumer<ClassifierResults> classifierResultsConsumer) {
 		super(true, true);
 		this.reasonerService = reasonerService;
@@ -77,7 +77,7 @@ public class RunElkOwlReasonerTask extends TrackingCallable<ReasonerService> {
 		msg = "Step " + workDone + ": Extracting data";
 		updateMessage(msg);
 		LOG.info(msg);
-		ExtractElkOwlAxiomsTask extractTask = new ExtractElkOwlAxiomsTask(reasonerService);
+		ExtractDataTask extractTask = new ExtractDataTask(reasonerService);
 		Future<ReasonerService> extractFuture = TinkExecutor.threadPool().submit(extractTask);
 		extractFuture.get();
 		updateProgress(workDone++, maxWork);
@@ -85,7 +85,7 @@ public class RunElkOwlReasonerTask extends TrackingCallable<ReasonerService> {
 		msg = "Step " + workDone + ": Loading data into reasoner";
 		updateMessage(msg);
 		LOG.info(msg);
-		LoadElkOwlAxiomsTask loadTask = new LoadElkOwlAxiomsTask(reasonerService);
+		LoadDataTask loadTask = new LoadDataTask(reasonerService);
 		Future<ReasonerService> loadFuture = TinkExecutor.threadPool().submit(loadTask);
 		loadFuture.get();
 		updateProgress(workDone++, maxWork);
@@ -93,7 +93,7 @@ public class RunElkOwlReasonerTask extends TrackingCallable<ReasonerService> {
 		msg = "Step " + workDone + ": Computing taxonomy";
 		updateMessage(msg);
 		LOG.info(msg);
-		ComputeElkOwlInferencesTask classifyTask = new ComputeElkOwlInferencesTask(reasonerService);
+		ComputeInferencesTask classifyTask = new ComputeInferencesTask(reasonerService);
 		Future<ReasonerService> classifyFuture = TinkExecutor.threadPool().submit(classifyTask);
 		classifyFuture.get();
 		updateProgress(workDone++, maxWork);
@@ -101,7 +101,7 @@ public class RunElkOwlReasonerTask extends TrackingCallable<ReasonerService> {
 		msg = "Step " + workDone + ": Processing results";
 		updateMessage(msg);
 		LOG.info(msg);
-		ProcessElkOwlResultsTask processResultsTask = new ProcessElkOwlResultsTask(reasonerService);
+		ProcessResultsTask processResultsTask = new ProcessResultsTask(reasonerService);
 		Future<ClassifierResults> processResultsFuture = TinkExecutor.threadPool().submit(processResultsTask);
 		ClassifierResults classifierResults = processResultsFuture.get();
 		updateProgress(workDone++, maxWork);
