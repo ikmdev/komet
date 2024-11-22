@@ -44,7 +44,7 @@ public class InstancesController {
     private void loadInstances() {
         // load the pattern instances into an observable list
         ObservableList<Object> patternChildren = FXCollections.observableArrayList();
-        Entity patternItem = patternViewModel.getPropertyValue(PATTERN);
+        EntityFacade patternItem = patternViewModel.getPropertyValue(PATTERN);
         setMetaTitle(patternItem.description());
         int patternNid = patternItem.nid();
         AtomicInteger childCount = new AtomicInteger();
