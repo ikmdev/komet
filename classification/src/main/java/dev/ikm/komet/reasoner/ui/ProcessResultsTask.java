@@ -71,9 +71,9 @@ import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 
-public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults> {
+public class ProcessResultsTask extends TrackingCallable<ClassifierResults> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ProcessElkOwlResultsTask.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ProcessResultsTask.class);
 
 	private final ReasonerService reasonerService;
 
@@ -94,7 +94,7 @@ public class ProcessElkOwlResultsTask extends TrackingCallable<ClassifierResults
 	// Chronic lung disease: [23e07078-f1e2-3f6a-9b7a-9397bcd91cfe]
 	private final int watchNid = PrimitiveData.nid(UUID.fromString("23e07078-f1e2-3f6a-9b7a-9397bcd91cfe"));
 
-	public ProcessElkOwlResultsTask(ReasonerService reasonerService) {
+	public ProcessResultsTask(ReasonerService reasonerService) {
 		super(false, true);
 		this.reasonerService = reasonerService;
 		this.viewCalculator = reasonerService.getViewCalculator();
