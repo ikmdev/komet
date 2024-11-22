@@ -30,15 +30,15 @@ import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 
-public class RunElkOwlReasonerIncrementalTask extends TrackingCallable<ReasonerService> {
+public class RunReasonerIncrementalTask extends TrackingCallable<ReasonerService> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(RunElkOwlReasonerIncrementalTask.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RunReasonerIncrementalTask.class);
 
 	private final ReasonerService reasonerService;
 
 	private final Consumer<ClassifierResults> classifierResultsConsumer;
 
-	public RunElkOwlReasonerIncrementalTask(ReasonerService reasonerService,
+	public RunReasonerIncrementalTask(ReasonerService reasonerService,
 			Consumer<ClassifierResults> classifierResultsConsumer) {
 		super(true, true);
 		this.reasonerService = reasonerService;
@@ -79,7 +79,7 @@ public class RunElkOwlReasonerIncrementalTask extends TrackingCallable<ReasonerS
 		msg = "Step " + workDone + ": Processing results";
 		updateMessage(msg);
 		LOG.info(msg);
-		ProcessElkOwlResultsTask processResultsTask = new ProcessElkOwlResultsTask(reasonerService);
+		ProcessResultsTask processResultsTask = new ProcessResultsTask(reasonerService);
 		Future<ClassifierResults> processResultsFuture = TinkExecutor.threadPool().submit(processResultsTask);
 		ClassifierResults classifierResults = processResultsFuture.get();
 		updateProgress(workDone++, maxWork);
