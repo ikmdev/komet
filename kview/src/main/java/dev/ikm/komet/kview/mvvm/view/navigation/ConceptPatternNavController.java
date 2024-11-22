@@ -218,8 +218,7 @@ public class ConceptPatternNavController {
                             }
                         }
                     });
-                    PatternEntity patternEntity = EntityService.get().getEntityFast(patternItem.nid());
-                    setUpDraggable(patternHBox, patternEntity, PATTERN);
+                    setUpDraggable(patternHBox, patternItem, PATTERN);
 
                     patternsVBox.getChildren().addAll(new HBox(leftPadding, patternHBox));
                     // set the pattern's name
@@ -322,7 +321,7 @@ public class ConceptPatternNavController {
         });
     }
 
-    private void setUpDraggable(Node node, Entity<?> entity, DragAndDropType dropType) {
+    private void setUpDraggable(Node node, EntityFacade entity, DragAndDropType dropType) {
         Objects.requireNonNull(node, "The node must not be null.");
         Objects.requireNonNull(entity, "The entity must not be null.");
 
