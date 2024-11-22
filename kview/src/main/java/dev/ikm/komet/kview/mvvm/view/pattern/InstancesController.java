@@ -1,6 +1,5 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.Entity;
@@ -14,6 +13,8 @@ import org.carlfx.cognitive.loader.InjectViewModel;
 
 import java.text.NumberFormat;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
 
 public class InstancesController {
 
@@ -30,7 +31,9 @@ public class InstancesController {
 
     @FXML
     private void initialize() {
-        loadInstances();
+        if(patternViewModel.getPropertyValue(PATTERN) != null){
+            loadInstances();
+        }
         patternMetaTitle.textProperty().bind(patternViewModel.getProperty(PATTERN).map(pattern -> {
             String[] patternNameParts = ((EntityFacade)pattern).description().split(" Pattern");
             if (patternNameParts.length > 0) {

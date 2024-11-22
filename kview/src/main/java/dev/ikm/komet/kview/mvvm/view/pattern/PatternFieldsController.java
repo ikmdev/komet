@@ -23,6 +23,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.common.ConceptDragOverAnimationController;
 import dev.ikm.komet.kview.mvvm.view.common.ConceptSearchFormItemController;
@@ -334,7 +335,7 @@ public class PatternFieldsController {
                     LOG.info("publicId: " + dragboard.getString());
 
                     HBox hbox = (HBox) event.getGestureSource();
-                    PublicId publicId = (PublicId) hbox.getUserData();
+                    PublicId publicId = ((DragAndDropInfo) hbox.getUserData()).publicId();
 
                     consumer.accept(publicId);
                     success = true;
