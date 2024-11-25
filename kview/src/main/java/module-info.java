@@ -28,9 +28,12 @@ module dev.ikm.komet.kview {
     requires org.carlfx.cognitive;
     requires org.carlfx.axonic;
     requires dev.ikm.tinkar.composer;
+    requires dev.ikm.jpms.google.common;
+
+    // JPro related modules
+    requires jpro.webapi;
     requires one.jpro.platform.auth.core;
     requires one.jpro.platform.file;
-    requires dev.ikm.jpms.google.common;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
@@ -102,8 +105,8 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view;
     exports dev.ikm.komet.kview.mvvm.view;
 
-    opens dev.ikm.komet.kview.mvvm.view.export;
-    exports dev.ikm.komet.kview.mvvm.view.export;
+    opens dev.ikm.komet.kview.mvvm.view.changeset;
+    exports dev.ikm.komet.kview.mvvm.view.changeset;
 
     opens dev.ikm.komet.kview.mvvm.view.login;
     exports dev.ikm.komet.kview.mvvm.view.login;
@@ -117,6 +120,8 @@ module dev.ikm.komet.kview {
 
     exports dev.ikm.komet.kview.mvvm.view.navigation;
     opens dev.ikm.komet.kview.mvvm.view.navigation to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.export;
+    opens dev.ikm.komet.kview.mvvm.view.export;
 
     provides KometNodeFactory with DetailsNodeFactory, PropertiesNodeFactory;
 

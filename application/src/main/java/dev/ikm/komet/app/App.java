@@ -31,7 +31,6 @@ import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.KometPreferencesStage;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.preferences.Reconstructor;
-import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.tabs.DetachableTab;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.KometStageController;
@@ -40,6 +39,7 @@ import dev.ikm.komet.framework.window.WindowComponent;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.JournalTileEvent;
+import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
 import dev.ikm.komet.kview.mvvm.view.export.ExportController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalViewFactory;
@@ -60,7 +60,6 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -79,9 +78,10 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
@@ -108,6 +108,7 @@ import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
@@ -298,7 +299,7 @@ public class App extends Application {
             Menu fileMenu = new Menu("File");
 
             MenuItem importDatasetMenuItem = new MenuItem("Import Dataset");
-            importDatasetMenuItem.setOnAction(actionEvent -> doImportDataSet(primaryStage));
+            importDatasetMenuItem.setOnAction(actionEvent -> openImport());
 
             // Exporting data
             MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset");
@@ -384,20 +385,6 @@ public class App extends Application {
         } catch (IOException e) {
             LOG.error(e.getLocalizedMessage(), e);
             Platform.exit();
-        }
-    }
-
-    private void doImportDataSet(Stage stage) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open Resource File");
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Zip Files", "*.zip"),
-                new FileChooser.ExtensionFilter("All Files", "*.*"));
-        File selectedFile = fileChooser.showOpenDialog(stage);
-        // selectedFile is null if the user clicks cancel
-        if (selectedFile != null) {
-            LoadEntitiesFromProtobufFile loadEntities = new LoadEntitiesFromProtobufFile(selectedFile);
-            ProgressHelper.progress(loadEntities, "Cancel Import");
         }
     }
 
@@ -722,6 +709,24 @@ public class App extends Application {
         }
     }
 
+    private void openImport() {
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
+        WindowSettings windowSettings = new WindowSettings(windowPreferences);
+        Stage importStage = new Stage(StageStyle.TRANSPARENT);
+        importStage.initOwner(getFocusedWindow());
+        //set up ImportViewModel
+        Config importConfig = new Config(ImportController.class.getResource("import.fxml"))
+                .updateViewModel("importViewModel", importViewModel ->
+                        importViewModel.setPropertyValue(VIEW_PROPERTIES, windowSettings.getView().makeOverridableViewProperties()));
+        JFXNode<Pane, ImportController> importJFXNode = FXMLMvvmLoader.make(importConfig);
+
+        Pane importPane = importJFXNode.node();
+        Scene importScene = new Scene(importPane, Color.TRANSPARENT);
+        importStage.setScene(importScene);
+        importStage.show();
+    }
+
     private void openExport() {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
@@ -748,7 +753,7 @@ public class App extends Application {
         fileMenu.getItems().add(about);
 
         MenuItem importMenuItem = new MenuItem("Import Dataset");
-        importMenuItem.setOnAction(actionEvent -> doImportDataSet(stage));
+        importMenuItem.setOnAction(actionEvent -> openImport());
         fileMenu.getItems().add(importMenuItem);
 
         // Exporting data
