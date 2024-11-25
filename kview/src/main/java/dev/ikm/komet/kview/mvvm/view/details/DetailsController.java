@@ -438,7 +438,38 @@ public class DetailsController  {
     private void setUpDescriptionContextMenu(Button addDescriptionButton) {
         ContextMenu contextMenu = buildMenuOptionContextMenu();
         addDescriptionButton.setContextMenu(contextMenu);
-        addDescriptionButton.setOnAction(actionEvent -> fireContextMenuEvent(actionEvent, Side.RIGHT, 2, 0));
+        addDescriptionButton.setOnAction(this::onAddDescriptionButtonPressed);
+    }
+
+    private void onAddDescriptionButtonPressed(ActionEvent actionEvent) {
+        if (this.conceptViewModel.getPropertyValue(MODE).equals(CREATE) &&
+                (getConceptViewModel().getPropertyValue(FULLY_QUALIFIED_NAME) == null)) {
+            // Show the context menu with 'Add Fully Qualified' option when it is a new concept in create mode and
+            // there is no fully qualified name.
+            fireContextMenuEvent(actionEvent, Side.RIGHT, 2, 0);
+        } else {
+            // Just show the UI to add another name otherwise (don't show context menu in this case).
+            showAddAnotherNameUI();
+        }
+    }
+
+    private void showAddAnotherNameUI() {
+        ConceptEntity currentConcept = null;
+        if (getConceptViewModel().getPropertyValue(CURRENT_ENTITY) instanceof EntityProxy.Concept concept) {
+            currentConcept = (ConceptEntity) EntityService.get().getEntity(concept.nid()).get();
+        } else {
+            currentConcept = getConceptViewModel().getPropertyValue(CURRENT_ENTITY);
+        }
+        if (currentConcept != null) {
+            // in edit mode, will have a concept and public id
+            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(addDescriptionButton,
+                    // pass the publicId of the Concept
+                    AddOtherNameToConceptEvent.ADD_DESCRIPTION, currentConcept.publicId())); // concept's publicId
+        } else {
+            // in create mode, we won't have a concept and public id yet
+            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(addDescriptionButton,
+                    AddOtherNameToConceptEvent.ADD_DESCRIPTION));
+        }
     }
 
     private ContextMenu buildMenuOptionContextMenu() {
@@ -476,55 +507,31 @@ public class DetailsController  {
                             createConceptEditDescrIcon()},
                     {MenuHelper.SEPARATOR},
             };
-        } else { // EDIT mode OR Create Mode after FQN has been added
-            menuItems = new Object[][]{
-                    {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
-                    {MenuHelper.SEPARATOR},
-                    {"Add Other Name", true, null, (EventHandler<ActionEvent>) actionEvent -> {
-                        ConceptEntity currentConcept = null;
-                        if (getConceptViewModel().getPropertyValue(CURRENT_ENTITY) instanceof EntityProxy.Concept concept) {
-                            currentConcept = (ConceptEntity) EntityService.get().getEntity(concept.nid()).get();
-                        } else {
-                            currentConcept = getConceptViewModel().getPropertyValue(CURRENT_ENTITY);
-                        }
-                        if (currentConcept != null) {
-                            // in edit mode, will have a concept and public id
-                            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(contextMenu,
-                                    // pass the publicId of the Concept
-                                    AddOtherNameToConceptEvent.ADD_DESCRIPTION, currentConcept.publicId())); // concept's publicId
-                        } else {
-                            // in create mode, we won't have a concept and public id yet
-                            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(contextMenu,
-                                    AddOtherNameToConceptEvent.ADD_DESCRIPTION));
-                        }
-                    },
-                            createConceptEditDescrIcon()},
-                    {MenuHelper.SEPARATOR},
-            };
-        }
-        for (Object[] menuItemObj : menuItems) {
-            if (MenuHelper.SEPARATOR.equals(menuItemObj[NAME])){
-                contextMenu.getItems().add(new SeparatorMenuItem());
-                continue;
+
+            for (Object[] menuItemObj : menuItems) {
+                if (MenuHelper.SEPARATOR.equals(menuItemObj[NAME])){
+                    contextMenu.getItems().add(new SeparatorMenuItem());
+                    continue;
+                }
+
+                // uses a default action if one is not given.
+                EventHandler<ActionEvent> menuItemAction = switch (menuItemObj[ACTION]) {
+                    case null ->  actionEvent -> LOG.info(menuItemObj[NAME] + " " + fqnTitleText.getText());
+                    case EventHandler  eventHandler -> eventHandler;
+                    default -> null;
+                };
+
+
+                // Create a menu item. Todo: if/when you have sub menus
+                MenuItem menuItem = menuHelper.createMenuOption(
+                        String.valueOf(menuItemObj[NAME]),                           /* name */
+                        Boolean.parseBoolean(String.valueOf(menuItemObj[ENABLED])),  /* enabled */
+                        (String[]) menuItemObj[STYLES],                                                  /* styling */
+                        menuItemAction,                                              /* action when selected */
+                        (Node) menuItemObj[GRAPHIC]                                                         /* optional graphic */
+                );
+                contextMenu.getItems().add(menuItem);
             }
-
-            // uses a default action if one is not given.
-            EventHandler<ActionEvent> menuItemAction = switch (menuItemObj[ACTION]) {
-                case null ->  actionEvent -> LOG.info(menuItemObj[NAME] + " " + fqnTitleText.getText());
-                case EventHandler  eventHandler -> eventHandler;
-                default -> null;
-            };
-
-
-            // Create a menu item. Todo: if/when you have sub menus
-            MenuItem menuItem = menuHelper.createMenuOption(
-                    String.valueOf(menuItemObj[NAME]),                           /* name */
-                    Boolean.parseBoolean(String.valueOf(menuItemObj[ENABLED])),  /* enabled */
-                    (String[]) menuItemObj[STYLES],                                                  /* styling */
-                    menuItemAction,                                              /* action when selected */
-                    (Node) menuItemObj[GRAPHIC]                                                         /* optional graphic */
-            );
-            contextMenu.getItems().add(menuItem);
         }
 
         return contextMenu;
