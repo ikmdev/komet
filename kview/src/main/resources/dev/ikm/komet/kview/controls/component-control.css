@@ -1,9 +1,9 @@
 @import "../mvvm/view/kview.css";
 
-.concept-control {
+.component-control {
 }
 
-.concept-control > .title-label {
+.component-control > .title-label {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
@@ -11,14 +11,14 @@
     -fx-font-weight: 500;
 }
 
-.concept-control > .selected-concept-container,
-.concept-control > .concept-container {
+.component-control > .selected-concept-container,
+.component-control > .concept-container {
     -fx-padding: 8;
     -fx-background-radius: 8px;
     -fx-background-color: -Grey-4;
 }
 
-.concept-control > .concept-container > .concept-search-box > .concept-text-field {
+.component-control > .concept-container > .concept-search-box > .concept-text-field {
     -fx-border-radius: 4;
     -fx-border-width: 1px;
     -fx-border-color: -Grey-5;
@@ -31,15 +31,15 @@
     -fx-text-fill: -Grey-8;
 }
 
-.concept-control > .concept-container > .concept-search-box > .concept-search-button {
+.component-control > .concept-container > .concept-search-box > .concept-search-button {
     -fx-background-color: white;
 }
 
-.concept-control > .concept-container > .concept-search-box > .concept-search-button:disabled {
+.component-control > .concept-container > .concept-search-box > .concept-search-button:disabled {
     -fx-background-color: -Grey-7;
 }
 
-.concept-control > .concept-container > .concept-search-box > .concept-search-button > .concept-search-region {
+.component-control > .concept-container > .concept-search-box > .concept-search-button > .concept-search-region {
     -width-size: 20;
     -height-size: 20;
     -fx-background-color: -Secondary-05;
@@ -50,7 +50,7 @@
     -fx-shape: "M7.50004 4.16871C7.27903 4.16871 7.06707 4.25651 6.91079 4.41279C6.7545 4.56907 6.66671 4.78103 6.66671 5.00204C6.66671 5.22306 6.7545 5.43502 6.91079 5.5913C7.06707 5.74758 7.27903 5.83538 7.50004 5.83538C7.72105 5.83538 7.93302 5.74758 8.0893 5.5913C8.24558 5.43502 8.33337 5.22306 8.33337 5.00204C8.33337 4.78103 8.24558 4.56907 8.0893 4.41279C7.93302 4.25651 7.72105 4.16871 7.50004 4.16871ZM5.14171 4.16871C5.31388 3.68076 5.63316 3.25824 6.05554 2.95937C6.47792 2.6605 6.98261 2.5 7.50004 2.5C8.01747 2.5 8.52216 2.6605 8.94454 2.95937C9.36692 3.25824 9.68621 3.68076 9.85837 4.16871H15.8334C16.0544 4.16871 16.2663 4.25651 16.4226 4.41279C16.5789 4.56907 16.6667 4.78103 16.6667 5.00204C16.6667 5.22306 16.5789 5.43502 16.4226 5.5913C16.2663 5.74758 16.0544 5.83538 15.8334 5.83538H9.85837C9.68621 6.32332 9.36692 6.74585 8.94454 7.04472C8.52216 7.34359 8.01747 7.50408 7.50004 7.50408C6.98261 7.50408 6.47792 7.34359 6.05554 7.04472C5.63316 6.74585 5.31388 6.32332 5.14171 5.83538H4.16671C3.94569 5.83538 3.73373 5.74758 3.57745 5.5913C3.42117 5.43502 3.33337 5.22306 3.33337 5.00204C3.33337 4.78103 3.42117 4.56907 3.57745 4.41279C3.73373 4.25651 3.94569 4.16871 4.16671 4.16871H5.14171ZM12.5 9.16871C12.279 9.16871 12.0671 9.25651 11.9108 9.41279C11.7545 9.56907 11.6667 9.78103 11.6667 10.002C11.6667 10.2231 11.7545 10.435 11.9108 10.5913C12.0671 10.7476 12.279 10.8354 12.5 10.8354C12.7211 10.8354 12.933 10.7476 13.0893 10.5913C13.2456 10.435 13.3334 10.2231 13.3334 10.002C13.3334 9.78103 13.2456 9.56907 13.0893 9.41279C12.933 9.25651 12.7211 9.16871 12.5 9.16871ZM10.1417 9.16871C10.3139 8.68077 10.6332 8.25824 11.0555 7.95937C11.4779 7.6605 11.9826 7.5 12.5 7.5C13.0175 7.5 13.5222 7.6605 13.9445 7.95937C14.3669 8.25824 14.6862 8.68077 14.8584 9.16871H15.8334C16.0544 9.16871 16.2663 9.25651 16.4226 9.41279C16.5789 9.56907 16.6667 9.78103 16.6667 10.002C16.6667 10.2231 16.5789 10.435 16.4226 10.5913C16.2663 10.7476 16.0544 10.8354 15.8334 10.8354H14.8584C14.6862 11.3233 14.3669 11.7458 13.9445 12.0447C13.5222 12.3436 13.0175 12.5041 12.5 12.5041C11.9826 12.5041 11.4779 12.3436 11.0555 12.0447C10.6332 11.7458 10.3139 11.3233 10.1417 10.8354H4.16671C3.94569 10.8354 3.73373 10.7476 3.57745 10.5913C3.42117 10.435 3.33337 10.2231 3.33337 10.002C3.33337 9.78103 3.42117 9.56907 3.57745 9.41279C3.73373 9.25651 3.94569 9.16871 4.16671 9.16871H10.1417ZM7.50004 14.1687C7.27903 14.1687 7.06707 14.2565 6.91079 14.4128C6.7545 14.5691 6.66671 14.781 6.66671 15.002C6.66671 15.2231 6.7545 15.435 6.91079 15.5913C7.06707 15.7476 7.27903 15.8354 7.50004 15.8354C7.72105 15.8354 7.93302 15.7476 8.0893 15.5913C8.24558 15.435 8.33337 15.2231 8.33337 15.002C8.33337 14.781 8.24558 14.5691 8.0893 14.4128C7.93302 14.2565 7.72105 14.1687 7.50004 14.1687ZM5.14171 14.1687C5.31388 13.6808 5.63316 13.2582 6.05554 12.9594C6.47792 12.6605 6.98261 12.5 7.50004 12.5C8.01747 12.5 8.52216 12.6605 8.94454 12.9594C9.36692 13.2582 9.68621 13.6808 9.85837 14.1687H15.8334C16.0544 14.1687 16.2663 14.2565 16.4226 14.4128C16.5789 14.5691 16.6667 14.781 16.6667 15.002C16.6667 15.2231 16.5789 15.435 16.4226 15.5913C16.2663 15.7476 16.0544 15.8354 15.8334 15.8354H9.85837C9.68621 16.3233 9.36692 16.7458 8.94454 17.0447C8.52216 17.3436 8.01747 17.5041 7.50004 17.5041C6.98261 17.5041 6.47792 17.3436 6.05554 17.0447C5.63316 16.7458 5.31388 16.3233 5.14171 15.8354H4.16671C3.94569 15.8354 3.73373 15.7476 3.57745 15.5913C3.42117 15.435 3.33337 15.2231 3.33337 15.002C3.33337 14.781 3.42117 14.5691 3.57745 14.4128C3.73373 14.2565 3.94569 14.1687 4.16671 14.1687H5.14171Z";
 }
 
-.concept-control > .concept-container > .concept-search-box > .concept-add-region {
+.component-control > .concept-container > .concept-search-box > .concept-add-region {
     -width-size: 24;
     -height-size: 24;
     -fx-min-height: -height-size;
@@ -61,8 +61,8 @@
     -fx-shape: "M20 13H13V20H11V13H4V11H11V4H13V11H20V13Z";
 }
 
-.concept-control > .concept-drop-area,
-.concept-control > .concept-container > .concept-drop-area {
+.component-control > .concept-drop-area,
+.component-control > .concept-container > .concept-drop-area {
     -fx-background-color: -Grey-2;
     -fx-text-fill: -Grey-8;
     -fx-border-width: 2;
@@ -71,8 +71,8 @@
     -fx-border-color: -Primary-04;
 }
 
-.concept-control > .concept-drop-area > .label > .concept-drag-and-drop-icon,
-.concept-control > .concept-container > .concept-drop-area > .label > .concept-drag-and-drop-icon {
+.component-control > .concept-drop-area > .label > .concept-drag-and-drop-icon,
+.component-control > .concept-container > .concept-drop-area > .label > .concept-drag-and-drop-icon {
     -fx-background-color: -Grey-8;
     -width-size: 20;
     -height-size: 20;
@@ -83,7 +83,7 @@
     -fx-shape: "M27 22.5V27H9V22.5H6V27C6 28.65 7.35 30 9 30H27C28.65 30 30 28.65 30 27V22.5H27ZM25.5 16.5L23.385 14.385L19.5 18.255V6H16.5V18.255L12.615 14.385L10.5 16.5L18 24L25.5 16.5Z";
 }
 
-.concept-control > .selected-concept-container > .concept-selected-entity-box {
+.component-control > .selected-concept-container > .concept-selected-entity-box {
     -fx-padding: 1;
     -fx-border-radius: 2;
     -fx-border-width: 1px;
@@ -91,7 +91,7 @@
     -fx-background-color: white;
 }
 
-.concept-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-description.label {
+.component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-description.label {
     -fx-text-fill: -Grey-11;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
@@ -99,11 +99,11 @@
     -fx-font-weight: 500;
 }
 
-.concept-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-discard-button {
+.component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-discard-button {
     -fx-background-color: white;
 }
 
-.concept-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-discard-button > .selected-concept-discard-region {
+.component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-discard-button > .selected-concept-discard-region {
     -fx-pref-width: 16px;
     -fx-pref-height: 16px;
     -fx-background-color: -Secondary-05;

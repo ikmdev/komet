@@ -1,8 +1,9 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.kview.controls.ComponentSetControl;
-import dev.ikm.komet.kview.controls.ConceptControl;
+import dev.ikm.komet.kview.controls.KLComponentListControl;
+import dev.ikm.komet.kview.controls.KLComponentSetControl;
+import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
@@ -32,9 +33,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ResourceBundle;
 
-public class ConceptControlSkin extends SkinBase<ConceptControl> {
+public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ConceptControl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KLComponentControl.class);
     private static final String SEARCH_TEXT_VALUE = "search.text.value";
     private static final DataFormat CONTROL_DRAG_FORMAT;
     static {
@@ -48,7 +49,7 @@ public class ConceptControlSkin extends SkinBase<ConceptControl> {
     private final HBox aboutToDropHBox;
     private final HBox aboutToRearrangeHBox;
 
-    public ConceptControlSkin(ConceptControl control) {
+    public KLComponentControlSkin(KLComponentControl control) {
         super(control);
 
         titleLabel = new Label();
@@ -101,11 +102,12 @@ public class ConceptControlSkin extends SkinBase<ConceptControl> {
 
     /**
      * There are two type of DND operations:
-     * - Drop a concept over an empty ConceptControl (dragboard string is publicId)
-     * - Rearrange non-empty ConceptControls that belong to a ComponentSetControl (dragboard string is CONTROL_DRAG_KEY)
+     * - Drop a concept over an empty KLComponentControl (dragboard string is publicId)
+     * - Rearrange non-empty KLComponentControls that belong to a KLComponentSetControl or a
+     *   KLComponentListControl (dragboard string is CONTROL_DRAG_KEY)
      */
     private void setupDragNDrop() {
-        ConceptControl control = getSkinnable();
+        KLComponentControl control = getSkinnable();
         control.setOnDragOver(event -> {
             if (event.getDragboard().hasContent(CONTROL_DRAG_FORMAT)) {
                 event.acceptTransferModes(TransferMode.MOVE);
@@ -156,16 +158,25 @@ public class ConceptControlSkin extends SkinBase<ConceptControl> {
             boolean success = false;
             Dragboard dragboard = event.getDragboard();
             if (event.getDragboard().hasContent(CONTROL_DRAG_FORMAT) &&
-                    event.getGestureSource() instanceof ConceptControl cc && haveAllowedDND(control, cc)) {
-                if (control.getParent() instanceof ComponentSetControl componentSetControl) {
-                    ComponentSetControlSkin skin = (ComponentSetControlSkin) componentSetControl.getSkin();
+                    event.getGestureSource() instanceof KLComponentControl cc && haveAllowedDND(control, cc)) {
+                // reorder components
+                if (control.getParent() instanceof KLComponentSetControl componentSetControl) {
+                    KLComponentSetControlSkin skin = (KLComponentSetControlSkin) componentSetControl.getSkin();
+                    int sourceIndex = skin.getChildren().indexOf(cc);
+                    int targetIndex = skin.getChildren().indexOf(control);
+                    final Node node = skin.getChildren().remove(sourceIndex);
+                    skin.getChildren().add(targetIndex, node);
+                    success = true;
+                } else if (control.getParent() instanceof KLComponentListControl componentListControl) {
+                    KLComponentListControlSkin skin = (KLComponentListControlSkin) componentListControl.getSkin();
                     int sourceIndex = skin.getChildren().indexOf(cc);
                     int targetIndex = skin.getChildren().indexOf(control);
                     final Node node = skin.getChildren().remove(sourceIndex);
                     skin.getChildren().add(targetIndex, node);
                     success = true;
                 }
-            } else if (dragboard.hasString() && !(event.getGestureSource() instanceof ConceptControl)) {
+            } else if (dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
+                // drop concept
                 try {
                     LOG.info("publicId: {}", dragboard.getString());
                     if (event.getGestureSource() instanceof Node source &&
@@ -173,10 +184,13 @@ public class ConceptControlSkin extends SkinBase<ConceptControl> {
                             publicId.toString().equals(dragboard.getString())) { // TODO: should this be needed? shouldn't we get PublicId from dragboard content?
                         if (control.getEntity() == null) {
                             Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-                            control.setEntity(entity);
-                            addConceptNode(entity);
+                            if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
+                                    !componentSetControl.getEntitiesList().contains(entity)) {
+                                control.setEntity(entity);
+                                addConceptNode(entity);
+                                success = true;
+                            }
                         }
-                        success = true;
                     }
                 } catch (Exception e) {
                     LOG.error("exception: ", e);
@@ -188,16 +202,17 @@ public class ConceptControlSkin extends SkinBase<ConceptControl> {
         });
     }
 
-    private boolean hasAllowedDND(ConceptControl control) {
-        return control != null && control.getEntity() != null && control.getParent() instanceof ComponentSetControl cs &&
-                cs.getEntitiesList().size() > 1;
+    private boolean hasAllowedDND(KLComponentControl control) {
+        return control != null && control.getEntity() != null &&
+                ((control.getParent() instanceof KLComponentSetControl cs && cs.getEntitiesList().size() > 1) ||
+                (control.getParent() instanceof KLComponentListControl cl && cl.getEntitiesList().size() > 1));
     }
 
-    private boolean haveAllowedDND(ConceptControl source, ConceptControl target) {
+    private boolean haveAllowedDND(KLComponentControl source, KLComponentControl target) {
         // only allowed if both source and target have the same parent
-        return hasAllowedDND(source) && source.getParent() instanceof ComponentSetControl cc1 &&
-                hasAllowedDND(target) && target.getParent() instanceof ComponentSetControl cc2 &&
-                cc1 == cc2;
+        return hasAllowedDND(source) && hasAllowedDND(target) &&
+                ((source.getParent() instanceof KLComponentSetControl cs1 && target.getParent() instanceof KLComponentSetControl cs2 && cs1 == cs2) ||
+                 (source.getParent() instanceof KLComponentListControl cl1 && target.getParent() instanceof KLComponentListControl cl2 && cl1 == cl2));
     }
 
     private HBox createSearchBox() {
@@ -289,6 +304,6 @@ public class ConceptControlSkin extends SkinBase<ConceptControl> {
     }
 
     private static String getString(String key) {
-        return ResourceBundle.getBundle("dev.ikm.komet.kview.controls.concept-control").getString(key);
+        return ResourceBundle.getBundle("dev.ikm.komet.kview.controls.component-control").getString(key);
     }
 }

@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
-import dev.ikm.komet.kview.controls.skin.ComponentSetControlSkin;
+import dev.ikm.komet.kview.controls.skin.KLComponentListControlSkin;
 import dev.ikm.tinkar.entity.Entity;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
@@ -12,10 +12,10 @@ import javafx.scene.control.Skin;
 
 import java.util.List;
 
-public class ComponentSetControl extends Control {
+public class KLComponentListControl extends Control {
 
-    public ComponentSetControl() {
-        getStyleClass().add("component-set-control");
+    public KLComponentListControl() {
+        getStyleClass().add("component-list-control");
     }
 
     // titleProperty
@@ -41,11 +41,11 @@ public class ComponentSetControl extends Control {
 
     @Override
     protected Skin<?> createDefaultSkin() {
-        return new ComponentSetControlSkin(this);
+        return new KLComponentListControlSkin(this);
     }
 
     @Override
     public String getUserAgentStylesheet() {
-        return ComponentSetControl.class.getResource("component-set-control.css").toExternalForm();
+        return KLComponentListControl.class.getResource("component-list-control.css").toExternalForm();
     }
 }

@@ -1,7 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import dev.ikm.komet.kview.controls.ComponentSetControl;
-import dev.ikm.komet.kview.controls.ConceptControl;
+import dev.ikm.komet.kview.controls.KLComponentControl;
+import dev.ikm.komet.kview.controls.KLComponentListControl;
 import dev.ikm.tinkar.entity.Entity;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
@@ -17,15 +17,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
-public class ComponentSetControlSkin extends SkinBase<ComponentSetControl> {
+public class KLComponentListControlSkin extends SkinBase<KLComponentListControl> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ComponentSetControl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KLComponentListControl.class);
 
     private final Label titleLabel;
     private final Button addEntryButton;
     private final int FIRST_CC_INDEX = 1;
 
-    public ComponentSetControlSkin(ComponentSetControl control) {
+    public KLComponentListControlSkin(KLComponentListControl control) {
         super(control);
 
         titleLabel = new Label();
@@ -35,10 +35,10 @@ public class ComponentSetControlSkin extends SkinBase<ComponentSetControl> {
         addEntryButton = new Button(getString("add.entry.button.text"));
         addEntryButton.getStyleClass().add("add-entry-button");
         addEntryButton.setOnAction(e -> {
-            ConceptControl conceptControl = new ConceptControl();
-            conceptControl.entityProperty().subscribe(entity -> {
+            KLComponentControl componentControl = new KLComponentControl();
+            componentControl.entityProperty().subscribe(entity -> {
                 if (entity != null) {
-                    int index = getChildren().indexOf(conceptControl) - FIRST_CC_INDEX;
+                    int index = getChildren().indexOf(componentControl) - FIRST_CC_INDEX;
                     if (index < control.getEntitiesList().size()) {
                         control.getEntitiesList().set(index, entity);
                     } else {
@@ -46,20 +46,20 @@ public class ComponentSetControlSkin extends SkinBase<ComponentSetControl> {
                     }
                 }
             });
-            conceptControl.setOnRemoveAction(ev -> {
-                getChildren().remove(conceptControl);
+            componentControl.setOnRemoveAction(ev -> {
+                getChildren().remove(componentControl);
                 if (control.getEntitiesList().isEmpty()) {
                     addEntryButton.fire();
                 }
             });
-            getChildren().add(getChildren().size() - 1, conceptControl);
+            getChildren().add(getChildren().size() - 1, componentControl);
             getSkinnable().requestLayout();
         });
         getChildren().addAll(titleLabel, addEntryButton);
         getChildren().addListener((ListChangeListener<Node>) change -> {
             while (change.next()) {
                 if (change.wasAdded() && change.getAddedSize() == 1) {
-                    Entity<?> entity = ((ConceptControl) change.getAddedSubList().getFirst()).getEntity();
+                    Entity<?> entity = ((KLComponentControl) change.getAddedSubList().getFirst()).getEntity();
                     if (entity != null) {
                         int index = change.getFrom() - FIRST_CC_INDEX;
                         if (index >= control.getEntitiesList().size()) {
@@ -78,9 +78,9 @@ public class ComponentSetControlSkin extends SkinBase<ComponentSetControl> {
 
         });
         addEntryButton.fire();
-        // Only allow one empty ConceptControl
+        // Only allow one empty KLConceptControl
         addEntryButton.disableProperty().bind(Bindings.createBooleanBinding(() ->
-                getChildren().stream().anyMatch(n -> n instanceof ConceptControl cc && cc.getEntity() == null),
+                getChildren().stream().anyMatch(n -> n instanceof KLComponentControl cc && cc.getEntity() == null),
                 getChildren(), control.entitiesProperty()));
 
         getSkinnable().setOnMouseDragReleased(e -> {
@@ -104,13 +104,13 @@ public class ComponentSetControlSkin extends SkinBase<ComponentSetControl> {
         titleLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
         y += labelPrefHeight;
         double spacing = 10;
-        for (ConceptControl conceptControl : getChildren().stream()
-                .filter(ConceptControl.class::isInstance)
-                .map(ConceptControl.class::cast)
+        for (KLComponentControl KLComponentControl : getChildren().stream()
+                .filter(KLComponentControl.class::isInstance)
+                .map(KLComponentControl.class::cast)
                 .toList()) {
             double conceptControlPrefWidth = contentWidth - padding.getRight() - x;
-            double conceptControlPrefHeight = conceptControl.prefHeight(conceptControlPrefWidth);
-            conceptControl.resizeRelocate(x, y, conceptControlPrefWidth, conceptControlPrefHeight);
+            double conceptControlPrefHeight = KLComponentControl.prefHeight(conceptControlPrefWidth);
+            KLComponentControl.resizeRelocate(x, y, conceptControlPrefWidth, conceptControlPrefHeight);
             y += conceptControlPrefHeight + spacing;
         }
         double buttonPrefWidth = addEntryButton.prefWidth(-1);
@@ -119,9 +119,9 @@ public class ComponentSetControlSkin extends SkinBase<ComponentSetControl> {
 
     private void updateEntitiesList() {
         List<? extends Entity<?>> list = getChildren().stream()
-                .filter(ConceptControl.class::isInstance)
-                .map(ConceptControl.class::cast)
-                .map(ConceptControl::getEntity)
+                .filter(KLComponentControl.class::isInstance)
+                .map(KLComponentControl.class::cast)
+                .map(KLComponentControl::getEntity)
                 .filter(Objects::nonNull)
                 .toList();
         getSkinnable().entitiesProperty().get().clear();
@@ -129,6 +129,6 @@ public class ComponentSetControlSkin extends SkinBase<ComponentSetControl> {
     }
 
     private static String getString(String key) {
-        return ResourceBundle.getBundle("dev.ikm.komet.kview.controls.component-set-control").getString(key);
+        return ResourceBundle.getBundle("dev.ikm.komet.kview.controls.component-list-control").getString(key);
     }
 }

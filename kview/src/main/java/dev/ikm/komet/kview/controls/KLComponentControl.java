@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
-import dev.ikm.komet.kview.controls.skin.ConceptControlSkin;
+import dev.ikm.komet.kview.controls.skin.KLComponentControlSkin;
 import dev.ikm.tinkar.entity.Entity;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -16,12 +16,12 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
-public class ConceptControl extends Control {
+public class KLComponentControl extends Control {
 
     private static final String SEARCH_TEXT_VALUE = "search.text.value";
 
-    public ConceptControl() {
-        getStyleClass().add("concept-control");
+    public KLComponentControl() {
+        getStyleClass().add("component-control");
         getProperties().addListener((MapChangeListener<Object, Object>) change -> {
             if (change.wasAdded() && SEARCH_TEXT_VALUE.equals(change.getKey())) {
                 if (change.getValueAdded() instanceof String value) {
@@ -115,11 +115,11 @@ public class ConceptControl extends Control {
 
     @Override
     protected Skin<?> createDefaultSkin() {
-        return new ConceptControlSkin(this);
+        return new KLComponentControlSkin(this);
     }
 
     @Override
     public String getUserAgentStylesheet() {
-        return ConceptControl.class.getResource("concept-control.css").toExternalForm();
+        return KLComponentControl.class.getResource("component-control.css").toExternalForm();
     }
 }
