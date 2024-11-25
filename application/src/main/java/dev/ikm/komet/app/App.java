@@ -718,7 +718,8 @@ public class App extends Application {
         //set up ImportViewModel
         Config importConfig = new Config(ImportController.class.getResource("import.fxml"))
                 .updateViewModel("importViewModel", importViewModel ->
-                        importViewModel.setPropertyValue(VIEW_PROPERTIES, windowSettings.getView().makeOverridableViewProperties()));
+                        importViewModel.setPropertyValue(VIEW_PROPERTIES,
+                                windowSettings.getView().makeOverridableViewProperties()));
         JFXNode<Pane, ImportController> importJFXNode = FXMLMvvmLoader.make(importConfig);
 
         Pane importPane = importJFXNode.node();
@@ -731,15 +732,17 @@ public class App extends Application {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
-        Stage exportStage = new Stage();
+        Stage exportStage = new Stage(StageStyle.TRANSPARENT);
+        exportStage.initOwner(getFocusedWindow());
         //set up ExportViewModel
         Config exportConfig = new Config(ExportController.class.getResource("export.fxml"))
-            .updateViewModel("exportViewModel", (exportViewModel) ->
-                exportViewModel.setPropertyValue(VIEW_PROPERTIES, windowSettings.getView().makeOverridableViewProperties()));
+                .updateViewModel("exportViewModel", (exportViewModel) ->
+                        exportViewModel.setPropertyValue(VIEW_PROPERTIES,
+                                windowSettings.getView().makeOverridableViewProperties()));
         JFXNode<Pane, ExportController> exportJFXNode = FXMLMvvmLoader.make(exportConfig);
 
         Pane exportPane = exportJFXNode.node();
-        Scene exportScene = new Scene(exportPane);
+        Scene exportScene = new Scene(exportPane, Color.TRANSPARENT);
         exportStage.setScene(exportScene);
         exportStage.show();
     }

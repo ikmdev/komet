@@ -268,7 +268,6 @@ public class ExportController {
             //Making sure the zip is the only thing that is zipped up
             ExtensionFilter zipExtensionFilter = new ExtensionFilter("Zip Files", ".zip");
             fileSavePicker.getExtensionFilters().addAll(zipExtensionFilter);
-            fileSavePicker.setSelectedExtensionFilter(zipExtensionFilter); // TODO: To be removed in the next JPro File module release
             String progressTitle = CUSTOM_RANGE.equals(dateChoice) ?
                     "Export Date Range: %s to %s".formatted(dateTimeFromLabel.getText(), dateTimeToLabel.getText())  : "Export All Data";
             performChangeSetExport(fileSavePicker, fromDate, toDate, progressTitle);
@@ -383,7 +382,6 @@ public class ExportController {
     }
 
     private boolean isFormPopulated() {
-        return (!exportOptions.getSelectionModel().isEmpty())
-                && (true);
+        return (!exportOptions.getSelectionModel().isEmpty());
     }
 }
