@@ -1526,19 +1526,17 @@ public class JournalController {
     public void newCreateConceptWindow(ActionEvent actionEvent) {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
-
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
         makeCreateConceptWindow(windowSettings.getView(), NID_TEXT, null);
 
     }
+
     @FXML
     public void newCreateLidrWindow(ActionEvent actionEvent) {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
-
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
         makeCreateLidrWindow(windowSettings.getView(), null, null);
-
     }
 
 
@@ -1577,26 +1575,8 @@ public class JournalController {
         } else {
             mode = CREATE;
         }
-
         // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
-
         StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
-/*
-
-        ValidationViewModel patternViewModel = new PatternViewModel()
-                .setPropertyValue(VIEW_PROPERTIES, viewProperties)
-                .setPropertyValue(MODE, mode)
-                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
-                .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
-                .setPropertyValue(STATE_MACHINE, patternSM)
-//                .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic) this might not be required.
-                .setPropertyValue(PATTERN, patternFacade);
-*/
-
-/*
-        Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
-                .addNamedViewModel(new NamedVm("patternViewModel", patternViewModel));*/
-
         Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
                 .updateViewModel("patternViewModel", (PatternViewModel patternViewModel) -> {
                     patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
@@ -1629,14 +1609,10 @@ public class JournalController {
         //FIXME are both LIDR and Pattern windows borrowing the concept folder for preferences?
         // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
         Optional<String> conceptFolderName;
-       /* if (conceptWindowSettingsMap != null){
-            conceptFolderName = (Optional<String>) conceptWindowSettingsMap.getOrDefault(CONCEPT_PREF_NAME, CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
-        } else {*/
-            conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
+       conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
             // create a conceptWindowSettingsMap
             Map<ConceptWindowSettings, Object> conceptWindowSettingsObjectMap = createConceptPrefMap(conceptFolderName.get(), kometNodePanel);
             kometNodePanel.setUserData(conceptWindowSettingsObjectMap);
-//        }
 
         // add to the list of concept windows
         final String finalConceptFolderName = conceptFolderName.get();
@@ -1647,64 +1623,6 @@ public class JournalController {
             // TODO more clean up such as view models and listeners just in case (memory).
             removeLidrSetting(finalConceptFolderName);
         });
-        //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
-       /* if (conceptWindowSettingsMap != null) {
-            kometNodePanel.setPrefHeight((Double)conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
-            kometNodePanel.setPrefWidth((Double)conceptWindowSettingsMap.get(CONCEPT_WIDTH));
-            kometNodePanel.setLayoutX((Double)conceptWindowSettingsMap.get(CONCEPT_XPOS));
-            kometNodePanel.setLayoutY((Double)conceptWindowSettingsMap.get(CONCEPT_YPOS));
-        }*/
         patternJFXNode.controller().putTitlePanesArrowOnRight();
-
-        //FIXME opening the panel too soon creates a broken UI for the pattern window
-        //EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(patternConfig, OPEN_PANEL));
     }
-
-
-   /* private void makePatternOldWindow(EntityFacade patternFacade, ViewProperties viewProperties) {
-        Entity patternEntity = EntityService.get().getEntity(patternFacade.nid()).get();
-
-        // populate STAMP values
-        Latest<EntityVersion> patternStamp = viewProperties.calculator().stampCalculator().latest(patternEntity);
-
-        StampViewModel stampViewModel = new StampViewModel();
-        stampViewModel.setPropertyValue(STATUS, patternStamp.get().stamp().state())
-            .setPropertyValue(TIME, patternStamp.get().stamp().time())
-            .setPropertyValue(AUTHOR, TinkarTerm.USER)
-            .setPropertyValue(MODULE, patternStamp.get().stamp().module())
-            .setPropertyValue(PATH, patternStamp.get().stamp().path())
-            ;
-
-        stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
-                .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
-
-        //TODO add 'edit' states to the state machine
-        StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
-
-        Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
-                .updateViewModel("patternViewModel", (PatternViewModel patternViewModel) -> {
-                    patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
-                        .setPropertyValue(MODE, EDIT)
-                        .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
-                        .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
-                        .setPropertyValue(STATE_MACHINE, patternSM)
-                        .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
-                        .setPropertyValue(PATTERN, patternFacade);
-                });
-
-        // create pattern window
-        JFXNode<Pane, PatternDetailsController> patternJFXNode = FXMLMvvmLoader.make(patternConfig);
-        Optional<PatternViewModel> optPatternViewModel = patternJFXNode.getViewModel("patternViewModel");
-        optPatternViewModel.ifPresent(patternViewModel -> patternViewModel.populatePattern());
-
-        //Getting the pattern window pane
-        Pane kometNodePanel = patternJFXNode.node();
-        //Applying the CSS from draggable-region to the panel (makes it movable/sizable).
-        Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
-        Node[] draggables = new Node[draggableToolbar.size()];
-
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
-        //Adding the pattern window panel as a child to the desktop pane.
-        desktopSurfacePane.getChildren().add(kometNodePanel);
-    }*/
 }
