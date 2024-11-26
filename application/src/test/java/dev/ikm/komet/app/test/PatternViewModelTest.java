@@ -107,28 +107,18 @@ public class PatternViewModelTest {
             setUpBefore();
             PatternViewModelTest testHarness = new PatternViewModelTest();
             testHarness.summonPatternTest();
-/*
-            try {
-                PatternViewModelTest testHarness = new PatternViewModelTest();
-
-                // create the pattern definition
-                PublicId patternPublicId = testHarness.createPattern();
-                LOG.info(patternPublicId.toString());
-                composer.commitSession(session);
-
-            } catch (Throwable e) {
-                e.printStackTrace();
-                tearDownAfter();
-                System.exit(0);
-            }
-*/
+           // create the pattern definition
+            PublicId patternPublicId = testHarness.createPattern();
+            LOG.info(patternPublicId.toString());
+            composer.commitSession(session);
             tearDownAfter();
             System.exit(0);
         });
     }
 
     public void summonPatternTest () {
-        //561f817a-130e-5e56-984d-910e9991558c
+        // Some UUIDS that can be used for testing:
+        // 561f817a-130e-5e56-984d-910e9991558c
         //c6553e16-dad5-51ff-a697-85b63d659fd3
         //91b9b62d-477c-493a-b42e-a34f92b2d27c
         //922697f7-36ba-4afc-9dd5-f29d54b0fdec
