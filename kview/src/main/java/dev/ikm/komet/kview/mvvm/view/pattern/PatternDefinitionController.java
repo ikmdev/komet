@@ -19,6 +19,7 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
@@ -230,7 +231,7 @@ public class PatternDefinitionController {
                 try {
                     LOG.info("publicId: " + dragboard.getString());
                     HBox hbox = (HBox) event.getGestureSource();
-                    PublicId publicId = (PublicId) hbox.getUserData();
+                    PublicId publicId = ((DragAndDropInfo) hbox.getUserData()).publicId();
                     consumer.accept(publicId);
                     success = true;
                 } catch (Exception e) {

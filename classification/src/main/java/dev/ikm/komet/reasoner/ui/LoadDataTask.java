@@ -21,24 +21,23 @@ import org.slf4j.LoggerFactory;
 import dev.ikm.tinkar.reasoner.service.ReasonerService;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 
-public class ExtractElkOwlAxiomsTask extends TrackingCallable<ReasonerService> {
+public class LoadDataTask extends TrackingCallable<ReasonerService> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ExtractElkOwlAxiomsTask.class);
+	private static final Logger LOG = LoggerFactory.getLogger(LoadDataTask.class);
 
 	private final ReasonerService reasonerService;
 
-	public ExtractElkOwlAxiomsTask(ReasonerService reasonerService) {
-		super(false, true);
+	public LoadDataTask(ReasonerService reasonerService) {
+		super(true, true);
 		this.reasonerService = reasonerService;
-		updateTitle("Extracting data " + reasonerService.getViewCalculator()
-				.getPreferredDescriptionTextWithFallbackOrNid(reasonerService.getStatedAxiomPattern()));
+		updateTitle("Loading data into reasoner");
 	}
 
 	@Override
 	protected ReasonerService compute() throws Exception {
-		reasonerService.extractData();
-		updateMessage("Extract in " + durationString());
-		LOG.info("Extract in " + durationString());
+		reasonerService.loadData();
+		updateMessage("Load in " + durationString());
+		LOG.info("Load in " + durationString());
 		return reasonerService;
 	}
 
