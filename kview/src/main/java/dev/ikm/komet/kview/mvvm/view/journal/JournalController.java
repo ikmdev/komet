@@ -23,19 +23,18 @@ import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FRO
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CONCEPT_TOPIC;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CREATE;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.DEVICE_ENTITY;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.STAMP_VIEW_MODEL;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.EDIT;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.MODE;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STAMP_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
@@ -63,6 +62,7 @@ import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 import static java.io.File.separator;
 import dev.ikm.komet.framework.KometNode;
@@ -133,13 +133,11 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
-import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -182,7 +180,6 @@ import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
-import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -1555,31 +1552,69 @@ public class JournalController {
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
 
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
-        makeNewPatternWindow(windowSettings.getView(), null, null);
+        makePatternWindow(null, windowSettings.getView().makeOverridableViewProperties());
     }
 
-    private void makeNewPatternWindow(ObservableViewNoOverride windowView, NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
+    private void makePatternWindow(EntityFacade patternFacade, ViewProperties viewProperties) {
 
-        // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
+        //initialize stampsViewModel with basic data.
         StampViewModel stampViewModel = new StampViewModel();
         stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
                 .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
 
+        String mode;
+        if(patternFacade != null){
+            mode = EDIT;
+            Entity patternEntity = EntityService.get().getEntity(patternFacade.nid()).get();
+            // populate STAMP values
+            Latest<EntityVersion> patternStamp = viewProperties.calculator().stampCalculator().latest(patternEntity);
+            stampViewModel.setPropertyValue(STATUS, patternStamp.get().stamp().state())
+                    .setPropertyValue(TIME, patternStamp.get().stamp().time())
+                    .setPropertyValue(AUTHOR, TinkarTerm.USER)
+                    .setPropertyValue(MODULE, patternStamp.get().stamp().module())
+                    .setPropertyValue(PATH, patternStamp.get().stamp().path())
+            ;
+        } else {
+            mode = CREATE;
+        }
+
+        // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
+
         StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
+/*
 
         ValidationViewModel patternViewModel = new PatternViewModel()
                 .setPropertyValue(VIEW_PROPERTIES, viewProperties)
-                .setPropertyValue(MODE, CREATE)
+                .setPropertyValue(MODE, mode)
                 .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
                 .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
-                .setPropertyValue(STATE_MACHINE, patternSM);
+                .setPropertyValue(STATE_MACHINE, patternSM)
+//                .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic) this might not be required.
+                .setPropertyValue(PATTERN, patternFacade);
+*/
+
+/*
+        Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
+                .addNamedViewModel(new NamedVm("patternViewModel", patternViewModel));*/
 
         Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
-                .addNamedViewModel(new NamedVm("patternViewModel", patternViewModel));
+                .updateViewModel("patternViewModel", (PatternViewModel patternViewModel) -> {
+                    patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                            .setPropertyValue(MODE, mode)
+                            .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
+                            .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
+                            .setPropertyValue(STATE_MACHINE, patternSM)
+//                            .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
+                            .setPropertyValue(PATTERN, patternFacade);
+                });
+
 
         // create pattern window
+        // create pattern window
         JFXNode<Pane, PatternDetailsController> patternJFXNode = FXMLMvvmLoader.make(patternConfig);
+        Optional<PatternViewModel> optPatternViewModel = patternJFXNode.getViewModel("patternViewModel");
+        //Here we load the Pattern Data.
+        optPatternViewModel.ifPresent(patternViewModel -> patternViewModel.loadPatternValues());
 
         //Getting the concept window pane
         Pane kometNodePanel = patternJFXNode.node();
@@ -1594,18 +1629,18 @@ public class JournalController {
         //FIXME are both LIDR and Pattern windows borrowing the concept folder for preferences?
         // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
         Optional<String> conceptFolderName;
-        if (conceptWindowSettingsMap != null){
+       /* if (conceptWindowSettingsMap != null){
             conceptFolderName = (Optional<String>) conceptWindowSettingsMap.getOrDefault(CONCEPT_PREF_NAME, CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
-        } else {
+        } else {*/
             conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
             // create a conceptWindowSettingsMap
             Map<ConceptWindowSettings, Object> conceptWindowSettingsObjectMap = createConceptPrefMap(conceptFolderName.get(), kometNodePanel);
             kometNodePanel.setUserData(conceptWindowSettingsObjectMap);
-        }
+//        }
 
         // add to the list of concept windows
         final String finalConceptFolderName = conceptFolderName.get();
-        conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, -1, kometNodePanel));
+        conceptWindows.add(new ConceptPreference(conceptFolderName.get(), null, -1, kometNodePanel));
 
         //Calls the remove method to remove and concepts that were closed by the user.
         patternJFXNode.controller().setOnCloseConceptWindow(windowEvent -> {
@@ -1613,12 +1648,12 @@ public class JournalController {
             removeLidrSetting(finalConceptFolderName);
         });
         //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
-        if (conceptWindowSettingsMap != null) {
+       /* if (conceptWindowSettingsMap != null) {
             kometNodePanel.setPrefHeight((Double)conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
             kometNodePanel.setPrefWidth((Double)conceptWindowSettingsMap.get(CONCEPT_WIDTH));
             kometNodePanel.setLayoutX((Double)conceptWindowSettingsMap.get(CONCEPT_XPOS));
             kometNodePanel.setLayoutY((Double)conceptWindowSettingsMap.get(CONCEPT_YPOS));
-        }
+        }*/
         patternJFXNode.controller().putTitlePanesArrowOnRight();
 
         //FIXME opening the panel too soon creates a broken UI for the pattern window
@@ -1626,7 +1661,7 @@ public class JournalController {
     }
 
 
-    private void makePatternWindow(EntityFacade patternFacade, ViewProperties viewProperties) {
+   /* private void makePatternOldWindow(EntityFacade patternFacade, ViewProperties viewProperties) {
         Entity patternEntity = EntityService.get().getEntity(patternFacade.nid()).get();
 
         // populate STAMP values
@@ -1671,5 +1706,5 @@ public class JournalController {
         WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
         //Adding the pattern window panel as a child to the desktop pane.
         desktopSurfacePane.getChildren().add(kometNodePanel);
-    }
+    }*/
 }
