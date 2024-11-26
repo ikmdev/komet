@@ -1604,7 +1604,7 @@ public class JournalController {
                             .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
                             .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
                             .setPropertyValue(STATE_MACHINE, patternSM)
-//                            .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
+                            .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
                             .setPropertyValue(PATTERN, patternFacade);
                 });
 

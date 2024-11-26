@@ -132,15 +132,10 @@ public class PatternViewModelTest {
         //c6553e16-dad5-51ff-a697-85b63d659fd3
         //91b9b62d-477c-493a-b42e-a34f92b2d27c
         //922697f7-36ba-4afc-9dd5-f29d54b0fdec
-
-
         Entity entity = EntityService.get().getEntityFast(UUID.fromString("922697f7-36ba-4afc-9dd5-f29d54b0fdec"));
         ViewProperties viewProperties = createViewProperties();
         ViewCalculator viewCalculator = viewProperties.calculator();
-        System.out.println( " SUMMON Pattern: " + entity);
-
-
-
+        LOG.info( " SUMMON Pattern: " + entity);
         //Load the Pattern Fields.
         ImmutableList<FieldDefinitionRecord> fieldDefinitionRecords = ((PatternRecord) entity).versions().getLastOptional().get().fieldDefinitions();
         fieldDefinitionRecords.stream().forEachOrdered( fieldDefinitionForEntity ->
@@ -148,7 +143,7 @@ public class PatternViewModelTest {
             EntityVersion latest = (EntityVersion) viewCalculator.latest(fieldDefinitionForEntity.meaning()).get();
             PatternField patternField = new PatternField(fieldDefinitionForEntity.meaning().description(), fieldDefinitionForEntity.dataType(),
             fieldDefinitionForEntity.purpose(), fieldDefinitionForEntity.meaning(), "", latest.stamp());
-            System.out.println("Pattern FIELDS: " + patternField.displayName());
+            LOG.info("Pattern FIELDS: " + patternField.displayName());
         });
 
         Latest<EntityVersion> latestEntityVersion = viewCalculator.latest(entity);
@@ -157,22 +152,14 @@ public class PatternViewModelTest {
         Entity purposeEntity = ((PatternVersionRecord) entityVersion).semanticPurpose();
         Entity meaningEntity = ((PatternVersionRecord) entityVersion).semanticMeaning();
 
-        System.out.println("Purpose: " +purposeEntity);
-        System.out.println("Meaning: " +meaningEntity);
+        LOG.info("Purpose: " +purposeEntity);
+        LOG.info("Meaning: " +meaningEntity);
 
         AtomicInteger counter = new AtomicInteger(0);
         viewCalculator.getFieldForSemanticWithMeaning(entity.nid(), TinkarTerm.MEANING.nid());
         viewCalculator.forEachSemanticVersionForComponentOfPattern(entity.nid(), TinkarTerm.DESCRIPTION_PATTERN.nid(),
                 (semanticEntityVersion,  entityVersion1, patternEntityVersion) -> {
 
-
-            int index = counter.incrementAndGet();
-  /*          System.out.println(index +" semanticEntityVersion: " + semanticEntityVersion);
-  //          System.out.println(index +" Fields: " + fields);
-            System.out.println(index +" EntityVersion: " + entityVersion);
-            System.out.println(index +" patternEntityVersion: " + patternEntityVersion);
-            System.out.println(index +" FQN: " + viewCalculator.getFullyQualifiedNameText(entity.nid()));
-            System.out.println(index +" RegularNames: " + viewCalculator.getRegularDescriptionText(entity.nid()));*/
             ConceptFacade language = (ConceptFacade) semanticEntityVersion.fieldValues().get(0);
             String string = (String) semanticEntityVersion.fieldValues().get(1);
             ConceptFacade caseSignificance = (ConceptFacade) semanticEntityVersion.fieldValues().get(2);
@@ -183,40 +170,14 @@ public class PatternViewModelTest {
             System.out.println(descrName.toString());
                 if(PublicId.equals(descriptionType.publicId(),TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.publicId())){
                     // set Property Value FQN D
-                    System.out.println(" Add to FQN : " + descrName.getNameText());
+                    LOG.info(" Add to FQN : " + descrName.getNameText());
                 } else if(PublicId.equals(descriptionType.publicId(), REGULAR_NAME_DESCRIPTION_TYPE.publicId())) {
                     // add to list.
-                    System.out.println(" Add to Other Name : " + descrName.getNameText());
+                    LOG.info(" Add to Other Name : " + descrName.getNameText());
                 } else if (PublicId.equals(descriptionType.publicId(), DEFINITION_DESCRIPTION_TYPE.publicId())) {
-                    System.out.println(" Add to Definition Name : " + descrName.getNameText());
+                    LOG.info(" Add to Definition Name : " + descrName.getNameText());
 
                 }
-
-          /*  patternEntityVersion.fieldDefinitions().stream().forEachOrdered(fieldDefinitionForEntity -> {
-                PatternField patternField = new PatternField(fieldDefinitionForEntity.meaning().description(), fieldDefinitionForEntity.dataType(),
-                    fieldDefinitionForEntity.purpose(), fieldDefinitionForEntity.meaning(), "", entityVersion.stamp());
-                System.out.println("Pattern FIELDS: " + patternField.toString());
-                        // add to list.
-            });*/
-                    /*semanticEntityVersion.fieldValues().forEach(field -> {
-
-                    });
-                    semanticEntityVersion.fieldValues().getLastOptional().ifPresent(concept ->{
-                        Concept descriptionType = (Concept) concept;
-                        if(PublicId.equals(descriptionType.publicId(), TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)){
-
-                        }
-                        DescrName descrName = new DescrName(null, descriptionType, )
-                    });*/
-//            Optional<SnomedDescriptions.DescriptionType> descriptionType = semanticEntityVersion.fieldValues();
-            /*
-                    Object descriptionTypeConceptValue = semanticVersion.get().fieldValues().get(indexForDescrType);
-                    if(descriptionTypeConceptValue instanceof EntityFacade descriptionTypeConcept ){
-                        int typeId = descriptionTypeConcept.nid();
-                        return (typeId == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() ||
-                                typeId == REGULAR_NAME_DESCRIPTION_TYPE.nid() ||
-                                typeId == DEFINITION_DESCRIPTION_TYPE.nid());
-                    }*/
         });
     }
     public static ViewProperties createViewProperties() {

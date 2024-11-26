@@ -819,7 +819,7 @@ public class PatternDetailsController {
         ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
         String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
         //lastUpdatedText.setText(lastUpdated);
-       // getStampViewModel().setPropertyValue(TIME, lastUpdated);
+        getStampViewModel().setPropertyValue(TIME, lastUpdated);
     }
 
     public ValidationViewModel getStampViewModel() {
