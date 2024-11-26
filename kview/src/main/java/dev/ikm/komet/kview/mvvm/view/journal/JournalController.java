@@ -1588,8 +1588,6 @@ public class JournalController {
                             .setPropertyValue(PATTERN, patternFacade);
                 });
 
-
-        // create pattern window
         // create pattern window
         JFXNode<Pane, PatternDetailsController> patternJFXNode = FXMLMvvmLoader.make(patternConfig);
         Optional<PatternViewModel> optPatternViewModel = patternJFXNode.getViewModel("patternViewModel");
