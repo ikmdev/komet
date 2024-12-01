@@ -2710,7 +2710,7 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .search-entry-text {
-    -fx-font: "Noto Sans";
+    -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
     -fx-font-weight: bold;
