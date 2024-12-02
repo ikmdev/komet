@@ -59,6 +59,7 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
 import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
@@ -986,7 +987,7 @@ public class JournalController {
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
 
         // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
-        StampViewModel stampViewModel = new StampViewModel(PRIMORDIAL_TIME);
+        StampViewModel stampViewModel = new StampViewModel();
         stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
                 .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
 
@@ -1556,7 +1557,7 @@ public class JournalController {
     private void makePatternWindow(EntityFacade patternFacade, ViewProperties viewProperties) {
 
         //initialize stampsViewModel with basic data.
-        StampViewModel stampViewModel = new StampViewModel();
+        StampViewModel stampViewModel = new StampViewModel(PREMUNDANE_TIME);
         stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
                 .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
 

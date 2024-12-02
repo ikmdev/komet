@@ -45,6 +45,10 @@ public class StampViewModel extends FormViewModel {
     public final static String MODULES_PROPERTY = "modules";
     public final static String PATHS_PROPERTY = "paths";
 
+    public StampViewModel() {
+        this(System.currentTimeMillis());
+    }
+
     public StampViewModel(Long initialStampTime) {
         super(); // Default to ViewMode
         addProperty(STATUS, State.ACTIVE)
