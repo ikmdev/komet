@@ -59,7 +59,6 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
 import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
@@ -1557,7 +1556,7 @@ public class JournalController {
     private void makePatternWindow(EntityFacade patternFacade, ViewProperties viewProperties) {
 
         //initialize stampsViewModel with basic data.
-        StampViewModel stampViewModel = new StampViewModel(PREMUNDANE_TIME);
+        StampViewModel stampViewModel = new StampViewModel();
         stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
                 .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
 

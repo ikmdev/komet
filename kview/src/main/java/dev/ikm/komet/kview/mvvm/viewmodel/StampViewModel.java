@@ -46,14 +46,10 @@ public class StampViewModel extends FormViewModel {
     public final static String PATHS_PROPERTY = "paths";
 
     public StampViewModel() {
-        this(System.currentTimeMillis());
-    }
-
-    public StampViewModel(Long initialStampTime) {
         super(); // Default to ViewMode
         addProperty(STATUS, State.ACTIVE)
                 .addProperty(AUTHOR, TinkarTerm.USER)
-                .addProperty(TIME, initialStampTime)
+                .addProperty(TIME, System.currentTimeMillis())
                 .addProperty(MODULE, (ConceptEntity) null)
                 .addProperty(PATH, (ConceptEntity) null)
                 .addProperty(MODULES_PROPERTY, Collections.emptyList(), true)
