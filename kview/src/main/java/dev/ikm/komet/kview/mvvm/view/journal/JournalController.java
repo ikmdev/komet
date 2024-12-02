@@ -986,7 +986,7 @@ public class JournalController {
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
 
         // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
-        StampViewModel stampViewModel = new StampViewModel();
+        StampViewModel stampViewModel = new StampViewModel(PRIMORDIAL_TIME);
         stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
                 .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
 
