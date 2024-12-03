@@ -6,7 +6,14 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 
+/**
+ * A ComboBox that always shows its items sorted when its popup is showing.
+ * The sort algorithm is given by `NaturalOrder.getObjectComparator()`.
+ *
+ * @param <T> The type of the value that has been selected or otherwise entered in to this ComboBox.
+ */
 public class SortedComboBox<T> extends ComboBox<T> {
+
     public SortedComboBox() {
         init();
     }
