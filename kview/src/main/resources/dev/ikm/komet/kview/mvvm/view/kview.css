@@ -2595,13 +2595,59 @@ Timeline Year line segment (will overlay change circles)
     -fx-shape: "M20 13H13V20H11V13H4V11H11V4H13V11H20V13Z";
 }
 
+.komet-text-field {
+    -fx-background-color: -Grey-1;
+    -fx-background-insets: 0;
+
+    -fx-border-width: 0;
+
+    -fx-color: -Grey-8;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+
+    -fx-prompt-text-fill: #111;
+}
+
 .blue-arrow-combo-box {
     -fx-background-color: -Grey-1;
     -fx-color: -Grey-8;
+
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
     -fx-font-weight: 500;
+}
+
+.blue-arrow-combo-box .list-cell {
+    -fx-text-fill: #111;
+}
+
+.blue-arrow-combo-box .text-input {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+
+    -fx-prompt-text-fill: #111;
+}
+
+.blue-arrow-combo-box:editable > .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.blue-arrow-combo-box:editable > .arrow-button:hover {
+    -fx-background-color: #f0f0f0;
+    -fx-background-radius: 4px;
+    -fx-background-insets: 0;
+}
+
+.komet-text-area {
+    -fx-background-color: -Grey-1;
+    -fx-background-insets: 0;
+
+    -fx-border-width: 0;
+
+    -fx-color: -Grey-8;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
 }
 
 .blue-arrow-combo-box.combo-box-base > .arrow-button > .arrow {
@@ -3294,7 +3340,7 @@ Landing page elements.
 .landing-container .combo-box > .list-cell {
     -fx-background: -Grey-1;
     -fx-background-color: -Grey-1;
-    -fx-text-fill: black;
+
     -fx-padding: 0.333333em 0.666667em 0.333333em 0.666667em; /* 4 8 4 8 */
 }
 

@@ -73,37 +73,37 @@
             <Label styleClass="add-description-label" text="Language" GridPane.rowIndex="5" />
             <Label styleClass="add-description-label" text="Status" GridPane.rowIndex="3" />
             <Label styleClass="add-description-label" text="Module" GridPane.rowIndex="4" />
-            <TextField fx:id="fullyQualifiedNameTextField" prefHeight="25.0" promptText="Enter Name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
+            <TextField styleClass="komet-text-field" fx:id="fullyQualifiedNameTextField" prefHeight="25.0" promptText="Enter Name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
                <GridPane.margin>
                   <Insets right="15.0" />
                </GridPane.margin>
             </TextField>
-            <SortedComboBox disable="true" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Fully Qualified Name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+            <SortedComboBox styleClass="blue-arrow-combo-box" disable="true" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Fully Qualified Name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
                <GridPane.margin>
                   <Insets right="15.0" />
                </GridPane.margin>
             </SortedComboBox>
-            <SortedComboBox fx:id="caseSignificanceComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select case sensitivity" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
+            <SortedComboBox fx:id="caseSignificanceComboBox"  styleClass="blue-arrow-combo-box" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select case sensitivity" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
                <GridPane.margin>
                   <Insets right="15.0" />
                </GridPane.margin>
             </SortedComboBox>
-            <SortedComboBox fx:id="languageComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select Language" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5">
+            <SortedComboBox fx:id="languageComboBox" styleClass="blue-arrow-combo-box" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select Language" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5">
                <GridPane.margin>
                   <Insets right="15.0" />
                </GridPane.margin>
             </SortedComboBox>
-            <SortedComboBox fx:id="statusComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select Status" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
+            <SortedComboBox fx:id="statusComboBox"  styleClass="blue-arrow-combo-box" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select Status" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
                <GridPane.margin>
                   <Insets right="15.0" />
                </GridPane.margin>
             </SortedComboBox>
-            <SortedComboBox fx:id="moduleComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select Module" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4">
+            <SortedComboBox fx:id="moduleComboBox" styleClass="blue-arrow-combo-box" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select Module" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4">
                <GridPane.margin>
                   <Insets right="15.0" />
                </GridPane.margin>
             </SortedComboBox>
-            <TextArea maxHeight="80.0" maxWidth="1.7976931348623157E308" text="Add comment here..." GridPane.columnSpan="2" GridPane.rowIndex="7">
+            <TextArea styleClass="komet-text-area" maxHeight="80.0" maxWidth="1.7976931348623157E308" text="Add comment here..." GridPane.columnSpan="2" GridPane.rowIndex="7">
                <GridPane.margin>
                   <Insets left="15.0" right="15.0" />
                </GridPane.margin>
