@@ -35,6 +35,9 @@ module dev.ikm.komet.kview {
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
 
+    opens dev.ikm.komet.kview.controls to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.controls;
+
     opens dev.ikm.komet.kview.mvvm.view.details to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.details;
 
