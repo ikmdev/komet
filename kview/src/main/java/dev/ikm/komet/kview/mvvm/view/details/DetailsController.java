@@ -85,7 +85,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 public class DetailsController  {
     private static final Logger LOG = LoggerFactory.getLogger(DetailsController.class);
-    private static final String EDIT_STAMP_OPTIONS_FXML = "edit-stamp.fxml";
+    private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
     @FXML
     private Button closeConceptButton;
 
