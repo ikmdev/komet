@@ -164,6 +164,7 @@ public class WebApp extends Application {
     private static final boolean IS_BROWSER = WebAPI.isBrowser();
     private static final boolean IS_DESKTOP = !IS_BROWSER && PlatformUtils.isDesktop();
     private static final boolean IS_MAC = !IS_BROWSER && PlatformUtils.isMac();
+    private static final boolean IS_MAC_AND_NOT_TESTFX_TEST = IS_MAC && !isTestFXTest();
     private final StackPane rootPane = createRootPane();
     private Image appIcon;
 
@@ -470,10 +471,21 @@ public class WebApp extends Application {
         };
     }
 
+    /**
+     * Checks if the application is being tested using TestFX Framework.
+     *
+     * @return {@code true} if testing mode; {@code false} otherwise.
+     */
+    private static boolean isTestFXTest() {
+        String testFxTest = System.getProperty("testfx.headless");
+        return testFxTest != null && !testFxTest.isBlank();
+    }
+
     private void setupMenus() {
-        MenuToolkit menuToolkit = MenuToolkit.toolkit();
         Menu kometAppMenu;
-        if (IS_MAC) {
+
+        if (IS_MAC_AND_NOT_TESTFX_TEST) {
+            MenuToolkit menuToolkit = MenuToolkit.toolkit();
             kometAppMenu = menuToolkit.createDefaultApplicationMenu("Komet");
         } else {
             kometAppMenu = new Menu("Komet");
@@ -483,7 +495,7 @@ public class WebApp extends Application {
         prefsItem.setAccelerator(new KeyCodeCombination(KeyCode.COMMA, KeyCombination.META_DOWN));
         prefsItem.setOnAction(event -> WebApp.kometPreferencesStage.showPreferences());
 
-        if (IS_MAC) {
+        if (IS_MAC_AND_NOT_TESTFX_TEST) {
             kometAppMenu.getItems().add(2, prefsItem);
             kometAppMenu.getItems().add(3, new SeparatorMenuItem());
             MenuItem appleQuit = kometAppMenu.getItems().getLast();
@@ -495,27 +507,32 @@ public class WebApp extends Application {
         MenuBar menuBar = new MenuBar(kometAppMenu);
 
         if (state.get() == RUNNING) {
-            Menu fileMenu = createFileMenu(menuToolkit);
+            Menu fileMenu = createFileMenu();
             Menu editMenu = createEditMenu();
             Menu viewMenu = createViewMenu();
             menuBar.getMenus().addAll(fileMenu, editMenu, viewMenu);
         }
 
-        Menu windowMenu = createWindowMenu(menuToolkit);
-        Menu helpMenu = createHelpMenu();
-        menuBar.getMenus().addAll(windowMenu, helpMenu);
-
-        if (IS_MAC) {
+        if (IS_MAC_AND_NOT_TESTFX_TEST) {
+            MenuToolkit menuToolkit = MenuToolkit.toolkit();
             menuToolkit.setApplicationMenu(kometAppMenu);
             menuToolkit.setAppearanceMode(AppearanceMode.AUTO);
             menuToolkit.setDockIconMenu(createDockMenu());
+            Menu windowMenu = createWindowMenuOnMacOS();
             menuToolkit.autoAddWindowMenuItems(windowMenu);
             menuToolkit.setGlobalMenuBar(menuBar);
             menuToolkit.setTrayMenu(createSampleMenu());
+
+            // Add the window menu to the menu bar
+            menuBar.getMenus().add(windowMenu);
         }
+
+        // Create and add the help menu to the menu bar
+        Menu helpMenu = createHelpMenu();
+        menuBar.getMenus().add(helpMenu);
     }
 
-    private Menu createFileMenu(MenuToolkit tk) {
+    private Menu createFileMenu() {
         Menu fileMenu = new Menu("File");
 
         // Import Dataset Menu Item
@@ -526,15 +543,15 @@ public class WebApp extends Application {
         MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset...");
         exportDatasetMenuItem.setOnAction(actionEvent -> openExport(primaryStage));
 
-        // Close Window Menu Item
-        MenuItem closeWindowMenuItem = tk.createCloseWindowMenuItem();
-
         // Add menu items to the File menu
-        fileMenu.getItems().addAll(
-                importDatasetMenuItem,
-                exportDatasetMenuItem,
-                new SeparatorMenuItem(),
-                closeWindowMenuItem);
+        fileMenu.getItems().addAll(importDatasetMenuItem, exportDatasetMenuItem);
+
+        if (IS_MAC_AND_NOT_TESTFX_TEST) {
+            // Close Window Menu Item
+            MenuToolkit tk = MenuToolkit.toolkit();
+            MenuItem closeWindowMenuItem = tk.createCloseWindowMenuItem();
+            fileMenu.getItems().addAll(new SeparatorMenuItem(), closeWindowMenuItem);
+        }
 
         return fileMenu;
     }
@@ -567,7 +584,8 @@ public class WebApp extends Application {
         return viewMenu;
     }
 
-    private Menu createWindowMenu(MenuToolkit menuToolkit) {
+    private Menu createWindowMenuOnMacOS() {
+        MenuToolkit menuToolkit = MenuToolkit.toolkit();
         Menu windowMenu = new Menu("Window");
         windowMenu.getItems().addAll(
                 menuToolkit.createMinimizeMenuItem(),
