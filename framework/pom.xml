@@ -70,10 +70,6 @@
             <artifactId>coordinate</artifactId>
         </dependency>
         <dependency>
-            <groupId>dev.ikm</groupId>
-            <artifactId>knowledge-layout</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-base</artifactId>
         </dependency>

@@ -88,6 +88,7 @@ open module dev.ikm.komet.framework {
     requires transitive org.kordamp.ikonli.javafx;
     requires transitive org.slf4j;
     requires transitive dev.ikm.tinkar.ext.lang.owl; // Owl expression builder
+
     uses TaskListsService;
     uses PreferencesService;
     uses KometNodeFactory;

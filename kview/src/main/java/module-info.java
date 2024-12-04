@@ -32,6 +32,8 @@ module dev.ikm.komet.kview {
     requires one.jpro.platform.file;
     requires dev.ikm.jpms.google.common;
 
+    requires transitive dev.ikm.layout;
+
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
 
