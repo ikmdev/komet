@@ -270,6 +270,11 @@
                 <artifactId>reasoner-hybrid</artifactId>
                 <version>${tinkar-core.version}</version>
             </dependency>
+            <dependency>
+                <groupId>dev.ikm</groupId>
+                <artifactId>knowledge-layout</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
 
             <!-- IKM Evrete Dependencies -->
             <dependency>
