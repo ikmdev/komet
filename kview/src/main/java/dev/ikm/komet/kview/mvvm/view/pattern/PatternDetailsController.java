@@ -142,7 +142,7 @@ public class PatternDetailsController {
 
     public static final URL PATTERN_PROPERTIES_VIEW_FXML_URL = PatternDetailsController.class.getResource("pattern-properties.fxml");
 
-    private static final String EDIT_STAMP_OPTIONS_FXML = "edit-stamp.fxml";
+    private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
 
     private Consumer<ToggleButton> reasonerResultsControllerConsumer;
 

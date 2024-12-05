@@ -3,7 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ButtonBar?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
@@ -12,6 +11,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import dev.ikm.komet.kview.controls.SortedComboBox?>
 
 <BorderPane minWidth="100.0" prefWidth="487.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
     <top>
@@ -50,26 +50,26 @@
                      <GridPane.margin>
                         <Insets right="15.0" />
                      </GridPane.margin></TextField>
-                      <ComboBox styleClass="blue-arrow-combo-box" disable="true" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Other Name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+                      <SortedComboBox styleClass="blue-arrow-combo-box" disable="true" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Other Name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
                      <GridPane.margin>
                         <Insets right="15.0" />
-                     </GridPane.margin></ComboBox>
-                      <ComboBox styleClass="blue-arrow-combo-box" fx:id="caseSignificanceComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
+                     </GridPane.margin></SortedComboBox>
+                      <SortedComboBox styleClass="blue-arrow-combo-box" fx:id="caseSignificanceComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
                      <GridPane.margin>
                         <Insets right="15.0" />
-                     </GridPane.margin></ComboBox>
-                      <ComboBox styleClass="blue-arrow-combo-box" fx:id="languageComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5">
+                     </GridPane.margin></SortedComboBox>
+                      <SortedComboBox styleClass="blue-arrow-combo-box" fx:id="languageComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5">
                      <GridPane.margin>
                         <Insets right="15.0" />
-                     </GridPane.margin></ComboBox>
-                      <ComboBox styleClass="blue-arrow-combo-box" fx:id="statusComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
+                     </GridPane.margin></SortedComboBox>
+                      <SortedComboBox styleClass="blue-arrow-combo-box" fx:id="statusComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
                      <GridPane.margin>
                         <Insets right="15.0" />
-                     </GridPane.margin></ComboBox>
-                      <ComboBox styleClass="blue-arrow-combo-box" fx:id="moduleComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4">
+                     </GridPane.margin></SortedComboBox>
+                      <SortedComboBox styleClass="blue-arrow-combo-box" fx:id="moduleComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4">
                      <GridPane.margin>
                         <Insets right="15.0" />
-                     </GridPane.margin></ComboBox>
+                     </GridPane.margin></SortedComboBox>
                   <VBox GridPane.columnSpan="2" GridPane.rowIndex="6">
                      <children>
                         <HBox depthTest="ENABLE" styleClass="dialect-container" VBox.vgrow="ALWAYS">
@@ -79,11 +79,11 @@
                                     <Insets />
                                  </opaqueInsets>
                               </Label>
-                              <ComboBox styleClass="blue-arrow-combo-box" fx:id="dialectComboBox1" disable="true" prefHeight="28.0" prefWidth="173.0">
+                              <SortedComboBox styleClass="blue-arrow-combo-box" fx:id="dialectComboBox1" disable="true" prefHeight="28.0" prefWidth="173.0">
                                  <HBox.margin>
                                     <Insets bottom="8.0" />
                                  </HBox.margin>
-                              </ComboBox>
+                              </SortedComboBox>
                            </children>
                            <opaqueInsets>
                               <Insets />
@@ -102,11 +102,11 @@
                                     <Insets />
                                  </opaqueInsets>
                               </Label>
-                              <ComboBox styleClass="blue-arrow-combo-box" fx:id="dialectComboBox2" disable="true" prefHeight="28.0" prefWidth="173.0">
+                              <SortedComboBox styleClass="blue-arrow-combo-box" fx:id="dialectComboBox2" disable="true" prefHeight="28.0" prefWidth="173.0">
                                  <HBox.margin>
                                     <Insets bottom="8.0" />
                                  </HBox.margin>
-                              </ComboBox>
+                              </SortedComboBox>
                            </children>
                            <opaqueInsets>
                               <Insets />
@@ -125,11 +125,11 @@
                                     <Insets />
                                  </opaqueInsets>
                               </Label>
-                              <ComboBox styleClass="blue-arrow-combo-box" fx:id="dialectComboBox3" disable="true" prefHeight="28.0" prefWidth="173.0">
+                              <SortedComboBox styleClass="blue-arrow-combo-box" fx:id="dialectComboBox3" disable="true" prefHeight="28.0" prefWidth="173.0">
                                  <HBox.margin>
                                     <Insets bottom="8.0" />
                                  </HBox.margin>
-                              </ComboBox>
+                              </SortedComboBox>
                            </children>
                            <opaqueInsets>
                               <Insets />
