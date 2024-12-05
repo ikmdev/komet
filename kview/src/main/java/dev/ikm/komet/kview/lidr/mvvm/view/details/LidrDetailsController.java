@@ -33,6 +33,7 @@ import dev.ikm.komet.kview.lidr.mvvm.view.properties.PropertiesController;
 import dev.ikm.komet.kview.lidr.mvvm.viewmodel.AnalyteGroupViewModel;
 import dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
+import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.view.timeline.TimelineController;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -193,10 +194,10 @@ public class LidrDetailsController {
      * Used slide out the properties view
      */
     @FXML
-    private Pane propertiesSlideoutTrayPane;
+    private VerticallyFilledPane propertiesSlideoutTrayPane;
 
     @FXML
-    private Pane timelineSlideoutTrayPane;
+    private VerticallyFilledPane timelineSlideoutTrayPane;
 
     /**
      * A function from the caller. This class passes a boolean true if classifier button is pressed invoke caller's function to be returned a view.
@@ -430,13 +431,8 @@ public class LidrDetailsController {
         clipChildren(slideoutTrayPane, 0);
         contentViewPane.setLayoutX(-width);
         slideoutTrayPane.setMaxWidth(0);
-
-        Region contentRegion = contentViewPane;
-        // binding the child's height to the preferred height of hte parent
-        // so that when we resize the window the content in the slide out pane
-        // aligns with the details view
-        contentRegion.prefHeightProperty().bind(slideoutTrayPane.heightProperty());
     }
+
     private Consumer<LidrDetailsController> onCloseConceptWindow;
     public void setOnCloseConceptWindow(Consumer<LidrDetailsController> onClose) {
         this.onCloseConceptWindow = onClose;
