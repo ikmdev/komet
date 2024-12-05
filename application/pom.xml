@@ -628,9 +628,6 @@
                             <includes>
                                 <include>**/*IT.java</include>
                             </includes>
-                            <systemPropertyVariables>
-                                <target.data.directory>${project.build.directory}/data</target.data.directory>
-                            </systemPropertyVariables>
                             <argLine>
                                 -Dtestfx.headless=true
                                 -Djava.awt.headless=true
