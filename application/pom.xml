@@ -167,33 +167,6 @@
                         </options>
                     </configuration>
                 </plugin>
-<!--                <plugin>-->
-<!--                    <groupId>org.apache.maven.plugins</groupId>-->
-<!--                    <artifactId>maven-dependency-plugin</artifactId>-->
-<!--                    <executions>-->
-<!--                        <execution>-->
-<!--                            <id>copy-data</id>-->
-<!--                            <phase>pre-integration-test</phase>-->
-<!--                            <goals>-->
-<!--                                <goal>copy</goal>-->
-<!--                            </goals>-->
-<!--                        </execution>-->
-<!--                    </executions>-->
-<!--                    <configuration>-->
-<!--                        <artifactItems>-->
-<!--                            <artifactItem>-->
-<!--                                <groupId>dev.ikm.tinkar.data</groupId>-->
-<!--                                <artifactId>tinkar-starter-data-reasoned</artifactId>-->
-<!--                                <classifier>pb</classifier>-->
-<!--                                <type>zip</type>-->
-<!--                                <overWrite>false</overWrite>-->
-<!--                                <outputDirectory>${user.home}/Solor</outputDirectory>-->
-<!--                            </artifactItem>-->
-<!--                        </artifactItems>-->
-<!--                        <overWriteReleases>false</overWriteReleases>-->
-<!--                        <overWriteSnapshots>true</overWriteSnapshots>-->
-<!--                    </configuration>-->
-<!--                </plugin>-->
             </plugins>
         </pluginManagement>
         <plugins>
