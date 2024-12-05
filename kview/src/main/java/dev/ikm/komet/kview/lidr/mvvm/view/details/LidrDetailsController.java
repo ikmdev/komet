@@ -90,7 +90,7 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 
 public class LidrDetailsController {
     private static final Logger LOG = LoggerFactory.getLogger(LidrDetailsController.class);
-    public static final String EDIT_STAMP_OPTIONS_FXML = "edit-stamp.fxml";
+    public static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
     public static final URL LIDR_PROPERTIES_VIEW_FXML_URL = PropertiesController.class.getResource("lidr-properties.fxml");
 
     protected static final String CONCEPT_TIMELINE_VIEW_FXML_FILE = "timeline.fxml";
