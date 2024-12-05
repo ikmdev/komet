@@ -469,8 +469,8 @@ public class PatternWindowIT {
         Path tinkarDataPath = solorDirectory.resolve(TINKAR_STARTER_DATA_DIR);
 
         // Path to the ZIP file in the target/data directorytargetJournalText
-        String targetDataDir = System.getProperty(PROPERTY_TARGET_DATA_DIR, DEFAULT_TARGET_DATA_DIR);
-        Path sourceZipPath = getTinkarStarterDataZipPath(targetDataDir);
+//        String targetDataDir = System.getProperty(PROPERTY_TARGET_DATA_DIR, DEFAULT_TARGET_DATA_DIR);
+        Path sourceZipPath = getTinkarStarterDataZipPath(solorDirectory.toString());
 
         boolean directoryExists = isDirectory(tinkarDataPath);
         boolean zipExists = zipFileExists(solorDirectory, TINKAR_DATA_ZIP_PREFIX);
