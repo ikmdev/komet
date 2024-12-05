@@ -37,6 +37,7 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FIELDS_COLLECTION;
@@ -354,13 +355,13 @@ public class PatternDetailsController {
         }
         // bind stamp
         lastUpdatedText.textProperty().bind(getStampViewModel().getProperty(TIME).map(t -> {
-            if (!t.equals(PREMUNDANE_TIME)) {
+            if (!t.equals(PREMUNDANE_TIME) && patternViewModel.getPropertyValue(MODE).equals(EDIT)) {
                 DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
                 Instant stampInstance = Instant.ofEpochSecond((long) t / 1000);
                 ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
                 return DATE_TIME_FORMATTER.format(stampTime);
             } else {
-                return "Premundane";
+                return patternViewModel.getPropertyValue(MODE).equals("CREATE")? "" : "Premundane";
             }
         }));
 
@@ -882,6 +883,8 @@ public class PatternDetailsController {
         boolean isValidSave = patternViewModel.createPattern();
         LOG.info(isValidSave ? "success" : "failed");
         if(isValidSave){
+            patternViewModel.setPropertyValue(MODE, EDIT);
+            patternViewModel.updateStamp();
             EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternCreationEvent(actionEvent.getSource(), PATTERN_CREATION_EVENT));
         }
     }

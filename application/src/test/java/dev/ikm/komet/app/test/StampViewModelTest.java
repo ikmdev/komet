@@ -15,17 +15,20 @@
  */
 package dev.ikm.komet.app.test;
 
-import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.terms.State;
 import org.carlfx.cognitive.validator.ValidationMessage;
-
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 
 public class StampViewModelTest {
     public static void main(String[] args) {
