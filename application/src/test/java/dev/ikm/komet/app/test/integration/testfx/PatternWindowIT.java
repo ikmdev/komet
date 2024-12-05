@@ -28,25 +28,22 @@ import org.testfx.api.FxToolkit;
 import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.service.support.CaptureSupport;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
+import static java.nio.file.Files.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.testfx.api.FxAssert.verifyThat;
 import static org.testfx.matcher.base.NodeMatchers.isVisible;
 import static org.testfx.util.NodeQueryUtils.hasText;
 import static org.testfx.util.WaitForAsyncUtils.waitFor;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
-import static java.nio.file.Files.*;
 
 /**
  * Integration test class for testing the PatternWindow functionality using TestFX.
@@ -81,15 +78,12 @@ public class PatternWindowIT {
 
     // Directory and File Names
     private static final String TINKAR_STARTER_DATA_PREFIX = "tinkar-starter-data";
-    private static final String TINKAR_DATA_ZIP_PREFIX = TINKAR_STARTER_DATA_PREFIX + "-reasoned";
+    private static final String TINKAR_STARTER_DATA_ZIP_PREFIX = TINKAR_STARTER_DATA_PREFIX + "-reasoned";
     private static final String TINKAR_STARTER_DATA_DIR = TINKAR_STARTER_DATA_PREFIX + "-reasoned";
+    private static final String TINKAR_STARTER_DATA_EXTENSION = ".zip";
     private static final String USER_HOME_DIR = System.getProperty("user.home");
     private static final String SOLOR_DIR = "Solor";
     private static final String TEST_SCREENSHOTS_DIR = "test-screenshots";
-
-    // Property Keys and Defaults
-    private static final String PROPERTY_TARGET_DATA_DIR = "target.data.directory";
-    private static final String DEFAULT_TARGET_DATA_DIR = "target/data";
 
     // Button Texts and Labels
     private static final String BUTTON_TEXT_OK = "OK";
@@ -130,7 +124,7 @@ public class PatternWindowIT {
     @BeforeAll
     public void setUpClass() {
         createScreenshotDirectory();
-        ensureTinkarStarterData();
+        ensureTinkarStarterDataExists();
     }
 
     /**
@@ -321,7 +315,7 @@ public class PatternWindowIT {
     /**
      * Verifies that the selected data source in the {@link ChoiceBox} matches the expected name.
      *
-     * @param robot        the TestFX {@link FxRobot} instance
+     * @param robot          the TestFX {@link FxRobot} instance
      * @param dataSourceEnum the enum representing the expected data source
      */
     private void verifySelectedDataSource(FxRobot robot, DataSource dataSourceEnum) {
@@ -341,9 +335,9 @@ public class PatternWindowIT {
     /**
      * Selects an item in a {@link ListView} whose text contains the specified prefix.
      *
-     * @param robot  the TestFX {@link FxRobot} instance
+     * @param robot    the TestFX {@link FxRobot} instance
      * @param listView the {@link ListView} to search
-     * @param prefix the prefix to match in item text
+     * @param prefix   the prefix to match in item text
      * @return true if an item was selected, false otherwise
      */
     private boolean selectListViewItem(FxRobot robot, ListView<?> listView, String prefix) {
@@ -360,7 +354,7 @@ public class PatternWindowIT {
     /**
      * Handles the case where the tinkar data source is missing by creating a new one.
      *
-     * @param robot  the TestFX {@link FxRobot} instance
+     * @param robot    the TestFX {@link FxRobot} instance
      * @param listView the {@link ListView} to update
      */
     private void createTinkarDataSourceIfMissing(FxRobot robot, ListView<?> listView) {
@@ -388,7 +382,7 @@ public class PatternWindowIT {
     /**
      * Handles the case where the tinkar data source already exists.
      *
-     * @param robot  the TestFX {@link FxRobot} instance
+     * @param robot    the TestFX {@link FxRobot} instance
      * @param listView the {@link ListView} to verify
      */
     private void handleExistingTinkarDataSource(FxRobot robot, ListView<?> listView) {
@@ -461,68 +455,36 @@ public class PatternWindowIT {
     }
 
     /**
-     * Ensures that the tinkar-starter-data directory or its ZIP file exists in the Solor directory.
-     * Copies the ZIP file from the target/data directory if missing.
+     * Ensures that the 'tinkar-starter-data' directory or its corresponding ZIP file exists within the Solor directory.
+     * If neither is found, logs an error and fails the test setup.
      */
-    private void ensureTinkarStarterData() {
-        Path solorDirectory = Paths.get(USER_HOME_DIR, SOLOR_DIR);
-        Path tinkarDataPath = solorDirectory.resolve(TINKAR_STARTER_DATA_DIR);
+    private void ensureTinkarStarterDataExists() {
+        final Path solorDirectory = Paths.get(USER_HOME_DIR, SOLOR_DIR);
+        final Path tinkarDataPath = solorDirectory.resolve(TINKAR_STARTER_DATA_DIR);
 
-        // Path to the ZIP file in the target/data directorytargetJournalText
-//        String targetDataDir = System.getProperty(PROPERTY_TARGET_DATA_DIR, DEFAULT_TARGET_DATA_DIR);
-        Path sourceZipPath = getTinkarStarterDataZipPath(solorDirectory.toString());
+        try {
+            final boolean directoryExists = isDirectory(tinkarDataPath);
+            final boolean zipExists = zipFileExists(solorDirectory, TINKAR_STARTER_DATA_ZIP_PREFIX);
 
-        boolean directoryExists = isDirectory(tinkarDataPath);
-        boolean zipExists = zipFileExists(solorDirectory, TINKAR_DATA_ZIP_PREFIX);
-
-        if (!directoryExists && !zipExists) {
-            LOG.info(String.format("'%s' directory and corresponding ZIP file not found in '%s'. Copying from target/data...",
-                    TINKAR_STARTER_DATA_DIR, solorDirectory.toAbsolutePath()));
-
-            if (!exists(sourceZipPath)) {
-                LOG.error(String.format("Source ZIP file not found at '%s'. Ensure it exists in the target/data directory.", sourceZipPath));
-                fail("Required data 'tinkar-starter-data' could not be found.");
-            }
-
-            try {
-                createDirectories(solorDirectory); // Ensure the Solor directory exists
-                Path destinationZipPath = solorDirectory.resolve(sourceZipPath.getFileName());
-                copy(sourceZipPath, destinationZipPath, StandardCopyOption.REPLACE_EXISTING);
-                LOG.info("Copied ZIP file to '{}'.", destinationZipPath.toAbsolutePath());
-            } catch (IOException e) {
-                LOG.error("Failed to copy tinkar-starter-data ZIP file", e);
-                fail("Required data 'tinkar-starter-data' could not be copied.");
-            }
-        } else {
             if (directoryExists) {
-                LOG.info(String.format("'%s' directory already exists at '%s'.", TINKAR_STARTER_DATA_DIR, tinkarDataPath.toAbsolutePath()));
+                LOG.info("'{}' directory already exists at '{}'.", TINKAR_STARTER_DATA_DIR,
+                        tinkarDataPath.toAbsolutePath());
+                return;
             }
+
             if (zipExists) {
-                LOG.info(String.format("ZIP file for '%s' already exists in '%s'.", TINKAR_STARTER_DATA_DIR, solorDirectory.toAbsolutePath()));
+                LOG.info("ZIP file for '{}' exists in '{}'.", TINKAR_STARTER_DATA_DIR,
+                        solorDirectory.toAbsolutePath());
+                return;
             }
-        }
-    }
 
-    /**
-     * Gets the path of the tinkar-starter-data ZIP file in the target/data directory.
-     *
-     * @param targetDataDir the directory to search in
-     * @return the path of the found ZIP file
-     */
-    private Path getTinkarStarterDataZipPath(String targetDataDir) {
-        Path targetDataPath = Paths.get(targetDataDir);
+            LOG.error("Neither '{}' directory nor a ZIP file starting with '{}' was found in '{}'.",
+                    TINKAR_STARTER_DATA_DIR, TINKAR_STARTER_DATA_ZIP_PREFIX, solorDirectory.toAbsolutePath());
+            fail("Required data 'tinkar-starter-data' could not be found in the Solor directory.");
 
-        try (Stream<Path> files = list(targetDataPath)) {
-            return files.filter(Files::isRegularFile) // Ensure it's a regular file
-                    .filter(path -> {
-                        String fileName = path.getFileName().toString();
-                        return fileName.startsWith(TINKAR_DATA_ZIP_PREFIX) && fileName.endsWith(".zip");
-                    })
-                    .findFirst() // Get the first matching file
-                    .orElseThrow(() -> new FileNotFoundException("No ZIP file starting with 'tinkar-starter-data-reasoned' found in " + targetDataPath));
-        } catch (IOException e) {
-            LOG.error("Error accessing target data directory: {}", targetDataDir, e);
-            throw new RuntimeException("Error accessing target data directory: " + targetDataDir, e);
+        } catch (Exception e) {
+            LOG.error("Error while ensuring 'tinkar-starter-data' exists.", e);
+            fail("Failed to verify 'tinkar-starter-data' existence due to an unexpected error.");
         }
     }
 
@@ -537,7 +499,8 @@ public class PatternWindowIT {
         try (Stream<Path> files = list(directory)) {
             return files.anyMatch(path -> {
                 String fileName = path.getFileName().toString();
-                return fileName.startsWith(prefix) && fileName.endsWith(".zip") && isRegularFile(path);
+                return fileName.startsWith(prefix) &&
+                        fileName.endsWith(TINKAR_STARTER_DATA_EXTENSION) && isRegularFile(path);
             });
         } catch (IOException e) {
             LOG.error("Failed to access Solor directory to verify tinkar-starter-data.", e);
