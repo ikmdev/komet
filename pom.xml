@@ -89,9 +89,11 @@
         <jpro-auth-core.version>${jpro-platform.version}-ikmdev</jpro-auth-core.version>
 
         <!-- TestFX Variables -->
+        <tinkar-starter-data-reasoned.version>1.0.0</tinkar-starter-data-reasoned.version>
         <testfx.version>4.0.18-jpms</testfx.version>
         <openjfx-monocle.version>21.0.2-jpms</openjfx-monocle.version>
         <maven-surefire-plugin.version>3.5.0</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.5.2</maven-failsafe-plugin.version>
 
         <!-- Everything Else -->
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
@@ -108,6 +110,18 @@
         <nsmenufx.version>3.1.0</nsmenufx.version>
         <openjfx.version>21.0.4</openjfx.version>
         <scenic-view.version>11.0.2</scenic-view.version>
+
+        <!-- TestFX / Monocle -->
+        <commonTestFXArgs>
+            --add-opens=javafx.graphics/com.sun.glass.ui=org.testfx.core
+            --add-opens=javafx.graphics/com.sun.javafx.application=org.testfx.core
+            --add-exports=javafx.graphics/com.sun.javafx.application=org.testfx.core
+            --add-exports=javafx.graphics/com.sun.glass.ui=org.testfx.monocle
+            --add-exports=javafx.graphics/com.sun.javafx.util=org.testfx.monocle
+            --add-exports=javafx.base/com.sun.javafx.logging=org.testfx.monocle
+            --add-opens=javafx.graphics/javafx.scene=org.controlsfx.controls
+            --add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
+        </commonTestFXArgs>
     </properties>
 
     <dependencyManagement>
@@ -269,6 +283,11 @@
                 <groupId>${tinkar-core.groupId}</groupId>
                 <artifactId>reasoner-hybrid</artifactId>
                 <version>${tinkar-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>dev.ikm.tinkar.data</groupId>
+                <artifactId>tinkar-starter-data-reasoned</artifactId>
+                <version>${tinkar-starter-data-reasoned.version}</version>
             </dependency>
 
             <!-- IKM Evrete Dependencies -->
@@ -601,6 +620,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven-surefire-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${maven-failsafe-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

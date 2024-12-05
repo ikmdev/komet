@@ -106,7 +106,7 @@ To run Komet with JPro in a Docker container, follow these steps:
 5. The application should now be running in the Docker container. Access it by navigating to `http://localhost:8080`
    in your web browser. If running on a remote server, replace localhost with the server’s IP address.
 
-## Running Komet GUI Tests Using the TestFX Framework
+## Running Komet GUI Unit Tests Using the TestFX Framework
 The Komet application includes GUI tests built with the TestFX framework. By default, these tests run in headless mode,
 which is ideal for continuous integration (CI) environments or situations where graphical interaction is unnecessary.
 1. **Running TestFX Tests in Headless Mode (Default)**<br>
@@ -131,6 +131,29 @@ which is ideal for continuous integration (CI) environments or situations where 
      ```bash
     mvn test -pl kview -Dtest=LoginTest#testSuccessfulAuthentication -Dheadless=false
      ```
+## Running Integration Tests Using the TestFX Framework
+In addition to unit tests, Komet includes integration tests to ensure that different components work seamlessly together. 
+These tests leverage the TestFX framework and can be executed using the Maven `verify` phase with the `its` profile.<br>
+
+### Running Integration Tests
+#### 1. Running only Integration Tests in Headless Mode (Default)
+To execute all integration tests using the TestFX framework, use the following command:
+   ```bash
+      mvn verify -Pits -DskipTests
+   ```
+This command triggers the `verify` phase in Maven with the `its` (integration tests) profile, running all integration 
+tests defined in the project. By default, integration tests run in headless mode, suitable for CI environments.
+If the argument `-DskipTests` is not provided, unit tests will also run before the integration tests.
+
+#### 2. Running only Integration Tests in Graphical Mode
+If you need to observe the GUI during integration testing—for example, when debugging UI interactions—you can disable 
+headless mode by setting the `testfx.headless` property to `false`:
+   ```bash
+      mvn verify -Pits -DskipTests -Dtestfx.headless=false
+   ```
+This will launch the GUI windows during test execution, allowing you to visually monitor the tests as they run.
+If the argument `-DskipTests` is not provided, unit tests will also run before the integration tests.
+
 **Important Note on Test Execution**<br>
 The tests will only run once after they pass successfully. To trigger the tests again, changes must be made
 to any part of the project.
