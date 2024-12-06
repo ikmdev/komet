@@ -17,6 +17,7 @@ package dev.ikm.komet.kview.mvvm.view.stamp;
 
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
+import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.property.ObjectProperty;
@@ -29,6 +30,7 @@ import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 
+import java.util.Collections;
 import java.util.List;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
@@ -132,6 +134,8 @@ public class StampEditController extends AbstractBasicController {
     private void setupModuleSelections() {
         // populate modules
         List<ConceptEntity> mods = stampViewModel.getObservableList(MODULES_PROPERTY);
+        Collections.sort(mods, NaturalOrder.getObjectComparator());
+
         mods.forEach(module -> {
             RadioButton rb = new RadioButton(module.description());
             rb.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
@@ -148,6 +152,8 @@ public class StampEditController extends AbstractBasicController {
     private void setupPathSelections() {
         // populate paths
         List<ConceptEntity> paths = stampViewModel.getObservableList(PATHS_PROPERTY);
+        Collections.sort(paths, NaturalOrder.getObjectComparator());
+
         paths.forEach(path -> {
             RadioButton rb = new RadioButton(path.description());
             rb.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);

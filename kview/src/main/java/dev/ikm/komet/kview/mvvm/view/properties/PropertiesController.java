@@ -64,7 +64,7 @@ public class PropertiesController implements Serializable {
 
     protected static final String EDIT_FQN_FXML_FILE = "edit-fully-qualified-name.fxml";
 
-    protected static final String ADD_FQN_FXML_FILE = "add-fqn.fxml";
+    protected static final String ADD_FQN_FXML_FILE = "add-fully-qualified-name.fxml";
 
     @FXML
     private SVGPath commentsButton;

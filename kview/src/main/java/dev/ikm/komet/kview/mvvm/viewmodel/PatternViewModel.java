@@ -337,7 +337,6 @@ public class PatternViewModel extends FormViewModel {
         }
         boolean isSuccess = composer.commitSession(session);
         setPropertyValue(PATTERN, pattern);
-        updateStamp();
         return isSuccess;
     }
 
@@ -356,11 +355,11 @@ public class PatternViewModel extends FormViewModel {
         StampViewModel stampViewModel = getPropertyValue(STAMP_VIEW_MODEL);
 
         Stamp stamp = stampCalculator.latest(patternFacade).get().stamp();
-        stampViewModel.setValue(STATUS, stamp.state());
-        stampViewModel.setValue(TIME, stamp.time());
-        stampViewModel.setValue(AUTHOR, stamp.author());
-        stampViewModel.setValue(MODULE, stamp.module());
-        stampViewModel.setValue(PATH, stamp.path());
+        stampViewModel.setPropertyValue(STATUS, stamp.state());
+        stampViewModel.setPropertyValue(TIME, stamp.time());
+        stampViewModel.setPropertyValue(AUTHOR, stamp.author());
+        stampViewModel.setPropertyValue(MODULE, stamp.module());
+        stampViewModel.setPropertyValue(PATH, stamp.path());
     }
 
 
