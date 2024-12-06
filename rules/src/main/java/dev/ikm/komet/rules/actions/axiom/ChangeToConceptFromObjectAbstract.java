@@ -16,13 +16,11 @@
 package dev.ikm.komet.rules.actions.axiom;
 
 import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
+import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.ConceptEntityVersion;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.SemanticFacade;
 import javafx.event.ActionEvent;
@@ -43,6 +41,14 @@ public abstract class ChangeToConceptFromObjectAbstract extends AbstractAxiomAct
             case SemanticEntityVersion semanticVersion -> {
                 SemanticEntity semantic = EntityService.get().getEntityFast(semanticVersion.nid());
                 this.conceptFacade = (ConceptFacade) semantic.topEnclosingComponent();
+            }
+            case SearchPanelController.NidTextRecord nidTextRecord -> {
+                switch (Entity.getFast(nidTextRecord.nid())) {
+                    case ConceptEntity conceptEntity -> this.conceptFacade = conceptEntity;
+                    case SemanticEntity semanticFacade -> this.conceptFacade = (ConceptFacade) semanticFacade.topEnclosingComponent();
+                    case null -> throw new IllegalStateException("Null object provided");
+                    default -> throw new IllegalStateException("Entity is not a concept: " + object);
+                }
             }
             case null -> throw new IllegalStateException("Null object provided");
             default -> throw new IllegalStateException("Entity is not a concept: " + object);
