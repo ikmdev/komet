@@ -1377,26 +1377,31 @@ Timeline (time travel) components
 */
 .timeline-header-bar {
     -icon-paint: -Grey-10;
-    -default-width: 300px;
-    -default-height: 100px;
+
     -fx-spacing: 4;
     -fx-alignment: center-left;
     -fx-background-insets: 0;
     -fx-background-color: #e0e8f1ff;
-    /*-fx-background-color: red;*/
-    -fx-border-insets: 0 0 -1 0;
-    -fx-border-style: solid;
-    -fx-border-width: 1;
-    -fx-border-color: transparent transparent transparent transparent;
+    -fx-background-radius: 4px 4px 0 0;
 
+    height: 45px;
 
-    /*-fx-min-height: -default-height;*/
-    /*-fx-pref-height: -default-height;*/
-    /*-fx-max-height: -default-height;*/
+    -fx-min-height: height;
+    -fx-pref-height: height;
+    -fx-max-height: height;
 
     -fx-min-width: 200;
     -fx-pref-width: -1;
     -fx-max-width: 5000;
+}
+
+.timeline-scrollpane {
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+.timeline-outer-container {
+    -fx-padding: 0 4px 4px 0;
 }
 
 .timeline-header-bar .timeline-text.label {
@@ -1508,8 +1513,14 @@ Timeline (time travel) components
 
 .timeline-content,
 .timeline-scrollpane > .viewport {
-    -fx-background-radius: 0 0 10 10;
+    -fx-background-radius: 0 0 4px 4px;
 }
+
+.timeline-content.outer-container {
+    -fx-border-color: -Grey-7;
+    -fx-border-width: 1px 0 0 0;
+}
+
 .timeline-row-container {
     -fx-spacing: 20;
 }
@@ -4591,6 +4602,11 @@ Styling a context menu for kview ui/ux controls
 
     -fx-border-width: 1px 0 0 0;
 }
+
+.lidr-window .timeline-content.outer-container {
+    -fx-border-color: -Natural-Grey-Main;
+}
+
 
 .pattern-window.concept-detail-pane .main-right-container .properties-tab-container-content .lidr-device,
 .lidr-window.concept-detail-pane .main-right-container .properties-tab-container-content .lidr-device {

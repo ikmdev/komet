@@ -15,6 +15,7 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Text?>
+<?import java.lang.String?>
 
 <BorderPane maxHeight="1.7976931348623157E308" prefHeight="700.0" prefWidth="298.0" styleClass="timeline-outer-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.timeline.TimelineController">
    <top>
@@ -41,9 +42,13 @@
       </HBox>
    </top>
    <center>
-      <AnchorPane fx:id="timelineSurfaceAnchorPane" maxHeight="1.7976931348623157E308" prefWidth="295.0" styleClass="timeline-content" BorderPane.alignment="CENTER">
+      <AnchorPane fx:id="timelineSurfaceAnchorPane" maxHeight="1.7976931348623157E308" prefWidth="295.0" BorderPane.alignment="CENTER">
+         <styleClass>
+            <String fx:value="timeline-content" />
+            <String fx:value="outer-container" />
+         </styleClass>
          <children>
-            <ScrollPane prefHeight="200.0" prefWidth="200.0" styleClass="timeline-scrollpane" vbarPolicy="NEVER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="1.0">
+            <ScrollPane prefHeight="200.0" prefWidth="200.0" styleClass="timeline-scrollpane" vbarPolicy="NEVER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
                <content>
                   <AnchorPane fx:id="timelineAnchorPane" prefHeight="226.0" prefWidth="192.0" styleClass="timeline-content">
                      <children>
