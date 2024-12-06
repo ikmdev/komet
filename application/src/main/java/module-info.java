@@ -38,7 +38,8 @@ module dev.ikm.komet.application {
     // JPro related modules
     requires jpro.webapi;
     requires one.jpro.platform.auth.core;
-    requires one.jpro.platform.internal.util;
+    requires one.jpro.platform.file;
+    requires one.jpro.platform.utils;
     opens jpro.html;
 
     requires javafx.controls;

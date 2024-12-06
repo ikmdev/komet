@@ -6,9 +6,14 @@ import javafx.scene.layout.Pane;
 
 /**
  * VerticallyFilledPane works like Pane, it doesn't do any positioning of its children, only resizing.
+ * Use case: The algorithm for the Tray Panes of Komet relies on the use of a layout container like Pane and its characteristic
+ * of allowing children to be positioned outside its bounds (because it doesn't do any positioning). This class goes a step
+ * further and provides other useful features for the Tray Pane that JavaFX Pane does not have.
+ *
  * The difference from Pane is that when resizing its children it sets their height so that they occupy the whole height of the
  * VerticallyFilledPane. The width of each child is set to their preferred width.
- * Use case: this "Layout container" was created to be used in Tray Panes so that he content fills the Tray Pane.
+ * Another thing VerticallyFilledPane does differently from Pane is to compute its min height and set it to be the maximum
+ * min height of all of its children.
  */
 public class VerticallyFilledPane extends Pane {
 
@@ -24,5 +29,18 @@ public class VerticallyFilledPane extends Pane {
                 node.resize(width, paneHeight);
             }
         }
+    }
+
+    @Override
+    protected double computeMinHeight(double width) {
+        if (getChildren().isEmpty()) {
+            return 0;
+        }
+
+        double minHeight = 0;
+        for (Node child : getChildren()) {
+            minHeight = Math.max(child.minHeight(width), minHeight);
+        }
+        return minHeight;
     }
 }
