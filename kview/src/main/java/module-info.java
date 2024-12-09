@@ -13,11 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
-import dev.ikm.komet.kview.mvvm.view.properties.PropertiesNodeFactory;
-import dev.ikm.komet.framework.KometNodeFactory;
-
 module dev.ikm.komet.kview {
     requires transitive dev.ikm.komet.framework;
     requires dev.ikm.komet.search;
@@ -99,6 +94,10 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.progress to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.progress;
 
+    // General editing
+    opens dev.ikm.komet.kview.mvvm.view.genediting to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.genediting;
+    exports dev.ikm.komet.kview.events.genediting;
 
     // TODO a temporary export screen for next gen ui.
     opens dev.ikm.komet.kview.mvvm.view;
@@ -120,7 +119,7 @@ module dev.ikm.komet.kview {
     exports dev.ikm.komet.kview.mvvm.view.navigation;
     opens dev.ikm.komet.kview.mvvm.view.navigation to javafx.fxml, org.carlfx.cognitive;
 
-    provides KometNodeFactory with DetailsNodeFactory, PropertiesNodeFactory;
+    provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory, dev.ikm.komet.kview.mvvm.view.properties.PropertiesNodeFactory;
 
     uses dev.ikm.komet.framework.events.EvtBus;
 }
