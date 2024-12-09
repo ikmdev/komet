@@ -45,6 +45,10 @@
             <artifactId>classification</artifactId>
         </dependency>
         <dependency>
+            <groupId>one.jpro</groupId>
+            <artifactId>jpro-webapi</artifactId>
+        </dependency>
+        <dependency>
             <groupId>one.jpro.platform</groupId>
             <artifactId>jpro-auth-core</artifactId>
         </dependency>
