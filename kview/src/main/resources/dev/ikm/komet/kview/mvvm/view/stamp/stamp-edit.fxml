@@ -25,22 +25,16 @@
             <Region prefHeight="1.0" styleClass="line" />
          </children>
       </StackPane>
-      <TitledPane fx:id="statusTitledPane" alignment="CENTER_RIGHT" animated="false" maxWidth="1.7976931348623157E308" minHeight="-Infinity" nodeOrientation="RIGHT_TO_LEFT" text="Status: Active" VBox.vgrow="ALWAYS">
+      <TitledPane fx:id="statusTitledPane" styleClass="status-titled-pane" alignment="CENTER_RIGHT" animated="false" maxWidth="1.7976931348623157E308" minHeight="-Infinity" nodeOrientation="RIGHT_TO_LEFT" text="Status: Active" VBox.vgrow="ALWAYS">
         <content>
-            <VBox fx:id="statusVBox" alignment="TOP_RIGHT" styleClass="option-container">
+            <VBox styleClass="option-container" fx:id="statusVBox" alignment="TOP_RIGHT">
                <children>
-                  <RadioButton fx:id="activeStatus" alignment="CENTER_RIGHT" contentDisplay="TOP" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" text="Active" VBox.vgrow="NEVER">
+                  <RadioButton styleClass="active" fx:id="activeStatus" alignment="CENTER_RIGHT"  mnemonicParsing="false"  nodeOrientation="LEFT_TO_RIGHT" text="Active" VBox.vgrow="NEVER">
                      <toggleGroup>
                         <ToggleGroup fx:id="statusToggleGroup" />
                      </toggleGroup>
-                     <VBox.margin>
-                        <Insets />
-                     </VBox.margin>
                   </RadioButton>
-                  <RadioButton fx:id="inactiveStatus" alignment="CENTER_RIGHT" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" text="Inactive" toggleGroup="$statusToggleGroup" VBox.vgrow="NEVER">
-                     <VBox.margin>
-                        <Insets />
-                     </VBox.margin>
+                  <RadioButton fx:id="inactiveStatus" alignment="CENTER_RIGHT" nodeOrientation="LEFT_TO_RIGHT" mnemonicParsing="false" text="Inactive" toggleGroup="$statusToggleGroup" VBox.vgrow="NEVER">
                   </RadioButton>
                </children>
             </VBox>
@@ -48,11 +42,11 @@
       </TitledPane>
       <TitledPane fx:id="moduleTitledPane" alignment="CENTER_RIGHT" animated="false" maxWidth="1.7976931348623157E308" minHeight="-Infinity" nodeOrientation="RIGHT_TO_LEFT" text="Module: ">
         <content>
-            <ScrollPane hbarPolicy="NEVER" maxHeight="150.0" nodeOrientation="LEFT_TO_RIGHT">
+            <ScrollPane hbarPolicy="NEVER" maxHeight="142" nodeOrientation="LEFT_TO_RIGHT">
                <content>
                   <VBox fx:id="moduleVBox" alignment="CENTER_LEFT" styleClass="option-container">
                      <children>
-                        <RadioButton alignment="CENTER_LEFT" contentDisplay="TOP" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" text="SNOMED CT Core" VBox.vgrow="SOMETIMES">
+                        <RadioButton mnemonicParsing="false" text="SNOMED CT Core">
                            <toggleGroup>
                               <ToggleGroup fx:id="moduleToggleGroup" />
                            </toggleGroup>
@@ -76,12 +70,12 @@
                <content>
                   <VBox fx:id="pathVBox" styleClass="option-container">
                      <children>
-                        <RadioButton alignment="CENTER_RIGHT" contentDisplay="TOP" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" text="Development" wrapText="true">
+                        <RadioButton mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" text="Development" wrapText="true">
                            <toggleGroup>
                               <ToggleGroup fx:id="pathToggleGroup" />
                            </toggleGroup>
                         </RadioButton>
-                        <RadioButton contentDisplay="BOTTOM" graphicTextGap="10.0" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" text="Primortial" toggleGroup="$pathToggleGroup" />
+                        <RadioButton mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" text="Primortial" toggleGroup="$pathToggleGroup" />
                      </children>
                      <padding>
                         <Insets left="8.0" />
