@@ -1575,6 +1575,7 @@ public class JournalController {
         } else {
             mode = CREATE;
         }
+        stampViewModel.setPropertyValue(MODE, mode);
         // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
         StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
         Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))

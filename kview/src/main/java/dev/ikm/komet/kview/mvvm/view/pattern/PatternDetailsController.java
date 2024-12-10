@@ -67,6 +67,7 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
@@ -82,7 +83,6 @@ import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
@@ -119,7 +119,6 @@ import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
-import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -786,8 +785,7 @@ public class PatternDetailsController {
             // set Stamp info into Details form
             getStampViewModel().save();
             patternViewModel.save();
-            updateUIStamp(getStampViewModel());
-        });
+           });
 
         popOver.show((Node) event.getSource());
 
@@ -796,32 +794,7 @@ public class PatternDetailsController {
         this.stampEditController = stampEditController;
     }
 
-    private void updateUIStamp(ViewModel stampViewModel) {
-        if (patternViewModel.isPatternPopulated()) {
-            updateTimeText(stampViewModel.getValue(TIME));
-        }
-        ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
-        if (moduleEntity == null) {
-            LOG.warn("Must select a valid module for Stamp.");
-            return;
-        }
-
-        getStampViewModel().setPropertyValue(MODULE, moduleEntity);
-        ConceptEntity pathEntity = stampViewModel.getValue(PATH);
-        getStampViewModel().setPropertyValue(PATH, pathEntity);
-        State status = stampViewModel.getValue(STATUS);
-        getStampViewModel().setPropertyValue(STATUS, status);
-    }
-
-    private void updateTimeText(Long time) {
-        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
-        Instant stampInstance = Instant.ofEpochSecond(time/1000);
-        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-        String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
-        getStampViewModel().setPropertyValue(TIME, lastUpdated);
-    }
-
-    public ValidationViewModel getStampViewModel() {
+      public ValidationViewModel getStampViewModel() {
         return patternViewModel.getPropertyValue(STAMP_VIEW_MODEL);
     }
 
@@ -867,15 +840,11 @@ public class PatternDetailsController {
         contentRegion.prefHeightProperty().bind(slideoutTrayPane.heightProperty());
     }
 
-
     public void putTitlePanesArrowOnRight() {
         putArrowOnRight(this.patternDefinitionTitledPane);
         putArrowOnRight(this.descriptionsTitledPane);
         putArrowOnRight(this.fieldsTitledPane);
     }
-
-
-
 
     @FXML
     private void savePattern(ActionEvent actionEvent) {
@@ -883,6 +852,12 @@ public class PatternDetailsController {
         LOG.info(isValidSave ? "success" : "failed");
         if(isValidSave){
             EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternCreationEvent(actionEvent.getSource(), PATTERN_CREATION_EVENT));
+
+            EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
+                    new MakePatternWindowEvent(this,
+                            MakePatternWindowEvent.OPEN_PATTERN, patternViewModel.getPropertyValue(PATTERN), patternViewModel.getViewProperties()));
+
+            patternViewModel.setPropertyValue(IS_INVALID, true);
         }
     }
 
