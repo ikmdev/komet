@@ -18,6 +18,10 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
@@ -45,7 +49,6 @@ import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.component.Concept;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -53,11 +56,9 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldRecord;
-import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.entity.StampEntityVersion;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -65,10 +66,7 @@ import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.SemanticFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
@@ -99,7 +97,6 @@ import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.text.LabelView;
 import java.net.URL;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -112,7 +109,7 @@ public class GenEditingDetailsController {
 
     private static final Logger LOG = LoggerFactory.getLogger(GenEditingDetailsController.class);
 
-    public static final URL PATTERN_PROPERTIES_VIEW_FXML_URL = GenEditingDetailsController.class.getResource("pattern-properties.fxml");
+    public static final URL GENEDITING_PROPERTIES_VIEW_FXML_URL = GenEditingDetailsController.class.getResource("genediting-properties.fxml");
 
     private Consumer<ToggleButton> reasonerResultsControllerConsumer;
 
@@ -473,23 +470,35 @@ public class GenEditingDetailsController {
     private void setupProperties() {
         // Setup Property screen bump out
         // Load Concept Properties View Panel (FXML & Controller)
-//        Config config = new Config(PATTERN_PROPERTIES_VIEW_FXML_URL)
-//                .addNamedViewModel(new NamedVm("patternViewModel", patternViewModel))
-//                .updateViewModel("patternPropertiesViewModel",
-//                        (patternPropertiesViewModel) -> patternPropertiesViewModel
-//                                .setPropertyValue(PATTERN_TOPIC, patternViewModel.getPropertyValue(PATTERN_TOPIC))
-//                                .setPropertyValue(VIEW_PROPERTIES, patternViewModel.getPropertyValue(VIEW_PROPERTIES) )
-//                                .setPropertyValue(STATE_MACHINE, patternViewModel.getPropertyValue(STATE_MACHINE))
-//                );
-//
-//        JFXNode<BorderPane, PropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(config);
-//        this.propertiesBorderPane = propsFXMLLoader.node();
-//        this.propertiesController = propsFXMLLoader.controller();
-//        attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
+        Config config = new Config(GENEDITING_PROPERTIES_VIEW_FXML_URL)
+                .updateViewModel("propertiesViewModel", (propertiesViewModel) -> propertiesViewModel
+                        .setPropertyValue(WINDOW_TOPIC, genEditingViewModel.getPropertyValue(WINDOW_TOPIC))
+                        .setPropertyValue(VIEW_PROPERTIES, genEditingViewModel.getPropertyValue(VIEW_PROPERTIES))
+                );
 
-        //FIXME this doesn't work properly, should leave for a future effort...
+        JFXNode<BorderPane, PropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(config);
+        this.propertiesBorderPane = propsFXMLLoader.node();
+        this.propertiesController = propsFXMLLoader.controller();
+        attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
+
         // open the panel, allow the state machine to determine which panel to show
-        //EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(propertiesToggleButton, OPEN_PANEL));
+        // listen for open and close events
+        propertiesEventSubscriber = (evt) -> {
+            if (evt.getEventType() == dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL) {
+                LOG.info("propBumpOutListener - Close Properties bumpout toggle = " + propertiesToggleButton.isSelected());
+                propertiesToggleButton.setSelected(false);
+                if (isOpen(propertiesSlideoutTrayPane)) {
+                    slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
+                }
+            } else if (evt.getEventType() == PropertyPanelEvent.OPEN_PANEL) {
+                LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
+                propertiesToggleButton.setSelected(true);
+                if (isClosed(propertiesSlideoutTrayPane)) {
+                    slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
+                }
+            }
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), PropertyPanelEvent.class, propertiesEventSubscriber);
     }
 
     public ViewProperties getViewProperties() {

@@ -21,6 +21,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
+import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +47,9 @@ public class PropertiesController {
     @FXML
     private BorderPane contentBorderPane;
 
+    /////////// Private variables
+    @InjectViewModel
+    private SimpleViewModel propertiesViewModel;
     @FXML
     private void initialize() {
         clearView();
