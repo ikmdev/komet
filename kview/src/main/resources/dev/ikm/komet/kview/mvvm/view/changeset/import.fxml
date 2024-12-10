@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Text?>
+<VBox minHeight="480" prefHeight="480.0" prefWidth="600.0" spacing="20.0" styleClass="white-container-border6"
+      stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="dev.ikm.komet.kview.mvvm.view.changeset.ImportController">
+    <HBox>
+        <Label prefHeight="25.0" styleClass="grey12-18pt-normal" text="Import Data Set"/>
+    </HBox>
+    <VBox fx:id="dropDatasetArea" VBox.vgrow="ALWAYS" minHeight="308" spacing="20" alignment="CENTER"
+          styleClass="drop-dataset-container">
+        <Label fx:id="datasetLabel" alignment="CENTER" contentDisplay="TOP" graphicTextGap="24"
+               styleClass="grey9-14pt-normal" text="Drag &amp; drop your file here">
+            <graphic>
+                <StackPane fx:id="uploadProgressPane" prefWidth="64" prefHeight="64">
+                    <Region prefWidth="64" prefHeight="56" maxWidth="64" maxHeight="56"
+                            styleClass="file-circle-plus-icon"/>
+                </StackPane>
+            </graphic>
+        </Label>
+        <FlowPane alignment="CENTER">
+            <Line stroke="darkgray">
+                <endX>150.0</endX>
+            </Line>
+            <Text fill="darkgray" text=" or "/>
+            <Line stroke="darkgray">
+                <endX>150.0</endX>
+            </Line>
+        </FlowPane>
+        <Button fx:id="browseButton" alignment="CENTER" mnemonicParsing="false"
+                styleClass="button-blue5-text-grey1-bg" text="BROWSE"/>
+    </VBox>
+    <HBox alignment="BOTTOM_RIGHT" spacing="12.0">
+        <Button fx:id="cancelButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false"
+                onAction="#handleCancelButtonEvent" prefHeight="32.0" prefWidth="88.0" text="CANCEL"
+                styleClass="button-blue5-text-grey1-bg">
+        </Button>
+        <Button fx:id="importButton" mnemonicParsing="false" onAction="#handleImportButtonEvent"
+                prefHeight="32.0" prefWidth="88.0" styleClass="grey-blue-button" text="IMPORT">
+        </Button>
+    </HBox>
+    <padding>
+        <Insets top="24.0" right="24.0" bottom="24.0" left="24.0"/>
+    </padding>
+</VBox>
