@@ -4740,5 +4740,67 @@ Styling a context menu for kview ui/ux controls
     -fx-font-size: 0.916667em;
 }
 
+/********************* General Editing Chapter window *****************************/
+.titled-content-background {
+    -fx-background-color: -Grey-1;
+    -fx-background-radius: 4px 4px 0 0;
+}
 
+.semantic-banner-label {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #212430;
+    -fx-font-weight: 400;
+    -fx-font-size: 17px;
+}
+.semantic-banner-label {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #212430;
+    -fx-font-weight: bolder;
+    -fx-font-size: 12px;
+}
+.semantic-banner-value {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #212430;
+    -fx-font-weight: 400;
+    -fx-font-size: 12px;
+}
 
+/* Semantic Details section - VBox */
+.semantic-field-container {
+    -height: 58;
+    -fx-min-height: -height;
+    -fx-pref-height: -height;
+    -fx-fill-width: true;
+    -fx-padding: 8px 12px;
+    -fx-background-color: -Grey-1;
+}
+.semantic-field-set-container,
+.semantic-field-ditree-container {
+    -fx-fill-width: true;
+    -fx-padding: 8px 12px;
+    -fx-background-color: -Grey-1;
+}
+
+/* label */
+.semantic-field-type-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 600;
+    -fx-font-size: 12px;
+    -fx-text-fill: #5E5E5E;
+}
+
+/* label */
+.semantic-field-value {
+    -fx-background-color: transparent;
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 600;
+    -fx-font-size: 12px;
+    -fx-text-fill: #212430;
+}
+/* mouse hover */
+.semantic-field-value:hover {
+    -fx-background-color: #F4F9FF;
+    -fx-text-fill: #395C9A;
+    -fx-border-width: 1px;
+    -fx-border-color: #CFD8E4;
+}

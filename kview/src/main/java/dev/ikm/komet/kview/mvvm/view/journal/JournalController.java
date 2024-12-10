@@ -542,6 +542,7 @@ public class JournalController {
 
                     ConceptFacade conceptFacade = null;
                     PatternFacade patternFacade = null;
+                    EntityFacade semanticFacade = null;
                     DragAndDropType dragAndDropType = null;
                     if (event.getGestureSource() instanceof SearchResultCell searchResultCell) {
                         dragAndDropType = CONCEPT;
@@ -569,11 +570,15 @@ public class JournalController {
                         } else if (dragAndDropInfo.type().equals(DragAndDropType.PATTERN)) {
                             dragAndDropType = DragAndDropType.PATTERN;
                             patternFacade = PatternFacade.make(PrimitiveData.nid(dragAndDropInfo.publicId()));
+                        } else if (dragAndDropInfo.type().equals(DragAndDropType.SEMANTIC)) {
+                            dragAndDropType = DragAndDropType.SEMANTIC;
+                            semanticFacade = EntityService.get().getEntityFast(PrimitiveData.nid(dragAndDropInfo.publicId()));
                         }
                         LOG.info("wait a sec");
                     }
 
-                    if (conceptFacade == null && patternFacade == null) {
+                    // TODO: This code isn't scalable. JournalController now supports a third window (semantic editing). If you have a new window each if/then/else needs to be changed.
+                    if (conceptFacade == null && patternFacade == null && semanticFacade == null) {
                         return;
                     }
                     PublicId publicId = null;
@@ -590,6 +595,11 @@ public class JournalController {
                     } else if (dragAndDropType.equals(DragAndDropType.PATTERN)) {
                         publicId = patternFacade.publicId();
                         makePatternWindow(patternFacade, windowView.makeOverridableViewProperties());
+                    } else if (dragAndDropType.equals(DragAndDropType.SEMANTIC)) {
+
+                        publicId = semanticFacade.publicId();
+                        // TODO save preferences of window's (position and size) such as the general editing chapter window.
+                        makeGenEditWindow(semanticFacade, windowView.makeOverridableViewProperties());
                     }
                     consumer.accept(publicId);
                     success = true;
@@ -1640,25 +1650,21 @@ public class JournalController {
 
     private void makeGenEditWindow(EntityFacade component, ViewProperties viewProperties) {
         System.out.println("Launching General editing window: " + component);
-        //initialize stampsViewModel with basic data.
-        StampViewModel stampViewModel = new StampViewModel();
-        stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
-                .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
+//        //initialize stampsViewModel with basic data.
+//        StampViewModel stampViewModel = new StampViewModel();
+//        stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
+//                .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
 
-        String mode;
         if(component != null){
-            mode = EDIT;
-            Entity entity = EntityService.get().getEntity(component.nid()).get();
+//            Entity entity = EntityService.get().getEntity(component.nid()).get();
             // populate STAMP values
-            Latest<EntityVersion> stamp = viewProperties.calculator().stampCalculator().latest(entity);
-            stampViewModel.setPropertyValue(STATUS, stamp.get().stamp().state())
-                    .setPropertyValue(TIME, stamp.get().stamp().time())
-                    .setPropertyValue(AUTHOR, TinkarTerm.USER)
-                    .setPropertyValue(MODULE, stamp.get().stamp().module())
-                    .setPropertyValue(PATH, stamp.get().stamp().path())
-            ;
-        } else {
-            mode = CREATE;
+//            Latest<EntityVersion> stamp = viewProperties.calculator().stampCalculator().latest(entity);
+//            stampViewModel.setPropertyValue(STATUS, stamp.get().stamp().state())
+//                    .setPropertyValue(TIME, stamp.get().stamp().time())
+//                    .setPropertyValue(AUTHOR, TinkarTerm.USER)
+//                    .setPropertyValue(MODULE, stamp.get().stamp().module())
+//                    .setPropertyValue(PATH, stamp.get().stamp().path())
+//            ;
         }
 //        // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
 //        //StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
@@ -1669,13 +1675,12 @@ public class JournalController {
                         genEditingViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
                                 .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
                                 .setPropertyValue(WINDOW_TOPIC, UUID.randomUUID())
-                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
+//                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
                                 .setPropertyValue(FIELDS_COLLECTION, new ArrayList<String>()) // Ordered collection of Fields
                                 .setPropertyValue(REF_COMPONENT, refComponent)
                                 .setPropertyValue(SEMANTIC, component));
 
-
-        // create pattern window
+        // create chapter window
         JFXNode<Pane, GenEditingDetailsController> jfxNode = FXMLMvvmLoader.make(config);
         //Getting the concept window pane
         Pane kometNodePanel = jfxNode.node();
@@ -1684,25 +1689,13 @@ public class JournalController {
         Node[] draggables = new Node[draggableToolbar.size()];
 
         WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
+
         //Adding the concept window panel as a child to the desktop pane.
         desktopSurfacePane.getChildren().add(kometNodePanel);
-
-        //FIXME are both LIDR and Pattern windows borrowing the concept folder for preferences?
-        // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
-        Optional<String> conceptFolderName;
-        conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
-        // create a conceptWindowSettingsMap
-        Map<ConceptWindowSettings, Object> conceptWindowSettingsObjectMap = createConceptPrefMap(conceptFolderName.get(), kometNodePanel);
-        kometNodePanel.setUserData(conceptWindowSettingsObjectMap);
-
-        // add to the list of concept windows
-        final String finalConceptFolderName = conceptFolderName.get();
-        conceptWindows.add(new ConceptPreference(conceptFolderName.get(), null, -1, kometNodePanel));
 
         //Calls the remove method to remove and concepts that were closed by the user.
         jfxNode.controller().setOnCloseConceptWindow(windowEvent -> {
             // TODO more clean up such as view models and listeners just in case (memory).
-            removeLidrSetting(finalConceptFolderName);
         });
         jfxNode.controller().putTitlePanesArrowOnRight();
     }
