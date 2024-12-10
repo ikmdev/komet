@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.43.0-SNAPSHOT</version>
+        <version>1.44.0-SNAPSHOT</version>
     </parent>
     <artifactId>application</artifactId>
     <dependencies>
@@ -92,7 +92,6 @@
         <dependency>
             <groupId>one.jpro</groupId>
             <artifactId>jpro-webapi</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>one.jpro.platform</groupId>
@@ -100,7 +99,7 @@
         </dependency>
         <dependency>
             <groupId>one.jpro.platform</groupId>
-            <artifactId>jpro-internal-util</artifactId>
+            <artifactId>jpro-utils</artifactId>
         </dependency>
         <!-- End JPro related dependencies -->
         <dependency>
@@ -179,6 +178,8 @@
                                 <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
                                 <option>--add-exports</option>
                                 <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</option>
+                                <option>--add-exports</option>
+                                <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
                                 <option>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</option>
                             </options>
                         </configuration>
@@ -229,6 +230,8 @@
                                 <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
                                 <option>--add-exports</option>
                                 <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</option>
+                                <option>--add-exports</option>
+                                <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
                                 <option>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</option>
                                 <option>
                                     -agentpath:/Applications/JProfiler.app/Contents/Resources/app/bin/macos/libjprofilerti.jnilib=port=8849
@@ -333,6 +336,8 @@
                                 <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
                                 <option>--add-exports</option>
                                 <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</option>
+                                <option>--add-exports</option>
+                                <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
                             </javaOptions>
                             <!-- Windows Options - ignored by other Operating Systems -->
                             <winMenu>true</winMenu>
@@ -421,6 +426,8 @@
                                         <option>
                                             javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
                                         </option>
+                                        <option>--add-exports</option>
+                                        <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
                                         <option>
                                             -Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer
                                         </option>
@@ -465,6 +472,8 @@
                                         <option>
                                             javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
                                         </option>
+                                        <option>--add-exports</option>
+                                        <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
                                         <option>
                                             -Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer
                                         </option>
@@ -523,6 +532,8 @@
                                 <JVMArg>javafx.graphics/javafx.scene=org.controlsfx.controls</JVMArg>
                                 <JVMArg>--add-exports</JVMArg>
                                 <JVMArg>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</JVMArg>
+                                <JVMArg>--add-exports</JVMArg>
+                                <JVMArg>javafx.base/com.sun.javafx.event=one.jpro.platform.file</JVMArg>
                                 <JVMArg>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</JVMArg>
                             </JVMArgs>
                         </configuration>

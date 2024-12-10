@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.43.0-SNAPSHOT</version>
+        <version>1.44.0-SNAPSHOT</version>
     </parent>
     <artifactId>kview</artifactId>
     <dependencies>
@@ -43,6 +43,10 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>classification</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>one.jpro</groupId>
+            <artifactId>jpro-webapi</artifactId>
         </dependency>
         <dependency>
             <groupId>one.jpro.platform</groupId>
