@@ -101,6 +101,20 @@
             <groupId>one.jpro.platform</groupId>
             <artifactId>jpro-utils</artifactId>
         </dependency>
+        <!--        testing -->
+        <dependency>
+            <groupId>one.jpro.platform.jpms</groupId>
+            <artifactId>testfx-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>one.jpro.platform.jpms</groupId>
+            <artifactId>testfx-junit5</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>one.jpro.platform.jpms</groupId>
+            <artifactId>openjfx-monocle</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- End JPro related dependencies -->
         <dependency>
             <groupId>${tinkar-core.groupId}</groupId>
@@ -536,6 +550,77 @@
                                 <JVMArg>javafx.base/com.sun.javafx.event=one.jpro.platform.file</JVMArg>
                                 <JVMArg>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</JVMArg>
                             </JVMArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>its</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-data</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>dev.ikm.tinkar.data</groupId>
+                                    <artifactId>tinkar-starter-data-reasoned</artifactId>
+                                    <classifier>pb</classifier>
+                                    <type>zip</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${user.home}/Solor</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>integration-test</id>
+                                <phase>integration-test</phase>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>verify</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                            <argLine>
+                                -Dtestfx.headless=true
+                                -Djava.awt.headless=true
+                                ${commonTestFXArgs}
+                            </argLine>
+                            <useModulePath>true</useModulePath>
+                            <forkCount>1</forkCount>
+                            <reuseForks>false</reuseForks>
+                            <skipTests>false</skipTests>
                         </configuration>
                     </plugin>
                 </plugins>
