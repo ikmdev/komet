@@ -105,7 +105,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>dev.ikm</groupId>
+            <groupId>dev.ikm.komet</groupId>
             <artifactId>knowledge-layout</artifactId>
         </dependency>
     </dependencies>

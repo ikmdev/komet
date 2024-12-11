@@ -30,7 +30,7 @@ module dev.ikm.komet.kview {
     requires one.jpro.platform.auth.core;
     requires one.jpro.platform.file;
 
-    requires transitive dev.ikm.layout;
+    requires transitive dev.ikm.komet.layout;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
