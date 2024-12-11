@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.String?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
@@ -16,7 +17,6 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
@@ -25,81 +25,112 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<BorderPane fx:id="landingPageBorderPane" minHeight="0.0" minWidth="0.0" prefHeight="682.0" prefWidth="1035.0" styleClass="landing-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController">
+<BorderPane fx:id="landingPageBorderPane" minHeight="0.0" minWidth="0.0" prefHeight="682.0" prefWidth="1035.0" styleClass="landing-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController">
    <left>
       <VBox fillWidth="false" maxWidth="201.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0" prefWidth="144.0" BorderPane.alignment="CENTER">
          <children>
-            <ToggleButton graphicTextGap="8.0" mnemonicParsing="false" selected="true" text="Home" textFill="#d3b5b5">
+            <ToggleButton mnemonicParsing="false" selected="true">
                <graphic>
-                  <Region>
-                     <styleClass>
-                        <String fx:value="icon" />
-                        <String fx:value="home" />
-                     </styleClass>
-                  </Region>
+                  <HBox styleClass="icon-container">
+                     <StackPane styleClass="icon-image-container">
+                        <Region>
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="home" />
+                           </styleClass>
+                        </Region>
+                     </StackPane>
+                     <Label text="Home" />
+                  </HBox>
                </graphic>
                <toggleGroup>
                   <ToggleGroup fx:id="sidebarToggleGroup" />
                </toggleGroup>
             </ToggleButton>
-            <ToggleButton graphicTextGap="8.0" mnemonicParsing="false" text="Favorites" textFill="#d3b5b5" toggleGroup="$sidebarToggleGroup">
+            <ToggleButton mnemonicParsing="false" toggleGroup="$sidebarToggleGroup">
                <graphic>
-                  <Region>
-                     <styleClass>
-                        <String fx:value="icon" />
-                        <String fx:value="heart" />
-                     </styleClass>
-                  </Region>
+                  <HBox styleClass="icon-container">
+                     <StackPane styleClass="icon-image-container">
+                        <Region>
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="heart" />
+                           </styleClass>
+                        </Region>
+                     </StackPane>
+                     <Label text="Favorites" />
+                  </HBox>
                </graphic>
             </ToggleButton>
-            <ToggleButton graphicTextGap="8.0" mnemonicParsing="false" text="Comments" textFill="#d3b5b5" toggleGroup="$sidebarToggleGroup">
+            <ToggleButton mnemonicParsing="false" toggleGroup="$sidebarToggleGroup">
                <graphic>
-                  <Region>
-                     <styleClass>
-                        <String fx:value="icon" />
-                        <String fx:value="comment" />
-                     </styleClass>
-                  </Region>
+                  <HBox styleClass="icon-container">
+                     <StackPane styleClass="icon-image-container">
+                        <Region>
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="comment" />
+                           </styleClass>
+                        </Region>
+                     </StackPane>
+                     <Label text="Comments" />
+                  </HBox>
                </graphic>
             </ToggleButton>
-            <ToggleButton graphicTextGap="8.0" mnemonicParsing="false" text="Notifications" textFill="#d3b5b5" toggleGroup="$sidebarToggleGroup">
+            <ToggleButton mnemonicParsing="false" toggleGroup="$sidebarToggleGroup">
                <graphic>
-                  <Pane>
-                     <children>
+                  <HBox styleClass="icon-container">
+                     <StackPane styleClass="icon-image-container">
                         <Region>
                            <styleClass>
                               <String fx:value="icon" />
                               <String fx:value="notification" />
                            </styleClass>
                         </Region>
-                        <Label fx:id="notificationCounter" layoutX="6.0" layoutY="-9.0" styleClass="counter" text="4" textFill="#c39292" />
-                     </children>
-                  </Pane>
+                        <StackPane alignment="TOP_RIGHT" maxHeight="-Infinity" maxWidth="-Infinity" styleClass="counter" StackPane.alignment="TOP_RIGHT">
+                           <Label fx:id="notificationCounter" text="4" StackPane.alignment="CENTER" />
+                           <StackPane.margin>
+                              <Insets top="-8.0" />
+                           </StackPane.margin>
+                        </StackPane>
+                     </StackPane>
+                     <Label text="Notifications" />
+                  </HBox>
                </graphic>
             </ToggleButton>
             <VBox prefHeight="200.0" prefWidth="100.0" />
             <Region styleClass="flex-space" VBox.vgrow="ALWAYS" />
-            <ToggleButton fx:id="settingsToggleButton" mnemonicParsing="false" text="Settings" toggleGroup="$sidebarToggleGroup">
+            <ToggleButton fx:id="settingsToggleButton" mnemonicParsing="false" toggleGroup="$sidebarToggleGroup">
                <graphic>
-                  <Region prefHeight="200.0" prefWidth="200.0">
-                     <styleClass>
-                        <String fx:value="icon" />
-                        <String fx:value="settings" />
-                     </styleClass>
-                  </Region>
+                  <HBox styleClass="icon-container">
+                     <StackPane styleClass="icon-image-container">
+                        <Region>
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="settings" />
+                           </styleClass>
+                        </Region>
+                     </StackPane>
+                     <Label text="Settings" />
+                  </HBox>
                </graphic>
             </ToggleButton>
-            <ToggleButton mnemonicParsing="false" text="Profile">
+            <ToggleButton mnemonicParsing="false">
                <toggleGroup>
                   <ToggleGroup fx:id="sidebarToggleGroup1" />
                </toggleGroup>
                <graphic>
-                  <Region prefHeight="200.0" prefWidth="200.0">
-                     <styleClass>
-                        <String fx:value="icon" />
-                        <String fx:value="avatar" />
-                     </styleClass>
-                  </Region>
+                  <HBox styleClass="icon-container">
+                     <StackPane styleClass="icon-image-container">
+                        <Region>
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="avatar" />
+                           </styleClass>
+                        </Region>
+                     </StackPane>
+                     <Label text="Profile" />
+                  </HBox>
                </graphic>
             </ToggleButton>
          </children>
