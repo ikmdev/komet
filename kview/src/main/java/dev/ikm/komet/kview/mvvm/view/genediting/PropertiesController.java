@@ -16,11 +16,16 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.slf4j.Logger;
@@ -48,12 +53,31 @@ public class PropertiesController {
     private BorderPane contentBorderPane;
 
     /////////// Private variables
+    /**
+     * Show the current edit window.
+     */
+    private Pane currentEditPane;
+
     @InjectViewModel
     private SimpleViewModel propertiesViewModel;
+
+    Subscriber<PropertyPanelEvent> showPanelSubscriber;
+
     @FXML
     private void initialize() {
         clearView();
+        setupShowingPanelHandlers();
+    }
 
+    private void setupShowingPanelHandlers() {
+        showPanelSubscriber = evt -> {
+            LOG.info("Show Panel by event type: " + evt.getEventType());
+            if (evt.getEventType() == PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
+                System.out.println("show edit semantic_fields panel");
+
+            }
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(propertiesViewModel.getPropertyValue(WINDOW_TOPIC), PropertyPanelEvent.class, showPanelSubscriber);
     }
 
 

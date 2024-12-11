@@ -18,6 +18,7 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
@@ -44,7 +45,6 @@ import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
-import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -523,6 +523,7 @@ public class GenEditingDetailsController {
         }
         Pane parent = (Pane) detailsOuterBorderPane.getParent();
         parent.getChildren().remove(detailsOuterBorderPane);
+        // TODO Create an event to notify children panes to clean up their subscribers.
     }
 
     @FXML
@@ -534,14 +535,14 @@ public class GenEditingDetailsController {
     private void showAddEditRefComponentPanel(ActionEvent actionEvent) {
 
     }
-    private void showEditFieldsPanel(ActionEvent actionEvent, PatternField selectedPatternField) {
-        LOG.info("Todo show bump out and display Edit Fields panel \n" + actionEvent);
-        actionEvent.consume();
-    }
-
     @FXML
-    private void showAddFieldsPanel(ActionEvent actionEvent) {
-        LOG.info("Todo show bump out and display Add Fields panel \n" + actionEvent);
+    private void showAndEditSemanticFieldsPanel(ActionEvent actionEvent) {
+        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+        EvtBusFactory.getDefaultEvtBus()
+                .publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                        new PropertyPanelEvent(actionEvent.getSource(),
+                                SHOW_EDIT_SEMANTIC_FIELDS, semantic));
+
     }
 
     @FXML
@@ -623,6 +624,17 @@ public class GenEditingDetailsController {
         return stampViewModel;
     }
 
+    /**
+     * When user clicks on the pencil icon to reveal the dynamic edit (KlFields) fields.
+     * @param actionEvent Button click action
+     */
+    @FXML
+    private void showSemanticEditFieldsPanel(ActionEvent actionEvent) {
+        LOG.info("Todo show bump out and display Edit Fields panel \n" + actionEvent);
+        actionEvent.consume();
+        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), SHOW_EDIT_SEMANTIC_FIELDS));
+        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
+    }
     @FXML
     private void openTimelinePanel(ActionEvent event) {
         LOG.info("not implemented yet");

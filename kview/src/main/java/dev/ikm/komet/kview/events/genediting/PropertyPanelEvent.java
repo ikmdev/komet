@@ -17,6 +17,7 @@ package dev.ikm.komet.kview.events.genediting;
 
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.tinkar.terms.EntityFacade;
 
 public class PropertyPanelEvent extends Evt {
 
@@ -24,8 +25,13 @@ public class PropertyPanelEvent extends Evt {
 
     public static final EvtType<PropertyPanelEvent> CLOSE_PANEL = new EvtType<>(Evt.ANY, "CLOSE_PANEL");
 
-    public static final EvtType<PropertyPanelEvent> CONFIRMATION_PANEL = new EvtType<>(Evt.ANY, "CONFIRMATION_PANEL");
+    /* EVENT */
+    public static final EvtType<PropertyPanelEvent> SHOW_PANEL = new EvtType<>(Evt.ANY, "SHOW_PANEL");
+    public static final EvtType<PropertyPanelEvent> SHOW_EDIT_SEMANTIC_FIELDS = new EvtType<>(SHOW_PANEL, "SHOW_EDIT_SEMANTIC_FIELDS");
+    public static final EvtType<PropertyPanelEvent> CONFIRMATION_PANEL = new EvtType<>(SHOW_PANEL, "CONFIRMATION_PANEL");
 
+    /*** private variables ***/
+    private EntityFacade semantic;
     /**
      *
      * @param source        the object on which the Event initially occurred
@@ -33,5 +39,15 @@ public class PropertyPanelEvent extends Evt {
      */
     public PropertyPanelEvent(Object source, EvtType<PropertyPanelEvent> eventType) {
         super(source, eventType);
+    }
+
+    /**
+     *
+     * @param source
+     * @param eventType
+     */
+    public PropertyPanelEvent(Object source, EvtType<PropertyPanelEvent> eventType, EntityFacade semantic) {
+        super(source, eventType);
+        this.semantic = semantic;
     }
 }

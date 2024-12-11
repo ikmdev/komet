@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.terms.EntityFacade;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ public class GenEditingViewModel extends FormViewModel {
                 .addProperty(CURRENT_JOURNAL_WINDOW_TOPIC, (UUID) null)
                 .addProperty(WINDOW_TOPIC, (UUID) null)
                 .addProperty(STAMP_VIEW_MODEL, (ViewModel) null)
-                .addProperty(FIELDS_COLLECTION, new ArrayList<String>()) // Ordered collection of Fields
+                .addProperty(FIELDS_COLLECTION, new ArrayList<FieldRecord<Object>>()) // Ordered collection of Fields
                 .addProperty(REF_COMPONENT, (EntityFacade) null)
                 .addProperty(SEMANTIC, (EntityFacade) null);
     }
