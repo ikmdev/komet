@@ -104,6 +104,10 @@
             <artifactId>data-ephemeral-provider</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>dev.ikm.komet</groupId>
+            <artifactId>knowledge-layout</artifactId>
+        </dependency>
     </dependencies>
 
     <!--TestFX configuration for headless and graphical tests-->

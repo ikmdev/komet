@@ -8,5 +8,6 @@ package dev.ikm.komet.kview.mvvm.model;
  */
 public enum DragAndDropType {
     CONCEPT,
-    PATTERN
+    PATTERN,
+    SEMANTIC
 }
