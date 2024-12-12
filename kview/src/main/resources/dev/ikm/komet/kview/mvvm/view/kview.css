@@ -1377,26 +1377,31 @@ Timeline (time travel) components
 */
 .timeline-header-bar {
     -icon-paint: -Grey-10;
-    -default-width: 300px;
-    -default-height: 100px;
+
     -fx-spacing: 4;
     -fx-alignment: center-left;
     -fx-background-insets: 0;
     -fx-background-color: #e0e8f1ff;
-    /*-fx-background-color: red;*/
-    -fx-border-insets: 0 0 -1 0;
-    -fx-border-style: solid;
-    -fx-border-width: 1;
-    -fx-border-color: transparent transparent transparent transparent;
+    -fx-background-radius: 4px 4px 0 0;
 
+    height: 45px;
 
-    /*-fx-min-height: -default-height;*/
-    /*-fx-pref-height: -default-height;*/
-    /*-fx-max-height: -default-height;*/
+    -fx-min-height: height;
+    -fx-pref-height: height;
+    -fx-max-height: height;
 
     -fx-min-width: 200;
     -fx-pref-width: -1;
     -fx-max-width: 5000;
+}
+
+.timeline-scrollpane {
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+.timeline-outer-container {
+    -fx-padding: 0 4px 4px 0;
 }
 
 .timeline-header-bar .timeline-text.label {
@@ -1508,8 +1513,14 @@ Timeline (time travel) components
 
 .timeline-content,
 .timeline-scrollpane > .viewport {
-    -fx-background-radius: 0 0 10 10;
+    -fx-background-radius: 0 0 4px 4px;
 }
+
+.timeline-content.outer-container {
+    -fx-border-color: -Grey-7;
+    -fx-border-width: 1px 0 0 0;
+}
+
 .timeline-row-container {
     -fx-spacing: 20;
 }
@@ -4192,46 +4203,75 @@ Styling a context menu for kview ui/ux controls
 /*    -fx-color: red;*/
 /*}*/
 /* alternative content using a border and a grad to transparent background - why should TitledPane content have a colour? */
+.popup-container .titled-pane > .title {
+    -fx-padding: 0.3333em 0.75em 0.083333em 0em; /* 4 9 1 9 */
+}
+
 .popup-container .titled-pane > *.content {
     -fx-border-color: transparent;
     -fx-border-insets: -1 0 0 0;
     -fx-background-color: transparent;
-    -fx-padding: -5 0 0 0;
+    -fx-padding: 0 0 4px 0;
+}
+
+.popup-container .titled-pane.status-titled-pane > *.content {
+    -fx-padding: 0;
+}
+
+.popup-container .titled-pane > *.content .option-container {
+    -fx-spacing: 5px;
+    -fx-padding: 2px 0 16px 10px;
+}
+
+.popup-container .titled-pane.status-titled-pane > *.content .option-container {
+    -fx-padding: 5px 10px 5px 0;
+}
+
+.popup-container .titled-pane.status-titled-pane > *.content .radio-button.active {
+    -fx-padding: 0 1px 0 0; /* Fix small misalignment of this radio button */
 }
 
 .popup-container .titled-pane > *.content .option-container .radio-button {
     -fx-label-padding: 4;
     -fx-text-fill: -Grey-White;
-    -fx-padding: 0 0 0 12;
+
+    -fx-label-padding: 0.0em 0.0em 0.0em 0.416667em; /* 0 0 0 5 */
 }
 .popup-container .titled-pane > *.content .option-container .radio-button > .radio,
 .popup-container .titled-pane > *.content .option-container .radio-button:focused > .radio {
-    -fx-background-radius: 0; /* large value to make sure this remains circular */
-    -fx-padding: 0; /* 4 -- padding from outside edge to the inner black dot */
-    -fx-background-color: -Grey-White;
-    -fx-scale-shape: false;
-    -fx-shape: "M8.99984 0.666748C4.39984 0.666748 0.666504 4.40008 0.666504 9.00008C0.666504 13.6001 4.39984 17.3334 8.99984 17.3334C13.5998 17.3334 17.3332 13.6001 17.3332 9.00008C17.3332 4.40008 13.5998 0.666748 8.99984 0.666748ZM8.99984 15.6667C5.3165 15.6667 2.33317 12.6834 2.33317 9.00008C2.33317 5.31675 5.3165 2.33341 8.99984 2.33341C12.6832 2.33341 15.6665 5.31675 15.6665 9.00008C15.6665 12.6834 12.6832 15.6667 8.99984 15.6667Z";
+    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+
+    -fx-border-style: solid;
+    -fx-border-radius: 1.0em;
+    -fx-border-color: -Grey-White;
+    -fx-border-insets: 0px;
+    -fx-border-width: 2px;
+
+    -fx-padding: 3px;
 }
 .popup-container .titled-pane > *.content .option-container .radio-button:selected > .radio,
 .popup-container .titled-pane > *.content .option-container .radio-button:selected:focused > .radio {
-    -fx-background-color: -Primary-04;
+    -fx-border-color: -Primary-04;
 }
 
 .popup-container .titled-pane > *.content .option-container .radio-button > .radio > .dot {
     -fx-background-color: transparent;
     -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
     -fx-padding: 0.333333em; /* 4 -- radius of the inner black dot when selected */
-    -fx-shape: "M8.99984 13.1667C11.301 13.1667 13.1665 11.3013 13.1665 9.00008C13.1665 6.69889 11.301 4.83342 8.99984 4.83342C6.69865 4.83342 4.83317 6.69889 4.83317 9.00008C4.83317 11.3013 6.69865 13.1667 8.99984 13.1667Z";
 }
 
 .popup-container .titled-pane > *.content .option-container .radio-button:selected > .radio > .dot {
+    -fx-background-insets: 0;
     -fx-background-color: -Primary-04;
-    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
-    /*-fx-padding: 0.333333em; !* 4 -- radius of the inner black dot when selected *!*/
-    -fx-shape: "M8.99984 13.1667C11.301 13.1667 13.1665 11.3013 13.1665 9.00008C13.1665 6.69889 11.301 4.83342 8.99984 4.83342C6.69865 4.83342 4.83317 6.69889 4.83317 9.00008C4.83317 11.3013 6.69865 13.1667 8.99984 13.1667Z";
 }
 .popup-container .titled-pane > *.content .scroll-pane .viewport {
     -fx-background-color: transparent;
+}
+
+.popup-container .scroll-pane .scroll-bar:vertical {
+    -fx-background-color: rgba(70, 70, 70, 0.1);
 }
 
 /* kview Progress bar popup */
@@ -4597,6 +4637,11 @@ Styling a context menu for kview ui/ux controls
 
     -fx-border-width: 1px 0 0 0;
 }
+
+.lidr-window .timeline-content.outer-container {
+    -fx-border-color: -Natural-Grey-Main;
+}
+
 
 .pattern-window.concept-detail-pane .main-right-container .properties-tab-container-content .lidr-device,
 .lidr-window.concept-detail-pane .main-right-container .properties-tab-container-content .lidr-device {
