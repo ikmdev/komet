@@ -83,80 +83,102 @@ To run Komet with JPro in a Docker container, follow these steps:
 2. Transfer the `komet-jpro.zip` file to the directory where you want to run the Docker container.
 3. Extract the contents of `komet-jpro.zip` file and navigate to the extracted folder.
 4. To run the application in a Docker container, choose one of the following options:
-    * **Option 1**: Build the Docker image and run the Docker container manually
-        * Inside the unzipped directory, locate the `Dockerfile`.
-        * Build the Docker image with the following command:
-          ```bash
-          docker build -t komet-jpro .
-          ```
-        * Run the Docker container using the following command:
-          ```bash
-          docker run -d -v ~/Solor:/root/Solor -p 8080:8080 komet-jpro
-          ```
-          Note: `-v ~/Solor:/root/Solor`: This option mounts a volume, mapping a directory on your host machine to
-          a directory inside the container.
-            * **~/Solor**: Path to the dataset directory on your local system.
-            * **/root/Solor**: Path inside the container where the dataset will be accessible.
-    * **Option 2**: Use Docker Compose
-        * Within the extracted directory, find the `docker-compose.yml` file.
-        * Start the Docker container with Docker Compose by running:
-          ```bash
-          docker compose up -d
-          ```
-5. The application should now be running in the Docker container. Access it by navigating to `http://localhost:8080`
-   in your web browser. If running on a remote server, replace localhost with the server’s IP address.
+- **Option 1**: Build the Docker image and run the Docker container manually
+   - Inside the unzipped directory, locate the `Dockerfile`.
+   - Build the Docker image with the following command:
+  ```bash
+  docker build -t komet-jpro .
+  ```
+   - Run the Docker container using the following command:
+  ```bash
+  docker run -d -v ~/Solor:/root/Solor -p 8080:8080 komet-jpro
+  ```
+  Note: `-v ~/Solor:/root/Solor`: This option mounts a volume, mapping a directory on your host machine to a directory 
+  inside the container.
+   - **~/Solor**: Path to the dataset directory on your local system.
+   - **/root/Solor**: Path inside the container where the dataset will be accessible.
+- **Option 2**: Use Docker Compose
+   - Within the extracted directory, find the `docker-compose.yml` file.
+   - Start the Docker container with Docker Compose by running:
+   ```bash
+   docker compose up -d
+   ```
+5. The application should now be running in the Docker container. Access it by navigating to `http://localhost:8080` in your web browser. If running on a remote server, replace localhost with the server’s IP address.
 
-## Running Komet GUI Unit Tests Using the TestFX Framework
+## TestFX Framework for GUI Testing in Komet JavaFX Application
+### Running Komet GUI Unit Tests Using the TestFX Framework
 The Komet application includes GUI tests built with the TestFX framework. By default, these tests run in headless mode,
 which is ideal for continuous integration (CI) environments or situations where graphical interaction is unnecessary.
-1. **Running TestFX Tests in Headless Mode (Default)**<br>
-   To execute all unit tests, including the TestFX GUI tests, in headless mode (without launching a GUI window), run:
+1. **Running TestFX Tests in Headless Mode (Default)**
+To execute all unit tests, including the TestFX GUI tests, in headless mode (without launching a GUI window), run:
    ```bash
    mvn test
    ```
-2. **Running TestFX Tests in Graphical Mode (Non-Headless)**<br>
-   If you need to observe the GUI during testing—for instance, when debugging UI components—you can disable
-   headless mode by setting the headless property to false.<br>
-   To run all tests in non-headless mode:
+2. **Running TestFX Tests in Graphical Mode (Non-Headless)**
+If you need to observe the GUI during testing—for instance, when debugging UI components—you can disable headless mode 
+by setting the headless property to false.
+To run all tests in non-headless mode:
    ```bash
-   mvn test -Dheadless=false
+   mvn test -Dtestfx.headless=false
    ```
-3. **Running Specific Tests**<br>
-   To run a specific test class in a specific module, for example the `LoginTest` class in the `kview` module:
+3. **Running Specific Tests**
+- To run a specific test class in a specific module, for example the `LoginUTestFX` class in the `kview` module:
    ```bash
-   mvn test -pl kview -Dtest=LoginTest -Dheadless=false
+   mvn test -pl kview -Dtest=LoginUTestFX -Dtestfx.headless=false
    ```
-   To run a specific test method inside a specific class, for example the `testSuccessfulAuthentication` method in the
-   `LoginTest` class in the `kview` module:
-     ```bash
-    mvn test -pl kview -Dtest=LoginTest#testSuccessfulAuthentication -Dheadless=false
-     ```
-## Running Integration Tests Using the TestFX Framework
-In addition to unit tests, Komet includes integration tests to ensure that different components work seamlessly together. 
-These tests leverage the TestFX framework and can be executed using the Maven `verify` phase with the `its` profile.<br>
+- To run a specific test method inside a specific class, for example the `testSuccessfulAuthentication` method in the 
+`LoginUTestFX` class in the `kview` module:
+   ```bash
+   mvn test -pl kview -Dtest=LoginUTestFX#testSuccessfulAuthentication -Dtestfx.headless=false
+   ```
 
-### Running Integration Tests
-#### 1. Running only Integration Tests in Headless Mode (Default)
-To execute all integration tests using the TestFX framework, use the following command:
-   ```bash
-      mvn verify -Pits -DskipTests
-   ```
-This command triggers the `verify` phase in Maven with the `its` (integration tests) profile, running all integration 
-tests defined in the project. By default, integration tests run in headless mode, suitable for CI environments.
-If the argument `-DskipTests` is not provided, unit tests will also run before the integration tests.
+### Running Integration Tests Using the TestFX Framework
+In addition to unit tests, Komet includes integration tests to ensure that different components work seamlessly together.
 
-#### 2. Running only Integration Tests in Graphical Mode
-If you need to observe the GUI during integration testing—for example, when debugging UI interactions—you can disable 
-headless mode by setting the `testfx.headless` property to `false`:
+1. Running all Integration Tests in Headless Mode (Default)
+To execute all integration tests including those using the TestFX framework, use the following command:
    ```bash
-      mvn verify -Pits -DskipTests -Dtestfx.headless=false
+   mvn verify
    ```
-This will launch the GUI windows during test execution, allowing you to visually monitor the tests as they run.
-If the argument `-DskipTests` is not provided, unit tests will also run before the integration tests.
+   This command triggers the `verify` phase in Maven, running all integration tests defined in the project. By default, 
+   TestFX integration tests run in headless mode, suitable for CI environments.
 
-**Important Note on Test Execution**<br>
-The tests will only run once after they pass successfully. To trigger the tests again, changes must be made
+2. Running all Integration Tests in Graphical Mode
+If you need to observe the GUI during TestFX integration testing—for example, when debugging UI interactions—you can 
+disable headless mode by setting the `testfx.headless` property to `false`:
+   ```bash
+   mvn verify -Dtestfx.headless=false
+   ```
+   This will launch the GUI windows during test execution, allowing you to visually monitor the tests as they run.
+
+3. Running Specific Integration Tests
+To run a specific integration test class, you can specify the test class or method using the `-Dit.test` parameter.
+For example, to run the `PatternWindowITestFX` integration test class:
+   ```bash
+   mvn verify -Dit.test=PatternWindowITestFX -DskipUnitTest
+   ```
+   The parameter `-DskipUnitTest` is used to skip the TestFX unit tests execution during the verify phase.
+
+**Important Note on Test Execution**
+- The tests will only run once after they pass successfully. To trigger the tests again, changes must be made
 to any part of the project.
+- During the verify phase, the unit tests will run first, followed by the integration tests. To skip the TestFX unit 
+tests and run only the integration tests, use the `-DskipUnitTest` parameter:
+   ```bash
+   mvn verify -DskipUnitTest
+   ```
+- To skip the TestFX integration tests and run only the unit tests, use the `-DskipIntegrationTests` parameter:
+   ```bash
+   mvn verify -DskipIntegrationTests
+   ```
+- Adding the `-Dmaven.build.cache.enabled=false` parameter will disable the Maven build cache, preventing tests from being
+cached  and reused, thus forcing fresh test execution. For example:
+   ```bash
+   mvn test -Dmaven.build.cache.enabled=false
+   ```
+   ```bash
+   mvn verify -Dmaven.build.cache.enabled=false
+   ```
 
 ## Usage Examples:
 This section details on the basic design methodology used for developing nex-gen Komet UI.
