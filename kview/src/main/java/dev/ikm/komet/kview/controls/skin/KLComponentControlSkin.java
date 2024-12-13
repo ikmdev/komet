@@ -4,6 +4,7 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.kview.controls.KLComponentListControl;
 import dev.ikm.komet.kview.controls.KLComponentSetControl;
 import dev.ikm.komet.kview.controls.KLComponentControl;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
@@ -180,10 +181,11 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                 try {
                     LOG.info("publicId: {}", dragboard.getString());
                     if (event.getGestureSource() instanceof Node source &&
-                            source.getUserData() instanceof PublicId publicId &&
-                            publicId.toString().equals(dragboard.getString())) { // TODO: should this be needed? shouldn't we get PublicId from dragboard content?
+                            source.getUserData() instanceof DragAndDropInfo dropInfo &&
+                            dropInfo.publicId() != null &&
+                            dropInfo.publicId().toString().equals(dragboard.getString())) { // TODO: should this be needed? shouldn't we get PublicId from dragboard content?
                         if (control.getEntity() == null) {
-                            Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+                            Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(dropInfo.publicId()));
                             if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
                                     !componentSetControl.getEntitiesList().contains(entity)) {
                                 control.setEntity(entity);
