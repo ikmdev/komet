@@ -563,7 +563,7 @@
     -default-button-height: 56px;
     -default-button-width: -1;
 
-    -fx-alignment: top-center;
+    -fx-alignment: center-left;
     -fx-background-insets: 0;
     /*-fx-background-color: #F3F5F8FF;*/
     -fx-background-color: -Grey-11;
@@ -586,7 +586,7 @@
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-background-radius: 0px, 0px, 0px, 0px;
-    -fx-padding: 16 12;
+    -fx-padding: 16 19 16 12;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
@@ -607,15 +607,43 @@
     -fx-content-display: left;
     -fx-graphic-text-gap: 8;
     -fx-min-width: -default-button-width;
-    -fx-pref-width: 144;
-    -fx-max-width: 144;
+    width: 152;
+    -fx-pref-width: width;
+    -fx-max-width: width;
 }
 
-/* all sidebar button regions are transparent */
+.side-bar .toggle-button .icon-container {
+    -fx-alignment: center-left;
+    -fx-spacing: 7px;
+}
+
+.side-bar .toggle-button .icon-container .icon-image-container {
+    -fx-min-width: 26px;
+    -fx-pref-width: 26px;
+}
+
+.side-bar .toggle-button .icon-container .label {
+    -fx-text-fill: white;
+}
+
+.side-bar .toggle-button:selected .icon-container .label {
+    -fx-text-fill: #111;
+}
+
 .side-bar .button .icon,
-.side-bar .toggle-button .icon
-{
+.side-bar .toggle-button .icon {
     -fx-background-color: -icon-paint;
+}
+
+.side-bar .toggle-button .icon,
+.side-bar .toggle-button .container-icon {
+    width: 20;
+    -fx-min-width: width;
+    -fx-pref-width: width;
+    -fx-max-width: width;
+
+    -fx-alignment: center;
+    -fx-position-shape: true;
 }
 
 
@@ -629,13 +657,23 @@ selected(active) - dark black
 /* Hover over tab button */
 .side-bar.show-text .toggle-button:selected,
 .side-bar.show-text .button:selected,
+.side-bar .toggle-button:selected,
+.side-bar .button:selected {
+    -fx-background-color: -Primary-05;
+}
+
+.side-bar.show-text .toggle-button:selected:hover,
+.side-bar.show-text .button:selected:hover,
+.side-bar .toggle-button:selected:hover,
+.side-bar .button:selected:hover{
+    -fx-background-color: derive(-Primary-05, 20%);
+}
+
 .side-bar.show-text .toggle-button:hover,
 .side-bar.show-text .button:hover,
-.side-bar .toggle-button:selected,
-.side-bar .button:selected,
 .side-bar .toggle-button:hover,
 .side-bar .button:hover {
-    -fx-background-color: -Primary-05;
+    -fx-background-color: rgba(100, 100, 100, 0.25);
 }
 
 /* Default */
@@ -667,12 +705,15 @@ selected(active) - dark black
 /* An Home svg (region) */
 .home {
     -width-size: 20;
-    -height-size: 17;
+    -height-size: 18;
     -fx-min-height: -height-size;
     -fx-min-width: -width-size;
     -fx-max-height: -height-size;
     -fx-max-width: -width-size;
     -fx-shape: "M10 3.19L15 7.69V15.5H13V9.5H7V15.5H5V7.69L10 3.19ZM10 0.5L0 9.5H3V17.5H9V11.5H11V17.5H17V9.5H20L10 0.5Z";
+
+    /* This icon shape is not correcly positioned so we need to correct that below */
+    -fx-translate-y: -1;
 }
 
 /* An Search svg (region) */
@@ -2497,6 +2538,12 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-radius: 5;
 }
 
+.white-container-border6 {
+    -fx-background-color: white;
+    -fx-border-radius: 6;
+    -fx-border-color: -Grey-6;
+}
+
 .white-combo-grey-arrow {
     -fx-border-radius: 4;
     -fx-background-color: -Grey-1;
@@ -2511,7 +2558,7 @@ Timeline Year line segment (will overlay change circles)
 
 .button-blue5-text-grey1-bg {
     -fx-border-radius: 4;
-    -fx-background-color: -Grey-2;
+    -fx-background-color: -Grey-1;
     -fx-border-color: -Secondary-05;
     -fx-text-fill: -Secondary-05;
     -fx-font-size: 14px;
@@ -2700,15 +2747,10 @@ Timeline Year line segment (will overlay change circles)
     -fx-shape: "M7.50002 18.3337C7.27901 18.3337 7.06705 18.2459 6.91077 18.0896C6.75448 17.9333 6.66669 17.7213 6.66669 17.5003V15.0003H3.33335C2.89133 15.0003 2.4674 14.8247 2.15484 14.5122C1.84228 14.1996 1.66669 13.7757 1.66669 13.3337V3.33366C1.66669 2.40866 2.41669 1.66699 3.33335 1.66699H16.6667C17.1087 1.66699 17.5326 1.84259 17.8452 2.15515C18.1578 2.46771 18.3334 2.89163 18.3334 3.33366V13.3337C18.3334 13.7757 18.1578 14.1996 17.8452 14.5122C17.5326 14.8247 17.1087 15.0003 16.6667 15.0003H11.5834L8.50002 18.092C8.33335 18.2503 8.12502 18.3337 7.91669 18.3337H7.50002ZM8.33335 13.3337V15.9003L10.9 13.3337H16.6667V3.33366H3.33335V13.3337H8.33335Z";
 }
 
-.file-circle-plus-icon {
-    -fx-background-color: -Secondary-05;
-    -fx-shape: "M0 64C0 28.7 28.7 0 64 0L224 0l0 128c0 17.7 14.3 32 32 32l128 0 0 38.6C310.1 219.5 256 287.4 256 368c0 59.1 29.1 111.3 73.7 143.3c-3.2 .5-6.4 .7-9.7 .7L64 512c-35.3 0-64-28.7-64-64L0 64zm384 64l-128 0L256 0 384 128zm48 96a144 144 0 1 1 0 288 144 144 0 1 1 0-288zm16 80c0-8.8-7.2-16-16-16s-16 7.2-16 16l0 48-48 0c-8.8 0-16 7.2-16 16s7.2 16 16 16l48 0 0 48c0 8.8 7.2 16 16 16s16-7.2 16-16l0-48 48 0c8.8 0 16-7.2 16-16s-7.2-16-16-16l-48 0 0-48z";
-}
-
 .comments-textflow {
     -fx-border-radius: 4;
+    -fx-min-height: 40;
     -fx-background-color: -Grey-1;
-    -fx-border-color: -Grey-5;
 }
 
 .comment-placeholder-text {
@@ -3067,7 +3109,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-style: normal;
     -fx-font-weight: 400;
     -fx-background-color: white;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 1, 1, 1, 1);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 1, 1, 1, 1);    
     -fx-min-width: 285px;
     -fx-pref-width: 285px;
     -fx-max-width: 285px;
@@ -3076,6 +3118,11 @@ Timeline Year line segment (will overlay change circles)
     -fx-alignment: center;
 }
 
+.list-cell:selected .pattern-instance-hbox .label {
+    -fx-text-fill: blue;
+    -fx-background-color: white, transparent, transparent;
+    -fx-background-insets: 0, 1, 2;
+}
 
 .pattern-instance-hbox .pattern-instance {
     -fx-min-width: 260px;
@@ -3283,16 +3330,24 @@ Landing page elements.
 
 /* label */
 .counter {
+    size: 16;
+    -fx-pref-width: size;
+    -fx-pref-height: size;
+
+    -fx-background-radius: 2em;
+    -fx-background-insets: 0;
+    -fx-background-color: -Accent-color-red;
+
+    -fx-translate-y: -2px;
+    -fx-translate-x: 4px;
+}
+
+.counter > .label {
     -fx-text-fill: -Grey-White;
-    -fx-label-padding: 2;
-    -fx-padding: 0 4 1 4;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 11px;
     -fx-font-style: normal;
     -fx-font-weight: 700;
-    -fx-background-radius: 12;
-    -fx-background-color: -Accent-color-red;
-
 }
 
 .split-pane.flat-split-divider:horizontal > .split-pane-divider {
@@ -4197,46 +4252,75 @@ Styling a context menu for kview ui/ux controls
 /*    -fx-color: red;*/
 /*}*/
 /* alternative content using a border and a grad to transparent background - why should TitledPane content have a colour? */
+.popup-container .titled-pane > .title {
+    -fx-padding: 0.3333em 0.75em 0.083333em 0em; /* 4 9 1 9 */
+}
+
 .popup-container .titled-pane > *.content {
     -fx-border-color: transparent;
     -fx-border-insets: -1 0 0 0;
     -fx-background-color: transparent;
-    -fx-padding: -5 0 0 0;
+    -fx-padding: 0 0 4px 0;
+}
+
+.popup-container .titled-pane.status-titled-pane > *.content {
+    -fx-padding: 0;
+}
+
+.popup-container .titled-pane > *.content .option-container {
+    -fx-spacing: 5px;
+    -fx-padding: 2px 0 16px 10px;
+}
+
+.popup-container .titled-pane.status-titled-pane > *.content .option-container {
+    -fx-padding: 5px 10px 5px 0;
+}
+
+.popup-container .titled-pane.status-titled-pane > *.content .radio-button.active {
+    -fx-padding: 0 1px 0 0; /* Fix small misalignment of this radio button */
 }
 
 .popup-container .titled-pane > *.content .option-container .radio-button {
     -fx-label-padding: 4;
     -fx-text-fill: -Grey-White;
-    -fx-padding: 0 0 0 12;
+
+    -fx-label-padding: 0.0em 0.0em 0.0em 0.416667em; /* 0 0 0 5 */
 }
 .popup-container .titled-pane > *.content .option-container .radio-button > .radio,
 .popup-container .titled-pane > *.content .option-container .radio-button:focused > .radio {
-    -fx-background-radius: 0; /* large value to make sure this remains circular */
-    -fx-padding: 0; /* 4 -- padding from outside edge to the inner black dot */
-    -fx-background-color: -Grey-White;
-    -fx-scale-shape: false;
-    -fx-shape: "M8.99984 0.666748C4.39984 0.666748 0.666504 4.40008 0.666504 9.00008C0.666504 13.6001 4.39984 17.3334 8.99984 17.3334C13.5998 17.3334 17.3332 13.6001 17.3332 9.00008C17.3332 4.40008 13.5998 0.666748 8.99984 0.666748ZM8.99984 15.6667C5.3165 15.6667 2.33317 12.6834 2.33317 9.00008C2.33317 5.31675 5.3165 2.33341 8.99984 2.33341C12.6832 2.33341 15.6665 5.31675 15.6665 9.00008C15.6665 12.6834 12.6832 15.6667 8.99984 15.6667Z";
+    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+
+    -fx-border-style: solid;
+    -fx-border-radius: 1.0em;
+    -fx-border-color: -Grey-White;
+    -fx-border-insets: 0px;
+    -fx-border-width: 2px;
+
+    -fx-padding: 3px;
 }
 .popup-container .titled-pane > *.content .option-container .radio-button:selected > .radio,
 .popup-container .titled-pane > *.content .option-container .radio-button:selected:focused > .radio {
-    -fx-background-color: -Primary-04;
+    -fx-border-color: -Primary-04;
 }
 
 .popup-container .titled-pane > *.content .option-container .radio-button > .radio > .dot {
     -fx-background-color: transparent;
     -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
     -fx-padding: 0.333333em; /* 4 -- radius of the inner black dot when selected */
-    -fx-shape: "M8.99984 13.1667C11.301 13.1667 13.1665 11.3013 13.1665 9.00008C13.1665 6.69889 11.301 4.83342 8.99984 4.83342C6.69865 4.83342 4.83317 6.69889 4.83317 9.00008C4.83317 11.3013 6.69865 13.1667 8.99984 13.1667Z";
 }
 
 .popup-container .titled-pane > *.content .option-container .radio-button:selected > .radio > .dot {
+    -fx-background-insets: 0;
     -fx-background-color: -Primary-04;
-    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
-    /*-fx-padding: 0.333333em; !* 4 -- radius of the inner black dot when selected *!*/
-    -fx-shape: "M8.99984 13.1667C11.301 13.1667 13.1665 11.3013 13.1665 9.00008C13.1665 6.69889 11.301 4.83342 8.99984 4.83342C6.69865 4.83342 4.83317 6.69889 4.83317 9.00008C4.83317 11.3013 6.69865 13.1667 8.99984 13.1667Z";
 }
 .popup-container .titled-pane > *.content .scroll-pane .viewport {
     -fx-background-color: transparent;
+}
+
+.popup-container .scroll-pane .scroll-bar:vertical {
+    -fx-background-color: rgba(70, 70, 70, 0.1);
 }
 
 /* kview Progress bar popup */
@@ -4750,5 +4834,67 @@ Styling a context menu for kview ui/ux controls
     -fx-font-size: 0.916667em;
 }
 
+/********************* General Editing Chapter window *****************************/
+.titled-content-background {
+    -fx-background-color: -Grey-1;
+    -fx-background-radius: 4px 4px 0 0;
+}
 
+.semantic-banner-label {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #212430;
+    -fx-font-weight: 400;
+    -fx-font-size: 17px;
+}
+.semantic-banner-label {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #212430;
+    -fx-font-weight: bolder;
+    -fx-font-size: 12px;
+}
+.semantic-banner-value {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #212430;
+    -fx-font-weight: 400;
+    -fx-font-size: 12px;
+}
 
+/* Semantic Details section - VBox */
+.semantic-field-container {
+    -height: 58;
+    -fx-min-height: -height;
+    -fx-pref-height: -height;
+    -fx-fill-width: true;
+    -fx-padding: 8px 12px;
+    -fx-background-color: -Grey-1;
+}
+.semantic-field-set-container,
+.semantic-field-ditree-container {
+    -fx-fill-width: true;
+    -fx-padding: 8px 12px;
+    -fx-background-color: -Grey-1;
+}
+
+/* label */
+.semantic-field-type-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 600;
+    -fx-font-size: 12px;
+    -fx-text-fill: #5E5E5E;
+}
+
+/* label */
+.semantic-field-value {
+    -fx-background-color: transparent;
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 600;
+    -fx-font-size: 12px;
+    -fx-text-fill: #212430;
+}
+/* mouse hover */
+.semantic-field-value:hover {
+    -fx-background-color: #F4F9FF;
+    -fx-text-fill: #395C9A;
+    -fx-border-width: 1px;
+    -fx-border-color: #CFD8E4;
+}

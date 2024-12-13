@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.build</groupId>
         <artifactId>java-parent</artifactId>
-        <version>1.53.0</version>
+        <version>1.55.0</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
@@ -54,6 +54,7 @@
         <module>progress</module>
         <module>rules</module>
         <module>search</module>
+        <module>knowledge-layout</module>
         <module>kview</module>
         <module>application</module>
     </modules>
@@ -191,6 +192,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>rules</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>knowledge-layout</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
