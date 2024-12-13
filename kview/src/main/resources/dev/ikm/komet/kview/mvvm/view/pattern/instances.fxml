@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" styleClass="instances-main-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.InstancesController">
+   <top>
+      <StackPane styleClass="main-top-container" BorderPane.alignment="CENTER">
+         <children>
+            <StackPane alignment="TOP_RIGHT" styleClass="icon-container" StackPane.alignment="TOP_RIGHT">
+               <children>
+                  <StackPane styleClass="help-icon">
+                     <children>
+                        <StackPane prefHeight="150.0" prefWidth="200.0" styleClass="question-mark" />
+                     </children>
+                  </StackPane>
+               </children>
+            </StackPane>
+            <VBox styleClass="top-container">
+               <children>
+                  <VBox styleClass="title-container">
+                     <children>
+                        <Label styleClass="title" text="Instances" />
+                        <Label fx:id="patternMetaTitle" styleClass="title-description" text="LIDR Metadata for.." />
+                     </children>
+                  </VBox>
+                  <StackPane styleClass="search-fileld-container">
+                     <children>
+                        <TextField promptText="Search" />
+                        <StackPane alignment="CENTER_RIGHT" styleClass="search-icon-container" StackPane.alignment="CENTER_RIGHT">
+                           <children>
+                              <StackPane styleClass="search-icon" />
+                           </children>
+                        </StackPane>
+                     </children>
+                  </StackPane>
+               </children>
+            </VBox>
+         </children>
+      </StackPane>
+   </top>
+   <center>
+      <StackPane styleClass="list-view-container" BorderPane.alignment="CENTER">
+         <children>
+            <ListView fx:id="instancesListView" prefHeight="200.0" prefWidth="200.0" />
+         </children>
+      </StackPane>
+   </center>
+</BorderPane>

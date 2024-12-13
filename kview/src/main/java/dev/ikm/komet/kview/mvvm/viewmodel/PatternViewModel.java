@@ -15,13 +15,22 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
+import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
+import static dev.ikm.tinkar.terms.TinkarTerm.ACCEPTABLE;
+import static dev.ikm.tinkar.terms.TinkarTerm.DEFINITION_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.component.Concept;
 import dev.ikm.tinkar.component.Stamp;
 import dev.ikm.tinkar.composer.Composer;
 import dev.ikm.tinkar.composer.Session;
@@ -29,7 +38,6 @@ import dev.ikm.tinkar.composer.assembler.PatternAssembler;
 import dev.ikm.tinkar.composer.template.FullyQualifiedName;
 import dev.ikm.tinkar.composer.template.Synonym;
 import dev.ikm.tinkar.composer.template.USDialect;
-import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -37,18 +45,17 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
-import dev.ikm.tinkar.entity.PatternEntity;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
+import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import org.carlfx.axonic.StateMachine;
 import org.carlfx.cognitive.validator.ValidationMessage;
@@ -64,30 +71,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
-import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
-import static dev.ikm.tinkar.terms.TinkarTerm.ACCEPTABLE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DEFINITION_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SENSITIVE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE;
-import static dev.ikm.tinkar.terms.TinkarTerm.ENGLISH_LANGUAGE;
-import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
-import static dev.ikm.tinkar.terms.TinkarTerm.NOT_APPLICABLE;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 
 public class PatternViewModel extends FormViewModel {
 
@@ -112,6 +96,10 @@ public class PatternViewModel extends FormViewModel {
     public static String FQN_LANGUAGE = "fqnLanguage";
 
     public static String OTHER_NAMES = "otherDescriptionNames";
+
+    //TODO Need to refactor this to use only this variable instead of OTHER_NAMES.
+    // This is used during editing only for now to map the DescrName class with SEMANTIC_VERSIONS.
+    public static String OTHER_NAME_SEMANTIC_VERSION_MAP = "regularNames";
 
     public static String PURPOSE_ENTITY = "purposeEntity";
 
@@ -148,6 +136,7 @@ public class PatternViewModel extends FormViewModel {
                     .addProperty(FQN_DESCRIPTION_NAME, (DescrName) null)
                     .addProperty(FQN_DATE_ADDED_STR, "")
                     .addProperty(OTHER_NAMES, new ArrayList<DescrName>())
+                    .addProperty(OTHER_NAME_SEMANTIC_VERSION_MAP, new HashMap<DescrName, SemanticEntityVersion>())
                     // PATTERN>DEFINITION Purpose and Meaning
                     .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
                     .addProperty(MEANING_ENTITY, (EntityFacade) null) // this is/will be the 'meaning' concept entity
@@ -220,25 +209,35 @@ public class PatternViewModel extends FormViewModel {
         }
     }
 
-    public void populatePattern() {
+    public void loadPatternValues(){
         ObjectProperty<EntityFacade> patternProperty = getProperty(PATTERN);
         EntityFacade patternFacade = patternProperty.getValue();
-        StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         if (patternFacade != null && getPropertyValue(MODE).equals(EDIT)) {
+            Entity entity = EntityService.get().getEntityFast(patternFacade);
             ViewCalculator viewCalculator = getViewProperties().calculator();
-            PatternEntity patternEntity = EntityService.get().getEntityFast(patternFacade.nid());
 
-            // bind purpose
-            //FIXME... when you bump out the DEFINITIONS, the purpose and meaning aren't populated
-            //do we need to pass it to the patternPropertiesViewModel???
+            // Load Fields data.
+            ObservableList<PatternField> patternFieldObsList = getObservableList(FIELDS_COLLECTION);
+            PatternVersionRecord patternVersionRecord = (PatternVersionRecord) viewCalculator.latest(entity).get();
+            ImmutableList<FieldDefinitionRecord> fieldDefinitionRecords = patternVersionRecord.fieldDefinitions();
 
-            Latest<PatternVersionRecord> latestPatternVerRec = viewCalculator.latest((patternFacade).nid());
-            EntityFacade purposeEntity = Entity.getFast(latestPatternVerRec.get().semanticPurposeNid());
+            fieldDefinitionRecords.stream().forEachOrdered( fieldDefinitionForEntity ->
+            {
+                EntityVersion latest = (EntityVersion) viewCalculator.latest(fieldDefinitionForEntity.meaning()).get();
+                PatternField patternField = new PatternField(fieldDefinitionForEntity.meaning().description(), fieldDefinitionForEntity.dataType(),
+                        fieldDefinitionForEntity.purpose(), fieldDefinitionForEntity.meaning(), "", latest.stamp());
+                patternFieldObsList.add(patternField);
+            });
+
+            // load Definition Semantics
+            Latest<EntityVersion> latestEntityVersion = viewCalculator.latest(entity);
+            EntityVersion entityVersion = latestEntityVersion.get();
+
+            Entity purposeEntity = ((PatternVersionRecord) entityVersion).semanticPurpose();
             setPropertyValue(PURPOSE_ENTITY, purposeEntity);
             setPropertyValue(PURPOSE_TEXT, purposeEntity.description());
 
-            EntityVersion purposeLatest = stampCalculator.latest(purposeEntity).get();
-            Long purposeMilis = purposeLatest.stamp().time();
+            Long purposeMilis = viewCalculator.latest(Entity.getFast(purposeEntity.nid())).get().stamp().time();
             if (purposeMilis.equals(PREMUNDANE_TIME)) {
                 setPropertyValue(PURPOSE_DATE_STR, "Date Added: Premundane");
             } else {
@@ -248,12 +247,11 @@ public class PatternViewModel extends FormViewModel {
                 setPropertyValue(PURPOSE_DATE_STR, "Date Added: " +  purposeDateStr);
             }
 
-
-            EntityFacade meaningEntity = Entity.getFast(latestPatternVerRec.get().semanticMeaningNid());
+            Entity meaningEntity = ((PatternVersionRecord) entityVersion).semanticMeaning();
             setPropertyValue(MEANING_ENTITY, meaningEntity);
             setPropertyValue(MEANING_TEXT, meaningEntity.description());
-            EntityVersion meaningLatest = stampCalculator.latest(purposeEntity).get();
-            Long meaningMillis = meaningLatest.stamp().time();
+
+            Long meaningMillis = viewCalculator.latest(Entity.getFast(meaningEntity.nid())).get().stamp().time();
             if (meaningMillis.equals(PREMUNDANE_TIME)) {
                 setPropertyValue(MEANING_DATE_STR, "Date Added: Premundane");
             } else {
@@ -263,184 +261,45 @@ public class PatternViewModel extends FormViewModel {
                 setPropertyValue(MEANING_DATE_STR, "Date Added: " + meaningDateStr);
             }
 
-            Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(viewCalculator, patternFacade);
-
-            ObservableList<DescrName> descrNameObservableList = getObservableList(OTHER_NAMES);
-            descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
-
-                boolean isFQN = semanticEntityVersion
-                        .fieldValues()
-                        .stream()
-                        .anyMatch( fieldValue ->
-                                (fieldValue instanceof ConceptFacade facade) &&
-                                        facade.nid() == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid());
-                PatternEntityVersion patternEntityVersion = (PatternEntityVersion) viewCalculator.latest(patternEntity).get();
-                if (isFQN) {
-                    String fqnNameDescription = (String) semanticEntityVersion.fieldValues().stream().filter(fv -> fv instanceof String)
-                            .collect(Collectors.toList()).getFirst();
-
-                    ConceptEntity caseEntity = getCaseConcept(patternEntity, viewCalculator, semanticEntityVersion);
-                    ConceptEntity langEntity = getLanguageConcept(patternEntityVersion, viewCalculator, semanticEntityVersion);
-
-                    DescrName fqnDescrName = new DescrName(null, fqnNameDescription, FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE,
-                            caseEntity, null, null,
-                            langEntity, semanticEntityVersion.publicId());
-                    setPropertyValue(FQN_DESCRIPTION_NAME, fqnDescrName);
-                    setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, fqnDescrName.getNameText());
-
-                    setPropertyValue(FQN_LANGUAGE, langEntity.description());
-
-                    EntityVersion fqnLatest = (EntityVersion) stampCalculator.latest(semanticEntityVersion.entity()).get();
-                    Long fqnMillis = fqnLatest.stamp().time();
-                    if (fqnMillis.equals(PREMUNDANE_TIME)) {
-                        setPropertyValue(FQN_DATE_ADDED_STR, "Premundane");
-                    } else {
-                        LocalDate fqnDate =
-                                Instant.ofEpochMilli(fqnLatest.stamp().time()).atZone(ZoneId.systemDefault()).toLocalDate();
-                        String fqnDateStr = fqnDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-                        setPropertyValue(FQN_DATE_ADDED_STR, fqnDateStr);
+            viewCalculator.forEachSemanticVersionForComponentOfPattern(entity.nid(), TinkarTerm.DESCRIPTION_PATTERN.nid(),
+                (semanticEntityVersion,  entityVersion1, patternEntityVersion) -> {
+                    ConceptFacade language = (ConceptFacade) semanticEntityVersion.fieldValues().get(0);
+                    String string = (String) semanticEntityVersion.fieldValues().get(1);
+                    ConceptFacade caseSignificance = (ConceptFacade) semanticEntityVersion.fieldValues().get(2);
+                    ConceptFacade descriptionType = (ConceptFacade) semanticEntityVersion.fieldValues().get(3);
+                    DescrName descrName = new DescrName(null, string, descriptionType,
+                        Entity.getFast(caseSignificance.nid()), Entity.getFast(semanticEntityVersion.state().nid()),
+                            Entity.getFast(semanticEntityVersion.module().nid()),Entity.getFast(language.nid()), semanticEntityVersion.publicId());
+                    if(PublicId.equals(descriptionType.publicId(),TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.publicId())){
+                        // set Property Value FQN D
+                        setPropertyValue(FQN_DESCRIPTION_NAME, descrName);
+                        setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, string);
+                        setPropertyValue(FQN_CASE_SIGNIFICANCE, caseSignificance);
+                        setPropertyValue(FQN_LANGUAGE, language);
+                    } else if(PublicId.equals(descriptionType.publicId(), REGULAR_NAME_DESCRIPTION_TYPE.publicId())) {
+                        ObservableList<DescrName> otherNamesList = getObservableList(OTHER_NAMES);
+                        HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(OTHER_NAME_SEMANTIC_VERSION_MAP);
+                        // add to list.
+                        otherNamesList.add(descrName);
+                        regularNamesMap.put(descrName, semanticEntityVersion);
+                    } else if (PublicId.equals(descriptionType.publicId(), DEFINITION_DESCRIPTION_TYPE.publicId())) {
+                        LOG.info(" Add to Definition Name : " + descrName.getNameText());
                     }
-                } else {
-                    String otherNameDescription = (String) semanticEntityVersion.fieldValues().stream().filter(fv -> fv instanceof String)
-                            .collect(Collectors.toList()).getFirst();
-
-                    ConceptEntity caseEntity = getCaseConcept(patternEntity, viewCalculator, semanticEntityVersion);
-
-                    // put the stamp in the DescrName (or just the time)
-                    Stamp stamp = semanticEntityVersion.stamp();
-                    ConceptEntity langEntity = getLanguageConcept(patternEntityVersion, viewCalculator, semanticEntityVersion);
-
-                    DescrName descrName = new DescrName(null, otherNameDescription, REGULAR_NAME_DESCRIPTION_TYPE,
-                            caseEntity, null, null,
-                            langEntity, semanticEntityVersion.publicId(), stamp);
-                    descrNameObservableList.add(descrName);
-                }
             });
-
-            // load the pattern fields
-            StampCalculator stampCalc = Calculators.Stamp.DevelopmentLatestActiveOnly();
-            PatternEntityVersion latestDescriptionPattern = (PatternEntityVersion) stampCalc.latest(patternFacade).get();
-            ImmutableList<? extends FieldDefinitionForEntity> fieldDefinitions = latestDescriptionPattern.fieldDefinitions();
-
-            ObservableList<PatternField> patternFieldObsList = getObservableList(FIELDS_COLLECTION);
-            List<PatternField> patternFields = convertFieldDefinitions(fieldDefinitions);
-            patternFields.forEach(patternField -> patternFieldObsList.add(patternField));
         }
     }
 
-    private List<PatternField> convertFieldDefinitions(ImmutableList<? extends FieldDefinitionForEntity> fieldDefinitions) {
-        List<PatternField> patternFieldList = new ArrayList<>(fieldDefinitions.size());
-        AtomicInteger idx = new AtomicInteger();
-        idx.set(0);
-        fieldDefinitions.stream().forEach(f -> {
-            StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
-            EntityVersion latest = (EntityVersion) stampCalculator.latest(f.meaning()).get();
-
-            patternFieldList.add(idx.getAndIncrement(), new PatternField(f.meaning().description(), f.dataType(), f.purpose(), f.meaning(), "", latest.stamp()));
-        });
-        return patternFieldList;
-    }
-
-    private Map<SemanticEntityVersion, List<String>> latestDescriptionSemantics(final ViewCalculator viewCalculator, EntityFacade conceptFacade) {
-        Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = new HashMap<>();
-
-        // FQN - English | Case Sensitive
-        // REG - English | Case Sensitive
-
-        //Get latest description semantic version of the passed in concept (entityfacade)
-        //Latest<SemanticEntityVersion> latestDescriptionSemanticVersion = viewCalculator.getDescription(conceptFacade);
-
-        //There should always be one FQN
-        //There can be 0 or more Regular Names
-        //Loop through, conditionally sort semantics by their description type concept object
-        //Update UI via the descriptionRegularName function on the
-        viewCalculator.getDescriptionsForComponent(conceptFacade).stream()
-                .filter(semanticEntity -> {
-                    // semantic -> semantic version -> pattern version(index meaning field from DESCR_Type)
-                    Latest<SemanticEntityVersion> semanticVersion = viewCalculator.latest(semanticEntity);
-
-                    PatternEntity<PatternEntityVersion> patternEntity = semanticEntity.pattern();
-                    PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
-
-                    int indexForDescrType = patternEntityVersion.indexForMeaning(TinkarTerm.DESCRIPTION_TYPE);
-
-                    // Filter (include) semantics where they contain descr type having FQN, Regular name, Definition Descr.
-                    Object descriptionTypeConceptValue = semanticVersion.get().fieldValues().get(indexForDescrType);
-                    if(descriptionTypeConceptValue instanceof EntityFacade descriptionTypeConcept ){
-                        int typeId = descriptionTypeConcept.nid();
-                        return (typeId == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() ||
-                                typeId == REGULAR_NAME_DESCRIPTION_TYPE.nid() ||
-                                typeId == DEFINITION_DESCRIPTION_TYPE.nid());
-                    }
-                    return false;
-                }).forEach(semanticEntity -> {
-                    // Each description obtain the latest semantic version, pattern version and their field values based on index
-                    Latest<SemanticEntityVersion> semanticVersion = viewCalculator.latest(semanticEntity);
-                    PatternEntity<PatternEntityVersion> patternEntity = semanticEntity.pattern();
-                    PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
-
-                    int indexCaseSig = patternEntityVersion.indexForMeaning(DESCRIPTION_CASE_SIGNIFICANCE);
-                    int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
-
-                    List<String> descrFields = new ArrayList<>();
-                    descriptionSemanticsMap.put(semanticVersion.get(), descrFields);
-                    Object caseSigConcept = semanticVersion.get().fieldValues().get(indexCaseSig);
-                    Object langConcept = semanticVersion.get().fieldValues().get(indexLang);
-
-                    // e.g. FQN - English | Case Sensitive
-                    String casSigText = viewCalculator.getRegularDescriptionText(((ConceptFacade) caseSigConcept).nid())
-                            .orElse(String.valueOf(((ConceptFacade) caseSigConcept).nid()));
-                    String langText = viewCalculator.getRegularDescriptionText(((ConceptFacade) langConcept).nid())
-                            .orElse(String.valueOf(((ConceptFacade) langConcept).nid()));
-
-                    descrFields.add(casSigText);
-                    descrFields.add(langText);
-                });
-        return descriptionSemanticsMap;
-
-    }
-
-    public ConceptEntity getLanguageConcept(PatternEntityVersion patternEntityVersion, ViewCalculator viewCalculator, SemanticEntityVersion semanticEntityVersion) {
-        int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
-
-        Object langConcept = (indexLang != -1)
-                ? semanticEntityVersion.fieldValues().get(indexLang)
-                : ENGLISH_LANGUAGE;
-
-        String langText = viewCalculator.getRegularDescriptionText(((ConceptFacade) langConcept).nid())
-                .orElse(String.valueOf(((ConceptFacade) langConcept).nid())).toUpperCase();
-
-        Set<ConceptEntity> possibleLanguages = fetchDescendentsOfConcept(getViewProperties(), LANGUAGE.publicId());
-
-        Optional<ConceptEntity> langEntity = possibleLanguages.stream().filter(lang -> lang.toString().equalsIgnoreCase(langText)).findFirst();
-
-        return langEntity.orElse(Entity.getFast(ENGLISH_LANGUAGE));
-    }
-
-    public ConceptEntity getCaseConcept(PatternEntity patternEntity, ViewCalculator viewCalculator, SemanticEntityVersion semanticEntityVersion) {
-        PatternEntityVersion patternEntityVersion = (PatternEntityVersion) viewCalculator.latest(patternEntity).get();
-        int indexCaseSig = patternEntityVersion.indexForMeaning(DESCRIPTION_CASE_SIGNIFICANCE);
-
-        Object caseSigConcept = (indexCaseSig != -1)
-                ? (Concept) semanticEntityVersion.fieldValues().get(indexCaseSig)
-                : NOT_APPLICABLE;
-
-        return Entity.getFast(((ConceptFacade) caseSigConcept).nid());
-    }
-
-
     public boolean createPattern() {
         save();
-
         if (hasErrorMsgs()) {
             for (ValidationMessage validationMessage : getValidationMessages()) {
                 LOG.error(validationMessage.toString());
             }
             return false;
         }
+        PublicId patternPublicId =  getPropertyValue(PATTERN) == null ? PublicIds.newRandom():  ((PatternFacade) getPropertyValue(PATTERN)).publicId();
+        Pattern pattern = Pattern.make(null, patternPublicId);
 
-        PublicId patternPublicId = PublicIds.newRandom();
-        Pattern pattern = Pattern.make(patternPublicId);
         Composer composer = new Composer("Save Pattern Definition");
 
         // get the STAMP values from the nested stampViewModel
@@ -454,42 +313,45 @@ public class PatternViewModel extends FormViewModel {
         // set up pattern with the fully qualified name
         ObservableList<PatternField> fieldsProperty = getObservableList(FIELDS_COLLECTION);
         session.compose((PatternAssembler patternAssembler) -> {
-                patternAssembler
-                            .pattern(pattern)
-                            .meaning(((EntityFacade)getPropertyValue(MEANING_ENTITY)).toProxy());
+            patternAssembler
+                        .pattern(pattern)
+                        .meaning(((EntityFacade)getPropertyValue(MEANING_ENTITY)).toProxy())
+                        .purpose(((EntityFacade)getPropertyValue(PURPOSE_ENTITY)).toProxy());
+            patternAssembler.attach((FullyQualifiedName fqn) -> fqn
+                                    .language(((EntityFacade)getPropertyValue(FQN_LANGUAGE)).toProxy())
+                                    .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
+                                    .caseSignificance(((EntityFacade)getPropertyValue(FQN_CASE_SIGNIFICANCE)).toProxy()));
             // add the field definitions
             for (int i = 0; i< fieldsProperty.size(); i++) {
                 PatternField patternField = fieldsProperty.get(i);
                 patternAssembler.fieldDefinition(patternField.meaning().toProxy(), patternField.purpose().toProxy(),
                         patternField.dataType().toProxy(), i);
             }
-            patternAssembler.purpose(((EntityFacade)getPropertyValue(PURPOSE_ENTITY)).toProxy())
-                            .attach((FullyQualifiedName fqn) -> fqn
-                                    .language(((EntityFacade)getPropertyValue(FQN_LANGUAGE)).toProxy())
-                                    .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
-                                    .caseSignificance(((EntityFacade)getPropertyValue(FQN_CASE_SIGNIFICANCE)).toProxy()));
         });
 
         // add the other name description semantics if they exist
         ObservableList<DescrName> otherNamesProperty = getObservableList(OTHER_NAMES);
-        if (!otherNamesProperty.isEmpty()) {
-            otherNamesProperty.forEach(otherName ->
-                    session.compose(new Synonym()
-                                    .language(otherName.getLanguage().toProxy())
-                                    .text(otherName.getNameText())
-                                    .caseSignificance(otherName.getCaseSignificance().toProxy()), pattern)
-                            .attach(new USDialect()
-                                    .acceptability(ACCEPTABLE))
-            );
-        }
+        boolean isEdit = getPropertyValue(MODE).equals("EDIT");
+
+        otherNamesProperty.forEach(otherName -> {
+            Synonym synonym = new Synonym()
+                    .language(otherName.getLanguage().toProxy())
+                    .text(otherName.getNameText())
+                    .caseSignificance(otherName.getCaseSignificance().toProxy());
+            if (isEdit) {
+                HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(OTHER_NAME_SEMANTIC_VERSION_MAP);
+                if(regularNamesMap != null && regularNamesMap.get(otherName) !=null) {
+                    SemanticEntityVersion semanticEntityVersion = regularNamesMap.get(otherName);
+                    SemanticEntity<SemanticEntityVersion> semanticEntity = semanticEntityVersion.chronology();
+                    synonym.semantic(semanticEntity.toProxy());
+                }
+            }
+            session.compose(synonym, pattern)
+                    .attach(new USDialect().acceptability(ACCEPTABLE));
+        });
         boolean isSuccess = composer.commitSession(session);
         setPropertyValue(PATTERN, pattern);
-        updateStamp();
         return isSuccess;
-    }
-
-    public String getPatternTitle() {
-        return ((EntityFacade) getPropertyValue(PATTERN)).description();
     }
 
     public ViewProperties getViewProperties() {
@@ -503,11 +365,11 @@ public class PatternViewModel extends FormViewModel {
         StampViewModel stampViewModel = getPropertyValue(STAMP_VIEW_MODEL);
 
         Stamp stamp = stampCalculator.latest(patternFacade).get().stamp();
-        stampViewModel.setValue(STATUS, stamp.state());
-        stampViewModel.setValue(TIME, stamp.time());
-        stampViewModel.setValue(AUTHOR, stamp.author());
-        stampViewModel.setValue(MODULE, stamp.module());
-        stampViewModel.setValue(PATH, stamp.path());
+        stampViewModel.setPropertyValue(STATUS, stamp.state());
+        stampViewModel.setPropertyValue(TIME, stamp.time());
+        stampViewModel.setPropertyValue(AUTHOR, stamp.author());
+        stampViewModel.setPropertyValue(MODULE, stamp.module());
+        stampViewModel.setPropertyValue(PATH, stamp.path());
     }
 
 

@@ -1,53 +1,52 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
+import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
+import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.INSTANCES;
+import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.PATTERN_FACADE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel.PATTERN_COLLECTION;
-import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.dnd.DragImageMaker;
+import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel;
 import dev.ikm.tinkar.common.service.PrimitiveData;
-import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.common.util.text.NaturalOrder;
-import dev.ikm.tinkar.common.util.time.DateTimeUtil;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.application.Platform;
-import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.Property;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.Node;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseButton;
-import javafx.scene.layout.*;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
+import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
-import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.NumberFormat;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
-import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel.PATTERN_COLLECTION;
 
 public class ConceptPatternNavController {
     private static final Logger LOG = LoggerFactory.getLogger(ConceptPatternNavController.class);
@@ -68,7 +67,7 @@ public class ConceptPatternNavController {
     @FXML
     private BorderPane navContentPane;
 
-    private Pane patternNavigationPane;
+    private ScrollPane patternNavigationPane;
 
     private VBox patternsVBox;
 
@@ -92,10 +91,10 @@ public class ConceptPatternNavController {
 
     @FXML
     public void initialize() {
-        patternNavigationPane = new Pane();
+        patternNavigationPane = new ScrollPane();
         patternsVBox = new VBox();
 
-        patternNavigationPane.getChildren().add(patternsVBox);
+        patternNavigationPane.setContent(patternsVBox);
         patternsVBox.getChildren().clear();
 
         // default to classic concept navigation
@@ -106,53 +105,63 @@ public class ConceptPatternNavController {
             if(evt.getEventType() == PATTERN_CREATION_EVENT){
                 LOG.info("A New Pattern has been added/created. Reloading all the Patterns.");
                 patternsVBox.getChildren().clear();
-                loadAllPatterns();
+                patternNavViewModel.reload();
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(SAVE_PATTERN_TOPIC, PatternCreationEvent.class, patternCreationEventSubscriber);
 
-        loadAllPatterns();
+        ViewProperties viewProperties = patternNavViewModel.getPropertyValue(VIEW_PROPERTIES);
+        // callback when all patterns are loaded. For each build up children instances.
+        patternNavViewModel.setOnReload(stream -> {
+            stream.forEach(patternItem -> {
+                int patternNid = patternItem.nid();
+                // load the pattern instances into an observable list
+                ObservableList<Object> patternChildren = FXCollections.observableArrayList();
+                AtomicInteger childCount = new AtomicInteger();
+                // populate the collection of instance for each pattern
+                PrimitiveData.get().forEachSemanticNidOfPattern(patternNid, semanticNid -> {
+                    if (childCount.incrementAndGet() < maxChildrenInPatternViewer) {
+                        patternChildren.add(semanticNid);
+                    }
+                });
 
-        // ScrollPane content should be at a minimum as high (height wise) as the ScrollPane viewport (ScrollPane's visible area) height
-        scrollPaneContent.minHeightProperty().bind(new DoubleBinding() {
-            {
-                super.bind(scrollPane.viewportBoundsProperty());
-            }
+                if (childCount.get() >= maxChildrenInPatternViewer) {
+                    NumberFormat numberFormat = NumberFormat.getInstance();
+                    patternChildren.add(numberFormat.format(childCount.get() - maxChildrenInPatternViewer) + " additional semantics suppressed...");
+                }
+                boolean hasChildren = childCount.get() > 0;
 
-            @Override
-            protected double computeValue() {
-                return scrollPane.getViewportBounds().getHeight();
-            }
+                Platform.runLater(() -> {
+                    // load the pattern entry FXML and controller
+                    Config patternInstanceConfig = new Config()
+                            .fxml(PatternNavEntryController.class.getResource(PATTERN_NAV_ENTRY_FXML))
+                            .updateViewModel("instancesViewModel", viewModel ->
+                                    viewModel.addProperty(VIEW_PROPERTIES, viewProperties)
+                                            .addProperty(CURRENT_JOURNAL_WINDOW_TOPIC, (Property) patternNavViewModel.getProperty(CURRENT_JOURNAL_WINDOW_TOPIC))
+                                            .addProperty(PATTERN_FACADE, patternItem)
+                                            .addProperty(INSTANCES, patternChildren, true)
+                            );
+
+                    JFXNode<Pane, PatternNavEntryController> patternNavEntryJFXNode = FXMLMvvmLoader.make(patternInstanceConfig);
+                    HBox patternHBox = (HBox) patternNavEntryJFXNode.node();
+
+                    patternsVBox.setSpacing(4); // space between pattern entries
+                    patternHBox.setAlignment(Pos.CENTER);
+                    Region leftPadding = new Region();
+                    leftPadding.setPrefWidth(12); // pad each entry with an empty region
+                    leftPadding.setPrefHeight(1);
+
+                    setUpDraggable(patternHBox, patternItem, PATTERN);
+
+                    patternsVBox.getChildren().addAll(new HBox(leftPadding, patternHBox));
+                });
+            });
         });
+
+
+        // initial loading of the patterns.
+        patternNavViewModel.reload();
     }
-
-    static final EntityProxy identifierPatternProxy = EntityProxy.make("Identifier pattern",
-            new UUID[] {UUID.fromString("65dd3f06-71ff-5650-8fb3-ce4019e50642")});
-
-    static final EntityProxy inferredDefinitionPatternProxy = EntityProxy.make("Inferred definition pattern",
-            new UUID[] {UUID.fromString("9f011812-15c9-5b1b-85f8-bb262bc1b2a2")});
-
-    static final EntityProxy inferredNavigationPatternProxy = EntityProxy.make("Inferred navigation pattern",
-            new UUID[] {UUID.fromString("a53cc42d-c07e-5934-96b3-2ede3264474e")});
-
-    static final EntityProxy pathMembershipProxy = EntityProxy.make("Path membership",
-            new UUID[] {UUID.fromString("add1db57-72fe-53c8-a528-1614bda20ec6")});
-
-    static final EntityProxy statedDefinitionPatternProxy = EntityProxy.make("Stated definition pattern",
-            new UUID[] {UUID.fromString("e813eb92-7d07-5035-8d43-e81249f5b36e")});
-
-    static final EntityProxy statedNavigationPatternProxy = EntityProxy.make("Stated navigation pattern",
-            new UUID[] {UUID.fromString("d02957d6-132d-5b3c-adba-505f5778d998")});
-
-    static final EntityProxy ukDialectPatternProxy = EntityProxy.make("UK Dialect Pattern",
-            new UUID[] {UUID.fromString("561f817a-130e-5e56-984d-910e9991558c")});
-
-    static final EntityProxy usDialectPatternProxy = EntityProxy.make("US Dialect Pattern",
-            new UUID[] {UUID.fromString("08f9112c-c041-56d3-b89b-63258f070074")});
-
-    static final EntityProxy versionControlPathOriginPatternProxy = EntityProxy.make("Version control path origin pattern",
-            new UUID[] {UUID.fromString("70f89dd5-2cdb-59bb-bbaa-98527513547c")});
-
 
     @FXML
     private void showConcepts() {
@@ -164,166 +173,39 @@ public class ConceptPatternNavController {
         navContentPane.setCenter(patternNavigationPane);
     }
 
-    public void loadAllPatterns() {
-        ViewProperties viewProperties = patternNavViewModel.getPropertyValue(VIEW_PROPERTIES);
 
-        TinkExecutor.threadPool().execute(() -> {
-            ObservableList<EntityFacade> patternItems = FXCollections.observableArrayList();
-            PrimitiveData.get().forEachPatternNid(patternNid -> {
-                Latest<PatternEntityVersion> latestPattern = viewProperties.calculator().latest(patternNid);
-                latestPattern.ifPresent(patternEntityVersion -> {
-                    if (EntityService.get().getEntity(patternNid).isPresent()) {
-                        patternItems.add(EntityService.get().getEntity(patternNid).get());
-                    }
-                });
-            });
-            patternItems.sort((o1, o2) -> {
-                if ((Integer) o1.nid() instanceof Integer nid1 && (Integer) o2.nid() instanceof Integer nid2) {
-                    return NaturalOrder.compareStrings(viewProperties.calculator().getDescriptionTextOrNid(nid1),
-                            viewProperties.calculator().getDescriptionTextOrNid(nid2));
-                } else {
-                    return NaturalOrder.compareStrings(o1.toString(), o2.toString());
-                }
-            });
-            Platform.runLater(() -> {
-                patternItems.stream().forEach(patternItem -> { // each pattern row
-                    // load the pattern instances into an observable list
-                    ObservableList<Object> patternChildren = FXCollections.observableArrayList();
-                    int patternNid = patternItem.nid();
-                    AtomicInteger childCount = new AtomicInteger();
+    private void setUpDraggable(Node node, EntityFacade entity, DragAndDropType dropType) {
+        Objects.requireNonNull(node, "The node must not be null.");
+        Objects.requireNonNull(entity, "The entity must not be null.");
 
-                    // populate the collection of instance for each pattern
-                    PrimitiveData.get().forEachSemanticNidOfPattern(patternNid, semanticNid -> {
-                        if (childCount.incrementAndGet() < maxChildrenInPatternViewer) {
-                            patternChildren.add(semanticNid);
-                        }
-                    });
-                    if (childCount.get() >= maxChildrenInPatternViewer) {
-                        NumberFormat numberFormat = NumberFormat.getInstance();
-                        patternChildren.add(numberFormat.format(childCount.get() - maxChildrenInPatternViewer) + " additional semantics suppressed...");
-                    }
-                    boolean hasChildren = patternChildren.size() > 0;
+        // Associate the node with the entity's public ID and type for later retrieval or identification
+        node.setUserData(new DragAndDropInfo(dropType, entity.publicId()));
 
-                    // load the pattern entry FXML and controller
-                    JFXNode<Pane, PatternNavEntryController> patternNavEntryJFXNode = FXMLMvvmLoader
-                            .make(PatternNavEntryController.class.getResource(PATTERN_NAV_ENTRY_FXML));
-                    HBox patternHBox = (HBox) patternNavEntryJFXNode.node();
-                    PatternNavEntryController patternNavEntryController = patternNavEntryJFXNode.controller();
+        // Set up the drag detection event handler
+        node.setOnDragDetected(mouseEvent -> {
+            // Initiate a drag-and-drop gesture with copy or move transfer mode
+            Dragboard dragboard = node.startDragAndDrop(TransferMode.COPY_OR_MOVE);
 
-                    patternsVBox.setSpacing(4); // space between pattern entries
-                    patternHBox.setAlignment(Pos.CENTER);
-                    Region leftPadding = new Region();
-                    leftPadding.setPrefWidth(12); // pad each entry with an empty region
-                    leftPadding.setPrefHeight(1);
-                    if (!hasChildren) {
-                        patternNavEntryController.disableInstancesListView();
-                    }
+            // Create the content to be placed on the dragboard
+            // Here, KometClipboard is used to encapsulate the entity's unique identifier (nid)
+            KometClipboard content = new KometClipboard(EntityFacade.make(entity.nid()));
 
-                    // add listener for double click to summon the pattern into the journal view
-                    patternHBox.setOnMouseClicked(mouseEvent -> {
-                        // double left click creates the concept window
-                        if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
-                            if (mouseEvent.getClickCount() == 2) {
-                                EvtBusFactory.getDefaultEvtBus().publish(patternNavViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
-                                        new MakePatternWindowEvent(this,
-                                        MakePatternWindowEvent.OPEN_PATTERN, patternItem, viewProperties));
-                            }
-                        }
-                    });
+            // Generate the drag image using DragImageMaker
+            DragImageMaker dragImageMaker = new DragImageMaker(node);
+            Image dragImage = dragImageMaker.getDragImage();
+            // Set the drag image on the dragboard
+            if (dragImage != null) {
+                dragboard.setDragView(dragImage);
+            }
 
-                    patternsVBox.getChildren().addAll(new HBox(leftPadding, patternHBox));
-                    // set the pattern's name
-                    patternNavEntryController.setPatternName(patternItem.description());
+            // Place the content on the dragboard
+            dragboard.setContent(content);
 
-                    // populate the pattern instances as a list view
-                    ListView<Object> patternInstances = patternNavEntryController.getPatternInstancesListView();
+            // Log the drag event details for debugging or auditing
+            LOG.info("Drag detected on node: " + mouseEvent.toString());
 
-                    // set the cell factory for each pattern's instances list
-                    patternInstances.setCellFactory(p -> new ListCell<>() {
-                        private final Label label;
-
-                        {
-                            setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-                            label = new Label();
-                        }
-
-                        @Override
-                        protected void updateItem(Object item, boolean empty) {
-                            super.updateItem(item, empty);
-                            setGraphic(null);
-                            if (item != null && !empty) {
-                                if (item instanceof String stringItem) {
-                                    setContentDisplay(ContentDisplay.TEXT_ONLY);
-                                    setText(stringItem);
-                                } else if (item instanceof Integer nid) {
-                                    String entityDescriptionText = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(nid);
-                                    Entity entity = Entity.getFast(nid);
-                                    if (entity instanceof SemanticEntity<?> semanticEntity) {
-                                        if (semanticEntity.patternNid() == identifierPatternProxy.nid()) {
-                                            //TODO Move better string descriptions to language calculator
-                                            Latest<? extends SemanticEntityVersion> latestId = viewProperties.calculator().latest(semanticEntity);
-                                            ImmutableList fields = latestId.get().fieldValues();
-                                            entityDescriptionText = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
-                                                    ": " + fields.get(1);
-                                        } else if (semanticEntity.patternNid() == inferredDefinitionPatternProxy.nid()) {
-                                            entityDescriptionText =
-                                                    "Inferred definition for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                                        } else if (semanticEntity.patternNid() == inferredNavigationPatternProxy.nid()) {
-                                            entityDescriptionText =
-                                                    "Inferred is-a relationships for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                                        } else if (semanticEntity.patternNid() == pathMembershipProxy.nid()) {
-                                            entityDescriptionText =
-                                                    viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                                        } else if (semanticEntity.patternNid() == statedDefinitionPatternProxy.nid()) {
-                                            entityDescriptionText =
-                                                    "Stated definition for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                                        } else if (semanticEntity.patternNid() == statedNavigationPatternProxy.nid()) {
-                                            entityDescriptionText =
-                                                    "Stated is-a relationships for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                                        } else if (semanticEntity.patternNid() == ukDialectPatternProxy.nid()) {
-                                            Latest<? extends SemanticEntityVersion> latestAcceptability = viewProperties.calculator().latest(semanticEntity);
-                                            ImmutableList fields = latestAcceptability.get().fieldValues();
-                                            entityDescriptionText =
-                                                    "UK dialect " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
-                                                            ": " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                                        } else if (semanticEntity.patternNid() == usDialectPatternProxy.nid()) {
-                                            Latest<? extends SemanticEntityVersion> latestAcceptability = viewProperties.calculator().latest(semanticEntity);
-                                            ImmutableList fields = latestAcceptability.get().fieldValues();
-                                            entityDescriptionText =
-                                                    "US dialect " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
-                                                            ": " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
-                                        } else if (semanticEntity.patternNid() == versionControlPathOriginPatternProxy.nid()) {
-                                            Latest<? extends SemanticEntityVersion> latestPathOrigins = viewProperties.calculator().latest(semanticEntity);
-                                            ImmutableList fields = latestPathOrigins.get().fieldValues();
-                                            entityDescriptionText =
-                                                    viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()) +
-                                                            " origin: " + DateTimeUtil.format((Instant) fields.get(1)) +
-                                                            " on " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0));
-                                        }
-                                    }
-
-                                    setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-                                    label.setText(entityDescriptionText);
-                                    if (!entityDescriptionText.isEmpty()) {
-                                        Image identicon = Identicon.generateIdenticonImage(entity.publicId());
-                                        ImageView imageView = new ImageView(identicon);
-                                        imageView.setFitWidth(24);
-                                        imageView.setFitHeight(24);
-                                        label.setGraphic(imageView);
-                                    }
-                                    label.getStyleClass().add("pattern-instance");
-                                    setGraphic(label);
-                                }
-                            }
-                        }
-                    });
-                    if (hasChildren) {
-                        Platform.runLater(() -> patternInstances.setItems(patternChildren));
-                    }
-
-                });
-
-            });
+            // Consume the mouse event to prevent further processing
+            mouseEvent.consume();
         });
     }
 

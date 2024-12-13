@@ -28,6 +28,7 @@ import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
+import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -85,7 +86,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 public class DetailsController  {
     private static final Logger LOG = LoggerFactory.getLogger(DetailsController.class);
-    private static final String EDIT_STAMP_OPTIONS_FXML = "edit-stamp.fxml";
+    private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
     @FXML
     private Button closeConceptButton;
 
@@ -206,10 +207,10 @@ public class DetailsController  {
      * Used slide out the properties view
      */
     @FXML
-    private Pane propertiesSlideoutTrayPane;
+    private VerticallyFilledPane propertiesSlideoutTrayPane;
 
     @FXML
-    private Pane timelineSlideoutTrayPane;
+    private VerticallyFilledPane timelineSlideoutTrayPane;
 
     @FXML
     private ContextMenu reasonerContextMenu;
@@ -438,7 +439,38 @@ public class DetailsController  {
     private void setUpDescriptionContextMenu(Button addDescriptionButton) {
         ContextMenu contextMenu = buildMenuOptionContextMenu();
         addDescriptionButton.setContextMenu(contextMenu);
-        addDescriptionButton.setOnAction(actionEvent -> fireContextMenuEvent(actionEvent, Side.RIGHT, 2, 0));
+        addDescriptionButton.setOnAction(this::onAddDescriptionButtonPressed);
+    }
+
+    private void onAddDescriptionButtonPressed(ActionEvent actionEvent) {
+        if (this.conceptViewModel.getPropertyValue(MODE).equals(CREATE) &&
+                (getConceptViewModel().getPropertyValue(FULLY_QUALIFIED_NAME) == null)) {
+            // Show the context menu with 'Add Fully Qualified' option when it is a new concept in create mode and
+            // there is no fully qualified name.
+            fireContextMenuEvent(actionEvent, Side.RIGHT, 2, 0);
+        } else {
+            // Just show the UI to add another name otherwise (don't show context menu in this case).
+            showAddAnotherNameUI();
+        }
+    }
+
+    private void showAddAnotherNameUI() {
+        ConceptEntity currentConcept = null;
+        if (getConceptViewModel().getPropertyValue(CURRENT_ENTITY) instanceof EntityProxy.Concept concept) {
+            currentConcept = (ConceptEntity) EntityService.get().getEntity(concept.nid()).get();
+        } else {
+            currentConcept = getConceptViewModel().getPropertyValue(CURRENT_ENTITY);
+        }
+        if (currentConcept != null) {
+            // in edit mode, will have a concept and public id
+            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(addDescriptionButton,
+                    // pass the publicId of the Concept
+                    AddOtherNameToConceptEvent.ADD_DESCRIPTION, currentConcept.publicId())); // concept's publicId
+        } else {
+            // in create mode, we won't have a concept and public id yet
+            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(addDescriptionButton,
+                    AddOtherNameToConceptEvent.ADD_DESCRIPTION));
+        }
     }
 
     private ContextMenu buildMenuOptionContextMenu() {
@@ -476,55 +508,31 @@ public class DetailsController  {
                             createConceptEditDescrIcon()},
                     {MenuHelper.SEPARATOR},
             };
-        } else { // EDIT mode OR Create Mode after FQN has been added
-            menuItems = new Object[][]{
-                    {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
-                    {MenuHelper.SEPARATOR},
-                    {"Add Other Name", true, null, (EventHandler<ActionEvent>) actionEvent -> {
-                        ConceptEntity currentConcept = null;
-                        if (getConceptViewModel().getPropertyValue(CURRENT_ENTITY) instanceof EntityProxy.Concept concept) {
-                            currentConcept = (ConceptEntity) EntityService.get().getEntity(concept.nid()).get();
-                        } else {
-                            currentConcept = getConceptViewModel().getPropertyValue(CURRENT_ENTITY);
-                        }
-                        if (currentConcept != null) {
-                            // in edit mode, will have a concept and public id
-                            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(contextMenu,
-                                    // pass the publicId of the Concept
-                                    AddOtherNameToConceptEvent.ADD_DESCRIPTION, currentConcept.publicId())); // concept's publicId
-                        } else {
-                            // in create mode, we won't have a concept and public id yet
-                            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(contextMenu,
-                                    AddOtherNameToConceptEvent.ADD_DESCRIPTION));
-                        }
-                    },
-                            createConceptEditDescrIcon()},
-                    {MenuHelper.SEPARATOR},
-            };
-        }
-        for (Object[] menuItemObj : menuItems) {
-            if (MenuHelper.SEPARATOR.equals(menuItemObj[NAME])){
-                contextMenu.getItems().add(new SeparatorMenuItem());
-                continue;
+
+            for (Object[] menuItemObj : menuItems) {
+                if (MenuHelper.SEPARATOR.equals(menuItemObj[NAME])){
+                    contextMenu.getItems().add(new SeparatorMenuItem());
+                    continue;
+                }
+
+                // uses a default action if one is not given.
+                EventHandler<ActionEvent> menuItemAction = switch (menuItemObj[ACTION]) {
+                    case null ->  actionEvent -> LOG.info(menuItemObj[NAME] + " " + fqnTitleText.getText());
+                    case EventHandler  eventHandler -> eventHandler;
+                    default -> null;
+                };
+
+
+                // Create a menu item. Todo: if/when you have sub menus
+                MenuItem menuItem = menuHelper.createMenuOption(
+                        String.valueOf(menuItemObj[NAME]),                           /* name */
+                        Boolean.parseBoolean(String.valueOf(menuItemObj[ENABLED])),  /* enabled */
+                        (String[]) menuItemObj[STYLES],                                                  /* styling */
+                        menuItemAction,                                              /* action when selected */
+                        (Node) menuItemObj[GRAPHIC]                                                         /* optional graphic */
+                );
+                contextMenu.getItems().add(menuItem);
             }
-
-            // uses a default action if one is not given.
-            EventHandler<ActionEvent> menuItemAction = switch (menuItemObj[ACTION]) {
-                case null ->  actionEvent -> LOG.info(menuItemObj[NAME] + " " + fqnTitleText.getText());
-                case EventHandler  eventHandler -> eventHandler;
-                default -> null;
-            };
-
-
-            // Create a menu item. Todo: if/when you have sub menus
-            MenuItem menuItem = menuHelper.createMenuOption(
-                    String.valueOf(menuItemObj[NAME]),                           /* name */
-                    Boolean.parseBoolean(String.valueOf(menuItemObj[ENABLED])),  /* enabled */
-                    (String[]) menuItemObj[STYLES],                                                  /* styling */
-                    menuItemAction,                                              /* action when selected */
-                    (Node) menuItemObj[GRAPHIC]                                                         /* optional graphic */
-            );
-            contextMenu.getItems().add(menuItem);
         }
 
         return contextMenu;
@@ -588,13 +596,8 @@ public class DetailsController  {
         clipChildren(slideoutTrayPane, 0);
         contentViewPane.setLayoutX(-width);
         slideoutTrayPane.setMaxWidth(0);
-
-        Region contentRegion = contentViewPane;
-        // binding the child's height to the preferred height of hte parent
-        // so that when we resize the window the content in the slide out pane
-        // aligns with the details view
-        contentRegion.prefHeightProperty().bind(slideoutTrayPane.heightProperty());
     }
+
     private Consumer<DetailsController> onCloseConceptWindow;
     public void setOnCloseConceptWindow(Consumer<DetailsController> onClose) {
         this.onCloseConceptWindow = onClose;

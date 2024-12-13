@@ -16,6 +16,8 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
+import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
 import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_EDIT_OTHER_NAME;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
@@ -24,6 +26,7 @@ import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.S
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FIELDS;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FQN;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_OTHER_NAME;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_DEFINITION;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FIELDS;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FQN;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_OTHER_NAME;
@@ -34,6 +37,7 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FIELDS_COLLECTION;
@@ -44,11 +48,13 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTIO
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_LANGUAGE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_DATE_STR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAMES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_DATE_STR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.SELECTED_PATTERN_FIELD;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STAMP_VIEW_MODEL;
@@ -62,6 +68,8 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
+import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
@@ -69,13 +77,14 @@ import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
+import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
+import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
@@ -112,7 +121,6 @@ import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
-import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,7 +142,7 @@ public class PatternDetailsController {
 
     public static final URL PATTERN_PROPERTIES_VIEW_FXML_URL = PatternDetailsController.class.getResource("pattern-properties.fxml");
 
-    private static final String EDIT_STAMP_OPTIONS_FXML = "edit-stamp.fxml";
+    private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
 
     private Consumer<ToggleButton> reasonerResultsControllerConsumer;
 
@@ -148,10 +156,10 @@ public class PatternDetailsController {
      * Used slide out the properties view
      */
     @FXML
-    private Pane propertiesSlideoutTrayPane;
+    private VerticallyFilledPane propertiesSlideoutTrayPane;
 
     @FXML
-    private Pane timelineSlideoutTrayPane;
+    private VerticallyFilledPane timelineSlideoutTrayPane;
 
     @FXML
     private Label patternTitleText;
@@ -347,13 +355,13 @@ public class PatternDetailsController {
         }
         // bind stamp
         lastUpdatedText.textProperty().bind(getStampViewModel().getProperty(TIME).map(t -> {
-            if (!t.equals(PREMUNDANE_TIME)) {
+            if (!t.equals(PREMUNDANE_TIME) && patternViewModel.getPropertyValue(MODE).equals(EDIT)) {
                 DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
                 Instant stampInstance = Instant.ofEpochSecond((long) t / 1000);
                 ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
                 return DATE_TIME_FORMATTER.format(stampTime);
             } else {
-                return "Premundane";
+                return patternViewModel.getPropertyValue(MODE).equals("CREATE")? "" : "Premundane";
             }
         }));
 
@@ -678,10 +686,20 @@ public class PatternDetailsController {
         actionEvent.consume();
         LOG.info("Todo show bump out and display Edit Definition panel \n" + actionEvent);
         StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);
-        patternSM.t("addField");
-        ObservableList<PatternField> patternFieldList = patternViewModel.getObservableList(FIELDS_COLLECTION);
+        EvtType<ShowPatternFormInBumpOutEvent> patternDefEventType = SHOW_ADD_DEFINITION;
+        patternSM.t("addDefinition"); // Default is to add definition state.
+        PatternDefinition patternDefinition = new PatternDefinition(
+                patternViewModel.getPropertyValue(PURPOSE_ENTITY),
+                patternViewModel.getPropertyValue(MEANING_ENTITY),
+                null);
+        if(patternDefinition.meaning() != null || patternDefinition.purpose() !=null || patternDefinition.membershipTag() !=null){
+            patternSM.t("editDefinition");
+            patternDefEventType = SHOW_EDIT_DEFINITION;
+        }
+
+
         // publish property open.
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_ADD_DEFINITION, patternFieldList.size()+1));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), patternDefEventType , patternDefinition));
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 
@@ -769,7 +787,6 @@ public class PatternDetailsController {
             // set Stamp info into Details form
             getStampViewModel().save();
             patternViewModel.save();
-            updateUIStamp(getStampViewModel());
         });
 
         popOver.show((Node) event.getSource());
@@ -777,33 +794,6 @@ public class PatternDetailsController {
         // store and use later.
         stampEdit = popOver;
         this.stampEditController = stampEditController;
-    }
-
-    private void updateUIStamp(ViewModel stampViewModel) {
-        if (patternViewModel.isPatternPopulated()) {
-            updateTimeText(stampViewModel.getValue(TIME));
-        }
-        ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
-        if (moduleEntity == null) {
-            LOG.warn("Must select a valid module for Stamp.");
-            return;
-        }
-        String moduleDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleEntity.nid());
-        moduleText.setText(moduleDescr);
-        ConceptEntity pathEntity = stampViewModel.getValue(PATH);
-        String pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
-        pathText.setText(pathDescr);
-        State status = stampViewModel.getValue(STATUS);
-        String statusMsg = status == null ? "Active" : getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
-        statusText.setText(statusMsg);
-    }
-
-    private void updateTimeText(Long time) {
-        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
-        Instant stampInstance = Instant.ofEpochSecond(time/1000);
-        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-        String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
-        lastUpdatedText.setText(lastUpdated);
     }
 
     public ValidationViewModel getStampViewModel() {
@@ -844,14 +834,7 @@ public class PatternDetailsController {
         clipChildren(slideoutTrayPane, 0);
         contentViewPane.setLayoutX(-width);
         slideoutTrayPane.setMaxWidth(0);
-
-        Region contentRegion = contentViewPane;
-        // binding the child's height to the preferred height of hte parent
-        // so that when we resize the window the content in the slide out pane
-        // aligns with the details view
-        contentRegion.prefHeightProperty().bind(slideoutTrayPane.heightProperty());
     }
-
 
     public void putTitlePanesArrowOnRight() {
         putArrowOnRight(this.patternDefinitionTitledPane);
@@ -859,13 +842,21 @@ public class PatternDetailsController {
         putArrowOnRight(this.fieldsTitledPane);
     }
 
-
-
-
     @FXML
     private void savePattern(ActionEvent actionEvent) {
         boolean isValidSave = patternViewModel.createPattern();
         LOG.info(isValidSave ? "success" : "failed");
+        if(isValidSave){
+            patternViewModel.setPropertyValue(MODE, EDIT);
+            patternViewModel.updateStamp();
+            EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternCreationEvent(actionEvent.getSource(), PATTERN_CREATION_EVENT));
+
+            EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
+                    new MakePatternWindowEvent(this,
+                            MakePatternWindowEvent.OPEN_PATTERN, patternViewModel.getPropertyValue(PATTERN), patternViewModel.getViewProperties()));
+
+            patternViewModel.setPropertyValue(IS_INVALID, true);
+        }
     }
 
 }

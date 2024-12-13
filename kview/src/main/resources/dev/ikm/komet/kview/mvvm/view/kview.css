@@ -39,6 +39,7 @@
     -Grey-1: #FBFBFC;
     -Grey-White: #FFF;
     -Natural-Grey-Main: #5E5E5E;
+    -Natural-Grey-Dark: #4A4A4A;
 
     -Accent-color-yellow: #F3BE00;
     -Accent-color-orange: #FDAD15;
@@ -424,7 +425,7 @@
     -fx-border-color: -Grey-7;
     -fx-border-width: 1px 0 0 0;
 
-    -fx-padding: 3px 0 0 0;
+    -fx-padding: 0;
 }
 
 .toggle-button.left-pill, .toggle-button.center-pill, .toggle-button.right-pill {
@@ -567,7 +568,7 @@
     -default-button-height: 56px;
     -default-button-width: -1;
 
-    -fx-alignment: top-center;
+    -fx-alignment: center-left;
     -fx-background-insets: 0;
     /*-fx-background-color: #F3F5F8FF;*/
     -fx-background-color: -Grey-11;
@@ -590,7 +591,7 @@
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-background-radius: 0px, 0px, 0px, 0px;
-    -fx-padding: 16 12;
+    -fx-padding: 16 19 16 12;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
@@ -611,15 +612,43 @@
     -fx-content-display: left;
     -fx-graphic-text-gap: 8;
     -fx-min-width: -default-button-width;
-    -fx-pref-width: 144;
-    -fx-max-width: 144;
+    width: 152;
+    -fx-pref-width: width;
+    -fx-max-width: width;
 }
 
-/* all sidebar button regions are transparent */
+.side-bar .toggle-button .icon-container {
+    -fx-alignment: center-left;
+    -fx-spacing: 7px;
+}
+
+.side-bar .toggle-button .icon-container .icon-image-container {
+    -fx-min-width: 26px;
+    -fx-pref-width: 26px;
+}
+
+.side-bar .toggle-button .icon-container .label {
+    -fx-text-fill: white;
+}
+
+.side-bar .toggle-button:selected .icon-container .label {
+    -fx-text-fill: #111;
+}
+
 .side-bar .button .icon,
-.side-bar .toggle-button .icon
-{
+.side-bar .toggle-button .icon {
     -fx-background-color: -icon-paint;
+}
+
+.side-bar .toggle-button .icon,
+.side-bar .toggle-button .container-icon {
+    width: 20;
+    -fx-min-width: width;
+    -fx-pref-width: width;
+    -fx-max-width: width;
+
+    -fx-alignment: center;
+    -fx-position-shape: true;
 }
 
 
@@ -633,13 +662,23 @@ selected(active) - dark black
 /* Hover over tab button */
 .side-bar.show-text .toggle-button:selected,
 .side-bar.show-text .button:selected,
+.side-bar .toggle-button:selected,
+.side-bar .button:selected {
+    -fx-background-color: -Primary-05;
+}
+
+.side-bar.show-text .toggle-button:selected:hover,
+.side-bar.show-text .button:selected:hover,
+.side-bar .toggle-button:selected:hover,
+.side-bar .button:selected:hover{
+    -fx-background-color: derive(-Primary-05, 20%);
+}
+
 .side-bar.show-text .toggle-button:hover,
 .side-bar.show-text .button:hover,
-.side-bar .toggle-button:selected,
-.side-bar .button:selected,
 .side-bar .toggle-button:hover,
 .side-bar .button:hover {
-    -fx-background-color: -Primary-05;
+    -fx-background-color: rgba(100, 100, 100, 0.25);
 }
 
 /* Default */
@@ -671,12 +710,15 @@ selected(active) - dark black
 /* An Home svg (region) */
 .home {
     -width-size: 20;
-    -height-size: 17;
+    -height-size: 18;
     -fx-min-height: -height-size;
     -fx-min-width: -width-size;
     -fx-max-height: -height-size;
     -fx-max-width: -width-size;
     -fx-shape: "M10 3.19L15 7.69V15.5H13V9.5H7V15.5H5V7.69L10 3.19ZM10 0.5L0 9.5H3V17.5H9V11.5H11V17.5H17V9.5H20L10 0.5Z";
+
+    /* This icon shape is not correcly positioned so we need to correct that below */
+    -fx-translate-y: -1;
 }
 
 /* An Search svg (region) */
@@ -1381,26 +1423,31 @@ Timeline (time travel) components
 */
 .timeline-header-bar {
     -icon-paint: -Grey-10;
-    -default-width: 300px;
-    -default-height: 100px;
+
     -fx-spacing: 4;
     -fx-alignment: center-left;
     -fx-background-insets: 0;
     -fx-background-color: #e0e8f1ff;
-    /*-fx-background-color: red;*/
-    -fx-border-insets: 0 0 -1 0;
-    -fx-border-style: solid;
-    -fx-border-width: 1;
-    -fx-border-color: transparent transparent transparent transparent;
+    -fx-background-radius: 4px 4px 0 0;
 
+    height: 45px;
 
-    /*-fx-min-height: -default-height;*/
-    /*-fx-pref-height: -default-height;*/
-    /*-fx-max-height: -default-height;*/
+    -fx-min-height: height;
+    -fx-pref-height: height;
+    -fx-max-height: height;
 
     -fx-min-width: 200;
     -fx-pref-width: -1;
     -fx-max-width: 5000;
+}
+
+.timeline-scrollpane {
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+.timeline-outer-container {
+    -fx-padding: 0 4px 4px 0;
 }
 
 .timeline-header-bar .timeline-text.label {
@@ -1512,8 +1559,14 @@ Timeline (time travel) components
 
 .timeline-content,
 .timeline-scrollpane > .viewport {
-    -fx-background-radius: 0 0 10 10;
+    -fx-background-radius: 0 0 4px 4px;
 }
+
+.timeline-content.outer-container {
+    -fx-border-color: -Grey-7;
+    -fx-border-width: 1px 0 0 0;
+}
+
 .timeline-row-container {
     -fx-spacing: 20;
 }
@@ -2416,6 +2469,41 @@ Timeline Year line segment (will overlay change circles)
     -fx-shape: "M15.8337 5.34199L14.6587 4.16699L10.0003 8.82533L5.34199 4.16699L4.16699 5.34199L8.82533 10.0003L4.16699 14.6587L5.34199 15.8337L10.0003 11.1753L14.6587 15.8337L15.8337 14.6587L11.1753 10.0003L15.8337 5.34199Z";
 }
 
+.white-container-border6 {
+    -fx-background-color: -Grey-White;
+    -fx-background-radius: 8;
+    -fx-border-radius: 6;
+    -fx-border-insets: 12;
+    -fx-border-color: -Grey-6;
+    -fx-background-insets: 12;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 8, 0, 0, 4);
+}
+
+.drop-dataset-container {
+    -fx-background-color: white, -Grey-2;
+    -fx-background-radius: 6;
+    -fx-background-insets: 0, 4;
+    -fx-border-width: 4;
+    -fx-border-radius: 6;
+    -fx-border-style: segments(6, 12) phase -12 line-join round line-cap round;
+    -fx-border-color: -Secondary-05;
+    -fx-text-fill: -Grey-8;
+}
+
+.drop-dataset-container:files-drag-over {
+    -fx-background-color: white, -Grey-4;
+}
+
+.drop-dataset-container .progress-indicator {
+    -fx-min-width: 64;
+    -fx-min-height: 64;
+    -fx-progress-color: -Secondary-05;
+}
+
+.tag-container {
+    -fx-background-color: -Grey-1;
+}
+
 .grey9-14pt-normal {
     -fx-text-fill: -Grey-9;
     -fx-font-family: "Noto Sans";
@@ -2599,13 +2687,59 @@ Timeline Year line segment (will overlay change circles)
     -fx-shape: "M20 13H13V20H11V13H4V11H11V4H13V11H20V13Z";
 }
 
+.komet-text-field {
+    -fx-background-color: -Grey-1;
+    -fx-background-insets: 0;
+
+    -fx-border-width: 0;
+
+    -fx-color: -Grey-8;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+
+    -fx-prompt-text-fill: #111;
+}
+
 .blue-arrow-combo-box {
     -fx-background-color: -Grey-1;
     -fx-color: -Grey-8;
+
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
     -fx-font-weight: 500;
+}
+
+.blue-arrow-combo-box .list-cell {
+    -fx-text-fill: #111;
+}
+
+.blue-arrow-combo-box .text-input {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+
+    -fx-prompt-text-fill: #111;
+}
+
+.blue-arrow-combo-box:editable > .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.blue-arrow-combo-box:editable > .arrow-button:hover {
+    -fx-background-color: #f0f0f0;
+    -fx-background-radius: 4px;
+    -fx-background-insets: 0;
+}
+
+.komet-text-area {
+    -fx-background-color: -Grey-1;
+    -fx-background-insets: 0;
+
+    -fx-border-width: 0;
+
+    -fx-color: -Grey-8;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
 }
 
 .blue-arrow-combo-box.combo-box-base > .arrow-button > .arrow {
@@ -2644,15 +2778,28 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .grey-blue-button:disabled {
-    -fx-border-radius: 4;
     -fx-background-color: -Grey-7;
-    -fx-fill: -Grey-2;
+    -fx-text-fill: -Grey-2;
+    -fx-opacity: 1.0;
 }
 
 .grey-blue-button {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 600;
+    -fx-font-size: 14px;
     -fx-border-radius: 4;
     -fx-background-color: -Secondary-05;
-    -fx-fill: white;
+    -fx-text-fill: -Grey-White;
+}
+
+.white-blue-button {
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-weight: 700;
+    -fx-font-size: 14px;
+    -fx-border-radius: 4;
+    -fx-border-color: -Secondary-05;
+    -fx-background-color: -Grey-White;
+    -fx-text-fill: -Secondary-05;
 }
 
 /*********************************************************************************
@@ -2706,7 +2853,6 @@ Timeline Year line segment (will overlay change circles)
     -fx-text-fill: white;
 }
 
-
 .search-entry-hbox {
     -fx-border-radius: 2px;
     -fx-background-radius: 2px;
@@ -2717,17 +2863,20 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
-    -fx-font-weight: 600;
-    -fx-fill: -Secondary-06;
+    -fx-font-weight: bold;
+    -fx-line-height: 16px;
+    -fx-letter-spacing: 0.2px;
+    -fx-fill: -Natural-Grey-Dark;
+
 }
 
 .search-entry-expanded {
-    -fx-border-radius: 4px;
+    -fx-border-radius: 1px;
     -fx-border-color: -Secondary-05;
 }
 
 .search-entry-title-pane {
-    -fx-border-radius: 4px;
+    -fx-border-radius: 1px;
     -fx-border-color: -Secondary-05;
 }
 
@@ -2750,7 +2899,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: white;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 1, 1, 1, 1);
     -fx-pref-width: 302px;
-    -fx-pref-height: 30;    
+    -fx-pref-height: 30;
 }
 
 .search-semantic-entry-text {
@@ -2907,6 +3056,12 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: white, #e5e9f1;
 }
 
+.draggable-node:snapshot {
+    -fx-border-color: -Primary-05;
+    -fx-border-radius: 0;
+    -fx-border-width: 4;
+}
+
 /* Styles title text inside the content of TitlePane. eg: DESCRIPTION , Fully Qualified Name.*/
 .pattern-title {
     -fx-text-alignment: center;
@@ -2946,7 +3101,12 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Secondary-05;
 }
 
-.pattern-instance {
+.add-scrollbar-patterns{
+    -fx-background-color: -Grey-10;
+}
+
+
+.pattern-instance-hbox {
     -fx-border-radius: 2px;
     -fx-fill: -Grey-11;
     -fx-font-family: "Noto Sans";
@@ -2955,11 +3115,43 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-weight: 400;
     -fx-background-color: white;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 1, 1, 1, 1);    
-    -fx-min-width: 280px;
-    -fx-pref-width: 280px;
-    -fx-max-width: 280px;
-    -fx-pref-height: 30;    
+    -fx-min-width: 285px;
+    -fx-pref-width: 285px;
+    -fx-max-width: 285px;
+    -fx-pref-height: 30;
+    -fx-padding: 5;
+    -fx-alignment: center;
 }
+
+.list-cell:selected .pattern-instance-hbox .label {
+    -fx-text-fill: blue;
+    -fx-background-color: white, transparent, transparent;
+    -fx-background-insets: 0, 1, 2;
+}
+
+.pattern-instance-hbox .pattern-instance {
+    -fx-min-width: 260px;
+    -fx-pref-width: 260px;
+    -fx-max-width: 260px;
+
+}
+.pattern-instance-hbox .pattern-instance-hover-icon {
+         visibility: hidden;
+}
+.pattern-instance-hbox:hover .pattern-instance-hover-icon {
+      visibility: visible;
+}
+
+.pattern-instance-hover-icon {
+     -fx-min-width: 16px;
+     -fx-max-width: 16px;
+     -fx-max-height: 16px;
+     -fx-min-height: 16px;
+     -fx-background-color: #9A9DA0;
+     -fx-shape: "M0 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0";
+}
+
+
 
 /********************************************************************************
  * End of Journal > Search Concept UI elements                                  *
@@ -3143,16 +3335,24 @@ Landing page elements.
 
 /* label */
 .counter {
+    size: 16;
+    -fx-pref-width: size;
+    -fx-pref-height: size;
+
+    -fx-background-radius: 2em;
+    -fx-background-insets: 0;
+    -fx-background-color: -Accent-color-red;
+
+    -fx-translate-y: -2px;
+    -fx-translate-x: 4px;
+}
+
+.counter > .label {
     -fx-text-fill: -Grey-White;
-    -fx-label-padding: 2;
-    -fx-padding: 0 4 1 4;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 11px;
     -fx-font-style: normal;
     -fx-font-weight: 700;
-    -fx-background-radius: 12;
-    -fx-background-color: -Accent-color-red;
-
 }
 
 .split-pane.flat-split-divider:horizontal > .split-pane-divider {
@@ -3257,7 +3457,7 @@ Landing page elements.
 .landing-container .combo-box > .list-cell {
     -fx-background: -Grey-1;
     -fx-background-color: -Grey-1;
-    -fx-text-fill: black;
+
     -fx-padding: 0.333333em 0.666667em 0.333333em 0.666667em; /* 4 8 4 8 */
 }
 
@@ -4057,46 +4257,75 @@ Styling a context menu for kview ui/ux controls
 /*    -fx-color: red;*/
 /*}*/
 /* alternative content using a border and a grad to transparent background - why should TitledPane content have a colour? */
+.popup-container .titled-pane > .title {
+    -fx-padding: 0.3333em 0.75em 0.083333em 0em; /* 4 9 1 9 */
+}
+
 .popup-container .titled-pane > *.content {
     -fx-border-color: transparent;
     -fx-border-insets: -1 0 0 0;
     -fx-background-color: transparent;
-    -fx-padding: -5 0 0 0;
+    -fx-padding: 0 0 4px 0;
+}
+
+.popup-container .titled-pane.status-titled-pane > *.content {
+    -fx-padding: 0;
+}
+
+.popup-container .titled-pane > *.content .option-container {
+    -fx-spacing: 5px;
+    -fx-padding: 2px 0 16px 10px;
+}
+
+.popup-container .titled-pane.status-titled-pane > *.content .option-container {
+    -fx-padding: 5px 10px 5px 0;
+}
+
+.popup-container .titled-pane.status-titled-pane > *.content .radio-button.active {
+    -fx-padding: 0 1px 0 0; /* Fix small misalignment of this radio button */
 }
 
 .popup-container .titled-pane > *.content .option-container .radio-button {
     -fx-label-padding: 4;
     -fx-text-fill: -Grey-White;
-    -fx-padding: 0 0 0 12;
+
+    -fx-label-padding: 0.0em 0.0em 0.0em 0.416667em; /* 0 0 0 5 */
 }
 .popup-container .titled-pane > *.content .option-container .radio-button > .radio,
 .popup-container .titled-pane > *.content .option-container .radio-button:focused > .radio {
-    -fx-background-radius: 0; /* large value to make sure this remains circular */
-    -fx-padding: 0; /* 4 -- padding from outside edge to the inner black dot */
-    -fx-background-color: -Grey-White;
-    -fx-scale-shape: false;
-    -fx-shape: "M8.99984 0.666748C4.39984 0.666748 0.666504 4.40008 0.666504 9.00008C0.666504 13.6001 4.39984 17.3334 8.99984 17.3334C13.5998 17.3334 17.3332 13.6001 17.3332 9.00008C17.3332 4.40008 13.5998 0.666748 8.99984 0.666748ZM8.99984 15.6667C5.3165 15.6667 2.33317 12.6834 2.33317 9.00008C2.33317 5.31675 5.3165 2.33341 8.99984 2.33341C12.6832 2.33341 15.6665 5.31675 15.6665 9.00008C15.6665 12.6834 12.6832 15.6667 8.99984 15.6667Z";
+    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+
+    -fx-border-style: solid;
+    -fx-border-radius: 1.0em;
+    -fx-border-color: -Grey-White;
+    -fx-border-insets: 0px;
+    -fx-border-width: 2px;
+
+    -fx-padding: 3px;
 }
 .popup-container .titled-pane > *.content .option-container .radio-button:selected > .radio,
 .popup-container .titled-pane > *.content .option-container .radio-button:selected:focused > .radio {
-    -fx-background-color: -Primary-04;
+    -fx-border-color: -Primary-04;
 }
 
 .popup-container .titled-pane > *.content .option-container .radio-button > .radio > .dot {
     -fx-background-color: transparent;
     -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
     -fx-padding: 0.333333em; /* 4 -- radius of the inner black dot when selected */
-    -fx-shape: "M8.99984 13.1667C11.301 13.1667 13.1665 11.3013 13.1665 9.00008C13.1665 6.69889 11.301 4.83342 8.99984 4.83342C6.69865 4.83342 4.83317 6.69889 4.83317 9.00008C4.83317 11.3013 6.69865 13.1667 8.99984 13.1667Z";
 }
 
 .popup-container .titled-pane > *.content .option-container .radio-button:selected > .radio > .dot {
+    -fx-background-insets: 0;
     -fx-background-color: -Primary-04;
-    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
-    /*-fx-padding: 0.333333em; !* 4 -- radius of the inner black dot when selected *!*/
-    -fx-shape: "M8.99984 13.1667C11.301 13.1667 13.1665 11.3013 13.1665 9.00008C13.1665 6.69889 11.301 4.83342 8.99984 4.83342C6.69865 4.83342 4.83317 6.69889 4.83317 9.00008C4.83317 11.3013 6.69865 13.1667 8.99984 13.1667Z";
 }
 .popup-container .titled-pane > *.content .scroll-pane .viewport {
     -fx-background-color: transparent;
+}
+
+.popup-container .scroll-pane .scroll-bar:vertical {
+    -fx-background-color: rgba(70, 70, 70, 0.1);
 }
 
 /* kview Progress bar popup */
@@ -4357,15 +4586,17 @@ Styling a context menu for kview ui/ux controls
     -fx-border-color: -Grey-7;
     -fx-background-color: -Grey-2;
     -fx-text-fill: -Secondary-05;
-
     -fx-background-insets: 0;
-
-    -fx-font-weight: 600;
+    -fx-font-family: "Noto Sans";
+    -fx-letter-spacing: 0.2px;
+    -fx-text-transform: uppercase;
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: bold;
 }
 
 .nav-toggle-left.toggle-button {
     -fx-border-width: 1 0 1 1;
-
     -fx-border-radius: 6 0 0 6;
     -fx-background-radius: 6 0 0 6;
 }
@@ -4391,7 +4622,7 @@ Styling a context menu for kview ui/ux controls
 .remove-icon {
     -fx-scale-shape: false;
     -fx-background-color: white;
-    -fx-shape: "M12.5 2.5V3.33333H16.6667V5H15.8334V15.8333C15.8334 16.75 15.0834 17.5 14.1667 17.5H5.83337C4.91671 17.5 4.16671 16.75 4.16671 15.8333V5H3.33337V3.33333H7.50004V2.5H12.5ZM5.83337 15.8333H14.1667V5H5.83337V15.8333ZM7.50004 6.66667H9.16671V14.1667H7.50004V6.66667ZM12.5 6.66667H10.8334V14.1667H12.5V6.66667Z";    
+    -fx-shape: "M12.5 2.5V3.33333H16.6667V5H15.8334V15.8333C15.8334 16.75 15.0834 17.5 14.1667 17.5H5.83337C4.91671 17.5 4.16671 16.75 4.16671 15.8333V5H3.33337V3.33333H7.50004V2.5H12.5ZM5.83337 15.8333H14.1667V5H5.83337V15.8333ZM7.50004 6.66667H9.16671V14.1667H7.50004V6.66667ZM12.5 6.66667H10.8334V14.1667H12.5V6.66667Z";
 }
 
 /*******************************************************************************
@@ -4461,7 +4692,214 @@ Styling a context menu for kview ui/ux controls
     -fx-border-width: 1px 0 0 0;
 }
 
+.lidr-window .timeline-content.outer-container {
+    -fx-border-color: -Natural-Grey-Main;
+}
+
+
 .pattern-window.concept-detail-pane .main-right-container .properties-tab-container-content .lidr-device,
 .lidr-window.concept-detail-pane .main-right-container .properties-tab-container-content .lidr-device {
     -fx-background-radius: 0 0 4px 4px;
+}
+
+/************************  Instances Toggle ***********************************/
+
+.instances-main-container {
+    -fx-background-color: -Grey-4;
+    -fx-padding: 15px 0 0 0;
+}
+
+.instances-main-container .main-top-container {
+    -fx-padding: 0 0 15px 0;
+}
+
+.instances-main-container .icon-container {
+    -fx-padding: 0 20px 0 0;
+}
+
+.instances-main-container .help-icon {
+    -fx-background-color: #4A7AD2;
+
+    -fx-max-height: 20px;
+    -fx-max-width: 20px;
+
+    -fx-alignment: top-right;
+
+    -fx-padding: 4px 6px 4px 6px;
+
+    -fx-background-radius: 2em; /* high value so this pane ends up being a circle */
+}
+.instances-main-container .help-icon .question-mark {
+    -fx-shape: "M9.20629 13.0298V12.6733C9.21069 11.9778 9.28771 11.4122 9.43736 10.9765C9.58701 10.5408 9.80708 10.1733 10.0976 9.87395C10.3925 9.57026 10.7578 9.27976 11.1935 9.00248C11.5192 8.79121 11.7921 8.56894 12.0122 8.33566C12.2367 8.09799 12.4061 7.8383 12.5205 7.55661C12.6394 7.27052 12.6988 6.96022 12.6988 6.62572C12.6988 6.15036 12.5866 5.73443 12.3621 5.37792C12.142 5.0214 11.8427 4.74631 11.4642 4.55265C11.0857 4.35459 10.6654 4.25556 10.2032 4.25556C9.76307 4.25556 9.35154 4.35239 8.96861 4.54605C8.59009 4.73531 8.27979 5.017 8.03771 5.39112C7.80004 5.76084 7.6702 6.21859 7.64819 6.76436H6.40039C6.4224 6.03813 6.60286 5.40873 6.94176 4.87616C7.28067 4.34359 7.73402 3.93205 8.3018 3.64156C8.86958 3.34667 9.50338 3.19922 10.2032 3.19922C10.9338 3.19922 11.5764 3.35107 12.131 3.65477C12.6856 3.95406 13.1191 4.36559 13.4316 4.88936C13.7441 5.40873 13.9004 6.00512 13.9004 6.67853C13.9004 7.12307 13.83 7.528 13.6891 7.89332C13.5483 8.25864 13.337 8.59535 13.0553 8.90344C12.778 9.21154 12.4303 9.50204 12.0122 9.77492C11.6161 10.039 11.3014 10.3009 11.0681 10.5606C10.8348 10.8203 10.6676 11.1174 10.5663 11.4519C10.4651 11.782 10.4101 12.1891 10.4013 12.6733V13.0298H9.20629ZM9.84009 17.0042C9.58041 17.0042 9.35594 16.9118 9.16668 16.7269C8.98182 16.5377 8.88939 16.3132 8.88939 16.0535C8.88939 15.7894 8.98182 15.565 9.16668 15.3801C9.35594 15.1953 9.58041 15.1028 9.84009 15.1028C10.0998 15.1028 10.322 15.1953 10.5069 15.3801C10.6962 15.565 10.7908 15.7894 10.7908 16.0535C10.7908 16.2252 10.7468 16.3836 10.6588 16.5289C10.5751 16.6741 10.4607 16.7908 10.3154 16.8788C10.1746 16.9624 10.0161 17.0042 9.84009 17.0042Z";
+    -fx-background-color: white;
+}
+
+.instances-main-container .top-container .text-field {
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+    -fx-background-radius: 5px;
+
+    -fx-border-radius: 5px;
+    -fx-border-color: -Grey-7;
+
+    -fx-font-family: "Noto Sans";
+}
+
+.instances-main-container .top-container .search-icon-container {
+    -fx-padding: 0 8px 0 0;
+
+    -fx-max-height: 20px;
+    -fx-max-width: 20px;
+}
+
+.instances-main-container .top-container .search-icon {
+    -fx-shape: "M7.50065 4.16871C7.27964 4.16871 7.06768 4.25651 6.9114 4.41279C6.75512 4.56907 6.66732 4.78103 6.66732 5.00204C6.66732 5.22306 6.75512 5.43502 6.9114 5.5913C7.06768 5.74758 7.27964 5.83538 7.50065 5.83538C7.72166 5.83538 7.93363 5.74758 8.08991 5.5913C8.24619 5.43502 8.33398 5.22306 8.33398 5.00204C8.33398 4.78103 8.24619 4.56907 8.08991 4.41279C7.93363 4.25651 7.72166 4.16871 7.50065 4.16871ZM5.14232 4.16871C5.31449 3.68076 5.63377 3.25824 6.05615 2.95937C6.47853 2.6605 6.98322 2.5 7.50065 2.5C8.01808 2.5 8.52277 2.6605 8.94515 2.95937C9.36754 3.25824 9.68682 3.68076 9.85898 4.16871H15.834C16.055 4.16871 16.267 4.25651 16.4232 4.41279C16.5795 4.56907 16.6673 4.78103 16.6673 5.00204C16.6673 5.22306 16.5795 5.43502 16.4232 5.5913C16.267 5.74758 16.055 5.83538 15.834 5.83538H9.85898C9.68682 6.32332 9.36754 6.74585 8.94515 7.04472C8.52277 7.34359 8.01808 7.50408 7.50065 7.50408C6.98322 7.50408 6.47853 7.34359 6.05615 7.04472C5.63377 6.74585 5.31449 6.32332 5.14232 5.83538H4.16732C3.9463 5.83538 3.73434 5.74758 3.57806 5.5913C3.42178 5.43502 3.33398 5.22306 3.33398 5.00204C3.33398 4.78103 3.42178 4.56907 3.57806 4.41279C3.73434 4.25651 3.9463 4.16871 4.16732 4.16871H5.14232ZM12.5007 9.16871C12.2796 9.16871 12.0677 9.25651 11.9114 9.41279C11.7551 9.56907 11.6673 9.78103 11.6673 10.002C11.6673 10.2231 11.7551 10.435 11.9114 10.5913C12.0677 10.7476 12.2796 10.8354 12.5007 10.8354C12.7217 10.8354 12.9336 10.7476 13.0899 10.5913C13.2462 10.435 13.334 10.2231 13.334 10.002C13.334 9.78103 13.2462 9.56907 13.0899 9.41279C12.9336 9.25651 12.7217 9.16871 12.5007 9.16871ZM10.1423 9.16871C10.3145 8.68077 10.6338 8.25824 11.0562 7.95937C11.4785 7.6605 11.9832 7.5 12.5007 7.5C13.0181 7.5 13.5228 7.6605 13.9452 7.95937C14.3675 8.25824 14.6868 8.68077 14.859 9.16871H15.834C16.055 9.16871 16.267 9.25651 16.4232 9.41279C16.5795 9.56907 16.6673 9.78103 16.6673 10.002C16.6673 10.2231 16.5795 10.435 16.4232 10.5913C16.267 10.7476 16.055 10.8354 15.834 10.8354H14.859C14.6868 11.3233 14.3675 11.7458 13.9452 12.0447C13.5228 12.3436 13.0181 12.5041 12.5007 12.5041C11.9832 12.5041 11.4785 12.3436 11.0562 12.0447C10.6338 11.7458 10.3145 11.3233 10.1423 10.8354H4.16732C3.9463 10.8354 3.73434 10.7476 3.57806 10.5913C3.42178 10.435 3.33398 10.2231 3.33398 10.002C3.33398 9.78103 3.42178 9.56907 3.57806 9.41279C3.73434 9.25651 3.9463 9.16871 4.16732 9.16871H10.1423ZM7.50065 14.1687C7.27964 14.1687 7.06768 14.2565 6.9114 14.4128C6.75512 14.5691 6.66732 14.781 6.66732 15.002C6.66732 15.2231 6.75512 15.435 6.9114 15.5913C7.06768 15.7476 7.27964 15.8354 7.50065 15.8354C7.72166 15.8354 7.93363 15.7476 8.08991 15.5913C8.24619 15.435 8.33398 15.2231 8.33398 15.002C8.33398 14.781 8.24619 14.5691 8.08991 14.4128C7.93363 14.2565 7.72166 14.1687 7.50065 14.1687ZM5.14232 14.1687C5.31449 13.6808 5.63377 13.2582 6.05615 12.9594C6.47853 12.6605 6.98322 12.5 7.50065 12.5C8.01808 12.5 8.52277 12.6605 8.94515 12.9594C9.36754 13.2582 9.68682 13.6808 9.85898 14.1687H15.834C16.055 14.1687 16.267 14.2565 16.4232 14.4128C16.5795 14.5691 16.6673 14.781 16.6673 15.002C16.6673 15.2231 16.5795 15.435 16.4232 15.5913C16.267 15.7476 16.055 15.8354 15.834 15.8354H9.85898C9.68682 16.3233 9.36754 16.7458 8.94515 17.0447C8.52277 17.3436 8.01808 17.5041 7.50065 17.5041C6.98322 17.5041 6.47853 17.3436 6.05615 17.0447C5.63377 16.7458 5.31449 16.3233 5.14232 15.8354H4.16732C3.9463 15.8354 3.73434 15.7476 3.57806 15.5913C3.42178 15.435 3.33398 15.2231 3.33398 15.002C3.33398 14.781 3.42178 14.5691 3.57806 14.4128C3.73434 14.2565 3.9463 14.1687 4.16732 14.1687H5.14232Z";
+
+    -fx-max-height: 16px;
+    -fx-max-width: 16px;
+
+    -fx-background-color: #4A7AD2;
+}
+
+.instances-main-container .title-container {
+    -fx-spacing: 0.25em;  /* 3 */
+    -fx-alignment: top-center;
+    -fx-padding: 0 0 5px 0;
+}
+
+.instances-main-container .title {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 1.25em; /* 15 */
+    -fx-text-fill: -Grey-11;
+
+    -fx-alignment: center;
+}
+
+.instances-main-container .title-description {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 1.083333em; /* 13 */
+    -fx-text-fill: -Grey-9;
+}
+
+.instances-main-container .top-container {
+    -fx-padding: 5px 35px 0 35px;
+}
+
+.instances-main-container .list-view-container {
+    -fx-padding: 0 35px 17px 35px;
+}
+
+.instances-main-container .list-view-container .list-view,
+.instances-main-container .list-view-container .list-view:focused {
+    -fx-background-color: -Grey-7;
+    -fx-background-radius: 5px;
+    -fx-background-insets: 0;
+
+    -fx-border-width: 0;
+
+    -fx-padding: 10px 8px 10px 8px;
+}
+
+.list-view-container .list-view .instance-cell {
+    -fx-padding: 0 0 8px 0;
+
+    -fx-background-color: transparent;
+}
+
+.list-view-container .list-view .instance-cell .pattern-instance {
+    -fx-padding: 6px 8px 6px 10px;
+    -fx-background-radius: 2px;
+    -fx-background-color: white;
+
+    -fx-effect: dropshadow(gaussian , rgba(0, 0, 0, 0.2), 2, 0, 0 , 2 );
+
+    -fx-pref-height: 30;
+
+    -fx-fill-height: true;
+    -fx-alignment: center_left;
+}
+
+.list-view-container .list-view .pattern-instance .icon {
+    -fx-padding: 0 10px 0 0;
+}
+
+.list-view-container .list-view .pattern-instance .text-container {
+    -fx-spacing: 1px;
+}
+
+.list-view-container .list-view .pattern-instance .title {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #2E3240;
+    -fx-font-size: 1em;
+}
+
+.list-view-container .list-view .pattern-instance .sub-title {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #6E7989;
+    -fx-font-size: 0.916667em;
+}
+
+/********************* General Editing Chapter window *****************************/
+.titled-content-background {
+    -fx-background-color: -Grey-1;
+    -fx-background-radius: 4px 4px 0 0;
+}
+
+.semantic-banner-label {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #212430;
+    -fx-font-weight: 400;
+    -fx-font-size: 17px;
+}
+.semantic-banner-label {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #212430;
+    -fx-font-weight: bolder;
+    -fx-font-size: 12px;
+}
+.semantic-banner-value {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #212430;
+    -fx-font-weight: 400;
+    -fx-font-size: 12px;
+}
+
+/* Semantic Details section - VBox */
+.semantic-field-container {
+    -height: 58;
+    -fx-min-height: -height;
+    -fx-pref-height: -height;
+    -fx-fill-width: true;
+    -fx-padding: 8px 12px;
+    -fx-background-color: -Grey-1;
+}
+.semantic-field-set-container,
+.semantic-field-ditree-container {
+    -fx-fill-width: true;
+    -fx-padding: 8px 12px;
+    -fx-background-color: -Grey-1;
+}
+
+/* label */
+.semantic-field-type-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 600;
+    -fx-font-size: 12px;
+    -fx-text-fill: #5E5E5E;
+}
+
+/* label */
+.semantic-field-value {
+    -fx-background-color: transparent;
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 600;
+    -fx-font-size: 12px;
+    -fx-text-fill: #212430;
+}
+/* mouse hover */
+.semantic-field-value:hover {
+    -fx-background-color: #F4F9FF;
+    -fx-text-fill: #395C9A;
+    -fx-border-width: 1px;
+    -fx-border-color: #CFD8E4;
 }
