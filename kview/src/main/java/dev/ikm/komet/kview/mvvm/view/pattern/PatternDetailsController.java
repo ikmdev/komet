@@ -787,7 +787,7 @@ public class PatternDetailsController {
             // set Stamp info into Details form
             getStampViewModel().save();
             patternViewModel.save();
-           });
+        });
 
         popOver.show((Node) event.getSource());
 
@@ -796,7 +796,7 @@ public class PatternDetailsController {
         this.stampEditController = stampEditController;
     }
 
-      public ValidationViewModel getStampViewModel() {
+    public ValidationViewModel getStampViewModel() {
         return patternViewModel.getPropertyValue(STAMP_VIEW_MODEL);
     }
 

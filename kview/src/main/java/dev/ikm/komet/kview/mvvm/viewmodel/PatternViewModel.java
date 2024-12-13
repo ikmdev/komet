@@ -97,7 +97,9 @@ public class PatternViewModel extends FormViewModel {
 
     public static String OTHER_NAMES = "otherDescriptionNames";
 
-    public static String REGULAR_NAMES = "regularNames";
+    //TODO Need to refactor this to use only this variable instead of OTHER_NAMES.
+    // This is used during editing only for now to map the DescrName class with SEMANTIC_VERSIONS.
+    public static String OTHER_NAME_SEMANTIC_VERSION_MAP = "regularNames";
 
     public static String PURPOSE_ENTITY = "purposeEntity";
 
@@ -134,7 +136,7 @@ public class PatternViewModel extends FormViewModel {
                     .addProperty(FQN_DESCRIPTION_NAME, (DescrName) null)
                     .addProperty(FQN_DATE_ADDED_STR, "")
                     .addProperty(OTHER_NAMES, new ArrayList<DescrName>())
-                    .addProperty(REGULAR_NAMES, new HashMap<DescrName, SemanticEntityVersion>())
+                    .addProperty(OTHER_NAME_SEMANTIC_VERSION_MAP, new HashMap<DescrName, SemanticEntityVersion>())
                     // PATTERN>DEFINITION Purpose and Meaning
                     .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
                     .addProperty(MEANING_ENTITY, (EntityFacade) null) // this is/will be the 'meaning' concept entity
@@ -276,7 +278,7 @@ public class PatternViewModel extends FormViewModel {
                         setPropertyValue(FQN_LANGUAGE, language);
                     } else if(PublicId.equals(descriptionType.publicId(), REGULAR_NAME_DESCRIPTION_TYPE.publicId())) {
                         ObservableList<DescrName> otherNamesList = getObservableList(OTHER_NAMES);
-                        HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(REGULAR_NAMES);
+                        HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(OTHER_NAME_SEMANTIC_VERSION_MAP);
                         // add to list.
                         otherNamesList.add(descrName);
                         regularNamesMap.put(descrName, semanticEntityVersion);
@@ -337,7 +339,7 @@ public class PatternViewModel extends FormViewModel {
                     .text(otherName.getNameText())
                     .caseSignificance(otherName.getCaseSignificance().toProxy());
             if (isEdit) {
-                HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(REGULAR_NAMES);
+                HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(OTHER_NAME_SEMANTIC_VERSION_MAP);
                 if(regularNamesMap != null && regularNamesMap.get(otherName) !=null) {
                     SemanticEntityVersion semanticEntityVersion = regularNamesMap.get(otherName);
                     SemanticEntity<SemanticEntityVersion> semanticEntity = semanticEntityVersion.chronology();
