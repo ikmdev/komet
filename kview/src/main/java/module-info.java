@@ -121,6 +121,7 @@ module dev.ikm.komet.kview {
 
     exports dev.ikm.komet.kview.mvvm.view.navigation;
     opens dev.ikm.komet.kview.mvvm.view.navigation to javafx.fxml, org.carlfx.cognitive;
+
     exports dev.ikm.komet.kview.controls;
     opens dev.ikm.komet.kview.controls;
 
