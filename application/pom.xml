@@ -547,7 +547,9 @@
         <profile>
             <id>its</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>!skipIntegrationTests</name>
+                </property>
             </activation>
             <build>
                 <plugins>
@@ -571,7 +573,7 @@
                                     <classifier>pb</classifier>
                                     <type>zip</type>
                                     <overWrite>false</overWrite>
-                                    <outputDirectory>${user.home}/Solor</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/data/Solor</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                             <overWriteReleases>false</overWriteReleases>
@@ -583,11 +585,25 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>integration-test</id>
+                                <id>testfx-integration-tests</id>
                                 <phase>integration-test</phase>
                                 <goals>
                                     <goal>integration-test</goal>
                                 </goals>
+                                <configuration>
+                                    <includes>
+                                        <include>**/*ITestFX.java</include>
+                                    </includes>
+                                    <argLine>
+                                        -Dtestfx.headless=true
+                                        ${commonTestFXArgs}
+                                    </argLine>
+                                    <forkCount>1</forkCount>
+                                    <reuseForks>false</reuseForks>
+                                    <systemPropertyVariables>
+                                        <target.data.directory>${project.build.directory}/data</target.data.directory>
+                                    </systemPropertyVariables>
+                                </configuration>
                             </execution>
                             <execution>
                                 <id>verify</id>
@@ -597,20 +613,6 @@
                                 </goals>
                             </execution>
                         </executions>
-                        <configuration>
-                            <includes>
-                                <include>**/*IT.java</include>
-                            </includes>
-                            <argLine>
-                                -Dtestfx.headless=true
-                                -Djava.awt.headless=true
-                                ${commonTestFXArgs}
-                            </argLine>
-                            <useModulePath>true</useModulePath>
-                            <forkCount>1</forkCount>
-                            <reuseForks>false</reuseForks>
-                            <skipTests>false</skipTests>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>

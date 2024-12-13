@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.build</groupId>
         <artifactId>java-parent</artifactId>
-        <version>1.53.0</version>
+        <version>1.54.0</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
@@ -92,8 +92,6 @@
         <tinkar-starter-data-reasoned.version>1.0.0</tinkar-starter-data-reasoned.version>
         <testfx.version>4.0.18-jpms</testfx.version>
         <openjfx-monocle.version>21.0.2-jpms</openjfx-monocle.version>
-        <maven-surefire-plugin.version>3.5.0</maven-surefire-plugin.version>
-        <maven-failsafe-plugin.version>3.5.2</maven-failsafe-plugin.version>
 
         <!-- Everything Else -->
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
@@ -615,16 +613,6 @@
                     <groupId>one.jpro</groupId>
                     <artifactId>jpro-maven-plugin</artifactId>
                     <version>${jpro.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${maven-surefire-plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>${maven-failsafe-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

@@ -55,9 +55,9 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(ApplicationExtension.class)
-public class PatternWindowIT {
+public class PatternWindowITestFX {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PatternWindowIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PatternWindowITestFX.class);
 
     // CSS Selectors
     private static final String SELECTOR_DATA_SOURCE_CHOICE_BOX = "#dataSourceChoiceBox";
@@ -76,12 +76,15 @@ public class PatternWindowIT {
     private static final String SELECTOR_DELETE_OPTION = "Delete";
     private static final String SELECTOR_TEXT_INPUT = ".text-input";
 
+    // Property Keys
+    private static final String PROPERTY_TARGET_DATA_DIR = "target.data.directory";
+
     // Directory and File Names
     private static final String TINKAR_STARTER_DATA_PREFIX = "tinkar-starter-data";
     private static final String TINKAR_STARTER_DATA_ZIP_PREFIX = TINKAR_STARTER_DATA_PREFIX + "-reasoned";
     private static final String TINKAR_STARTER_DATA_DIR = TINKAR_STARTER_DATA_PREFIX + "-reasoned";
     private static final String TINKAR_STARTER_DATA_EXTENSION = ".zip";
-    private static final String USER_HOME_DIR = System.getProperty("user.home");
+    private static final String BASE_DATA_DIR = System.getProperty(PROPERTY_TARGET_DATA_DIR);
     private static final String SOLOR_DIR = "Solor";
     private static final String TEST_SCREENSHOTS_DIR = "test-screenshots";
 
@@ -117,12 +120,14 @@ public class PatternWindowIT {
         }
     }
 
+
     /**
-     * Creates the screenshot directory for storing test screenshots.
-     * This method is called before all tests.
+     * Sets up the test class by overriding the user home directory,
+     * creating the screenshot directory, and ensuring the Tinkar starter data exists.
      */
     @BeforeAll
     public void setUpClass() {
+        overrideUserHome();
         createScreenshotDirectory();
         ensureTinkarStarterDataExists();
     }
@@ -426,7 +431,7 @@ public class PatternWindowIT {
      */
     private void createScreenshotDirectory() {
         try {
-            screenshotDirectory = Paths.get(USER_HOME_DIR, SOLOR_DIR, TEST_SCREENSHOTS_DIR);
+            screenshotDirectory = Paths.get(BASE_DATA_DIR, SOLOR_DIR, TEST_SCREENSHOTS_DIR);
             if (notExists(screenshotDirectory)) {
                 createDirectories(screenshotDirectory);
                 LOG.info("Created screenshot directory at {}", screenshotDirectory.toAbsolutePath());
@@ -459,7 +464,7 @@ public class PatternWindowIT {
      * If neither is found, logs an error and fails the test setup.
      */
     private void ensureTinkarStarterDataExists() {
-        final Path solorDirectory = Paths.get(USER_HOME_DIR, SOLOR_DIR);
+        final Path solorDirectory = Paths.get(BASE_DATA_DIR, SOLOR_DIR);
         final Path tinkarDataPath = solorDirectory.resolve(TINKAR_STARTER_DATA_DIR);
 
         try {
@@ -522,5 +527,15 @@ public class PatternWindowIT {
         T node = robot.lookup(selector).queryAs(type);
         assertNotNull(node, String.format("Node with selector '%s' and type '%s' should be present", selector, type.getSimpleName()));
         return node;
+    }
+
+    /**
+     * Overrides the user home directory to point to the test data directory.
+     * This is useful for ensuring that tests use a consistent and isolated data directory.
+     */
+    private static void overrideUserHome() {
+        String absoluteDataDir = Paths.get(BASE_DATA_DIR).toAbsolutePath().toString();
+        System.setProperty("user.home", absoluteDataDir);
+        LOG.info("Overriding user.home to {}", absoluteDataDir);
     }
 }
