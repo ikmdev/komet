@@ -47,9 +47,12 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ObjectProperty;
@@ -67,6 +70,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 
 public class PatternViewModel extends FormViewModel {
@@ -92,6 +96,10 @@ public class PatternViewModel extends FormViewModel {
     public static String FQN_LANGUAGE = "fqnLanguage";
 
     public static String OTHER_NAMES = "otherDescriptionNames";
+
+    //TODO Need to refactor this to use only this variable instead of OTHER_NAMES.
+    // This is used during editing only for now to map the DescrName class with SEMANTIC_VERSIONS.
+    public static String OTHER_NAME_SEMANTIC_VERSION_MAP = "regularNames";
 
     public static String PURPOSE_ENTITY = "purposeEntity";
 
@@ -128,6 +136,7 @@ public class PatternViewModel extends FormViewModel {
                     .addProperty(FQN_DESCRIPTION_NAME, (DescrName) null)
                     .addProperty(FQN_DATE_ADDED_STR, "")
                     .addProperty(OTHER_NAMES, new ArrayList<DescrName>())
+                    .addProperty(OTHER_NAME_SEMANTIC_VERSION_MAP, new HashMap<DescrName, SemanticEntityVersion>())
                     // PATTERN>DEFINITION Purpose and Meaning
                     .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
                     .addProperty(MEANING_ENTITY, (EntityFacade) null) // this is/will be the 'meaning' concept entity
@@ -254,7 +263,6 @@ public class PatternViewModel extends FormViewModel {
 
             viewCalculator.forEachSemanticVersionForComponentOfPattern(entity.nid(), TinkarTerm.DESCRIPTION_PATTERN.nid(),
                 (semanticEntityVersion,  entityVersion1, patternEntityVersion) -> {
-
                     ConceptFacade language = (ConceptFacade) semanticEntityVersion.fieldValues().get(0);
                     String string = (String) semanticEntityVersion.fieldValues().get(1);
                     ConceptFacade caseSignificance = (ConceptFacade) semanticEntityVersion.fieldValues().get(2);
@@ -270,30 +278,28 @@ public class PatternViewModel extends FormViewModel {
                         setPropertyValue(FQN_LANGUAGE, language);
                     } else if(PublicId.equals(descriptionType.publicId(), REGULAR_NAME_DESCRIPTION_TYPE.publicId())) {
                         ObservableList<DescrName> otherNamesList = getObservableList(OTHER_NAMES);
+                        HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(OTHER_NAME_SEMANTIC_VERSION_MAP);
                         // add to list.
                         otherNamesList.add(descrName);
+                        regularNamesMap.put(descrName, semanticEntityVersion);
                     } else if (PublicId.equals(descriptionType.publicId(), DEFINITION_DESCRIPTION_TYPE.publicId())) {
-                        System.out.println(" Add to Definition Name : " + descrName.getNameText());
-
+                        LOG.info(" Add to Definition Name : " + descrName.getNameText());
                     }
-
             });
-
         }
     }
 
     public boolean createPattern() {
         save();
-
         if (hasErrorMsgs()) {
             for (ValidationMessage validationMessage : getValidationMessages()) {
                 LOG.error(validationMessage.toString());
             }
             return false;
         }
+        PublicId patternPublicId =  getPropertyValue(PATTERN) == null ? PublicIds.newRandom():  ((PatternFacade) getPropertyValue(PATTERN)).publicId();
+        Pattern pattern = Pattern.make(null, patternPublicId);
 
-        PublicId patternPublicId = PublicIds.newRandom();
-        Pattern pattern = Pattern.make(patternPublicId);
         Composer composer = new Composer("Save Pattern Definition");
 
         // get the STAMP values from the nested stampViewModel
@@ -307,41 +313,45 @@ public class PatternViewModel extends FormViewModel {
         // set up pattern with the fully qualified name
         ObservableList<PatternField> fieldsProperty = getObservableList(FIELDS_COLLECTION);
         session.compose((PatternAssembler patternAssembler) -> {
-                patternAssembler
-                            .pattern(pattern)
-                            .meaning(((EntityFacade)getPropertyValue(MEANING_ENTITY)).toProxy());
+            patternAssembler
+                        .pattern(pattern)
+                        .meaning(((EntityFacade)getPropertyValue(MEANING_ENTITY)).toProxy())
+                        .purpose(((EntityFacade)getPropertyValue(PURPOSE_ENTITY)).toProxy());
+            patternAssembler.attach((FullyQualifiedName fqn) -> fqn
+                                    .language(((EntityFacade)getPropertyValue(FQN_LANGUAGE)).toProxy())
+                                    .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
+                                    .caseSignificance(((EntityFacade)getPropertyValue(FQN_CASE_SIGNIFICANCE)).toProxy()));
             // add the field definitions
             for (int i = 0; i< fieldsProperty.size(); i++) {
                 PatternField patternField = fieldsProperty.get(i);
                 patternAssembler.fieldDefinition(patternField.meaning().toProxy(), patternField.purpose().toProxy(),
                         patternField.dataType().toProxy(), i);
             }
-            patternAssembler.purpose(((EntityFacade)getPropertyValue(PURPOSE_ENTITY)).toProxy())
-                            .attach((FullyQualifiedName fqn) -> fqn
-                                    .language(((EntityFacade)getPropertyValue(FQN_LANGUAGE)).toProxy())
-                                    .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
-                                    .caseSignificance(((EntityFacade)getPropertyValue(FQN_CASE_SIGNIFICANCE)).toProxy()));
         });
 
         // add the other name description semantics if they exist
         ObservableList<DescrName> otherNamesProperty = getObservableList(OTHER_NAMES);
-        if (!otherNamesProperty.isEmpty()) {
-            otherNamesProperty.forEach(otherName ->
-                    session.compose(new Synonym()
-                                    .language(otherName.getLanguage().toProxy())
-                                    .text(otherName.getNameText())
-                                    .caseSignificance(otherName.getCaseSignificance().toProxy()), pattern)
-                            .attach(new USDialect()
-                                    .acceptability(ACCEPTABLE))
-            );
-        }
+        boolean isEdit = getPropertyValue(MODE).equals("EDIT");
+
+        otherNamesProperty.forEach(otherName -> {
+            Synonym synonym = new Synonym()
+                    .language(otherName.getLanguage().toProxy())
+                    .text(otherName.getNameText())
+                    .caseSignificance(otherName.getCaseSignificance().toProxy());
+            if (isEdit) {
+                HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(OTHER_NAME_SEMANTIC_VERSION_MAP);
+                if(regularNamesMap != null && regularNamesMap.get(otherName) !=null) {
+                    SemanticEntityVersion semanticEntityVersion = regularNamesMap.get(otherName);
+                    SemanticEntity<SemanticEntityVersion> semanticEntity = semanticEntityVersion.chronology();
+                    synonym.semantic(semanticEntity.toProxy());
+                }
+            }
+            session.compose(synonym, pattern)
+                    .attach(new USDialect().acceptability(ACCEPTABLE));
+        });
         boolean isSuccess = composer.commitSession(session);
         setPropertyValue(PATTERN, pattern);
         return isSuccess;
-    }
-
-    public String getPatternTitle() {
-        return ((EntityFacade) getPropertyValue(PATTERN)).description();
     }
 
     public ViewProperties getViewProperties() {
