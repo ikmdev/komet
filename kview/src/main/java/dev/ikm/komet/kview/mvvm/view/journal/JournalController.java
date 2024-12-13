@@ -32,6 +32,10 @@ import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.FIELDS_COLLECTION;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STAMP_VIEW_MODEL;
@@ -85,6 +89,7 @@ import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
+import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
@@ -98,6 +103,7 @@ import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.view.details.ConceptPreference;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
+import dev.ikm.komet.kview.mvvm.view.genediting.GenEditingDetailsController;
 import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
 import dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
@@ -133,6 +139,7 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -384,6 +391,12 @@ public class JournalController {
         };
         journalEventBus.subscribe(journalTopic, MakePatternWindowEvent.class, makePatternWindowEventSubscriber);
 
+        // Listening for when a General authoring Window needs to be summoned.
+        Subscriber<MakeGenEditingWindowEvent> makeGenEditWindowEventSubscriber = evt ->
+            makeGenEditWindow(evt.getComponent(), evt.getViewProperties());
+
+        journalEventBus.subscribe(journalTopic, MakeGenEditingWindowEvent.class, makeGenEditWindowEventSubscriber);
+
         showNavigationalPanelEventSubscriber = evt -> {
             try {
                 getNavigatorNode().getController().showConcept(evt.getConceptFacade().nid());
@@ -529,6 +542,7 @@ public class JournalController {
 
                     ConceptFacade conceptFacade = null;
                     PatternFacade patternFacade = null;
+                    EntityFacade semanticFacade = null;
                     DragAndDropType dragAndDropType = null;
                     if (event.getGestureSource() instanceof SearchResultCell searchResultCell) {
                         dragAndDropType = CONCEPT;
@@ -556,11 +570,15 @@ public class JournalController {
                         } else if (dragAndDropInfo.type().equals(DragAndDropType.PATTERN)) {
                             dragAndDropType = DragAndDropType.PATTERN;
                             patternFacade = PatternFacade.make(PrimitiveData.nid(dragAndDropInfo.publicId()));
+                        } else if (dragAndDropInfo.type().equals(DragAndDropType.SEMANTIC)) {
+                            dragAndDropType = DragAndDropType.SEMANTIC;
+                            semanticFacade = EntityService.get().getEntityFast(PrimitiveData.nid(dragAndDropInfo.publicId()));
                         }
                         LOG.info("wait a sec");
                     }
 
-                    if (conceptFacade == null && patternFacade == null) {
+                    // TODO: This code isn't scalable. JournalController now supports a third window (semantic editing). If you have a new window each if/then/else needs to be changed.
+                    if (conceptFacade == null && patternFacade == null && semanticFacade == null) {
                         return;
                     }
                     PublicId publicId = null;
@@ -577,6 +595,11 @@ public class JournalController {
                     } else if (dragAndDropType.equals(DragAndDropType.PATTERN)) {
                         publicId = patternFacade.publicId();
                         makePatternWindow(patternFacade, windowView.makeOverridableViewProperties());
+                    } else if (dragAndDropType.equals(DragAndDropType.SEMANTIC)) {
+
+                        publicId = semanticFacade.publicId();
+                        // TODO save preferences of window's (position and size) such as the general editing chapter window.
+                        makeGenEditWindow(semanticFacade, windowView.makeOverridableViewProperties());
                     }
                     consumer.accept(publicId);
                     success = true;
@@ -1431,18 +1454,19 @@ public class JournalController {
 
             // Applying the preferences naming convention to the files.
             // e.g., journal-window/JOURNAL_Journal_1/CONCEPT_XXX
-            KometPreferences conceptPreferences =journalSubWindowPreferences.node(
-                    conceptPreference.getDirectoryName());
-            conceptPreferences.put(CONCEPT_PREF_NAME, conceptPreference.getDirectoryName());
-            conceptPreferences.put(NID_TYPE, conceptPreference.getNidType().toString());
-            conceptPreferences.putInt(NID_VALUE, conceptPreference.getNid());
-            conceptPreferences.putDouble(CONCEPT_HEIGHT, conceptPreference.getConceptPane().getPrefHeight());
-            conceptPreferences.putDouble(CONCEPT_WIDTH, conceptPreference.getConceptPane().getPrefWidth());
-            conceptPreferences.putDouble(CONCEPT_XPOS, conceptPreference.getConceptPane().getBoundsInParent().getMinX());
-            conceptPreferences.putDouble(CONCEPT_YPOS, conceptPreference.getConceptPane().getBoundsInParent().getMinY());
             try {
+                KometPreferences conceptPreferences =journalSubWindowPreferences.node(
+                        conceptPreference.getDirectoryName());
+                conceptPreferences.put(CONCEPT_PREF_NAME, conceptPreference.getDirectoryName());
+                conceptPreferences.put(NID_TYPE, conceptPreference.getNidType().toString());
+                conceptPreferences.putInt(NID_VALUE, conceptPreference.getNid());
+                conceptPreferences.putDouble(CONCEPT_HEIGHT, conceptPreference.getConceptPane().getPrefHeight());
+                conceptPreferences.putDouble(CONCEPT_WIDTH, conceptPreference.getConceptPane().getPrefWidth());
+                conceptPreferences.putDouble(CONCEPT_XPOS, conceptPreference.getConceptPane().getBoundsInParent().getMinX());
+                conceptPreferences.putDouble(CONCEPT_YPOS, conceptPreference.getConceptPane().getBoundsInParent().getMinY());
+
                 conceptPreferences.flush();
-            } catch (BackingStoreException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -1622,5 +1646,57 @@ public class JournalController {
             removeLidrSetting(finalConceptFolderName);
         });
         patternJFXNode.controller().putTitlePanesArrowOnRight();
+    }
+
+    private void makeGenEditWindow(EntityFacade component, ViewProperties viewProperties) {
+        System.out.println("Launching General editing window: " + component);
+//        //initialize stampsViewModel with basic data.
+//        StampViewModel stampViewModel = new StampViewModel();
+//        stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
+//                .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
+
+        if(component != null){
+//            Entity entity = EntityService.get().getEntity(component.nid()).get();
+            // populate STAMP values
+//            Latest<EntityVersion> stamp = viewProperties.calculator().stampCalculator().latest(entity);
+//            stampViewModel.setPropertyValue(STATUS, stamp.get().stamp().state())
+//                    .setPropertyValue(TIME, stamp.get().stamp().time())
+//                    .setPropertyValue(AUTHOR, TinkarTerm.USER)
+//                    .setPropertyValue(MODULE, stamp.get().stamp().module())
+//                    .setPropertyValue(PATH, stamp.get().stamp().path())
+//            ;
+        }
+//        // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
+//        //StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
+        SemanticEntity entity = (SemanticEntity) EntityService.get().getEntity(component.nid()).get();
+        EntityFacade refComponent = EntityService.get().getEntity(entity.referencedComponentNid()).get();
+        Config config = new Config(GenEditingDetailsController.class.getResource("genediting-details.fxml"))
+                .updateViewModel("genEditingViewModel", genEditingViewModel ->
+                        genEditingViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                                .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
+                                .setPropertyValue(WINDOW_TOPIC, UUID.randomUUID())
+//                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
+                                .setPropertyValue(FIELDS_COLLECTION, new ArrayList<String>()) // Ordered collection of Fields
+                                .setPropertyValue(REF_COMPONENT, refComponent)
+                                .setPropertyValue(SEMANTIC, component));
+
+        // create chapter window
+        JFXNode<Pane, GenEditingDetailsController> jfxNode = FXMLMvvmLoader.make(config);
+        //Getting the concept window pane
+        Pane kometNodePanel = jfxNode.node();
+        //Applying the CSS from draggable-region to the panel (makes it movable/sizable).
+        Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
+        Node[] draggables = new Node[draggableToolbar.size()];
+
+        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
+
+        //Adding the concept window panel as a child to the desktop pane.
+        desktopSurfacePane.getChildren().add(kometNodePanel);
+
+        //Calls the remove method to remove and concepts that were closed by the user.
+        jfxNode.controller().setOnCloseConceptWindow(windowEvent -> {
+            // TODO more clean up such as view models and listeners just in case (memory).
+        });
+        jfxNode.controller().putTitlePanesArrowOnRight();
     }
 }
