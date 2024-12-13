@@ -563,7 +563,7 @@
     -default-button-height: 56px;
     -default-button-width: -1;
 
-    -fx-alignment: top-center;
+    -fx-alignment: center-left;
     -fx-background-insets: 0;
     /*-fx-background-color: #F3F5F8FF;*/
     -fx-background-color: -Grey-11;
@@ -586,7 +586,7 @@
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-background-radius: 0px, 0px, 0px, 0px;
-    -fx-padding: 16 12;
+    -fx-padding: 16 19 16 12;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
@@ -607,15 +607,43 @@
     -fx-content-display: left;
     -fx-graphic-text-gap: 8;
     -fx-min-width: -default-button-width;
-    -fx-pref-width: 144;
-    -fx-max-width: 144;
+    width: 152;
+    -fx-pref-width: width;
+    -fx-max-width: width;
 }
 
-/* all sidebar button regions are transparent */
+.side-bar .toggle-button .icon-container {
+    -fx-alignment: center-left;
+    -fx-spacing: 7px;
+}
+
+.side-bar .toggle-button .icon-container .icon-image-container {
+    -fx-min-width: 26px;
+    -fx-pref-width: 26px;
+}
+
+.side-bar .toggle-button .icon-container .label {
+    -fx-text-fill: white;
+}
+
+.side-bar .toggle-button:selected .icon-container .label {
+    -fx-text-fill: #111;
+}
+
 .side-bar .button .icon,
-.side-bar .toggle-button .icon
-{
+.side-bar .toggle-button .icon {
     -fx-background-color: -icon-paint;
+}
+
+.side-bar .toggle-button .icon,
+.side-bar .toggle-button .container-icon {
+    width: 20;
+    -fx-min-width: width;
+    -fx-pref-width: width;
+    -fx-max-width: width;
+
+    -fx-alignment: center;
+    -fx-position-shape: true;
 }
 
 
@@ -629,13 +657,23 @@ selected(active) - dark black
 /* Hover over tab button */
 .side-bar.show-text .toggle-button:selected,
 .side-bar.show-text .button:selected,
+.side-bar .toggle-button:selected,
+.side-bar .button:selected {
+    -fx-background-color: -Primary-05;
+}
+
+.side-bar.show-text .toggle-button:selected:hover,
+.side-bar.show-text .button:selected:hover,
+.side-bar .toggle-button:selected:hover,
+.side-bar .button:selected:hover{
+    -fx-background-color: derive(-Primary-05, 20%);
+}
+
 .side-bar.show-text .toggle-button:hover,
 .side-bar.show-text .button:hover,
-.side-bar .toggle-button:selected,
-.side-bar .button:selected,
 .side-bar .toggle-button:hover,
 .side-bar .button:hover {
-    -fx-background-color: -Primary-05;
+    -fx-background-color: rgba(100, 100, 100, 0.25);
 }
 
 /* Default */
@@ -667,12 +705,15 @@ selected(active) - dark black
 /* An Home svg (region) */
 .home {
     -width-size: 20;
-    -height-size: 17;
+    -height-size: 18;
     -fx-min-height: -height-size;
     -fx-min-width: -width-size;
     -fx-max-height: -height-size;
     -fx-max-width: -width-size;
     -fx-shape: "M10 3.19L15 7.69V15.5H13V9.5H7V15.5H5V7.69L10 3.19ZM10 0.5L0 9.5H3V17.5H9V11.5H11V17.5H17V9.5H20L10 0.5Z";
+
+    /* This icon shape is not correcly positioned so we need to correct that below */
+    -fx-translate-y: -1;
 }
 
 /* An Search svg (region) */
@@ -1377,26 +1418,31 @@ Timeline (time travel) components
 */
 .timeline-header-bar {
     -icon-paint: -Grey-10;
-    -default-width: 300px;
-    -default-height: 100px;
+
     -fx-spacing: 4;
     -fx-alignment: center-left;
     -fx-background-insets: 0;
     -fx-background-color: #e0e8f1ff;
-    /*-fx-background-color: red;*/
-    -fx-border-insets: 0 0 -1 0;
-    -fx-border-style: solid;
-    -fx-border-width: 1;
-    -fx-border-color: transparent transparent transparent transparent;
+    -fx-background-radius: 4px 4px 0 0;
 
+    height: 45px;
 
-    /*-fx-min-height: -default-height;*/
-    /*-fx-pref-height: -default-height;*/
-    /*-fx-max-height: -default-height;*/
+    -fx-min-height: height;
+    -fx-pref-height: height;
+    -fx-max-height: height;
 
     -fx-min-width: 200;
     -fx-pref-width: -1;
     -fx-max-width: 5000;
+}
+
+.timeline-scrollpane {
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+.timeline-outer-container {
+    -fx-padding: 0 4px 4px 0;
 }
 
 .timeline-header-bar .timeline-text.label {
@@ -1508,8 +1554,14 @@ Timeline (time travel) components
 
 .timeline-content,
 .timeline-scrollpane > .viewport {
-    -fx-background-radius: 0 0 10 10;
+    -fx-background-radius: 0 0 4px 4px;
 }
+
+.timeline-content.outer-container {
+    -fx-border-color: -Grey-7;
+    -fx-border-width: 1px 0 0 0;
+}
+
 .timeline-row-container {
     -fx-spacing: 20;
 }
@@ -2412,6 +2464,41 @@ Timeline Year line segment (will overlay change circles)
     -fx-shape: "M15.8337 5.34199L14.6587 4.16699L10.0003 8.82533L5.34199 4.16699L4.16699 5.34199L8.82533 10.0003L4.16699 14.6587L5.34199 15.8337L10.0003 11.1753L14.6587 15.8337L15.8337 14.6587L11.1753 10.0003L15.8337 5.34199Z";
 }
 
+.white-container-border6 {
+    -fx-background-color: -Grey-White;
+    -fx-background-radius: 8;
+    -fx-border-radius: 6;
+    -fx-border-insets: 12;
+    -fx-border-color: -Grey-6;
+    -fx-background-insets: 12;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 8, 0, 0, 4);
+}
+
+.drop-dataset-container {
+    -fx-background-color: white, -Grey-2;
+    -fx-background-radius: 6;
+    -fx-background-insets: 0, 4;
+    -fx-border-width: 4;
+    -fx-border-radius: 6;
+    -fx-border-style: segments(6, 12) phase -12 line-join round line-cap round;
+    -fx-border-color: -Secondary-05;
+    -fx-text-fill: -Grey-8;
+}
+
+.drop-dataset-container:files-drag-over {
+    -fx-background-color: white, -Grey-4;
+}
+
+.drop-dataset-container .progress-indicator {
+    -fx-min-width: 64;
+    -fx-min-height: 64;
+    -fx-progress-color: -Secondary-05;
+}
+
+.tag-container {
+    -fx-background-color: -Grey-1;
+}
+
 .grey9-14pt-normal {
     -fx-text-fill: -Grey-9;
     -fx-font-family: "Noto Sans";
@@ -2686,15 +2773,28 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .grey-blue-button:disabled {
-    -fx-border-radius: 4;
     -fx-background-color: -Grey-7;
-    -fx-fill: -Grey-2;
+    -fx-text-fill: -Grey-2;
+    -fx-opacity: 1.0;
 }
 
 .grey-blue-button {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 600;
+    -fx-font-size: 14px;
     -fx-border-radius: 4;
     -fx-background-color: -Secondary-05;
-    -fx-fill: white;
+    -fx-text-fill: -Grey-White;
+}
+
+.white-blue-button {
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-weight: 700;
+    -fx-font-size: 14px;
+    -fx-border-radius: 4;
+    -fx-border-color: -Secondary-05;
+    -fx-background-color: -Grey-White;
+    -fx-text-fill: -Secondary-05;
 }
 
 /*********************************************************************************
@@ -2748,7 +2848,6 @@ Timeline Year line segment (will overlay change circles)
     -fx-text-fill: white;
 }
 
-
 .search-entry-hbox {
     -fx-border-radius: 2px;
     -fx-background-radius: 2px;
@@ -2756,7 +2855,7 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .search-entry-text {
-    -fx-font: "Noto Sans";
+    -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
     -fx-font-weight: bold;
@@ -2795,7 +2894,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: white;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 1, 1, 1, 1);
     -fx-pref-width: 302px;
-    -fx-pref-height: 30;    
+    -fx-pref-height: 30;
 }
 
 .search-semantic-entry-text {
@@ -3019,7 +3118,12 @@ Timeline Year line segment (will overlay change circles)
     -fx-alignment: center;
 }
 
-  
+.list-cell:selected .pattern-instance-hbox .label {
+    -fx-text-fill: blue;
+    -fx-background-color: white, transparent, transparent;
+    -fx-background-insets: 0, 1, 2;
+}
+
 .pattern-instance-hbox .pattern-instance {
     -fx-min-width: 260px;
     -fx-pref-width: 260px;
@@ -3226,16 +3330,24 @@ Landing page elements.
 
 /* label */
 .counter {
+    size: 16;
+    -fx-pref-width: size;
+    -fx-pref-height: size;
+
+    -fx-background-radius: 2em;
+    -fx-background-insets: 0;
+    -fx-background-color: -Accent-color-red;
+
+    -fx-translate-y: -2px;
+    -fx-translate-x: 4px;
+}
+
+.counter > .label {
     -fx-text-fill: -Grey-White;
-    -fx-label-padding: 2;
-    -fx-padding: 0 4 1 4;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 11px;
     -fx-font-style: normal;
     -fx-font-weight: 700;
-    -fx-background-radius: 12;
-    -fx-background-color: -Accent-color-red;
-
 }
 
 .split-pane.flat-split-divider:horizontal > .split-pane-divider {
@@ -4140,46 +4252,75 @@ Styling a context menu for kview ui/ux controls
 /*    -fx-color: red;*/
 /*}*/
 /* alternative content using a border and a grad to transparent background - why should TitledPane content have a colour? */
+.popup-container .titled-pane > .title {
+    -fx-padding: 0.3333em 0.75em 0.083333em 0em; /* 4 9 1 9 */
+}
+
 .popup-container .titled-pane > *.content {
     -fx-border-color: transparent;
     -fx-border-insets: -1 0 0 0;
     -fx-background-color: transparent;
-    -fx-padding: -5 0 0 0;
+    -fx-padding: 0 0 4px 0;
+}
+
+.popup-container .titled-pane.status-titled-pane > *.content {
+    -fx-padding: 0;
+}
+
+.popup-container .titled-pane > *.content .option-container {
+    -fx-spacing: 5px;
+    -fx-padding: 2px 0 16px 10px;
+}
+
+.popup-container .titled-pane.status-titled-pane > *.content .option-container {
+    -fx-padding: 5px 10px 5px 0;
+}
+
+.popup-container .titled-pane.status-titled-pane > *.content .radio-button.active {
+    -fx-padding: 0 1px 0 0; /* Fix small misalignment of this radio button */
 }
 
 .popup-container .titled-pane > *.content .option-container .radio-button {
     -fx-label-padding: 4;
     -fx-text-fill: -Grey-White;
-    -fx-padding: 0 0 0 12;
+
+    -fx-label-padding: 0.0em 0.0em 0.0em 0.416667em; /* 0 0 0 5 */
 }
 .popup-container .titled-pane > *.content .option-container .radio-button > .radio,
 .popup-container .titled-pane > *.content .option-container .radio-button:focused > .radio {
-    -fx-background-radius: 0; /* large value to make sure this remains circular */
-    -fx-padding: 0; /* 4 -- padding from outside edge to the inner black dot */
-    -fx-background-color: -Grey-White;
-    -fx-scale-shape: false;
-    -fx-shape: "M8.99984 0.666748C4.39984 0.666748 0.666504 4.40008 0.666504 9.00008C0.666504 13.6001 4.39984 17.3334 8.99984 17.3334C13.5998 17.3334 17.3332 13.6001 17.3332 9.00008C17.3332 4.40008 13.5998 0.666748 8.99984 0.666748ZM8.99984 15.6667C5.3165 15.6667 2.33317 12.6834 2.33317 9.00008C2.33317 5.31675 5.3165 2.33341 8.99984 2.33341C12.6832 2.33341 15.6665 5.31675 15.6665 9.00008C15.6665 12.6834 12.6832 15.6667 8.99984 15.6667Z";
+    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+
+    -fx-border-style: solid;
+    -fx-border-radius: 1.0em;
+    -fx-border-color: -Grey-White;
+    -fx-border-insets: 0px;
+    -fx-border-width: 2px;
+
+    -fx-padding: 3px;
 }
 .popup-container .titled-pane > *.content .option-container .radio-button:selected > .radio,
 .popup-container .titled-pane > *.content .option-container .radio-button:selected:focused > .radio {
-    -fx-background-color: -Primary-04;
+    -fx-border-color: -Primary-04;
 }
 
 .popup-container .titled-pane > *.content .option-container .radio-button > .radio > .dot {
     -fx-background-color: transparent;
     -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
     -fx-padding: 0.333333em; /* 4 -- radius of the inner black dot when selected */
-    -fx-shape: "M8.99984 13.1667C11.301 13.1667 13.1665 11.3013 13.1665 9.00008C13.1665 6.69889 11.301 4.83342 8.99984 4.83342C6.69865 4.83342 4.83317 6.69889 4.83317 9.00008C4.83317 11.3013 6.69865 13.1667 8.99984 13.1667Z";
 }
 
 .popup-container .titled-pane > *.content .option-container .radio-button:selected > .radio > .dot {
+    -fx-background-insets: 0;
     -fx-background-color: -Primary-04;
-    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
-    /*-fx-padding: 0.333333em; !* 4 -- radius of the inner black dot when selected *!*/
-    -fx-shape: "M8.99984 13.1667C11.301 13.1667 13.1665 11.3013 13.1665 9.00008C13.1665 6.69889 11.301 4.83342 8.99984 4.83342C6.69865 4.83342 4.83317 6.69889 4.83317 9.00008C4.83317 11.3013 6.69865 13.1667 8.99984 13.1667Z";
 }
 .popup-container .titled-pane > *.content .scroll-pane .viewport {
     -fx-background-color: transparent;
+}
+
+.popup-container .scroll-pane .scroll-bar:vertical {
+    -fx-background-color: rgba(70, 70, 70, 0.1);
 }
 
 /* kview Progress bar popup */
@@ -4476,7 +4617,7 @@ Styling a context menu for kview ui/ux controls
 .remove-icon {
     -fx-scale-shape: false;
     -fx-background-color: white;
-    -fx-shape: "M12.5 2.5V3.33333H16.6667V5H15.8334V15.8333C15.8334 16.75 15.0834 17.5 14.1667 17.5H5.83337C4.91671 17.5 4.16671 16.75 4.16671 15.8333V5H3.33337V3.33333H7.50004V2.5H12.5ZM5.83337 15.8333H14.1667V5H5.83337V15.8333ZM7.50004 6.66667H9.16671V14.1667H7.50004V6.66667ZM12.5 6.66667H10.8334V14.1667H12.5V6.66667Z";    
+    -fx-shape: "M12.5 2.5V3.33333H16.6667V5H15.8334V15.8333C15.8334 16.75 15.0834 17.5 14.1667 17.5H5.83337C4.91671 17.5 4.16671 16.75 4.16671 15.8333V5H3.33337V3.33333H7.50004V2.5H12.5ZM5.83337 15.8333H14.1667V5H5.83337V15.8333ZM7.50004 6.66667H9.16671V14.1667H7.50004V6.66667ZM12.5 6.66667H10.8334V14.1667H12.5V6.66667Z";
 }
 
 /*******************************************************************************
@@ -4545,6 +4686,11 @@ Styling a context menu for kview ui/ux controls
 
     -fx-border-width: 1px 0 0 0;
 }
+
+.lidr-window .timeline-content.outer-container {
+    -fx-border-color: -Natural-Grey-Main;
+}
+
 
 .pattern-window.concept-detail-pane .main-right-container .properties-tab-container-content .lidr-device,
 .lidr-window.concept-detail-pane .main-right-container .properties-tab-container-content .lidr-device {
@@ -4688,5 +4834,67 @@ Styling a context menu for kview ui/ux controls
     -fx-font-size: 0.916667em;
 }
 
+/********************* General Editing Chapter window *****************************/
+.titled-content-background {
+    -fx-background-color: -Grey-1;
+    -fx-background-radius: 4px 4px 0 0;
+}
 
+.semantic-banner-label {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #212430;
+    -fx-font-weight: 400;
+    -fx-font-size: 17px;
+}
+.semantic-banner-label {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #212430;
+    -fx-font-weight: bolder;
+    -fx-font-size: 12px;
+}
+.semantic-banner-value {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #212430;
+    -fx-font-weight: 400;
+    -fx-font-size: 12px;
+}
 
+/* Semantic Details section - VBox */
+.semantic-field-container {
+    -height: 58;
+    -fx-min-height: -height;
+    -fx-pref-height: -height;
+    -fx-fill-width: true;
+    -fx-padding: 8px 12px;
+    -fx-background-color: -Grey-1;
+}
+.semantic-field-set-container,
+.semantic-field-ditree-container {
+    -fx-fill-width: true;
+    -fx-padding: 8px 12px;
+    -fx-background-color: -Grey-1;
+}
+
+/* label */
+.semantic-field-type-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 600;
+    -fx-font-size: 12px;
+    -fx-text-fill: #5E5E5E;
+}
+
+/* label */
+.semantic-field-value {
+    -fx-background-color: transparent;
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 600;
+    -fx-font-size: 12px;
+    -fx-text-fill: #212430;
+}
+/* mouse hover */
+.semantic-field-value:hover {
+    -fx-background-color: #F4F9FF;
+    -fx-text-fill: #395C9A;
+    -fx-border-width: 1px;
+    -fx-border-color: #CFD8E4;
+}

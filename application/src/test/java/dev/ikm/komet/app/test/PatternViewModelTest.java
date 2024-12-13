@@ -122,7 +122,8 @@ public class PatternViewModelTest {
         //c6553e16-dad5-51ff-a697-85b63d659fd3
         //91b9b62d-477c-493a-b42e-a34f92b2d27c
         //922697f7-36ba-4afc-9dd5-f29d54b0fdec
-        Entity entity = EntityService.get().getEntityFast(UUID.fromString("922697f7-36ba-4afc-9dd5-f29d54b0fdec"));
+        //7a145080-81e2-45c5-9ac1-76aae23888ab
+        Entity entity = EntityService.get().getEntityFast(UUID.fromString("7a145080-81e2-45c5-9ac1-76aae23888ab"));
         ViewProperties viewProperties = createViewProperties();
         ViewCalculator viewCalculator = viewProperties.calculator();
         LOG.info( " SUMMON Pattern: " + entity);

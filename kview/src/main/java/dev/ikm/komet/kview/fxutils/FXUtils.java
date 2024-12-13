@@ -24,6 +24,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
+import javafx.stage.Window;
 
 import java.util.Optional;
 
@@ -95,5 +96,20 @@ public class FXUtils {
             return findParent(parent, styleClass);
         }
 
+    }
+
+    /**
+     * Retrieves the currently focused {@link Window}.
+     * <p>
+     * This method iterates through all available windows and returns the first window
+     * that is currently focused. If no window is focused, it returns {@code null}.
+     *
+     * @return the focused {@link Window}, or {@code null} if no window is currently focused.
+     */
+    public static Window getFocusedWindow() {
+        return Window.getWindows().stream()
+                .filter(Window::isFocused)
+                .findFirst()
+                .orElse(null);
     }
 }

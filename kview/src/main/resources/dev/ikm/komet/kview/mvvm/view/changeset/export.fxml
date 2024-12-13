@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<VBox minHeight="632.0" prefHeight="632.0" prefWidth="600.0" spacing="20.0" styleClass="white-container-border6"
+      stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="dev.ikm.komet.kview.mvvm.view.changeset.ExportController">
+   <HBox>
+      <Label styleClass="grey12-18pt-normal" text="Export Data Set"/>
+      <Region HBox.hgrow="ALWAYS"/>
+      <Button mnemonicParsing="false" prefHeight="24.0" styleClass="grey-button-black-text" text="FLWOR Query"
+              textAlignment="CENTER"/>
+   </HBox>
+   <VBox spacing="4.0">
+      <Label styleClass="grey9-14pt-normal" text="Name Export"/>
+      <HBox spacing="11.0">
+         <TextField fx:id="exportName" prefHeight="32.0" prefWidth="474.0" promptText="Enter name"
+                    styleClass="text-field-black" HBox.hgrow="ALWAYS"/>
+         <ComboBox fx:id="exportOptions" prefHeight="32.0" prefWidth="192.0"
+                   styleClass="white-combo-grey-arrow"/>
+      </HBox>
+   </VBox>
+   <VBox spacing="4.0">
+      <Label styleClass="grey9-14pt-normal" text="Select Path"/>
+      <ComboBox fx:id="pathOptions" disable="true" prefHeight="28.0" prefWidth="560.0"
+                styleClass="white-combo-grey-arrow"/>
+   </VBox>
+   <VBox spacing="4.0">
+      <Label styleClass="grey9-14pt-normal" text="Tag(s)"/>
+      <VBox styleClass="tag-container" minHeight="80.0" prefHeight="80.0" prefWidth="560.0">
+         <HBox alignment="BOTTOM_RIGHT" VBox.vgrow="ALWAYS" prefWidth="560.0">
+            <Button mnemonicParsing="false" styleClass="button-blue5-text-grey1-bg" text="ADD TAG(S)"/>
+         </HBox>
+      </VBox>
+   </VBox>
+   <VBox spacing="4.0">
+      <Label styleClass="grey9-14pt-normal" text="Time Period"/>
+      <HBox spacing="12.0">
+         <ComboBox fx:id="timePeriodComboBox" prefHeight="28.0" prefWidth="172.0"
+                   styleClass="blue-arrow-combo-box-grey11">
+            <items>
+               <FXCollections fx:factory="observableArrayList">
+                  <String fx:value="Current Date"/>
+                  <String fx:value="Custom Range"/>
+               </FXCollections>
+            </items>
+         </ComboBox>
+         <HBox fx:id="dateTimePickerHbox">
+            <HBox alignment="CENTER" spacing="1.0">
+               <Label fx:id="dateTimeFromLabel" prefHeight="31.0" prefWidth="127.0"
+                      text="01/01/2000, 02:13 PM"/>
+               <Button fx:id="dateTimePickerFrom" mnemonicParsing="false" onAction="#updateFromDateTime"
+                       prefHeight="36.0" prefWidth="46.0" styleClass="date-time-calendar-button"
+                       text="Button">
+                  <graphic>
+                     <Region layoutX="-32.0" prefHeight="33.0" prefWidth="30.0"
+                             styleClass="add-date-time-calendar"/>
+                  </graphic>
+               </Button>
+            </HBox>
+            <HBox alignment="CENTER">
+               <Text strokeType="OUTSIDE" strokeWidth="0.0" text=" –" wrappingWidth="16.0"/>
+            </HBox>
+            <HBox alignment="CENTER">
+               <Label fx:id="dateTimeToLabel" prefHeight="31.0" prefWidth="128.0"
+                      text="03/04/2024, 02:13 PM"/>
+               <Button fx:id="dateTimePickerTo" layoutX="-32.0" mnemonicParsing="false"
+                       onAction="#updateToDateTime" prefHeight="36.0" prefWidth="48.0"
+                       styleClass="date-time-calendar-button" text="Button">
+                  <graphic>
+                     <Region prefHeight="33.0" prefWidth="30.0" styleClass="add-date-time-calendar"/>
+                  </graphic>
+               </Button>
+            </HBox>
+         </HBox>
+      </HBox>
+   </VBox>
+   <TextFlow VBox.vgrow="ALWAYS" minHeight="118.0" prefHeight="118.0" styleClass="comments-textflow">
+      <padding>
+         <Insets left="10.0" top="13.0"/>
+      </padding>
+      <Region prefHeight="20.0" prefWidth="16.0" styleClass="comment-icon"/>
+      <Text styleClass="comment-placeholder-text"
+            text="Add comment here..."
+            translateX="8.0" translateY="-4.0" wrappingWidth="140.0"/>
+   </TextFlow>
+   <HBox alignment="BOTTOM_RIGHT" spacing="12.0">
+      <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#handleCancelButtonEvent" prefHeight="32.0"
+              prefWidth="88.0" styleClass="button-blue5-text-grey1-bg" text="CANCEL">
+      </Button>
+      <Button fx:id="exportButton" mnemonicParsing="false" onAction="#handleExportButtonEvent" prefHeight="32.0"
+              prefWidth="88.0" styleClass="grey-blue-button" text="EXPORT">
+      </Button>
+   </HBox>
+   <padding>
+      <Insets bottom="24.0" left="24.0" right="24.0" top="24.0"/>
+   </padding>
+</VBox>
