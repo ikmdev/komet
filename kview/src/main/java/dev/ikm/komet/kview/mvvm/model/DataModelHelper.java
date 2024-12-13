@@ -34,6 +34,7 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import dev.ikm.tinkar.entity.ConceptEntity;
@@ -245,5 +246,25 @@ public class DataModelHelper {
             }));
         });
         return identifiersToAppend;
+    }
+
+    /**
+     * Returns FieldRecords of a semantic version and its pattern entity version.
+     * @param semanticEntityVersion
+     * @param patternEntityVersion
+     * @return A list of FieldRecord objects.
+     */
+    public static List<FieldRecord<Object>> fieldRecords(SemanticEntityVersion semanticEntityVersion, PatternEntityVersion patternEntityVersion) {
+        List<FieldRecord<Object>> fieldRecords = new ArrayList<>();
+        ImmutableList<? extends FieldDefinitionForEntity> fieldDefinitionForEntities = patternEntityVersion.fieldDefinitions();
+        for (int i = 0; i < semanticEntityVersion.fieldValues().size(); i++) {
+            fieldRecords.add(new FieldRecord(
+                    semanticEntityVersion.fieldValues().get(i),
+                    semanticEntityVersion.nid(),
+                    semanticEntityVersion.stampNid(),
+                    fieldDefinitionForEntities.get(i))
+            );
+        }
+        return fieldRecords;
     }
 }
