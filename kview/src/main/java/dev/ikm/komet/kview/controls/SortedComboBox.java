@@ -26,10 +26,12 @@ public class SortedComboBox<T> extends ComboBox<T> {
     private void init() {
         itemsProperty().addListener(this::onItemsChanged);
         addListenerToItems();
+        sortItemsInComboBox();
     }
 
     private void onItemsChanged(Observable observable) {
         addListenerToItems();
+        sortItemsInComboBox();
     }
 
     private void addListenerToItems() {
@@ -39,8 +41,12 @@ public class SortedComboBox<T> extends ComboBox<T> {
     private void onChanged(ListChangeListener.Change<? extends T> change) {
         while (change.next()) {
             if (change.wasAdded()) {
-                getItems().sort(NaturalOrder.getObjectComparator());
+                sortItemsInComboBox();
             }
         }
+    }
+
+    private void sortItemsInComboBox() {
+        getItems().sort(NaturalOrder.getObjectComparator());
     }
 }

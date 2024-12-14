@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<ScrollPane styleClass="sample-container" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.sampler.controllers.SamplerHomeController">
+    <VBox>
+        <Label layoutX="43.0" layoutY="20.0" styleClass="header" text="Home" />
+        <Label fx:id="samplerDescription" styleClass="body-text" wrapText="true">
+            <VBox.margin>
+                <Insets bottom="40.0" />
+            </VBox.margin>
+        </Label>
+
+        <padding>
+            <Insets bottom="60.0" right="60.0" />
+        </padding>
+    </VBox>
+
+</ScrollPane>
