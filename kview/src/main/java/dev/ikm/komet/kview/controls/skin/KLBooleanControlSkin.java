@@ -4,10 +4,25 @@ import dev.ikm.komet.kview.controls.KLBooleanControl;
 import javafx.scene.control.skin.RadioButtonSkin;
 import javafx.scene.layout.StackPane;
 
+/**
+ * Default skin implementation for the {@link KLBooleanControl} control,
+ * based on the {@link RadioButtonSkin}, but with a customized layout, where
+ * the visual indication of the selected state is placed to the right.
+ *
+ * @see KLBooleanControl
+ * @see javafx.scene.control.RadioButton
+ */
 public class KLBooleanControlSkin extends RadioButtonSkin {
 
     private final StackPane radio;
 
+    /**
+     * Creates a new KLBooleanControlSkin instance, installing the necessary child
+     * nodes into the Control {@link javafx.scene.control.Control#getChildrenUnmodifiable() children} list, as
+     * well as the necessary input mappings for handling key, mouse, etc. events.
+     *
+     * @param control The control that this skin should be installed onto.
+     */
     public KLBooleanControlSkin(KLBooleanControl control) {
         super(control);
         radio = getChildren().stream()
@@ -17,6 +32,7 @@ public class KLBooleanControlSkin extends RadioButtonSkin {
                 .orElseThrow();
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
         super.layoutChildren(contentX, contentY, contentWidth, contentHeight);
