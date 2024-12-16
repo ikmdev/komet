@@ -40,6 +40,7 @@ public class PatternNavViewModel extends FormViewModel {
                 return;
             }
             ObservableList<EntityFacade> observableList = getObservableList(PATTERN_COLLECTION);
+            observableList.clear();
             PrimitiveData.get().forEachPatternNid(patternNid -> {
                 Latest<PatternEntityVersion> latestPattern = viewProperties.calculator().latest(patternNid);
                 latestPattern.ifPresent(patternEntityVersion -> {
