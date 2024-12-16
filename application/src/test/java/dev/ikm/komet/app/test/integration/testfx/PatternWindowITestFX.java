@@ -78,6 +78,7 @@ public class PatternWindowITestFX {
 
     // Property Keys
     private static final String PROPERTY_TARGET_DATA_DIR = "target.data.directory";
+    private static final String PROPERTY_USER_HOME = "user.home";
 
     // Directory and File Names
     private static final String TINKAR_STARTER_DATA_PREFIX = "tinkar-starter-data";
@@ -366,7 +367,7 @@ public class PatternWindowITestFX {
         selectDataSourceByName(robot, DataSource.NEW_SPINED_ARRAY_STORE);
         waitForFxEvents();
 
-        listView = lookupNode(robot, "#fileListView", ListView.class);
+        listView = lookupNode(robot, SELECTOR_FILE_LIST_VIEW, ListView.class);
         // Verify that the new Spined Array Store (SAS) data source is selected
         boolean foundTinkarNewSAS = selectListViewItem(robot, listView, TINKAR_STARTER_DATA_PREFIX);
         assertTrue(foundTinkarNewSAS, "Should find 'tinkar' in the new Spined Array Store data source");
@@ -535,7 +536,7 @@ public class PatternWindowITestFX {
      */
     private static void overrideUserHome() {
         String absoluteDataDir = Paths.get(BASE_DATA_DIR).toAbsolutePath().toString();
-        System.setProperty("user.home", absoluteDataDir);
-        LOG.info("Overriding user.home to {}", absoluteDataDir);
+        System.setProperty(PROPERTY_USER_HOME, absoluteDataDir);
+        LOG.info("Overriding {} to {}", PROPERTY_USER_HOME, absoluteDataDir);
     }
 }
