@@ -1,0 +1,33 @@
+@import "../mvvm/view/kview.css";
+
+.component-set-control {
+}
+
+.component-set-control > .title-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-text-fill: -Grey-11;
+    -fx-font-weight: 500;
+}
+
+.component-set-control > .add-entry-button {
+    -fx-border-color: -Secondary-05;
+    -fx-background-color: -Grey-1;
+    -fx-text-fill: -Secondary-05;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4;
+    -height-size: 32px;
+    -width-size: 122px;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+}
+
+.component-set-control > .add-entry-button > .concept-search-button:disabled {
+    -fx-background-color: -Grey-7;
+}
