@@ -1,0 +1,310 @@
+@import "../mvvm/view/kview.css";
+
+.calendar-popup {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-border-color: -Grey-5;
+    -fx-pref-width: 440;
+    -fx-pref-height: 340;
+    -fx-padding: 5;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 4, 0.2, 0, 4);
+}
+
+/* left side */
+
+.calendar-popup > .calendar-node.date-picker-popup {
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-alignment: CENTER;
+    -fx-spacing: 0;
+    -fx-padding: 1;
+    -fx-effect: null;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-text-fill: -Grey-12;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane {
+    -fx-padding: 7 6 8 6;
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner {
+    -fx-spacing: 10;
+    -fx-alignment: center;
+    -fx-fill-height: false;
+    -fx-background-color: transparent;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button {
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+    -fx-color: -Grey-12;
+    -fx-background-radius: 0;
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:focused {
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .left-button {
+    -fx-padding: 0 4 0 3;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .right-button {
+    -fx-padding: 0 3 0 4;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button > .most-left-arrow-calendar,
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button > .left-arrow-calendar,
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button > .right-arrow-calendar,
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button > .most-right-arrow-calendar {
+    -fx-background-color: -Grey-8;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-effect: null;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:hover > .most-left-arrow-calendar,
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:hover > .left-arrow-calendar,
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:hover > .right-arrow-calendar,
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:hover > .most-right-arrow-calendar {
+    -fx-background-color: -Grey-10;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:pressed > .most-left-arrow-calendar,
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:pressed > .left-arrow-calendar,
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:pressed > .right-arrow-calendar,
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:pressed > .most-right-arrow-calendar {
+    -fx-background-color: -Grey-12;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button > .most-left-arrow-calendar {
+    -fx-padding: 6 5 6 5;
+    -fx-shape: "M7.997 5.072 7.995 6.501l-2.998-4 2.998-4 .002 1.43-1.976 2.57L7.997 5.072z M5.997,5.072L5.995,6.501l-2.998-4l2.998-4l0.002,1.43l-1.976,2.57L5.997,5.072z";
+    -fx-scale-shape: true;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button > .left-arrow-calendar {
+    -fx-padding: 6 3 6 3;
+    -fx-shape: "M5.997,5.072L5.995,6.501l-2.998-4l2.998-4l0.002,1.43l-1.976,2.57L5.997,5.072z";
+    -fx-scale-shape: true;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button > .right-arrow-calendar {
+    -fx-padding: 6 3 6 3;
+    -fx-shape: "M2.998-0.07L3-1.499l2.998,4L3,6.501l-0.002-1.43l1.976-2.57L2.998-0.07z";
+    -fx-scale-shape: true;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button > .most-right-arrow-calendar {
+    -fx-padding: 6 5 6 5;
+    -fx-shape: "M4.998-.07 5-1.499l2.998 4L5 6.501l-.002-1.43 1.976-2.57L4.998-.07z M2.998-0.07L3-1.499l2.998,4L3,6.501l-0.002-1.43l1.976-2.57L2.998-0.07z";
+    -fx-scale-shape: true;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .label.month-year-label {
+    -fx-alignment: center;
+    -fx-font-size: 16;
+    -fx-min-width: 140;
+    -fx-pref-width: 140;
+    -fx-max-width: 140;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid {
+    -fx-background-color: white;
+    -fx-padding: 0;
+    -fx-vgap: 1;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .date-cell {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-alignment: BASELINE_CENTER;
+    -fx-opacity: 1.0;
+    -fx-pref-width: 36;
+    -fx-max-width: 36;
+    -fx-pref-height: 36;
+    -fx-max-height: 36;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .day-name-cell {
+    -fx-font-size: 12;
+    -fx-text-fill: -Grey-10;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .day-cell {
+    -fx-padding: 4 7 4 7;
+    -fx-border-width: 0;
+    -fx-font-size: 14;
+    -fx-background: white;
+    -fx-background-color: white;
+    -fx-border-color: white;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-text-fill: -Grey-12;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .today {
+    -fx-border-color: -Primary-06;
+    -fx-background-insets: 0;
+    -fx-border-width: 1;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .day-cell:hover,
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .selected,
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .previous-month.selected,
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .next-month.selected {
+    -fx-background-color: -Primary-03;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .previous-month:hover,
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .next-month:hover {
+    -fx-background-color: -Primary-03;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .today:hover,
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .today.selected {
+    -fx-background-color: -Primary-03;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .day-cell:focused,
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .today:focused {
+    -fx-background-color: -Primary-03;
+    -fx-background-insets: 0;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .day-cell:focused:hover,
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .today:focused:hover,
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .selected:focused,
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .today.selected:focused {
+    -fx-background-color: -Primary-03;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .previous-month,
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .next-month {
+    -fx-background-color: white;
+    -fx-text-fill: -Grey-7;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .previous-month.today,
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .next-month.today {
+    -fx-background-color: -Primary-02;
+}
+
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .previous-month.today:hover,
+.calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .next-month.today:hover {
+    -fx-background-color: -Primary-02;
+}
+
+/* center side */
+
+.calendar-popup > .center-box {
+    -fx-alignment: center;
+    -fx-padding: 16 2 16 2;
+    -fx-pref-width: 5;
+    -fx-max-width: 5;
+}
+
+.calendar-popup > .center-box > .calendar-line {
+    -fx-background-color: -Grey-7;
+    -fx-pref-width: 1;
+    -fx-pref-height: 1;
+}
+
+/* right side */
+
+.calendar-popup > .calendar-time-box {
+    -fx-background-color: white;
+    -fx-alignment: top-center;
+    -fx-padding: 32 16 32 16;
+    -fx-spacing: 16;
+}
+
+.calendar-popup > .calendar-time-box > .time-box {
+    -fx-alignment: center;
+    -fx-spacing: 1;
+}
+
+.calendar-popup > .calendar-time-box > .time-box > .label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 16;
+    -fx-text-fill: black;
+}
+
+.calendar-popup > .calendar-time-box > .time-box > .hour-field,
+.calendar-popup > .calendar-time-box > .time-box > .minute-field {
+    -fx-background-color: -Grey-2;
+    -fx-background-radius: 5;
+    -fx-border-color: -Grey-7;
+    -fx-border-radius: 5;
+    -fx-min-width: 50;
+    -fx-pref-width: 50;
+    -fx-max-width: 50;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 18;
+    -fx-text-fill: black;
+    -fx-pref-column-count: 2;
+    -fx-highlight-fill: -Primary-04
+}
+
+.calendar-popup > .calendar-time-box > .zone-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 18;
+    -fx-text-fill: -Grey-8;
+}
+
+.calendar-popup > .calendar-time-box > .buttons-box {
+    -fx-alignment: center;
+    -fx-spacing: 10;
+}
+
+.calendar-popup > .calendar-time-box > .buttons-box > .apply-button {
+    -fx-background-color: -Secondary-05;
+    -fx-text-fill: white;
+    -fx-border-color: -Secondary-05;
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-padding: 0;
+    -fx-pref-width: 110;
+    -fx-max-width: 110;
+    -fx-pref-height: 24;
+    -fx-max-height: 24;
+}
+
+
+.calendar-popup > .calendar-time-box > .buttons-box > .apply-button:disabled {
+    -fx-background-color: -Grey-7;
+}
+
+.calendar-popup > .calendar-time-box > .buttons-box > .remove-button,
+.calendar-popup > .calendar-time-box > .buttons-box > .cancel-button {
+    -fx-background-color: -Grey-2;
+    -fx-text-fill: -Secondary-05;
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+    -fx-border-color: -Secondary-05;
+    -fx-border-radius: 4;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-padding: 0;
+    -fx-pref-width: 110;
+    -fx-max-width: 110;
+    -fx-pref-height: 24;
+    -fx-max-height: 24;
+}
