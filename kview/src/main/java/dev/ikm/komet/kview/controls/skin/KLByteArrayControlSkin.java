@@ -1,7 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLByteArrayControl;
-import dev.ikm.komet.kview.controls.KLComponentControl;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -35,7 +34,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
- * Default skin implementation for the {@link KLByteArrayControlSkin} control
+ * Default skin implementation for the {@link KLByteArrayControl} control
  */
 public class KLByteArrayControlSkin extends SkinBase<KLByteArrayControl> {
 
