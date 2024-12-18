@@ -5,6 +5,7 @@ import javafx.beans.Observable;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
 
 /**
  * A ComboBox that always shows its items sorted when its popup is showing.
@@ -27,6 +28,20 @@ public class SortedComboBox<T> extends ComboBox<T> {
         itemsProperty().addListener(this::onItemsChanged);
         addListenerToItems();
         sortItemsInComboBox();
+
+        // Code below fixes IIA-1139. JavaFX Comboboxes have a weird behavior in that the prompt text can get cleared when interacting
+        // with them and never comes back again
+        setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(T item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null || empty) {
+                    setText(getPromptText());
+                } else {
+                    setText(item.toString());
+                }
+            }
+        });
     }
 
     private void onItemsChanged(Observable observable) {
