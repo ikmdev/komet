@@ -32,7 +32,6 @@ import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.KometPreferencesStage;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.preferences.Reconstructor;
-import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.tabs.DetachableTab;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.KometStageController;
@@ -42,7 +41,8 @@ import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.SignInUserEvent;
-import dev.ikm.komet.kview.mvvm.view.export.ExportController;
+import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
+import dev.ikm.komet.kview.mvvm.view.changeset.ExportController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalViewFactory;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
@@ -63,7 +63,6 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -83,13 +82,12 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import javafx.stage.Window;
+import javafx.stage.*;
 import one.jpro.platform.auth.core.authentication.User;
-import one.jpro.platform.internal.util.CommandRunner;
-import one.jpro.platform.internal.util.PlatformUtils;
+import one.jpro.platform.utils.CommandRunner;
+import one.jpro.platform.utils.PlatformUtils;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
@@ -537,7 +535,7 @@ public class WebApp extends Application {
 
         // Import Dataset Menu Item
         MenuItem importDatasetMenuItem = new MenuItem("Import Dataset...");
-        importDatasetMenuItem.setOnAction(actionEvent -> doImportDataSet(primaryStage));
+        importDatasetMenuItem.setOnAction(actionEvent -> openImport(primaryStage));
 
         // Export Dataset Menu Item
         MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset...");
@@ -644,30 +642,6 @@ public class WebApp extends Application {
             ScreenInfo.mouseIsDragging(true);
             ScreenInfo.mouseWasDragged(true);
         });
-    }
-
-    private void doImportDataSet(Stage stage) {
-        if (IS_DESKTOP) { // TODO: Use JPro File module to handle file operations for desktop and browser
-            File selectedFile = getFileFromChooser(stage);
-            // selectedFile is null if the user clicks cancel
-            if (selectedFile != null) {
-                try {
-                    LoadEntitiesFromProtobufFile loadEntities = new LoadEntitiesFromProtobufFile(selectedFile);
-                    ProgressHelper.progress(loadEntities, "Cancel Import");
-                } catch (Exception e) {
-                    LOG.error(e.getLocalizedMessage(), e);
-                }
-            }
-        }
-    }
-
-    private File getFileFromChooser(Stage stage) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open Resource File");
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Zip Files", "*.zip"),
-                new FileChooser.ExtensionFilter("All Files", "*.*"));
-        return fileChooser.showOpenDialog(stage);
     }
 
     private void launchLandingPage(Stage stage, User user) {
@@ -983,20 +957,40 @@ public class WebApp extends Application {
         }
     }
 
+    private void openImport(Window owner) {
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
+        WindowSettings windowSettings = new WindowSettings(windowPreferences);
+        Stage importStage = new Stage(StageStyle.TRANSPARENT);
+        importStage.initOwner(owner);
+        //set up ImportViewModel
+        Config importConfig = new Config(ImportController.class.getResource("import.fxml"))
+                .updateViewModel("importViewModel", (importViewModel) ->
+                        importViewModel.setPropertyValue(VIEW_PROPERTIES,
+                                windowSettings.getView().makeOverridableViewProperties()));
+        JFXNode<Pane, ImportController> importJFXNode = FXMLMvvmLoader.make(importConfig);
+
+        Pane importPane = importJFXNode.node();
+        Scene importScene = new Scene(importPane, Color.TRANSPARENT);
+        importStage.setScene(importScene);
+        importStage.show();
+    }
+
     private void openExport(Window owner) {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
-        Stage exportStage = new Stage();
+        Stage exportStage = new Stage(StageStyle.TRANSPARENT);
         exportStage.initOwner(owner);
         //set up ExportViewModel
         Config exportConfig = new Config(ExportController.class.getResource("export.fxml"))
                 .updateViewModel("exportViewModel", (exportViewModel) ->
-                        exportViewModel.setPropertyValue(VIEW_PROPERTIES, windowSettings.getView().makeOverridableViewProperties()));
+                        exportViewModel.setPropertyValue(VIEW_PROPERTIES,
+                                windowSettings.getView().makeOverridableViewProperties()));
         JFXNode<Pane, ExportController> exportJFXNode = FXMLMvvmLoader.make(exportConfig);
 
         Pane exportPane = exportJFXNode.node();
-        Scene exportScene = new Scene(exportPane);
+        Scene exportScene = new Scene(exportPane, Color.TRANSPARENT);
         exportStage.setScene(exportScene);
         exportStage.show();
     }
@@ -1011,7 +1005,7 @@ public class WebApp extends Application {
 
         // Importing data
         MenuItem importMenuItem = new MenuItem("Import Dataset");
-        importMenuItem.setOnAction(actionEvent -> doImportDataSet(stage));
+        importMenuItem.setOnAction(actionEvent -> openImport(stage));
         fileMenu.getItems().add(importMenuItem);
 
         // Exporting data
