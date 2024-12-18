@@ -124,6 +124,15 @@ module dev.ikm.komet.kview {
 
     exports dev.ikm.komet.kview.controls;
     opens dev.ikm.komet.kview.controls;
+    opens dev.ikm.komet.kview.klfields.readonly to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.klfields.readonly;
+
+    opens dev.ikm.komet.kview.klfields.editable to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.klfields.editable;
+
+    provides dev.ikm.komet.kview.klfields.readonly.ReadOnlyKlStringField with dev.ikm.komet.kview.klfields.readonly.DefaultReadOnlyKlStringField;
+    provides dev.ikm.komet.kview.klfields.editable.EditableKlStringField with dev.ikm.komet.kview.klfields.editable.DefaultEditableKlStringField;
+    provides dev.ikm.komet.kview.klfields.editable.EditableKlComponentField with dev.ikm.komet.kview.klfields.editable.DefaultEditableKlComponentField;
 
     provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory, dev.ikm.komet.kview.mvvm.view.properties.PropertiesNodeFactory;
 

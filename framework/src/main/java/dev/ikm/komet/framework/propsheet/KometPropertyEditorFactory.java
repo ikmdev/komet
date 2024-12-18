@@ -189,9 +189,9 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
                     if (property.getObservableField().meaningNid() == TinkarTerm.EL_PLUS_PLUS_INFERRED_TERMINOLOGICAL_AXIOMS.nid()) {
                         premiseType = PremiseType.INFERRED;
                     }
-                    int semanticNid = property.observableField.field().semanticNid();
+                    int semanticNid = property.observableField.fieldRecord().semanticNid();
                     ObservableSemantic axiomSemantic = ObservableSemantic.get(semanticNid);
-                    ObservableSemanticVersion axiomSemanticVersion = axiomSemantic.getVersionFast(property.observableField.field().semanticVersionStampNid());
+                    ObservableSemanticVersion axiomSemanticVersion = axiomSemantic.getVersionFast(property.observableField.fieldRecord().semanticVersionStampNid());
 
                     AxiomView axiomView = AxiomView.create(axiomSemanticVersion, premiseType, viewProperties);
                     return Optional.of(axiomView);

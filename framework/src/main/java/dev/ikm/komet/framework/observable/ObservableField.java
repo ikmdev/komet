@@ -36,10 +36,14 @@ public class ObservableField<T> implements Field<T> {
     public ObservableField(FieldRecord<T> fieldRecord, boolean writeOnEveryChange) {
         this.writeOnEveryChange = writeOnEveryChange;
         fieldProperty.set(fieldRecord);
-        valueProperty.set(fieldRecord.value());
+        if (fieldRecord != null) {
+            valueProperty.set(fieldRecord.value());
+        }
         valueProperty.addListener((observable, oldValue, newValue) -> {
-            handleValueChange(newValue);
-            fieldProperty.set(field().withValue(newValue));
+            if (newValue != null) {
+                handleValueChange(newValue);
+                fieldProperty.set(fieldRecord().withValue(newValue));
+            }
         });
         refreshProperties.addListener((observable, oldValue, newValue) -> {
             if(!newValue){
@@ -65,8 +69,8 @@ public class ObservableField<T> implements Field<T> {
     public void writeToDatabase(Object newValue) {
         StampRecord stamp = Entity.getStamp(fieldProperty.get().semanticVersionStampNid());
         // Get current version
-        SemanticVersionRecord version = Entity.getVersionFast(field().semanticNid(), field().semanticVersionStampNid());
-        SemanticRecord semantic = Entity.getFast(field().semanticNid());
+        SemanticVersionRecord version = Entity.getVersionFast(fieldRecord().semanticNid(), fieldRecord().semanticVersionStampNid());
+        SemanticRecord semantic = Entity.getFast(fieldRecord().semanticNid());
         MutableList fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
         fieldsForNewVersion.set(fieldIndex(), newValue);
 
@@ -94,42 +98,46 @@ public class ObservableField<T> implements Field<T> {
         }
     }
 
-    public FieldRecord<T> field() {
+    public FieldRecord<T> fieldRecord() {
         return fieldProperty.get();
     }
 
     @Override
     public T value() {
-        return field().value();
+        return fieldRecord().value();
     }
 
     @Override
     public FieldDataType fieldDataType() {
-        return field().fieldDataType();
+        return fieldRecord().fieldDataType();
     }
 
     @Override
     public int meaningNid() {
-        return field().meaningNid();
+        return fieldRecord().meaningNid();
     }
 
     @Override
     public int purposeNid() {
-        return field().purposeNid();
+        return fieldRecord().purposeNid();
     }
 
     @Override
     public int dataTypeNid() {
-        return field().dataTypeNid();
+        return fieldRecord().dataTypeNid();
     }
 
     @Override
     public int fieldIndex() {
-        return field().fieldIndex();
+        return fieldRecord().fieldIndex();
     }
 
     public ObjectProperty<T> valueProperty() {
         return valueProperty;
+    }
+
+    public ObjectProperty<FieldRecord<T>> fieldProperty() {
+        return fieldProperty;
     }
 
 }
