@@ -107,7 +107,7 @@
         <jpackage.version>1.6.0</jpackage.version>
         <mockito.version>5.7.0</mockito.version>
         <nsmenufx.version>3.1.0</nsmenufx.version>
-        <openjfx.version>21.0.4</openjfx.version>
+        <openjfx.version>23.0.1</openjfx.version>
         <scenic-view.version>11.0.2</scenic-view.version>
     </properties>
 

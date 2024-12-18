@@ -12,7 +12,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<HBox alignment="CENTER" styleClass="descr-row-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.properties.ChangeListItemController">
+<HBox alignment="CENTER" styleClass="descr-row-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.properties.ChangeListItemController">
    <children>
       <Region fx:id="extensionVline" prefHeight="40.0" prefWidth="11.0" styleClass="extension-vline" HBox.hgrow="NEVER" />
       <VBox maxHeight="-Infinity" prefHeight="81.0" prefWidth="346.0" styleClass="descr-info-container" HBox.hgrow="ALWAYS">

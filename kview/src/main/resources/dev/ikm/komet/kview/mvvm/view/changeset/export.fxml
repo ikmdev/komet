@@ -14,7 +14,7 @@
 <?import javafx.scene.text.TextFlow?>
 
 <VBox minHeight="632.0" prefHeight="632.0" prefWidth="600.0" spacing="20.0" styleClass="white-container-border6"
-      stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="dev.ikm.komet.kview.mvvm.view.changeset.ExportController">
    <HBox>
       <Label styleClass="grey12-18pt-normal" text="Export Data Set"/>

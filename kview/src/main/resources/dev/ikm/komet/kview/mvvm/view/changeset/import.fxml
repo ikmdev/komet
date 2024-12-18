@@ -6,7 +6,7 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Text?>
 <VBox minHeight="480" prefHeight="480.0" prefWidth="600.0" spacing="20.0" styleClass="white-container-border6"
-      stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="dev.ikm.komet.kview.mvvm.view.changeset.ImportController">
     <HBox>
         <Label prefHeight="25.0" styleClass="grey12-18pt-normal" text="Import Data Set"/>

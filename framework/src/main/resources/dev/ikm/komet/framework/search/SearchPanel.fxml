@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
-            xmlns="http://javafx.com/javafx/16" fx:controller="dev.ikm.komet.framework.search.SearchPanelController">
+            xmlns="http://javafx.com/javafx/23" fx:controller="dev.ikm.komet.framework.search.SearchPanelController">
     <top>
         <GridPane BorderPane.alignment="CENTER">
             <columnConstraints>

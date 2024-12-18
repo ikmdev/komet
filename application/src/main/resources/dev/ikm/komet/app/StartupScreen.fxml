@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 
-<BorderPane fx:id="splashBorderPane" maxHeight="495.0" maxWidth="965.0" minHeight="495.0" minWidth="965.0" prefHeight="495.0" prefWidth="965.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sh.komet.fx.stage.StartupScreenController">
+<BorderPane fx:id="splashBorderPane" maxHeight="495.0" maxWidth="965.0" minHeight="495.0" minWidth="965.0" prefHeight="495.0" prefWidth="965.0" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sh.komet.fx.stage.StartupScreenController">
    <bottom>
       <ToolBar prefHeight="9.0" prefWidth="966.0" BorderPane.alignment="CENTER">
          <items>
