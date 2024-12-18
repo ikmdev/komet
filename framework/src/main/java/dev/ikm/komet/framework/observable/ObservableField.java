@@ -36,10 +36,14 @@ public class ObservableField<T> implements Field<T> {
     public ObservableField(FieldRecord<T> fieldRecord, boolean writeOnEveryChange) {
         this.writeOnEveryChange = writeOnEveryChange;
         fieldProperty.set(fieldRecord);
-        valueProperty.set(fieldRecord.value());
+        if (fieldRecord != null) {
+            valueProperty.set(fieldRecord.value());
+        }
         valueProperty.addListener((observable, oldValue, newValue) -> {
-            handleValueChange(newValue);
-            fieldProperty.set(field().withValue(newValue));
+            if (newValue != null) {
+                handleValueChange(newValue);
+                fieldProperty.set(field().withValue(newValue));
+            }
         });
         refreshProperties.addListener((observable, oldValue, newValue) -> {
             if(!newValue){
@@ -130,6 +134,10 @@ public class ObservableField<T> implements Field<T> {
 
     public ObjectProperty<T> valueProperty() {
         return valueProperty;
+    }
+
+    public ObjectProperty<FieldRecord<T>> fieldProperty() {
+        return fieldProperty;
     }
 
 }
