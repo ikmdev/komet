@@ -77,7 +77,7 @@
                <GridPane.margin>
                   <Insets right="15.0" />
                </GridPane.margin></TextField>
-            <SortedComboBox styleClass="blue-arrow-combo-box" editable="true" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Other Name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+            <SortedComboBox styleClass="blue-arrow-combo-box" disable="true" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Other Name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
                <GridPane.margin>
                   <Insets right="15.0" />
                </GridPane.margin></SortedComboBox>
