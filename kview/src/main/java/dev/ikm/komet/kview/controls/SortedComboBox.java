@@ -11,6 +11,9 @@ import javafx.scene.control.ListCell;
  * A ComboBox that always shows its items sorted when its popup is showing.
  * The sort algorithm is given by `NaturalOrder.getObjectComparator()`.
  *
+ * If the programmer has set a Converter in this SortedComboBox, it is used to convert the item that is selected
+ * to a string and then that string is set as the text that is shown.
+ *
  * @param <T> The type of the value that has been selected or otherwise entered in to this ComboBox.
  */
 public class SortedComboBox<T> extends ComboBox<T> {
@@ -38,7 +41,11 @@ public class SortedComboBox<T> extends ComboBox<T> {
                 if (item == null || empty) {
                     setText(getPromptText());
                 } else {
-                    setText(item.toString());
+                    if (getConverter() != null) {
+                        setText(getConverter().toString(item));
+                    } else {
+                        setText(item.toString());
+                    }
                 }
             }
         });
