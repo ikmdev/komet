@@ -25,8 +25,8 @@ public class DefaultEditableKlComponentField implements EditableKlComponentField
                 // if changed update value.
                 Entity entity = newValue;
                 field().valueProperty().set(newValue);
-                componentControl.setTitle(field().fieldRecord().meaning().description());
-                componentControl.setTooltip(new Tooltip(field().fieldRecord().purpose().description()));
+                componentControl.setTitle(field().field().meaning().description());
+                componentControl.setTooltip(new Tooltip(field().field().purpose().description()));
             });
 
             field().fieldProperty().addListener((observable, oldValue, newValue) -> {

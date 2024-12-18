@@ -36,9 +36,9 @@ public class DefaultEditableKlStringField implements EditableKlStringField {
                 }
             });
 
-            fieldMeaning.setTooltip(new Tooltip(field().fieldRecord().purpose().description()));
-            fieldMeaning.setText(field().fieldRecord().meaning().description());
-            fieldValue.setText(field().fieldRecord().value());
+            fieldMeaning.setTooltip(new Tooltip(field().field().purpose().description()));
+            fieldMeaning.setText(field().field().meaning().description());
+            fieldValue.setText(field().field().value());
 
             node = componentRow;
         }
