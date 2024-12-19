@@ -50,4 +50,7 @@ public class PropertyPanelEvent extends Evt {
         super(source, eventType);
         this.semantic = semantic;
     }
+    public EntityFacade getSemantic() {
+        return semantic;
+    }
 }
