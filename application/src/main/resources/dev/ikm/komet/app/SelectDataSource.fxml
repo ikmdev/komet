@@ -24,7 +24,7 @@
     <bottom>
         <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
             <items>
-                <Button defaultButton="true" mnemonicParsing="false" onAction="#okButtonPressed" prefHeight="26.0"
+                <Button fx:id="okButton" defaultButton="true" mnemonicParsing="false" onAction="#okButtonPressed" prefHeight="26.0"
                         prefWidth="62.0" text="OK"/>
                 <Button fx:id="cancelButton" cancelButton="true" mnemonicParsing="false"
                         prefHeight="26.0" prefWidth="62.0" text="Cancel"/>
