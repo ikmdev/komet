@@ -13,13 +13,38 @@ import javafx.scene.control.Skin;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * <p>KLComponentSetControl is a custom control that acts as a template capable of populating multiple,
+ * independent items, with relevant information, as part of a collection. It is made of one or more
+ * {@link KLComponentControl KLComponentControls}, where the user can add multiple entities but without
+ * duplicates.
+ * <p>When two or more distinct entities are present, these can be reordered with drag and drop
+ * gestures.</p>
+ * <p>If there are no empty KLComponentControls, a {@link javafx.scene.control.Button} allows
+ * adding one empty more, so the user can keep adding more items.
+ * </p>
+ *
+ * <pre><code>
+ * KLComponentSetControl componentSetControl = new KLComponentSetControl();
+ * componentSetControl.setTitle("Component Set Definition");
+ * componentSetControl.entitiesProperty().subscribe(entityList -> System.out.println("EntityList = " + entityList));
+ * </code></pre>
+ *
+ * @see KLComponentControl
+ * @see KLComponentListControl
+ */
 public class KLComponentSetControl extends Control {
 
+    /**
+     * Creates a KLComponentSetControl
+     */
     public KLComponentSetControl() {
         getStyleClass().add("component-set-control");
     }
 
-    // titleProperty
+    /**
+     * A string property that sets the title of the control, if any
+     */
     private final StringProperty titleProperty = new SimpleStringProperty(this, "title");
     public final StringProperty titleProperty() {
        return titleProperty;
@@ -31,7 +56,9 @@ public class KLComponentSetControl extends Control {
         titleProperty.set(value);
     }
 
-    // entitiesProperty
+    /**
+     * This property holds the list of {@link Entity Entities} that have been added to the control
+     */
     private final ListProperty<Entity<?>> entitiesProperty = new SimpleListProperty<>(FXCollections.observableList(new LinkedList<>()));
     public final ListProperty<Entity<?>> entitiesProperty() {
        return entitiesProperty;
@@ -40,11 +67,13 @@ public class KLComponentSetControl extends Control {
        return entitiesProperty.get();
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Skin<?> createDefaultSkin() {
         return new KLComponentSetControlSkin(this);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getUserAgentStylesheet() {
         return KLComponentSetControl.class.getResource("component-set-control.css").toExternalForm();
