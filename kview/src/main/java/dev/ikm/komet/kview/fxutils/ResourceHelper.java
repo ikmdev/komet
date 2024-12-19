@@ -128,5 +128,6 @@ public class ResourceHelper {
 
         String url5 = toAbsolutePath("../details/kview-details.fxml", ResourceHelper.class);
         LOG.info("Url 5 test. " + url5);
+
     }
 }

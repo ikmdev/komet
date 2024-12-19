@@ -334,6 +334,12 @@
     -fx-background-color: transparent;
 }
 
+/* common container pane used on bump outs needing scroll pane */
+.sub-container {
+    -fx-background-color: -Grey-3;
+}
+
+.sub-container .scroll-pane,
 .lidr-sub-container .scroll-pane,
 .analyte-group-container .scroll-pane,
 .axiom-container .scroll-pane {
@@ -341,7 +347,7 @@
     -fx-border-insets: 1;
     -fx-background-radius: 0 0 10 10;
 }
-
+.sub-container .scroll-pane > .viewport,
 .lidr-sub-container .scroll-pane > .viewport,
 .analyte-group-container .scroll-pane > .viewport,
 .axiom-container .scroll-pane > .viewport {
@@ -4902,4 +4908,41 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: #395C9A;
     -fx-border-width: 1px;
     -fx-border-color: #CFD8E4;
+}
+.field-separator {
+    -fx-text-fill: -Grey-7;
+    -fx-background-color: -Grey-7;
+    -fx-border-color: -Grey-7;
+    -fx-pref-height: 1px;
+    -fx-border-style: solid;
+    -fx-border-width: 0.5px;
+    -fx-orientation: horizontal;
+    -fx-halignment: center;
+    -fx-valignment: center;
+    -fx-padding: -2px 0px -2px 0px;
+}
+
+/* cancel, clear form buttons */
+.sub-container .button-bar .button {
+    -fx-border-radius: 4 4 4 4;
+    -fx-border-color: -Secondary-05;
+    -fx-border-width: 1px;
+    -fx-background-color: -Grey-2;
+    -fx-text-fill: -Secondary-05;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+}
+
+/* submit button */
+.sub-container .button-bar .primary.button {
+    -fx-border-radius: 4;
+    -fx-background-color: -Secondary-05;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-font-style: normal;
+    -fx-text-fill: -Grey-White;
+    /*-fx-border-width: 1px;*/
 }
