@@ -12,9 +12,30 @@ import javafx.scene.layout.Priority;
  * JavaFx Scene Graph Node.
  */
 public interface KometPlugin {
+    /**
+     * Retrieves a scene graph node associated with this plugin. This method is marked as deprecated
+     * and should be replaced with an alternative approach when possible.
+     *
+     * @param <SGN> The type of the scene graph node extending {@code Node}.
+     * @return The scene graph node instance.
+     * @deprecated Use klWidget
+     */
+    @Deprecated
     default <SGN extends Node> SGN sceneGraphNode() {
-        return (SGN) this;
+        return klWidget();
     };
+
+    /**
+     * Provides access to the current instance as a scene graph node.
+     * This method is a type-safe way to retrieve the instance while
+     * treating it as a specific type extending {@code Node}.
+     *
+     * @param <SGN> The type of the scene graph node extending {@code Node}.
+     * @return The current instance cast to the specified type {@code SGN}.
+     */
+    default <SGN extends Node> SGN klWidget() {
+        return (SGN) this;
+    }
 
     default ObservableMap<Object, Object> properties() {
         return sceneGraphNode().getProperties();
