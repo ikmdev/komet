@@ -16,10 +16,36 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
+/**
+ * <p>KLComponentControl is a custom control that acts as a template capable of populating a single,
+ * independent item, with relevant information.
+ * Initially, if the control is empty, the user can either:
+ * </p>
+ * <p>- type in a {@link javafx.scene.control.TextField} to search for a concept. Based on the
+ * {@link #onSearchActionProperty}, an action will be executed. The {@link #searchTextProperty} holds the text
+ * to search for.</p>
+ * <p>- or drag and drop a concept from any other external JavaFX node that holds a valid {@link Entity}.
+ * The {@link #entityProperty} keeps the entity that was added.
+ *</p>
+ * <p>When an entity is added to the control, a close button is enabled to remove it, based on
+ * the {@link #onRemoveActionProperty}.
+ * </p>
+ * <pre><code>KLComponentControl componentControl = new KLComponentControl();
+ * componentControl.setTitle("Component definition");
+ * componentControl.setOnSearchAction(e -> System.out.println("Search for " + componentControl.getSearchText()));
+ * componentControl.entityProperty().subscribe(entity -> System.out.println("Entity = " + entity));
+ * </code></pre>
+ *
+ * @see KLComponentSetControl
+ * @see KLComponentListControl
+ */
 public class KLComponentControl extends Control {
 
     private static final String SEARCH_TEXT_VALUE = "search.text.value";
 
+    /**
+     * Creates a KLComponentControl
+     */
     public KLComponentControl() {
         getStyleClass().add("component-control");
         getProperties().addListener((MapChangeListener<Object, Object>) change -> {
@@ -32,7 +58,9 @@ public class KLComponentControl extends Control {
         });
     }
 
-    // titleProperty
+    /**
+     * A string property that sets the title of the control, if any
+     */
     private final StringProperty titleProperty = new SimpleStringProperty(this, "title");
     public final StringProperty titleProperty() {
        return titleProperty;
@@ -44,7 +72,9 @@ public class KLComponentControl extends Control {
         titleProperty.set(value);
     }
 
-    // entityProperty
+    /**
+     * This property holds the {@link Entity} that has been added to the control
+     */
     private final ObjectProperty<Entity<?>> entityProperty = new SimpleObjectProperty<>(this, "entity");
     public final ObjectProperty<Entity<?>> entityProperty() {
        return entityProperty;
@@ -56,7 +86,9 @@ public class KLComponentControl extends Control {
         entityProperty.set(value);
     }
 
-    // searchTextProperty
+    /**
+     * A read only property with the text that was typed to be searched for.
+     */
     private final ReadOnlyStringWrapper searchTextProperty = new ReadOnlyStringWrapper(this, "searchText");
     public final ReadOnlyStringProperty searchTextProperty() {
        return searchTextProperty.getReadOnlyProperty();
@@ -65,7 +97,9 @@ public class KLComponentControl extends Control {
        return searchTextProperty.get();
     }
 
-    // onSearchActionProperty
+    /**
+     * A property with an action to be executed when the user types some text to be searched for.
+     */
     private final ObjectProperty<EventHandler<ActionEvent>> onSearchActionProperty = new SimpleObjectProperty<>(this, "onSearchAction");
     public final ObjectProperty<EventHandler<ActionEvent>> onSearchActionProperty() {
        return onSearchActionProperty;
@@ -77,7 +111,9 @@ public class KLComponentControl extends Control {
         onSearchActionProperty.set(value);
     }
 
-    // showAddConceptProperty
+    /**
+     * A boolean property that when true adds an extra button to the control
+     */
     private final BooleanProperty showAddConceptProperty = new SimpleBooleanProperty(this, "showAddConcept");
     public final BooleanProperty showAddConceptProperty() {
        return showAddConceptProperty;
@@ -89,7 +125,9 @@ public class KLComponentControl extends Control {
         showAddConceptProperty.set(value);
     }
 
-    // onAddConceptActionProperty
+    /**
+     * A property that defines the action to be executed when the add concept button is pressed.
+     */
     private final ObjectProperty<EventHandler<ActionEvent>> onAddConceptActionProperty = new SimpleObjectProperty<>(this, "onAddConceptAction");
     public final ObjectProperty<EventHandler<ActionEvent>> onAddConceptActionProperty() {
        return onAddConceptActionProperty;
@@ -101,7 +139,10 @@ public class KLComponentControl extends Control {
         onAddConceptActionProperty.set(value);
     }
 
-    // onRemoveActionProperty
+    /**
+     * A property with an action to be executed when the user clicks on the remove button. By default, it will
+     * remove the entity that was added.
+     */
     private final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty = new SimpleObjectProperty<>(this, "onRemoveAction", e -> setEntity(null));
     public final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty() {
        return onRemoveActionProperty;
@@ -113,11 +154,13 @@ public class KLComponentControl extends Control {
         onRemoveActionProperty.set(value);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Skin<?> createDefaultSkin() {
         return new KLComponentControlSkin(this);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getUserAgentStylesheet() {
         return KLComponentControl.class.getResource("component-control.css").toExternalForm();
