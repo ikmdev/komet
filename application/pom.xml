@@ -19,6 +19,7 @@
         <dependency>
             <groupId>com.pixelduke</groupId>
             <artifactId>fxcomponents</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

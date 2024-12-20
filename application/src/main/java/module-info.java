@@ -47,7 +47,7 @@ module dev.ikm.komet.application {
     requires nsmenufx;
     requires fr.brouillard.oss.cssfx;
     requires org.carlfx.cognitive;
-    requires com.pixelduke.fxcomponents;
+
     requires org.controlsfx.controls;
     requires dev.ikm.komet.classification;
     requires dev.ikm.komet.details;
