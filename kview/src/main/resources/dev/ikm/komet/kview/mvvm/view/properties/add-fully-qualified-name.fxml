@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import dev.ikm.komet.kview.controls.SortedComboBox?>
 
-<BorderPane minHeight="100.0" minWidth="100.0" prefWidth="487.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane minHeight="100.0" minWidth="100.0" prefWidth="487.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1">
    <top>
       <HBox alignment="TOP_CENTER" prefHeight="0.0" prefWidth="0.0" styleClass="edit-concept-label-container" BorderPane.alignment="TOP_CENTER">
          <children>

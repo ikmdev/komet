@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity"
             minHeight="-Infinity"
-            minWidth="-Infinity" prefHeight="614.0" prefWidth="741.0" xmlns="http://javafx.com/javafx/9"
+            minWidth="-Infinity" prefHeight="614.0" prefWidth="741.0" xmlns="http://javafx.com/javafx/23"
             fx:controller="dev.ikm.komet.framework.preferences.KometPreferencesController">
     <children>
         <SplitPane dividerPositions="0.35785953177257523" layoutX="126.0" layoutY="81.0" prefHeight="400.0"

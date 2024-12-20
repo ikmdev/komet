@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="topBorderPane" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.framework.window.KometStageController">
+<BorderPane fx:id="topBorderPane" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.framework.window.KometStageController">
     <bottom>
         <HBox fx:id="bottomBorderBox" prefHeight="0.0" prefWidth="866.0" BorderPane.alignment="CENTER">
             <children>
