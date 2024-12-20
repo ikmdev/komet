@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import dev.ikm.komet.kview.controls.SortedComboBox?>
+
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Button?>
+<ScrollPane styleClass="sample-container" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.sampler.controllers.SamplerSortedComboBoxController">
+    <VBox>
+        <Label layoutX="43.0" layoutY="20.0" styleClass="header" text="Sorted ComboBox" />
+        <Label fx:id="samplerDescription" styleClass="body-text" wrapText="true">
+            <VBox.margin>
+                <Insets  bottom="40.0" />
+            </VBox.margin>
+        </Label>
+        <BorderPane prefWidth="200.0" styleClass="control-container">
+            <left>
+                <VBox styleClass="inner-container">
+                    <SortedComboBox fx:id="sortedComboBox">
+                        <items>
+                            <FXCollections fx:factory="observableArrayList">
+                                <String fx:value="Carl" />
+                                <String fx:value="Andrew" />
+                                <String fx:value="Pedro" />
+                                <String fx:value="Swaroop" />
+                                <String fx:value="Doug" />
+                                <String fx:value="Keith" />
+                                <String fx:value="Samantha" />
+                                <String fx:value="Rohit" />
+                            </FXCollections>
+                        </items>
+                        <value>
+                            <String fx:value="Carl" />
+                        </value>
+                    </SortedComboBox>
+                </VBox>
+            </left>
+            <right>
+                <VBox prefHeight="100.0" styleClass="control-configuration-container" BorderPane.alignment="CENTER">
+                    <HBox spacing="5">
+                        <TextField fx:id="textField"/>
+                        <Button onAction="#onAddPressed" text="add"/>
+                    </HBox>
+                </VBox>
+            </right>
+            <VBox.margin>
+                <Insets bottom="40.0" />
+            </VBox.margin>
+        </BorderPane>
+
+        <padding>
+            <Insets bottom="60.0" right="60.0" />
+        </padding>
+    </VBox>
+</ScrollPane>
