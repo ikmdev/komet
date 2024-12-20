@@ -17,7 +17,9 @@ package dev.ikm.komet.kview.mvvm.view.stamp;
 
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
+import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.terms.State;
 import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.NodeOrientation;
@@ -28,11 +30,11 @@ import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 
+import java.util.Collections;
 import java.util.List;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 
 public class StampEditController extends AbstractBasicController {
 
@@ -77,9 +79,10 @@ public class StampEditController extends AbstractBasicController {
     @Override
     public void initialize() {
         clearView();
-        // setup modules and path radio button selection
+        // setup status modules and path radio button selection
         setupModuleSelections();
         setupPathSelections();
+        setupStatusSelections();
 
         // When user selects a radio button
         moduleToggleGroup.selectedToggleProperty().addListener((observableValue, toggle, t1) -> {
@@ -96,22 +99,43 @@ public class StampEditController extends AbstractBasicController {
             if (path != null) {
                 pathTitledPane.setText("Path: " + path.description());
             }
+        }));
 
+        statusToggleGroup.selectedToggleProperty().addListener(((observableValue, toggle, t1) -> {
+            State status = (State) t1.getUserData();
+            getStampViewModel().setPropertyValue(STATUS, status);
+            if (status != null) {
+                statusTitledPane.setText("Status: " + status.name());
+            }
         }));
     }
 
     /**
-     * sets the status to active,
+     * In Create mode sets the status to active,
      * disables the radio button inactive
      */
     public void selectActiveStatusToggle() {
-        statusToggleGroup.selectToggle(activeStatus);
-        inactiveStatus.setDisable(true);
+        if(stampViewModel.getPropertyValue(MODE) == CREATE){
+            inactiveStatus.setDisable(true);
+            activeStatus.setSelected(true);
+        }else{
+            inactiveStatus.setDisable(false);
+        }
+    }
+
+    /**
+     * Set the user data as part of the radio button.
+     */
+    private void setupStatusSelections() {
+        inactiveStatus.setUserData(State.INACTIVE);
+        activeStatus.setUserData(State.ACTIVE);
     }
 
     private void setupModuleSelections() {
         // populate modules
         List<ConceptEntity> mods = stampViewModel.getObservableList(MODULES_PROPERTY);
+        Collections.sort(mods, NaturalOrder.getObjectComparator());
+
         mods.forEach(module -> {
             RadioButton rb = new RadioButton(module.description());
             rb.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
@@ -124,9 +148,12 @@ public class StampEditController extends AbstractBasicController {
             moduleVBox.getChildren().add(rb);
         });
     }
+
     private void setupPathSelections() {
         // populate paths
         List<ConceptEntity> paths = stampViewModel.getObservableList(PATHS_PROPERTY);
+        Collections.sort(paths, NaturalOrder.getObjectComparator());
+
         paths.forEach(path -> {
             RadioButton rb = new RadioButton(path.description());
             rb.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);

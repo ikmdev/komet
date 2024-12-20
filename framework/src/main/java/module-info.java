@@ -53,7 +53,7 @@ open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.events;
     exports dev.ikm.komet.framework.events.appevents;
 
-    provides CachingService with DragRegistry.CacheProvider;
+    provides CachingService with dev.ikm.komet.framework.dnd.DragRegistry.CacheProvider;
     requires io.github.classgraph;
     requires dev.ikm.tinkar.collection;
     requires org.kordamp.ikonli.fontawesome5;
@@ -72,9 +72,10 @@ open module dev.ikm.komet.framework {
     requires static java.compiler;
     requires static dev.ikm.jpms.recordbuilder.core;
     requires transitive javafx.base;
+    requires transitive javafx.graphics;
     requires transitive javafx.controls;
     requires transitive javafx.fxml;
-    requires transitive javafx.graphics;
+    requires transitive javafx.swing;
     requires transitive org.controlsfx.controls;
     requires transitive dev.ikm.komet.preferences;
     requires transitive dev.ikm.komet.terms;
@@ -87,15 +88,16 @@ open module dev.ikm.komet.framework {
     requires transitive org.kordamp.ikonli.javafx;
     requires transitive org.slf4j;
     requires transitive dev.ikm.tinkar.ext.lang.owl; // Owl expression builder
-    uses TaskListsService;
-    uses PreferencesService;
-    uses KometNodeFactory;
+
+    uses dev.ikm.komet.framework.concurrent.TaskListsService;
+    uses dev.ikm.komet.preferences.PreferencesService;
+    uses dev.ikm.komet.framework.KometNodeFactory;
     uses dev.ikm.tinkar.common.alert.AlertReportingService;
-    uses RuleService;
+    uses dev.ikm.komet.framework.rulebase.RuleService;
 
 
     provides dev.ikm.komet.framework.events.EvtBus
-            with DefaultEvtBus;
+            with dev.ikm.komet.framework.events.DefaultEvtBus;
 
     uses dev.ikm.komet.framework.events.EvtBus;
 }

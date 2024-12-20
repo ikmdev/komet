@@ -15,10 +15,20 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.coordinate.stamp.StampFields;
-import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.ConceptEntityVersion;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -30,13 +40,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
-
 public class StampViewModel extends FormViewModel {
 
     public final static String MODULES_PROPERTY = "modules";
     public final static String PATHS_PROPERTY = "paths";
-    public final static String INCOMPLETE = "Incomplete";
+
     public StampViewModel() {
         super(); // Default to ViewMode
         addProperty(STATUS, State.ACTIVE)
@@ -59,7 +67,6 @@ public class StampViewModel extends FormViewModel {
             }
             return VALID;
         });
-
     }
 
     @Override

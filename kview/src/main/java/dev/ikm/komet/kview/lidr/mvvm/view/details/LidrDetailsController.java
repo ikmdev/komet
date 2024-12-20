@@ -33,6 +33,7 @@ import dev.ikm.komet.kview.lidr.mvvm.view.properties.PropertiesController;
 import dev.ikm.komet.kview.lidr.mvvm.viewmodel.AnalyteGroupViewModel;
 import dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
+import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.view.timeline.TimelineController;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -81,11 +82,6 @@ import static dev.ikm.komet.kview.lidr.events.ShowPanelEvent.SHOW_ADD_ANALYTE_GR
 import static dev.ikm.komet.kview.lidr.events.ShowPanelEvent.SHOW_ADD_DEVICE;
 import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.ORDINAL_CONCEPT;
 import static dev.ikm.komet.kview.lidr.mvvm.view.details.LidrRecordDetailsController.LIDR_RECORD_FXML;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CONCEPT_TOPIC;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CREATE;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.EDIT;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.*;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ViewModelHelper.addNewLidrRecord;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ViewModelHelper.toStampDetail;
@@ -95,7 +91,7 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 
 public class LidrDetailsController {
     private static final Logger LOG = LoggerFactory.getLogger(LidrDetailsController.class);
-    public static final String EDIT_STAMP_OPTIONS_FXML = "edit-stamp.fxml";
+    public static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
     public static final URL LIDR_PROPERTIES_VIEW_FXML_URL = PropertiesController.class.getResource("lidr-properties.fxml");
 
     protected static final String CONCEPT_TIMELINE_VIEW_FXML_FILE = "timeline.fxml";
@@ -198,10 +194,10 @@ public class LidrDetailsController {
      * Used slide out the properties view
      */
     @FXML
-    private Pane propertiesSlideoutTrayPane;
+    private VerticallyFilledPane propertiesSlideoutTrayPane;
 
     @FXML
-    private Pane timelineSlideoutTrayPane;
+    private VerticallyFilledPane timelineSlideoutTrayPane;
 
     /**
      * A function from the caller. This class passes a boolean true if classifier button is pressed invoke caller's function to be returned a view.
@@ -435,13 +431,8 @@ public class LidrDetailsController {
         clipChildren(slideoutTrayPane, 0);
         contentViewPane.setLayoutX(-width);
         slideoutTrayPane.setMaxWidth(0);
-
-        Region contentRegion = contentViewPane;
-        // binding the child's height to the preferred height of hte parent
-        // so that when we resize the window the content in the slide out pane
-        // aligns with the details view
-        contentRegion.prefHeightProperty().bind(slideoutTrayPane.heightProperty());
     }
+
     private Consumer<LidrDetailsController> onCloseConceptWindow;
     public void setOnCloseConceptWindow(Consumer<LidrDetailsController> onClose) {
         this.onCloseConceptWindow = onClose;
@@ -494,6 +485,11 @@ public class LidrDetailsController {
             updateStampViewModel(EDIT, stamp);
         }
 
+        if(entityFacade == null){
+            getStampViewModel().setPropertyValue(MODE, CREATE);
+        }else {
+            getStampViewModel().setPropertyValue(MODE, EDIT);
+        }
         // Display info for top banner area
         updateDeviceBanner();
 
@@ -606,7 +602,7 @@ public class LidrDetailsController {
         deviceSummaryText.setText(entityFacade.description());
 
         // Update manufacturer if one exists
-        Optional<Concept> mfg = DataModelHelper.findDeviceManufacturer(entityFacade.publicId());
+        Optional<ConceptFacade> mfg = DataModelHelper.findDeviceManufacturer(entityFacade.publicId());
         mfg.ifPresentOrElse(concept -> mfgSummaryText.setText(
                 ((ConceptFacade) concept).description()),
                 ()-> mfgSummaryText.setText("")
@@ -678,6 +674,7 @@ public class LidrDetailsController {
     public void popupStampEdit(ActionEvent event) {
         if (stampEdit !=null && stampEditController != null) {
             stampEdit.show((Node) event.getSource());
+            stampEditController.selectActiveStatusToggle();
             return;
         }
 
@@ -693,6 +690,8 @@ public class LidrDetailsController {
         StampEditController stampEditController = stampJFXNode.controller();
 
         stampEditController.updateModel(getViewProperties());
+        stampEditController.selectActiveStatusToggle();
+
         popOver.setOnHidden(windowEvent -> {
             // set Stamp info into Details form
             getStampViewModel().save();
@@ -722,6 +721,7 @@ public class LidrDetailsController {
         }
         String moduleDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleEntity.nid());
         moduleText.setText(moduleDescr);
+
         ConceptEntity pathEntity = stampViewModel.getValue(PATH);
         String pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
         pathText.setText(pathDescr);

@@ -13,11 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
-import dev.ikm.komet.kview.mvvm.view.properties.PropertiesNodeFactory;
-import dev.ikm.komet.framework.KometNodeFactory;
-
 module dev.ikm.komet.kview {
     requires transitive dev.ikm.komet.framework;
     requires dev.ikm.komet.search;
@@ -28,6 +23,14 @@ module dev.ikm.komet.kview {
     requires org.carlfx.cognitive;
     requires org.carlfx.axonic;
     requires dev.ikm.tinkar.composer;
+    requires dev.ikm.jpms.google.common;
+
+    // JPro related modules
+    requires jpro.webapi;
+    requires one.jpro.platform.auth.core;
+    requires one.jpro.platform.file;
+
+    requires transitive dev.ikm.komet.layout;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
@@ -94,11 +97,20 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.progress to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.progress;
 
+    // General editing
+    opens dev.ikm.komet.kview.mvvm.view.genediting to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.genediting;
+    exports dev.ikm.komet.kview.events.genediting;
 
     // TODO a temporary export screen for next gen ui.
-    opens dev.ikm.komet.kview.mvvm.view.export;
-    exports dev.ikm.komet.kview.mvvm.view.export;
+    opens dev.ikm.komet.kview.mvvm.view;
     exports dev.ikm.komet.kview.mvvm.view;
+
+    opens dev.ikm.komet.kview.mvvm.view.changeset;
+    exports dev.ikm.komet.kview.mvvm.view.changeset;
+
+    opens dev.ikm.komet.kview.mvvm.view.login;
+    exports dev.ikm.komet.kview.mvvm.view.login;
 
     exports dev.ikm.komet.kview.mvvm.view.descriptionname;
     opens dev.ikm.komet.kview.mvvm.view.descriptionname to javafx.fxml, org.carlfx.cognitive;
@@ -107,7 +119,22 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.pattern to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.events.pattern;
 
-    provides KometNodeFactory with DetailsNodeFactory, PropertiesNodeFactory;
+    exports dev.ikm.komet.kview.mvvm.view.navigation;
+    opens dev.ikm.komet.kview.mvvm.view.navigation to javafx.fxml, org.carlfx.cognitive;
+
+    exports dev.ikm.komet.kview.controls;
+    opens dev.ikm.komet.kview.controls;
+    opens dev.ikm.komet.kview.klfields.readonly to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.klfields.readonly;
+
+    opens dev.ikm.komet.kview.klfields.editable to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.klfields.editable;
+
+    provides dev.ikm.komet.kview.klfields.readonly.ReadOnlyKlStringField with dev.ikm.komet.kview.klfields.readonly.DefaultReadOnlyKlStringField;
+    provides dev.ikm.komet.kview.klfields.editable.EditableKlStringField with dev.ikm.komet.kview.klfields.editable.DefaultEditableKlStringField;
+    provides dev.ikm.komet.kview.klfields.editable.EditableKlComponentField with dev.ikm.komet.kview.klfields.editable.DefaultEditableKlComponentField;
+
+    provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory, dev.ikm.komet.kview.mvvm.view.properties.PropertiesNodeFactory;
 
     uses dev.ikm.komet.framework.events.EvtBus;
 }

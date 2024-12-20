@@ -17,11 +17,18 @@ package dev.ikm.komet.app.test;
 
 import static dev.ikm.tinkar.terms.EntityProxy.Concept;
 import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
+import static dev.ikm.tinkar.terms.TinkarTerm.DEFINITION_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_PATTERN;
 import static dev.ikm.tinkar.terms.TinkarTerm.ENGLISH_LANGUAGE;
 import static dev.ikm.tinkar.terms.TinkarTerm.PREFERRED;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.mvvm.model.DescrName;
+import dev.ikm.komet.kview.mvvm.model.PatternField;
+import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.CachingService;
@@ -34,15 +41,25 @@ import dev.ikm.tinkar.composer.assembler.PatternAssembler;
 import dev.ikm.tinkar.composer.assembler.SemanticAssembler;
 import dev.ikm.tinkar.composer.template.FullyQualifiedName;
 import dev.ikm.tinkar.composer.template.USDialect;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.FieldDefinitionRecord;
+import dev.ikm.tinkar.entity.PatternRecord;
+import dev.ikm.tinkar.entity.PatternVersionRecord;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PatternViewModelTest {
 
@@ -88,24 +105,80 @@ public class PatternViewModelTest {
 
         Platform.startup(() -> {
             setUpBefore();
-            try {
-                PatternViewModelTest testHarness = new PatternViewModelTest();
-
-                // create the pattern definition
-                PublicId patternPublicId = testHarness.createPattern();
-                LOG.info(patternPublicId.toString());
-                composer.commitSession(session);
-
-            } catch (Throwable e) {
-                e.printStackTrace();
-                tearDownAfter();
-                System.exit(0);
-            }
+            PatternViewModelTest testHarness = new PatternViewModelTest();
+            testHarness.summonPatternTest();
+           // create the pattern definition
+            PublicId patternPublicId = testHarness.createPattern();
+            LOG.info(patternPublicId.toString());
+            composer.commitSession(session);
             tearDownAfter();
             System.exit(0);
         });
     }
 
+    public void summonPatternTest () {
+        // Some UUIDS that can be used for testing:
+        // 561f817a-130e-5e56-984d-910e9991558c
+        //c6553e16-dad5-51ff-a697-85b63d659fd3
+        //91b9b62d-477c-493a-b42e-a34f92b2d27c
+        //922697f7-36ba-4afc-9dd5-f29d54b0fdec
+        //7a145080-81e2-45c5-9ac1-76aae23888ab
+        Entity entity = EntityService.get().getEntityFast(UUID.fromString("7a145080-81e2-45c5-9ac1-76aae23888ab"));
+        ViewProperties viewProperties = createViewProperties();
+        ViewCalculator viewCalculator = viewProperties.calculator();
+        LOG.info( " SUMMON Pattern: " + entity);
+        //Load the Pattern Fields.
+        ImmutableList<FieldDefinitionRecord> fieldDefinitionRecords = ((PatternRecord) entity).versions().getLastOptional().get().fieldDefinitions();
+        fieldDefinitionRecords.stream().forEachOrdered( fieldDefinitionForEntity ->
+        {
+            EntityVersion latest = (EntityVersion) viewCalculator.latest(fieldDefinitionForEntity.meaning()).get();
+            PatternField patternField = new PatternField(fieldDefinitionForEntity.meaning().description(), fieldDefinitionForEntity.dataType(),
+            fieldDefinitionForEntity.purpose(), fieldDefinitionForEntity.meaning(), "", latest.stamp());
+            LOG.info("Pattern FIELDS: " + patternField.displayName());
+        });
+
+        Latest<EntityVersion> latestEntityVersion = viewCalculator.latest(entity);
+        EntityVersion entityVersion = latestEntityVersion.get();
+
+        Entity purposeEntity = ((PatternVersionRecord) entityVersion).semanticPurpose();
+        Entity meaningEntity = ((PatternVersionRecord) entityVersion).semanticMeaning();
+
+        LOG.info("Purpose: " +purposeEntity);
+        LOG.info("Meaning: " +meaningEntity);
+
+        AtomicInteger counter = new AtomicInteger(0);
+        viewCalculator.getFieldForSemanticWithMeaning(entity.nid(), TinkarTerm.MEANING.nid());
+        viewCalculator.forEachSemanticVersionForComponentOfPattern(entity.nid(), TinkarTerm.DESCRIPTION_PATTERN.nid(),
+                (semanticEntityVersion,  entityVersion1, patternEntityVersion) -> {
+
+            ConceptFacade language = (ConceptFacade) semanticEntityVersion.fieldValues().get(0);
+            String string = (String) semanticEntityVersion.fieldValues().get(1);
+            ConceptFacade caseSignificance = (ConceptFacade) semanticEntityVersion.fieldValues().get(2);
+            ConceptFacade descriptionType = (ConceptFacade) semanticEntityVersion.fieldValues().get(3);
+            DescrName descrName = new DescrName(null, string, descriptionType,
+            Entity.getFast(caseSignificance.nid()), Entity.getFast(semanticEntityVersion.state().nid()), Entity.getFast(semanticEntityVersion.module().nid()),
+            Entity.getFast(language.nid()), semanticEntityVersion.publicId());
+            System.out.println(descrName.toString());
+                if(PublicId.equals(descriptionType.publicId(),TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.publicId())){
+                    // set Property Value FQN D
+                    LOG.info(" Add to FQN : " + descrName.getNameText());
+                } else if(PublicId.equals(descriptionType.publicId(), REGULAR_NAME_DESCRIPTION_TYPE.publicId())) {
+                    // add to list.
+                    LOG.info(" Add to Other Name : " + descrName.getNameText());
+                } else if (PublicId.equals(descriptionType.publicId(), DEFINITION_DESCRIPTION_TYPE.publicId())) {
+                    LOG.info(" Add to Definition Name : " + descrName.getNameText());
+
+                }
+        });
+    }
+    public static ViewProperties createViewProperties() {
+        // TODO how do we get a viewProperties?
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        KometPreferences windowPreferences = appPreferences.node("main-komet-window");
+        WindowSettings windowSettings = new WindowSettings(windowPreferences);
+        ViewProperties viewProperties = windowSettings.getView().makeOverridableViewProperties();
+        return viewProperties;
+    }
 
     /**
      * test creating a pattern using the composer API

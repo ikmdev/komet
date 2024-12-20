@@ -36,13 +36,14 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="456.0" prefHeight="560.0" prefWidth="727.0" style="-fx-background-color: transparent;" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
+<?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
+<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="560.0" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
    <center>
-      <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0" style="-fx-background-color: transparent;">
+      <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0">
          <top>
-            <VBox style="-fx-background-color: transparent;" BorderPane.alignment="CENTER">
+            <VBox BorderPane.alignment="CENTER">
                <children>
-                  <FlowPane style="-fx-background-color: transparent;" styleClass="rounded-top">
+                  <FlowPane styleClass="rounded-top">
                      <children>
                         <HBox prefHeight="18.0" spacing="4.0" style="-fx-background-color: -Natural-Grey-Main;">
                            <styleClass>
@@ -158,15 +159,15 @@
             </VBox>
          </top>
          <right>
-            <HBox BorderPane.alignment="CENTER">
+            <HBox styleClass="main-right-container" BorderPane.alignment="CENTER">
                <children>
-                  <Pane fx:id="propertiesSlideoutTrayPane" styleClass="slideout-tray-pane" />
-                  <Pane fx:id="timelineSlideoutTrayPane" styleClass="slideout-tray-pane" />
+                  <VerticallyFilledPane fx:id="propertiesSlideoutTrayPane" styleClass="slideout-tray-pane" />
+                  <VerticallyFilledPane fx:id="timelineSlideoutTrayPane" styleClass="slideout-tray-pane" />
                </children>
             </HBox>
          </right>
          <center>
-            <BorderPane prefWidth="762.0" BorderPane.alignment="CENTER">
+            <BorderPane styleClass="main-center-container" prefWidth="762.0" BorderPane.alignment="CENTER">
                <center>
                   <VBox focusTraversable="true" maxHeight="1.7976931348623157E308" opacity="0.92" prefWidth="762.0">
                      <children>
@@ -185,30 +186,30 @@
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                        </rowConstraints>
                                        <children>
-                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 600; -fx-fill: -Grey-12;" text="SEMANTIC MEANING:" wrappingWidth="121.474609375">
+                                          <Text GridPane.columnIndex="1" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 600; -fx-fill: -Grey-12;" text="SEMANTIC MEANING:" wrappingWidth="121.474609375">
                                              <font>
                                                 <Font name="Noto Sans Batak Regular" size="12.0" />
                                              </font>
                                           </Text>
                                           <Label />
-                                          <Text fx:id="semanticMeaningText" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="227.6090087890625">
+                                          <Text GridPane.columnIndex="1" fx:id="semanticMeaningText" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="227.6090087890625">
                                              <font>
                                                 <Font name="Noto Sans Batak Regular" size="13.0" />
                                              </font>
                                           </Text>
-                                          <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 500; -fx-fill: -Grey-12;" text="SEMANTIC PURPOSE" wrappingWidth="117.490234375" GridPane.columnIndex="1">
+                                          <Text GridPane.columnIndex="0" fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 500; -fx-fill: -Grey-12;" text="SEMANTIC PURPOSE" wrappingWidth="117.490234375" >
                                              <font>
                                                 <Font name="Open Sans Bold" size="14.0" />
                                              </font>
                                           </Text>
-                                          <Text fx:id="purposeDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-normal-grey-eight" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                          <Text GridPane.columnIndex="0" GridPane.rowIndex="2" fx:id="purposeDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-normal-grey-eight" >
                                              <font>
                                                 <Font name="Noto Sans Batak Regular" size="13.0" />
                                              </font>
                                           </Text>
-                                          <Text fx:id="meaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" GridPane.rowIndex="1" />
-                                          <Text fx:id="meaningDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-normal-grey-eight" GridPane.rowIndex="2" />
-                                          <Text fx:id="purposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                          <Text GridPane.columnIndex="1" GridPane.rowIndex="1" fx:id="meaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve"  />
+                                          <Text GridPane.columnIndex="1" GridPane.rowIndex="2" fx:id="meaningDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-normal-grey-eight"  />
+                                          <Text  GridPane.columnIndex="0" GridPane.rowIndex="1" fx:id="purposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" />
                                        </children>
                                     </GridPane>
                                  </content>
@@ -491,7 +492,7 @@
                                                 <Insets top="4.0" />
                                              </HBox.margin>
                                           </Separator>
-                                          <Button fx:id="editFieldsButton" mnemonicParsing="false" onAction="#showAddFieldsPanel" styleClass="add-pencil-button" text="Button">
+                                          <Button fx:id="addFieldsButton" mnemonicParsing="false" onAction="#showAddFieldsPanel" styleClass="add-pencil-button" text="Button">
                                              <graphic>
                                                 <Region prefHeight="200.0" prefWidth="200.0" styleClass="add-pencil" stylesheets="@../kview.css" />
                                              </graphic>
@@ -511,7 +512,6 @@
                      </opaqueInsets>
                      <styleClass>
                         <String fx:value="lidr-detail-pane" />
-                        <String fx:value="rounded-bottom" />
                      </styleClass>
                   </VBox>
                </center>
@@ -692,5 +692,6 @@
    <styleClass>
       <String fx:value="concept-detail-pane" />
       <String fx:value="lidr-container" />
+      <String fx:value="pattern-window" />
    </styleClass>
 </BorderPane>

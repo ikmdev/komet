@@ -22,6 +22,8 @@ import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
+import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.common.ConceptDragOverAnimationController;
 import dev.ikm.komet.kview.mvvm.view.common.ConceptSearchFormItemController;
@@ -65,11 +67,13 @@ import java.util.stream.IntStream;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.ADD_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_CONTINUE_ADD_FIELDS;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_CONTINUE_EDIT_FIELDS;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchFieldDefinitionDataTypes;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 
 public class PatternFieldsController {
 
@@ -331,7 +335,7 @@ public class PatternFieldsController {
                     LOG.info("publicId: " + dragboard.getString());
 
                     HBox hbox = (HBox) event.getGestureSource();
-                    PublicId publicId = (PublicId) hbox.getUserData();
+                    PublicId publicId = ((DragAndDropInfo) hbox.getUserData()).publicId();
 
                     consumer.accept(publicId);
                     success = true;
@@ -508,9 +512,6 @@ public class PatternFieldsController {
             // when there are validators, we potentially will have errors
             return; // do not proceed.
         }
-        //publish close env
-        EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
-                new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
 
         //publish form submission data
         PatternField patternField = new PatternField(
@@ -518,15 +519,22 @@ public class PatternFieldsController {
                 patternFieldsViewModel.getValue(DATA_TYPE),
                 patternFieldsViewModel.getValue(PURPOSE_ENTITY),
                 patternFieldsViewModel.getValue(MEANING_ENTITY),
-                patternFieldsViewModel.getValue(COMMENTS)
-        );
+                patternFieldsViewModel.getValue(COMMENTS),
+                null);
 
         PatternField previousPatternField = patternFieldsViewModel.getValue(PREVIOUS_PATTERN_FIELD);
 
         // This logic can be improvised.
         EvtType<PatternFieldsPanelEvent> eventType = EDIT_FIELD;
-        if(previousPatternField == null){
+        int totalFields = fieldOrderComboBox.getItems().size();
+        if (previousPatternField == null) {
              eventType = ADD_FIELD;
+            //publish event to get to the continue adding confirmation panel
+            EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
+                    new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_CONTINUE_ADD_FIELDS, totalFields));
+        } else {
+            EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),
+                    new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_CONTINUE_EDIT_FIELDS, totalFields));
         }
 
         EvtBusFactory.getDefaultEvtBus().publish(patternFieldsViewModel.getPropertyValue(PATTERN_TOPIC),

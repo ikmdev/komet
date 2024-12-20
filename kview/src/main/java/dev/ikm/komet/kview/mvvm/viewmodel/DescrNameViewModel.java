@@ -67,6 +67,8 @@ public class DescrNameViewModel extends FormViewModel {
 
     public static final String IS_INVALID = "isInvalid";
 
+    public static final String PREVIOUS_DESCRIPTION_DATA = "previousDescriptionData";
+
     public DescrNameViewModel() {
         super(); // defaults to View mode
                 addProperty(NAME_TEXT, "")
@@ -112,7 +114,8 @@ public class DescrNameViewModel extends FormViewModel {
                 .addProperty(TITLE_TEXT, "")
                 .addProperty(DESCRIPTION_NAME_TYPE, "")
                 .addProperty(IS_INVALID, true)
-        ;
+                .addProperty(PREVIOUS_DESCRIPTION_DATA, (DescrName) null)
+            ;
     }
 
     public Set<ConceptEntity> findAllLanguages(ViewProperties viewProperties) {
@@ -241,6 +244,17 @@ public class DescrNameViewModel extends FormViewModel {
                 getValue(LANGUAGE),
                 getValue(SEMANTIC_PUBLIC_ID)
         );
+    }
+
+    public void updateData(DescrName editDescrName) {
+        editDescrName.setParentConcept(getValue(PARENT_PUBLIC_ID));
+        editDescrName.setNameText(getValue(NAME_TEXT));
+        editDescrName.setNameType(getValue(NAME_TYPE));
+        editDescrName.setCaseSignificance(getValue(CASE_SIGNIFICANCE));
+        editDescrName.setStatus(getValue(STATUS));
+        editDescrName.setModule(getValue(MODULE));
+        editDescrName.setLanguage(getValue(LANGUAGE));
+        editDescrName.setSemanticPublicId(getValue(SEMANTIC_PUBLIC_ID));
     }
 
     public void updateOtherName(PublicId publicId) {

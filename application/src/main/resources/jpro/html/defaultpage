@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>KOMET Web application</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Komet is a health care interoperability solution that seeks to translate and integrate terminology standards used in health care settings">
+
+    <link rel="stylesheet" type="text/css" href="/jpro/css/jpro-fullscreen.css">
+    <link rel="stylesheet" type="text/css" href="/jpro/css/jpro.css">
+
+    <script src="/jpro/js/jpro.js" type="text/javascript"></script>
+</head>
+
+<body>
+
+    <jpro-app href="/app/default?singleton=true" nativescrolling="true" fullscreen="true" printJSCommands="true"></jpro-app>
+
+</body>
+
+</html>
