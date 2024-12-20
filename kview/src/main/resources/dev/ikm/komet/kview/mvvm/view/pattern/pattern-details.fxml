@@ -52,7 +52,7 @@
                            </styleClass>
                            <children>
                               <Region prefHeight="12.0" prefWidth="8.4" styleClass="lidr-tab-icon" />
-                              <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="lidr-tab-text" text="Pattern" />
+                              <Text fx:id="patternText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="lidr-tab-text" text="Pattern" />
                            </children>
                            <cursor>
                               <Cursor fx:constant="CLOSED_HAND" />

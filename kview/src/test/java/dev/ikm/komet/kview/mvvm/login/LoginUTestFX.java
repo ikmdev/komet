@@ -55,7 +55,7 @@ import static org.mockito.Mockito.mockStatic;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(ApplicationExtension.class)
-public class LoginTest {
+public class LoginUTestFX {
 
     private static final String SIGN_IN_BUTTON_ID = "#signInButton";
     private static final String USERNAME_TEXTFIELD_ID = "#usernameTextField";
@@ -68,7 +68,7 @@ public class LoginTest {
     public static final String PASSWORD_ERROR_MSG = "Password is required and must be greater than 5 characters.";
     public static final String AUTH_ERROR_MSG = "Authentication failed: Invalid credentials.";
 
-    private static final Logger LOG = LoggerFactory.getLogger(LoginTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LoginUTestFX.class);
     private static final String ORIGINAL_USER_HOME = System.getProperty("user.home");
     private static final String SOLOR_DIR_NAME = "Solor";
     private static final String USERS_INI_FILE_NAME = "users.ini";
