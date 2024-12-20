@@ -9,54 +9,38 @@ on:
 
 env:
   BRANCH_NAME: ${{github.ref_name}}
-  IS_TAG: ${{contains(github.ref_type, 'tag')}}
 
 jobs:
+  pr-verification:
+    name: Pull Request Validation
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Pull Request Version Validation
+        uses: ikmdev/maven-pull-request-version-validation-action@v1.0.0
+
   build-job:
     name: Build Job
     runs-on: ubuntu-24.04
-    outputs:
-      RELEASE_UPLOAD_URL: ${{steps.upload_url.outputs.RELEASE_UPLOAD_URL}}
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
       - uses: actions/setup-java@v4
         with:
             java-version: '21'
             distribution: 'zulu'
-
+          
       - name: Build IKMDEV Code
-        uses: ikmdev/maven-clean-install-build-action@main
+        uses: ikmdev/maven-clean-install-build-action@v2.0.0
         with:
           branch_name: ${{env.BRANCH_NAME}}
-          sonarcloud_token: ${{ secrets.SONAR_TOKEN }}
-          sonarcloud_host_url: ${{ 'https://sonarcloud.io/'}}
-          sonarcloud_organization: ${{ github.repository_owner }}
-          sonarcloud_sources: ${{ 'src/main/java' }}
-          sonarcloud_projectKey: ${{ github.repository_owner }}_${{ github.event.repository.name }}
-          sonarcloud_coverage_jacoco_xmlReportPaths: ${{ 'target/site/jacoco/jacoco.xml' }}
-          sonarcloud_java_binaries: ${{ 'target/classes' }}
-          sonarcloud_tests: ${{ '' }}
-
-
-      - name: Get Release URL (Tag)
-        id: get_tag_release_url
-        if: env.IS_TAG == 'true'
-        uses: octokit/request-action@v2.x
-        with:
-          route: GET /repos/${{github.repository}}/releases/tags/${{env.BRANCH_NAME}}
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-           
-      
-      - name: Print & Assign Release Upload Url (Tag)
-        if: env.IS_TAG == 'true'
-        id: upload_url
-        run: | 
-         echo "RELEASE_UPLOAD_URL=${{fromJson(steps.get_tag_release_url.outputs.data).upload_url}}" >> $GITHUB_OUTPUT
      
 
   generate_build_installers:
-    name: Generate Release Installers
+    name: Generate Snapshot Installers
     needs: build-job
+    if: ${{!contains(github.ref_type, 'tag')}}
     strategy:
       matrix:
         os: [macos-13, macos-14, ubuntu-20.04, windows-2022]
@@ -75,9 +59,8 @@ jobs:
          uses: ./.github/installer_composite
          with:
             branch_name: ${{ env.BRANCH_NAME }}
-            isTag: ${{env.IS_TAG}}
-            release_upload_url: ${{ needs.build-job.outputs.RELEASE_UPLOAD_URL || '' }}
+            isTag: "false"
+            release_upload_url: ${{ '' }}
             github_token: ${{secrets.GITHUB_TOKEN}}
             operating_system: ${{matrix.os}}
         
-

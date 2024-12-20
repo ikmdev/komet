@@ -1,14 +1,29 @@
-name: Release Workflow
+
+name: SemVer Release Workflow
 
 run-name: "Releasing ${{ github.event.repository.name }} #${{github.run_number}}"
 
 # Trigger workflow manually
 on:
   workflow_dispatch:
+    inputs:
+      release_version:
+        type: string
+        description: "(Optional) Custom Release Version"
+        required: false
+      version_type:
+        description: 'Development version type to increment'
+        required: true
+        default: 'minor'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
 
 env:
-  BRANCH_NAME: ${{github.ref_name}}
-  TRUNK_BRANCH_NAME: 'main'
+  BRANCH_NAME: ${{ github.ref_name }}
+  TRUNK_BRANCH_NAME: ${{ github.event.repository.default_branch }}
 
 jobs:
   release:
@@ -19,17 +34,17 @@ jobs:
       - name: Verify Branch
         if: env.BRANCH_NAME != env.TRUNK_BRANCH_NAME
         run: |
-          echo "ERROR: Attempting to release from branch ${{env.BRANCH_NAME}}. Release from ${{env.TRUNK_BRANCH_NAME}} branch only"
+          echo "ERROR: Attempting to release from branch ${{ env.BRANCH_NAME }}. Release from ${{ env.TRUNK_BRANCH_NAME }} branch only."
           exit 1
 
-      - name: Release IKMDEV Code
-        id: release_ikmdev_codes
-        uses: ikmdev/maven-release-action@komet
+      - name: Checkout Repository
+        uses: actions/checkout@v4
         with:
-          ikmdevops_pat: ${{secrets.IKMDEVOPS_PAT_TOKEN}}
+          token: ${{secrets.IKMDEVOPS_PAT_TOKEN}}
+
+      - name: Shared Release Action
+        uses: ikmdev/maven-semver-release-action@v1.0.0
+        with:
+          version_type: ${{ github.event.inputs.version_type }}
           github_token: ${{secrets.GITHUB_TOKEN}}
-          ossrh_username: ${{secrets.OSSRH_TOKEN_USER}}
-          ossrh_token: ${{secrets.OSSRH_TOKEN_PASS}}
-          gpg_key: ${{secrets.GPG_KEY}}
-          gpg_passphrase: ${{secrets.GPG_PASSPHRASE}}
-            
+          release_version: ${{ github.event.inputs.release_version }}
