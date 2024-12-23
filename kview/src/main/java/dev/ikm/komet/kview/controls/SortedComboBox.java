@@ -30,6 +30,7 @@ public class SortedComboBox<T> extends ComboBox<T> {
     private void init() {
         itemsProperty().addListener(this::onItemsChanged);
         addListenerToItems();
+        sortItemsInComboBox();
 
         // Code below fixes IIA-1139. JavaFX Comboboxes have a weird behavior in that the prompt text can get cleared when interacting
         // with them and never comes back again
@@ -52,6 +53,7 @@ public class SortedComboBox<T> extends ComboBox<T> {
 
     private void onItemsChanged(Observable observable) {
         addListenerToItems();
+        sortItemsInComboBox();
     }
 
     private void addListenerToItems() {
@@ -61,8 +63,12 @@ public class SortedComboBox<T> extends ComboBox<T> {
     private void onChanged(ListChangeListener.Change<? extends T> change) {
         while (change.next()) {
             if (change.wasAdded()) {
-                getItems().sort(NaturalOrder.getObjectComparator());
+                sortItemsInComboBox();
             }
         }
+    }
+
+    private void sortItemsInComboBox() {
+        getItems().sort(NaturalOrder.getObjectComparator());
     }
 }
