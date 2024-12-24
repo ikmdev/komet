@@ -26,6 +26,7 @@ public abstract class StringFieldAbstract implements KlStringField {
     protected final Label meaningLabel = new Label("A string:");
     protected final Tooltip purposeTooltip = new Tooltip("The purpose of this field");
     protected final Control stringControl;
+    //FIXME we need to be able to choose our control
     protected final HBox widgetContainer;
 
     /**
@@ -42,10 +43,12 @@ public abstract class StringFieldAbstract implements KlStringField {
     public StringFieldAbstract(ObservableField<String> observableStringField, Control stringControl, ObservableView observableView) {
         this.observableStringField = observableStringField;
         this.observableView = observableView;
-        this.meaningLabel.setText(observableView.getDescriptionTextOrNid(observableStringField.meaningNid()));
+        //FIXME this is a temporary formatting
+        this.meaningLabel.setText(observableView.getDescriptionTextOrNid(observableStringField.meaningNid()) + ": ");
         this.purposeTooltip.setText(observableView.getDescriptionTextOrNid(observableStringField.purposeNid()));
         this.stringControl = stringControl;
-        this.widgetContainer = new HBox(/*new Label("The string: "),*/ stringControl);
+        //FIXME we don't want to hard code a Label or HBox here
+        this.widgetContainer = new HBox(meaningLabel, stringControl);
         Tooltip.install(widgetContainer, purposeTooltip);
         // TODO: put listener on the ObservableView, and update presentation if the view changes.
     }

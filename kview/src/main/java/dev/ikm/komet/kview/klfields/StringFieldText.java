@@ -21,7 +21,7 @@ public class StringFieldText extends StringFieldAbstract implements KlStringFiel
     private StringFieldText(ObservableField<String> observableStringField, ObservableView observableView) {
         super(observableStringField, new TextField("The string"), observableView);
         getValueControl().setText(observableStringField.value());
-        getValueControl().textProperty().bind(observableStringField.valueProperty());
+        getValueControl().textProperty().bindBidirectional(observableStringField.valueProperty());
     }
 
     /**

@@ -119,10 +119,9 @@ public class SemanticFieldsController {
 
                 ObservableField<String> stringObservableField =observableFields.get(fieldRecord.fieldIndex());
 
+                //StringField klWidget returns the widget container which is an HBox with a hard coded label
                 node = stringFieldTextFactory.create(stringObservableField, observableViewBase).klWidget();
 
-                //KlField klField = editFieldFactory.createStringField(fieldRecord);
-                //node = klField.sceneGraphNode();
                 node.setUserData(stringObservableField);
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 node = rowf.createReadOnlyComponentSet(getViewProperties(), fieldRecord);
@@ -164,10 +163,6 @@ public class SemanticFieldsController {
             if (observableField != null) {
                 observableField.writeToDataBase();
             }
-//            KlField klField = (KlField) node.getUserData();
-//            if (klField != null) {
-//                klField.field().writeToDataBase();
-//            }
         });
 //        clearView(actionEvent);
     }
