@@ -26,9 +26,6 @@ import jdk.jfr.Name;
  *    instance using the provided observable field and view.
  * 2. {@code getFieldInterface()}: Returns the interface type that this factory produces, i.e., {@link StringFieldLabel}.
  */
-@Name("Read-only String Field Factory")
-@Description("A String field that uses a Label to present the field. " +
-        "The field is not editable because the Label does not support editing.")
 public class StringFieldLabelFactory implements FieldFactory<String> {
     public StringFieldLabelFactory() {
     }
@@ -53,6 +50,17 @@ public class StringFieldLabelFactory implements FieldFactory<String> {
     @Override
     public Class<StringFieldLabel> getFieldInterface() {
         return StringFieldLabel.class;
+    }
+
+    @Override
+    public String getName() {
+        return "Read-only String Field Factory";
+    }
+
+    @Override
+    public String getDescription() {
+        return "A String field that uses a Label to present the field. " +
+                "The field is not editable because the Label does not support editing.";
     }
 }
 

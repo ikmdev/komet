@@ -26,4 +26,8 @@ public interface FieldFactory<T> {
      *         interface extending {@link KlField}.
      */
     Class<? extends KlField<T>> getFieldInterface();
+
+    String getName();
+
+    String getDescription();
 }

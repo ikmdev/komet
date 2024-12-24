@@ -45,7 +45,7 @@ public abstract class StringFieldAbstract implements KlStringField {
         this.meaningLabel.setText(observableView.getDescriptionTextOrNid(observableStringField.meaningNid()));
         this.purposeTooltip.setText(observableView.getDescriptionTextOrNid(observableStringField.purposeNid()));
         this.stringControl = stringControl;
-        this.widgetContainer = new HBox(new Label("The string: "), stringControl);
+        this.widgetContainer = new HBox(/*new Label("The string: "),*/ stringControl);
         Tooltip.install(widgetContainer, purposeTooltip);
         // TODO: put listener on the ObservableView, and update presentation if the view changes.
     }

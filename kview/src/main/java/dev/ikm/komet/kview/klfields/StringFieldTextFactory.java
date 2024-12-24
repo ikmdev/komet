@@ -18,19 +18,12 @@ import jdk.jfr.Name;
  * an {@link ObservableField} and an {@link ObservableView}, enabling dynamic
  * binding and updating of values between the UI and the underlying data model.
  *
- * Annotations used:
- * - {@code @Name}: Specifies the name of the factory as "Editable String Field Factory".
- * - {@code @Description}: Provides a description of the factory, indicating
- *   that the field is editable using a TextField component.
  *
  * Main responsibilities:
  * - Create and return a new instance of {@link KlField} that represents
  *   a string field.
  * - Provide metadata about the type of field produced, namely {@link StringFieldText}.
  */
-@Name("Editable String Field Factory")
-@Description("A String field that uses a TextField to present the field. " +
-        "The field IS editable because TextField supports editing.")
 public class StringFieldTextFactory implements FieldFactory<String> {
     public StringFieldTextFactory() {
     }
@@ -45,11 +38,22 @@ public class StringFieldTextFactory implements FieldFactory<String> {
      */
     @Override
     public KlField<String> create(ObservableField<String> observableField, ObservableView observableView) {
-        return StringFieldLabel.create(observableField, observableView);
+        return StringFieldText.create(observableField, observableView);
     }
 
     @Override
     public Class<StringFieldText> getFieldInterface() {
         return StringFieldText.class;
+    }
+
+    @Override
+    public String getName() {
+        return "Editable String Field Factory";
+    }
+
+    @Override
+    public String getDescription() {
+        return "A String field that uses a TextField to present the field. " +
+                "The field IS editable because TextField supports editing.";
     }
 }
