@@ -31,6 +31,7 @@ module dev.ikm.komet.kview {
     requires one.jpro.platform.file;
 
     requires transitive dev.ikm.komet.layout;
+    requires jdk.jfr;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
@@ -133,6 +134,7 @@ module dev.ikm.komet.kview {
     provides dev.ikm.komet.kview.klfields.readonly.ReadOnlyKlStringField with dev.ikm.komet.kview.klfields.readonly.DefaultReadOnlyKlStringField;
     provides dev.ikm.komet.kview.klfields.editable.EditableKlStringField with dev.ikm.komet.kview.klfields.editable.DefaultEditableKlStringField;
     provides dev.ikm.komet.kview.klfields.editable.EditableKlComponentField with dev.ikm.komet.kview.klfields.editable.DefaultEditableKlComponentField;
+    //provides dev.ikm.komet.layout.component.version.field.FieldFactory with dev.ikm.komet.kview.klfields.StringFieldLabelFactory;
 
     provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory, dev.ikm.komet.kview.mvvm.view.properties.PropertiesNodeFactory;
 
