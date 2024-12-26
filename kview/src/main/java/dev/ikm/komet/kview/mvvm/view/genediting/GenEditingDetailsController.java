@@ -40,12 +40,20 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
+import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
+import dev.ikm.komet.kview.klfields.StringFieldLabelFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
+import dev.ikm.komet.layout.component.version.field.FieldFactory;
+import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -82,6 +90,7 @@ import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,6 +99,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ServiceLoader;
 import java.util.function.Consumer;
 
 public class GenEditingDetailsController {
@@ -309,7 +319,14 @@ public class GenEditingDetailsController {
     }
 
     private void setupSemanticDetailsUI(Latest<SemanticEntityVersion> semanticEntityVersionLatest) {
+
+
+        //FIXME use a different factory
         ReadOnlyKLFieldFactory rowf = ReadOnlyKLFieldFactory.getInstance();
+
+//        ServiceLoader<StringFieldLabelFactory> serviceLoader = PluggableService.load(StringFieldLabelFactory.class);
+//        StringFieldLabelFactory stringFieldLabelFactory = serviceLoader.findFirst().get();
+
         Consumer<FieldRecord<Object>> updateUIConsumer = (fieldRecord) -> {
 
             Node readOnlyNode = null;
@@ -321,7 +338,15 @@ public class GenEditingDetailsController {
                 // load a read-only component
                 readOnlyNode = rowf.createReadOnlyComponent(getViewProperties(), fieldRecord);
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
-                readOnlyNode = rowf.createStringField(fieldRecord).sceneGraphNode();
+                //readOnlyNode = rowf.createStringField(fieldRecord).sceneGraphNode();
+                ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
+                ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+                ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
+                ObservableViewBase observableViewBase = getViewProperties().nodeView();
+
+                // need ObservableField<String>, ObservableView
+                StringFieldLabelFactory stringFieldLabelFactory = new StringFieldLabelFactory();
+                readOnlyNode = stringFieldLabelFactory.create(observableFields.get(fieldRecord.fieldIndex()), observableViewBase).klWidget();
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 readOnlyNode = rowf.createReadOnlyComponentSet(getViewProperties(), fieldRecord);
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
