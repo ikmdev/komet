@@ -1,0 +1,23 @@
+.string-control {
+    -fx-font-family: "Noto Sans";
+}
+
+.string-control .main-container {
+    -fx-spacing: 4px;
+}
+
+.string-control .main-container .text-field.text {
+    -fx-background-color: #c3cddc, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4px, 4px;
+
+    -fx-cursor: text;
+
+    -fx-padding: 0.333333em 0.583em 0.333333em 0.583em; /* 4 7 4 7 */
+
+    -fx-pref-width: 250px;
+}
+
+.string-control .main-container .title {
+    -fx-text-fill: #111;
+}
