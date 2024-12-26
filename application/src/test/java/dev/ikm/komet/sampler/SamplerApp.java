@@ -22,6 +22,7 @@ public class SamplerApp extends Application {
     private static final String SORTED_COMBO_BOX_SAMPLER = "Sampler_SortedComboBox.fxml";
 
     private static final String BOOLEAN_SAMPLER = "Sampler_Boolean.fxml";
+    private static final String READ_ONLY_COMPONENT_SAMPLER = "Sampler_KLReadOnlyComponent.fxml";
 
     public static SamplerApp INSTANCE;
 
@@ -68,8 +69,8 @@ public class SamplerApp extends Application {
 
         // Basic data types menu
         Menu basicControlsMenu = createMenu("Basic Data Types", "alt-20.png");
-
         basicControlsMenu.getItems().add(createMenuItemWithContent("Boolean Control", BOOLEAN_SAMPLER));
+        basicControlsMenu.getItems().add(createMenuItemWithContent("Read-Only Component Control", READ_ONLY_COMPONENT_SAMPLER));
 
         // Basic controls menu
         Menu otherControlsMenu = createMenu("Other Controls", "plus-math-20.png");
