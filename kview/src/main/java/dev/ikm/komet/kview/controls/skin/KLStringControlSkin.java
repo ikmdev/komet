@@ -7,15 +7,15 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-public class KLStringControlSkin extends SkinBase<KLStringControl> {
+public class KLStringControlSkin<T extends KLStringControl> extends SkinBase<T> {
     private final VBox mainContainer = new VBox();
-    private final TextField textField = new TextField();
-    private final Label titleLabel = new Label();
+    protected final TextField textField = new TextField();
+    protected final Label titleLabel = new Label();
 
     /**
      * @param control The control for which this Skin should attach to.
      */
-    public KLStringControlSkin(KLStringControl control) {
+    public KLStringControlSkin(T control) {
         super(control);
 
         mainContainer.getChildren().addAll(titleLabel, textField);
