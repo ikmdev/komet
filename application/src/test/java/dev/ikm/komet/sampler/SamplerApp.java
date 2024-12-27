@@ -67,16 +67,23 @@ public class SamplerApp extends Application {
         // menu items
         navigationPane.getMenuItems().add(createMenuItemOrMenu("Home", "home-20.png", HOME, false));
 
-        // Basic data types menu
-        Menu basicControlsMenu = createMenu("Basic Data Types", "alt-20.png");
-        basicControlsMenu.getItems().add(createMenuItemWithContent("Boolean Control", BOOLEAN_SAMPLER));
-        basicControlsMenu.getItems().add(createMenuItemWithContent("Read-Only String Control", READ_ONLY_STRING_SAMPLER));
+        // Read-Only Data Controls
+        Menu readOnlyControls = createMenu("Read-Only Data Controls", "eye-20.png");
+        readOnlyControls.getItems().add(createMenuItemWithContent("String Control", READ_ONLY_STRING_SAMPLER));
 
-        // Basic controls menu
+        // Editable Data Controls
+        Menu editableControlsMenu = createMenu("Editable Data Controls", "edit-row-20.png");
+        editableControlsMenu.getItems().add(createMenuItemWithContent("Boolean Control", BOOLEAN_SAMPLER));
+
+        // Other Controls
         Menu otherControlsMenu = createMenu("Other Controls", "plus-math-20.png");
         otherControlsMenu.getItems().add(createMenuItemWithContent("Sorted ComboBox", SORTED_COMBO_BOX_SAMPLER));
 
-        navigationPane.getMenuItems().addAll(basicControlsMenu, otherControlsMenu);
+        navigationPane.getMenuItems().addAll(
+                readOnlyControls,
+                editableControlsMenu,
+                otherControlsMenu
+        );
 
         // footer menu items
 
