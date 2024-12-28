@@ -52,6 +52,12 @@ public class KLReadOnlyStringControl extends Control {
     public ObjectProperty<Runnable> onEditActionProperty() { return onEditAction; }
     public void setOnEditAction(Runnable onEditAction) { this.onEditAction.set(onEditAction); }
 
+    // -- on add units of measure action
+    private ObjectProperty<Runnable> onAddUnitsOfMeasureAction = new SimpleObjectProperty<>();
+    public Runnable getOnAddUnitsOfMeasureAction() { return onAddUnitsOfMeasureAction.get(); }
+    public ObjectProperty<Runnable> onAddUnitsOfMeasureActionProperty() { return onAddUnitsOfMeasureAction; }
+    public void setOnAddUnitsOfMeasureAction(Runnable onAddUnitsOfMeasureAction) { this.onAddUnitsOfMeasureAction.set(onAddUnitsOfMeasureAction); }
+
     // -- on remove action
     private ObjectProperty<Runnable> onRemoveAction = new SimpleObjectProperty<>();
     public Runnable getOnRemoveAction() { return onRemoveAction.get(); }
