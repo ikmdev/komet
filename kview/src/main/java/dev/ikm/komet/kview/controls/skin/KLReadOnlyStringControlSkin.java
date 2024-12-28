@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLReadOnlyStringControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyStringControl.DataType;
 import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.controls.KometIcon.IconValue;
 import javafx.beans.InvalidationListener;
@@ -44,7 +45,7 @@ public class KLReadOnlyStringControlSkin extends SkinBase<KLReadOnlyStringContro
         textLabel.setPrefWidth(Double.MAX_VALUE);
         textLabel.setMaxWidth(Region.USE_PREF_SIZE);
 
-        setupContextMenu();
+        setupContextMenu(control);
 
         // CSS
         mainContainer.getStyleClass().add("main-container");
@@ -54,11 +55,27 @@ public class KLReadOnlyStringControlSkin extends SkinBase<KLReadOnlyStringContro
         contextMenu.getStyleClass().add("klcontext-menu");
     }
 
-    private void setupContextMenu() {
-        KLReadOnlyStringControl control = getSkinnable();
+    private void setupContextMenu(KLReadOnlyStringControl control) {
+        addMenuItemsToContextMenu(control);
 
-        MenuItem editTextItem = new MenuItem("Edit Text");
-        editTextItem.setGraphic(KometIcon.create(IconValue.PENCIL));
+        control.setContextMenu(contextMenu);
+
+        contextMenu.showingProperty().addListener(observable -> {
+            control.setEditMode(contextMenu.isShowing());
+        });
+
+        control.dataTypeProperty().addListener(observable -> {
+            contextMenu.getItems().clear();
+            addMenuItemsToContextMenu(control);
+        });
+    }
+
+    private void addMenuItemsToContextMenu(KLReadOnlyStringControl control) {
+        if (control.getDataType() == DataType.STRING) {
+            addMenuItemsForStringType(control);
+        } else if (control.getDataType() == DataType.INTEGER) {
+            addMenuItemsForIntegerType(control);
+        }
 
         SeparatorMenuItem separatorMenuItem = new SeparatorMenuItem();
 
@@ -66,26 +83,40 @@ public class KLReadOnlyStringControlSkin extends SkinBase<KLReadOnlyStringContro
         removeItem.setGraphic(KometIcon.create(IconValue.TRASH));
 
         contextMenu.getItems().addAll(
-                editTextItem,
                 separatorMenuItem,
                 removeItem
         );
+
+        removeItem.setOnAction(actionEvent -> {
+            if (control.getOnRemoveAction() != null) {
+                control.getOnRemoveAction().run();
+            }
+        });
+    }
+
+    private void addMenuItemsForStringType(KLReadOnlyStringControl control) {
+        MenuItem editTextItem = new MenuItem("Edit Text");
+        editTextItem.setGraphic(KometIcon.create(IconValue.PENCIL));
+
+        contextMenu.getItems().add(editTextItem);
 
         editTextItem.setOnAction(actionEvent -> {
             if (control.getOnEditAction() != null) {
                 control.getOnEditAction().run();
             }
         });
-        removeItem.setOnAction(actionEvent -> {
-            if (control.getOnRemoveAction() != null) {
-                control.getOnRemoveAction().run();
+    }
+
+    private void addMenuItemsForIntegerType(KLReadOnlyStringControl control) {
+        MenuItem editTextItem = new MenuItem("Edit Integer");
+        editTextItem.setGraphic(KometIcon.create(IconValue.PENCIL));
+
+        contextMenu.getItems().add(editTextItem);
+
+        editTextItem.setOnAction(actionEvent -> {
+            if (control.getOnEditAction() != null) {
+                control.getOnEditAction().run();
             }
-        });
-
-        control.setContextMenu(contextMenu);
-
-        contextMenu.showingProperty().addListener(observable -> {
-            control.setEditMode(contextMenu.isShowing());
         });
     }
 

@@ -12,9 +12,21 @@ import javafx.scene.control.Skin;
 
 public class KLReadOnlyStringControl extends Control {
 
+    public enum DataType {
+        INTEGER,
+        FLOAT,
+        STRING
+    }
+
     public KLReadOnlyStringControl() {
         getStyleClass().add("read-only-string-control");
     }
+
+    // -- data type
+    private ObjectProperty<DataType> dataType = new SimpleObjectProperty<>(DataType.STRING);
+    public DataType getDataType() { return dataType.get(); }
+    public ObjectProperty<DataType> dataTypeProperty() { return dataType; }
+    public void setDataType(DataType dataType) { this.dataType.set(dataType); }
 
     // -- title
     private StringProperty title = new SimpleStringProperty();

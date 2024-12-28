@@ -11,6 +11,8 @@
 <?import dev.ikm.komet.kview.controls.KLReadOnlyStringControl?>
 
 <?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.collections.FXCollections?>
 <ScrollPane styleClass="sample-container" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.sampler.controllers.SamplerReadOnlyStringController">
     <VBox>
@@ -37,6 +39,7 @@
                         <Button onAction="#onTextChanged" text="Set Text"/>
                     </HBox>
                     <CheckBox fx:id="editModeCheckBox" onAction="#editModeChanged" text="Edit Mode" />
+                    <ComboBox fx:id="dataTypeComboBox" />
                 </VBox>
             </right>
             <VBox.margin>
