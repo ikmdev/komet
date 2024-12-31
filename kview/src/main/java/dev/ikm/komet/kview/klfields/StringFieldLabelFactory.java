@@ -4,6 +4,7 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.layout.component.version.field.FieldFactory;
 import dev.ikm.komet.layout.component.version.field.KlField;
+import dev.ikm.komet.layout.component.version.field.KlStringField;
 import jdk.jfr.Description;
 import jdk.jfr.Name;
 
@@ -48,7 +49,11 @@ public class StringFieldLabelFactory implements FieldFactory<String> {
     }
 
     @Override
-    public Class<StringFieldLabel> getFieldInterface() {
+    public Class<KlStringField> getFieldInterface() {
+        return KlStringField.class;
+    }
+
+    public Class<StringFieldLabel> getFieldImplementation() {
         return StringFieldLabel.class;
     }
 

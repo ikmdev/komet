@@ -27,7 +27,26 @@ public interface FieldFactory<T> {
      */
     Class<? extends KlField<T>> getFieldInterface();
 
+    /**
+     * Retrieves the class type of the specific implementation of {@link KlField}
+     * that is produced by the factory.
+     *
+     * @return A {@link Class} object representing the class type of the implementation
+     *         of {@link KlField} associated with this factory.
+     */
+    Class<? extends KlField<T>> getFieldImplementation();
+
+    /**
+     * Retrieves the name of the associated field widget created by this factory.
+     *
+     * @return A string representing the name of the field widget.
+     */
     String getName();
 
+    /**
+     * Retrieves a description of the field widget created by this factory.
+     *
+     * @return A string representing the description of the field or factory.
+     */
     String getDescription();
 }
