@@ -25,7 +25,7 @@ public class SampleReadOnlyStringListController {
 
     public void initialize()
     {
-        samplerDescription.setText("Read only String Control that's used to display KLComponentSetField");
+        samplerDescription.setText("Read-Only String List Control that's used to display KLComponentSetField");
 
         titleTextField.setText(readOnlyStringListControl.getTitle());
         editModeCheckBox.setSelected(readOnlyStringListControl.isEditMode());
