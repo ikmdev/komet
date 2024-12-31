@@ -98,6 +98,7 @@
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
         <classgraph.version>4.8.115</classgraph.version>
         <cognitive.version>1.5.1</cognitive.version>
+        <fxcomponents.version>1.6.2</fxcomponents.version>
         <axonic.version>1.1.5</axonic.version>
         <common-java5.version>3.0.0-M9</common-java5.version>
         <controlsfx.version>11.1.0</controlsfx.version>
@@ -336,6 +337,11 @@
                 <groupId>org.carlfx</groupId>
                 <artifactId>cognitive</artifactId>
                 <version>${cognitive.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.pixelduke</groupId>
+                <artifactId>fxcomponents</artifactId>
+                <version>${fxcomponents.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.carlfx</groupId>
