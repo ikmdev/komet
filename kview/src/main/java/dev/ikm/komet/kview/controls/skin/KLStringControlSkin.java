@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import dev.ikm.komet.kview.controls.KLIntegerControl;
+import dev.ikm.komet.kview.controls.KLStringControl;
 import javafx.animation.PauseTransition;
 import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
@@ -10,36 +10,34 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.util.Duration;
 import javafx.util.Subscription;
-import javafx.util.converter.IntegerStringConverter;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
 /**
- * Default skin implementation for the {@link KLIntegerControl} control
+ * Default skin implementation for the {@link KLStringControl} control
  */
-public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
+public class KLStringControlSkin extends SkinBase<KLStringControl> {
 
-    private static final Pattern NUMERICAL_PATTERN = Pattern.compile("^-?([1-9][0-9]*)?$"); // allow '-', don't start with 0
+    private static final Pattern ALPHABET_PATTERN = Pattern.compile("^\\pL[\\pL ]*$"); // any letter from any language, including spaces after first letter
     private static final PseudoClass ERROR_PSEUDO_CLASS = PseudoClass.getPseudoClass("error");
-    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.integer-control");
+    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.string-control");
 
     private final Label titleLabel;
     private final TextField textField;
     private final Label errorLabel;
 
-    private Subscription subscription;
-    private boolean textChangedViaKeyEvent;
+    private final Subscription subscription;
 
     /**
-     * Creates a new KLIntegerControlSkin instance, installing the necessary child
+     * Creates a new KLStringControlSkin instance, installing the necessary child
      * nodes into the Control {@link javafx.scene.control.Control#getChildrenUnmodifiable() children} list, as
      * well as the necessary input mappings for handling key, mouse, etc. events.
      *
      * @param control The control that this skin should be installed onto.
      */
-    public KLIntegerControlSkin(KLIntegerControl control) {
+    public KLStringControlSkin(KLStringControl control) {
         super(control);
 
         titleLabel = new Label();
@@ -48,7 +46,7 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
 
         textField = new TextField();
         textField.promptTextProperty().bind(control.promptTextProperty());
-        textField.getStyleClass().add("value-text-field");
+        textField.getStyleClass().add("text-field");
 
         errorLabel = new Label();
         errorLabel.visibleProperty().bind(control.showErrorProperty().and(
@@ -57,30 +55,10 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
 
         getChildren().addAll(titleLabel, textField, errorLabel);
 
-        textField.setTextFormatter(new TextFormatter<>(new IntegerStringConverter(), null, change -> {
+        textField.setTextFormatter(new TextFormatter<>(change -> {
             errorLabel.setText(null);
             String text = change.getControlNewText();
-            if (text.isEmpty() || NUMERICAL_PATTERN.matcher(text).matches()) {
-                if (!text.isEmpty() && !"-".equals(text)) {
-                    // check that text is within [MIN_VALUE, MAX_VALUE]
-                    try {
-                        Integer.parseInt(text);
-                    } catch (Exception e) {
-                        // or else discard the change and warn
-                        errorLabel.setText(MessageFormat.format(resources.getString("error.integer.text"), text));
-                        return null;
-                    }
-                }
-                return change;
-            } else if ("-".equals(change.getText()) ) {
-                if (change.getControlText().startsWith("-")) { // if text starts with '-', cancel it
-                    change.setText("");
-                    change.setRange(0, 1);
-                    change.setCaretPosition(change.getCaretPosition() - 2);
-                    change.setAnchor(change.getAnchor() - 2);
-                } else { // a '-', typed from any position, will be set at the beginning of the text
-                    change.setRange(0, 0);
-                }
+            if (text.isEmpty() || ALPHABET_PATTERN.matcher(text).matches()) {
                 return change;
             } else {
                 errorLabel.setText(MessageFormat.format(resources.getString("error.input.text"), change.getText()));
@@ -88,36 +66,22 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
             return null;
         }));
 
-        // value was set externally
-        subscription = control.valueProperty().subscribe(nv -> {
-            if (!textChangedViaKeyEvent) {
-                textField.setText(nv == null ? null : nv.toString());
-            }
-        });
-        subscription = subscription.and(textField.textProperty().subscribe(nv -> {
-            textChangedViaKeyEvent = true;
-            if (nv == null || nv.isEmpty() || "-".equals(nv)) {
-                control.setValue(null);
-            } else {
-                control.setValue(Integer.parseInt(nv));
-            }
-            textChangedViaKeyEvent = false;
-        }));
+        textField.textProperty().bindBidirectional(control.textProperty());
 
         final PauseTransition pauseTransition = new PauseTransition(Duration.seconds(1));
         pauseTransition.setOnFinished(f -> {
-            textField.pseudoClassStateChanged(ERROR_PSEUDO_CLASS, false);
+            getSkinnable().pseudoClassStateChanged(ERROR_PSEUDO_CLASS, false);
             errorLabel.setText(null);
         });
-        subscription = subscription.and(errorLabel.textProperty().subscribe(nv -> {
+        subscription = errorLabel.textProperty().subscribe(nv -> {
             if (nv != null) {
-                textField.pseudoClassStateChanged(ERROR_PSEUDO_CLASS, true);
+                getSkinnable().pseudoClassStateChanged(ERROR_PSEUDO_CLASS, true);
                 pauseTransition.playFromStart();
             } else {
-                textField.pseudoClassStateChanged(ERROR_PSEUDO_CLASS, false);
+                getSkinnable().pseudoClassStateChanged(ERROR_PSEUDO_CLASS, false);
                 pauseTransition.stop();
             }
-        }));
+        });
     }
 
     /** {@inheritDoc} */
