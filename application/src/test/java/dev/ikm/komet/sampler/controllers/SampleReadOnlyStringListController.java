@@ -4,10 +4,16 @@ import dev.ikm.komet.kview.controls.KLReadOnlyStringListControl;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
+import static dev.ikm.komet.kview.controls.KLReadOnlyStringListControl.*;
+
 public class SampleReadOnlyStringListController {
+    @FXML
+    private ComboBox<StringListDataType> dataTypeComboBox;
+
     @FXML
     private KLReadOnlyStringListControl readOnlyStringListControl;
 
@@ -29,6 +35,15 @@ public class SampleReadOnlyStringListController {
 
         titleTextField.setText(readOnlyStringListControl.getTitle());
         editModeCheckBox.setSelected(readOnlyStringListControl.isEditMode());
+
+        // Data Type Combobox
+        for (StringListDataType stringDataType : StringListDataType.values()) {
+            dataTypeComboBox.getItems().add(stringDataType);
+        }
+        dataTypeComboBox.setValue(readOnlyStringListControl.getDataType());
+        dataTypeComboBox.valueProperty().addListener(observable -> {
+            readOnlyStringListControl.setDataType(dataTypeComboBox.getValue());
+        });
     }
 
     @FXML

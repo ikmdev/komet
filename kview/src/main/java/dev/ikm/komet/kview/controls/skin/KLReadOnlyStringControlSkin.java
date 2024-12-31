@@ -2,7 +2,7 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.NodeUtils;
 import dev.ikm.komet.kview.controls.KLReadOnlyStringControl;
-import dev.ikm.komet.kview.controls.KLReadOnlyStringControl.DataType;
+import dev.ikm.komet.kview.controls.KLReadOnlyStringControl.StringDataType;
 import dev.ikm.komet.kview.controls.KometIcon.IconValue;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Label;
@@ -70,7 +70,7 @@ public class KLReadOnlyStringControlSkin extends KLReadOnlyBaseControlSkin<KLRea
 
     private void addMenuItemsToContextMenu(KLReadOnlyStringControl control) {
         switch (control.getDataType()) {
-            case DataType.STRING -> addMenuItemsForStringType(control);
+            case STRING -> addMenuItemsForStringType(control);
             case INTEGER -> addMenuItemsForIntegerType(control);
             case FLOAT -> addMenuItemsForFloatType(control);
             case BOOLEAN -> addMenuItemsForBooleanType(control);
