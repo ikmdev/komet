@@ -129,6 +129,8 @@ module dev.ikm.komet.kview {
 
     opens dev.ikm.komet.kview.klfields.editable to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.klfields.editable;
+    exports dev.ikm.komet.kview;
+    opens dev.ikm.komet.kview;
 
     provides dev.ikm.komet.kview.klfields.readonly.ReadOnlyKlStringField with dev.ikm.komet.kview.klfields.readonly.DefaultReadOnlyKlStringField;
     provides dev.ikm.komet.kview.klfields.editable.EditableKlStringField with dev.ikm.komet.kview.klfields.editable.DefaultEditableKlStringField;

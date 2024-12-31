@@ -8,12 +8,11 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Button?>
-<?import dev.ikm.komet.kview.controls.KLReadOnlyStringControl?>
 <?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.ComboBox?>
+<?import dev.ikm.komet.kview.controls.KLReadOnlyStringListControl?>
 
 <ScrollPane styleClass="sample-container" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.sampler.controllers.SamplerReadOnlyStringController">
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.sampler.controllers.SampleReadOnlyStringListController">
     <VBox>
         <Label layoutX="43.0" layoutY="20.0" styleClass="header" text="Read-Only String" />
         <Label fx:id="samplerDescription" styleClass="body-text" wrapText="true">
@@ -24,7 +23,8 @@
         <BorderPane styleClass="control-container">
             <left>
                 <VBox prefWidth="500" styleClass="inner-container" fillWidth="true">
-                    <KLReadOnlyStringControl fx:id="readOnlyStringControl" title="A TITLE:" promptText="[Placeholder]" />
+                    <KLReadOnlyStringListControl fx:id="readOnlyStringListControl" title="A TITLE:" promptText="[Placeholder]">
+                    </KLReadOnlyStringListControl>
                 </VBox>
             </left>
             <right>
@@ -35,10 +35,10 @@
                     </HBox>
                     <HBox spacing="5">
                         <TextField fx:id="textTextField"/>
-                        <Button onAction="#onTextChanged" text="Set Text"/>
+                        <Button onAction="#onAddText" text="Add Text"/>
                     </HBox>
+                    <Button onAction="#onRemoveText" text="Remove Text"/>
                     <CheckBox fx:id="editModeCheckBox" onAction="#editModeChanged" text="Edit Mode" />
-                    <ComboBox fx:id="dataTypeComboBox" />
                 </VBox>
             </right>
             <VBox.margin>
