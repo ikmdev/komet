@@ -6,12 +6,9 @@ import dev.ikm.tinkar.entity.ConceptVersionRecord;
 import javafx.scene.Node;
 
 /**
- * Represents a single pane component in the layout system that deals with
- * a specific observable concept and its version.
- *
- * @param <N> the type of the JavaFX node that this pane uses.
+ * @deprecated use KlConceptPane
  */
-public interface KlConceptPaneSingle<N extends Node> extends KlComponentPaneSingle<ObservableConceptVersion, ConceptVersionRecord> {
-    ObservableConcept observableEntity();
+@Deprecated
+public interface KlConceptPaneSingle<N extends Node> extends KlConceptPane {
 
 }
