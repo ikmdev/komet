@@ -28,12 +28,19 @@ module dev.ikm.komet.application.test {
     exports dev.ikm.komet.app.test;
     opens dev.ikm.komet.app.test;
 
+    /* Sampler App */
+    exports dev.ikm.komet.sampler;
+    opens dev.ikm.komet.sampler to javafx.fxml;
+    exports dev.ikm.komet.sampler.controllers;
+    opens dev.ikm.komet.sampler.controllers to javafx.fxml;
+
     // TODO Not happy that I have to specify these here... Can't dynamically add modules?
     requires dev.ikm.tinkar.provider.spinedarray;
     requires dev.ikm.tinkar.provider.mvstore;
     requires dev.ikm.tinkar.provider.ephemeral;
     // End not happy...
     requires org.carlfx.cognitive;
+    requires com.pixelduke.fxcomponents;
     requires javafx.controls;
     requires javafx.fxml;
     requires nsmenufx;
