@@ -4958,3 +4958,71 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: -Grey-White;
     /*-fx-border-width: 1px;*/
 }
+
+/*******************************************************************************
+ *                                                                             *
+ * KL Controls Context Menu                                                    *
+ *                                                                             *
+ ******************************************************************************/
+
+.klcontext-menu {
+    -fx-background-color: #2e3140;
+    -fx-background-radius: 4px;
+
+    -fx-min-width: 150px;
+}
+
+.klcontext-menu .separator:horizontal {
+    -fx-padding: 0 5px 0 5px;
+}
+
+.klcontext-menu .separator:horizontal .line {
+    -fx-border-color: #555 transparent transparent transparent;
+}
+
+.klcontext-menu .menu-item > .graphic-container {
+    -fx-padding: 0.416667em 0.5em 0.416667em 0.5em;
+}
+
+.klcontext-menu .menu-item:hover,
+.klcontext-menu .menu-item:focused {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+}
+
+.klcontext-menu .menu-item > .label {
+    -fx-font-family: "Noto Sans";
+
+    -fx-text-fill: white;
+}
+
+klcontext-menu .menu-item > .graphic-container {
+    -fx-padding: 0em 0.5em 0em 0em;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Icons                                                                       *
+ *                                                                             *
+ ******************************************************************************/
+
+.icon {
+    size: 12;
+
+    -fx-pref-width: size;
+    -fx-max-width: size;
+    -fx-min-width: size;
+
+    -fx-pref-height: size;
+    -fx-max-height: size;
+    -fx-min-height: size;
+
+    -fx-background-color: white;
+}
+
+.icon.pencil {
+    -fx-shape: "M11.7167 7.5L12.5 8.28333L4.93333 15.8333H4.16667V15.0667L11.7167 7.5ZM14.7167 2.5C14.5083 2.5 14.2917 2.58333 14.1333 2.74167L12.6083 4.26667L15.7333 7.39167L17.2583 5.86667C17.5833 5.54167 17.5833 5 17.2583 4.69167L15.3083 2.74167C15.1417 2.575 14.9333 2.5 14.7167 2.5ZM11.7167 5.15833L2.5 14.375V17.5H5.625L14.8417 8.28333L11.7167 5.15833Z";
+}
+
+.icon.trash {
+    -fx-shape: "M12.4987 2.5V3.33333H16.6654V5H15.832V15.8333C15.832 16.75 15.082 17.5 14.1654 17.5H5.83203C4.91536 17.5 4.16536 16.75 4.16536 15.8333V5H3.33203V3.33333H7.4987V2.5H12.4987ZM5.83203 15.8333H14.1654V5H5.83203V15.8333ZM7.4987 6.66667H9.16536V14.1667H7.4987V6.66667ZM12.4987 6.66667H10.832V14.1667H12.4987V6.66667Z";
+}
