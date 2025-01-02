@@ -5,9 +5,9 @@ import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 
 /**
- * Represents a single pane component in the layout system that deals with
- * a specific observable semantic and its version.
+ * @deprecated use KlSemanticPane
  */
-public interface KlSemanticPaneSingle extends KlComponentPaneSingle<ObservableSemanticVersion, SemanticVersionRecord> {
-    ObservableSemantic observableEntity();
+@Deprecated
+public interface KlSemanticPaneSingle extends KlSemanticPane {
+
 }
