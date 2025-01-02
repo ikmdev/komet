@@ -15,6 +15,12 @@ public abstract class KLReadOnlyBaseControl extends Control {
     public StringProperty titleProperty() { return title; }
     public void setTitle(String title) { this.title.set(title); }
 
+    // -- prompt text
+    private StringProperty promptText = new SimpleStringProperty();
+    public String getPromptText() { return promptText.get(); }
+    public StringProperty promptTextProperty() { return promptText; }
+    public void setPromptText(String text) { this.promptText.set(text); }
+
     // -- edit mode
     private BooleanProperty editMode = new SimpleBooleanProperty();
     public boolean isEditMode() { return editMode.get(); }

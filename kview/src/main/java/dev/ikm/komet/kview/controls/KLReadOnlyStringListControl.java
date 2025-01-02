@@ -20,12 +20,6 @@ public class KLReadOnlyStringListControl extends KLReadOnlyBaseControl {
         getStyleClass().add("read-only-string-list-control");
     }
 
-    // -- prompt text
-    private final StringProperty promptText = new SimpleStringProperty();
-    public String getPromptText() { return promptText.get(); }
-    public StringProperty promptTextProperty() { return promptText; }
-    public void setPromptText(String text) { promptText.set(text); }
-
     // -- texts
     private final ObservableList<String> texts = FXCollections.observableArrayList();
     public ObservableList<String> getTexts() {

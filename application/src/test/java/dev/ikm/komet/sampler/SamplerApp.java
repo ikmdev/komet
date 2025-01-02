@@ -22,8 +22,10 @@ public class SamplerApp extends Application {
     private static final String SORTED_COMBO_BOX_SAMPLER = "Sampler_SortedComboBox.fxml";
 
     private static final String BOOLEAN_SAMPLER = "Sampler_Boolean.fxml";
+
     private static final String READ_ONLY_STRING_SAMPLER = "Sampler_KLReadOnlyString.fxml";
     private static final String READ_ONLY_STRING_LIST_SAMPLER = "Sampler_KLReadOnlyStringList.fxml";
+    private static final String READ_ONLY_IMAGE_SAMPLER = "Sampler_KLReadOnlyImage.fxml";
 
     public static SamplerApp INSTANCE;
 
@@ -72,6 +74,7 @@ public class SamplerApp extends Application {
         Menu readOnlyControls = createMenu("Read-Only Data Controls", "eye-20.png");
         readOnlyControls.getItems().add(createMenuItemWithContent("String Control", READ_ONLY_STRING_SAMPLER));
         readOnlyControls.getItems().add(createMenuItemWithContent("String List Control", READ_ONLY_STRING_LIST_SAMPLER));
+        readOnlyControls.getItems().add(createMenuItemWithContent("Image Control", READ_ONLY_IMAGE_SAMPLER));
 
         // Editable Data Controls
         Menu editableControlsMenu = createMenu("Editable Data Controls", "edit-row-20.png");
