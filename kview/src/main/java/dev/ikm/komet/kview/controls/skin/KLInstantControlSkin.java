@@ -14,12 +14,22 @@ import javafx.scene.layout.StackPane;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Default skin implementation for the {@link KLInstantControl} control
+ */
 public class KLInstantControlSkin extends SkinBase<KLInstantControl> {
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy, HH:mm a O");
     private final Label titleLabel;
     private final HBox calendarBox;
 
+    /**
+     * Creates a new KLInstantControlSkin instance, installing the necessary child
+     * nodes into the Control {@link javafx.scene.control.Control#getChildrenUnmodifiable() children} list, as
+     * well as the necessary input mappings for handling key, mouse, etc. events.
+     *
+     * @param control The control that this skin should be installed onto.
+     */
     public KLInstantControlSkin(KLInstantControl control) {
         super(control);
 
