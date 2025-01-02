@@ -9,11 +9,25 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 
+/**
+ * <p>A popup control implementation that shows a date picker and a
+ * time picker to the user, in order to define a {@link #localDateProperty() date},
+ * a {@link #localTimeProperty() time} and a {@link #zoneOffsetProperty() zone-offset}.
+ * </p>
+ * <p>This popup is meant to be launched from a {@link KLInstantControl}.
+ * </p>
+ *
+ * @see KLInstantControl
+ */
 public class CalendarPopup extends PopupControl {
 
+    /**
+     * Creates a CalendarPopup
+     */
     public CalendarPopup() {
         super();
         getStyleClass().add("calendar-popup");
@@ -27,7 +41,9 @@ public class CalendarPopup extends PopupControl {
         });
     }
 
-    // localDateProperty
+    /**
+     * A property that holds the {@link LocalDate} that represents the selected instant in time
+     */
     private final ObjectProperty<LocalDate> localDateProperty = new SimpleObjectProperty<>(this, "localDate");
     public final ObjectProperty<LocalDate> localDateProperty() {
         return localDateProperty;
@@ -39,7 +55,9 @@ public class CalendarPopup extends PopupControl {
         localDateProperty.set(value);
     }
 
-    // localTimeProperty
+    /**
+     * A property that holds the {@link LocalTime} that represents the selected instant in time
+     */
     private final ObjectProperty<LocalTime> localTimeProperty = new SimpleObjectProperty<>(this, "localTime");
     public final ObjectProperty<LocalTime> localTimeProperty() {
         return localTimeProperty;
@@ -51,7 +69,9 @@ public class CalendarPopup extends PopupControl {
         localTimeProperty.set(value);
     }
 
-    // zoneOffsetProperty
+    /**
+     * A property wiht a {@link ZoneOffset} that defines the time-zone offset from Greenwich/ UTC
+     */
     private final ObjectProperty<ZoneOffset> zoneOffsetProperty = new SimpleObjectProperty<>(this, "zoneOffset", ZoneOffset.UTC);
     public final ObjectProperty<ZoneOffset> zoneOffsetProperty() {
         return zoneOffsetProperty;
@@ -63,6 +83,7 @@ public class CalendarPopup extends PopupControl {
         zoneOffsetProperty.set(value);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Skin<?> createDefaultSkin() {
         return new CalendarPopupSkin(this);
