@@ -59,8 +59,7 @@
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 18;
-    -fx-font-style: bold;
-    -fx-font-weight: 1000;
+    -fx-font-weight: bold;
     -fx-translate-y: 45.5;
     -fx-pref-width: 60;
     -fx-alignment: center;
@@ -98,12 +97,10 @@
     -fx-font-weight: 500;
     -fx-background-radius: 4;
     -fx-padding: 0;
-    -height-size: 32px;
-    -width-size: 122px;
-    -fx-pref-width: -width-size;
-    -fx-max-width: -width-size;
-    -fx-pref-height: -height-size;
-    -fx-max-height: -height-size;
+    -fx-pref-width: 122px;
+    -fx-max-width: 122px;
+    -fx-pref-height: 32px;
+    -fx-max-height: 32px;
 }
 
 .bytearray-control > .add-file-button:disabled {
