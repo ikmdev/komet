@@ -19,6 +19,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
+import javafx.util.Subscription;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -26,6 +27,9 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ResourceBundle;
 
+/**
+ * Default skin implementation for the {@link CalendarPopup} control
+ */
 public class CalendarPopupSkin implements Skin<CalendarPopup> {
 
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.instant-control");
@@ -35,7 +39,15 @@ public class CalendarPopupSkin implements Skin<CalendarPopup> {
 
     private final ObjectProperty<LocalDate> selectedLocalDateProperty;
     private final ObjectProperty<LocalTime> selectedLocalTimeProperty;
+    private Subscription subscription;
 
+    /**
+     * Creates a new CalendarPopupSkin instance, installing the necessary child
+     * nodes into the Control {@link javafx.scene.control.Control#getChildrenUnmodifiable() children} list, as
+     * well as the necessary input mappings for handling key, mouse, etc. events.
+     *
+     * @param control The control that this skin should be installed onto.
+     */
     public CalendarPopupSkin(CalendarPopup control) {
         this.control = control;
 
@@ -44,12 +56,12 @@ public class CalendarPopupSkin implements Skin<CalendarPopup> {
 
         // left side
         DatePicker datePicker = new DatePicker(control.getLocalDate() != null ? control.getLocalDate() : LocalDate.now());
-        datePicker.valueProperty().subscribe(selectedLocalDateProperty::set);
+        subscription = datePicker.valueProperty().subscribe(selectedLocalDateProperty::set);
         DatePickerSkin datePickerSkin = new DatePickerSkin(datePicker);
         datePicker.setShowWeekNumbers(false);
         final Node popupContent = datePickerSkin.getPopupContent();
         popupContent.getStyleClass().add("calendar-node");
-        control.sceneProperty().subscribe(s -> {
+        subscription = subscription.and(control.sceneProperty().subscribe(s -> {
             if (s != null) {
                 if (popupContent.lookup(".month-year-pane") instanceof BorderPane bp) {
                     HBox monthSpinner = (HBox) bp.getLeft();
@@ -69,7 +81,7 @@ public class CalendarPopupSkin implements Skin<CalendarPopup> {
                             }
                         }));
             }
-        });
+        }));
 
         // center side
         Region line = new Region();
@@ -148,19 +160,24 @@ public class CalendarPopupSkin implements Skin<CalendarPopup> {
         root.getStylesheets().add(CalendarPopup.class.getResource("calendar-popup.css").toExternalForm());
     }
 
+    /** {@inheritDoc} */
     @Override
     public CalendarPopup getSkinnable() {
         return control;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Node getNode() {
         return root;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void dispose() {
-
+        if (subscription != null) {
+            subscription.unsubscribe();
+        }
     }
 
     private HBox adaptMonthYearPane(HBox monthSpinner, HBox yearSpinner) {
