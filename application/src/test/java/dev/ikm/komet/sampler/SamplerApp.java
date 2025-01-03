@@ -48,13 +48,6 @@ public class SamplerApp extends Application {
 
         addItemsToNavigationPane();
 
-        navigationPane.selectedMenuItemProperty().addListener(observable -> {
-            MenuItem selectedMenuItem = navigationPane.getSelectedMenuItem();
-            if (selectedMenuItem != null) {
-                System.out.println("Selected menu item changed to -> " + selectedMenuItem.getText());
-            }
-        });
-
         stage.setTitle("Komet Sampler");
 
         // Setup conditions for background blur to show through
