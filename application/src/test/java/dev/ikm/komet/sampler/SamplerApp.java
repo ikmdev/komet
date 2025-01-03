@@ -22,6 +22,9 @@ public class SamplerApp extends Application {
     private static final String SORTED_COMBO_BOX_SAMPLER = "Sampler_SortedComboBox.fxml";
 
     private static final String BOOLEAN_SAMPLER = "Sampler_Boolean.fxml";
+    private static final String STRING_SAMPLER = "Sampler_KLStringControl.fxml";
+    private static final String INTEGER_SAMPLER = "Sampler_KLIntegerControl.fxml";
+    private static final String FLOAT_SAMPLER = "Sampler_KLFloatControl.fxml";
 
     public static SamplerApp INSTANCE;
 
@@ -67,15 +70,20 @@ public class SamplerApp extends Application {
         navigationPane.getMenuItems().add(createMenuItemOrMenu("Home", "home-20.png", HOME, false));
 
         // Basic data types menu
-        Menu basicControlsMenu = createMenu("Basic Data Types", "alt-20.png");
+        Menu basicControlsMenu = createMenu("Read-only Data Controls", "alt-20.png");
 
-        basicControlsMenu.getItems().add(createMenuItemWithContent("Boolean Control", BOOLEAN_SAMPLER));
+        // Editable controls
+        Menu editableControlsMenu = createMenu("Editable Data Controls", "edit-row-20.png");
+        editableControlsMenu.getItems().add(createMenuItemWithContent("Boolean Control", BOOLEAN_SAMPLER));
+        editableControlsMenu.getItems().add(createMenuItemWithContent("String Control", STRING_SAMPLER));
+        editableControlsMenu.getItems().add(createMenuItemWithContent("IntegerControl", INTEGER_SAMPLER));
+        editableControlsMenu.getItems().add(createMenuItemWithContent("FloatControl", FLOAT_SAMPLER));
 
         // Basic controls menu
         Menu otherControlsMenu = createMenu("Other Controls", "plus-math-20.png");
         otherControlsMenu.getItems().add(createMenuItemWithContent("Sorted ComboBox", SORTED_COMBO_BOX_SAMPLER));
 
-        navigationPane.getMenuItems().addAll(basicControlsMenu, otherControlsMenu);
+        navigationPane.getMenuItems().addAll(basicControlsMenu, editableControlsMenu, otherControlsMenu);
 
         // footer menu items
 
