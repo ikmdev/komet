@@ -50,12 +50,7 @@ public class KLFloatControl extends Control {
      * {@link Double#MIN_VALUE} and {@link Double#MAX_VALUE},
      * or null if no value is set.
      */
-    private final ObjectProperty<Double> valueProperty = new SimpleObjectProperty<>(this, "value") {
-        @Override
-        protected void invalidated() {
-            System.out.println("got " + get());
-        }
-    };
+    private final ObjectProperty<Double> valueProperty = new SimpleObjectProperty<>(this, "value");
     public final ObjectProperty<Double> valueProperty() {
         return valueProperty;
     }
