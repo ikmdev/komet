@@ -33,6 +33,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+/**
+ * Default skin implementation for the {@link KLByteArrayControl} control
+ */
 public class KLByteArrayControlSkin extends SkinBase<KLByteArrayControl> {
 
     private static final Logger LOG = LoggerFactory.getLogger(KLByteArrayControl.class);
@@ -53,6 +56,13 @@ public class KLByteArrayControlSkin extends SkinBase<KLByteArrayControl> {
 
     private Task<KLByteArrayControl.FileData> task;
 
+    /**
+     * Creates a new KLByteArrayControlSkin instance, installing the necessary child
+     * nodes into the Control {@link javafx.scene.control.Control#getChildrenUnmodifiable() children} list, as
+     * well as the necessary input mappings for handling key, mouse, etc. events.
+     *
+     * @param control The control that this skin should be installed onto.
+     */
     public KLByteArrayControlSkin(KLByteArrayControl control) {
         super(control);
 
@@ -175,13 +185,14 @@ public class KLByteArrayControlSkin extends SkinBase<KLByteArrayControl> {
                         iconLabel.setText(getFileNameExtension(name).orElse(null));
                     }
                 });
-                LOG.info("Start task");
+                LOG.debug("Start upload task");
                 new Thread(task).start();
             }
         });
         getChildren().addAll(titleLabel, fileContainer, messageLabel, addFileButton);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
         super.layoutChildren(contentX, contentY, contentWidth, contentHeight);
