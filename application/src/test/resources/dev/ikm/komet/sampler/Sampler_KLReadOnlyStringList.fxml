@@ -20,7 +20,7 @@
                 <Insets  bottom="40.0" />
             </VBox.margin>
         </Label>
-        <BorderPane styleClass="control-container">
+        <BorderPane styleClass="sample-control-container">
             <left>
                 <VBox prefWidth="500" styleClass="inner-container" fillWidth="true">
                     <KLReadOnlyStringListControl fx:id="readOnlyStringListControl" title="A TITLE:" promptText="[Placeholder]">
