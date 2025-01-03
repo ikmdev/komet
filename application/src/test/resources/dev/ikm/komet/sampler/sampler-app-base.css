@@ -43,7 +43,7 @@
     -fx-border-radius: 0 5px 5px 5px;
 }
 
-.control-container {
+.sample-control-container {
     -fx-border-width: 1px;
     -fx-border-radius: 5px;
 
@@ -51,16 +51,17 @@
     -fx-background-radius: 5px;
 }
 
-.control-container > .control-configuration-container {
+.sample-control-container > .control-configuration-container {
     -fx-border-width: 0 0 0 1px;
 }
 
-.control-container > .inner-container,
-.control-container > .control-configuration-container {
+
+.sample-control-container > .inner-container,
+.sample-control-container > .control-configuration-container {
     -fx-padding: 1.5em;
 }
 
-.control-container > .control-configuration-container {
+.sample-control-container > .control-configuration-container {
     -fx-background-radius: 0 5px 5px 0;
 }
 
@@ -76,7 +77,7 @@
     -fx-border-color: transparent #f2f2f2 #f2f2f2 #f2f2f2;
 }
 
-.sample-container .control-container {
+.sample-container .sample-control-container {
     -fx-background-color: #fbfbfb;
     -fx-border-color: #e6e6e6;
 }

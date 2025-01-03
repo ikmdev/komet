@@ -22,6 +22,10 @@ public class SamplerApp extends Application {
     private static final String SORTED_COMBO_BOX_SAMPLER = "Sampler_SortedComboBox.fxml";
 
     private static final String BOOLEAN_SAMPLER = "Sampler_Boolean.fxml";
+    private static final String STRING_SAMPLER = "Sampler_KLStringControl.fxml";
+    private static final String INTEGER_SAMPLER = "Sampler_KLIntegerControl.fxml";
+    private static final String FLOAT_SAMPLER = "Sampler_KLFloatControl.fxml";
+
     private static final String READ_ONLY_STRING_SAMPLER = "Sampler_KLReadOnlyString.fxml";
 
     public static SamplerApp INSTANCE;
@@ -74,6 +78,9 @@ public class SamplerApp extends Application {
         // Editable Data Controls
         Menu editableControlsMenu = createMenu("Editable Data Controls", "edit-row-20.png");
         editableControlsMenu.getItems().add(createMenuItemWithContent("Boolean Control", BOOLEAN_SAMPLER));
+        editableControlsMenu.getItems().add(createMenuItemWithContent("String Control", STRING_SAMPLER));
+        editableControlsMenu.getItems().add(createMenuItemWithContent("IntegerControl", INTEGER_SAMPLER));
+        editableControlsMenu.getItems().add(createMenuItemWithContent("FloatControl", FLOAT_SAMPLER));
 
         // Other Controls
         Menu otherControlsMenu = createMenu("Other Controls", "plus-math-20.png");
