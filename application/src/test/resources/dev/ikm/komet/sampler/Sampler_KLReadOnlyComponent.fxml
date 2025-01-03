@@ -21,7 +21,7 @@
                 <Insets  bottom="40.0" />
             </VBox.margin>
         </Label>
-        <BorderPane styleClass="control-container">
+        <BorderPane styleClass="sample-control-container">
             <left>
                 <VBox prefWidth="500" styleClass="inner-container" fillWidth="true">
                     <KLReadOnlyComponentControl fx:id="readOnlyComponentControl" title="A TITLE:" text="[Placehoder]">
