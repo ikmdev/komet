@@ -12,15 +12,31 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ResourceBundle;
 
+/**
+ * <p>KLInstantControl allows setting or getting a time instant, defined by a {@link #localDateTimeProperty()} and
+ * a {@link #zoneOffsetProperty()}, by using a {@link CalendarPopup popup} that shows the initial date and time (or the
+ * current ones, if not set) and allows removing the initial value (if set), or setting a new value.
+ * </p>
+ * <pre><code>
+ * KLInstantControl instantControl = new KLInstantControl();
+ * instantControl.setTitle("Instant");
+ * instantControl.localDateTimeProperty().subscribe(t -> System.out.println("Instant: " + t));
+ * </code></pre>
+ */
 public class KLInstantControl extends Control {
 
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.instant-control");
 
+    /**
+     * Creates a KLInstantControl
+     */
     public KLInstantControl() {
         getStyleClass().add("instant-control");
     }
 
-    // titleProperty
+    /**
+     * A string property that sets the title of the control, if any
+     */
     private final StringProperty titleProperty = new SimpleStringProperty(this, "title");
     public final StringProperty titleProperty() {
         return titleProperty;
@@ -32,7 +48,9 @@ public class KLInstantControl extends Control {
         titleProperty.set(value);
     }
 
-    // promptProperty
+    /**
+     * A string property that sets the prompt of the control
+     */
     private final StringProperty promptProperty = new SimpleStringProperty(this, "prompt", resources.getString("prompt.text"));
     public final StringProperty promptProperty() {
         return promptProperty;
@@ -44,7 +62,9 @@ public class KLInstantControl extends Control {
         promptProperty.set(value);
     }
 
-    // localDateTimeProperty
+    /**
+     * A property that holds the {@link LocalDateTime} that represents the selected instant in time
+     */
     private final ObjectProperty<LocalDateTime> localDateTimeProperty = new SimpleObjectProperty<>(this, "localDateTime");
     public final ObjectProperty<LocalDateTime> localDateTimeProperty() {
         return localDateTimeProperty;
@@ -56,7 +76,9 @@ public class KLInstantControl extends Control {
         localDateTimeProperty.set(value);
     }
 
-    // zoneOffsetProperty
+    /**
+     * A property wiht a {@link ZoneOffset} that defines the time-zone offset from Greenwich/ UTC
+     */
     private final ObjectProperty<ZoneOffset> zoneOffsetProperty = new SimpleObjectProperty<>(this, "zoneOffset");
     public final ObjectProperty<ZoneOffset> zoneOffsetProperty() {
         return zoneOffsetProperty;
@@ -68,11 +90,13 @@ public class KLInstantControl extends Control {
         zoneOffsetProperty.set(value);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Skin<?> createDefaultSkin() {
         return new KLInstantControlSkin(this);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getUserAgentStylesheet() {
         return KLInstantControl.class.getResource("instant-control.css").toExternalForm();

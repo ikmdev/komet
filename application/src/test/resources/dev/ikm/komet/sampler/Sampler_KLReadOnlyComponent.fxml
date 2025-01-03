@@ -8,14 +8,14 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Button?>
-<?import dev.ikm.komet.kview.controls.KLReadOnlyStringControl?>
 <?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.ComboBox?>
+<?import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl?>
 
+<?import javafx.scene.image.Image?>
 <ScrollPane styleClass="sample-container" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.sampler.controllers.SamplerReadOnlyStringController">
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.sampler.controllers.SamplerReadOnlyComponentController">
     <VBox>
-        <Label layoutX="43.0" layoutY="20.0" styleClass="header" text="Read-Only String" />
+        <Label layoutX="43.0" layoutY="20.0" styleClass="header" text="Read-Only Component Control" />
         <Label fx:id="samplerDescription" styleClass="body-text" wrapText="true">
             <VBox.margin>
                 <Insets  bottom="40.0" />
@@ -24,7 +24,11 @@
         <BorderPane styleClass="sample-control-container">
             <left>
                 <VBox prefWidth="500" styleClass="inner-container" fillWidth="true">
-                    <KLReadOnlyStringControl fx:id="readOnlyStringControl" title="A TITLE:" promptText="[Placeholder]" />
+                    <KLReadOnlyComponentControl fx:id="readOnlyComponentControl" title="A TITLE:" text="[Placehoder]">
+                        <icon>
+                            <Image url="@icon-example.png" />
+                        </icon>
+                    </KLReadOnlyComponentControl>
                 </VBox>
             </left>
             <right>
@@ -38,7 +42,6 @@
                         <Button onAction="#onTextChanged" text="Set Text"/>
                     </HBox>
                     <CheckBox fx:id="editModeCheckBox" onAction="#editModeChanged" text="Edit Mode" />
-                    <ComboBox fx:id="dataTypeComboBox" />
                 </VBox>
             </right>
             <VBox.margin>
