@@ -18,4 +18,5 @@ module dev.ikm.komet.layout {
     exports dev.ikm.komet.layout.selection.element;
 
     opens dev.ikm.layout.app to javafx.fxml;
+    exports dev.ikm.komet.layout.component.multi;
 }
