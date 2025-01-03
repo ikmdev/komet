@@ -1,0 +1,37 @@
+@import "../mvvm/view/kview.css";
+
+.integer-control {
+}
+
+.integer-control > .title-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-text-fill: -Grey-11;
+    -fx-font-weight: 500;
+}
+
+.integer-control > .value-text-field {
+    -fx-background-color: white;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-border-color: -Grey-5;
+    -fx-pref-height: 32.0;
+    -fx-padding: 4 7 4 7;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-text-fill: -Grey-10;
+}
+
+.integer-control > .value-text-field:error {
+    -fx-border-color: -Accent-color-red;
+}
+
+.integer-control > .error-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-text-fill: -Accent-color-red;
+}
