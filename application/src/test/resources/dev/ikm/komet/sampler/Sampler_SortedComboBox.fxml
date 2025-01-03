@@ -6,12 +6,12 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
 <?import dev.ikm.komet.kview.controls.SortedComboBox?>
-
 <?import javafx.collections.FXCollections?>
 <?import java.lang.String?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Button?>
+
 <ScrollPane styleClass="sample-container" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.sampler.controllers.SamplerSortedComboBoxController">
     <VBox>
@@ -21,7 +21,7 @@
                 <Insets  bottom="40.0" />
             </VBox.margin>
         </Label>
-        <BorderPane prefWidth="200.0" styleClass="control-container">
+        <BorderPane prefWidth="200.0" styleClass="sample-control-container">
             <left>
                 <VBox styleClass="inner-container">
                     <SortedComboBox fx:id="sortedComboBox">
