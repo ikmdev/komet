@@ -21,7 +21,7 @@
                 <Insets  bottom="40.0" />
             </VBox.margin>
         </Label>
-        <BorderPane prefWidth="200.0" styleClass="control-container">
+        <BorderPane prefWidth="200.0" styleClass="sample-control-container">
             <left>
                 <VBox styleClass="inner-container">
                     <SortedComboBox fx:id="sortedComboBox">
