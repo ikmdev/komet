@@ -2,7 +2,6 @@ module dev.ikm.komet.layout {
 
     requires dev.ikm.komet.framework;
 
-    opens dev.ikm.komet.layout to javafx.fxml;
     exports dev.ikm.komet.layout;
     exports dev.ikm.komet.layout.action;
     exports dev.ikm.komet.layout.component;
@@ -16,7 +15,10 @@ module dev.ikm.komet.layout {
     exports dev.ikm.komet.layout.orchestration.process;
     exports dev.ikm.komet.layout.selection;
     exports dev.ikm.komet.layout.selection.element;
+    exports dev.ikm.komet.layout.window;
 
+    opens dev.ikm.komet.layout to javafx.fxml;
     opens dev.ikm.layout.app to javafx.fxml;
+
     exports dev.ikm.komet.layout.component.multi;
 }
