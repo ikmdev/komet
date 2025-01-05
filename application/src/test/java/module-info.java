@@ -14,7 +14,25 @@
  * limitations under the License.
  */
 
+import dev.ikm.komet.framework.KometNodeFactory;
+import dev.ikm.komet.framework.concurrent.TaskListsService;
+import dev.ikm.komet.framework.events.DefaultEvtBus;
+import dev.ikm.tinkar.common.service.DataServiceController;
+import dev.ikm.tinkar.common.service.DefaultDescriptionForNidService;
+import dev.ikm.tinkar.common.service.PublicIdService;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.StampService;
+
 module dev.ikm.komet.application.test {
+
+    exports dev.ikm.komet.app.test;
+    opens dev.ikm.komet.app.test;
+
+    /* Sampler App */
+    exports dev.ikm.komet.sampler;
+    opens dev.ikm.komet.sampler to javafx.fxml;
+    exports dev.ikm.komet.sampler.controllers;
+    opens dev.ikm.komet.sampler.controllers to javafx.fxml;
 
     // TODO Not happy that I have to specify these here... Can't dynamically add modules?
     requires dev.ikm.tinkar.provider.spinedarray;
@@ -22,6 +40,7 @@ module dev.ikm.komet.application.test {
     requires dev.ikm.tinkar.provider.ephemeral;
     // End not happy...
     requires org.carlfx.cognitive;
+    requires com.pixelduke.fxcomponents;
     requires javafx.controls;
     requires javafx.fxml;
     requires nsmenufx;
@@ -53,9 +72,6 @@ module dev.ikm.komet.application.test {
     requires org.testfx.junit5;
     requires org.testfx.monocle;
     requires org.junit.jupiter;
-
-    exports dev.ikm.komet.app.test;
-    opens dev.ikm.komet.app.test;
 
     exports dev.ikm.komet.app.test.integration.testfx;
     opens dev.ikm.komet.app.test.integration.testfx;
