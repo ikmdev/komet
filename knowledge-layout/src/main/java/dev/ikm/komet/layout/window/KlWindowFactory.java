@@ -3,6 +3,7 @@ package dev.ikm.komet.layout.window;
 import dev.ikm.komet.layout.KlFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import javafx.scene.control.MenuItem;
+import org.controlsfx.control.action.Action;
 import org.eclipse.collections.api.list.ImmutableList;
 
 /**
@@ -25,13 +26,13 @@ public interface KlWindowFactory extends KlFactory {
     }
 
     /**
-     * Creates and returns an immutable list of menu items that will create new windows
+     * Creates and returns an immutable list of window actions that will create new windows
      * corresponding to the different types of windows and scenes supported by this
      * factory.
      *
-     * @return An {@code ImmutableList<MenuItem>} containing the constructed menu items.
+     * @return An {@code ImmutableList<Action>} containing the constructed menu items.
      */
-    ImmutableList<MenuItem> createMenuItems();
+    ImmutableList<Action> createWindowActions();
     /**
      * Creates a new instance of a KlWindow using the specified preferences.
      *
