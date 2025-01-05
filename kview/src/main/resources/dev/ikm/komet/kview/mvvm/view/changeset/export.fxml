@@ -96,11 +96,13 @@
             translateX="8.0" translateY="-4.0" wrappingWidth="140.0"/>
    </TextFlow>
    <HBox alignment="BOTTOM_RIGHT" spacing="12.0">
-      <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#handleCancelButtonEvent" prefHeight="32.0"
-              prefWidth="88.0" styleClass="button-blue5-text-grey1-bg" text="CANCEL">
+      <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#handleCancelButtonEvent"
+              minHeight="32.0" prefHeight="32.0" prefWidth="88.0" text="CANCEL"
+              styleClass="button-blue5-text-grey1-bg">
       </Button>
-      <Button fx:id="exportButton" mnemonicParsing="false" onAction="#handleExportButtonEvent" prefHeight="32.0"
-              prefWidth="88.0" styleClass="grey-blue-button" text="EXPORT">
+      <Button fx:id="exportButton" mnemonicParsing="false" onAction="#handleExportButtonEvent"
+              minHeight="32.0" prefHeight="32.0" prefWidth="88.0" text="EXPORT"
+              styleClass="grey-blue-button">
       </Button>
    </HBox>
    <padding>
