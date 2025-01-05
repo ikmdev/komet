@@ -13,5 +13,5 @@ import dev.ikm.komet.framework.observable.ObservablePatternVersion;
  * @see KlVersionPane
  * @see ObservablePatternVersion
  */
-public interface KlPatternVersionPane extends KlVersionPane<ObservablePatternVersion> {
+public non-sealed interface KlPatternVersionPane extends KlVersionPane<ObservablePatternVersion> {
 }

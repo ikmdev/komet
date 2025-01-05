@@ -1,5 +1,7 @@
 package dev.ikm.komet.layout.component.version.field;
 
+import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
+import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpression;
 
 /**
@@ -9,5 +11,7 @@ import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpression;
  *
  * Logical expression is an adaptor class on top of an underlying Directed Tree.
  */
-public interface KlLogicalExpressionField extends KlField<LogicalExpression> {
+@RegularName( "Logical Expression Field")
+@ParentConcept(KlDirectedTreeField.class)
+public non-sealed interface KlLogicalExpressionField extends KlField<LogicalExpression> {
 }

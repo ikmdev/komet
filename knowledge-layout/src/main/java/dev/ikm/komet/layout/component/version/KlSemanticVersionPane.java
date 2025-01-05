@@ -13,6 +13,6 @@ import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
  * @see KlVersionPane
  * @see ObservableSemanticVersion
  */
-public interface KlSemanticVersionPane extends KlVersionPane<ObservableSemanticVersion> {
+public non-sealed interface KlSemanticVersionPane extends KlVersionPane<ObservableSemanticVersion> {
 
 }

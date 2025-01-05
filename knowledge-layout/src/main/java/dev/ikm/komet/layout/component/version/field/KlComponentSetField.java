@@ -1,5 +1,7 @@
 package dev.ikm.komet.layout.component.version.field;
 
+import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
+import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
 
@@ -16,5 +18,7 @@ import java.util.Set;
  *
  *  * @TODO should we have separate list and set types, or should they be combined into one component that can be constrained to prohibit addition of duplicates?
  */
-public interface KlComponentSetField<E extends Entity<V>, V extends EntityVersion> extends KlField<Set<E>> {
+@RegularName("Component Set")
+@ParentConcept(KlField.class)
+public non-sealed interface KlComponentSetField<E extends Entity<V>, V extends EntityVersion> extends KlField<Set<E>> {
 }

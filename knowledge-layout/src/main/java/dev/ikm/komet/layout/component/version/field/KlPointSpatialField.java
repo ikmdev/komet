@@ -1,5 +1,7 @@
 package dev.ikm.komet.layout.component.version.field;
 
+import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
+import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
 import dev.ikm.tinkar.component.location.SpatialPoint;
 
 /**
@@ -7,5 +9,7 @@ import dev.ikm.tinkar.component.location.SpatialPoint;
  *
  * This interface extends KlField parameterized with a SpatialPoint type.
  */
-public interface KlPointSpatialField extends KlField<SpatialPoint> {
+@ParentConcept(KlField.class)
+@RegularName("Spatial Point Field")
+public non-sealed interface KlPointSpatialField extends KlField<SpatialPoint> {
 }

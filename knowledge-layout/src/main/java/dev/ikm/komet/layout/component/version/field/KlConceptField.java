@@ -1,5 +1,7 @@
 package dev.ikm.komet.layout.component.version.field;
 
+import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
+import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.ConceptEntityVersion;
 
@@ -12,5 +14,7 @@ import dev.ikm.tinkar.entity.ConceptEntityVersion;
  * @param <C> The type of the concept entity.
  * @param <V> The type of the concept entity version.
  */
-public interface KlConceptField<C extends ConceptEntity<V> , V extends ConceptEntityVersion> extends KlField<C> {
+@RegularName("Concept Field")
+@ParentConcept(KlComponentField.class)
+public non-sealed interface KlConceptField<C extends ConceptEntity<V> , V extends ConceptEntityVersion> extends KlField<C> {
 }

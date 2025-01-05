@@ -1,5 +1,7 @@
 package dev.ikm.komet.layout.component.version.field;
 
+import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
+import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 
@@ -12,5 +14,7 @@ import dev.ikm.tinkar.entity.SemanticEntityVersion;
  * @param <S> The type of the semantic entity.
  * @param <V> The type of the semantic entity version.
  */
-public interface KlSemanticField<S extends SemanticEntity<V>, V extends SemanticEntityVersion> extends KlField<S> {
+@ParentConcept(KlComponentField.class)
+@RegularName( "Semantic Field")
+public non-sealed interface KlSemanticField<S extends SemanticEntity<V>, V extends SemanticEntityVersion> extends KlField<S> {
 }

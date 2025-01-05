@@ -1,5 +1,7 @@
 package dev.ikm.komet.layout.component.version.field;
 
+import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
+import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
 import dev.ikm.tinkar.entity.graph.DiGraphEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 
@@ -12,5 +14,7 @@ import dev.ikm.tinkar.entity.graph.EntityVertex;
  * @param <DG> The type of the directed graph entity.
  * @param <V> The type of the entity vertex.
  */
-public interface KlDirectedGraphField<DG extends DiGraphEntity<V>, V extends EntityVertex> extends KlField<DG> {
+@RegularName("Directed Graph Field")
+@ParentConcept(KlField.class)
+public non-sealed interface KlDirectedGraphField<DG extends DiGraphEntity<V>, V extends EntityVertex> extends KlField<DG> {
 }

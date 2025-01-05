@@ -12,5 +12,5 @@ import dev.ikm.komet.framework.observable.ObservableStampVersion;
  *
  * @see KlVersionPane
  * @see ObservableStampVersion
- */public interface KlStampVersionPane extends KlVersionPane<ObservableStampVersion> {
+ */public non-sealed interface KlStampVersionPane extends KlVersionPane<ObservableStampVersion> {
 }

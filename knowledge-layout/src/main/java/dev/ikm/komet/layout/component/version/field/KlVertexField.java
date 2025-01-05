@@ -1,5 +1,7 @@
 package dev.ikm.komet.layout.component.version.field;
 
+import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
+import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 
 /**
@@ -10,5 +12,7 @@ import dev.ikm.tinkar.entity.graph.EntityVertex;
  *
  * This interface extends the KlField interface, parameterized with an EntityVertex type.
  */
-public interface KlVertexField extends KlField<EntityVertex> {
+@ParentConcept(KlField.class)
+@RegularName("Graph Vertex Field")
+public non-sealed interface KlVertexField extends KlField<EntityVertex> {
 }

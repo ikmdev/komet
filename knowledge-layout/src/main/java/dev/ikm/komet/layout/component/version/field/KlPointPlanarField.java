@@ -1,5 +1,7 @@
 package dev.ikm.komet.layout.component.version.field;
 
+import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
+import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
 import dev.ikm.tinkar.component.location.PlanarPoint;
 
 /**
@@ -7,5 +9,7 @@ import dev.ikm.tinkar.component.location.PlanarPoint;
  *
  * This interface extends KlField parameterized with a PlanarPoint type.
  */
-public interface KlPointPlanarField extends KlField<PlanarPoint> {
+@ParentConcept(KlField.class)
+@RegularName( "Planar Point Field")
+public non-sealed interface KlPointPlanarField extends KlField<PlanarPoint> {
 }
