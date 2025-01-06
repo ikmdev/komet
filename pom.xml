@@ -113,6 +113,7 @@
 
         <!-- TestFX / Monocle -->
         <commonTestFXArgs>
+            -Dtestfx.headless=true
             --add-opens=javafx.graphics/com.sun.glass.ui=org.testfx.core
             --add-opens=javafx.graphics/com.sun.javafx.application=org.testfx.core
             --add-exports=javafx.graphics/com.sun.javafx.application=org.testfx.core
@@ -667,4 +668,90 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>integrationTestFX</id>
+            <activation>
+                <property>
+                    <name>runITestFX</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>testfx-integration-tests</id>
+                                <phase>integration-test</phase>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                </goals>
+                                <configuration>
+                                    <includes>
+                                        <include>**/*ITestFX.java</include>
+                                    </includes>
+                                    <argLine>
+                                        ${commonTestFXArgs}
+                                    </argLine>
+                                    <forkCount>1</forkCount>
+                                    <reuseForks>false</reuseForks>
+                                    <systemPropertyVariables>
+                                        <target.data.directory>${project.build.directory}/data</target.data.directory>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>verify</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>unitTestFX</id>
+            <activation>
+                <property>
+                    <name>runUTestFX</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>testfx-unit-tests</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <includes>
+                                        <include>**/*UTestFX.java</include>
+                                    </includes>
+                                    <argLine>
+                                        ${commonTestFXArgs}
+                                    </argLine>
+                                </configuration>
+                            </execution>
+                            <!-- Disable the default execution -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

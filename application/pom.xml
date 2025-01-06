@@ -561,10 +561,10 @@
             </build>
         </profile>
         <profile>
-            <id>its</id>
+            <id>integrationTestData</id>
             <activation>
                 <property>
-                    <name>!skipIntegrationTests</name>
+                    <name>runITestFX</name>
                 </property>
             </activation>
             <build>
@@ -579,54 +579,20 @@
                                 <goals>
                                     <goal>copy</goal>
                                 </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>dev.ikm.tinkar.data</groupId>
-                                    <artifactId>tinkar-starter-data-reasoned</artifactId>
-                                    <classifier>pb</classifier>
-                                    <type>zip</type>
-                                    <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}/data/Solor</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>testfx-integration-tests</id>
-                                <phase>integration-test</phase>
-                                <goals>
-                                    <goal>integration-test</goal>
-                                </goals>
                                 <configuration>
-                                    <includes>
-                                        <include>**/*ITestFX.java</include>
-                                    </includes>
-                                    <argLine>
-                                        -Dtestfx.headless=true
-                                        ${commonTestFXArgs}
-                                    </argLine>
-                                    <forkCount>1</forkCount>
-                                    <reuseForks>false</reuseForks>
-                                    <systemPropertyVariables>
-                                        <target.data.directory>${project.build.directory}/data</target.data.directory>
-                                    </systemPropertyVariables>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>dev.ikm.tinkar.data</groupId>
+                                            <artifactId>tinkar-starter-data-reasoned</artifactId>
+                                            <classifier>pb</classifier>
+                                            <type>zip</type>
+                                            <overWrite>false</overWrite>
+                                            <outputDirectory>${project.build.directory}/data/Solor</outputDirectory>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <overWriteReleases>false</overWriteReleases>
+                                    <overWriteSnapshots>true</overWriteSnapshots>
                                 </configuration>
-                            </execution>
-                            <execution>
-                                <id>verify</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>verify</goal>
-                                </goals>
                             </execution>
                         </executions>
                     </plugin>

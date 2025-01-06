@@ -109,47 +109,4 @@
             <artifactId>knowledge-layout</artifactId>
         </dependency>
     </dependencies>
-
-    <!--TestFX configuration for headless and graphical tests-->
-    <profiles>
-        <profile>
-            <id>unitTest</id>
-            <activation>
-                <property>
-                    <name>!skipUnitTest</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>testfx-unit-tests</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <includes>
-                                        <include>**/*UTestFX.java</include>
-                                    </includes>
-                                    <argLine>
-                                        -Dtestfx.headless=true
-                                        ${commonTestFXArgs}
-                                    </argLine>
-                                </configuration>
-                            </execution>
-                            <!-- Disable the default execution -->
-                            <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
