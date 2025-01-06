@@ -7,7 +7,7 @@ import dev.ikm.komet.layout.component.version.field.KlComponentField;
  * I think you should consider a stand alone generic "EditableField" interface, rather than
  * creating a subtype of every field, one that is read-only, and one that is editable.
  *
- * In coding logic, this may require to clauses, but the approach has looser coupling:<br><br>
+ * In coding logic, this may require two clauses, but the approach has looser coupling, and keeps the hierarchies shallower:<br><br>
  * <pre>{@code
 if (fieldWidget instanceof KlComponentField && fieldWidget instanceof KlEditable) {
 // Do something interesting.
@@ -20,6 +20,7 @@ if (fieldWidget instanceof KlComponentField && fieldWidget instanceof KlEditable
  * Design patterns such as the Strategy pattern or the Decorator pattern can help you
  * achieve flexibility and avoid the need for deep inheritance hierarchies.
  *
+ * TODO: Should we add a generic KlEditable<DataType> interface in the knowledge-layout module?
  */
 public interface EditableKlComponentField extends KlComponentField {
 }
