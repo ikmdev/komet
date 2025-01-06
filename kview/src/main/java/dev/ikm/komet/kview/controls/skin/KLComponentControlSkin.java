@@ -1,11 +1,10 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentListControl;
 import dev.ikm.komet.kview.controls.KLComponentSetControl;
-import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
-import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import javafx.event.ActionEvent;
@@ -34,6 +33,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ResourceBundle;
 
+/**
+ * Default skin implementation for the {@link KLComponentControl} control
+ */
 public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
     private static final Logger LOG = LoggerFactory.getLogger(KLComponentControl.class);
@@ -50,6 +52,13 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private final HBox aboutToDropHBox;
     private final HBox aboutToRearrangeHBox;
 
+    /**
+     * Creates a new KLComponentControlSkin instance, installing the necessary child
+     * nodes into the Control {@link javafx.scene.control.Control#getChildrenUnmodifiable() children} list, as
+     * well as the necessary input mappings for handling key, mouse, etc. events.
+     *
+     * @param control The control that this skin should be installed onto.
+     */
     public KLComponentControlSkin(KLComponentControl control) {
         super(control);
 
@@ -77,16 +86,23 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
             if (entity == null || entity.getValue() == null) {
                selectedConceptContainer.getChildren().clear();
                conceptContainer.setVisible(true);
-           }
+            }
+        });
+        control.entityProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                addConceptNode(getSkinnable().getEntity());
+            }
         });
     }
 
+    /** {@inheritDoc} */
     @Override
     public void dispose() {
         super.dispose();
         unregisterChangeListeners(getSkinnable().entityProperty());
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
         double labelPrefWidth = titleLabel.isManaged() ? titleLabel.prefWidth(-1) : 0;
@@ -182,9 +198,12 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     LOG.info("publicId: {}", dragboard.getString());
                     if (event.getGestureSource() instanceof Node source &&
                             source.getUserData() instanceof DragAndDropInfo dropInfo &&
-                            dropInfo.publicId() != null &&
-                            dropInfo.publicId().toString().equals(dragboard.getString())) { // TODO: should this be needed? shouldn't we get PublicId from dragboard content?
-                        if (control.getEntity() == null) {
+                            dropInfo.publicId() != null
+//                            &&
+//                            dropInfo.publicId().toString().equals(dragboard.getString())
+                    ) { // TODO: should this be needed? shouldn't we get PublicId from dragboard content?
+
+                        //if (control.getEntity() == null) {
                             Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(dropInfo.publicId()));
                             if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
                                     !componentSetControl.getEntitiesList().contains(entity)) {
@@ -192,7 +211,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                                 addConceptNode(entity);
                                 success = true;
                             }
-                        }
+                        //}
                     }
                 } catch (Exception e) {
                     LOG.error("exception: ", e);

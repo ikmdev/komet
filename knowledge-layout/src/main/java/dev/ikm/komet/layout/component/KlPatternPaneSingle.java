@@ -6,12 +6,8 @@ import dev.ikm.tinkar.entity.PatternVersionRecord;
 import javafx.scene.Node;
 
 /**
- * Represents a single pane component in the layout system that deals with
- * a specific observable pattern.
- *
- * @param <N> the type of the JavaFX node that this pane uses.
+ * @deprecated use KlPatternPane
  */
-public interface KlPatternPaneSingle<N extends Node> extends KlComponentPaneSingle<ObservablePatternVersion, PatternVersionRecord> {
-    ObservablePattern observableEntity();
-
+@Deprecated
+public interface KlPatternPaneSingle extends KlPatternPane {
 }

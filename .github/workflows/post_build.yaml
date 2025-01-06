@@ -1,0 +1,73 @@
+name: Post Build Action Workflow
+
+run-name: 'Post Build Action -- ${{github.event.workflow_run.head_branch}}'
+
+on:
+   workflow_run:
+    workflows:
+      - Build Workflow
+    types:
+      - completed
+
+permissions:
+  contents: write        
+        
+jobs:
+  post-build:
+    name: Post Build Actions
+    runs-on: ubuntu-24.04
+    if: github.event.workflow_run.conclusion == 'success' && github.repository_owner == 'ikmdev'
+    outputs:
+       RELEASE_UPLOAD_URL: ${{steps.ikmdev_post_build.outputs.release_upload_url}}
+       IS_TAG: ${{steps.ikmdev_post_build.outputs.is_tag}}
+    steps:   
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{github.event.workflow_run.head_repository.full_name}}
+          ref: ${{github.event.workflow_run.head_branch}}
+          fetch-depth: 0
+          
+      - name: IKMDEV Post Build Action
+        id: ikmdev_post_build
+        uses: ikmdev/maven-post-build-action@v1.0.0
+        with:
+            nexus_repo_password: ${{secrets.EC2_NEXUS_PASSWORD}}
+            branch_name: ${{github.event.workflow_run.head_branch}}
+            github_token: ${{secrets.GITHUB_TOKEN}}
+            ossrh_username: ${{secrets.OSSRH_TOKEN_USER}}
+            ossrh_token: ${{secrets.OSSRH_TOKEN_PASS}}
+            gpg_key: ${{secrets.GPG_KEY}}
+            gpg_passphrase: ${{secrets.GPG_PASSPHRASE}}
+            sonarcloud_token: ${{ secrets.SONAR_TOKEN }}
+            sonarcloud_tests: ${{ '' }}
+
+  generate_release_installers:
+    name: Generate Release Installers
+    needs: post-build
+    if: needs.post-build.outputs.IS_TAG == 'true'
+    strategy:
+      matrix:
+        os: [macos-13, macos-14, ubuntu-20.04, windows-2022]
+    runs-on: ${{matrix.os}}
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{github.event.workflow_run.head_branch}}
+       
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+            distribution: 'zulu'
+            java-version: '21'
+   
+      - name: Composite Action
+        uses: ./.github/installer_composite
+        with:
+          branch_name: ${{github.event.workflow_run.head_branch}}
+          isTag: "true"
+          release_upload_url: ${{ needs.post-build.outputs.RELEASE_UPLOAD_URL}}
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          operating_system: ${{matrix.os}}
+           

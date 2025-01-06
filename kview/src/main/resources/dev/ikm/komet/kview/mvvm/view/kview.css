@@ -334,6 +334,12 @@
     -fx-background-color: transparent;
 }
 
+/* common container pane used on bump outs needing scroll pane */
+.sub-container {
+    -fx-background-color: -Grey-3;
+}
+
+.sub-container .scroll-pane,
 .lidr-sub-container .scroll-pane,
 .analyte-group-container .scroll-pane,
 .axiom-container .scroll-pane {
@@ -341,7 +347,7 @@
     -fx-border-insets: 1;
     -fx-background-radius: 0 0 10 10;
 }
-
+.sub-container .scroll-pane > .viewport,
 .lidr-sub-container .scroll-pane > .viewport,
 .analyte-group-container .scroll-pane > .viewport,
 .axiom-container .scroll-pane > .viewport {
@@ -2502,6 +2508,12 @@ Timeline Year line segment (will overlay change circles)
 
 .tag-container {
     -fx-background-color: -Grey-1;
+    -fx-background-radius: 4;
+}
+
+.file-circle-plus-icon {
+    -fx-background-color: -Secondary-05;
+    -fx-shape: "M0 64C0 28.7 28.7 0 64 0L224 0l0 128c0 17.7 14.3 32 32 32l128 0 0 38.6C310.1 219.5 256 287.4 256 368c0 59.1 29.1 111.3 73.7 143.3c-3.2 .5-6.4 .7-9.7 .7L64 512c-35.3 0-64-28.7-64-64L0 64zm384 64l-128 0L256 0 384 128zm48 96a144 144 0 1 1 0 288 144 144 0 1 1 0-288zm16 80c0-8.8-7.2-16-16-16s-16 7.2-16 16l0 48-48 0c-8.8 0-16 7.2-16 16s7.2 16 16 16l48 0 0 48c0 8.8 7.2 16 16 16s16-7.2 16-16l0-48 48 0c8.8 0 16-7.2 16-16s-7.2-16-16-16l-48 0 0-48z";
 }
 
 .grey9-14pt-normal {
@@ -2569,6 +2581,8 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-size: 14px;
     -fx-font-weight: bold;
     -fx-font-family: "Noto Sans";
+    -fx-alignment: center;
+    -fx-content-display: center;
 }
 
 /* date selection combo box used by export */
@@ -2754,8 +2768,10 @@ Timeline Year line segment (will overlay change circles)
 
 .comments-textflow {
     -fx-border-radius: 4;
-    -fx-min-height: 40;
+    -fx-min-height: 118;
     -fx-background-color: -Grey-1;
+    -fx-background-radius: 4;
+    -fx-border-color: -Grey-5;
 }
 
 .comment-placeholder-text {
@@ -2790,6 +2806,8 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-radius: 4;
     -fx-background-color: -Secondary-05;
     -fx-text-fill: -Grey-White;
+    -fx-alignment: center;
+    -fx-content-display: center;
 }
 
 .white-blue-button {
@@ -4902,4 +4920,109 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: #395C9A;
     -fx-border-width: 1px;
     -fx-border-color: #CFD8E4;
+}
+.field-separator {
+    -fx-text-fill: -Grey-7;
+    -fx-background-color: -Grey-7;
+    -fx-border-color: -Grey-7;
+    -fx-pref-height: 1px;
+    -fx-border-style: solid;
+    -fx-border-width: 0.5px;
+    -fx-orientation: horizontal;
+    -fx-halignment: center;
+    -fx-valignment: center;
+    -fx-padding: -2px 0px -2px 0px;
+}
+
+/* cancel, clear form buttons */
+.sub-container .button-bar .button {
+    -fx-border-radius: 4 4 4 4;
+    -fx-border-color: -Secondary-05;
+    -fx-border-width: 1px;
+    -fx-background-color: -Grey-2;
+    -fx-text-fill: -Secondary-05;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+}
+
+/* submit button */
+.sub-container .button-bar .primary.button {
+    -fx-border-radius: 4;
+    -fx-background-color: -Secondary-05;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-font-style: normal;
+    -fx-text-fill: -Grey-White;
+    /*-fx-border-width: 1px;*/
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * KL Controls Context Menu                                                    *
+ *                                                                             *
+ ******************************************************************************/
+
+.klcontext-menu {
+    -fx-background-color: #2e3140;
+    -fx-background-radius: 4px;
+
+    -fx-min-width: 150px;
+}
+
+.klcontext-menu .separator:horizontal {
+    -fx-padding: 0 5px 0 5px;
+}
+
+.klcontext-menu .separator:horizontal .line {
+    -fx-border-color: #555 transparent transparent transparent;
+}
+
+.klcontext-menu .menu-item > .graphic-container {
+    -fx-padding: 0.416667em 0.5em 0.416667em 0.5em;
+}
+
+.klcontext-menu .menu-item:hover,
+.klcontext-menu .menu-item:focused {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+}
+
+.klcontext-menu .menu-item > .label {
+    -fx-font-family: "Noto Sans";
+
+    -fx-text-fill: white;
+}
+
+klcontext-menu .menu-item > .graphic-container {
+    -fx-padding: 0em 0.5em 0em 0em;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Icons                                                                       *
+ *                                                                             *
+ ******************************************************************************/
+
+.icon {
+    size: 12;
+
+    -fx-pref-width: size;
+    -fx-max-width: size;
+    -fx-min-width: size;
+
+    -fx-pref-height: size;
+    -fx-max-height: size;
+    -fx-min-height: size;
+
+    -fx-background-color: white;
+}
+
+.icon.pencil {
+    -fx-shape: "M11.7167 7.5L12.5 8.28333L4.93333 15.8333H4.16667V15.0667L11.7167 7.5ZM14.7167 2.5C14.5083 2.5 14.2917 2.58333 14.1333 2.74167L12.6083 4.26667L15.7333 7.39167L17.2583 5.86667C17.5833 5.54167 17.5833 5 17.2583 4.69167L15.3083 2.74167C15.1417 2.575 14.9333 2.5 14.7167 2.5ZM11.7167 5.15833L2.5 14.375V17.5H5.625L14.8417 8.28333L11.7167 5.15833Z";
+}
+
+.icon.trash {
+    -fx-shape: "M12.4987 2.5V3.33333H16.6654V5H15.832V15.8333C15.832 16.75 15.082 17.5 14.1654 17.5H5.83203C4.91536 17.5 4.16536 16.75 4.16536 15.8333V5H3.33203V3.33333H7.4987V2.5H12.4987ZM5.83203 15.8333H14.1654V5H5.83203V15.8333ZM7.4987 6.66667H9.16536V14.1667H7.4987V6.66667ZM12.4987 6.66667H10.832V14.1667H12.4987V6.66667Z";
 }
