@@ -4,7 +4,8 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 
-public interface KlFactory {
+
+public interface KlWidgetFactory extends KlFactory {
 
     /**
      * Provides a palette icon for the layout tool that represents this factory.
@@ -19,7 +20,7 @@ public interface KlFactory {
 
     /**
      * Retrieves the KlWidget interface of the KlWidget produced by the factory.
-      *
+     *
      * @return A {@link Class} object representing the class type of the field
      *         interface extending {@link KlWidget}.
      */
@@ -41,7 +42,7 @@ public interface KlFactory {
      * @return A string representing the name of the widget.
      */
     default String klWidgetName() {
-        return camelCaseToWords(this.klWidgetImplementationClass().getSimpleName());
+        return KlFactory.camelCaseToWords(this.klWidgetImplementationClass().getSimpleName());
     }
 
     /**
@@ -51,45 +52,8 @@ public interface KlFactory {
      */
     default String klWidgetDescription() {
         return "A Knowledge Layout Widget that implements the " +
-                camelCaseToWords(this.klWidgetInterfaceClass().getSimpleName() +
+                KlFactory.camelCaseToWords(this.klWidgetInterfaceClass().getSimpleName() +
                         " interface.");
     }
 
-    /**
-     * TODO: move this to a text utility in tinkar-core ?
-     * @param camelCaseString
-     * @return
-     */
-    static String camelCaseToWords(String camelCaseString) {
-        if (camelCaseString.startsWith("kl")) {
-            camelCaseString = camelCaseString.replaceFirst("^kl", "knowledgeLayout");
-        } else if (camelCaseString.startsWith("Kl")) {
-            camelCaseString = camelCaseString.replaceFirst( "^Kl", "KnowledgeLayout");
-        }
-        StringBuilder result = new StringBuilder();
-
-        for (int i = 0; i < camelCaseString.length(); i++) {
-            char ch = camelCaseString.charAt(i);
-
-            if (Character.isUpperCase(ch)) {
-                if (i > 0) {
-                    result.append(" ");
-                }
-                result.append(Character.toLowerCase(ch));
-            } else {
-                result.append(ch);
-            }
-        }
-
-        return result.toString().replace("kl ", "Knowledge Layout ");
-    }
-
-    /**
-     * Retrieves the name of this factory.
-     *
-     * @return A string representing the name of the factory.
-     */
-    default String name() {
-        return camelCaseToWords(this.getClass().getSimpleName());
-    }
 }
