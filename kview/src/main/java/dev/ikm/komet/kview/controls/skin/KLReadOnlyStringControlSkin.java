@@ -73,12 +73,14 @@ public class KLReadOnlyStringControlSkin extends SkinBase<KLReadOnlyStringContro
     }
 
     private void addMenuItemsToContextMenu(KLReadOnlyStringControl control) {
-        if (control.getDataType() == DataType.STRING) {
-            addMenuItemsForStringType(control);
-        } else if (control.getDataType() == DataType.INTEGER) {
-            addMenuItemsForIntegerType(control);
-        } else if (control.getDataType() == DataType.FLOAT) {
-            addMenuItemsForFloatType(control);
+        switch (control.getDataType()) {
+            case DataType.STRING -> addMenuItemsForStringType(control);
+            case INTEGER -> addMenuItemsForIntegerType(control);
+            case FLOAT -> addMenuItemsForFloatType(control);
+            case BOOLEAN -> addMenuItemsForBooleanType(control);
+            case UUID -> addMenuItemsForUUIDType(control);
+            case INSTANT -> addMenuItemsForInstantType(control);
+            case BYTE_ARRAY -> addMenuItemsForByteArrayType(control);
         }
 
         contextMenu.getItems().addAll(
@@ -103,6 +105,30 @@ public class KLReadOnlyStringControlSkin extends SkinBase<KLReadOnlyStringContro
         contextMenu.getItems().addAll(
                 createMenuItem("Edit Float", IconValue.PENCIL, this::fireOnEditAction),
                 createMenuItem("Add Unit of Measure", IconValue.PLUS, this::fireOnAddUnitsOfMeasureAction)
+        );
+    }
+
+    private void addMenuItemsForBooleanType(KLReadOnlyStringControl control) {
+        contextMenu.getItems().add(
+                createMenuItem("Edit Selection", IconValue.PENCIL, this::fireOnEditAction)
+        );
+    }
+
+    private void addMenuItemsForUUIDType(KLReadOnlyStringControl control) {
+        contextMenu.getItems().add(
+                createMenuItem("Edit Identifier", IconValue.PENCIL, this::fireOnEditAction)
+        );
+    }
+
+    private void addMenuItemsForInstantType(KLReadOnlyStringControl control) {
+        contextMenu.getItems().add(
+                createMenuItem("Edit Identifier", IconValue.PENCIL, this::fireOnEditAction)
+        );
+    }
+
+    private void addMenuItemsForByteArrayType(KLReadOnlyStringControl control) {
+        contextMenu.getItems().add(
+                createMenuItem("Edit Selection", IconValue.PENCIL, this::fireOnEditAction)
         );
     }
 

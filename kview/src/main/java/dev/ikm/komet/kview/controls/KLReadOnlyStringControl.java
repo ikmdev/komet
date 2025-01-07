@@ -15,7 +15,11 @@ public class KLReadOnlyStringControl extends Control {
     public enum DataType {
         INTEGER,
         FLOAT,
-        STRING
+        STRING,
+        BOOLEAN,
+        UUID,
+        INSTANT,
+        BYTE_ARRAY
     }
 
     public KLReadOnlyStringControl() {
