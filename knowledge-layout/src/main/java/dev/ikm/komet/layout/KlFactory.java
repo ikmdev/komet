@@ -87,7 +87,7 @@ public interface KlFactory {
     /**
      * Retrieves the name of this factory.
      *
-     * @return A string representing the name of the field widget.
+     * @return A string representing the name of the factory.
      */
     default String name() {
         return camelCaseToWords(this.getClass().getSimpleName());

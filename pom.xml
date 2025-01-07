@@ -69,7 +69,7 @@
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.4.0</tinkar-composer.version>
-        <tinkar-core.version>1.77.0</tinkar-core.version>
+        <tinkar-core.version>1.80.0</tinkar-core.version>
 
         <!-- IKM Evrete Variables -->
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
@@ -90,9 +90,9 @@
         <jpro-auth-core.version>${jpro-platform.version}-ikmdev</jpro-auth-core.version>
 
         <!-- TestFX Variables -->
+        <tinkar-starter-data-reasoned.version>1.0.0</tinkar-starter-data-reasoned.version>
         <testfx.version>4.0.18-jpms</testfx.version>
         <openjfx-monocle.version>21.0.2-jpms</openjfx-monocle.version>
-        <maven-surefire-plugin.version>3.5.0</maven-surefire-plugin.version>
 
         <!-- Everything Else -->
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
@@ -108,8 +108,21 @@
         <jpackage.version>1.6.0</jpackage.version>
         <mockito.version>5.7.0</mockito.version>
         <nsmenufx.version>3.1.0</nsmenufx.version>
-        <openjfx.version>21.0.4</openjfx.version>
+        <openjfx.version>23.0.1</openjfx.version>
         <scenic-view.version>11.0.2</scenic-view.version>
+
+        <!-- TestFX / Monocle -->
+        <commonTestFXArgs>
+            -Dtestfx.headless=true
+            --add-opens=javafx.graphics/com.sun.glass.ui=org.testfx.core
+            --add-opens=javafx.graphics/com.sun.javafx.application=org.testfx.core
+            --add-exports=javafx.graphics/com.sun.javafx.application=org.testfx.core
+            --add-exports=javafx.graphics/com.sun.glass.ui=org.testfx.monocle
+            --add-exports=javafx.graphics/com.sun.javafx.util=org.testfx.monocle
+            --add-exports=javafx.base/com.sun.javafx.logging=org.testfx.monocle
+            --add-opens=javafx.graphics/javafx.scene=org.controlsfx.controls
+            --add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
+        </commonTestFXArgs>
     </properties>
 
     <dependencyManagement>
@@ -277,6 +290,11 @@
                 <artifactId>reasoner-hybrid</artifactId>
                 <version>${tinkar-core.version}</version>
             </dependency>
+            <dependency>
+                <groupId>dev.ikm.tinkar.data</groupId>
+                <artifactId>tinkar-starter-data-reasoned</artifactId>
+                <version>${tinkar-starter-data-reasoned.version}</version>
+            </dependency>
 
             <!-- IKM Evrete Dependencies -->
             <dependency>
@@ -342,6 +360,20 @@
                 <groupId>com.pixelduke</groupId>
                 <artifactId>fxcomponents</artifactId>
                 <version>${fxcomponents.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.openjfx</groupId>
+                        <artifactId>javafx-base</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.openjfx</groupId>
+                        <artifactId>javafx-graphics</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.openjfx</groupId>
+                        <artifactId>javafx-controls</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.carlfx</groupId>
@@ -609,11 +641,6 @@
                     <artifactId>jpro-maven-plugin</artifactId>
                     <version>${jpro.version}</version>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${maven-surefire-plugin.version}</version>
-                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -641,4 +668,90 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>integrationTestFX</id>
+            <activation>
+                <property>
+                    <name>runITestFX</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>testfx-integration-tests</id>
+                                <phase>integration-test</phase>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                </goals>
+                                <configuration>
+                                    <includes>
+                                        <include>**/*ITestFX.java</include>
+                                    </includes>
+                                    <argLine>
+                                        ${commonTestFXArgs}
+                                    </argLine>
+                                    <forkCount>1</forkCount>
+                                    <reuseForks>false</reuseForks>
+                                    <systemPropertyVariables>
+                                        <target.data.directory>${project.build.directory}/data</target.data.directory>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>verify</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>unitTestFX</id>
+            <activation>
+                <property>
+                    <name>runUTestFX</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>testfx-unit-tests</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <includes>
+                                        <include>**/*UTestFX.java</include>
+                                    </includes>
+                                    <argLine>
+                                        ${commonTestFXArgs}
+                                    </argLine>
+                                </configuration>
+                            </execution>
+                            <!-- Disable the default execution -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
