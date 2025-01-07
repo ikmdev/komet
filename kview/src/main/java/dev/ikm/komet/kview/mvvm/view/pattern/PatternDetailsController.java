@@ -52,6 +52,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAMES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_DATE_STR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
@@ -351,7 +352,7 @@ public class PatternDetailsController {
 
         // bind view model
         if (!patternTitleText.textProperty().isBound()) {
-            patternTitleText.textProperty().bind(patternViewModel.getProperty(PATTERN).map(p -> ((EntityFacade) p).description()));
+            patternTitleText.textProperty().bind(patternViewModel.getProperty(PATTERN_TITLE_TEXT));
         }
         // bind stamp
         lastUpdatedText.textProperty().bind(getStampViewModel().getProperty(TIME).map(t -> {
