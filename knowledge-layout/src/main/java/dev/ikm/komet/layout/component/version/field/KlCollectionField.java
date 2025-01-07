@@ -15,7 +15,7 @@ import java.util.Collection;
  *
  * @param <C> The type of the collection held by the field.
  */
-@RegularName( "Collection Field")
+@RegularName("Collection Field")
 @ParentConcept(KlField.class)
 public interface KlCollectionField<C extends Collection<?>> extends KlField<C> {
 

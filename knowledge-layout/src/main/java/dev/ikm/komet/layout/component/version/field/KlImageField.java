@@ -10,6 +10,6 @@ import javafx.scene.image.Image;
  * This interface extends KlField parameterized with an Image type.
  */
 @RegularName("Image Field")
-@ParentConcept( KlField.class)
+@ParentConcept(KlField.class)
 public interface KlImageField extends KlField<Image> {
 }

@@ -8,7 +8,7 @@ import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
  *
  * This interface extends KlField parameterized with a String type.
  */
-@RegularName( "String Field")
-@ParentConcept( KlField.class)
+@RegularName("String Field")
+@ParentConcept(KlField.class)
 public interface KlStringField extends KlField<String> {
 }

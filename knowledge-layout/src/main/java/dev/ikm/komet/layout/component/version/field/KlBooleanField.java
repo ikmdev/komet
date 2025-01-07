@@ -8,7 +8,7 @@ import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
  *
  * This interface extends KlField parameterized with an Boolean type.
  */
-@RegularName( "Boolean Field")
-@ParentConcept( KlField.class)
+@RegularName("Boolean Field")
+@ParentConcept(KlField.class)
 public interface KlBooleanField extends KlField<Boolean> {
 }

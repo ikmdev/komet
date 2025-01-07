@@ -8,7 +8,7 @@ import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
  *
  * This interface extends KlField parameterized with an Integer type.
  */
-@RegularName( "Integer Field")
-@ParentConcept( KlField.class)
+@RegularName("Integer Field")
+@ParentConcept(KlField.class)
 public interface KlIntegerField extends KlField<Integer> {
 }
