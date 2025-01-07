@@ -1,20 +1,24 @@
 package dev.ikm.komet.layout.component.version.field;
 
+import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
+import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
 
 import java.util.List;
 
 /**
- * Represents a field whose value is a list of entity components.
+ * Represents a field that holds a list of component entities.
  *
- * This interface extends the KlField interface, parameterized with a list of entities
- * and their corresponding versions.
+ * This interface extends KlListField, parameterized with a list of component entity types,
+ * where the entities themselves are parameterized with their respective version types. It serves
+ * as a specialization designed to manage and interact specifically with component entities in
+ * list-based collections.
  *
- * @param <E> The type of the entities in the list.
- * @param <V> The type of the entity versions.
- *
- * @TODO should we have separate list and set types, or should they be combined into one component that can be constrained to prohibit addition of duplicates?
+ * @param <E> The type of the component entity in the list.
+ * @param <V> The type of the version associated with the component entity.
  */
-public interface KlComponentListField<E extends Entity<V>, V extends EntityVersion> extends KlField<List<E>> {
+@RegularName("Component List Field")
+@ParentConcept(KlListField.class)
+public interface KlComponentListField<E extends Entity<V>, V extends EntityVersion> extends KlListField<List<E>> {
 }
