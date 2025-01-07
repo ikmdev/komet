@@ -2,7 +2,7 @@ package dev.ikm.komet.layout.component.multi;
 
 import dev.ikm.komet.framework.observable.ObservableVersion;
 import dev.ikm.komet.layout.KlWidget;
-import dev.ikm.komet.layout.component.version.KlVersionPaneSingle;
+import dev.ikm.komet.layout.component.version.KlVersionPane;
 import javafx.collections.ObservableList;
 
 /**
@@ -24,8 +24,8 @@ public interface KlMultiVersionPane<V extends ObservableVersion> extends KlWidge
     /**
      * Retrieves the list of single version panes associated with this multi-version pane.
      *
-     * @return an ObservableList of KlVersionPaneSingle<V> objects, representing the individual version panes
+     * @return an ObservableList of KlVersionPane<V> objects, representing the individual version panes
      *         that handle and display single versions of the entity managed by this multi-version pane.
      */
-    ObservableList<KlVersionPaneSingle<V>> klVersions();
+    ObservableList<KlVersionPane<V>> klVersions();
 }

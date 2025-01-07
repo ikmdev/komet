@@ -4,11 +4,11 @@ import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
 import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
 
 /**
- * Represents a field that holds an Integer value.
+ * Represents a field that holds a Boolean value.
  *
- * This interface extends KlField parameterized with an Integer type.
+ * This interface extends KlField parameterized with an Boolean type.
  */
-@RegularName("Integer Field")
+@RegularName("Boolean Field")
 @ParentConcept(KlField.class)
-public interface KlIntegerField extends KlField<Integer> {
+public interface KlBooleanField extends KlField<Boolean> {
 }

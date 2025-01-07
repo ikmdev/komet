@@ -4,7 +4,7 @@ import dev.ikm.komet.framework.observable.ObservableVersion;
 import dev.ikm.komet.layout.component.KlPane;
 
 /**
- * The {@code KlVersionPaneSingle} interface represents a pane that displays a single version of an entity.
+ * The {@code KlVersionPane} interface represents a pane that displays a single version of an entity.
  *
  * @param <OV> the type of the ObservableVersion that the pane works with
  *
