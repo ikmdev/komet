@@ -9,7 +9,7 @@ import dev.ikm.tinkar.component.location.SpatialPoint;
  *
  * This interface extends KlField parameterized with a SpatialPoint type.
  */
-@RegularName( "Spatial Point Field")
-@ParentConcept( KlField.class)
+@RegularName("Spatial Point Field")
+@ParentConcept(KlField.class)
 public interface KlPointSpatialField extends KlField<SpatialPoint> {
 }

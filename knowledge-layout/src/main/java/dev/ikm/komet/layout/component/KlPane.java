@@ -14,6 +14,6 @@ public interface KlPane extends KlWidget {
      * @return the JavaFX {@code Pane} used to display content
      */
     default Pane pane() {
-        return sceneGraphNode();
+        return klWidget();
     }
 }

@@ -14,7 +14,7 @@ import dev.ikm.tinkar.entity.SemanticEntityVersion;
  * @param <S> The type of the semantic entity.
  * @param <V> The type of the semantic entity version.
  */
-@RegularName( "Semantic Field")
+@RegularName("Semantic Field")
 @ParentConcept(KlComponentField.class)
 public interface KlSemanticField<S extends SemanticEntity<V>, V extends SemanticEntityVersion> extends KlField<S> {
 }
