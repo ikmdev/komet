@@ -30,7 +30,8 @@ public class SamplerReadOnlyStringController {
 
     public void initialize()
     {
-        samplerDescription.setText("Read only String Control that's used to display KLStringField");
+        samplerDescription.setText("Read only String Control that's used to display KLStringField, " +
+                "KlIntegerField or KlFloatField");
 
         titleTextField.setText(readOnlyStringControl.getTitle());
         textTextField.setText(readOnlyStringControl.getText());

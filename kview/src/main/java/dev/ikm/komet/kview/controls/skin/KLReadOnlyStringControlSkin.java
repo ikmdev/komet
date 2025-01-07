@@ -7,6 +7,8 @@ import dev.ikm.komet.kview.controls.KometIcon.IconValue;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.css.PseudoClass;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -75,49 +77,57 @@ public class KLReadOnlyStringControlSkin extends SkinBase<KLReadOnlyStringContro
             addMenuItemsForStringType(control);
         } else if (control.getDataType() == DataType.INTEGER) {
             addMenuItemsForIntegerType(control);
+        } else if (control.getDataType() == DataType.FLOAT) {
+            addMenuItemsForFloatType(control);
         }
 
-        SeparatorMenuItem separatorMenuItem = new SeparatorMenuItem();
-
-        MenuItem removeItem = new MenuItem("Remove");
-        removeItem.setGraphic(KometIcon.create(IconValue.TRASH));
-
         contextMenu.getItems().addAll(
-                separatorMenuItem,
-                removeItem
+                new SeparatorMenuItem(),
+                createMenuItem("Remove", IconValue.TRASH, this::fireOnRmoveAction)
         );
-
-        removeItem.setOnAction(actionEvent -> {
-            if (control.getOnRemoveAction() != null) {
-                control.getOnRemoveAction().run();
-            }
-        });
     }
 
     private void addMenuItemsForStringType(KLReadOnlyStringControl control) {
-        MenuItem editTextItem = new MenuItem("Edit Text");
-        editTextItem.setGraphic(KometIcon.create(IconValue.PENCIL));
-
-        contextMenu.getItems().add(editTextItem);
-
-        editTextItem.setOnAction(actionEvent -> {
-            if (control.getOnEditAction() != null) {
-                control.getOnEditAction().run();
-            }
-        });
+        contextMenu.getItems().add(
+                createMenuItem("Edit Text", IconValue.PENCIL, this::fireOnEditAction)
+        );
     }
 
     private void addMenuItemsForIntegerType(KLReadOnlyStringControl control) {
-        MenuItem editTextItem = new MenuItem("Edit Integer");
-        editTextItem.setGraphic(KometIcon.create(IconValue.PENCIL));
+        contextMenu.getItems().add(
+                createMenuItem("Edit Integer", IconValue.PENCIL, this::fireOnEditAction)
+        );
+    }
 
-        contextMenu.getItems().add(editTextItem);
+    private void addMenuItemsForFloatType(KLReadOnlyStringControl control) {
+        contextMenu.getItems().addAll(
+                createMenuItem("Edit Float", IconValue.PENCIL, this::fireOnEditAction),
+                createMenuItem("Add Unit of Measure", IconValue.PLUS, this::fireOnAddUnitsOfMeasureAction)
+        );
+    }
 
-        editTextItem.setOnAction(actionEvent -> {
-            if (control.getOnEditAction() != null) {
-                control.getOnEditAction().run();
-            }
-        });
+    private void fireOnEditAction(ActionEvent actionEvent) {
+        if (getSkinnable().getOnEditAction() != null) {
+            getSkinnable().getOnEditAction().run();
+        }
+    }
+
+    private void fireOnAddUnitsOfMeasureAction(ActionEvent actionEvent) {
+        if (getSkinnable().getOnAddUnitsOfMeasureAction() != null) {
+            getSkinnable().getOnAddUnitsOfMeasureAction().run();
+        }
+    }
+
+    private void fireOnRmoveAction(ActionEvent actionEvent) {
+        if (getSkinnable().getOnRemoveAction() != null) {
+            getSkinnable().getOnRemoveAction().run();
+        }
+    }
+
+    private MenuItem createMenuItem(String text, KometIcon.IconValue icon, EventHandler<ActionEvent> actionHandler) {
+        MenuItem menuItem = new MenuItem(text, KometIcon.create(icon));
+        menuItem.setOnAction(actionHandler);
+        return menuItem;
     }
 
     private void onEditModeChanged(Observable observable) {
