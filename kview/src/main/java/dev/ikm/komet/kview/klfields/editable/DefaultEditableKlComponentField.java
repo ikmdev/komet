@@ -17,7 +17,7 @@ public class DefaultEditableKlComponentField implements EditableKlComponentField
     }
 
     @Override
-    public KLComponentControl sceneGraphNode() {
+    public KLComponentControl klWidget() {
         if (node == null) {
             KLComponentControl componentControl = new KLComponentControl();
 
