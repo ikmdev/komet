@@ -15,7 +15,7 @@
 <?import javafx.scene.text.TextFlow?>
 
 <?import javafx.scene.layout.VBox?>
-<HBox fx:id="searchEntryHBox" prefHeight="30.0" prefWidth="332.0" styleClass="search-entry-hbox" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.search.SortResultSemanticEntryController">
+<HBox fx:id="searchEntryHBox" prefHeight="30.0" prefWidth="332.0" styleClass="search-entry-hbox" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.search.SortResultSemanticEntryController">
    <children>
       <VBox HBox.hgrow="ALWAYS">
          <children>
