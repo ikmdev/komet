@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/16"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/23"
             fx:controller="dev.ikm.komet.navigator.graph.MultiParentGraphViewController">
     <children>
         <BorderPane fx:id="topBorderPane" layoutX="1.0" layoutY="4.5" prefHeight="711.0" prefWidth="507.0"
