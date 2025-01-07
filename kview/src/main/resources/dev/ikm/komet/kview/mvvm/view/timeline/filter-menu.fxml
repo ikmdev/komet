@@ -10,7 +10,7 @@
 <?import javafx.scene.shape.Line?>
 
 
-<VBox fx:id="filterMenuVbox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="314.0" prefWidth="214.0" styleClass="filter-menu-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.timeline.FilterMenuController">
+<VBox fx:id="filterMenuVbox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="314.0" prefWidth="214.0" styleClass="filter-menu-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.timeline.FilterMenuController">
    <children>
       <Label styleClass="filter-menu-title" text="PATH" />
       <VBox fx:id="pathSelectionVBox" prefHeight="52.0" prefWidth="212.0" styleClass="filter-menu-options-container">
