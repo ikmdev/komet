@@ -12,9 +12,25 @@ import javafx.scene.control.Skin;
 
 public class KLReadOnlyStringControl extends Control {
 
+    public enum DataType {
+        INTEGER,
+        FLOAT,
+        STRING,
+        BOOLEAN,
+        UUID,
+        INSTANT,
+        BYTE_ARRAY
+    }
+
     public KLReadOnlyStringControl() {
         getStyleClass().add("read-only-string-control");
     }
+
+    // -- data type
+    private ObjectProperty<DataType> dataType = new SimpleObjectProperty<>(DataType.STRING);
+    public DataType getDataType() { return dataType.get(); }
+    public ObjectProperty<DataType> dataTypeProperty() { return dataType; }
+    public void setDataType(DataType dataType) { this.dataType.set(dataType); }
 
     // -- title
     private StringProperty title = new SimpleStringProperty();
@@ -39,6 +55,12 @@ public class KLReadOnlyStringControl extends Control {
     public Runnable getOnEditAction() { return onEditAction.get(); }
     public ObjectProperty<Runnable> onEditActionProperty() { return onEditAction; }
     public void setOnEditAction(Runnable onEditAction) { this.onEditAction.set(onEditAction); }
+
+    // -- on add units of measure action
+    private ObjectProperty<Runnable> onAddUnitsOfMeasureAction = new SimpleObjectProperty<>();
+    public Runnable getOnAddUnitsOfMeasureAction() { return onAddUnitsOfMeasureAction.get(); }
+    public ObjectProperty<Runnable> onAddUnitsOfMeasureActionProperty() { return onAddUnitsOfMeasureAction; }
+    public void setOnAddUnitsOfMeasureAction(Runnable onAddUnitsOfMeasureAction) { this.onAddUnitsOfMeasureAction.set(onAddUnitsOfMeasureAction); }
 
     // -- on remove action
     private ObjectProperty<Runnable> onRemoveAction = new SimpleObjectProperty<>();

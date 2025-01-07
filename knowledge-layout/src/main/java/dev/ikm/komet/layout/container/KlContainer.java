@@ -1,7 +1,7 @@
 package dev.ikm.komet.layout.container;
 
 import dev.ikm.komet.layout.KlWidget;
-import dev.ikm.komet.layout.component.KlComponentPaneSingle;
+import dev.ikm.komet.layout.component.KlComponentPane;
 import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
 
@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class KlContainer implements KlWidget {
     private GridPane gridPane;
-    List<KlComponentPaneSingle> klComponents;
+    List<KlComponentPane> klComponents;
 
     /**
      * Returns the GridPane instance managed by this KlContainer.

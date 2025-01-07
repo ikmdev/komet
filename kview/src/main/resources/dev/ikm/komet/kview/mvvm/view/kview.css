@@ -4980,8 +4980,8 @@ Styling a context menu for kview ui/ux controls
     -fx-border-color: #555 transparent transparent transparent;
 }
 
-.klcontext-menu .menu-item > .graphic-container {
-    -fx-padding: 0.416667em 0.5em 0.416667em 0.5em;
+.klcontext-menu .menu-item {
+    -fx-padding: 0.333333em 2em 0.333333em 0.833333em;  /* 4 24 4 10 */
 }
 
 .klcontext-menu .menu-item:hover,
@@ -4995,8 +4995,8 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: white;
 }
 
-klcontext-menu .menu-item > .graphic-container {
-    -fx-padding: 0em 0.5em 0em 0em;
+.klcontext-menu .menu-item > .graphic-container {
+    -fx-padding: 0.416667em 0.583333em 0.416667em 0em; /* 5 7 5 0 */
 }
 
 /*******************************************************************************
@@ -5006,7 +5006,7 @@ klcontext-menu .menu-item > .graphic-container {
  ******************************************************************************/
 
 .icon {
-    size: 12;
+    size: 12px;
 
     -fx-pref-width: size;
     -fx-max-width: size;
@@ -5025,4 +5025,8 @@ klcontext-menu .menu-item > .graphic-container {
 
 .icon.trash {
     -fx-shape: "M12.4987 2.5V3.33333H16.6654V5H15.832V15.8333C15.832 16.75 15.082 17.5 14.1654 17.5H5.83203C4.91536 17.5 4.16536 16.75 4.16536 15.8333V5H3.33203V3.33333H7.4987V2.5H12.4987ZM5.83203 15.8333H14.1654V5H5.83203V15.8333ZM7.4987 6.66667H9.16536V14.1667H7.4987V6.66667ZM12.4987 6.66667H10.832V14.1667H12.4987V6.66667Z";
+}
+
+.icon.plus {
+    -fx-shape: "M9.99935 1.66699C5.40685 1.66699 1.66602 5.40782 1.66602 10.0003C1.66602 14.5928 5.40685 18.3337 9.99935 18.3337C14.5919 18.3337 18.3327 14.5928 18.3327 10.0003C18.3327 5.40782 14.5919 1.66699 9.99935 1.66699ZM9.99935 3.33366C13.6911 3.33366 16.666 6.30856 16.666 10.0003C16.666 13.6921 13.6911 16.667 9.99935 16.667C6.30758 16.667 3.33268 13.6921 3.33268 10.0003C3.33268 6.30856 6.30758 3.33366 9.99935 3.33366ZM9.16602 5.83366V9.16699H5.83268V10.8337H9.16602V14.167H10.8327V10.8337H14.166V9.16699H10.8327V5.83366H9.16602Z";
 }
