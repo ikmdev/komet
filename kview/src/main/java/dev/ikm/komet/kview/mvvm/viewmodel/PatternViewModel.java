@@ -181,11 +181,6 @@ public class PatternViewModel extends FormViewModel {
                     });
     }
 
-    public boolean isPatternPopulated() {
-        ObjectProperty<Pattern> patternObjectProperty = getProperty(PATTERN);
-        return patternObjectProperty.isNotNull().get();
-    }
-
     public void setPurposeAndMeaningText(PatternDefinition patternDefinition) {
         setPropertyValue(PURPOSE_ENTITY, patternDefinition.purpose());
         setPropertyValue(MEANING_ENTITY, patternDefinition.meaning());
@@ -209,6 +204,14 @@ public class PatternViewModel extends FormViewModel {
         }
     }
 
+    public void reLoadPatternValues(){
+        ObservableList<PatternField> patternFieldObsList = getObservableList(FIELDS_COLLECTION);
+        patternFieldObsList.clear();
+        ObservableList<DescrName> otherNamesList = getObservableList(OTHER_NAMES);
+        otherNamesList.clear();
+        loadPatternValues();
+
+    }
     public void loadPatternValues(){
         ObjectProperty<EntityFacade> patternProperty = getProperty(PATTERN);
         EntityFacade patternFacade = patternProperty.getValue();
