@@ -19,7 +19,7 @@
 <?import javafx.scene.text.TextFlow?>
 
 <?import dev.ikm.komet.kview.controls.SortedComboBox?>
-<BorderPane stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternFieldsController">
+<BorderPane stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternFieldsController">
     <center>
         <ScrollPane fitToWidth="true" hbarPolicy="NEVER" BorderPane.alignment="CENTER">
             <BorderPane.margin>
