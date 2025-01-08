@@ -52,8 +52,6 @@ import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
-import dev.ikm.komet.layout.component.version.field.FieldFactory;
-import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -99,7 +97,6 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ServiceLoader;
 import java.util.function.Consumer;
 
 public class GenEditingDetailsController {
@@ -338,7 +335,7 @@ public class GenEditingDetailsController {
                 // load a read-only component
                 readOnlyNode = rowf.createReadOnlyComponent(getViewProperties(), fieldRecord);
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
-                //readOnlyNode = rowf.createStringField(fieldRecord).sceneGraphNode();
+                //readOnlyNode = rowf.createStringField(fieldRecord).klWidget();
                 ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
                 ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
                 ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();

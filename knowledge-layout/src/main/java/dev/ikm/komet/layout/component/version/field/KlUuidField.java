@@ -13,7 +13,7 @@ import java.util.UUID;
  * Some implementations of this interface may show the UUID string, and others
  * may display different types of identicon.
  */
-@RegularName( "UUID Field")
-@ParentConcept( KlField.class)
+@RegularName("UUID Field")
+@ParentConcept(KlField.class)
 public interface KlUuidField extends KlField<UUID> {
 }

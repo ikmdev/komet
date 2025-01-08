@@ -2,7 +2,6 @@ package dev.ikm.komet.layout.container;
 
 import dev.ikm.komet.layout.KlWidget;
 import dev.ikm.komet.layout.component.KlComponentPane;
-import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
 
 import java.util.List;
@@ -21,7 +20,7 @@ public class KlContainer implements KlWidget {
      * @return the GridPane instance
      */
     @Override
-    public <SGN extends Node> SGN sceneGraphNode() {
-        return (SGN) gridPane;
+    public GridPane klWidget() {
+        return gridPane;
     }
 }
