@@ -15,6 +15,6 @@ import dev.ikm.tinkar.entity.PatternEntityVersion;
  * @param <V> The type of the pattern entity version.
  */
 @RegularName("Pattern Field")
-@ParentConcept( KlComponentField.class)
+@ParentConcept(KlComponentField.class)
 public interface KlPatternField<P extends PatternEntity<V>, V extends PatternEntityVersion> extends KlField<P> {
 }

@@ -7,7 +7,7 @@ import dev.ikm.tinkar.common.id.PublicId;
 /**
  *
  */
-@RegularName( "Public Id Field")
-@ParentConcept( KlField.class)
+@RegularName("Public Id Field")
+@ParentConcept(KlField.class)
 public interface KlPublicIdField extends KlField<PublicId>{
 }

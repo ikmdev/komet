@@ -107,7 +107,7 @@ public class SemanticFieldsController {
             if (dataTypeNid == TinkarTerm.COMPONENT_FIELD.nid()) {
                 // load a read-only component
                 KlField klField = editFieldFactory.createComponent(fieldRecord);
-                node = klField.sceneGraphNode();
+                node = klField.klWidget();
                 node.setUserData(klField.field());
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
 

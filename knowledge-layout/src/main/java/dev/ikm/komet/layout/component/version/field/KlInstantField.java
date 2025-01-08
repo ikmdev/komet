@@ -11,6 +11,6 @@ import java.time.Instant;
  * This interface extends the KlField interface, parameterized with an Instant type.
  */
 @RegularName("Instant Field")
-@ParentConcept( KlField.class)
+@ParentConcept(KlField.class)
 public interface KlInstantField extends KlField<Instant> {
 }

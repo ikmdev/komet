@@ -11,7 +11,7 @@ import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpression;
  *
  * Logical expression is an adaptor class on top of an underlying Directed Tree.
  */
-@RegularName( "Logical Expression Field")
+@RegularName("Logical Expression Field")
 @ParentConcept(KlDirectedTreeField.class)
 public interface KlLogicalExpressionField extends KlField<LogicalExpression> {
 }

@@ -10,6 +10,6 @@ import dev.ikm.tinkar.component.location.PlanarPoint;
  * This interface extends KlField parameterized with a PlanarPoint type.
  */
 @RegularName("Planar Point Field")
-@ParentConcept( KlField.class)
+@ParentConcept(KlField.class)
 public interface KlPointPlanarField extends KlField<PlanarPoint> {
 }

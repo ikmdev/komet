@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @param <L> The type of list held by the field.
  */
-@RegularName( "List Field")
-@ParentConcept( KlCollectionField.class)
+@RegularName("List Field")
+@ParentConcept(KlCollectionField.class)
 public interface KlListField<L extends List<?>> extends KlCollectionField<L> {
 }
