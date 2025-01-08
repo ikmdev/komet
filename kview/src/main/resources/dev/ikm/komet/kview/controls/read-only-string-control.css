@@ -1,22 +1,22 @@
-.read-only-string-control .main-container .text {
-    -fx-border-width: 1px;
-    -fx-border-color: transparent;
-}
-
+.read-only-string-control .main-container .text-container,
 .read-only-string-control .main-container .title {
     -fx-border-width: 1px;
     -fx-border-color: transparent;
 
+    -fx-padding: 0 0.25em 0 0.25em;
+}
+
+.read-only-string-control .main-container .title {
     -fx-text-fill: #5d5d5d;
 }
 
-.read-only-string-control:hover .main-container .text {
+.read-only-string-control:hover .main-container .text-container {
     -fx-background-color: #f4f4f4;
     -fx-border-color: #dfdfdf;
 }
 
 
-.read-only-string-control:edit-mode .main-container .text {
+.read-only-string-control:edit-mode .main-container .text-container {
     -fx-background-color: #f4f9ff;
     -fx-border-color: #cfd8e4;
 
