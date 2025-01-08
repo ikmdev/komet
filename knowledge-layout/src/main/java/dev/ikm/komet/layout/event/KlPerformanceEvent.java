@@ -11,7 +11,7 @@ public interface KlPerformanceEvent extends KlEvent {
      /**
       * Retrieves the component that performed the specific action or event.
       *
-      * @return a KlComponentPaneSingle instance related to the performance event
+      * @return a KlComponentPane instance related to the performance event
       */
      KlComponentPane<?> performer();
 
