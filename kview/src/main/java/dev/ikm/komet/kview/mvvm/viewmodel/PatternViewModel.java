@@ -263,7 +263,7 @@ public class PatternViewModel extends FormViewModel {
                 String meaningDateStr = meaningDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
                 setPropertyValue(MEANING_DATE_STR, "Date Added: " + meaningDateStr);
             }
-            String patternTitleText = retriveDisplayName((PatternFacade) patternFacade);
+            String patternTitleText = retrieveDisplayName((PatternFacade) patternFacade);
             setPropertyValue(PATTERN_TITLE_TEXT, patternTitleText);
 
             loadFqnDetails(patternFacade);
@@ -305,7 +305,7 @@ public class PatternViewModel extends FormViewModel {
         setPropertyValue(FQN_LANGUAGE, fqnLanguage);
     }
 
-    private String retriveDisplayName(PatternFacade patternFacade) {
+    private String retrieveDisplayName(PatternFacade patternFacade) {
         ViewProperties viewProperties = getPropertyValue(VIEW_PROPERTIES);
         ViewCalculator viewCalculator = viewProperties.calculator();
         Optional<String> optionalStringRegularName = viewCalculator.getRegularDescriptionText(patternFacade);
