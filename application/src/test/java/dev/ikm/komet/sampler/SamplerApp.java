@@ -28,6 +28,7 @@ public class SamplerApp extends Application {
 
     private static final String READ_ONLY_STRING_SAMPLER = "Sampler_KLReadOnlyString.fxml";
     private static final String READ_ONLY_COMPONENT_SAMPLER = "Sampler_KLReadOnlyComponent.fxml";
+    private static final String READ_ONLY_STRING_LIST_SAMPLER = "Sampler_KLReadOnlyStringList.fxml";
 
     public static SamplerApp INSTANCE;
 
@@ -72,14 +73,11 @@ public class SamplerApp extends Application {
         // menu items
         navigationPane.getMenuItems().add(createMenuItemOrMenu("Home", "home-20.png", HOME, false));
 
-        // Basic data types menu
-        Menu basicControlsMenu = createMenu("Basic Data Types", "alt-20.png");
-        basicControlsMenu.getItems().add(createMenuItemWithContent("Boolean Control", BOOLEAN_SAMPLER));
-
         // Read-Only Data Controls
         Menu readOnlyControls = createMenu("Read-Only Data Controls", "eye-20.png");
         readOnlyControls.getItems().add(createMenuItemWithContent("String Control", READ_ONLY_STRING_SAMPLER));
         readOnlyControls.getItems().add(createMenuItemWithContent("Read-Only Component Control", READ_ONLY_COMPONENT_SAMPLER));
+        readOnlyControls.getItems().add(createMenuItemWithContent("String List Control", READ_ONLY_STRING_LIST_SAMPLER));
 
         // Editable Data Controls
         Menu editableControlsMenu = createMenu("Editable Data Controls", "edit-row-20.png");
