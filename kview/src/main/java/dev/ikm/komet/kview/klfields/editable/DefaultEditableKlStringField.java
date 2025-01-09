@@ -19,7 +19,7 @@ public class DefaultEditableKlStringField implements EditableKlStringField {
     }
 
     @Override
-    public Node sceneGraphNode() {
+    public Node klWidget() {
         if (node == null) {
             JFXNode<Pane, Void> jfxNode = FXMLMvvmLoader.make(this.getClass().getResource("/dev/ikm/komet/kview/controls/editable-value-field.fxml"));
             Pane componentRow = jfxNode.node();

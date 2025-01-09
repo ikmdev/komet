@@ -25,7 +25,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<BorderPane fx:id="landingPageBorderPane" minHeight="0.0" minWidth="0.0" prefHeight="682.0" prefWidth="1035.0" styleClass="landing-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController">
+<BorderPane fx:id="landingPageBorderPane" minHeight="0.0" minWidth="0.0" prefHeight="682.0" prefWidth="1035.0" styleClass="landing-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController">
    <left>
       <VBox fillWidth="false" maxWidth="201.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0" prefWidth="144.0" BorderPane.alignment="CENTER">
          <children>

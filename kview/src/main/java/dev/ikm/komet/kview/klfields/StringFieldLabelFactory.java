@@ -2,14 +2,13 @@ package dev.ikm.komet.kview.klfields;
 
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ObservableView;
-import dev.ikm.komet.layout.component.version.field.FieldFactory;
 import dev.ikm.komet.layout.component.version.field.KlField;
-import jdk.jfr.Description;
-import jdk.jfr.Name;
+import dev.ikm.komet.layout.component.version.field.KlFieldFactory;
+import dev.ikm.komet.layout.component.version.field.KlStringField;
 
 /**
  * A factory implementation for creating read-only string fields represented by a {@link StringFieldLabel}.
- * This implementation of {@link FieldFactory} generates a field component where the string value is displayed
+ * This implementation of {@link dev.ikm.komet.layout.component.version.field.KlFieldFactory} generates a field component where the string value is displayed
  * with a label, and editing functionality is disabled, as labels are non-editable controls.
  *
  * This class uses the factory pattern to encapsulate the creation logic for {@link StringFieldLabel}.
@@ -26,7 +25,7 @@ import jdk.jfr.Name;
  *    instance using the provided observable field and view.
  * 2. {@code getFieldInterface()}: Returns the interface type that this factory produces, i.e., {@link StringFieldLabel}.
  */
-public class StringFieldLabelFactory implements FieldFactory<String> {
+public class StringFieldLabelFactory implements KlFieldFactory<String> {
     public StringFieldLabelFactory() {
     }
 
@@ -48,7 +47,11 @@ public class StringFieldLabelFactory implements FieldFactory<String> {
     }
 
     @Override
-    public Class<StringFieldLabel> getFieldInterface() {
+    public Class<KlStringField> getFieldInterface() {
+        return KlStringField.class;
+    }
+
+    public Class<StringFieldLabel> getFieldImplementation() {
         return StringFieldLabel.class;
     }
 

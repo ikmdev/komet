@@ -67,14 +67,23 @@ module dev.ikm.komet.application.test {
     requires org.junit.jupiter.api;
     requires dev.ikm.tinkar.composer;
 
-    uses DataServiceController;
-    uses DefaultDescriptionForNidService;
-    uses EntityService;
-    uses KometNodeFactory;
-    uses PublicIdService;
-    uses StampService;
-    uses TaskListsService;
-    uses DefaultEvtBus;
+    requires dev.ikm.komet.application;
+    requires org.testfx.core;
+    requires org.testfx.junit5;
+    requires org.testfx.monocle;
+    requires org.junit.jupiter;
+
+    exports dev.ikm.komet.app.test.integration.testfx;
+    opens dev.ikm.komet.app.test.integration.testfx;
+
+    uses dev.ikm.tinkar.common.service.DataServiceController;
+    uses dev.ikm.tinkar.common.service.DefaultDescriptionForNidService;
+    uses dev.ikm.tinkar.entity.EntityService;
+    uses dev.ikm.komet.framework.KometNodeFactory;
+    uses dev.ikm.tinkar.common.service.PublicIdService;
+    uses dev.ikm.tinkar.entity.StampService;
+    uses dev.ikm.komet.framework.concurrent.TaskListsService;
+    uses dev.ikm.komet.framework.events.DefaultEvtBus;
 
     // For ScenicView...
     //requires org.scenicview.scenicview;
