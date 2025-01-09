@@ -60,7 +60,7 @@ public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseControl>
     }
 
     protected MenuItem createMenuItem(String text, KometIcon.IconValue icon, EventHandler<ActionEvent> actionHandler) {
-        MenuItem menuItem = new MenuItem(text, KometIcon.create(icon));
+        MenuItem menuItem = new MenuItem(text, KometIcon.create(icon, "icon-klcontext-menu"));
         menuItem.setOnAction(actionHandler);
         return menuItem;
     }
