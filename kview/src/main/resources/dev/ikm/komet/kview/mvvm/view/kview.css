@@ -4999,13 +4999,7 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 0.416667em 0.583333em 0.416667em 0em; /* 5 7 5 0 */
 }
 
-/*******************************************************************************
- *                                                                             *
- * Icons                                                                       *
- *                                                                             *
- ******************************************************************************/
-
-.icon {
+.icon-klcontext-menu {
     size: 12px;
 
     -fx-pref-width: size;
@@ -5015,7 +5009,15 @@ Styling a context menu for kview ui/ux controls
     -fx-pref-height: size;
     -fx-max-height: size;
     -fx-min-height: size;
+}
 
+/*******************************************************************************
+ *                                                                             *
+ * Icons                                                                       *
+ *                                                                             *
+ ******************************************************************************/
+
+.icon {
     -fx-background-color: white;
 }
 

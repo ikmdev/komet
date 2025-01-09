@@ -151,7 +151,7 @@ public class KLReadOnlyStringControlSkin extends SkinBase<KLReadOnlyStringContro
     }
 
     private MenuItem createMenuItem(String text, KometIcon.IconValue icon, EventHandler<ActionEvent> actionHandler) {
-        MenuItem menuItem = new MenuItem(text, KometIcon.create(icon));
+        MenuItem menuItem = new MenuItem(text, KometIcon.create(icon, "icon-klcontext-menu"));
         menuItem.setOnAction(actionHandler);
         return menuItem;
     }
