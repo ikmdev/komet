@@ -2,7 +2,6 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.NodeUtils;
 import dev.ikm.komet.kview.controls.KLReadOnlyStringControl;
-import dev.ikm.komet.kview.controls.KLReadOnlyStringControl.StringDataType;
 import dev.ikm.komet.kview.controls.KometIcon.IconValue;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Label;
@@ -14,7 +13,6 @@ public class KLReadOnlyStringControlSkin extends KLReadOnlyBaseControlSkin<KLRea
     private final VBox mainContainer = new VBox();
     private final VBox textContainer = new VBox();
     private final Label textLabel = new Label();
-    private final Label promptTextLabel = new Label();
 
     /**
      * @param control The control for which this Skin should attach to.
@@ -45,18 +43,15 @@ public class KLReadOnlyStringControlSkin extends KLReadOnlyBaseControlSkin<KLRea
     }
 
     private void initTexts(KLReadOnlyStringControl control) {
-        promptTextLabel.textProperty().bind(control.promptTextProperty());
-
-        updatePromptTextAndTextLabel(control);
-        control.textProperty().addListener(observable -> updatePromptTextAndTextLabel(control));
+        updatePromptTextAndTextLabelVisibility(control);
+        control.textProperty().addListener(observable -> updatePromptTextAndTextLabelVisibility(control));
     }
 
-    private void updatePromptTextAndTextLabel(KLReadOnlyStringControl control) {
+    private void updatePromptTextAndTextLabelVisibility(KLReadOnlyStringControl control) {
         boolean showPromptText = control.getText() == null || control.getText().isEmpty();
 
         NodeUtils.setShowing(promptTextLabel, showPromptText);
         NodeUtils.setShowing(textLabel, !showPromptText);
-
     }
 
     private void setupContextMenu(KLReadOnlyStringControl control) {
