@@ -71,6 +71,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.UUID;
 
 public class PatternViewModel extends FormViewModel {
@@ -123,12 +124,15 @@ public class PatternViewModel extends FormViewModel {
 
     public static String IS_INVALID = "IS_INVALID";
 
+    public static String PATTERN_TITLE_TEXT = "patternTitleText";
+
     // Used to load the values in the PatternField controller from PatternDetailsController.
     public static String SELECTED_PATTERN_FIELD = "selectedPatternField";
 
     public PatternViewModel() {
         super();
             addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+                    .addProperty(PATTERN_TITLE_TEXT, "")
                     .addProperty(PATTERN_TOPIC, (UUID) null)
                     .addProperty(STATE_MACHINE, (StateMachine) null)
                     .addProperty(STAMP_VIEW_MODEL, (ViewModel) null)
@@ -177,11 +181,6 @@ public class PatternViewModel extends FormViewModel {
                     });
     }
 
-    public boolean isPatternPopulated() {
-        ObjectProperty<Pattern> patternObjectProperty = getProperty(PATTERN);
-        return patternObjectProperty.isNotNull().get();
-    }
-
     public void setPurposeAndMeaningText(PatternDefinition patternDefinition) {
         setPropertyValue(PURPOSE_ENTITY, patternDefinition.purpose());
         setPropertyValue(MEANING_ENTITY, patternDefinition.meaning());
@@ -205,6 +204,14 @@ public class PatternViewModel extends FormViewModel {
         }
     }
 
+    public void reLoadPatternValues(){
+        ObservableList<PatternField> patternFieldObsList = getObservableList(FIELDS_COLLECTION);
+        patternFieldObsList.clear();
+        ObservableList<DescrName> otherNamesList = getObservableList(OTHER_NAMES);
+        otherNamesList.clear();
+        loadPatternValues();
+
+    }
     public void loadPatternValues(){
         ObjectProperty<EntityFacade> patternProperty = getProperty(PATTERN);
         EntityFacade patternFacade = patternProperty.getValue();
@@ -256,6 +263,10 @@ public class PatternViewModel extends FormViewModel {
                 String meaningDateStr = meaningDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
                 setPropertyValue(MEANING_DATE_STR, "Date Added: " + meaningDateStr);
             }
+            String patternTitleText = retrieveDisplayName((PatternFacade) patternFacade);
+            setPropertyValue(PATTERN_TITLE_TEXT, patternTitleText);
+
+            loadFqnDetails(patternFacade);
 
             viewCalculator.forEachSemanticVersionForComponentOfPattern(entity.nid(), TinkarTerm.DESCRIPTION_PATTERN.nid(),
                 (semanticEntityVersion,  entityVersion1, patternEntityVersion) -> {
@@ -266,13 +277,7 @@ public class PatternViewModel extends FormViewModel {
                     DescrName descrName = new DescrName(null, string, descriptionType,
                         Entity.getFast(caseSignificance.nid()), Entity.getFast(semanticEntityVersion.state().nid()),
                             Entity.getFast(semanticEntityVersion.module().nid()),Entity.getFast(language.nid()), semanticEntityVersion.publicId());
-                    if(PublicId.equals(descriptionType.publicId(),TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.publicId())){
-                        // set Property Value FQN D
-                        setPropertyValue(FQN_DESCRIPTION_NAME, descrName);
-                        setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, string);
-                        setPropertyValue(FQN_CASE_SIGNIFICANCE, caseSignificance);
-                        setPropertyValue(FQN_LANGUAGE, language);
-                    } else if(PublicId.equals(descriptionType.publicId(), REGULAR_NAME_DESCRIPTION_TYPE.publicId())) {
+                if(PublicId.equals(descriptionType.publicId(), REGULAR_NAME_DESCRIPTION_TYPE.publicId())) {
                         ObservableList<DescrName> otherNamesList = getObservableList(OTHER_NAMES);
                         HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(OTHER_NAME_SEMANTIC_VERSION_MAP);
                         // add to list.
@@ -283,6 +288,29 @@ public class PatternViewModel extends FormViewModel {
                     }
             });
         }
+    }
+
+    private void loadFqnDetails(EntityFacade patternFacade) {
+        SemanticEntityVersion fqnSemanticEntityVersion = getViewProperties().calculator().getFullyQualifiedDescription(patternFacade).get();
+        ConceptFacade fqnLanguage = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(0);
+        String fqnString = (String) fqnSemanticEntityVersion.fieldValues().get(1);
+        ConceptFacade fqnCaseSignificance = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(2);
+        ConceptFacade fqnDescriptionType = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(3);
+        DescrName fqnDescrName = new DescrName(null, fqnString, fqnDescriptionType,
+                Entity.getFast(fqnCaseSignificance.nid()), Entity.getFast(fqnSemanticEntityVersion.state().nid()),
+                Entity.getFast(fqnSemanticEntityVersion.module().nid()),Entity.getFast(fqnLanguage.nid()), fqnSemanticEntityVersion.publicId());
+        setPropertyValue(FQN_DESCRIPTION_NAME, fqnDescrName);
+        setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, fqnString);
+        setPropertyValue(FQN_CASE_SIGNIFICANCE, fqnCaseSignificance);
+        setPropertyValue(FQN_LANGUAGE, fqnLanguage);
+    }
+
+    private String retrieveDisplayName(PatternFacade patternFacade) {
+        ViewProperties viewProperties = getPropertyValue(VIEW_PROPERTIES);
+        ViewCalculator viewCalculator = viewProperties.calculator();
+        Optional<String> optionalStringRegularName = viewCalculator.getRegularDescriptionText(patternFacade);
+        Optional<String> optionalStringFQN = viewCalculator.getFullyQualifiedNameText(patternFacade);
+        return optionalStringRegularName.orElseGet(optionalStringFQN::get);
     }
 
     public boolean createPattern() {
