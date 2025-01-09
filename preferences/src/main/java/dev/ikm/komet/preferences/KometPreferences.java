@@ -20,6 +20,8 @@ import dev.ikm.tinkar.terms.*;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.NodeChangeListener;
@@ -405,6 +407,76 @@ public interface KometPreferences {
             return Optional.of(false);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Stores a BigDecimal value associated with the specified Enum key.
+     *
+     * @param key   the Enum key used to associate with the BigDecimal value
+     * @param value the BigDecimal value to store
+     */
+    default void putBigDecimal(Enum key, BigDecimal value) {
+        putBigDecimal(enumToGeneralKey(key), value);
+    }
+    /**
+     * Stores a BigDecimal value as a string representation associated with the specified key.
+     *
+     * @param key the key with which the specified BigDecimal value is to be associated
+     * @param value the BigDecimal value to be stored, which will be converted to its string representation
+     */
+    default void putBigDecimal(String key, BigDecimal value) {
+        put(key, value.toString());
+    }
+    /**
+     * Retrieves a BigDecimal value associated with a given Enum key. If the key does not have
+     * an associated value, returns the provided default BigDecimal value.
+     *
+     * @param key the Enum key used to identify the value
+     * @param bigDecimal the default BigDecimal value to return if no value is found for the key
+     * @return the BigDecimal value associated with the key, or the provided default value if none is found
+     */
+    default BigDecimal getBigDecimal(Enum key, BigDecimal bigDecimal) {
+        return getBigDecimal(enumToGeneralKey(key), bigDecimal);
+    }
+    /**
+     * Retrieves the BigDecimal value associated with the specified key. If the value
+     * is not present, the provided default value is returned.
+     *
+     * @param key the key to retrieve the BigDecimal value associated with it
+     * @param defaultValue the default BigDecimal value to return if the key is not present
+     * @return the BigDecimal value associated with the key, or the default value if not present
+     */
+    default BigDecimal getBigDecimal(String key, BigDecimal defaultValue) {
+        Optional<BigDecimal> optionalValue = getBigDecimal(key);
+        if (optionalValue.isPresent()) {
+            return optionalValue.get();
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Retrieves the BigDecimal value associated with the key.
+     *
+     * @param key the key whose associated value is to be retrieved
+     * @return an Optional containing the BigDecimal representation of the value if present,
+     *         or an empty Optional if the value is absent
+     */
+    default Optional<BigDecimal> getBigDecimal(String key) {
+        Optional<String> optionalString = get(key);
+        if (optionalString.isPresent()) {
+            return Optional.of(new BigDecimal(optionalString.get()));
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Retrieves an Optional containing a BigDecimal value associated with the specified Enum key.
+     *
+     * @param key the Enum key used to identify and retrieve the associated BigDecimal value
+     * @return an Optional containing the BigDecimal value if present, or an empty Optional if no value is found
+     */
+    default Optional<BigDecimal> getBigDecimal(Enum key) {
+        return getBigDecimal(enumToGeneralKey(key));
     }
 
     default void putDouble(Enum key, double value) {
