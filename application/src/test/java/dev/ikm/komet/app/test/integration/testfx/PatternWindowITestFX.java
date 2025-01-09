@@ -74,7 +74,6 @@ public class PatternWindowITestFX {
     private static final String SELECTOR_JOURNAL_CARD_NAME = "#journalCardName";
     private static final String SELECTOR_MENU_OPTION_BUTTON = "#menuOptionButton";
     private static final String SELECTOR_DELETE_OPTION = "Delete";
-    private static final String SELECTOR_TEXT_INPUT = ".text-input";
 
     // Property Keys
     private static final String PROPERTY_TARGET_DATA_DIR = "target.data.directory";
@@ -372,7 +371,7 @@ public class PatternWindowITestFX {
         boolean foundTinkarNewSAS = selectListViewItem(robot, listView, TINKAR_STARTER_DATA_PREFIX);
         assertTrue(foundTinkarNewSAS, "Should find 'tinkar' in the new Spined Array Store data source");
 
-        TextField newFolderTextField = lookupNode(robot, SELECTOR_TEXT_INPUT, TextField.class);
+        TextField newFolderTextField = robot.lookup(node -> node instanceof TextField && node.isVisible()).query();
         robot.clickOn(newFolderTextField);
         robot.write(TINKAR_STARTER_DATA_DIR);
         waitForFxEvents();

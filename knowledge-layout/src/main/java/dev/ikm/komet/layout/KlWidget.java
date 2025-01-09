@@ -18,19 +18,6 @@ import java.util.UUID;
 public interface KlWidget {
 
     /**
-     * Retrieves a scene graph node associated with this plugin. This method is marked as deprecated
-     * and should be replaced with an alternative approach when possible.
-     *
-     * @param <SGN> The type of the scene graph node extending {@code Node}.
-     * @return The scene graph node instance.
-     * @deprecated use klWidget
-     */
-    @Deprecated
-    default <SGN extends Node> SGN sceneGraphNode() {
-        return (SGN) this;
-    };
-
-    /**
      * Retrieves the scene graph node that presents this KlWidget.
      *
      * @param <SGN> The type of the scene graph node extending {@code Node}.
@@ -41,7 +28,7 @@ public interface KlWidget {
     }
 
     default ObservableMap<Object, Object> properties() {
-        return sceneGraphNode().getProperties();
+        return klWidget().getProperties();
     }
 
     /**
@@ -50,7 +37,7 @@ public interface KlWidget {
      * @param columnIndex the column index to set for the pane
      */
     default void setColumnIndex(int columnIndex) {
-        GridPane.setColumnIndex(sceneGraphNode(), columnIndex);
+        GridPane.setColumnIndex(klWidget(), columnIndex);
     }
 
     /**
@@ -59,7 +46,7 @@ public interface KlWidget {
      * @return the column index of the pane
      */
     default int getColumnIndex() {
-        return GridPane.getColumnIndex(sceneGraphNode());
+        return GridPane.getColumnIndex(klWidget());
     }
 
     /**
@@ -68,7 +55,7 @@ public interface KlWidget {
      * @param rowIndex the row index to set for the pane
      */
     default void setRowIndex(int rowIndex) {
-        GridPane.setRowIndex(sceneGraphNode(), rowIndex);
+        GridPane.setRowIndex(klWidget(), rowIndex);
     }
 
     /**
@@ -77,7 +64,7 @@ public interface KlWidget {
      * @return the row index of the pane
      */
     default int getRowIndex() {
-        return GridPane.getRowIndex(sceneGraphNode());
+        return GridPane.getRowIndex(klWidget());
     }
 
     /**
@@ -86,7 +73,7 @@ public interface KlWidget {
      * @param colspan the number of columns the pane should span
      */
     default void setColspan(int colspan) {
-        GridPane.setColumnSpan(sceneGraphNode(), colspan);
+        GridPane.setColumnSpan(klWidget(), colspan);
     }
 
     /**
@@ -95,7 +82,7 @@ public interface KlWidget {
      * @return the number of columns the pane spans
      */
     default int getColspan() {
-        return GridPane.getColumnSpan(sceneGraphNode());
+        return GridPane.getColumnSpan(klWidget());
     }
 
     /**
@@ -104,7 +91,7 @@ public interface KlWidget {
      * @param rowspan the number of rows the pane should span
      */
     default void setRowspan(int rowspan) {
-        GridPane.setRowSpan(sceneGraphNode(), rowspan);
+        GridPane.setRowSpan(klWidget(), rowspan);
     }
 
     /**
@@ -113,7 +100,7 @@ public interface KlWidget {
      * @return the number of rows the pane spans
      */
     default int getRowspan() {
-        return GridPane.getRowSpan(sceneGraphNode());
+        return GridPane.getRowSpan(klWidget());
     }
 
     /**
@@ -122,7 +109,7 @@ public interface KlWidget {
      * @param priority the horizontal grow priority to set for the pane
      */
     default void setHgrow(Priority priority) {
-        GridPane.setHgrow(sceneGraphNode(), priority);
+        GridPane.setHgrow(klWidget(), priority);
     }
 
     /**
@@ -131,7 +118,7 @@ public interface KlWidget {
      * @return the horizontal grow priority of the pane
      */
     default Priority getHgrow() {
-        return GridPane.getHgrow(sceneGraphNode());
+        return GridPane.getHgrow(klWidget());
     }
 
     /**
@@ -140,7 +127,7 @@ public interface KlWidget {
      * @param priority the vertical grow priority to set for the pane
      */
     default void setVgrow(Priority priority) {
-        GridPane.setVgrow(sceneGraphNode(), priority);
+        GridPane.setVgrow(klWidget(), priority);
     }
 
     /**
@@ -149,7 +136,7 @@ public interface KlWidget {
      * @return the vertical grow priority of the pane
      */
     default Priority getVgrow() {
-        return GridPane.getVgrow(sceneGraphNode());
+        return GridPane.getVgrow(klWidget());
     }
 
     /**
@@ -158,8 +145,8 @@ public interface KlWidget {
      * @param alignment the positional alignment to set for the pane
      */
     default void setAlignment(Pos alignment) {
-        GridPane.setHalignment(sceneGraphNode(), HPos.valueOf(alignment.name()));
-        GridPane.setValignment(sceneGraphNode(), VPos.valueOf(alignment.name()));
+        GridPane.setHalignment(klWidget(), HPos.valueOf(alignment.name()));
+        GridPane.setValignment(klWidget(), VPos.valueOf(alignment.name()));
     }
 
     /**
@@ -173,8 +160,8 @@ public interface KlWidget {
      * @return the positional alignment of the pane, or null if the alignments are not set or they differ
      */
     default Pos getAlignment() {
-        HPos halignment = GridPane.getHalignment(sceneGraphNode());
-        VPos valignment = GridPane.getValignment(sceneGraphNode());
+        HPos halignment = GridPane.getHalignment(klWidget());
+        VPos valignment = GridPane.getValignment(klWidget());
 
         if (halignment != null && valignment != null && halignment.name().equals(valignment.name())) {
             return Pos.valueOf(halignment.name());
@@ -188,8 +175,8 @@ public interface KlWidget {
      * @param contentBias the orientation bias to set for the content
      */
     default void setContentBias(Orientation contentBias) {
-        GridPane.setHalignment(sceneGraphNode(), contentBias == Orientation.HORIZONTAL ? HPos.CENTER : HPos.LEFT);
-        GridPane.setValignment(sceneGraphNode(), contentBias == Orientation.VERTICAL ? VPos.CENTER : VPos.TOP);
+        GridPane.setHalignment(klWidget(), contentBias == Orientation.HORIZONTAL ? HPos.CENTER : HPos.LEFT);
+        GridPane.setValignment(klWidget(), contentBias == Orientation.VERTICAL ? VPos.CENTER : VPos.TOP);
     }
 
     /**
@@ -202,8 +189,8 @@ public interface KlWidget {
      * @return the content bias as an Orientation (HORIZONTAL, VERTICAL), or null if neither condition is met.
      */
     default Orientation getContentBias() {
-        HPos halignment = GridPane.getHalignment(sceneGraphNode());
-        VPos valignment = GridPane.getValignment(sceneGraphNode());
+        HPos halignment = GridPane.getHalignment(klWidget());
+        VPos valignment = GridPane.getValignment(klWidget());
 
         if (halignment == HPos.CENTER && valignment != VPos.CENTER) {
             return Orientation.HORIZONTAL;
@@ -231,7 +218,7 @@ public interface KlWidget {
      * @param insets the Insets object containing the top, right, bottom, and left margins
      */
     default void setInsets(Insets insets) {
-        GridPane.setMargin(sceneGraphNode(), insets);
+        GridPane.setMargin(klWidget(), insets);
     }
 
     /**
@@ -242,7 +229,7 @@ public interface KlWidget {
      * @return the Insets object containing the top, right, bottom, and left margins of the pane
      */
     default Insets getInsets() {
-        return GridPane.getMargin(sceneGraphNode());
+        return GridPane.getMargin(klWidget());
     }
 
     /**

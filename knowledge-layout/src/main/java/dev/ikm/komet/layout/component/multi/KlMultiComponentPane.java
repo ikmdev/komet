@@ -26,7 +26,7 @@ public interface KlMultiComponentPane<OE extends ObservableEntity> extends KlWid
     /**
      * Retrieves the list of single pane components associated with this multi-component pane.
      *
-     * @return an ObservableList of KlComponentPaneSingle objects, representing the individual component panes contained within this multi-component pane.
+     * @return an ObservableList of KlComponentPane objects, representing the individual component panes contained within this multi-component pane.
      */
     ObservableList<KlComponentPane<OE>> klComponents();
 }
