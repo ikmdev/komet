@@ -72,16 +72,6 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
                     }
                 }
                 return change;
-            } else if ("-".equals(change.getText()) ) {
-                if (change.getControlText().startsWith("-")) { // if text starts with '-', cancel it
-                    change.setText("");
-                    change.setRange(0, 1);
-                    change.setCaretPosition(change.getCaretPosition() - 2);
-                    change.setAnchor(change.getAnchor() - 2);
-                } else { // a '-', typed from any position, will be set at the beginning of the text
-                    change.setRange(0, 0);
-                }
-                return change;
             } else {
                 errorLabel.setText(MessageFormat.format(resources.getString("error.input.text"), change.getText()));
             }
