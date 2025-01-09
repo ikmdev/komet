@@ -9,7 +9,7 @@ import javafx.scene.control.Skin;
 
 public class KLReadOnlyStringControl extends KLReadOnlyBaseControl {
 
-    public enum DataType {
+    public enum StringDataType {
         INTEGER,
         FLOAT,
         STRING,
@@ -24,10 +24,10 @@ public class KLReadOnlyStringControl extends KLReadOnlyBaseControl {
     }
 
     // -- data type
-    private ObjectProperty<DataType> dataType = new SimpleObjectProperty<>(DataType.STRING);
-    public DataType getDataType() { return dataType.get(); }
-    public ObjectProperty<DataType> dataTypeProperty() { return dataType; }
-    public void setDataType(DataType dataType) { this.dataType.set(dataType); }
+    private ObjectProperty<StringDataType> dataType = new SimpleObjectProperty<>(StringDataType.STRING);
+    public StringDataType getDataType() { return dataType.get(); }
+    public ObjectProperty<StringDataType> dataTypeProperty() { return dataType; }
+    public void setDataType(StringDataType stringDataType) { this.dataType.set(stringDataType); }
 
     // -- prompt text
     private StringProperty promptText = new SimpleStringProperty();

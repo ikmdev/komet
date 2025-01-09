@@ -97,8 +97,6 @@ public class KLReadOnlyStringListControlSkin extends KLReadOnlyBaseControlSkin<K
         NodeUtils.setShowing(promptTextLabel, control.getTexts().isEmpty());
     }
 
-
-
     private void setupContextMenu(KLReadOnlyStringListControl control) {
         addMenuItemsToContextMenu(control);
 
@@ -108,26 +106,17 @@ public class KLReadOnlyStringListControlSkin extends KLReadOnlyBaseControlSkin<K
             control.setEditMode(contextMenu.isShowing());
         });
 
-//        control.dataTypeProperty().addListener(observable -> {
-//            contextMenu.getItems().clear();
-//            addMenuItemsToContextMenu(control);
-//        });
+        control.dataTypeProperty().addListener(observable -> {
+            contextMenu.getItems().clear();
+            addMenuItemsToContextMenu(control);
+        });
     }
 
     private void addMenuItemsToContextMenu(KLReadOnlyStringListControl control) {
-//        switch (control.getDataType()) {
-//            case KLReadOnlyStringControl.DataType.STRING -> addMenuItemsForStringType(control);
-//            case INTEGER -> addMenuItemsForIntegerType(control);
-//            case FLOAT -> addMenuItemsForFloatType(control);
-//            case BOOLEAN -> addMenuItemsForBooleanType(control);
-//            case UUID -> addMenuItemsForUUIDType(control);
-//            case INSTANT -> addMenuItemsForInstantType(control);
-//            case BYTE_ARRAY -> addMenuItemsForByteArrayType(control);
-//        }
-
-        contextMenu.getItems().add(
-                createMenuItem("Edit Set", KometIcon.IconValue.PENCIL, this::fireOnEditAction)
-        );
+        switch (control.getDataType()) {
+            case KLReadOnlyStringListControl.StringListDataType.COMPONENT_ID_SET -> addMenuItemsForComponentSetType(control);
+            case KLReadOnlyStringListControl.StringListDataType.COMPONENT_ID_LIST -> addMenuItemsForComponentListType(control);
+        }
 
         contextMenu.getItems().addAll(
                 new SeparatorMenuItem(),
@@ -135,4 +124,15 @@ public class KLReadOnlyStringListControlSkin extends KLReadOnlyBaseControlSkin<K
         );
     }
 
+    private void addMenuItemsForComponentSetType(KLReadOnlyStringListControl control) {
+        contextMenu.getItems().add(
+                createMenuItem("Edit Set", KometIcon.IconValue.PENCIL, this::fireOnEditAction)
+        );
+    }
+
+    private void addMenuItemsForComponentListType(KLReadOnlyStringListControl control) {
+        contextMenu.getItems().add(
+                createMenuItem("Edit List", KometIcon.IconValue.PENCIL, this::fireOnEditAction)
+        );
+    }
 }
