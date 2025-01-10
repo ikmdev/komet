@@ -14,8 +14,6 @@ public class KLReadOnlyStringListControlSkin extends KLReadOnlyBaseControlSkin<K
     private final VBox mainContainer = new VBox();
     private final VBox textsContainer = new VBox();
 
-    private final Label promptTextLabel = new Label();
-
     private final ListChangeListener<String> textsChanged = this::onTextChanged;
     private final HashMap<String, Label> stringToLabel = new HashMap<>();
 
@@ -35,7 +33,6 @@ public class KLReadOnlyStringListControlSkin extends KLReadOnlyBaseControlSkin<K
         textsContainer.setPrefWidth(Double.MAX_VALUE);
         textsContainer.setMaxWidth(Region.USE_PREF_SIZE);
 
-
         initTexts(control);
 
         setupContextMenu(control);
@@ -48,14 +45,13 @@ public class KLReadOnlyStringListControlSkin extends KLReadOnlyBaseControlSkin<K
     }
 
     private void initTexts(KLReadOnlyStringListControl control){
-        promptTextLabel.textProperty().bind(control.promptTextProperty());
         textsContainer.getChildren().add(promptTextLabel);
 
         for (String text : control.getTexts()) {
             createAndAddLabelForText(text);
         }
 
-        updatePromptText(control);
+        updatePromptTextVisibility(control);
 
         control.getTexts().addListener(textsChanged);
     }
@@ -75,7 +71,7 @@ public class KLReadOnlyStringListControlSkin extends KLReadOnlyBaseControlSkin<K
                 }
             }
 
-            updatePromptText(getSkinnable());
+            updatePromptTextVisibility(getSkinnable());
         }
     }
 
@@ -93,7 +89,7 @@ public class KLReadOnlyStringListControlSkin extends KLReadOnlyBaseControlSkin<K
         return label;
     }
 
-    private void updatePromptText(KLReadOnlyStringListControl control) {
+    private void updatePromptTextVisibility(KLReadOnlyStringListControl control) {
         NodeUtils.setShowing(promptTextLabel, control.getTexts().isEmpty());
     }
 

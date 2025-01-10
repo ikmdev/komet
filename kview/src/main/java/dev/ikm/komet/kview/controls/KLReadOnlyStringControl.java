@@ -29,12 +29,6 @@ public class KLReadOnlyStringControl extends KLReadOnlyBaseControl {
     public ObjectProperty<StringDataType> dataTypeProperty() { return dataType; }
     public void setDataType(StringDataType stringDataType) { this.dataType.set(stringDataType); }
 
-    // -- prompt text
-    private StringProperty promptText = new SimpleStringProperty();
-    public String getPromptText() { return promptText.get(); }
-    public StringProperty promptTextProperty() { return promptText; }
-    public void setPromptText(String text) { this.promptText.set(text); }
-
     // -- text
     private StringProperty text = new SimpleStringProperty();
     public String getText() { return text.get(); }
