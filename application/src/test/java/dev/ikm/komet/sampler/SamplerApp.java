@@ -56,7 +56,6 @@ public class SamplerApp extends Application {
 
         stage.setTitle("Komet Sampler");
 
-        // Setup conditions for background blur to show through
         StackPane root = new StackPane(navigationPane);
         Scene scene = new Scene(root, 1250, 630);
 
