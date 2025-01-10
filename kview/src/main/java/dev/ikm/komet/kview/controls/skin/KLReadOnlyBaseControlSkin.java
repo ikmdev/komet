@@ -16,6 +16,7 @@ public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseControl>
     protected static final PseudoClass EDIT_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("edit-mode");
 
     protected final Label titleLabel = new Label();
+    protected final Label promptTextLabel = new Label();
 
     protected final ContextMenu contextMenu = new ContextMenu();
 
@@ -28,6 +29,7 @@ public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseControl>
         super(control);
 
         titleLabel.textProperty().bind(control.titleProperty());
+        promptTextLabel.textProperty().bind(control.promptTextProperty());
 
         control.editModeProperty().addListener(editModeChanged);
 
@@ -35,6 +37,7 @@ public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseControl>
 
         // CSS
         titleLabel.getStyleClass().add("title");
+        promptTextLabel.getStyleClass().add("prompt-text");
         contextMenu.getStyleClass().add("klcontext-menu");
     }
 
