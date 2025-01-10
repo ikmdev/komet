@@ -62,6 +62,7 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
             String oldText = change.getControlText();
             String newText = change.getControlNewText();
             String addedText = change.getText();
+            int exponentPosition = exponentPosition(oldText);
 
             // Valid change (even if number is still not valid):
             // - empty (null value)
@@ -85,6 +86,30 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
                     // ignore
                 }
                 return change;
+            } else if ("-".equals(addedText) || "+".equals(addedText)) { // typing '-'/'+' in any other position
+                // start is position 0 when typing without exponent or before it, or
+                // exponent position + 1 when typing to the right of the exponent
+                int start = change.getRangeStart() <= exponentPosition ? 0 : exponentPosition + 1;
+
+                if (oldText.charAt(start) == addedText.charAt(0)) {
+                    // if text at start is '-'/'+', typing same '-'/'+', cancels it
+                    change.setText("");
+                    change.setRange(start, start + 1);
+                    change.setCaretPosition(Math.max(0, change.getCaretPosition() - 2));
+                    change.setAnchor(Math.max(0, change.getAnchor() - 2));
+                    return change;
+                } else if ((oldText.charAt(start) == '-' && "+".equals(addedText)) ||
+                        (oldText.charAt(start) == '+' && "-".equals(addedText))) {
+                    // if text at start is '-'/'+', typing '+'/'-', replaces it with '+'/'-'
+                    change.setRange(start, start + 1);
+                    change.setCaretPosition(Math.max(0, change.getCaretPosition() - 1));
+                    change.setAnchor(Math.max(0, change.getAnchor() - 1));
+                    return change;
+                } else if (oldText.charAt(start) != '-' && oldText.charAt(start) != '+') {
+                    // if text at start is not '-'/'+', typing '-'/'+' from any position, sets it
+                    change.setRange(start, start);
+                    return change;
+                }
             }
             errorLabel.setText(MessageFormat.format(resources.getString("error.input.text"), addedText));
             return null;
@@ -187,6 +212,13 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
             return false;
         }
         return text.contains("e") || text.contains("E");
+    }
+
+    private static int exponentPosition(String text) {
+        if (!hasExponent(text)) {
+            return Integer.MAX_VALUE;
+        }
+        return text.contains("e") ? text.indexOf("e") : text.indexOf("E");
     }
 
     private static boolean endsWithExponent(String text) {
