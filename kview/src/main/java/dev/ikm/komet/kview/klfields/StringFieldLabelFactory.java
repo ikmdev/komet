@@ -39,10 +39,11 @@ public class StringFieldLabelFactory implements KlFieldFactory<String> {
      *                        will automatically update the displayed value in the label representation.
      * @param observableView  The observable view context that provides application-specific settings and interactions
      *                        for the created field.
+     * @param editable flag to determine if the UI control is editable
      * @return A new {@link KlField} instance configured as a read-only string field, represented using a label.
      */
     @Override
-    public KlField<String> create(ObservableField<String> observableField, ObservableView observableView) {
+    public KlField<String> create(ObservableField<String> observableField, ObservableView observableView, boolean editable) {
         return StringFieldLabel.create(observableField, observableView);
     }
 
