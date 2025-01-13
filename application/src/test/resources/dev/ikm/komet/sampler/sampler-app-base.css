@@ -93,6 +93,10 @@
  *                                                                             *
  ******************************************************************************/
 
+.navigation-pane > .main-container > .pane .navigation-pane-item:selected .selection-marker-container > .selection-marker {
+    -fx-background-color: green;
+}
+
 .navigation-pane > .main-container > .pane > .top-container > .hamburger-container {
     -fx-padding: 0 0 0 8px;
 }
