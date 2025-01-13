@@ -2,8 +2,6 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLStringControlSkin;
 import javafx.beans.DefaultProperty;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Control;
@@ -69,21 +67,6 @@ public class KLStringControl extends Control {
     }
     public final void setPromptText(String value) {
         promptTextProperty.set(value);
-    }
-
-    /**
-     * Boolean property that enables displaying a label with an error message when there
-     * are errors editing the string value
-     */
-    private final BooleanProperty showErrorProperty = new SimpleBooleanProperty(this, "showError", false);
-    public final BooleanProperty showErrorProperty() {
-       return showErrorProperty;
-    }
-    public final boolean isShowError() {
-       return showErrorProperty.get();
-    }
-    public final void setShowError(boolean value) {
-        showErrorProperty.set(value);
     }
 
     /** {@inheritDoc} */
