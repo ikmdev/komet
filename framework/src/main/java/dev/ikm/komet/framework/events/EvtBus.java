@@ -23,6 +23,12 @@ package dev.ikm.komet.framework.events;
 public interface EvtBus {
 
 
+    /**
+     * Raise an event based on a topic, event containing data (payload).
+     * @param topic Topic unique value.
+     * @param evt Event containing data
+     * @param <T> Type of Event.
+     */
     <T extends Evt> void publish(Object topic, T evt);
 
     /**
@@ -38,5 +44,19 @@ public interface EvtBus {
      * @param subscriber the subscriber to the topic
      */
     <T extends Evt> void unsubscribe(Object topic, Class<T> eventClass, Subscriber<T> subscriber);
+
+    /**
+     * Unsubscribe subscriber regardless of topic or event class.
+     * @param subscriber subscriber for removal
+     * @param <T> Type of Event Evt class.
+     */
+    <T extends Evt> void unsubscribe(Subscriber<T> subscriber);
+
+    /**
+     * Unsubscribe subscriber regardless of topic or event class.
+     * @param subscriber subscriber for removal as variable arguments (array). This is for convenience.
+     */
+    void unsubscribe(Subscriber<?> ...subscriber);
+
 
 }
