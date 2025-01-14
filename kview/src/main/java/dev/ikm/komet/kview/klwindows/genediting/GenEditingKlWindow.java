@@ -10,7 +10,6 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.fxutils.window.WindowSupport;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.mvvm.view.genediting.GenEditingDetailsController;
-import dev.ikm.komet.layout.window.KlWindow;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
@@ -28,7 +27,7 @@ import java.util.UUID;
  * The General Editing Chapter window showing semantic details on the Journal Window's surface as a JavaFX Pane
  * having the ability to resize, drag, close.
  */
-public class GenEditingKlWindow extends AbstractEntityChapterKlWindow implements KlWindow {
+public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
     private JFXNode<Pane, GenEditingDetailsController> jfxNode;
 
     /**
