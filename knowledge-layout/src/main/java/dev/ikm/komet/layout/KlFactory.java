@@ -4,7 +4,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 
-public interface KlFactory {
+public interface KlFactory<T extends KlGadget> {
 
     /**
      * Provides a palette icon for the layout tool that represents this factory.
@@ -12,27 +12,27 @@ public interface KlFactory {
      * @return A Node object representing the visual icon of the layout palette.
      */
     default Node layoutPaletteIcon() {
-        Label paletteIcon = new Label(klWidgetName());
-        Tooltip.install(paletteIcon, new Tooltip(klWidgetDescription()));
+        Label paletteIcon = new Label(klGadgetName());
+        Tooltip.install(paletteIcon, new Tooltip(klGadgetDescription()));
         return paletteIcon;
     }
 
     /**
-     * Retrieves the KlWidget interface of the KlWidget produced by the factory.
+     * Retrieves the KlGadget interface of the KlGadget produced by the factory.
       *
      * @return A {@link Class} object representing the class type of the field
      *         interface extending {@link KlWidget}.
      */
-    Class<? extends KlWidget> klWidgetInterfaceClass();
+    Class<T> klInterfaceClass();
 
     /**
-     * Retrieves the concrete class of the KlWidget
+     * Retrieves the concrete class of the KlGadget
      * that is produced by the factory.
      *
      * @return A {@link Class} object representing the class type of the implementation
-     *         of {@link KlWidget} associated with this factory.
+     *         of {@link KlGadget} associated with this factory.
      */
-    Class<?> klWidgetImplementationClass();
+    Class<? extends T> klImplementationClass();
 
 
     /**
@@ -40,18 +40,18 @@ public interface KlFactory {
      *
      * @return A string representing the name of the widget.
      */
-    default String klWidgetName() {
-        return camelCaseToWords(this.klWidgetImplementationClass().getSimpleName());
+    default String klGadgetName() {
+        return camelCaseToWords(this.klImplementationClass().getSimpleName());
     }
 
     /**
-     * Retrieves a description of the widget created by this factory.
+     * Retrieves a description of the gadget created by this factory.
      *
-     * @return A string representing the description of the widget.
+     * @return A string representing the description of the gadget.
      */
-    default String klWidgetDescription() {
-        return "A Knowledge Layout Widget that implements the " +
-                camelCaseToWords(this.klWidgetInterfaceClass().getSimpleName() +
+    default String klGadgetDescription() {
+        return "A Knowledge Layout Gadget that implements the " +
+                camelCaseToWords(this.klInterfaceClass().getSimpleName() +
                         " interface.");
     }
 

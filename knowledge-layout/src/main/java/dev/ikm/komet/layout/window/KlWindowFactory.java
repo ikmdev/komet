@@ -1,6 +1,7 @@
 package dev.ikm.komet.layout.window;
 
 import dev.ikm.komet.layout.KlFactory;
+import dev.ikm.komet.layout.KlGadget;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import org.controlsfx.control.action.Action;
@@ -11,7 +12,7 @@ import org.eclipse.collections.api.list.ImmutableList;
  * Extends the {@link KlFactory} interface to provide specific
  * functionality for producing top-level windows.
  */
-public interface KlWindowFactory extends KlFactory {
+public interface KlWindowFactory extends KlFactory<KlGadget> {
     /**
      * Represents the types of windows that can be created in the Komet application.
      * This enumeration is part of the {@link KlWindowFactory} and categorizes the
