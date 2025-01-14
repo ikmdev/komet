@@ -1,11 +1,25 @@
 package dev.ikm.komet.layout;
 
+import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
+import dev.ikm.komet.preferences.KometPreferences;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 
+import java.util.function.Supplier;
+
 
 public interface KlWidgetFactory<T extends KlWidget> extends KlFactory<T> {
+
+    /**
+     * Creates an instance of the specified KlWidget.
+     *
+     * @param preferencesSupplier a supplier providing KometPreferences
+     *                            used to store the widget's initial
+     *                            configuration preferences
+     * @return an instance of the KlWidget type created by this factory
+     */
+    T create(Supplier<KometPreferences> preferencesSupplier);
 
     /**
      * Provides a palette icon for the layout tool that represents this factory.

@@ -8,6 +8,7 @@ import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
 import dev.ikm.tinkar.common.bind.annotations.publicid.PublicIdAnnotation;
 import dev.ikm.tinkar.common.bind.annotations.publicid.UuidAnnotation;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 
 import java.util.UUID;
 
@@ -22,6 +23,6 @@ import java.util.UUID;
 @RegularName("Knowledge Layout Field")
 @ParentProxy(parentName = "Komet panels (SOLOR)",
         parentPublicId = @PublicIdAnnotation(@UuidAnnotation("b3d1cdf6-27a5-502d-8f16-ed026a7b9d15")))
-public interface KlField<T> extends KlWidget<Node>, ConceptClass {
+public interface KlField<T> extends KlWidget<Parent>, ConceptClass {
     ObservableField<T> field();
 }
