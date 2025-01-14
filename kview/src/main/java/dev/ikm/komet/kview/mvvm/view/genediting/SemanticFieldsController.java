@@ -24,9 +24,9 @@ import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.klfields.StringFieldTextFactory;
 import dev.ikm.komet.kview.klfields.editable.EditableKLFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
+import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.layout.component.version.field.KlField;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -111,7 +111,7 @@ public class SemanticFieldsController {
                 node.setUserData(klField.field());
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
 
-                StringFieldTextFactory stringFieldTextFactory = new StringFieldTextFactory();
+                KlStringFieldFactory stringFieldTextFactory = new KlStringFieldFactory();
                 ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
                 ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
                 ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
@@ -120,7 +120,7 @@ public class SemanticFieldsController {
                 ObservableField<String> stringObservableField =observableFields.get(fieldRecord.fieldIndex());
 
                 //StringField klWidget returns the widget container which is an HBox with a hard coded label
-                node = stringFieldTextFactory.create(stringObservableField, observableViewBase).klWidget();
+                node = stringFieldTextFactory.create(stringObservableField, observableViewBase, true).klWidget();
 
                 node.setUserData(stringObservableField);
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
