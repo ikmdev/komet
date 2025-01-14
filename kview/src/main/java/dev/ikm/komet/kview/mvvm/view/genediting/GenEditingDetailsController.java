@@ -47,8 +47,8 @@ import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
-import dev.ikm.komet.kview.klfields.StringFieldLabelFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
+import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -342,8 +342,8 @@ public class GenEditingDetailsController {
                 ObservableViewBase observableViewBase = getViewProperties().nodeView();
 
                 // need ObservableField<String>, ObservableView
-                StringFieldLabelFactory stringFieldLabelFactory = new StringFieldLabelFactory();
-                readOnlyNode = stringFieldLabelFactory.create(observableFields.get(fieldRecord.fieldIndex()), observableViewBase, false).klWidget();
+                KlStringFieldFactory klStringFieldFactory = new KlStringFieldFactory();
+                readOnlyNode = klStringFieldFactory.create(observableFields.get(fieldRecord.fieldIndex()), observableViewBase, false).klWidget();
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 readOnlyNode = rowf.createReadOnlyComponentSet(getViewProperties(), fieldRecord);
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
