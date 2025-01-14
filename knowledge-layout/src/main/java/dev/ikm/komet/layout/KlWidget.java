@@ -10,12 +10,24 @@ import javafx.scene.layout.Priority;
 import java.util.UUID;
 
 /**
- * KlWidget is an interface contract enabling service discovery of Knowledge Layout Widgets
- * and providing methods to enable layout and configuration of user interacting plugins that extend the
- * JavaFx Scene Graph Node.
+ * The {@code KlWidget} interface defines a contract for a customizable widget
+ * that integrates with a scene graph and provides various layout and styling
+ * functionalities. It extends {@code KlGadget} and genericizes the
+ * {@code Node} class, representing the underlying JavaFX node.
+ *
+ * @param <T> the type of {@code Node} that this widget extends or encapsulates.
  */
 
-public interface KlWidget {
+public interface KlWidget<T extends Node> extends KlGadget<T> {
+
+    /**
+     * Retrieves the widget representation for this KlWidget.
+     *
+     * @return The widget instance, represented by the specific implementation of the KlWidget.
+     */
+    default T klGadget() {
+        return klWidget();
+    }
 
     /**
      * Retrieves the scene graph node that presents this KlWidget.

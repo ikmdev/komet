@@ -1,13 +1,26 @@
 package dev.ikm.komet.layout.preferences;
 
+import dev.ikm.komet.layout.KlFactory;
 import dev.ikm.komet.layout.window.KlWindowFactory;
 import dev.ikm.komet.preferences.KometPreferences;
+
+import java.util.Optional;
 
 public interface KlUniversalPreferences {
 
     KometPreferences preferences();
 
-    Class<? extends KlWindowFactory> getFactoryClass();
+    default Class<? extends KlFactory> getFactoryClass() {
+        Optional<String> factoryClassString =  preferences().get(Keys.FACTORY_CLASS);
+        if (factoryClassString.isPresent()) {
+            try {
+                return (Class<? extends KlFactory>) Class.forName(factoryClassString.get());
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        throw new IllegalStateException("Preferences not initialized with Keys.FACTORY_CLASS");
+    }
 
     enum Keys {
         /**
