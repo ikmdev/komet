@@ -120,7 +120,7 @@ public class SemanticFieldsController {
                 ObservableField<String> stringObservableField =observableFields.get(fieldRecord.fieldIndex());
 
                 //StringField klWidget returns the widget container which is an HBox with a hard coded label
-                node = stringFieldTextFactory.create(stringObservableField, observableViewBase).klWidget();
+                node = stringFieldTextFactory.create(stringObservableField, observableViewBase, true).klWidget();
 
                 node.setUserData(stringObservableField);
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
