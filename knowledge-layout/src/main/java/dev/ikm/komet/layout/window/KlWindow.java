@@ -2,7 +2,6 @@ package dev.ikm.komet.layout.window;
 
 import dev.ikm.komet.layout.KlGadget;
 import dev.ikm.komet.layout.preferences.KlUniversalPreferences;
-import javafx.scene.Scene;
 import javafx.stage.Window;
 
 /**
@@ -17,10 +16,10 @@ public interface KlWindow extends KlUniversalPreferences, KlGadget<Window> {
      * Each window has a single scene that acts as the hierarchical root
      * for all visual elements within the window.
      *
-     * @return The {@link Scene} object associated with this window.
+     * @return The {@link KlScene} object associated with this window.
      * TODO: Should we be using the root {@link javafx.scene.Node} rather than Scene here?
      * Does the journal windows have a scene? Or to they go directly to a Node? Do they have a
      * representation of rendering within single windows? Such as Camera, Cursor, Fill...
      */
-    Scene scene();
+    KlScene scene();
 }

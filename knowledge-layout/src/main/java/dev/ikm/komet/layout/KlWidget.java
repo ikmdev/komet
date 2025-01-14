@@ -4,6 +4,7 @@ import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import javafx.collections.ObservableMap;
 import javafx.geometry.*;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 
@@ -18,7 +19,7 @@ import java.util.UUID;
  * @param <T> the type of {@code Node} that this widget extends or encapsulates.
  */
 
-public interface KlWidget<T extends Node> extends KlGadget<T> {
+public interface KlWidget<T extends Parent> extends KlGadget<T> {
 
     /**
      * Retrieves the widget representation for this KlWidget.
@@ -35,7 +36,7 @@ public interface KlWidget<T extends Node> extends KlGadget<T> {
      * @param <SGN> The type of the scene graph node extending {@code Node}.
      * @return The scene graph node instance.
      */
-    default <SGN extends Node> SGN klWidget() {
+    default <SGN extends Parent> SGN klWidget() {
         return (SGN) this;
     }
 

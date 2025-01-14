@@ -1,10 +1,29 @@
 package dev.ikm.komet.layout;
 
+import dev.ikm.komet.layout.window.KlWindow;
+import dev.ikm.komet.preferences.KometPreferences;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 
+/**
+ * Defines a factory for creating and restoring instances of {@link KlGadget}.
+ * This interface provides methods for retrieving metadata about the factory,
+ * such as the names and descriptions of the gadgets it produces, and supports
+ * customization for layout tools through palette icons.
+ *
+ * @param <T> The type of {@link KlGadget} produced by this factory.
+ */
 public interface KlFactory<T extends KlGadget> {
+
+    /**
+     * Restores an instance of type T using the provided preferences.
+     *
+     * @param preferences an instance of KometPreferences that contains the
+     *                    configuration or state required to restore the object.
+     * @return an instance of type T restored using the given preferences.
+     */
+    T restore(KometPreferences preferences);
 
     /**
      * Provides a palette icon for the layout tool that represents this factory.

@@ -4,31 +4,82 @@ import dev.ikm.komet.layout.window.KlWindow;
 import dev.ikm.komet.layout.window.KlWindowFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.PreferencesService;
+import javafx.scene.Scene;
 
+import java.util.function.Supplier;
 import java.util.prefs.BackingStoreException;
 
 /**
  * The KlPreferencesFactory interface provides a method for creating instances of
  * KometPreferences.
  */
-public class KlPreferencesFactory {
-    private final KometPreferences parentPreferences;
+public class KlPreferencesFactory implements Supplier<KometPreferences>{
 
-    private KlPreferencesFactory(KometPreferences parentPreferences) {
+    private final KometPreferences parentPreferences;
+    private final Class implementationClass;
+
+    /**
+     * Constructs a new {@code KlPreferencesFactory} instance.
+     *
+     * @param parentPreferences the parent {@code KometPreferences} node in which the
+     *                          preferences for the factory will be managed
+     * @param implementationClass the implementation class for which this factory is created
+     */
+    private KlPreferencesFactory(KometPreferences parentPreferences, Class implementationClass) {
         this.parentPreferences = parentPreferences;
+        this.implementationClass = implementationClass;
     }
 
     /**
-     * Creates a new instance of {@code KlPreferencesFactory} using the provided parent preferences.
+     * Provides a new unique instance of {@code KometPreferences} associated with the specified
+     * implementation class within the parent preferences node.
      *
-     * @param parentPreferences the parent {@code KometPreferences} used to initialize the factory
-     * @return a new instance of {@code KlPreferencesFactory}
+     * @return a {@code KometPreferences} instance uniquely associated with the implementation class
+     *         and created within the parent preferences node
      */
-    public static KlPreferencesFactory createFactory(KometPreferences parentPreferences) {
-        return new KlPreferencesFactory(parentPreferences);
+    @Override
+    public KometPreferences get() {
+        return createSequentiallyUniquePreferences(parentPreferences, implementationClass);
     }
-    public KometPreferences createWidgetPreferences(Class implementationClass) {
-        return createWindowPreferences(parentPreferences, implementationClass);
+
+    /**
+     * Creates a new {@code KlPreferencesFactory} instance for managing preferences
+     * related to a specific implementation class within the provided parent preferences node.
+     *
+     * @param parentPreferences the parent {@code KometPreferences} node in which the
+     *                          new {@code KlPreferencesFactory} will be created
+     * @param implementationClass the class for which the preferences factory is to be created
+     * @return a {@code KlPreferencesFactory} instance associated with the specified
+     *         implementation class
+     */
+    public static KlPreferencesFactory createFactory(KometPreferences parentPreferences, Class implementationClass) {
+        return new KlPreferencesFactory(parentPreferences, implementationClass);
+    }
+    /**
+     * Creates a new {@code KometPreferences} instance for managing preferences related to a specific
+     * scene configuration. The preference node sequentially named using the {@code Scene.class}
+     * type and is created within the specified parent preferences node.
+     *
+     * @param parentPreferences the parent {@code KometPreferences} node under which the new scene
+     *                          preferences node will be created
+     * @return a {@code KometPreferences} instance uniquely associated with the {@code Scene.class}
+     */
+    private static KometPreferences createScenePreferences(KometPreferences parentPreferences) {
+        return createSequentiallyUniquePreferences(parentPreferences, Scene.class);
+    }
+
+    /**
+     * Creates a {@code Supplier} that provides a new {@code KometPreferences} instance
+     * for managing preferences related to a specific scene configuration. The preferences
+     * are created under the specified {@code parentPreferences} node.
+     *
+     * @param parentPreferences the parent {@code KometPreferences} node under which the
+     *                          preferences for the scene will be managed
+     * @return a {@code Supplier} that supplies a {@code KometPreferences} instance uniquely
+     *         associated with the scene configuration
+     */
+    public static Supplier<KometPreferences> createScenePreferencesSupplier(KometPreferences parentPreferences) {
+        return () -> createScenePreferences(parentPreferences);
     }
 
     /**
@@ -41,7 +92,7 @@ public class KlPreferencesFactory {
     public static KometPreferences createWindowPreferences(Class<? extends KlWindow> implementationClass) {
         KometPreferences configurationPreferences = PreferencesService.configurationPreferences();
         KometPreferences windowPreferencesRoot = configurationPreferences.node(KlWindowFactory.PREFERENCES_ROOT);
-        return createWindowPreferences(windowPreferencesRoot, implementationClass);
+        return createSequentiallyUniquePreferences(windowPreferencesRoot, implementationClass);
     }
 
     /**
@@ -54,7 +105,7 @@ public class KlPreferencesFactory {
      * @return the new {@code KometPreferences} node associated with the specified implementation class
      * @throws RuntimeException if an error occurs while checking existing nodes or creating the new node
      */
-    public static KometPreferences createWindowPreferences(KometPreferences parentPreferences, Class implementationClass) {
+    private static KometPreferences createSequentiallyUniquePreferences(KometPreferences parentPreferences, Class implementationClass) {
         int sequence = 0;
         try {
             while (parentPreferences.nodeExists(sequentialNodeName(implementationClass, sequence))) {

@@ -4,6 +4,7 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.layout.component.version.field.KlStringField;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
@@ -54,7 +55,7 @@ public abstract class StringFieldAbstract implements KlStringField {
     }
 
     @Override
-    public <SGN extends Node> SGN klWidget() {
+    public <SGN extends Parent> SGN klWidget() {
         return (SGN) widgetContainer;
     }
 
