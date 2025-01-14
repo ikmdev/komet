@@ -25,9 +25,10 @@ public interface KlFieldFactory<T> {
      *
      * @param observableField the observable field that holds the data to be represented by the created {@link KlField}.
      * @param observableView the observable view that defines the context in which the created {@link KlField} operates.
+     * @param editable flag to determine if the UI control is editable
      * @return a new {@link KlField} instance parameterized with the same type as the provided {@link ObservableField}.
      */
-    KlField<T> create(ObservableField<T> observableField, ObservableView observableView);
+    KlField<T> create(ObservableField<T> observableField, ObservableView observableView, boolean editable);
 
     /**
      * Retrieves the class type of the field interface produced by the factory.

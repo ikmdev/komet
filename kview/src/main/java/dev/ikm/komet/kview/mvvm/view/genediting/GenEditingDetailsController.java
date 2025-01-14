@@ -343,7 +343,7 @@ public class GenEditingDetailsController {
 
                 // need ObservableField<String>, ObservableView
                 StringFieldLabelFactory stringFieldLabelFactory = new StringFieldLabelFactory();
-                readOnlyNode = stringFieldLabelFactory.create(observableFields.get(fieldRecord.fieldIndex()), observableViewBase).klWidget();
+                readOnlyNode = stringFieldLabelFactory.create(observableFields.get(fieldRecord.fieldIndex()), observableViewBase, false).klWidget();
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 readOnlyNode = rowf.createReadOnlyComponentSet(getViewProperties(), fieldRecord);
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {

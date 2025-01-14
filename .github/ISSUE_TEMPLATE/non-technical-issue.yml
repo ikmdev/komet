@@ -1,0 +1,39 @@
+name: 📚 Non-Technical Issue
+description: Use this form to submit content suggestions, fixes, and questions as well as any other non-technical topic.
+title: "Non-Technical Issue:"
+
+body:
+- type: dropdown
+  id: issueLoc
+  attributes:
+    label: Issue Location
+    description: "Where is this issue located?"
+    options:
+      - javadocs
+      - README file
+      - Other
+  validations:
+    required: true
+- type: dropdown
+  id: issueTypeN
+  attributes:
+    label: "Issue Type"
+    description: "What type of issue is this?"
+    options:
+      - Content addition
+      - Content correction
+      - Question
+      - Typo, syntax, or other minor fixes
+      - Other
+- type: textarea
+  id: description
+  attributes:
+    label: "Issue Description"
+    description: "Use the area below to concisely describe the issue, including any necessary links to navigate to the issue location" 
+- type: checkboxes
+  id: selfhelp
+  attributes:
+    label: Self-Service
+    description: If you feel like you could contribute to this issue, please check the box below.
+    options:
+      - label: I would be willing to fix this issue
