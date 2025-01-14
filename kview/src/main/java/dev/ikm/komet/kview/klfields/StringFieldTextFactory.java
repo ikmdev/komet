@@ -33,10 +33,11 @@ public class StringFieldTextFactory implements KlFieldFactory<String> {
      *
      * @param observableField The observable field of type String to be associated with the field.
      * @param observableView  The observable view that provides context and coordination for the field.
+     * @param editable flag to determine if the UI control is editable
      * @return A {@link KlField} instance representing the created string field.
      */
     @Override
-    public KlField<String> create(ObservableField<String> observableField, ObservableView observableView) {
+    public KlField<String> create(ObservableField<String> observableField, ObservableView observableView, boolean editable) {
         return StringFieldText.create(observableField, observableView);
     }
 

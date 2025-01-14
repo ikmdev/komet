@@ -26,6 +26,12 @@ public class KometIcon extends StackPane {
         return kometIcon;
     }
 
+    public static KometIcon create(IconValue iconValue, String... additionalStyleClasses) {
+        KometIcon kometIcon = create(iconValue);
+        kometIcon.getStyleClass().addAll(additionalStyleClasses);
+        return kometIcon;
+    }
+
     public KometIcon() {
         getStyleClass().add("icon");
     }
