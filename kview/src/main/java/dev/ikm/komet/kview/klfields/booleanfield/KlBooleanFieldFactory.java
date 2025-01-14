@@ -13,12 +13,12 @@ public class KlBooleanFieldFactory implements KlFieldFactory<Boolean> {
     }
 
     @Override
-    public Class<? extends KlField> getFieldInterface() {
+    public Class<? extends KlField<Boolean>> getFieldInterface() {
         return KlBooleanField.class;
     }
 
     @Override
-    public Class<? extends KlField> getFieldImplementation() {
+    public Class<? extends KlField<Boolean>> getFieldImplementation() {
         return DefaultKlBooleanField.class;
     }
 
