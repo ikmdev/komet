@@ -23,7 +23,6 @@ import dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.kview.state.pattern.PatternDetailsPattern;
-import dev.ikm.komet.layout.window.KlWindow;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.Entity;
@@ -45,7 +44,7 @@ import java.util.UUID;
  * The General Editing Chapter window showing semantic details on the Journal Window's surface as a JavaFX Pane
  * having the ability to resize, drag, close.
  */
-public class PatternKlWindow extends AbstractEntityChapterKlWindow implements KlWindow {
+public class PatternKlWindow extends AbstractEntityChapterKlWindow {
     private JFXNode<Pane, PatternDetailsController> jfxNode;
 
     /**
