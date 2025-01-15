@@ -1,6 +1,5 @@
 package dev.ikm.komet.layout;
 
-import dev.ikm.komet.layout.window.KlWindow;
 import dev.ikm.komet.preferences.KometPreferences;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -31,8 +30,8 @@ public interface KlFactory<T extends KlGadget> {
      * @return A Node object representing the visual icon of the layout palette.
      */
     default Node layoutPaletteIcon() {
-        Label paletteIcon = new Label(klGadgetName());
-        Tooltip.install(paletteIcon, new Tooltip(klGadgetDescription()));
+        Label paletteIcon = new Label(klName());
+        Tooltip.install(paletteIcon, new Tooltip(klDescription()));
         return paletteIcon;
     }
 
@@ -55,11 +54,11 @@ public interface KlFactory<T extends KlGadget> {
 
 
     /**
-     * Retrieves the name of the widget created by this factory.
+     * Retrieves the name of the KlWidget or KlGadget created by this factory.
      *
      * @return A string representing the name of the widget.
      */
-    default String klGadgetName() {
+    default String klName() {
         return camelCaseToWords(this.klImplementationClass().getSimpleName());
     }
 
@@ -68,8 +67,8 @@ public interface KlFactory<T extends KlGadget> {
      *
      * @return A string representing the description of the gadget.
      */
-    default String klGadgetDescription() {
-        return "A Knowledge Layout Gadget that implements the " +
+    default String klDescription() {
+        return "A Knowledge Layout Widget or Gadget that implements the " +
                 camelCaseToWords(this.klInterfaceClass().getSimpleName() +
                         " interface.");
     }
