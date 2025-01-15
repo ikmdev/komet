@@ -18,11 +18,7 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
-import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
-import dev.ikm.komet.framework.observable.ObservableSemantic;
-import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
-import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klfields.editable.EditableKLFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
@@ -43,7 +39,6 @@ import javafx.scene.control.Separator;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
-import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,36 +107,25 @@ public class SemanticFieldsController {
                 node.setUserData(klField.field());
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
                 KlStringFieldFactory stringFieldTextFactory = new KlStringFieldFactory();
-                ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
-                ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-                ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
-                ObservableViewBase observableViewBase = getViewProperties().nodeView();
-                ObservableField<String> stringObservableField =observableFields.get(fieldRecord.fieldIndex());
-                //StringField klWidget returns the widget container which is an HBox with a hard coded label
-                node = stringFieldTextFactory.create(stringObservableField, observableViewBase, true).klWidget();
+                ObservableField<String> stringObservableField = GenEditingHelper.getObservableFields(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                node = stringFieldTextFactory.create(stringObservableField, getViewProperties().nodeView(), true).klWidget();
                 node.setUserData(stringObservableField);
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 node = rowf.createReadOnlyComponentSet(getViewProperties(), fieldRecord);
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
                 node = rowf.createReadOnlyDiTree(getViewProperties(), fieldRecord);
             }else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.FLOAT.nid()) {
-                ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
-                ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-                ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
-                ObservableViewBase observableViewBase = getViewProperties().nodeView();
-                ObservableField<Float> floatObservableField =observableFields.get(fieldRecord.fieldIndex());
+                ObservableField<Float> floatObservableField = GenEditingHelper.getObservableFields(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
-                node = klFloatFieldFactory.create(floatObservableField, observableViewBase, true).klWidget();
+                node = klFloatFieldFactory.create(floatObservableField, getViewProperties().nodeView(), true).klWidget();
                 node.setUserData(floatObservableField);
             }
-
             // Add to VBox
             if (node != null) {
                 editFieldsVBox.getChildren().add(node);
                 // Add separator
                 editFieldsVBox.getChildren().add(createSeparator());
             }
-            System.out.println("field record: " + fieldRecord);
         };
         rowf.setupSemanticDetailsUI(getViewProperties(), semanticEntityVersionLatest, updateUIConsumer);
     }
