@@ -25,6 +25,7 @@ import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klfields.editable.EditableKLFieldFactory;
+import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.layout.component.version.field.KlField;
@@ -110,23 +111,28 @@ public class SemanticFieldsController {
                 node = klField.klWidget();
                 node.setUserData(klField.field());
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
-
                 KlStringFieldFactory stringFieldTextFactory = new KlStringFieldFactory();
                 ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
                 ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
                 ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
                 ObservableViewBase observableViewBase = getViewProperties().nodeView();
-
                 ObservableField<String> stringObservableField =observableFields.get(fieldRecord.fieldIndex());
-
                 //StringField klWidget returns the widget container which is an HBox with a hard coded label
                 node = stringFieldTextFactory.create(stringObservableField, observableViewBase, true).klWidget();
-
                 node.setUserData(stringObservableField);
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 node = rowf.createReadOnlyComponentSet(getViewProperties(), fieldRecord);
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
                 node = rowf.createReadOnlyDiTree(getViewProperties(), fieldRecord);
+            }else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.FLOAT.nid()) {
+                ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
+                ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+                ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
+                ObservableViewBase observableViewBase = getViewProperties().nodeView();
+                ObservableField<Float> floatObservableField =observableFields.get(fieldRecord.fieldIndex());
+                KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
+                node = klFloatFieldFactory.create(floatObservableField, observableViewBase, true).klWidget();
+                node.setUserData(floatObservableField);
             }
 
             // Add to VBox

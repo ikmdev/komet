@@ -47,6 +47,7 @@ import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
+import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
@@ -317,12 +318,8 @@ public class GenEditingDetailsController {
 
     private void setupSemanticDetailsUI(Latest<SemanticEntityVersion> semanticEntityVersionLatest) {
 
-
         //FIXME use a different factory
         ReadOnlyKLFieldFactory rowf = ReadOnlyKLFieldFactory.getInstance();
-
-//        ServiceLoader<StringFieldLabelFactory> serviceLoader = PluggableService.load(StringFieldLabelFactory.class);
-//        StringFieldLabelFactory stringFieldLabelFactory = serviceLoader.findFirst().get();
 
         Consumer<FieldRecord<Object>> updateUIConsumer = (fieldRecord) -> {
 
@@ -349,7 +346,12 @@ public class GenEditingDetailsController {
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
                 readOnlyNode = rowf.createReadOnlyDiTree(getViewProperties(), fieldRecord);
             } else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid()) {
-
+                ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
+                ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+                ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
+                ObservableViewBase observableViewBase = getViewProperties().nodeView();
+                KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
+                readOnlyNode = klFloatFieldFactory.create(observableFields.get(fieldRecord.fieldIndex()), observableViewBase, false).klWidget();
             }
 
             // Add to VBox
