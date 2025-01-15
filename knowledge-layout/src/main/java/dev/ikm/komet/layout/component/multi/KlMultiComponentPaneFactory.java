@@ -3,7 +3,7 @@ package dev.ikm.komet.layout.component.multi;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.layout.KlEntityType;
-import dev.ikm.komet.layout.KlWidgetFactory;
+import dev.ikm.komet.layout.window.KlWhiteBoardFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import org.eclipse.collections.api.list.ImmutableList;
 
@@ -16,7 +16,7 @@ import org.eclipse.collections.api.list.ImmutableList;
  * @param <OE> The type of ObservableEntity handled by the factory. ObservableEntities are entities
  *             whose versions and properties can be observed and tracked for changes.
  */
-public interface KlMultiComponentPaneFactory<OE extends ObservableEntity> extends KlWidgetFactory, KlEntityType<OE> {
+public interface KlMultiComponentPaneFactory<OE extends ObservableEntity> extends KlWhiteBoardFactory, KlEntityType<OE> {
 
     /**
      * Creates an instance of KlMultiComponentPane tailored to the specified observable entities, observable view,

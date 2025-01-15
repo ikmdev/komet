@@ -3,7 +3,8 @@ package dev.ikm.komet.layout.component;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.layout.KlEntityType;
-import dev.ikm.komet.layout.KlWidgetFactory;
+import dev.ikm.komet.layout.KlFactory;
+import dev.ikm.komet.layout.KlWidget;
 import dev.ikm.komet.preferences.KometPreferences;
 
 /**
@@ -13,7 +14,7 @@ import dev.ikm.komet.preferences.KometPreferences;
  *
  * @param <OE> the type of ObservableEntity that this factory works with
  */
-public interface KlComponentPaneFactory<OE extends ObservableEntity> extends KlWidgetFactory, KlEntityType<OE> {
+public interface KlComponentPaneFactory<OE extends ObservableEntity> extends KlEntityType<OE>, KlFactory<KlWidget> {
 
     /**
      * Creates a KlComponentPane instance for the given observable entity, observable view,

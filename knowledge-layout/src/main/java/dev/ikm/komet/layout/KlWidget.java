@@ -1,5 +1,6 @@
 package dev.ikm.komet.layout;
 
+import dev.ikm.komet.layout.preferences.KlUniversalPreferences;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import javafx.collections.ObservableMap;
 import javafx.geometry.*;
@@ -19,7 +20,7 @@ import java.util.UUID;
  * @param <T> the type of {@code Node} that this widget extends or encapsulates.
  */
 
-public interface KlWidget<T extends Parent> extends KlGadget<T> {
+public interface KlWidget<T extends Parent> extends KlGadget<T>, KlUniversalPreferences {
 
     /**
      * Retrieves the widget representation for this KlWidget.

@@ -2,6 +2,7 @@ package dev.ikm.komet.layout.window;
 
 import dev.ikm.komet.layout.KlGadget;
 import dev.ikm.komet.layout.preferences.KlUniversalPreferences;
+import javafx.scene.Parent;
 import javafx.stage.Window;
 
 /**
@@ -10,16 +11,28 @@ import javafx.stage.Window;
  * such as is provided within the journal view. All KlWindows have a single Scene.
  */
 public interface KlWindow extends KlUniversalPreferences, KlGadget<Window> {
+    /**
+     * Retrieves the root node of the scene.
+     * The root node serves as the top-most parent of all visual elements in the scene's hierarchy.
+     *
+     * @return The {@link Parent} object representing the root node of the scene.
+     */
+    Parent getRoot();
 
     /**
-     * Retrieves the scene associated with this window.
-     * Each window has a single scene that acts as the hierarchical root
-     * for all visual elements within the window.
-     *
-     * @return The {@link KlScene} object associated with this window.
-     * TODO: Should we be using the root {@link javafx.scene.Node} rather than Scene here?
-     * Does the journal windows have a scene? Or to they go directly to a Node? Do they have a
-     * representation of rendering within single windows? Such as Camera, Cursor, Fill...
+     * Displays the top-level window, making it visible to the user.
+     * If the window is currently hidden or not rendered, invoking this method
+     * will ensure it is rendered and brought into view.
      */
-    KlScene scene();
+    void show();
+
+    /**
+     * Hides the top-level window, making it invisible to the user.
+     * If the window is currently visible or displayed, invoking this method ensures
+     * it is removed from the user's view but not destroyed.
+     *
+     * This method does not permanently dispose of the window or its resources, allowing
+     * it to be shown again later through appropriate operations.
+     */
+    void hide();
 }

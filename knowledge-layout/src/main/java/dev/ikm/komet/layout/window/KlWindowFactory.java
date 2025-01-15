@@ -2,13 +2,15 @@ package dev.ikm.komet.layout.window;
 
 import dev.ikm.komet.layout.KlFactory;
 import dev.ikm.komet.layout.KlGadget;
-import dev.ikm.komet.layout.KlWidget;
-import dev.ikm.komet.layout.KlWidgetFactory;
-import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.service.PluggableService;
 import javafx.stage.Window;
 import org.controlsfx.control.action.Action;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
+
+import java.util.ServiceLoader;
 
 /**
  * Factory interface for creating instances of {@link KlWindow}.
@@ -38,38 +40,30 @@ public interface KlWindowFactory extends KlFactory<KlGadget<Window>> {
      * the type of window (e.g., JOURNAL or JAVAFX) that can be produced.
      */
     WindowType factoryWindowType();
-    /**
-     * Creates and returns an immutable list of menu items that will create new windows
-     * corresponding to the different types of windows and scenes supported by this
-     * factory.
-     *
-     * @return An {@code ImmutableList<MenuItem>} containing the constructed menu items.
-     */
-    ImmutableList<Action> createNewWindowActions();
 
     /**
-     * Creates an instance of a {@link KlWindow} using the provided widget factory.
-     * This method leverages the supplied {@link KlWidgetFactory} to configure and
+     * Creates an instance of a {@link KlWindow} using the provided whiteboard factory.
+     * This method leverages the supplied {@link KlWhiteBoardFactory} to configure and
      * construct the window, encapsulating its layout and behavior.
      *
-     * @param widgetFactory The {@link KlWidgetFactory} responsible for providing the widgets
+     * @param whiteBoardFactory The {@link KlWhiteBoardFactory} responsible for providing the widgets
      *                      and configurations to construct the {@link KlWindow}.
      * @return A new instance of {@link KlWindow} constructed using the given widget factory.
      */
-    KlWindow create(KlWidgetFactory widgetFactory);
+    KlWindow create(KlWhiteBoardFactory whiteBoardFactory);
 
     /**
-     * Creates and returns an immutable list of actions for creating new windows within
-     * the application. These actions are constructed using the specified preferences
-     * factory and scene factory, enabling configuration and management of window
-     * properties and their associated scenes.
+     * Creates a list of actions for opening new windows using the specified whiteboard factories.
+     * The generated actions allow users to instantiate new windows with configurations
+     * provided by the given factories.
      *
-     * @param sceneFactory       The {@link KlSceneFactory} responsible for generating
-     *                           scenes to be associated with the created windows.
-     * @return An {@code ImmutableList<Action>} representing the actions
-     *         that create and configure new windows.
+     * @param whiteBoardFactories Varargs parameter of {@link KlWhiteBoardFactory} instances,
+     *                            each responsible for generating a specific type of whiteboard
+     *                            to be included in a new window.
+     * @return An {@code ImmutableList<Action>} containing actions for creating new windows
+     *         with whiteboards from the specified factories.
      */
-    ImmutableList<Action> createNewWindowActions(KlSceneFactory sceneFactory);
+    ImmutableList<Action> createNewWindowActions(KlWhiteBoardFactory... whiteBoardFactories);
 
     /**
      * Restores a previously configured instance of {@link KlWindow} using the provided preferences.
@@ -85,12 +79,23 @@ public interface KlWindowFactory extends KlFactory<KlGadget<Window>> {
     KlWindow restore(KometPreferences preferences);
 
     /**
-     * Creates and returns an immutable list of actions that can be used to restore
-     * previously saved and configured windows. These actions allow for the recreation
-     * of window states based on stored preferences or configurations.
+     * Creates and returns an immutable list of actions that can be used to create new windows
+     * from the discovered {@link KlWhiteBoardFactory} providers.
      *
      * @return An {@code ImmutableList<Action>} representing actions for restoring windows.
      */
     ImmutableList<Action> createRestoreWindowActions();
+
+    default ImmutableList<Action> createNewWindowActionsByDiscovery() {
+        ServiceLoader<KlWhiteBoardFactory> serviceLoader = PluggableService.load(KlWhiteBoardFactory.class);
+        MutableList<Action> actions = Lists.mutable.empty();
+        serviceLoader.forEach(whiteBoardFactory ->
+                actions.add(new Action("New " + whiteBoardFactory.name(), event -> {
+                    KlWindow window = this.create(whiteBoardFactory);
+                    window.show();
+                })));
+        return actions.toImmutable();
+    }
+
 
 }
