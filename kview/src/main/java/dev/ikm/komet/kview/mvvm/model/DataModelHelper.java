@@ -15,6 +15,29 @@
  */
 package dev.ikm.komet.kview.mvvm.model;
 
+import static dev.ikm.tinkar.terms.TinkarTerm.ARRAY_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.CONCEPT_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.DIGRAPH_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.DITREE_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.INSTANT_LITERAL;
+import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.LONG;
+import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.SEMANTIC_FIELD_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
+import static dev.ikm.tinkar.terms.TinkarTerm.UUID_DATA_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.VERTEX_FIELD;
+import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -27,29 +50,32 @@ import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
+import dev.ikm.tinkar.entity.FieldRecord;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.RecordListBuilder;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.SemanticRecord;
+import dev.ikm.tinkar.entity.SemanticVersionRecord;
+import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.terms.EntityProxy;
-
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 /**
  * utitity class for accessing and modifying common data operations
@@ -266,5 +292,20 @@ public class DataModelHelper {
             );
         }
         return fieldRecords;
+    }
+
+    /**
+     *
+     * @param viewProperties viewProperties cannot be null. Required to get the calculator.
+     * @param semanticEntityVersionLatest
+     * @param fieldRecord
+     * @return the observable field
+     * @param <T>
+     */
+    public static <T> ObservableField<T> obtainObservableField(ViewProperties viewProperties, Latest<SemanticEntityVersion> semanticEntityVersionLatest, FieldRecord<Object> fieldRecord){
+        ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
+        ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
+        ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
+        return observableFields.get(fieldRecord.fieldIndex());
     }
 }
