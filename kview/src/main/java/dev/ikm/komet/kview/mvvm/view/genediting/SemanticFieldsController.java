@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import dev.ikm.komet.framework.observable.ObservableField;
@@ -107,7 +108,7 @@ public class SemanticFieldsController {
                 node.setUserData(klField.field());
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
                 KlStringFieldFactory stringFieldTextFactory = new KlStringFieldFactory();
-                ObservableField<String> stringObservableField = GenEditingHelper.getObservableFields(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                ObservableField<String> stringObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 node = stringFieldTextFactory.create(stringObservableField, getViewProperties().nodeView(), true).klWidget();
                 node.setUserData(stringObservableField);
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
@@ -115,7 +116,7 @@ public class SemanticFieldsController {
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
                 node = rowf.createReadOnlyDiTree(getViewProperties(), fieldRecord);
             }else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.FLOAT.nid()) {
-                ObservableField<Float> floatObservableField = GenEditingHelper.getObservableFields(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                ObservableField<Float> floatObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
                 node = klFloatFieldFactory.create(floatObservableField, getViewProperties().nodeView(), true).klWidget();
                 node.setUserData(floatObservableField);

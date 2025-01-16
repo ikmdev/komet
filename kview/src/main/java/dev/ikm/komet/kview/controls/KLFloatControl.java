@@ -46,8 +46,8 @@ public class KLFloatControl extends Control {
     }
 
     /**
-     * A Double property that holds a double value, between
-     * {@link Double#MIN_VALUE} and {@link Double#MAX_VALUE},
+     * A Float property that holds a float value, between
+     * {@link Float#MIN_VALUE} and {@link Float#MAX_VALUE},
      * or null if no value is set.
      */
     private final ObjectProperty<Float> valueProperty = new SimpleObjectProperty<>(this, "value");

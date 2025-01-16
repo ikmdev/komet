@@ -6,6 +6,7 @@ import dev.ikm.komet.kview.controls.KLFloatControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyStringControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.component.version.field.KlFloatField;
+import javafx.beans.binding.ObjectBinding;
 import javafx.scene.Node;
 
 public class DefaultKlFloatField extends BaseDefaultKlField<Float> implements KlFloatField {
@@ -21,7 +22,16 @@ public class DefaultKlFloatField extends BaseDefaultKlField<Float> implements Kl
             node = floatControl;
         } else {
             KLReadOnlyStringControl readOnlyStringControl = new KLReadOnlyStringControl();
-            readOnlyStringControl.setText(String.valueOf(observableFloatField.value()));
+
+            readOnlyStringControl.textProperty().bind(new ObjectBinding<>() {
+                {super.bind(observableFloatField.valueProperty());}
+                @Override
+                protected String computeValue() {
+                    return String.valueOf(observableFloatField.value());
+                }
+            });
+//
+//            readOnlyStringControl.setText(String.valueOf(observableFloatField.value()));
             readOnlyStringControl.setTitle(getTitle());
             node = readOnlyStringControl;
         }

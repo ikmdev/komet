@@ -25,6 +25,7 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
@@ -327,7 +328,7 @@ public class GenEditingDetailsController {
                 // load a read-only component
                 readOnlyNode = rowf.createReadOnlyComponent(getViewProperties(), fieldRecord);
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
-                ObservableField<String> observableFields = GenEditingHelper.getObservableFields(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                ObservableField<String> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlStringFieldFactory klStringFieldFactory = new KlStringFieldFactory();
                 readOnlyNode = klStringFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
@@ -335,7 +336,7 @@ public class GenEditingDetailsController {
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
                 readOnlyNode = rowf.createReadOnlyDiTree(getViewProperties(), fieldRecord);
             } else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid()) {
-                ObservableField<Float> observableFields = GenEditingHelper.getObservableFields(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                ObservableField<Float> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
                 readOnlyNode = klFloatFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
             }
