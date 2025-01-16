@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -114,8 +115,13 @@ public class WindowSupport {
     public WindowSupport(final Pane parentNode, Pane desktopPane, Node... draggableNodes) {
         this.pane = parentNode;
         this.desktopPane = desktopPane;
-        this.draggableNodes = draggableNodes;
-
+        if (draggableNodes == null || draggableNodes.length == 0) {
+            Set<Node> draggableToolbar = parentNode.lookupAll(".draggable-region");
+            final Node[] draggables = new Node[draggableToolbar.size()];
+            this.draggableNodes = draggableToolbar.toArray(draggables);
+        } else {
+            this.draggableNodes = draggableNodes;
+        }
         // Initialize Consumers after 'pane' is assigned
         this.defaultPositionWindowPress = (mouseEvent -> {
             anchorPtProperty.set(new Point2D(mouseEvent.getSceneX(), mouseEvent.getSceneY()));
@@ -141,7 +147,7 @@ public class WindowSupport {
 
         parentNode.addEventFilter(MouseEvent.MOUSE_PRESSED, this::handleParentNodeMousePressedFilter);
 
-        for (Node draggableNode : draggableNodes) {
+        for (Node draggableNode : this.draggableNodes) {
             draggableNode.addEventHandler(MouseEvent.MOUSE_PRESSED, this::handlePositionWindowMousePressed);
             draggableNode.addEventHandler(MouseEvent.MOUSE_DRAGGED, this::handlePositionWindowMouseDragged);
             draggableNode.addEventHandler(MouseEvent.MOUSE_RELEASED, this::handlePositionWindowMouseReleased);
