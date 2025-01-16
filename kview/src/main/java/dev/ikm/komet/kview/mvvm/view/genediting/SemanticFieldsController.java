@@ -25,6 +25,7 @@ import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klfields.editable.EditableKLFieldFactory;
+import dev.ikm.komet.kview.klfields.integerField.KlIntegerFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.layout.component.version.field.KlField;
@@ -102,7 +103,6 @@ public class SemanticFieldsController {
         Consumer<FieldRecord<Object>> updateUIConsumer = (fieldRecord) -> {
 
             Node node = null;
-            System.out.println("---> dataType() " + fieldRecord.dataType().description());
             int dataTypeNid = fieldRecord.dataType().nid();
             if (dataTypeNid == TinkarTerm.COMPONENT_FIELD.nid()) {
                 // load a read-only component
@@ -110,23 +110,19 @@ public class SemanticFieldsController {
                 node = klField.klWidget();
                 node.setUserData(klField.field());
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
-
                 KlStringFieldFactory stringFieldTextFactory = new KlStringFieldFactory();
-                ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
-                ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-                ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
-                ObservableViewBase observableViewBase = getViewProperties().nodeView();
-
-                ObservableField<String> stringObservableField =observableFields.get(fieldRecord.fieldIndex());
-
-                //StringField klWidget returns the widget container which is an HBox with a hard coded label
-                node = stringFieldTextFactory.create(stringObservableField, observableViewBase, true).klWidget();
-
+                ObservableField<String> stringObservableField = GenEditingHelper.getObservableFields(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                node = stringFieldTextFactory.create(stringObservableField, getViewProperties().nodeView(), true).klWidget();
                 node.setUserData(stringObservableField);
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 node = rowf.createReadOnlyComponentSet(getViewProperties(), fieldRecord);
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
                 node = rowf.createReadOnlyDiTree(getViewProperties(), fieldRecord);
+            }else if (dataTypeNid == TinkarTerm.INTEGER_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.INTEGER_FIELD.nid()) {
+                ObservableField<Integer> integerObservableField = GenEditingHelper.getObservableFields(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
+                node = klIntegerFieldFactory.create(integerObservableField, getViewProperties().nodeView(), true).klWidget();
+                node.setUserData(integerObservableField);
             }
 
             // Add to VBox
@@ -135,7 +131,6 @@ public class SemanticFieldsController {
                 // Add separator
                 editFieldsVBox.getChildren().add(createSeparator());
             }
-            System.out.println("field record: " + fieldRecord);
         };
         rowf.setupSemanticDetailsUI(getViewProperties(), semanticEntityVersionLatest, updateUIConsumer);
     }
