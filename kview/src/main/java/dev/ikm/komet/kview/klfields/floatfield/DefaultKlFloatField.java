@@ -30,8 +30,6 @@ public class DefaultKlFloatField extends BaseDefaultKlField<Float> implements Kl
                     return String.valueOf(observableFloatField.value());
                 }
             });
-//
-//            readOnlyStringControl.setText(String.valueOf(observableFloatField.value()));
             readOnlyStringControl.setTitle(getTitle());
             node = readOnlyStringControl;
         }

@@ -21,7 +21,7 @@ public class DefaultKlStringField extends BaseDefaultKlField<String> implements 
             node = stringControl;
         } else {
             KLReadOnlyStringControl readOnlyStringControl = new KLReadOnlyStringControl();
-            readOnlyStringControl.setText(observableStringField.value());
+            readOnlyStringControl.textProperty().bindBidirectional(observableStringField.valueProperty());
             readOnlyStringControl.setTitle(getTitle());
             node = readOnlyStringControl;
         }
