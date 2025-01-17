@@ -23,6 +23,7 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klfields.editable.EditableKLFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
+import dev.ikm.komet.kview.klfields.integerField.KlIntegerFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.layout.component.version.field.KlField;
@@ -99,7 +100,6 @@ public class SemanticFieldsController {
         Consumer<FieldRecord<Object>> updateUIConsumer = (fieldRecord) -> {
 
             Node node = null;
-            System.out.println("---> dataType() " + fieldRecord.dataType().description());
             int dataTypeNid = fieldRecord.dataType().nid();
             if (dataTypeNid == TinkarTerm.COMPONENT_FIELD.nid()) {
                 // load a read-only component
@@ -120,6 +120,11 @@ public class SemanticFieldsController {
                 KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
                 node = klFloatFieldFactory.create(floatObservableField, getViewProperties().nodeView(), true).klWidget();
                 node.setUserData(floatObservableField);
+            }else if (dataTypeNid == TinkarTerm.INTEGER_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.INTEGER_FIELD.nid()) {
+                ObservableField<Integer> integerObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
+                node = klIntegerFieldFactory.create(integerObservableField, getViewProperties().nodeView(), true).klWidget();
+                node.setUserData(integerObservableField);
             }
             // Add to VBox
             if (node != null) {
