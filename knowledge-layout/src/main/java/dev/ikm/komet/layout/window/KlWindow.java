@@ -1,7 +1,6 @@
 package dev.ikm.komet.layout.window;
 
 import dev.ikm.komet.layout.KlGadget;
-import dev.ikm.komet.layout.preferences.KlUniversalPreferences;
 import javafx.scene.Parent;
 import javafx.stage.Window;
 
@@ -10,7 +9,7 @@ import javafx.stage.Window;
  * The window may be a JavaFx Window or Stage, or some other window equivalent widget
  * such as is provided within the journal view. All KlWindows have a single Scene.
  */
-public interface KlWindow extends KlUniversalPreferences, KlGadget<Window> {
+public interface KlWindow extends KlGadget<Window> {
     /**
      * Retrieves the root node of the scene.
      * The root node serves as the top-most parent of all visual elements in the scene's hierarchy.

@@ -1,10 +1,14 @@
 package dev.ikm.komet.layout;
 
-import dev.ikm.komet.layout.preferences.KlUniversalPreferences;
+import dev.ikm.komet.layout.component.KlPane;
+import dev.ikm.komet.layout.component.multi.KlMultiComponentPane;
+import dev.ikm.komet.layout.component.multi.KlMultiVersionPane;
+import dev.ikm.komet.layout.component.version.field.KlField;
+import dev.ikm.komet.layout.container.KlContainer;
+import dev.ikm.komet.layout.coordinate.KlCoordinate;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import javafx.collections.ObservableMap;
 import javafx.geometry.*;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -20,7 +24,7 @@ import java.util.UUID;
  * @param <T> the type of {@code Node} that this widget extends or encapsulates.
  */
 
-public interface KlWidget<T extends Parent> extends KlGadget<T>, KlUniversalPreferences {
+public interface KlWidget<T extends Parent> extends KlGadget<T> {
 
     /**
      * Retrieves the widget representation for this KlWidget.
