@@ -1,9 +1,7 @@
 package dev.ikm.komet.layout.window;
 
 import dev.ikm.komet.layout.KlGadget;
-import dev.ikm.komet.layout.preferences.KlUniversalPreferences;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 
 /**
  * Represents a Knowledge Layout (KL) Scene, serving as a part of the broader layout framework.
@@ -17,7 +15,7 @@ import javafx.scene.Scene;
  * Methods defined in this interface allow integration with the JavaFX framework, such as
  * retrieving the root node of the scene and accessing the entire JavaFX Scene instance.
  */
-public interface KlWhiteBoard extends KlUniversalPreferences, KlGadget<KlWhiteBoard> {
+public interface KlWhiteBoard extends KlGadget<KlWhiteBoard> {
     /**
      * Retrieves the root node of the whiteboard.
      * The root node serves as the top-most parent of all visual elements in the whiteboard hierarchy.
