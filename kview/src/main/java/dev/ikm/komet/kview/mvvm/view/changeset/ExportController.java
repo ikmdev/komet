@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.changeset;
 
+import com.jpro.webapi.WebAPI;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -25,11 +26,9 @@ import dev.ikm.komet.kview.fxutils.ComboBoxHelper;
 import dev.ikm.komet.kview.mvvm.viewmodel.ExportViewModel;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.EntityCountSummary;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.export.ExportEntitiesToProtobufFile;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.InvalidationListener;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -48,13 +47,14 @@ import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.events.ExportDateTimePopOverEvent.*;
@@ -230,8 +230,7 @@ public class ExportController {
 
     @FXML
     private void handleCancelButtonEvent(ActionEvent cancelEvent) {
-        Stage stage = (Stage) cancelButton.getScene().getWindow();
-        stage.close();
+        closeDialog();
     }
 
     /**
@@ -268,9 +267,7 @@ public class ExportController {
             //Making sure the zip is the only thing that is zipped up
             ExtensionFilter zipExtensionFilter = new ExtensionFilter("Zip Files", ".zip");
             fileSavePicker.getExtensionFilters().addAll(zipExtensionFilter);
-            String progressTitle = CUSTOM_RANGE.equals(dateChoice) ?
-                    "Export Date Range: %s to %s".formatted(dateTimeFromLabel.getText(), dateTimeToLabel.getText())  : "Export All Data";
-            performChangeSetExport(fileSavePicker, fromDate, toDate, progressTitle);
+            performChangeSetExport(fileSavePicker, fromDate, toDate);
         } else {
             AlertStreams.dispatchToRoot(new UnsupportedOperationException("Export Type not supported"));
         }
@@ -282,9 +279,8 @@ public class ExportController {
      * @param fileSavePicker the file save picker to select the export file
      * @param fromDate the start date of the export range in epoch milliseconds
      * @param toDate the end date of the export range in epoch milliseconds
-     * @param progressTitle the title for the progress indicator
      */
-    private void performChangeSetExport(FileSavePicker fileSavePicker, long fromDate, long toDate, String progressTitle) {
+    private void performChangeSetExport(final FileSavePicker fileSavePicker, final long fromDate, final long toDate) {
         fileSavePicker.setOnFileSelected(exportFile -> {
             if (exportFile == null) {
                 LOG.warn("Export file is null");
@@ -292,53 +288,25 @@ public class ExportController {
                 return CompletableFuture.failedFuture(new IllegalArgumentException("Export file cannot be null"));
             }
 
-            CompletableFuture<EntityCountSummary> exportFuture = EntityService.get()
-                    .temporalExport(exportFile, fromDate, toDate);
-            notifyProgressIndicator(exportFuture, progressTitle);
+            ExportEntitiesToProtobufFile exportEntities = new ExportEntitiesToProtobufFile(exportFile, fromDate, toDate);
+            Future<?> exportFuture = ProgressHelper.progress(exportEntities, "Cancel Export");
+            closeDialog();
 
-            // Close the export dialog
-            Stage stage = (Stage) exportButton.getScene().getWindow();
-            stage.close();
-
-            return exportFuture.thenAccept(entityCountSummary ->
-                            LOG.info("Export completed successfully to file {}", exportFile.getAbsolutePath()))
-                    .exceptionally(ex -> {
-                        LOG.error("Export failed", ex);
-                        AlertStreams.dispatchToRoot(new RuntimeException("Export failed", ex));
-                        return null;
-                    });
-        });
-    }
-
-    /**
-     * Notifies the progress indicator of the export operation.
-     *
-     * @param exportFuture the future representing the export operation
-     * @param title the title for the progress indicator
-     */
-    private void notifyProgressIndicator(CompletableFuture<EntityCountSummary> exportFuture, String title) {
-        Task<EntityCountSummary> javafxTask = new Task<>() {
-
-            @Override
-            protected EntityCountSummary call() throws Exception {
-                updateTitle(title);
-                updateProgress(-1.0, 1.0); // Indeterminate progress
-
-                final EntityCountSummary entityCountSummary;
+            return CompletableFuture.runAsync(() -> {
                 try {
-                    entityCountSummary = exportFuture.get();
-                    updateProgress(1.0, 1.0);
-                    updateMessage("Export completed!");
-                } catch (Exception ex) {
-                    updateMessage("Export failed!");
-                    updateProgress(0.0, 0.0);
-                    throw ex;
+                    exportFuture.get(); // Wait for the export task to complete
+                    LOG.info("Export completed successfully to file {}", exportFile);
+                } catch (CancellationException cex) {
+                    LOG.info("Export to file '{}' canceled", exportFile);
+                    deleteFile(exportFile);
+                    throw new CompletionException(cex);
+                } catch (InterruptedException | ExecutionException ex) {
+                    LOG.error("Export to file '{}' failed", exportFile);
+                    deleteFile(exportFile);
+                    throw new CompletionException(ex);
                 }
-                return entityCountSummary;
-            }
-        };
-
-        ProgressHelper.progress(javafxTask, "Cancel Export");
+            });
+        });
     }
 
     private long transformStringInLocalDateTimeToEpochMillis(String localDateTimeFormat) {
@@ -383,5 +351,30 @@ public class ExportController {
 
     private boolean isFormPopulated() {
         return (!exportOptions.getSelectionModel().isEmpty());
+    }
+
+    /**
+     * Closes the export dialog window.
+     */
+    private void closeDialog() {
+        Stage stage = (Stage) cancelButton.getScene().getWindow();
+        if (stage != null) {
+            stage.close();
+        }
+    }
+
+    /**
+     * Deletes the specified export file if the export operation fails or is canceled.
+     * This ensures that incomplete or corrupted files are not left behind.
+     *
+     * <p>Note: When running on the Web with JPro, file deletion is managed by
+     * {@link FileSavePicker}, and this method will not perform the deletion.</p>
+     *
+     * @param exportFile the export file to delete
+     */
+    private void deleteFile(File exportFile) {
+        if (!WebAPI.isBrowser() && exportFile.exists() && exportFile.delete()) {
+            LOG.info("Export file '{}' deleted", exportFile);
+        }
     }
 }
