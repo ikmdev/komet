@@ -100,7 +100,6 @@ public class SemanticFieldsController {
         Consumer<FieldRecord<Object>> updateUIConsumer = (fieldRecord) -> {
 
             Node node = null;
-            System.out.println("---> dataType() " + fieldRecord.dataType().description());
             int dataTypeNid = fieldRecord.dataType().nid();
             if (dataTypeNid == TinkarTerm.COMPONENT_FIELD.nid()) {
                 // load a read-only component
