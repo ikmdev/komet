@@ -25,6 +25,7 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
@@ -40,13 +41,10 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
-import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
-import dev.ikm.komet.framework.observable.ObservableSemantic;
-import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
-import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
+import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
@@ -88,7 +86,6 @@ import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
-import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -317,12 +314,8 @@ public class GenEditingDetailsController {
 
     private void setupSemanticDetailsUI(Latest<SemanticEntityVersion> semanticEntityVersionLatest) {
 
-
         //FIXME use a different factory
         ReadOnlyKLFieldFactory rowf = ReadOnlyKLFieldFactory.getInstance();
-
-//        ServiceLoader<StringFieldLabelFactory> serviceLoader = PluggableService.load(StringFieldLabelFactory.class);
-//        StringFieldLabelFactory stringFieldLabelFactory = serviceLoader.findFirst().get();
 
         Consumer<FieldRecord<Object>> updateUIConsumer = (fieldRecord) -> {
 
@@ -335,28 +328,23 @@ public class GenEditingDetailsController {
                 // load a read-only component
                 readOnlyNode = rowf.createReadOnlyComponent(getViewProperties(), fieldRecord);
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
-                //readOnlyNode = rowf.createStringField(fieldRecord).klWidget();
-                ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
-                ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-                ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
-                ObservableViewBase observableViewBase = getViewProperties().nodeView();
-
-                // need ObservableField<String>, ObservableView
+                ObservableField<String> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlStringFieldFactory klStringFieldFactory = new KlStringFieldFactory();
-                readOnlyNode = klStringFieldFactory.create(observableFields.get(fieldRecord.fieldIndex()), observableViewBase, false).klWidget();
+                readOnlyNode = klStringFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 readOnlyNode = rowf.createReadOnlyComponentSet(getViewProperties(), fieldRecord);
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
                 readOnlyNode = rowf.createReadOnlyDiTree(getViewProperties(), fieldRecord);
             } else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid()) {
-
+                ObservableField<Float> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
+                readOnlyNode = klFloatFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
             }
 
             // Add to VBox
             if (readOnlyNode != null) {
                 semanticDetailsVBox.getChildren().add(readOnlyNode);
             }
-            System.out.println("field record: " + fieldRecord);
         };
         rowf.setupSemanticDetailsUI(getViewProperties(), semanticEntityVersionLatest, updateUIConsumer);
     }
