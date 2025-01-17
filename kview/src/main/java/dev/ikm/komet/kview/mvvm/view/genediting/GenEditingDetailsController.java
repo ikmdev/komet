@@ -45,6 +45,7 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
+import dev.ikm.komet.kview.klfields.integerField.KlIntegerFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
@@ -339,6 +340,10 @@ public class GenEditingDetailsController {
                 ObservableField<Float> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
                 readOnlyNode = klFloatFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
+            }else if (dataTypeNid == TinkarTerm.INTEGER_FIELD.nid()) {
+                ObservableField<Integer> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
+                readOnlyNode = klIntegerFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
             }
 
             // Add to VBox
