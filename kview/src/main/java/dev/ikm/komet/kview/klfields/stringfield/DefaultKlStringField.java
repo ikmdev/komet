@@ -13,19 +13,19 @@ public class DefaultKlStringField extends BaseDefaultKlField<String> implements 
     public DefaultKlStringField(ObservableField<String> observableStringField, ObservableView observableView, boolean isEditable) {
         super(observableStringField, observableView, isEditable);
 
-        Node klWidget;
+        Node node;
         if (isEditable) {
             KLStringControl stringControl = new KLStringControl();
             stringControl.textProperty().bindBidirectional(observableStringField.valueProperty());
             stringControl.setTitle(getTitle());
-            klWidget = stringControl;
+            node = stringControl;
         } else {
             KLReadOnlyStringControl readOnlyStringControl = new KLReadOnlyStringControl();
-            readOnlyStringControl.setText(observableStringField.value());
+            readOnlyStringControl.textProperty().bindBidirectional(observableStringField.valueProperty());
             readOnlyStringControl.setTitle(getTitle());
-            klWidget = readOnlyStringControl;
+            node = readOnlyStringControl;
         }
 
-        setKlWidget(klWidget);
+        setKlWidget(node);
     }
 }
