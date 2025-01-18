@@ -31,7 +31,16 @@ public interface KlWindowFactory extends KlFactory<KlGadget<Window>> {
         JAVAFX
     }
 
-    String PREFERENCES_ROOT = "KlWindowPreferences";
+    /**
+     * The root location for the preferences for active windows within the context of the application.
+     */
+    String ACTIVE_WINDOWS = "ActiveWindows";
+
+    /**
+     * The root location for the preferences for layouts that can be used
+     * within the application. 
+     */
+    String WINDOW_LAYOUTS = "WindowLayouts";
 
     /**
      * Retrieves the type of window that this factory is designed to create.
