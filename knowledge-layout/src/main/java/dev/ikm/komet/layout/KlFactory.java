@@ -30,7 +30,7 @@ public interface KlFactory<T extends KlGadget> {
      * @return A Node object representing the visual icon of the layout palette.
      */
     default Node layoutPaletteIcon() {
-        Label paletteIcon = new Label(klName());
+        Label paletteIcon = new Label(klGadgetName());
         Tooltip.install(paletteIcon, new Tooltip(klDescription()));
         return paletteIcon;
     }
@@ -58,7 +58,7 @@ public interface KlFactory<T extends KlGadget> {
      *
      * @return A string representing the name of the widget.
      */
-    default String klName() {
+    default String klGadgetName() {
         return camelCaseToWords(this.klImplementationClass().getSimpleName());
     }
 

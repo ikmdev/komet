@@ -91,7 +91,7 @@ public class KlPreferencesFactory implements Supplier<KometPreferences>{
      */
     public static KometPreferences createWindowPreferences(Class<? extends KlWindow> implementationClass) {
         KometPreferences configurationPreferences = PreferencesService.configurationPreferences();
-        KometPreferences windowPreferencesRoot = configurationPreferences.node(KlWindowFactory.PREFERENCES_ROOT);
+        KometPreferences windowPreferencesRoot = configurationPreferences.node(KlWindowFactory.ACTIVE_WINDOWS);
         return createSequentiallyUniquePreferences(windowPreferencesRoot, implementationClass);
     }
 

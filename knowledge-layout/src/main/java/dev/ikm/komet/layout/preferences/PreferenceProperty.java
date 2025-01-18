@@ -1,84 +1,103 @@
 package dev.ikm.komet.layout.preferences;
 
+import dev.ikm.tinkar.common.bind.ClassConceptBinding;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.Property;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 
-public class PreferenceProperty<T> implements Property<T> {
-    final Property<T> property;
+public abstract class PreferenceProperty<T, I extends Property<T>> implements Property<T>, ClassConceptBinding {
+    public static final String INITIAL_STRING_VALUE = "uninitialized";
+    public static final boolean INITIAL_BOOLEAN_VALUE = false;
+    public static final int INITIAL_INTEGER_VALUE = Integer.MIN_VALUE;
 
-    private PreferenceProperty(Property<T> property) {
-        this.property = property;
+    final I implInstance;
+    final ClassConceptBinding binding;
+
+    protected PreferenceProperty(I implInstance, ClassConceptBinding binding) {
+        this.implInstance = implInstance;
+        this.binding = binding;
     }
 
-    public static Property<String> stringProperty() {
-        PreferenceProperty stringProperty = new PreferenceProperty<>(new SimpleStringProperty());
-        return stringProperty;
+    public final I impl() {
+        return implInstance;
+    }
+
+    public static PreferencePropertyString stringProp(ClassConceptBinding binding) {
+        return PreferencePropertyString.create(binding);
+    }
+
+    public static PreferencePropertyInteger integerProp(ClassConceptBinding binding) {
+        return PreferencePropertyInteger.create(binding);
+    }
+
+    public static PreferencePropertyBoolean booleanProp(ClassConceptBinding binding) {
+        return PreferencePropertyBoolean.create(binding);
     }
 
     @Override
-    public void bind(javafx.beans.value.ObservableValue<? extends T> observable) {
-        property.bind(observable);
+    public void bind(ObservableValue<? extends T> observable) {
+        this.implInstance.bind(observable);
     }
 
     @Override
     public void unbind() {
-        property.unbind();
+        this.implInstance.unbind();
     }
 
     @Override
     public boolean isBound() {
-        return property.isBound();
+        return this.implInstance.isBound();
     }
 
     @Override
     public void setValue(T value) {
-        property.setValue(value);
+        this.implInstance.setValue(value);
     }
 
     @Override
     public void addListener(ChangeListener<? super T> listener) {
-        property.addListener(listener);
+        this.implInstance.addListener(listener);
     }
 
     @Override
     public void removeListener(ChangeListener<? super T> listener) {
-        property.removeListener(listener);
+        this.implInstance.removeListener(listener);
     }
 
     @Override
     public T getValue() {
-        return property.getValue();
+        return this.implInstance.getValue();
     }
 
     @Override
     public void bindBidirectional(Property<T> other) {
-        property.bindBidirectional(other);
+        this.implInstance.bindBidirectional(other);
     }
 
     @Override
     public void unbindBidirectional(Property<T> other) {
-        property.unbindBidirectional(other);
+        this.implInstance.unbindBidirectional(other);
     }
 
     @Override
     public Object getBean() {
-        return property.getBean();
+        return this.implInstance.getBean();
     }
 
     @Override
     public String getName() {
-        return property.getName();
+        // TODO make this work to get right name and dialect with view coordinate.
+        return this.binding.regularNames().get(0);
     }
 
     @Override
     public void addListener(InvalidationListener listener) {
-        property.addListener(listener);
+        this.implInstance.addListener(listener);
     }
 
     @Override
     public void removeListener(InvalidationListener listener) {
-        property.removeListener(listener);
+        this.implInstance.removeListener(listener);
     }
 }
