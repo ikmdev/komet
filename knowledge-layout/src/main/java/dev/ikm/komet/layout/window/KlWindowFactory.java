@@ -17,7 +17,7 @@ import java.util.ServiceLoader;
  * Extends the {@link KlFactory} interface to provide specific
  * functionality for producing top-level windows.
  */
-public interface KlWindowFactory extends KlFactory<KlGadget<Window>> {
+public interface KlWindowFactory<W extends Window> extends KlFactory<KlGadget<W>> {
     /**
      * Represents the types of windows that can be created in the Komet application.
      * This enumeration is part of the {@link KlWindowFactory} and categorizes the
@@ -85,7 +85,7 @@ public interface KlWindowFactory extends KlFactory<KlGadget<Window>> {
      * @return A restored {@link KlWindow} instance configured with the provided preferences.
      */
     @Override
-    KlWindow restore(KometPreferences preferences);
+    KlGadget<W> restore(KometPreferences preferences);
 
     /**
      * Creates and returns an immutable list of actions that can be used to create new windows

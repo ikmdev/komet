@@ -10,7 +10,7 @@ import javafx.stage.Window;
  * The window may be a JavaFx Window or Stage, or some other window equivalent widget
  * such as is provided within the journal view. All KlWindows have a single Scene.
  */
-public interface KlWindow extends KlGadget<Window> {
+public interface KlWindow<W extends Window> extends KlGadget<W> {
 
     /**
      * Enumerates preference keys for managing the properties and default configuration states

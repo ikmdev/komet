@@ -87,6 +87,17 @@ public interface KlGadget<T> {
     T klGadget();
 
     /**
+     * Retrieves the concrete class type of the {@link KlFactory} used to create
+     * the current {@link KlGadget} implementation.
+     *
+     * @return a {@link Class} object that represents the class type extending {@link KlFactory},
+     *         which is responsible for producing the associated {@link KlGadget}.
+     */
+    default Class<? extends KlFactory> factoryClass() {
+        throw new UnsupportedOperationException("Please implement on the concrete class");
+    }
+
+    /**
      * Retrieves a {@code ViewCalculator} instance for the context associated with the implementing class.
      * The {@code ViewCalculator} allows for the evaluation and manipulation of various view and coordinate
      * computations within the associated knowledge layout system.
