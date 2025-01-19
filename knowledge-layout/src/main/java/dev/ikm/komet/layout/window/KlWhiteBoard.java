@@ -2,7 +2,6 @@ package dev.ikm.komet.layout.window;
 
 import dev.ikm.komet.layout.KlGadget;
 import dev.ikm.komet.layout.preferences.PropertyWithDefault;
-import javafx.scene.Parent;
 import javafx.scene.layout.BorderPane;
 
 /**
@@ -64,5 +63,5 @@ public interface KlWhiteBoard extends KlGadget<KlWhiteBoard> {
      *
      * @return The {@link BorderPane} object representing the root node of the scene.
      */
-    BorderPane getRoot();
+    BorderPane root();
 }

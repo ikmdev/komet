@@ -2,7 +2,6 @@ package dev.ikm.komet.layout.window;
 
 import dev.ikm.komet.layout.KlGadget;
 import dev.ikm.komet.layout.preferences.PropertyWithDefault;
-import dev.ikm.tinkar.common.bind.ClassConceptBinding;
 import javafx.scene.Parent;
 import javafx.stage.Window;
 
@@ -59,7 +58,7 @@ public interface KlWindow extends KlGadget<Window> {
      *
      * @return The {@link Parent} object representing the root node of the scene.
      */
-    Parent getRoot();
+    Parent root();
 
     /**
      * Displays the top-level window, making it visible to the user.

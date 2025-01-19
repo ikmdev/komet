@@ -1,5 +1,6 @@
 package dev.ikm.komet.layout.preferences;
 
+import dev.ikm.komet.layout.KlGadget;
 import dev.ikm.tinkar.common.bind.ClassConceptBinding;
 import javafx.beans.property.SimpleStringProperty;
 
@@ -11,23 +12,24 @@ import javafx.beans.property.SimpleStringProperty;
 public class PreferencePropertyString extends PreferenceProperty<String, SimpleStringProperty> {
 
     /**
-     * Constructs a new {@code PreferencePropertyString} with the given {@code ClassConceptBinding}.
-     * This initializes the property with a default string value.
+     * Constructs a new {@code PreferencePropertyString} instance.
      *
-     * @param binding the {@code ClassConceptBinding} used to bind the property
+     * @param gadget  the {@code KlGadget} instance associated with this preference property.
+     * @param binding the {@code ClassConceptBinding} used to define bindings and initialize the property.
      */
-    protected PreferencePropertyString(ClassConceptBinding binding) {
-        super(new SimpleStringProperty(PreferenceProperty.INITIAL_STRING_VALUE), binding);
+    protected PreferencePropertyString(KlGadget gadget, ClassConceptBinding binding) {
+        super(new SimpleStringProperty(gadget, binding.fullyQualifiedNames().getAny(), PreferenceProperty.INITIAL_STRING_VALUE), binding);
     }
 
     /**
-     * Creates a new instance of {@code PreferencePropertyString} using the given {@code ClassConceptBinding}.
+     * Creates and returns a new instance of {@code PreferencePropertyString}.
      *
-     * @param binding the {@code ClassConceptBinding} used to initialize the instance
-     * @return a new instance of {@code PreferencePropertyString}
+     * @param gadget  the {@code KlGadget} instance associated with the preference property.
+     * @param binding the {@code ClassConceptBinding} used to define bindings and initialize the property.
+     * @return a new instance of {@code PreferencePropertyString}.
      */
-    protected static PreferencePropertyString create(ClassConceptBinding binding) {
-        return new PreferencePropertyString(binding);
+    protected static PreferencePropertyString create(KlGadget gadget, ClassConceptBinding binding) {
+        return new PreferencePropertyString(gadget, binding);
     }
 
 }
