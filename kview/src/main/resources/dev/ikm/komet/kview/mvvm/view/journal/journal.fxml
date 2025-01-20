@@ -8,10 +8,8 @@
 <?import javafx.scene.control.ContextMenu?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -21,6 +19,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.shape.SVGPath?>
+<?import dev.ikm.komet.kview.controls.KLWorkspace?>
 
 <BorderPane fx:id="journalBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.journal.JournalController">
    <center>
@@ -135,11 +134,7 @@
                         </HBox>
                      </top>
                      <center>
-                        <ScrollPane fx:id="desktopSurfaceScrollPane" focusTraversable="true" styleClass="desktop-scroll-pane">
-                           <AnchorPane fx:id="desktopSurfacePane" maxHeight="1800.0" maxWidth="2800.0" prefHeight="1800.0" prefWidth="2800.0" styleClass="desktop-area">
-                              <Region fx:id="desktopDropRegion" layoutX="24.0" layoutY="24.0" mouseTransparent="true" styleClass="desktop-drop-region" />
-                           </AnchorPane>
-                        </ScrollPane>
+                        <KLWorkspace fx:id="workspace" focusTraversable="true"/>
                      </center>
                   </BorderPane>
                </center>
