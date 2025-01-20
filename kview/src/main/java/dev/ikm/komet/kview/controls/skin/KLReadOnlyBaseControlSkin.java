@@ -4,6 +4,7 @@ import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KometIcon;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.binding.StringBinding;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -28,7 +29,20 @@ public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseControl>
     public KLReadOnlyBaseControlSkin(T control) {
         super(control);
 
-        titleLabel.textProperty().bind(control.titleProperty());
+        titleLabel.textProperty().bind(new StringBinding() {
+            {
+                super.bind(control.titleProperty());
+            }
+            @Override
+            protected String computeValue() {
+                String title = control.getTitle();
+                if (title != null) {
+                    return control.getTitle().toUpperCase();
+                } else {
+                    return "";
+                }
+            }
+        });
         promptTextLabel.textProperty().bind(control.promptTextProperty());
 
         control.editModeProperty().addListener(editModeChanged);

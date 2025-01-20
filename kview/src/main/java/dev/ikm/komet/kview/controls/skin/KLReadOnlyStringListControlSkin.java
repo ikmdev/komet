@@ -40,8 +40,6 @@ public class KLReadOnlyStringListControlSkin extends KLReadOnlyBaseControlSkin<K
         // CSS
         mainContainer.getStyleClass().add("main-container");
         textsContainer.getStyleClass().add("text-container");
-
-        contextMenu.getStyleClass().add("klcontext-menu");
     }
 
     private void initTexts(KLReadOnlyStringListControl control){
