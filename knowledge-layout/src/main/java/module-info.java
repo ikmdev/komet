@@ -10,7 +10,6 @@ module dev.ikm.komet.layout {
     exports dev.ikm.komet.layout.component.version;
     exports dev.ikm.komet.layout.container;
     exports dev.ikm.komet.layout.context;
-    exports dev.ikm.komet.layout.coordinate;
     exports dev.ikm.komet.layout.event;
     exports dev.ikm.komet.layout.orchestration;
     exports dev.ikm.komet.layout.orchestration.process;
