@@ -10,7 +10,7 @@ import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-public class KLReadOnlyStringControlSkin extends KLReadOnlyBaseControlSkin<KLReadOnlyDataTypeControl> {
+public class KLReadOnlyDataTypeControlSkin<T> extends KLReadOnlyBaseControlSkin<KLReadOnlyDataTypeControl<T>> {
 
     private final VBox textContainer = new VBox();
     private final Label textLabel = new Label();
@@ -18,7 +18,7 @@ public class KLReadOnlyStringControlSkin extends KLReadOnlyBaseControlSkin<KLRea
     /**
      * @param control The control for which this Skin should attach to.
      */
-    public KLReadOnlyStringControlSkin(KLReadOnlyDataTypeControl control) {
+    public KLReadOnlyDataTypeControlSkin(KLReadOnlyDataTypeControl control) {
         super(control);
 
         mainContainer.getChildren().addAll(textContainer);
