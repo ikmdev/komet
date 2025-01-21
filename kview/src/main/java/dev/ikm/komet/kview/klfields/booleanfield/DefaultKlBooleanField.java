@@ -14,12 +14,18 @@ public class DefaultKlBooleanField extends BaseDefaultKlField<Boolean> implement
         Node klWidget;
         // only editable control for boolean
 
-        KLBooleanControl booleanControl = new KLBooleanControl();
-        //TODO how do we bind the value of the radio button group to the observable boolean field?
-        //booleanControl.textProperty().bindBidirectional(observableBooleanField.valueProperty());
+        if (isEditable) {
+            KLBooleanControl booleanControl = new KLBooleanControl();
+            booleanControl.getValueProperty().bindBidirectional(observableBooleanField.valueProperty());
+            booleanControl.setTitle(getTitle());
+            klWidget = booleanControl;
+        } else {
+            //TODO no read only control...?
+            KLBooleanControl booleanControl = new KLBooleanControl();
 
-        klWidget = booleanControl;
 
+            klWidget = booleanControl;
+        }
 
         setKlWidget(klWidget);
     }

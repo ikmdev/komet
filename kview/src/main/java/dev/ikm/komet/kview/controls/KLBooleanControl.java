@@ -1,8 +1,13 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLBooleanControlSkin;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Skin;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+
 
 /**
  * <p>KLBooleanControl is a {@link RadioButton} control with a customized skin,
@@ -42,6 +47,27 @@ import javafx.scene.control.Skin;
  * item2.setToggleGroup(group);</code></pre>
  */
 public class KLBooleanControl extends RadioButton {
+
+        /**
+          * A string property that sets the title of the control, if any
+          */
+        private final StringProperty titleProperty = new SimpleStringProperty(this, "title");
+        public final StringProperty titleProperty() {
+             return titleProperty;
+        }
+        public final String getTitle() {
+             return titleProperty.get();
+        }
+        public final void setTitle(String value) {
+           titleProperty.set(value);
+        }
+
+        private final BooleanProperty valueProperty = new SimpleBooleanProperty(this, "false");
+
+        public final BooleanProperty getValueProperty() {
+            return valueProperty;
+        }
+
 
     /**
      * Creates a KLBooleanControl with an empty string for its label.
