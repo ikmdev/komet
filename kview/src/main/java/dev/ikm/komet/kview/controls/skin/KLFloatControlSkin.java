@@ -10,7 +10,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.util.Duration;
 import javafx.util.Subscription;
-import javafx.util.converter.DoubleStringConverter;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
@@ -129,7 +128,7 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
             } else if (!("-".equals(nv) || "+".equals(nv) || endsWithExponent(nv) || endsWithSignedExponent(nv))) {
                 try {
                     // only set control's value when it is a valid number
-                    double value = Double.parseDouble(nv);
+                    float value = Float.parseFloat(nv);
                     control.setValue(value);
                 } catch (NumberFormatException e) {
                     // ignore, and keep control with its old value

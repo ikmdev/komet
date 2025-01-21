@@ -1,6 +1,25 @@
 @font-face {
     font-family: 'Noto Sans';
+    font-weight: normal;
     src: url('noto-sans.regular.ttf');
+}
+
+@font-face {
+    font-family: 'Noto Sans Medium';
+    font-weight: 500;
+    src: url('noto-sans.medium.ttf');
+}
+
+@font-face {
+    font-family: 'Noto Sans SemiBold';
+    font-weight: 600;
+    src: url('noto-sans.semibold.ttf');
+}
+
+@font-face {
+    font-family: 'Noto Sans Bold';
+    font-weight: 700;
+    src: url('noto-sans.bold.ttf');
 }
 
 .root {
@@ -4346,12 +4365,16 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: rgba(70, 70, 70, 0.1);
 }
 
-/* kview Progress bar popup */
+/*****************************
+* kview Progress bar popup
+*****************************/
+
 .kview-progress-container {
     -fx-background-insets: 0;
     -fx-background-radius: 6;
     -fx-background-color: transparent;
 }
+
 .kview-progress {
     -fx-background-insets: 0;
     -fx-background-radius: 6;
@@ -4360,7 +4383,7 @@ Styling a context menu for kview ui/ux controls
     -fx-border-width: 1px;
     -fx-border-radius: 6;
     -fx-padding: 14px 20px;
-    -fx-effect: dropshadow(one-pass-box, rgba(0, 0, 0, 0.20), 10, 0.01, 4, 4);
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.3), 4, 0, 0, 4);
 }
 
 .kview-progress-container .button.close-button,
@@ -4384,20 +4407,74 @@ Styling a context menu for kview ui/ux controls
     -fx-indeterminate-bar-flip: true;
     -fx-indeterminate-bar-animation-time: 2;
 }
+
 .kview-progress .progress-bar > .bar {
     -fx-background-color: -Accent-color-green;
-    -fx-background-insets: 3 3 4 3;
-    /*-fx-background-radius: 0.583em; *//* 7 */
+    -fx-background-insets: 0;
     -fx-background-radius: 6;
-    -fx-padding: 0.75em;
 }
+
 .kview-progress .progress-bar:indeterminate > .bar {
     -fx-background-color: linear-gradient(to left, transparent, -Accent-color-green);
 }
+
 .kview-progress .progress-bar > .track {
     -fx-background-color: #545D72;
     -fx-background-insets: 0;
     -fx-background-radius: 6;
+}
+
+.kview-progress #titleText {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 18px;
+    -fx-font-weight: 500;
+    -fx-font-style: normal;
+    -fx-fill: -Grey-White;
+}
+
+.kview-progress #messageText {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-weight: 400;
+    -fx-fill: -Grey-3;
+}
+
+.kview-progress #valueText {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-font-style: normal;
+    -fx-fill: -Accent-color-green;
+}
+
+.kview-progress #statusText {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: 400;
+    -fx-fill: -Grey-3;
+}
+
+.kview-progress #cancelProgressButton {
+    -fx-background-insets: 1;
+    -fx-background-color: -Grey-11;
+    -fx-border-color: -Secondary-05;
+    -fx-border-radius: 4;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+    -fx-text-fill: -Secondary-04;
+    -fx-text-alignment: center;
+}
+
+/*****************************
+* Notification popup
+*****************************/
+
+.notification-popup .progress-popup-pane {
+    -fx-spacing: 14;
+    -fx-alignment: bottom_center;
 }
 
 /*****************************

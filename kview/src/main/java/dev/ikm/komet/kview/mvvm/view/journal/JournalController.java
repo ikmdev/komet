@@ -26,20 +26,12 @@ import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CONCEPT_TOPI
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CREATE;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.DEVICE_ENTITY;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.EDIT;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.MODE;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.FIELDS_COLLECTION;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STAMP_VIEW_MODEL;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
@@ -63,12 +55,9 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
 import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 import static java.io.File.separator;
+import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
+
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -79,6 +68,7 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.events.appevents.ProgressEvent;
 import dev.ikm.komet.framework.preferences.PrefX;
+import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.framework.tabs.DetachableTab;
@@ -86,6 +76,7 @@ import dev.ikm.komet.framework.tabs.TabGroup;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.controls.NotificationPopup;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
@@ -95,6 +86,10 @@ import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.fxutils.window.WindowSupport;
+import dev.ikm.komet.kview.klwindows.genediting.GenEditingKlWindow;
+import dev.ikm.komet.kview.klwindows.genediting.GenEditingKlWindowFactory;
+import dev.ikm.komet.kview.klwindows.pattern.PatternKlWindow;
+import dev.ikm.komet.kview.klwindows.pattern.PatternKlWindowFactory;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.lidr.mvvm.view.details.LidrDetailsController;
 import dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel;
@@ -103,16 +98,12 @@ import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.view.details.ConceptPreference;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
-import dev.ikm.komet.kview.mvvm.view.genediting.GenEditingDetailsController;
 import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
-import dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
 import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
 import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
-import dev.ikm.komet.kview.state.pattern.PatternDetailsPattern;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
 import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
 import dev.ikm.komet.preferences.ConceptWindowSettings;
@@ -133,18 +124,14 @@ import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -153,18 +140,12 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.geometry.Side;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
@@ -180,14 +161,12 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import org.carlfx.axonic.StateMachine;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
-import org.controlsfx.control.PopOver;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
@@ -203,6 +182,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.prefs.BackingStoreException;
 
 /**
@@ -259,7 +239,7 @@ public class JournalController {
 
     private Pane nextGenReasonerSlideoutTrayPane;
 
-    private Pane progressSlideoutTrayPane;
+    private NotificationPopup progressNotificationPopup;
 
     @FXML
     private ToggleButton reasonerToggleButton;
@@ -292,7 +272,7 @@ public class JournalController {
     /////////////////////////////////////////////////////////////////
     // Private Data
     /////////////////////////////////////////////////////////////////
-    private final VBox progressListVBox = new VBox();
+    private final VBox progressPopupPane = new VBox();
     private Pane navigatorNodePanel;
     private Pane searchNodePanel;
     private Pane nextGenSearchPanel;
@@ -352,6 +332,7 @@ public class JournalController {
     @FXML
     public void initialize() {
         reasonerNodePanel = new BorderPane();
+        progressPopupPane.getStyleClass().add("progress-popup-pane");
 
         createTrayPanes();
 
@@ -441,7 +422,6 @@ public class JournalController {
     }
 
     private void createTrayPanes() {
-        progressSlideoutTrayPane = newTrayPane();
         navSlideoutTrayPane = newTrayPane();
         searchSlideoutTrayPane = newTrayPane();
         reasonerSlideoutTrayPane = newTrayPane();
@@ -459,7 +439,6 @@ public class JournalController {
         nextGenReasonerSlideoutTrayPane.setMaxHeight(Double.MAX_VALUE);
 
         trayPaneContainer.getChildren().addAll(
-                progressSlideoutTrayPane,
                 navSlideoutTrayPane,
                 searchSlideoutTrayPane,
                 reasonerSlideoutTrayPane,
@@ -620,51 +599,130 @@ public class JournalController {
         progressToggleButton.setVisible(false);
         // Listen for progress tasks
         setupProgressListener();
-
-        // add a vbox list for progress popups.
-        setupSlideOutTrayPane(progressListVBox, progressSlideoutTrayPane);
-        SlideOutTrayHelper.slideIn(progressSlideoutTrayPane);
     }
 
     private boolean isMouseOverNode(Node node, DragEvent event) {
         return event.getPickResult().getIntersectedNode() == node;
     }
 
+    /**
+     * Subscribes to progress events (on {@code PROGRESS_TOPIC}) and displays a
+     * {@link NotificationPopup} to show progress information.
+     * <p>
+     * When a new {@link ProgressEvent} with the event type {@code SUMMON} is received,
+     * this method:
+     * <ul>
+     *   <li>Creates and configures the {@link NotificationPopup} that displays the
+     *       current progress tasks.</li>
+     *   <li>Makes the {@code progressToggleButton} visible (so the user can manually
+     *       show or hide the popup).</li>
+     *   <li>Builds the progress user interface and attaches it to the popup.</li>
+     * </ul>
+     */
     private void setupProgressListener() {
+        // Subscribe to progress events on the event bus
         Subscriber<ProgressEvent> progressPopupSubscriber = evt -> {
-            // if summon event type, load stuff and reference task to progress popup
+            // if SUMMON event type, load stuff and reference task to progress popup
             if (evt.getEventType() == SUMMON) {
                 Platform.runLater(() -> {
+                    // Make the toggle button visible so users can open the popover
                     progressToggleButton.setVisible(true);
+
                     Task<Void> task = evt.getTask();
+
+                    // Build the UI (Pane + Controller) for the progress popup
                     JFXNode<Pane, ProgressController> progressJFXNode = createProgressBox(task, evt.getCancelButtonText());
                     ProgressController progressController = progressJFXNode.controller();
                     Pane progressPane = progressJFXNode.node();
-                    PopOver popOver = new PopOver(progressPane);
 
-                    // setup close button
+                    // Create a new NotificationPopup to show the progress pane
+                    progressNotificationPopup = new NotificationPopup(progressPopupPane);
+                    progressNotificationPopup.setAnchorLocation(WINDOW_BOTTOM_LEFT);
+
+                    // Hide popup when clicking on the progressPopupPane background (if autoHide is enabled)
+                    progressPopupPane.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
+                        if (e.getPickResult().getIntersectedNode() == progressPopupPane
+                                && progressNotificationPopup.isAutoHide()) {
+                            progressNotificationPopup.hide();
+                        }
+                    });
+
+                    // Close button handler in the progress pane
                     progressController.getCloseProgressButton().setOnAction(actionEvent -> {
-                        popOver.hide();
-                        progressController.cleanup();
+                        // Cancel the task
+                        ProgressHelper.cancel(task);
+
+                        // Remove the progress pane from the popup
+                        progressPopupPane.getChildren().remove(progressPane);
+                        if (progressPopupPane.getChildren().isEmpty()) {
+                            progressToggleButton.setSelected(false);
+                            progressToggleButton.setVisible(false);
+                        }
                     });
 
-                    popOver.setOnHidden(windowEvent -> progressController.cleanup());
-                    popOver.setArrowLocation(PopOver.ArrowLocation.LEFT_TOP);
-                    popOver.show(progressToggleButton);
-
-                    // Create one inside the list for bump out
-                    JFXNode<Pane, ProgressController> progressJFXNode2 = createProgressBox(task, evt.getCancelButtonText());
-                    ProgressController progressController2 = progressJFXNode2.controller();
-                    Pane progressBox2 = progressJFXNode2.node();
-                    progressController2.getCloseProgressButton().setOnAction(actionEvent -> {
-                        progressController2.cleanup();
-                        progressListVBox.getChildren().remove(progressBox2);
+                    progressNotificationPopup.setOnShown(windowEvent -> {
+                        // Select the toggle button when the popup is shown
+                        progressToggleButton.setSelected(true);
                     });
-                    progressListVBox.getChildren().addFirst(progressBox2);
+
+                    progressNotificationPopup.setOnHidden(windowEvent -> {
+                        // Deselect the toggle button when the popup is hidden
+                        progressToggleButton.setSelected(false);
+                    });
+
+                    progressToggleButton.setOnAction(actionEvent -> {
+                        // Toggle button logic to show/hide the popup
+                        if (progressToggleButton.isSelected()) {
+                            if (progressNotificationPopup.isShowing()) {
+                                progressNotificationPopup.hide();
+                            } else {
+                                progressNotificationPopup.show(progressToggleButton, this::supplyProgressPopupAnchorPoint);
+                            }
+                        } else {
+                            progressNotificationPopup.hide();
+                        }
+                    });
+
+                    // Add the progress UI to the popup's vertical container
+                    progressPopupPane.getChildren().add(progressPane);
+
+                    // Show the progress popup immediately for this new task
+                    progressNotificationPopup.show(progressToggleButton, this::supplyProgressPopupAnchorPoint);
                 });
             }
         };
         journalEventBus.subscribe(PROGRESS_TOPIC, ProgressEvent.class, progressPopupSubscriber);
+    }
+
+    /**
+     * Computes and returns the coordinates at which the progress popup
+     * ({@link #progressNotificationPopup}) should be anchored, ensuring it appears to
+     * the right of the {@code progressToggleButton} and near the lower edge of
+     * the workspace.
+     * <p>
+     * The resulting anchor point is used by {@link NotificationPopup#show(Node, Supplier)}
+     * or similar popup methods to place the popup on the screen.
+     *
+     * @return a {@code Point2D} representing the (X, Y) coordinates where the progress
+     * popup should be anchored
+     */
+    private Point2D supplyProgressPopupAnchorPoint() {
+        final Bounds progressToggleButtonScreenBounds =
+                progressToggleButton.localToScreen(progressToggleButton.getBoundsInLocal());
+        final Bounds desktopScrollPaneScreenBounds =
+                desktopSurfaceScrollPane.localToScreen(desktopSurfaceScrollPane.getBoundsInLocal());
+        final double progressListVBoxPadding = 12.0;  // Padding around the progress list VBox
+
+        // Adjust the progress popup’s height to fit within the workspace bounds.
+        progressPopupPane.setPrefHeight(desktopScrollPaneScreenBounds.getHeight()
+                - (4 * progressListVBoxPadding - 4.0));
+
+        // Position the popup to the right of the toggle button, near the bottom of the workspace.
+        final double popupAnchorX = progressToggleButtonScreenBounds.getMinX()
+                + progressToggleButton.getWidth() + progressListVBoxPadding;
+        final double popupAnchorY = desktopScrollPaneScreenBounds.getMaxY()
+                - 2 * progressListVBoxPadding;
+        return new Point2D(popupAnchorX, popupAnchorY);
     }
 
     private JFXNode<Pane, ProgressController> createProgressBox(Task<Void> task, String cancelButtonText) {
@@ -703,8 +761,6 @@ public class JournalController {
             return reasonerSlideoutTrayPane;
         } else if (nextGenSearchToggleButton.equals(selectedToggleButton)) {
             return nexGenSearchSlideoutTrayPane;
-        } else if (progressToggleButton.equals(selectedToggleButton)) {
-            return progressSlideoutTrayPane;
         } else if (nextGenReasonerToggleButton.equals(selectedToggleButton)) {
             return nextGenReasonerSlideoutTrayPane;
         }
@@ -723,6 +779,11 @@ public class JournalController {
         // cleanup code here...
         LOG.info("kView Concept Details Viewer Journal is shutting down...");
         activityStreams.forEach( activityStreamKey -> ActivityStreams.delete(activityStreamKey));
+
+        journalEventBus.unsubscribe(makeConceptWindowEventSubscriber,
+                makePatternWindowEventSubscriber,
+                showNavigationalPanelEventSubscriber,
+                closeReasonerPanelEventSubscriber);
     }
 
     /**
@@ -1578,126 +1639,38 @@ public class JournalController {
     }
 
     private void makePatternWindow(EntityFacade patternFacade, ViewProperties viewProperties) {
-
-        //initialize stampsViewModel with basic data.
-        StampViewModel stampViewModel = new StampViewModel();
-        stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
-                .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
-
-        String mode;
-        if(patternFacade != null){
-            mode = EDIT;
-            Entity patternEntity = EntityService.get().getEntity(patternFacade.nid()).get();
-            // populate STAMP values
-            Latest<EntityVersion> patternStamp = viewProperties.calculator().stampCalculator().latest(patternEntity);
-            stampViewModel.setPropertyValue(STATUS, patternStamp.get().stamp().state())
-                    .setPropertyValue(TIME, patternStamp.get().stamp().time())
-                    .setPropertyValue(AUTHOR, TinkarTerm.USER)
-                    .setPropertyValue(MODULE, patternStamp.get().stamp().module())
-                    .setPropertyValue(PATH, patternStamp.get().stamp().path())
-            ;
-        } else {
-            mode = CREATE;
-        }
-        stampViewModel.setPropertyValue(MODE, mode);
-        // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
-        StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
-        Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
-                .updateViewModel("patternViewModel", (PatternViewModel patternViewModel) -> {
-                    patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
-                            .setPropertyValue(MODE, mode)
-                            .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
-                            .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
-                            .setPropertyValue(STATE_MACHINE, patternSM)
-                            .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
-                            .setPropertyValue(PATTERN, patternFacade);
-                });
-
-        // create pattern window
-        JFXNode<Pane, PatternDetailsController> patternJFXNode = FXMLMvvmLoader.make(patternConfig);
-        Optional<PatternViewModel> optPatternViewModel = patternJFXNode.getViewModel("patternViewModel");
-        //Here we load the Pattern Data.
-        optPatternViewModel.ifPresent(patternViewModel -> patternViewModel.loadPatternValues());
-
-        //Getting the concept window pane
-        Pane kometNodePanel = patternJFXNode.node();
-        //Applying the CSS from draggable-region to the panel (makes it movable/sizable).
-        Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
-        Node[] draggables = new Node[draggableToolbar.size()];
-
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
-        //Adding the concept window panel as a child to the desktop pane.
-        desktopSurfacePane.getChildren().add(kometNodePanel);
+        // TODO: Use pluggable service loader to load KlWindowFactories. and locate GenEditingKlWindow.
+        PatternKlWindowFactory entityKlWindowFactory = new PatternKlWindowFactory();
+        PatternKlWindow patternKlWindow = entityKlWindowFactory.create(journalTopic, patternFacade, desktopSurfacePane, viewProperties, null);
+        Pane chapterWindow = patternKlWindow.getPaneWindow();
+        desktopSurfacePane.getChildren().add(chapterWindow);
 
         //FIXME are both LIDR and Pattern windows borrowing the concept folder for preferences?
         // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
         Optional<String> conceptFolderName;
-       conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
-            // create a conceptWindowSettingsMap
-            Map<ConceptWindowSettings, Object> conceptWindowSettingsObjectMap = createConceptPrefMap(conceptFolderName.get(), kometNodePanel);
-            kometNodePanel.setUserData(conceptWindowSettingsObjectMap);
+        conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
+        // create a conceptWindowSettingsMap
+        Map<ConceptWindowSettings, Object> conceptWindowSettingsObjectMap = createConceptPrefMap(conceptFolderName.get(), chapterWindow);
+        chapterWindow.setUserData(conceptWindowSettingsObjectMap);
 
         // add to the list of concept windows
         final String finalConceptFolderName = conceptFolderName.get();
-        conceptWindows.add(new ConceptPreference(conceptFolderName.get(), null, -1, kometNodePanel));
+        conceptWindows.add(new ConceptPreference(conceptFolderName.get(), null, -1, chapterWindow));
 
-        //Calls the remove method to remove and concepts that were closed by the user.
-        patternJFXNode.controller().setOnCloseConceptWindow(windowEvent -> {
-            // TODO more clean up such as view models and listeners just in case (memory).
+        patternKlWindow.setOnClose(()-> {
             removeLidrSetting(finalConceptFolderName);
         });
-        patternJFXNode.controller().putTitlePanesArrowOnRight();
+        patternKlWindow.onShown();
+
     }
 
-    private void makeGenEditWindow(EntityFacade component, ViewProperties viewProperties) {
-        System.out.println("Launching General editing window: " + component);
-//        //initialize stampsViewModel with basic data.
-//        StampViewModel stampViewModel = new StampViewModel();
-//        stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
-//                .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
+    private void makeGenEditWindow(EntityFacade entityFacade, ViewProperties viewProperties) {
+        System.out.println("Launching General editing window: " + entityFacade);
 
-        if(component != null){
-//            Entity entity = EntityService.get().getEntity(component.nid()).get();
-            // populate STAMP values
-//            Latest<EntityVersion> stamp = viewProperties.calculator().stampCalculator().latest(entity);
-//            stampViewModel.setPropertyValue(STATUS, stamp.get().stamp().state())
-//                    .setPropertyValue(TIME, stamp.get().stamp().time())
-//                    .setPropertyValue(AUTHOR, TinkarTerm.USER)
-//                    .setPropertyValue(MODULE, stamp.get().stamp().module())
-//                    .setPropertyValue(PATH, stamp.get().stamp().path())
-//            ;
-        }
-//        // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
-//        //StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
-        SemanticEntity entity = (SemanticEntity) EntityService.get().getEntity(component.nid()).get();
-        EntityFacade refComponent = EntityService.get().getEntity(entity.referencedComponentNid()).get();
-        Config config = new Config(GenEditingDetailsController.class.getResource("genediting-details.fxml"))
-                .updateViewModel("genEditingViewModel", genEditingViewModel ->
-                        genEditingViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
-                                .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
-                                .setPropertyValue(WINDOW_TOPIC, UUID.randomUUID())
-//                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
-                                .setPropertyValue(FIELDS_COLLECTION, new ArrayList<String>()) // Ordered collection of Fields
-                                .setPropertyValue(REF_COMPONENT, refComponent)
-                                .setPropertyValue(SEMANTIC, component));
-
-        // create chapter window
-        JFXNode<Pane, GenEditingDetailsController> jfxNode = FXMLMvvmLoader.make(config);
-        //Getting the concept window pane
-        Pane kometNodePanel = jfxNode.node();
-        //Applying the CSS from draggable-region to the panel (makes it movable/sizable).
-        Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
-        Node[] draggables = new Node[draggableToolbar.size()];
-
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
-
-        //Adding the concept window panel as a child to the desktop pane.
-        desktopSurfacePane.getChildren().add(kometNodePanel);
-
-        //Calls the remove method to remove and concepts that were closed by the user.
-        jfxNode.controller().setOnCloseConceptWindow(windowEvent -> {
-            // TODO more clean up such as view models and listeners just in case (memory).
-        });
-        jfxNode.controller().putTitlePanesArrowOnRight();
+        // TODO: Use pluggable service loader to load KlWindowFactories. and locate GenEditingKlWindow.
+        GenEditingKlWindowFactory entityKlWindowFactory = new GenEditingKlWindowFactory();
+        GenEditingKlWindow genEditingKlWindow = entityKlWindowFactory.create(journalTopic, entityFacade, desktopSurfacePane, viewProperties, null);
+        desktopSurfacePane.getChildren().add(genEditingKlWindow.getPaneWindow());
+        genEditingKlWindow.onShown(); // TODO: Revisit. JavaFX post render issue. Must be called after Node is rendered (realized). When not realized the implied style classes don't exist and returns null.
     }
 }
