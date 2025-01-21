@@ -7,25 +7,9 @@ import javafx.scene.control.Skin;
 
 public class KLReadOnlyDataTypeControl<T> extends KLReadOnlyBaseControl {
 
-    public enum DataType {
-        INTEGER,
-        FLOAT,
-        STRING,
-        BOOLEAN,
-        UUID,
-        INSTANT,
-        BYTE_ARRAY
-    }
-
     public KLReadOnlyDataTypeControl() {
         getStyleClass().add("read-only-string-control");
     }
-
-    // -- data type
-    private ObjectProperty<DataType> type = new SimpleObjectProperty<>(DataType.STRING);
-    public DataType getType() { return type.get(); }
-    public ObjectProperty<DataType> typeProperty() { return type; }
-    public void setType(DataType type) { this.type.set(type); }
 
     // -- value
     private ObjectProperty<T> value = new SimpleObjectProperty<>();

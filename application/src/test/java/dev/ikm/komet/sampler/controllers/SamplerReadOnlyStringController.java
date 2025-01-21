@@ -1,7 +1,6 @@
 package dev.ikm.komet.sampler.controllers;
 
 import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl;
-import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl.DataType;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
@@ -11,7 +10,7 @@ import javafx.scene.control.TextField;
 
 public class SamplerReadOnlyStringController {
     @FXML
-    private ComboBox<DataType> dataTypeComboBox;
+    private ComboBox dataTypeComboBox;
 
     @FXML
     private KLReadOnlyDataTypeControl<String> readOnlyStringControl;
@@ -38,13 +37,13 @@ public class SamplerReadOnlyStringController {
         editModeCheckBox.setSelected(readOnlyStringControl.isEditMode());
 
         // Data Type Combobox
-        for (DataType dataType : DataType.values()) {
-            dataTypeComboBox.getItems().add(dataType);
-        }
-        dataTypeComboBox.setValue(readOnlyStringControl.getType());
-        dataTypeComboBox.valueProperty().addListener(observable -> {
-            readOnlyStringControl.setType(dataTypeComboBox.getValue());
-        });
+//        for (DataType dataType : DataType.values()) {
+//            dataTypeComboBox.getItems().add(dataType);
+//        }
+//        dataTypeComboBox.setValue(readOnlyStringControl.getType());
+//        dataTypeComboBox.valueProperty().addListener(observable -> {
+//            readOnlyStringControl.setType(dataTypeComboBox.getValue());
+//        });
     }
 
     @FXML

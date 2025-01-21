@@ -8,8 +8,6 @@ import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.component.version.field.KlFloatField;
 import javafx.scene.Node;
 
-import static dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl.DataType.FLOAT;
-
 public class DefaultKlFloatField extends BaseDefaultKlField<Float> implements KlFloatField {
 
     public DefaultKlFloatField(ObservableField<Float> observableFloatField, ObservableView observableView, boolean isEditable) {
@@ -28,8 +26,6 @@ public class DefaultKlFloatField extends BaseDefaultKlField<Float> implements Kl
 
             readOnlyStringControl.valueProperty().bindBidirectional(observableFloatField.valueProperty());
             readOnlyStringControl.setTitle(getTitle());
-
-            readOnlyStringControl.setType(FLOAT);
 
             node = readOnlyStringControl;
         }

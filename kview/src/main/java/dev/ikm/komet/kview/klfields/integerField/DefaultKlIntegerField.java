@@ -8,8 +8,6 @@ import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.component.version.field.KlIntegerField;
 import javafx.scene.Node;
 
-import static dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl.DataType.INTEGER;
-
 public class DefaultKlIntegerField extends BaseDefaultKlField<Integer> implements KlIntegerField {
 
     public DefaultKlIntegerField(ObservableField<Integer> observableIntegerField, ObservableView observableView, boolean isEditable) {
@@ -28,8 +26,6 @@ public class DefaultKlIntegerField extends BaseDefaultKlField<Integer> implement
 
             readOnlyStringControl.valueProperty().bindBidirectional(observableIntegerField.valueProperty());
             readOnlyStringControl.setTitle(getTitle());
-
-            readOnlyStringControl.setType(INTEGER);
 
             node = readOnlyStringControl;
         }
