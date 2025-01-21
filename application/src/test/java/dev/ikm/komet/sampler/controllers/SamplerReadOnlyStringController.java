@@ -1,7 +1,7 @@
 package dev.ikm.komet.sampler.controllers;
 
-import dev.ikm.komet.kview.controls.KLReadOnlyStringControl;
-import dev.ikm.komet.kview.controls.KLReadOnlyStringControl.StringDataType;
+import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl.DataType;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
@@ -11,10 +11,10 @@ import javafx.scene.control.TextField;
 
 public class SamplerReadOnlyStringController {
     @FXML
-    private ComboBox<StringDataType> dataTypeComboBox;
+    private ComboBox<DataType> dataTypeComboBox;
 
     @FXML
-    private KLReadOnlyStringControl readOnlyStringControl;
+    private KLReadOnlyDataTypeControl<String> readOnlyStringControl;
 
     @FXML
     private CheckBox editModeCheckBox;
@@ -34,16 +34,16 @@ public class SamplerReadOnlyStringController {
                 "KlIntegerField, KlFloatField, KlUuidField, KlInstantField");
 
         titleTextField.setText(readOnlyStringControl.getTitle());
-        textTextField.setText(readOnlyStringControl.getText());
+        textTextField.setText(readOnlyStringControl.getValue());
         editModeCheckBox.setSelected(readOnlyStringControl.isEditMode());
 
         // Data Type Combobox
-        for (StringDataType stringDataType : StringDataType.values()) {
-            dataTypeComboBox.getItems().add(stringDataType);
+        for (DataType dataType : DataType.values()) {
+            dataTypeComboBox.getItems().add(dataType);
         }
-        dataTypeComboBox.setValue(readOnlyStringControl.getDataType());
+        dataTypeComboBox.setValue(readOnlyStringControl.getType());
         dataTypeComboBox.valueProperty().addListener(observable -> {
-            readOnlyStringControl.setDataType(dataTypeComboBox.getValue());
+            readOnlyStringControl.setType(dataTypeComboBox.getValue());
         });
     }
 
@@ -54,7 +54,7 @@ public class SamplerReadOnlyStringController {
 
     @FXML
     private void onTextChanged(ActionEvent actionEvent) {
-        readOnlyStringControl.setText(textTextField.getText());
+        readOnlyStringControl.setValue(textTextField.getText());
     }
 
     @FXML

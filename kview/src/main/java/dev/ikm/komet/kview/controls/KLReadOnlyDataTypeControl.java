@@ -3,13 +3,11 @@ package dev.ikm.komet.kview.controls;
 import dev.ikm.komet.kview.controls.skin.KLReadOnlyStringControlSkin;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.scene.control.Skin;
 
-public class KLReadOnlyStringControl extends KLReadOnlyBaseControl {
+public class KLReadOnlyDataTypeControl<T> extends KLReadOnlyBaseControl {
 
-    public enum StringDataType {
+    public enum DataType {
         INTEGER,
         FLOAT,
         STRING,
@@ -19,21 +17,21 @@ public class KLReadOnlyStringControl extends KLReadOnlyBaseControl {
         BYTE_ARRAY
     }
 
-    public KLReadOnlyStringControl() {
+    public KLReadOnlyDataTypeControl() {
         getStyleClass().add("read-only-string-control");
     }
 
     // -- data type
-    private ObjectProperty<StringDataType> dataType = new SimpleObjectProperty<>(StringDataType.STRING);
-    public StringDataType getDataType() { return dataType.get(); }
-    public ObjectProperty<StringDataType> dataTypeProperty() { return dataType; }
-    public void setDataType(StringDataType stringDataType) { this.dataType.set(stringDataType); }
+    private ObjectProperty<DataType> type = new SimpleObjectProperty<>(DataType.STRING);
+    public DataType getType() { return type.get(); }
+    public ObjectProperty<DataType> typeProperty() { return type; }
+    public void setType(DataType type) { this.type.set(type); }
 
-    // -- text
-    private StringProperty text = new SimpleStringProperty();
-    public String getText() { return text.get(); }
-    public StringProperty textProperty() { return text; }
-    public void setText(String text) { this.text.set(text); }
+    // -- value
+    private ObjectProperty<T> value = new SimpleObjectProperty<>();
+    public T getValue() { return value.get(); }
+    public ObjectProperty<T> valueProperty() { return value; }
+    public void setValue(T value) { this.value.set(value); }
 
     // -- on add units of measure action
     private ObjectProperty<Runnable> onAddUnitsOfMeasureAction = new SimpleObjectProperty<>();
