@@ -2,32 +2,33 @@ package dev.ikm.komet.kview.klfields.booleanfield;
 
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ObservableView;
+import dev.ikm.komet.layout.component.version.field.KlBooleanField;
 import dev.ikm.komet.layout.component.version.field.KlField;
 import dev.ikm.komet.layout.component.version.field.KlFieldFactory;
 
-public class KlBooleanFieldFactory implements KlFieldFactory {
+public class KlBooleanFieldFactory implements KlFieldFactory<Boolean> {
     @Override
-    public KlField create(ObservableField observableField, ObservableView observableView) {
-        return null;
+    public KlField<Boolean> create(ObservableField observableField, ObservableView observableView, boolean editable) {
+        return new DefaultKlBooleanField(observableField, observableView, editable);
     }
 
     @Override
     public Class<? extends KlField> getFieldInterface() {
-        return null;
+        return KlBooleanField.class;
     }
 
     @Override
     public Class<? extends KlField> getFieldImplementation() {
-        return null;
+        return DefaultKlBooleanField.class;
     }
 
     @Override
     public String getName() {
-        return "";
+        return "Boolean Field Factory";
     }
 
     @Override
     public String getDescription() {
-        return "";
+        return "A Radio button group";
     }
 }

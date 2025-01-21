@@ -47,6 +47,7 @@ import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.integerField.KlIntegerFieldFactory;
+import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
@@ -333,6 +334,10 @@ public class GenEditingDetailsController {
                 readOnlyNode = klComponentFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
                 ObservableField<String> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+
+                //readOnlyNode = rowf.createStringField(fieldRecord).klWidget();
+
+                // need ObservableField<String>, ObservableView
                 KlStringFieldFactory klStringFieldFactory = new KlStringFieldFactory();
                 readOnlyNode = klStringFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
@@ -347,6 +352,11 @@ public class GenEditingDetailsController {
                 ObservableField<Integer> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
                 readOnlyNode = klIntegerFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
+            } else if (dataTypeNid == TinkarTerm.BOOLEAN.nid()) {
+                ObservableField<Boolean> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
+                readOnlyNode = klBooleanFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
+
             }
 
             // Add to VBox
