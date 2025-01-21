@@ -1,8 +1,10 @@
 package dev.ikm.komet.layout.preferences;
 
 import dev.ikm.komet.layout.KlGadget;
+import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.bind.ClassConceptBinding;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.coordinate.edit.Activity;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
@@ -56,6 +58,18 @@ public abstract class PreferenceProperty<T, I extends Property<T>> implements Pr
      * zero.
      */
     public static final double INITIAL_DOUBLE_VALUE = Double.NaN;
+
+    /**
+     * Represents the initial default value for an {@link Encodable} property in the {@code PreferenceProperty} class.
+     * This value is set to {@code Activity.DEVELOPING}, indicating a predetermined initial state
+     * for encodable preference properties.
+     *
+     * It is used within the context of preference properties to establish a starting
+     * or default value that can later be modified or further processed as needed.
+     *
+     * The constant is immutable and shared across all instances of the {@code PreferenceProperty} class.
+     */
+    public static final Encodable INITIAL_ENCODABLE_VALUE = Activity.DEVELOPING;
 
     /**
      * Represents the implementation instance of type {@code I} used internally
@@ -148,6 +162,19 @@ public abstract class PreferenceProperty<T, I extends Property<T>> implements Pr
      */
     public static PreferencePropertyDouble doubleProp(KlGadget gadget, ClassConceptBinding binding) {
         return PreferencePropertyDouble.create(gadget, binding);
+    }
+
+    /**
+     * Creates a new {@code PreferencesPropertyObject} instance for the given {@code KlGadget}
+     * and {@code ClassConceptBinding}. This method initializes a preference property object
+     * configured with the specified gadget and binding.
+     *
+     * @param gadget  the {@code KlGadget} instance associated with the preference property.
+     * @param binding the {@code ClassConceptBinding} used to define bindings and initialize the property.
+     * @return a new instance of {@code PreferencesPropertyObject} configured with the given gadget and binding.
+     */
+    public static PreferencesPropertyObject objectProp(KlGadget gadget, ClassConceptBinding binding) {
+        return PreferencesPropertyObject.create(gadget, binding);
     }
 
     @Override

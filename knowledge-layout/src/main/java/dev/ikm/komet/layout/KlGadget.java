@@ -1,42 +1,44 @@
 package dev.ikm.komet.layout;
 
+import dev.ikm.komet.layout.preferences.KlGlobalPreferenceKeys;
 import dev.ikm.komet.layout.preferences.PreferenceProperty;
 import dev.ikm.komet.layout.preferences.PropertyWithDefault;
 import dev.ikm.komet.layout.window.KlWindow;
-import dev.ikm.tinkar.common.bind.ClassConceptBinding;
-import dev.ikm.tinkar.coordinate.Calculators;
+import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.komet.preferences.PreferencesService;
+import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
 import javafx.stage.Window;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Highest level Knowledge Layout Component. Some components, such as {@code Window} do
  * not descend from {@code Node}, and this interface enables inclusion of those components
- * in the Knowledge Layout paradigm (i.e. consistent use of factories and preferences, and
- * an ability to serialize, share, and restore a layout.)
+ * in the Knowledge Layout paradigm (i.e., consistent use of factories and preferences, and
+ * provides an ability to serialize, share, and restore a layout.)
  *
  */
 public interface KlGadget<T> {
     /**
      * Keys for objects that KlGadgets will store in the properties of their associated
-     * JavaFx {@code Node}s.
-     *
+     * JavaFx {@code Node}s. Some of these objects will provide caching and computation
+     * functionality (behavior), and may not be strictly data carriers. In those cases,
+     * where the state must be saved and restored, the gadget class is responsible for
+     * populating the properties with objects derived from, and saved to, a corresponding
+     * KometPreferencesNode with a corresponding PropertyKey.
      */
     enum PropertyKeys {
+        /**
+         * Represents a property key used to associate a view calculator
+         * with a JavaFX {@code Node}. The View Calculator provides behavior and caching,
+         * and is based on an underlying {@code ViewCoordinateRecord}. Reading and writing of
+         * {@code ViewCoordinateRecord}s is the responsibility of the KlView.
+         */
         VIEW_CALCULATOR
     }
 
-    /**
-     * A thread-safe atomic reference to a {@code ViewCalculator} instance used within the knowledge layout system.
-     * This instance provides functionalities for evaluating and manipulating various view and coordinate computations.
-     * The initial value is set using the default {@code ViewCalculatorWithCache} instance provided by {@code Calculators.View.Default()}.
-     * This reference ensures safe updates and access across multiple threads.
-     */
-    AtomicReference<ViewCalculator> applicationViewCalculatorRef = new AtomicReference<>(Calculators.View.Default());
     /**
      * Enum representing the keys used to manage and access user preferences
      * related to gadgets within the application. This enum defines constants
@@ -47,7 +49,7 @@ public interface KlGadget<T> {
         /**
          * Boolean string representing if the preferences have been initialized.
          */
-        INITIALIZED( Boolean.FALSE),
+        INITIALIZED(Boolean.FALSE),
 
         /**
          * Fully qualified name of the factory class. Used to restore the KlWindow
@@ -105,13 +107,37 @@ public interface KlGadget<T> {
      * @return a {@code ViewCalculator} instance associated with the current context.
      */
     default ViewCalculator viewCalculatorForContext() {
-        return switch (this.klGadget()) {
+        return  switch (this.klGadget()) {
             case Node node -> viewCalculatorForContext(node);
             case Window window -> viewCalculatorForContext(window);
             case Scene scene -> viewCalculatorForContext(scene);
-            default -> applicationViewCalculatorRef.get();
+            default -> {
+                yield fetchDefaultKnowledgeBaseViewCalculator();
+            }
         };
+     }
+
+    /**
+     * Fetches the default {@code ViewCalculator} based on the root preferences
+     * and the default {@code ViewCoordinateRecord}. If the {@code DEFAULT_VIEW_COORDINATE} key
+     * is not already present in the root preferences, it initializes the key with a default value.
+     * Returns the corresponding {@code ViewCalculatorWithCache} instance for the resolved
+     * {@code ViewCoordinateRecord}.
+     *
+     * @return the default {@code ViewCalculator} instance based on the resolved
+     *         {@code ViewCoordinateRecord}.
+     */
+    private static ViewCalculator fetchDefaultKnowledgeBaseViewCalculator() {
+        KometPreferences rootPreferences = PreferencesService.configurationPreferences();
+        ViewCoordinateRecord defaultViewCoordinateRecord =
+                (ViewCoordinateRecord) KlGlobalPreferenceKeys.DEFAULT_VIEW_COORDINATE.defaultValue();
+        if (!rootPreferences.hasKey(KlGlobalPreferenceKeys.DEFAULT_VIEW_COORDINATE)) {
+            rootPreferences.putObject(KlGlobalPreferenceKeys.DEFAULT_VIEW_COORDINATE, defaultViewCoordinateRecord);
+        }
+        return ViewCalculatorWithCache.getCalculator(
+                (ViewCoordinateRecord) rootPreferences.getObject(KlGlobalPreferenceKeys.DEFAULT_VIEW_COORDINATE).get());
     }
+
     /**
      * Retrieves a {@code ViewCalculator} instance for the specified {@code Window} context.
      * The {@code ViewCalculator} enables evaluation and manipulation of view-related computations
@@ -127,7 +153,7 @@ public interface KlGadget<T> {
         if (window.hasProperties() && window.getProperties().containsKey(PropertyKeys.VIEW_CALCULATOR.name())) {
             return (ViewCalculator) window.getProperties().get(PropertyKeys.VIEW_CALCULATOR.name());
         }
-        return applicationViewCalculatorRef.get();
+        return fetchDefaultKnowledgeBaseViewCalculator();
     }
 
     /**
@@ -178,6 +204,6 @@ public interface KlGadget<T> {
         if (scene.getWindow() != null) {
             return viewCalculatorForContext(scene.getWindow());
         }
-        return applicationViewCalculatorRef.get();
+        return fetchDefaultKnowledgeBaseViewCalculator();
     }
 }
