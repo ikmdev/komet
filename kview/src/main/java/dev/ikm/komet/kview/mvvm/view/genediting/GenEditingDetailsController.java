@@ -352,7 +352,8 @@ public class GenEditingDetailsController {
                 ObservableField<Integer> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
                 readOnlyNode = klIntegerFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
-            } else if (dataTypeNid == TinkarTerm.BOOLEAN.nid()) {
+            } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
+                // read only... treat as a string?
                 ObservableField<Boolean> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
                 readOnlyNode = klBooleanFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();

@@ -21,9 +21,10 @@ public class DefaultKlBooleanField extends BaseDefaultKlField<Boolean> implement
             klWidget = booleanControl;
         } else {
             //TODO no read only control...?
-            KLBooleanControl booleanControl = new KLBooleanControl();
+            KLBooleanControl booleanControl = new KLBooleanControl(); // load fxml instead?
 
 
+            booleanControl.setTitle(getTitle());
             klWidget = booleanControl;
         }
 
