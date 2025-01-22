@@ -11,7 +11,6 @@ import javafx.scene.layout.VBox;
 import java.util.HashMap;
 
 public class KLReadOnlyStringListControlSkin extends KLReadOnlyBaseControlSkin<KLReadOnlyStringListControl> {
-    private final VBox mainContainer = new VBox();
     private final VBox textsContainer = new VBox();
 
     private final ListChangeListener<String> textsChanged = this::onTextChanged;
@@ -23,12 +22,8 @@ public class KLReadOnlyStringListControlSkin extends KLReadOnlyBaseControlSkin<K
     public KLReadOnlyStringListControlSkin(KLReadOnlyStringListControl control) {
         super(control);
 
-        mainContainer.getChildren().addAll(titleLabel, textsContainer);
-        getChildren().add(mainContainer);
+        mainContainer.getChildren().addAll(textsContainer);
 
-        mainContainer.setFillWidth(true);
-        titleLabel.setPrefWidth(Double.MAX_VALUE);
-        titleLabel.setMaxWidth(Region.USE_PREF_SIZE);
         textsContainer.setFillWidth(true);
         textsContainer.setPrefWidth(Double.MAX_VALUE);
         textsContainer.setMaxWidth(Region.USE_PREF_SIZE);
@@ -38,10 +33,7 @@ public class KLReadOnlyStringListControlSkin extends KLReadOnlyBaseControlSkin<K
         setupContextMenu(control);
 
         // CSS
-        mainContainer.getStyleClass().add("main-container");
         textsContainer.getStyleClass().add("text-container");
-
-        contextMenu.getStyleClass().add("klcontext-menu");
     }
 
     private void initTexts(KLReadOnlyStringListControl control){

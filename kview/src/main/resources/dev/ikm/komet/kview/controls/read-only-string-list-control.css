@@ -10,11 +10,15 @@
     -fx-text-fill: #5d5d5d;
 }
 
+.read-only-string-list-control .main-container .text-container .text {
+    -fx-text-fill: #111;
+    -fx-font-size: 1.166667em;
+}
+
 .read-only-string-list-control:hover .main-container .text-container {
     -fx-background-color: #f4f4f4;
     -fx-border-color: #dfdfdf;
 }
-
 
 .read-only-string-list-control:edit-mode .main-container .text-container {
     -fx-background-color: #f4f9ff;

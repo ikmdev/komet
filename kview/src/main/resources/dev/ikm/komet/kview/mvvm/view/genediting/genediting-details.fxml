@@ -217,19 +217,10 @@
                                  </font>
                                  <content>
                                     <VBox fx:id="semanticDetailsVBox" maxWidth="1.7976931348623157E308" prefWidth="610.0" styleClass="titled-content-background">
-                                       <children>
-                                          <VBox maxWidth="1.7976931348623157E308" styleClass="semantic-field-container">
-                                             <children>
-                                                <Label styleClass="semantic-field-type-label" text="TEST PERFORMED ANALYTE OBSERVABLE (LOINC):" />
-                                                <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" prefHeight="32.0" prefWidth="673.0" spacing="3.0">
-                                                   <children>
-                                                      <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true" styleClass="identicon-image-view" />
-                                                      <Label maxWidth="1.7976931348623157E308" styleClass="semantic-field-value" text="Concept FQN / Semantic Name D" HBox.hgrow="ALWAYS" />
-                                                   </children>
-                                                </HBox>
-                                             </children>
-                                          </VBox>
-                                       </children>
+                                       <styleClass>
+                                          <String fx:value="titled-content-background" />
+                                          <String fx:value="semantic-field-container" />
+                                       </styleClass>
                                     </VBox>
                                  </content>
                               </TitledPane>

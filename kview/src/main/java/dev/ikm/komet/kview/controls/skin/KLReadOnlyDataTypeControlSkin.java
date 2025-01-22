@@ -1,77 +1,79 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.NodeUtils;
-import dev.ikm.komet.kview.controls.KLReadOnlyStringControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl;
 import dev.ikm.komet.kview.controls.KometIcon.IconValue;
+import javafx.beans.binding.ObjectBinding;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Label;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-public class KLReadOnlyStringControlSkin extends KLReadOnlyBaseControlSkin<KLReadOnlyStringControl> {
-    private final VBox mainContainer = new VBox();
+public class KLReadOnlyDataTypeControlSkin<T> extends KLReadOnlyBaseControlSkin<KLReadOnlyDataTypeControl<T>> {
+
     private final VBox textContainer = new VBox();
     private final Label textLabel = new Label();
 
     /**
      * @param control The control for which this Skin should attach to.
      */
-    public KLReadOnlyStringControlSkin(KLReadOnlyStringControl control) {
+    public KLReadOnlyDataTypeControlSkin(KLReadOnlyDataTypeControl<T> control) {
         super(control);
 
-        mainContainer.getChildren().addAll(titleLabel, textContainer);
+        mainContainer.getChildren().addAll(textContainer);
+
         textContainer.getChildren().addAll(promptTextLabel, textLabel);
-        getChildren().add(mainContainer);
 
-        textLabel.textProperty().bind(control.textProperty());
+        textLabel.textProperty().bind(new ObjectBinding<>() {
+            {
+                super.bind(control.valueProperty());
+            }
+            @Override
+            protected String computeValue() {
+                if (control.getValue() == null) {
+                    return "";
+                } else {
+                    return String.valueOf(control.getValue());
+                }
+            }
+        });
 
-        mainContainer.setFillWidth(true);
-        titleLabel.setPrefWidth(Double.MAX_VALUE);
-        titleLabel.setMaxWidth(Region.USE_PREF_SIZE);
         textLabel.setPrefWidth(Double.MAX_VALUE);
         textLabel.setMaxWidth(Region.USE_PREF_SIZE);
 
         initTexts(control);
 
-        setupContextMenu(control);
+        addMenuItemsToContextMenu(control);
 
         // CSS
-        mainContainer.getStyleClass().add("main-container");
         textContainer.getStyleClass().add("text-container");
         textLabel.getStyleClass().add("text");
     }
 
-    private void initTexts(KLReadOnlyStringControl control) {
+    private void initTexts(KLReadOnlyDataTypeControl<T> control) {
         updatePromptTextAndTextLabelVisibility(control);
-        control.textProperty().addListener(observable -> updatePromptTextAndTextLabelVisibility(control));
+        control.valueProperty().addListener(observable -> updatePromptTextAndTextLabelVisibility(control));
     }
 
-    private void updatePromptTextAndTextLabelVisibility(KLReadOnlyStringControl control) {
-        boolean showPromptText = control.getText() == null || control.getText().isEmpty();
+    private void updatePromptTextAndTextLabelVisibility(KLReadOnlyDataTypeControl<T> control) {
+        boolean showPromptText = control.getValue() == null;
 
         NodeUtils.setShowing(promptTextLabel, showPromptText);
         NodeUtils.setShowing(textLabel, !showPromptText);
     }
 
-    private void setupContextMenu(KLReadOnlyStringControl control) {
-        addMenuItemsToContextMenu(control);
+    private void addMenuItemsToContextMenu(KLReadOnlyDataTypeControl<T> control) {
+        Class<?> dataClassType = control.valueProperty().get().getClass();
 
-        control.dataTypeProperty().addListener(observable -> {
-            contextMenu.getItems().clear();
-            addMenuItemsToContextMenu(control);
-        });
-    }
-
-    private void addMenuItemsToContextMenu(KLReadOnlyStringControl control) {
-        switch (control.getDataType()) {
-            case STRING -> addMenuItemsForStringType(control);
-            case INTEGER -> addMenuItemsForIntegerType(control);
-            case FLOAT -> addMenuItemsForFloatType(control);
-            case BOOLEAN -> addMenuItemsForBooleanType(control);
-            case UUID -> addMenuItemsForUUIDType(control);
-            case INSTANT -> addMenuItemsForInstantType(control);
-            case BYTE_ARRAY -> addMenuItemsForByteArrayType(control);
+        if (dataClassType.equals(String.class)) {
+            addMenuItemsForStringType(control);
+        } else if (dataClassType.equals(Integer.class)) {
+            addMenuItemsForIntegerType(control);
+        } else if (dataClassType.equals(Float.class)) {
+            addMenuItemsForFloatType(control);
+        } else if (dataClassType.equals(Boolean.class)) {
+            addMenuItemsForBooleanType(control);
         }
 
         contextMenu.getItems().addAll(
@@ -80,44 +82,44 @@ public class KLReadOnlyStringControlSkin extends KLReadOnlyBaseControlSkin<KLRea
         );
     }
 
-    private void addMenuItemsForStringType(KLReadOnlyStringControl control) {
+    private void addMenuItemsForStringType(KLReadOnlyDataTypeControl<T> control) {
         contextMenu.getItems().add(
                 createMenuItem("Edit Text", IconValue.PENCIL, this::fireOnEditAction)
         );
     }
 
-    private void addMenuItemsForIntegerType(KLReadOnlyStringControl control) {
+    private void addMenuItemsForIntegerType(KLReadOnlyDataTypeControl<T> control) {
         contextMenu.getItems().add(
                 createMenuItem("Edit Integer", IconValue.PENCIL, this::fireOnEditAction)
         );
     }
 
-    private void addMenuItemsForFloatType(KLReadOnlyStringControl control) {
+    private void addMenuItemsForFloatType(KLReadOnlyDataTypeControl<T> control) {
         contextMenu.getItems().addAll(
                 createMenuItem("Edit Float", IconValue.PENCIL, this::fireOnEditAction),
                 createMenuItem("Add Unit of Measure", IconValue.PLUS, this::fireOnAddUnitsOfMeasureAction)
         );
     }
 
-    private void addMenuItemsForBooleanType(KLReadOnlyStringControl control) {
+    private void addMenuItemsForBooleanType(KLReadOnlyDataTypeControl<T> control) {
         contextMenu.getItems().add(
                 createMenuItem("Edit Selection", IconValue.PENCIL, this::fireOnEditAction)
         );
     }
 
-    private void addMenuItemsForUUIDType(KLReadOnlyStringControl control) {
+    private void addMenuItemsForUUIDType(KLReadOnlyDataTypeControl<T> control) {
         contextMenu.getItems().add(
                 createMenuItem("Edit Identifier", IconValue.PENCIL, this::fireOnEditAction)
         );
     }
 
-    private void addMenuItemsForInstantType(KLReadOnlyStringControl control) {
+    private void addMenuItemsForInstantType(KLReadOnlyDataTypeControl<T> control) {
         contextMenu.getItems().add(
                 createMenuItem("Edit Identifier", IconValue.PENCIL, this::fireOnEditAction)
         );
     }
 
-    private void addMenuItemsForByteArrayType(KLReadOnlyStringControl control) {
+    private void addMenuItemsForByteArrayType(KLReadOnlyDataTypeControl<T> control) {
         contextMenu.getItems().add(
                 createMenuItem("Edit Selection", IconValue.PENCIL, this::fireOnEditAction)
         );
