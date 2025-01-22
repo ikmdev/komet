@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Button?>
-<?import dev.ikm.komet.kview.controls.KLReadOnlyStringControl?>
+<?import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 
@@ -24,7 +24,7 @@
         <BorderPane styleClass="sample-control-container">
             <left>
                 <VBox prefWidth="500" styleClass="inner-container" fillWidth="true">
-                    <KLReadOnlyStringControl fx:id="readOnlyStringControl" title="A TITLE:" promptText="[Placeholder]" />
+                    <KLReadOnlyDataTypeControl fx:id="readOnlyStringControl" title="A TITLE:" promptText="[Placeholder]" />
                 </VBox>
             </left>
             <right>

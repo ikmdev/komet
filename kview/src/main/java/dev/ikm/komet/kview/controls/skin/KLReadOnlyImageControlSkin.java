@@ -17,7 +17,6 @@ import java.io.File;
 public class KLReadOnlyImageControlSkin extends KLReadOnlyBaseControlSkin<KLReadOnlyImageControl> {
     private static final PseudoClass IMAGE_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("image-selected");
 
-    private final VBox mainContainer = new VBox();
     private final VBox textContainer = new VBox();
     private final Label textLabel = new Label();
 
@@ -32,14 +31,11 @@ public class KLReadOnlyImageControlSkin extends KLReadOnlyBaseControlSkin<KLRead
     public KLReadOnlyImageControlSkin(KLReadOnlyImageControl control) {
         super(control);
 
+        mainContainer.getChildren().addAll(imageContainer, textContainer);
+
         imageContainer.getChildren().addAll(imageView, promptTextLabel);
         textContainer.getChildren().add(textLabel);
-        mainContainer.getChildren().addAll(titleLabel, imageContainer, textContainer);
-        getChildren().add(mainContainer);
 
-        mainContainer.setFillWidth(true);
-        titleLabel.setPrefWidth(Double.MAX_VALUE);
-        titleLabel.setMaxWidth(Region.USE_PREF_SIZE);
         textLabel.setPrefWidth(Double.MAX_VALUE);
         textLabel.setMaxWidth(Region.USE_PREF_SIZE);
 
@@ -52,7 +48,6 @@ public class KLReadOnlyImageControlSkin extends KLReadOnlyBaseControlSkin<KLRead
         setupContextMenu(control);
 
         // CSS
-        mainContainer.getStyleClass().add("main-container");
         textContainer.getStyleClass().add("text-container");
         textLabel.getStyleClass().add("text");
         imageContainer.getStyleClass().add("image-container");

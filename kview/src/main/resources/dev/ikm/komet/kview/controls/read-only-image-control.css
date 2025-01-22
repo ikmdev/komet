@@ -7,7 +7,7 @@
 }
 
 .read-only-image-control .main-container .title {
-    -fx-text-fill: #111;
+    -fx-text-fill: #5d5d5d;
 }
 
 .read-only-image-control .main-container .text-container {
@@ -16,6 +16,7 @@
 
 .read-only-image-control .main-container .text-container .text {
     -fx-text-fill: #111;
+    -fx-font-size: 1.166667em;
 }
 
 .read-only-image-control:hover .main-container .text-container .text {

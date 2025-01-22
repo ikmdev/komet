@@ -4,6 +4,7 @@ import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KometIcon;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.binding.StringBinding;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -11,9 +12,13 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SkinBase;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 
 public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseControl> extends SkinBase<T> {
     protected static final PseudoClass EDIT_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("edit-mode");
+
+    protected final VBox mainContainer = new VBox();
 
     protected final Label titleLabel = new Label();
     protected final Label promptTextLabel = new Label();
@@ -28,14 +33,37 @@ public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseControl>
     public KLReadOnlyBaseControlSkin(T control) {
         super(control);
 
-        titleLabel.textProperty().bind(control.titleProperty());
+        titleLabel.textProperty().bind(new StringBinding() {
+            {
+                super.bind(control.titleProperty());
+            }
+            @Override
+            protected String computeValue() {
+                String title = control.getTitle();
+                if (title != null) {
+                    return control.getTitle().toUpperCase();
+                } else {
+                    return "";
+                }
+            }
+        });
         promptTextLabel.textProperty().bind(control.promptTextProperty());
 
         control.editModeProperty().addListener(editModeChanged);
 
+
+        mainContainer.getChildren().addAll(titleLabel);
+        mainContainer.setFillWidth(true);
+        getChildren().add(mainContainer);
+
+        titleLabel.setPrefWidth(Double.MAX_VALUE);
+        titleLabel.setMaxWidth(Region.USE_PREF_SIZE);
+
+
         initContextMenu(control);
 
         // CSS
+        mainContainer.getStyleClass().add("main-container");
         titleLabel.getStyleClass().add("title");
         promptTextLabel.getStyleClass().add("prompt-text");
         contextMenu.getStyleClass().add("klcontext-menu");
