@@ -4756,8 +4756,8 @@ Styling a context menu for kview ui/ux controls
     -fx-border-insets: 0;
 }
 
-.pattern-window.concept-detail-pane .main-center-container .titled-pane .title,
-.lidr-window.concept-detail-pane .main-center-container .titled-pane .title {
+.pattern-window.concept-detail-pane .main-center-container .titled-pane >  .title,
+.lidr-window.concept-detail-pane .main-center-container .titled-pane > .title {
     -fx-padding: 8 4 4 6;
 }
 
@@ -4961,11 +4961,12 @@ Styling a context menu for kview ui/ux controls
 
 /* Semantic Details section - VBox */
 .semantic-field-container {
-    -height: 58;
-    -fx-min-height: -height;
-    -fx-pref-height: -height;
+    -fx-min-height: 58px;
+
+    -fx-spacing: 12px;
+
     -fx-fill-width: true;
-    -fx-padding: 8px 12px;
+    -fx-padding: 16px 8px 20px 8px;
     -fx-background-color: -Grey-1;
 }
 .semantic-field-set-container,
