@@ -1,9 +1,14 @@
 package dev.ikm.komet.layout;
 
+import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
+import dev.ikm.komet.layout.window.KlWhiteBoardFactory;
+import dev.ikm.komet.layout.window.KlWindow;
 import dev.ikm.komet.preferences.KometPreferences;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
+
+import java.util.function.Supplier;
 
 /**
  * Defines a factory for creating and restoring instances of {@link KlGadget}.
@@ -14,6 +19,15 @@ import javafx.scene.control.Tooltip;
  * @param <T> The type of {@link KlGadget} produced by this factory.
  */
 public interface KlFactory<T extends KlGadget> {
+
+    /**
+     * Creates an instance of type T using the provided KlPreferencesFactory.
+     *
+     * @param preferencesFactory an instance of KlPreferencesFactory used to provide
+     *                           necessary preferences for creating the object.
+     * @return an instance of type T created using the given preferencesFactory.
+     */
+    T create(KlPreferencesFactory preferencesFactory);
 
     /**
      * Restores an instance of type T using the provided preferences.
