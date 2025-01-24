@@ -334,10 +334,6 @@ public class GenEditingDetailsController {
                 readOnlyNode = klComponentFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
                 ObservableField<String> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
-
-                //readOnlyNode = rowf.createStringField(fieldRecord).klWidget();
-
-                // need ObservableField<String>, ObservableView
                 KlStringFieldFactory klStringFieldFactory = new KlStringFieldFactory();
                 readOnlyNode = klStringFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
