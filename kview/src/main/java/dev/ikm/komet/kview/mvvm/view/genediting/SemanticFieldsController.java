@@ -129,6 +129,7 @@ public class SemanticFieldsController {
                 ObservableField<Boolean> booleanObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
                 node = klBooleanFieldFactory.create(booleanObservableField, getViewProperties().nodeView(), true).klWidget();
+                node.setUserData(booleanObservableField);
             }
             // Add to VBox
             if (node != null) {
