@@ -382,7 +382,6 @@ public class JournalController {
         journalEventBus.subscribe(JOURNAL_TOPIC, CloseReasonerPanelEvent.class, closeReasonerPanelEventSubscriber);
 
         // initialize drag and drop for search results of next gen search
-
         setupDragNDrop(workspace, (publicId) -> {
         });
 
