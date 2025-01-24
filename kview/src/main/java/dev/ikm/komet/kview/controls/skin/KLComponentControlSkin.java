@@ -5,8 +5,8 @@ import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentListControl;
 import dev.ikm.komet.kview.controls.KLComponentSetControl;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -88,11 +88,15 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                conceptContainer.setVisible(true);
             }
         });
+
         control.entityProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 addConceptNode(getSkinnable().getEntity());
             }
         });
+        if (control.getEntity() != null) {
+            addConceptNode(control.getEntity());
+        }
     }
 
     /** {@inheritDoc} */
@@ -204,7 +208,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     ) { // TODO: should this be needed? shouldn't we get PublicId from dragboard content?
 
                         //if (control.getEntity() == null) {
-                            Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(dropInfo.publicId()));
+                            int nid = EntityService.get().nidForPublicId(dropInfo.publicId());
+                            EntityProxy entity = EntityProxy.make(nid);
                             if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
                                     !componentSetControl.getEntitiesList().contains(entity)) {
                                 control.setEntity(entity);
@@ -279,7 +284,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         return aboutToDropHBox;
     }
 
-    private void addConceptNode(Entity<?> entity) {
+    private void addConceptNode(EntityProxy entity) {
         Image identicon = Identicon.generateIdenticonImage(entity.publicId());
         ImageView imageView = new ImageView();
         imageView.setFitWidth(20);

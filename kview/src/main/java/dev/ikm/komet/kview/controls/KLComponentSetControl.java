@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLComponentSetControlSkin;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -59,11 +60,11 @@ public class KLComponentSetControl extends Control {
     /**
      * This property holds the list of {@link Entity Entities} that have been added to the control
      */
-    private final ListProperty<Entity<?>> entitiesProperty = new SimpleListProperty<>(FXCollections.observableList(new LinkedList<>()));
-    public final ListProperty<Entity<?>> entitiesProperty() {
+    private final ListProperty<EntityProxy> entitiesProperty = new SimpleListProperty<>(FXCollections.observableList(new LinkedList<>()));
+    public final ListProperty<EntityProxy> entitiesProperty() {
        return entitiesProperty;
     }
-    public final List<Entity<?>> getEntitiesList() {
+    public final List<EntityProxy> getEntitiesList() {
        return entitiesProperty.get();
     }
 
