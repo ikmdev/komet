@@ -165,16 +165,16 @@ public abstract class PreferenceProperty<T, I extends Property<T>> implements Pr
     }
 
     /**
-     * Creates a new {@code PreferencesPropertyObject} instance for the given {@code KlGadget}
+     * Creates a new {@code PreferencePropertyObject} instance for the given {@code KlGadget}
      * and {@code ClassConceptBinding}. This method initializes a preference property object
      * configured with the specified gadget and binding.
      *
      * @param gadget  the {@code KlGadget} instance associated with the preference property.
      * @param binding the {@code ClassConceptBinding} used to define bindings and initialize the property.
-     * @return a new instance of {@code PreferencesPropertyObject} configured with the given gadget and binding.
+     * @return a new instance of {@code PreferencePropertyObject} configured with the given gadget and binding.
      */
-    public static PreferencesPropertyObject objectProp(KlGadget gadget, ClassConceptBinding binding) {
-        return PreferencesPropertyObject.create(gadget, binding);
+    public static PreferencePropertyObject objectProp(KlGadget gadget, ClassConceptBinding binding) {
+        return PreferencePropertyObject.create(gadget, binding);
     }
 
     @Override

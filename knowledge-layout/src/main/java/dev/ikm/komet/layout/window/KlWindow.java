@@ -3,7 +3,6 @@ package dev.ikm.komet.layout.window;
 import dev.ikm.komet.layout.KlGadget;
 import dev.ikm.komet.layout.preferences.PropertyWithDefault;
 import javafx.scene.Parent;
-import javafx.stage.Window;
 
 /**
  * A top-level window within which a scene is hosted, and with which the user interacts.
@@ -34,12 +33,62 @@ public interface KlWindow<W> extends KlGadget<W> {
      * preferences, ensuring a consistent user experience across sessions.
      */
     enum PreferenceKeys implements PropertyWithDefault {
-        WINDOW_X_LOCATION(0),
-        WINDOW_Y_LOCATION(0),
-        WINDOW_WIDTH(800),
-        WINDOW_HEIGHT(500),
-        VISIBLE(false),
-        OPACITY(1.0);
+        /**
+         * Represents the horizontal location of the window on the screen.
+         * This preference key is used to specify the default X-coordinate position
+         * of a top-level window within the application. The value determines the
+         * initial horizontal offset from the left edge of the screen where the window
+         * will be displayed.
+         *
+         * Default value: 0.0
+         */
+        WINDOW_X_LOCATION(0d),
+        /**
+         * Represents the vertical location of the window on the screen.
+         * This preference key is used to specify the default Y-coordinate position
+         * of a top-level window within the application. The value determines the
+         * initial vertical offset from the top edge of the screen where the window
+         * will be displayed.
+         *
+         * Default value: 0.0
+         */
+        WINDOW_Y_LOCATION(0d),
+        /**
+         * Represents the default width of a top-level window in the application.
+         * This preference key is used to specify the default horizontal dimension
+         * of the window in pixels. The value determines the initial width when
+         * the window is created or restored to its default state.
+         *
+         * Default value: 800.0
+         */
+        WINDOW_WIDTH(800d),
+        /**
+         * Represents the default height of a window in the Komet application's layout system.
+         *
+         * This variable defines the initial height for a window, measured in units, which is
+         * typically used during the creation or rendering of a UI window. It provides a
+         * pre-set default value to maintain consistency across windows and ensure proper layout
+         * proportions within the application.
+         */
+        WINDOW_HEIGHT(500d),
+        /**
+         * A constant that determines the visibility state of a certain component or element within the application.
+         * It is primarily used to toggle the visibility of the associated component between visible (true)
+         * and hidden (false) states.
+         *
+         * Initial value: false, meaning the component is hidden by default.
+         */
+        WINDOW_VISIBLE(false),
+
+        /**
+         * Represents the opacity level for a component or layout in the context of the Komet application's windowing framework.
+         *
+         * The {@code OPACITY} variable defines the transparency level using a double value ranging from 0.0 to 1.0.
+         * A value of 0.0 represents complete transparency, while a value of 1.0 corresponds to full opacity.
+         *
+         * Default value: 1.0
+         */
+        WINDOW_OPACITY(1.0d);
 
         final Object defaultValue;
 
