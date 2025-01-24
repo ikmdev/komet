@@ -21,17 +21,18 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
 import dev.ikm.komet.kview.klfields.editable.EditableKLFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.integerField.KlIntegerFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
-import dev.ikm.komet.layout.component.version.field.KlField;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -103,14 +104,13 @@ public class SemanticFieldsController {
             int dataTypeNid = fieldRecord.dataType().nid();
             if (dataTypeNid == TinkarTerm.COMPONENT_FIELD.nid()) {
                 // load a read-only component
-                KlField klField = editFieldFactory.createComponent(fieldRecord);
-                node = klField.klWidget();
-                node.setUserData(klField.field());
+                KlComponentFieldFactory componentFieldFactory = new KlComponentFieldFactory();
+                ObservableField<EntityProxy> componentObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                node = componentFieldFactory.create(componentObservableField, getViewProperties().nodeView(), true).klWidget();
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
                 KlStringFieldFactory stringFieldTextFactory = new KlStringFieldFactory();
                 ObservableField<String> stringObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 node = stringFieldTextFactory.create(stringObservableField, getViewProperties().nodeView(), true).klWidget();
-                node.setUserData(stringObservableField);
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 node = rowf.createReadOnlyComponentSet(getViewProperties(), fieldRecord);
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
@@ -119,12 +119,10 @@ public class SemanticFieldsController {
                 ObservableField<Float> floatObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
                 node = klFloatFieldFactory.create(floatObservableField, getViewProperties().nodeView(), true).klWidget();
-                node.setUserData(floatObservableField);
             }else if (dataTypeNid == TinkarTerm.INTEGER_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.INTEGER_FIELD.nid()) {
                 ObservableField<Integer> integerObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
                 node = klIntegerFieldFactory.create(integerObservableField, getViewProperties().nodeView(), true).klWidget();
-                node.setUserData(integerObservableField);
             }
             // Add to VBox
             if (node != null) {
