@@ -1093,83 +1093,6 @@ selected(active) - dark black
     -fx-max-width: 2000;
 }
 
-.desktop-area {
-    /*-fx-background-image: url("journal/grid-2x2-segment.png");*/
-    -fx-background-color: transparent;
-}
-
-.desktop-scroll-pane {
-    -fx-background-color: #cad3e2;
-    -fx-background-insets: 0;
-    -fx-padding: 0 -12 -12 0;
-}
-
-.desktop-scroll-pane > .viewport {
-    -fx-background-color: transparent;
-    -fx-padding: 0;
-}
-
-.desktop-scroll-pane > .corner {
-    -fx-background-color: transparent;
-}
-
-.desktop-scroll-pane > .scroll-bar {
-    -fx-background-color: transparent;
-}
-
-.desktop-scroll-pane > .scroll-bar:vertical {
-    -fx-min-width: 0;
-    -fx-pref-width: 0;
-    -fx-max-width: 0;
-    -fx-padding: 3 3 3 -12;
-}
-
-.desktop-scroll-pane > .scroll-bar:horizontal {
-    -fx-min-height: 0;
-    -fx-pref-height: 0;
-    -fx-max-height: 0;
-    -fx-padding: -12 3 3 3;
-}
-
-.desktop-scroll-pane > .scroll-bar .track {
-    -fx-background-color: transparent;
-}
-
-.desktop-scroll-pane > .scroll-bar:vertical .track {
-    -fx-background-insets: 0 12 0 0;
-}
-
-.desktop-scroll-pane > .scroll-bar:horizontal .track {
-    -fx-background-insets: 0 0 12 0;
-}
-
-.desktop-scroll-pane > .scroll-bar .thumb {
-     -fx-background-color: -Grey-1, rgba(0, 0, 0, 0.4);
-     -fx-background-insets: 0, 1;
-     -fx-background-radius: 6px;
-    -fx-padding: 0;
-}
-
-.desktop-scroll-pane > .scroll-bar:hover .thumb {
-    -fx-background-color: -Grey-1, rgba(0, 0, 0, 0.5);
-}
-
-.desktop-scroll-pane > .scroll-bar .increment-button,
-.desktop-scroll-pane > .scroll-bar .decrement-button {
-    -fx-background-insets: 0;
-    -fx-min-width: 0;
-    -fx-pref-width: 0;
-    -fx-min-height: 0;
-    -fx-pref-height: 0;
-    -fx-padding: 0;
-}
-
-.desktop-scroll-pane > .scroll-bar .increment-arrow,
-.desktop-scroll-pane > .scroll-bar .decrement-arrow {
-    -fx-shape: " ";
-    -fx-padding: 0;
-}
-
 .chapter-block-bar-stack {
     -icon-paint: -Grey-10;
     -default-height: 48px;
@@ -3076,23 +2999,6 @@ Timeline Year line segment (will overlay change circles)
     -fx-min-width: 212px;
 }
 
-.desktop-drop-region {
-    -height: 940px;
-    -width: 672px;
-    -fx-min-width: -width;
-    -fx-min-height: -height;
-    -fx-pref-width: -width;
-    -fx-pref-height: -height;
-    -fx-border-color: -Primary-04;
-    -fx-border-radius: 8;
-    -fx-border-width: 4;
-    -fx-border-style: segments(12, 16) phase -8 line-join round line-cap round;
-    -fx-background-radius: 8;
-    -fx-background-insets: 0, 4;
-    /* The second color is obtained as a result of blending the current workspace background color and the white color with 50% opacity */
-    -fx-background-color: white, #e5e9f1;
-}
-
 .draggable-node:snapshot {
     -fx-border-color: -Primary-05;
     -fx-border-radius: 0;
@@ -4756,8 +4662,8 @@ Styling a context menu for kview ui/ux controls
     -fx-border-insets: 0;
 }
 
-.pattern-window.concept-detail-pane .main-center-container .titled-pane .title,
-.lidr-window.concept-detail-pane .main-center-container .titled-pane .title {
+.pattern-window.concept-detail-pane .main-center-container .titled-pane >  .title,
+.lidr-window.concept-detail-pane .main-center-container .titled-pane > .title {
     -fx-padding: 8 4 4 6;
 }
 
@@ -4961,11 +4867,12 @@ Styling a context menu for kview ui/ux controls
 
 /* Semantic Details section - VBox */
 .semantic-field-container {
-    -height: 58;
-    -fx-min-height: -height;
-    -fx-pref-height: -height;
+    -fx-min-height: 58px;
+
+    -fx-spacing: 12px;
+
     -fx-fill-width: true;
-    -fx-padding: 8px 12px;
+    -fx-padding: 16px 8px 20px 8px;
     -fx-background-color: -Grey-1;
 }
 .semantic-field-set-container,
