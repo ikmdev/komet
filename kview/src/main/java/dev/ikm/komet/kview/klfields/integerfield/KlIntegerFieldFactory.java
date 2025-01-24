@@ -1,4 +1,4 @@
-package dev.ikm.komet.kview.klfields.integerField;
+package dev.ikm.komet.kview.klfields.integerfield;
 
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ObservableView;
