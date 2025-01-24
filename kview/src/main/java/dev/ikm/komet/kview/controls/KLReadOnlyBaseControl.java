@@ -16,7 +16,7 @@ public abstract class KLReadOnlyBaseControl extends Control {
     public void setTitle(String title) { this.title.set(title); }
 
     // -- prompt text
-    private StringProperty promptText = new SimpleStringProperty();
+    private StringProperty promptText = new SimpleStringProperty("[Placeholder]");
     public String getPromptText() { return promptText.get(); }
     public StringProperty promptTextProperty() { return promptText; }
     public void setPromptText(String text) { this.promptText.set(text); }

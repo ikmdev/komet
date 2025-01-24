@@ -24,7 +24,7 @@
         <BorderPane styleClass="sample-control-container">
             <left>
                 <VBox prefWidth="500" styleClass="inner-container" fillWidth="true">
-                    <KLReadOnlyComponentControl fx:id="readOnlyComponentControl" title="A TITLE:" text="[Placehoder]">
+                    <KLReadOnlyComponentControl fx:id="readOnlyComponentControl" title="A TITLE:" promptText="[Placeholder]">
                         <icon>
                             <Image url="@icon-example.png" />
                         </icon>
