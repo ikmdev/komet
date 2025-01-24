@@ -344,7 +344,6 @@ public class GenEditingDetailsController {
         Consumer<FieldRecord<Object>> updateUIConsumer = (fieldRecord) -> {
 
             Node readOnlyNode = null;
-            System.out.println("---> dataType() " + fieldRecord.dataType().description());
             int dataTypeNid = fieldRecord.dataType().nid();
 
             // substitute each data type.
