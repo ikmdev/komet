@@ -47,6 +47,7 @@ import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.integerField.KlIntegerFieldFactory;
+import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
@@ -347,6 +348,11 @@ public class GenEditingDetailsController {
                 ObservableField<Integer> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
                 readOnlyNode = klIntegerFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
+            } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
+                ObservableField<Boolean> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
+                readOnlyNode = klBooleanFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
+
             }
 
             // Add to VBox
