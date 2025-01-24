@@ -1312,23 +1312,20 @@ public class DetailsController  {
     }
 
     private void updateUIStamp(ViewModel stampViewModel) {
-//        long time = stampViewModel.getValue(TIME);
-//        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
-//        Instant stampInstance = Instant.ofEpochSecond(time/1000);
-//        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-//        String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
+        long time = stampViewModel.getValue(TIME);
+        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
+        Instant stampInstance = Instant.ofEpochSecond(time/1000);
+        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
+        String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
 
-        //FIXME do property binding
-        //lastUpdatedText.setText(lastUpdated);
+        lastUpdatedText.setText(lastUpdated);
         ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
         if (moduleEntity == null) {
             LOG.warn("Must select a valid module for Stamp.");
             return;
         }
         String moduleDescr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleEntity.nid());
-        //FIXME do property binding
-        //moduleText.setText(moduleDescr);
-        getStampViewModel().setPropertyValue(MODULE, moduleEntity);
+        moduleText.setText(moduleDescr);
         ConceptEntity pathEntity = stampViewModel.getValue(PATH);
         String pathDescr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
         //FIXME do property binding
@@ -1336,9 +1333,7 @@ public class DetailsController  {
         getStampViewModel().setPropertyValue(PATH, pathEntity);
         State status = stampViewModel.getValue(STATUS);
         String statusMsg = status == null ? "Active" : viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
-        //FIXME do property binding
-        //statusText.setText(statusMsg);
-        getStampViewModel().setPropertyValue(STATUS, status);
+        statusText.setText(statusMsg);
     }
 
     public void compactSizeWindow() {
