@@ -1,14 +1,10 @@
 package dev.ikm.komet.layout;
 
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
-import dev.ikm.komet.layout.window.KlWhiteBoardFactory;
-import dev.ikm.komet.layout.window.KlWindow;
 import dev.ikm.komet.preferences.KometPreferences;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
-
-import java.util.function.Supplier;
 
 /**
  * Defines a factory for creating and restoring instances of {@link KlGadget}.

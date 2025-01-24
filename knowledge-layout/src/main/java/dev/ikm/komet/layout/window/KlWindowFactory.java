@@ -53,13 +53,14 @@ public interface KlWindowFactory<W> extends KlFactory<KlWindow<W>> {
      * The generated actions allow users to instantiate new windows with configurations
      * provided by the given factories.
      *
-     * @param whiteBoardFactories Varargs parameter of {@link KlWhiteBoardFactory} instances,
+     * @param windowPaneFactories Varargs parameter of {@link KlWindowPaneFactory} instances,
      *                            each responsible for generating a specific type of whiteboard
      *                            to be included in a new window.
      * @return An {@code ImmutableList<Action>} containing actions for creating new windows
      *         with whiteboards from the specified factories.
      */
-    ImmutableList<Action> createNewWindowActions(KlWhiteBoardFactory... whiteBoardFactories);
+    ImmutableList<Action> createNewWindowActions(KlPreferencesFactory preferencesFactory,
+                                                 KlWindowPaneFactory... windowPaneFactories);
 
     /**
      * Restores a previously configured instance of {@link KlWindow} using the provided preferences.
@@ -76,26 +77,26 @@ public interface KlWindowFactory<W> extends KlFactory<KlWindow<W>> {
 
     /**
      * Creates and returns an immutable list of actions that can be used to create new windows
-     * from the discovered {@link KlWhiteBoardFactory} providers.
+     * from the discovered {@link KlWindowPaneFactory} providers.
      *
      * @return An {@code ImmutableList<Action>} representing actions for restoring windows.
      */
     ImmutableList<Action> createRestoreWindowActions();
 
     /**
-     * Creates a list of actions to open new windows by discovering available {@link KlWhiteBoardFactory}
+     * Creates a list of actions to open new windows by discovering available {@link KlWindowPaneFactory}
      * implementations. Each action, when triggered, launches a new {@link KlWindow} instance
-     * with configurations provided by the respective {@link KlWhiteBoardFactory}.
+     * with configurations provided by the respective {@link KlWindowPaneFactory}.
      *
      * @param preferencesFactory A {@link KlPreferencesFactory} instance used to supply preferences
      *                           for the creation of new windows. These preferences define the state
      *                           and configuration of the windows to be created.
      *
      * @return An {@code ImmutableList<Action>} containing actions for creating new windows,
-     *         each associated with a discovered {@link KlWhiteBoardFactory}.
+     *         each associated with a discovered {@link KlWindowPaneFactory}.
      */
     default ImmutableList<Action> createNewWindowActionsByDiscovery(KlPreferencesFactory preferencesFactory) {
-        ServiceLoader<KlWhiteBoardFactory> serviceLoader = PluggableService.load(KlWhiteBoardFactory.class);
+        ServiceLoader<KlWindowPaneFactory> serviceLoader = PluggableService.load(KlWindowPaneFactory.class);
         MutableList<Action> actions = Lists.mutable.empty();
         serviceLoader.forEach(whiteBoardFactory ->
                 actions.add(new Action("New " + whiteBoardFactory.name(), event -> {

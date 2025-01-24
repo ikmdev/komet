@@ -11,7 +11,8 @@ public interface KlPreferencesFactory extends Supplier<KometPreferences>{
 
     /**
      * Provides a new unique instance of {@code KometPreferences} associated with the specified
-     * implementation class within the parent preferences node.
+     * implementation class within the parent preferences node. Multiple calls will create multiple
+     * unique instances of {@code KometPreferences}, all with the same parent.
      *
      * @return a {@code KometPreferences} instance uniquely associated with the implementation class
      *         and created within the parent preferences node

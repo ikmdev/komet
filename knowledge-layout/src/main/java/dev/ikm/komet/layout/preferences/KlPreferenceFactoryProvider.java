@@ -17,7 +17,7 @@ class KlPreferenceFactoryProvider  {
      */
     static class PreferenceFactoryWithParentFactory implements KlPreferencesFactory {
         private final KlPreferencesFactory preferencesFactory;
-        private final AtomicReference<KometPreferences> parentPreferences = new AtomicReference<>();
+        private final AtomicReference<KometPreferences> parentPreferencesReference = new AtomicReference<>();
         private final Class implementationClass;
 
         PreferenceFactoryWithParentFactory(KlPreferencesFactory preferencesFactory, Class implementationClass) {
@@ -27,10 +27,10 @@ class KlPreferenceFactoryProvider  {
 
         @Override
         public KometPreferences get() {
-            return parentPreferences.accumulateAndGet(null,
+            KometPreferences parentPreferences = parentPreferencesReference.accumulateAndGet(null,
                     (existingValue, unused) ->
-                            existingValue != null ? existingValue :
-                                    createSequentiallyUniquePreferences(preferencesFactory.get(), implementationClass));
+                            existingValue != null ? existingValue : preferencesFactory.get());
+            return createSequentiallyUniquePreferences(parentPreferences, implementationClass);
         }
 
         /**

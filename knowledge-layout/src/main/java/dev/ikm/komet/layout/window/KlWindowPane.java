@@ -3,21 +3,22 @@ package dev.ikm.komet.layout.window;
 import dev.ikm.komet.layout.KlGadget;
 import dev.ikm.komet.layout.preferences.PropertyWithDefault;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.layout.BorderPane;
 
 /**
  * Represents a Knowledge Layout (KL) Scene, serving as a part of the broader layout framework.
- * The KlWhiteBoard interface provides methods to access the scene and its root {@link javafx.scene.Node}, and inherits
+ * The KlWindowPane interface provides methods to access the scene and its root {@link javafx.scene.Node}, and inherits
  * behavior for managing preferences and acting as a KlGadget.
  *
  * This interface extends KlUniversalPreferences, enabling the retrieval and management of
- * preferences associated with the KlWhiteBoard, and KlGadget, allowing it to represent itself
+ * preferences associated with the KlWindowPane, and KlGadget, allowing it to represent itself
  * as a component within the Knowledge Layout system.
  *
  * Methods defined in this interface allow integration with the JavaFX framework, such as
  * retrieving the root node of the scene and accessing the entire JavaFX Scene instance.
  */
-public interface KlWhiteBoard<T extends Node> extends KlGadget<T> {
+public interface KlWindowPane<P extends Parent> extends KlGadget<P> {
 
     /**
      * Enumerates preference keys for managing transformations and properties of a Knowledge Layout (KL) Scene in the Komet application.
@@ -110,7 +111,7 @@ public interface KlWhiteBoard<T extends Node> extends KlGadget<T> {
      * Retrieves the root node of the whiteboard.
      * The root node serves as the top-most parent of all visual elements in the whiteboard hierarchy.
      *
-     * @return The {@link BorderPane} object representing the root node of the scene.
+     * @return The {@link Node} object representing the root node of the scene.
      */
-    BorderPane root();
+    P root();
 }
