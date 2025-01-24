@@ -10,7 +10,6 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 
 import java.util.ServiceLoader;
-import java.util.function.Supplier;
 
 /**
  * Factory interface for creating instances of {@link KlWindow}.
@@ -32,17 +31,6 @@ public interface KlWindowFactory<W> extends KlFactory<KlWindow<W>> {
     }
 
     /**
-     * The root location for the preferences for active windows within the context of the application.
-     */
-    String ACTIVE_WINDOWS = "ActiveWindows";
-
-    /**
-     * The root location for the preferences for layouts that can be used
-     * within the application. 
-     */
-    String WINDOW_LAYOUTS = "WindowLayouts";
-
-    /**
      * Retrieves the type of window that this factory is designed to create.
      *
      * @return The {@link WindowType} associated with the factory, specifying
@@ -51,17 +39,14 @@ public interface KlWindowFactory<W> extends KlFactory<KlWindow<W>> {
     WindowType factoryWindowType();
 
     /**
-     * Creates a new instance of {@link KlWindow} using the given preferences supplier.
-     * The preference supplier provides creates a {@code KometPreferences} instance to store the
-     * state of the window.
+     * Creates a new instance of {@link KlWindow} using the provided preferences factory.
      *
-     * @param preferencesSupplier A {@link Supplier} of {@link KometPreferences},
-     *                            which allows storing configuration preferences for the window.
-     *                            These preferences influence properties such as size,
-     *                            position, visibility, and other attributes.
-     * @return A new {@link KlWindow} instance configured with the supplied preferences.
+     * @param preferencesFactory The {@link KlPreferencesFactory} used to supply preferences for the creation
+     *                           of the {@link KlWindow}. These preferences define the state and configuration
+     *                           of the window to be created.
+     * @return A newly created instance of {@link KlWindow} configured with the specified preferences.
      */
-    W create(Supplier<KometPreferences> preferencesSupplier);
+    KlWindow<W> create(KlPreferencesFactory preferencesFactory);
 
     /**
      * Creates a list of actions for opening new windows using the specified whiteboard factories.
