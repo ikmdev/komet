@@ -11,28 +11,28 @@ import javafx.beans.property.SimpleObjectProperty;
  * {@code KlGadget} and {@code ClassConceptBinding} for managing and binding preference-based
  * property values.
  */
-public class PreferencesPropertyObject<E extends Encodable> extends PreferenceProperty<E, SimpleObjectProperty<E>> {
+public class PreferencePropertyObject<E extends Encodable> extends PreferenceProperty<E, SimpleObjectProperty<E>> {
 
     /**
-     * Constructs an instance of {@code PreferencesPropertyObject} with the specified gadget and binding.
+     * Constructs an instance of {@code PreferencePropertyObject} with the specified gadget and binding.
      *
      * @param gadget  the {@code KlGadget} instance associated with the preference property.
      * @param binding the {@code ClassConceptBinding} used to define bindings and initialize the property.
      */
-    protected PreferencesPropertyObject(KlGadget gadget, ClassConceptBinding binding) {
+    protected PreferencePropertyObject(KlGadget gadget, ClassConceptBinding binding) {
         super(new SimpleObjectProperty<E>(gadget, binding.fullyQualifiedNames().getAny(),
                 (E) PreferenceProperty.INITIAL_ENCODABLE_VALUE), binding);
     }
 
     /**
-     * Creates and returns a new instance of {@code PreferencesPropertyObject} using the specified gadget and binding.
+     * Creates and returns a new instance of {@code PreferencePropertyObject} using the specified gadget and binding.
      *
      * @param gadget  the {@code KlGadget} instance associated with the preference property.
      * @param binding the {@code ClassConceptBinding} used to define bindings and initialize the property.
-     * @return a newly created {@code PreferencesPropertyObject} instance with the provided gadget and binding.
+     * @return a newly created {@code PreferencePropertyObject} instance with the provided gadget and binding.
      */
-    protected static PreferencesPropertyObject create(KlGadget gadget, ClassConceptBinding binding) {
-        return new PreferencesPropertyObject(gadget, binding);
+    protected static PreferencePropertyObject create(KlGadget gadget, ClassConceptBinding binding) {
+        return new PreferencePropertyObject(gadget, binding);
     }
 
 }

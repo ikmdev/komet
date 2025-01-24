@@ -1,11 +1,9 @@
 package dev.ikm.komet.layout.window;
 
 import dev.ikm.komet.layout.KlFactory;
-import dev.ikm.komet.layout.KlGadget;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.service.PluggableService;
-import javafx.stage.Window;
 import org.controlsfx.control.action.Action;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;

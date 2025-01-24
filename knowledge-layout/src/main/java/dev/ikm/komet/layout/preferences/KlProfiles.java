@@ -75,7 +75,7 @@ public class KlProfiles {
      * @return A {@code KlPreferencesFactory} instance for the shared layout preferences.
      */
     public static KlPreferencesFactory sharedLayoutPreferenceFactory(Class implementationClass) {
-        return KlPreferencesFactory.createFactory(sharedLayoutPreferences(), implementationClass);
+        return KlPreferencesFactory.create(sharedLayoutPreferences(), implementationClass);
     }
 
     /**
@@ -94,7 +94,7 @@ public class KlProfiles {
      * @return A {@code KlPreferencesFactory} instance for the shared window preferences.
      */
     public static KlPreferencesFactory sharedWindowPreferenceFactory(Class implementationClass) {
-        return KlPreferencesFactory.createFactory(sharedWindowPreferences(), implementationClass);
+        return KlPreferencesFactory.create(sharedWindowPreferences(), implementationClass);
     }
 
     /**
@@ -125,7 +125,7 @@ public class KlProfiles {
      * @return A {@code KlPreferencesFactory} instance for the specified user's window preferences.
      */
     public static KlPreferencesFactory userWindowPreferenceFactory(String userName, Class implementationClass) {
-        return KlPreferencesFactory.createFactory(userWindowPreferences(userName), implementationClass);
+        return KlPreferencesFactory.create(userWindowPreferences(userName), implementationClass);
     }
     /**
      * Provides access to the layout preferences node for a specific user.
@@ -146,7 +146,7 @@ public class KlProfiles {
      * @return A {@code KlPreferencesFactory} instance for the specified user's layout preferences.
      */
     public static KlPreferencesFactory userLayoutPreferenceFactory(String userName, Class implementationClass) {
-        return KlPreferencesFactory.createFactory(userLayoutPreferences(userName), implementationClass);
+        return KlPreferencesFactory.create(userLayoutPreferences(userName), implementationClass);
     }
 
 }
