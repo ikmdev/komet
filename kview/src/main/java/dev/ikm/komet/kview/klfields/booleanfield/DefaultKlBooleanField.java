@@ -54,10 +54,11 @@ public class DefaultKlBooleanField extends BaseDefaultKlField<Boolean> implement
             //TODO get both toggles by their IDs and compare to the selected toggle
             //inside the toggle group it will tell us the selection, but not true|false
 
-            BooleanBinding booleanBinding = Bindings.createBooleanBinding(
-                    //TODO callable
-                    , observableBooleanField.valueProperty()
-            );
+            //FIXME set up the callable
+//            BooleanBinding booleanBinding = Bindings.createBooleanBinding(
+//                    //TODO callable
+//                    , observableBooleanField.valueProperty()
+//            );
 
 //            if (toggleGroup.getSelectedToggle().equals(radio1)) { // True
 //                observableBooleanField.valueProperty().
