@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import dev.ikm.komet.kview.NodeUtils;
 import dev.ikm.komet.kview.controls.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.SeparatorMenuItem;
@@ -33,11 +34,25 @@ public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KL
         iconImageView.setFitWidth(20);
         iconImageView.setFitHeight(20);
 
+        initTexts(control);
+
         setupContextMenu(control);
 
         // CSS
         textContainer.getStyleClass().add("text-container");
         textLabel.getStyleClass().add("text");
+    }
+
+    private void initTexts(KLReadOnlyComponentControl control) {
+        updatePromptTextAndTextLabelVisibility(control);
+        control.textProperty().addListener(observable -> updatePromptTextAndTextLabelVisibility(control));
+    }
+
+    private void updatePromptTextAndTextLabelVisibility(KLReadOnlyComponentControl control) {
+        boolean showPromptText = control.getText() == null || control.getText().isEmpty();
+
+        NodeUtils.setShowing(promptTextLabel, showPromptText);
+        NodeUtils.setShowing(textLabel, !showPromptText);
     }
 
     private void setupContextMenu(KLReadOnlyComponentControl control) {
