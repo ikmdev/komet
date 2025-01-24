@@ -51,6 +51,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.viewmodel.ViewModel;
@@ -62,12 +63,23 @@ import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.OptionalInt;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static dev.ikm.komet.framework.events.FrameworkTopics.SEARCH_SORT_TOPIC;
-import static dev.ikm.komet.kview.events.SearchSortOptionEvent.*;
+import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT;
+import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT_ALPHA;
+import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC;
+import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC_ALPHA;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 
 public class NextGenSearchController extends AbstractBasicController {
@@ -107,11 +119,10 @@ public class NextGenSearchController extends AbstractBasicController {
 
     private EvtBus eventBus;
 
-
-
     @FXML
     public void initialize() {
         eventBus = EvtBusFactory.getDefaultEvtBus();
+
         clearView();
 
         setUpSearchOptionsPopOver();
@@ -381,15 +392,17 @@ public class NextGenSearchController extends AbstractBasicController {
         AtomicReference<Node> entry = new AtomicReference<>();
         latestTopVersion.ifPresent(entityVersion -> {
 
-            JFXNode<Pane, SortResultConceptEntryController> searchConceptEntryJFXNode = FXMLMvvmLoader
-                    .make(SortResultConceptEntryController.class.getResource(SORT_CONCEPT_RESULT_CONCEPT_FXML));
+            Config config = new Config(SortResultConceptEntryController.class.getResource(SORT_CONCEPT_RESULT_CONCEPT_FXML));
+            config.updateViewModel("searchEntryViewModel", (searchEntryViewModel) -> searchEntryViewModel.addProperty(VIEW_PROPERTIES, getViewProperties()));
+            JFXNode<Pane, SortResultConceptEntryController> searchConceptEntryJFXNode = FXMLMvvmLoader.make(config);
             entry.set(searchConceptEntryJFXNode.node());
             SortResultConceptEntryController controller = searchConceptEntryJFXNode.controller();
+
 
             controller.setIdenticon(Identicon.generateIdenticonImage(entityVersion.publicId()));
             controller.setWindowView(windowView);
             Entity entity = Entity.get(entityVersion.nid()).get();
-            controller.setData((ConceptEntity) entity);
+            controller.setData(entity);
             controller.setComponentText(topText);
 
             // add the custom descriptions
