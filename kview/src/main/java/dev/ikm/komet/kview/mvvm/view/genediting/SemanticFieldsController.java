@@ -164,7 +164,6 @@ public class SemanticFieldsController {
     @FXML
     public void submit(ActionEvent actionEvent) {
         actionEvent.consume();
-        System.out.println(actionEvent);
         List<ObservableField> list = new ArrayList<>();
         observableFields.forEach(observableField -> {
             if (observableField != null) {

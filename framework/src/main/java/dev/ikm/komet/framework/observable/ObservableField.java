@@ -78,7 +78,7 @@ public class ObservableField<T> implements Field<T> {
 
             // Create transaction
             Transaction t = Transaction.make();
-            System.out.println("inside if");
+
             // newStamp already written to the entity store.
             StampEntity newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), version.entity());
 
@@ -90,7 +90,7 @@ public class ObservableField<T> implements Field<T> {
             // Entity provider will broadcast the nid of the changed entity.
             Entity.provider().putEntity(analogue);
         } else {
-            System.out.println("inside else");
+
             SemanticVersionRecord newVersion = version.withFieldValues(fieldsForNewVersion.toImmutable());
             // if a version with the same stamp as newVersion exists, that version will be removed
             // prior to adding the new version so you don't get duplicate versions with the same stamp.

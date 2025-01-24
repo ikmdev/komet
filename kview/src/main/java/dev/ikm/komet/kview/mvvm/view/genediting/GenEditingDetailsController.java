@@ -238,23 +238,13 @@ public class GenEditingDetailsController {
         //Set up the Listener to refresh the details area
         Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
             if (evt.getEventType() == GenEditingEvent.PUBLISH) {
-//                try {
-//                    Thread.sleep(5000);
-//                } catch (InterruptedException e) {
-//                    throw new RuntimeException(e);
-//                }
-
                 Platform.runLater(() -> {
                     for(int i=0; i < evt.getList().size(); i++){
                         ObservableField field = observableFields.get(i);
                         ObservableField updatedField = evt.getList().get(i);
-
-                        System.out.println("Field index: " + field.fieldIndex() + ":: updatedField index " + updatedField.fieldIndex());
-                        System.out.println("Field value: " + field.value() + ":: updatedField value " + updatedField.value());
                         if(updatedField != null && field != null){
                             field.valueProperty().setValue(updatedField.valueProperty().getValue());
                         }
-
                     }
                 });
             }
