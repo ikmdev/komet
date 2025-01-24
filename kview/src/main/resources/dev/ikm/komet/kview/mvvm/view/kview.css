@@ -4997,6 +4997,36 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: white;
 }
 
+.klradio.radio-button > .radio {
+    -fx-background-color: #4277D8;
+    -fx-fill: white;
+    -fx-shape: "M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z";
+}
+
+.klradio.radio-button:selected > .radio .dot {
+    -fx-background-color: #4277D8;
+    -fx-fill: white;
+    -fx-shape: "M12 17C14.7614 17 17 14.7614 17 12C17 9.23858 14.7614 7 12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17Z";
+}
+
+.kl-boolean-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-line-height: 16px;
+    -fx-text-fill: black;
+}
+
+.kl-boolean-selection {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-line-height: 16px;
+    -fx-text-fill: -Grey-11;
+}
+
 /*******************************************************************************
  *                                                                             *
  * Icons                                                                       *
@@ -5014,3 +5044,4 @@ Styling a context menu for kview ui/ux controls
 .icon.plus {
     -fx-shape: "M9.99935 1.66699C5.40685 1.66699 1.66602 5.40782 1.66602 10.0003C1.66602 14.5928 5.40685 18.3337 9.99935 18.3337C14.5919 18.3337 18.3327 14.5928 18.3327 10.0003C18.3327 5.40782 14.5919 1.66699 9.99935 1.66699ZM9.99935 3.33366C13.6911 3.33366 16.666 6.30856 16.666 10.0003C16.666 13.6921 13.6911 16.667 9.99935 16.667C6.30758 16.667 3.33268 13.6921 3.33268 10.0003C3.33268 6.30856 6.30758 3.33366 9.99935 3.33366ZM9.16602 5.83366V9.16699H5.83268V10.8337H9.16602V14.167H10.8327V10.8337H14.166V9.16699H10.8327V5.83366H9.16602Z";
 }
+
