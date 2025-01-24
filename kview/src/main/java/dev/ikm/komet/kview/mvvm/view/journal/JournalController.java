@@ -15,44 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.journal;
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
-import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
-import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
-import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
-import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CREATE;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.MODE;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.CONCEPT_FOLDER_PREFIX;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_HEIGHT;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_XPOS;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_YPOS;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_HEIGHT;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_PREF_NAME;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_WIDTH;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_XPOS;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_YPOS;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_TYPE;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_VALUE;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_FOLDER_PREFIX;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_COUNT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_NAMES;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
-import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
-import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
-import static java.io.File.separator;
-import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
-
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -139,8 +101,14 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -171,6 +139,44 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.prefs.BackingStoreException;
+
+import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
+import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
+import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
+import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CREATE;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.MODE;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.CONCEPT_FOLDER_PREFIX;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_HEIGHT;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_XPOS;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_YPOS;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_HEIGHT;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_PREF_NAME;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_WIDTH;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_XPOS;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_YPOS;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_TYPE;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_VALUE;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_FOLDER_PREFIX;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_COUNT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_NAMES;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
+import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
+import static java.io.File.separator;
+import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
 
 /**
  * This view is responsible for updating the kView journal window by loading a navigation panel
@@ -306,7 +312,6 @@ public class JournalController {
 
     public JournalController() {
         journalTopic = UUID.randomUUID();
-        ;
     }
 
     /**
@@ -378,7 +383,8 @@ public class JournalController {
 
         // initialize drag and drop for search results of next gen search
 
-        setupDragNDrop(workspace, (publicId) -> {});
+        setupDragNDrop(workspace, (publicId) -> {
+        });
 
         workspace.addEventHandler(MouseEvent.MOUSE_CLICKED, this::onMouseClickedOnDesktopSurfacePane);
     }
@@ -1494,7 +1500,7 @@ public class JournalController {
         final String finalConceptFolderName = conceptFolderName.get();
         conceptWindows.add(new ConceptPreference(conceptFolderName.get(), null, -1, chapterWindow));
 
-        patternKlWindow.setOnClose(()-> removeLidrSetting(finalConceptFolderName));
+        patternKlWindow.setOnClose(() -> removeLidrSetting(finalConceptFolderName));
         patternKlWindow.onShown();
     }
 
