@@ -23,7 +23,7 @@ public class DefaultEditableKlComponentField implements EditableKlComponentField
 
             componentControl.entityProperty().addListener((observable, oldValue, newValue) -> {
                 // if changed update value.
-                Entity entity = newValue;
+//                Entity entity = newValue;
                 field().valueProperty().set(newValue);
                 componentControl.setTitle(field().field().meaning().description());
                 componentControl.setTooltip(new Tooltip(field().field().purpose().description()));
@@ -33,7 +33,7 @@ public class DefaultEditableKlComponentField implements EditableKlComponentField
                 if (newValue != null) {
                     Entity entity = (Entity) newValue.value();
                     Entity<?> entity2 = EntityService.get().getEntityFast(entity.nid());
-                    componentControl.entityProperty().set(entity2);
+//                    componentControl.entityProperty().set(entity2);
                     componentControl.setTitle(newValue.meaning().description());
                     componentControl.setTooltip(new Tooltip(newValue.purpose().description()));
                 }
@@ -41,7 +41,7 @@ public class DefaultEditableKlComponentField implements EditableKlComponentField
             EntityProxy entity = (EntityProxy) field().value();
             Entity<?> entity2 = EntityService.get().getEntityFast(entity.nid());
             field().valueProperty().set(entity2);
-            componentControl.entityProperty().set(entity2);
+//            componentControl.entityProperty().set(entity2);
             componentControl.setTitle(field().meaning().description());
             componentControl.setTooltip(new Tooltip(field().purpose().description()));
 

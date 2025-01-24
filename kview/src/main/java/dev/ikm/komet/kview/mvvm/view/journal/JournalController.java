@@ -15,6 +15,44 @@
  */
 package dev.ikm.komet.kview.mvvm.view.journal;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
+import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
+import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
+import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CREATE;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.MODE;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.CONCEPT_FOLDER_PREFIX;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_HEIGHT;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_XPOS;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_YPOS;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_HEIGHT;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_PREF_NAME;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_WIDTH;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_XPOS;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_YPOS;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_TYPE;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_VALUE;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_FOLDER_PREFIX;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_COUNT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_NAMES;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
+import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
+import static java.io.File.separator;
+import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
+
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -33,6 +71,7 @@ import dev.ikm.komet.framework.tabs.TabGroup;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.NotificationPopup;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
@@ -42,25 +81,24 @@ import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
-import dev.ikm.komet.kview.fxutils.window.WindowSupport;
+import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
+import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindowFactory;
 import dev.ikm.komet.kview.klwindows.genediting.GenEditingKlWindow;
 import dev.ikm.komet.kview.klwindows.genediting.GenEditingKlWindowFactory;
+import dev.ikm.komet.kview.klwindows.lidr.LidrKlWindow;
+import dev.ikm.komet.kview.klwindows.lidr.LidrKlWindowFactory;
 import dev.ikm.komet.kview.klwindows.pattern.PatternKlWindow;
 import dev.ikm.komet.kview.klwindows.pattern.PatternKlWindowFactory;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
-import dev.ikm.komet.kview.lidr.mvvm.view.details.LidrDetailsController;
-import dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.view.details.ConceptPreference;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
-import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
 import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
 import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
 import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
 import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
 import dev.ikm.komet.preferences.ConceptWindowSettings;
@@ -100,24 +138,11 @@ import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Side;
-import javafx.scene.Cursor;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
-import javafx.scene.input.DragEvent;
+
+import javafx.scene.control.*;
 import javafx.scene.input.Dragboard;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -130,8 +155,6 @@ import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
-import org.carlfx.cognitive.loader.NamedVm;
-import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
@@ -142,56 +165,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.prefs.BackingStoreException;
-
-import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
-import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
-import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
-import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CONCEPT_TOPIC;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CREATE;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.DEVICE_ENTITY;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.MODE;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STAMP_VIEW_MODEL;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.CONCEPT_FOLDER_PREFIX;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_HEIGHT;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_XPOS;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_YPOS;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_HEIGHT;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_PREF_NAME;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_WIDTH;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_XPOS;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_YPOS;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_TYPE;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_VALUE;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_FOLDER_PREFIX;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_COUNT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_NAMES;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
-import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
-import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
-import static java.io.File.separator;
-import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
 
 /**
  * This view is responsible for updating the kView journal window by loading a navigation panel
@@ -215,13 +194,7 @@ public class JournalController {
     private BorderPane journalBorderPane;
 
     @FXML
-    private ScrollPane desktopSurfaceScrollPane;
-
-    @FXML
-    private AnchorPane desktopSurfacePane;
-
-    @FXML
-    private Region desktopDropRegion;
+    private KLWorkspace workspace;
 
     @FXML
     private MenuItem newConceptMenuItem;
@@ -403,21 +376,17 @@ public class JournalController {
         closeReasonerPanelEventSubscriber = evt -> sidebarToggleGroup.selectToggle(null);
         journalEventBus.subscribe(JOURNAL_TOPIC, CloseReasonerPanelEvent.class, closeReasonerPanelEventSubscriber);
 
-        // initially drop region is invisible
-        desktopDropRegion.setVisible(false);
-
         // initialize drag and drop for search results of next gen search
-        setupDragNDrop(desktopSurfacePane, (publicId) -> {
-        });
 
-        // setup scalable desktop
-        setupScalableDesktop();
+        setupDragNDrop(workspace, (publicId) -> {});
 
-        desktopSurfacePane.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onMouseClickedOnDesktopSurfacePane(event));
+        workspace.addEventHandler(MouseEvent.MOUSE_CLICKED, this::onMouseClickedOnDesktopSurfacePane);
     }
 
     private void onMouseClickedOnDesktopSurfacePane(MouseEvent mouseEvent) {
-        if (mouseEvent.getTarget() == desktopSurfacePane) { // We are indeed just clicking on the background and none of its children
+        final Node intersectedNode = mouseEvent.getPickResult().getIntersectedNode();
+        if (intersectedNode.getStyleClass().contains(DESKTOP_PANE_STYLE_CLASS)) {
+            // We are indeed just clicking on the background and none of its children
             collapseTrayPanes();
         }
     }
@@ -464,63 +433,7 @@ public class JournalController {
         return pane;
     }
 
-    private void setupScalableDesktop() {
-        journalBorderPane.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
-            // if control key down make desktop surface mouse transparent.
-            // Meaning don't allow the dragging of concept windows, but allow panning of desktop surface.
-            if (keyEvent.getCode() == KeyCode.CONTROL) {
-                desktopSurfacePane.setMouseTransparent(true);
-                desktopSurfaceScrollPane.setPannable(true);
-                StackPane viewport = (StackPane) desktopSurfaceScrollPane.lookup(".viewport");
-                viewport.setCursor(Cursor.OPEN_HAND); // Indicate dragging with open hand
-                desktopSurfaceScrollPane.requestFocus();
-            }
-        });
-
-        journalBorderPane.addEventHandler(KeyEvent.KEY_RELEASED, keyEvent -> {
-            // Turn desktop surface back to listen for drag and mouse press and set cursor back to default.
-            if (keyEvent.getCode() == KeyCode.CONTROL) {
-                desktopSurfacePane.setMouseTransparent(false);
-                desktopSurfaceScrollPane.setPannable(false);
-                StackPane viewport = (StackPane) desktopSurfaceScrollPane.lookup(".viewport");
-                viewport.setCursor(Cursor.DEFAULT); // Revert back to default cursor
-            }
-        });
-
-        desktopSurfaceScrollPane.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
-            if (mouseEvent.isPrimaryButtonDown() && desktopSurfaceScrollPane.isPannable()) {
-                StackPane viewport = (StackPane) desktopSurfaceScrollPane.lookup(".viewport");
-                viewport.setCursor(Cursor.CLOSED_HAND); // Indicate dragging with closed hand
-            }
-        });
-
-        desktopSurfaceScrollPane.addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
-            if (desktopSurfaceScrollPane.isPannable()) {
-                StackPane viewport = (StackPane) desktopSurfaceScrollPane.lookup(".viewport");
-                viewport.setCursor(Cursor.OPEN_HAND); // Revert back to open hand after dragging
-            }
-        });
-    }
-
     private void setupDragNDrop(Node node, Consumer<PublicId> consumer) {
-        node.setOnDragOver(event -> {
-            boolean isMouseOverNode = isMouseOverNode(node, event);
-            desktopDropRegion.setVisible(isMouseOverNode);
-            desktopDropRegion.setManaged(isMouseOverNode);
-
-            /* data is dragged over the target */
-            /* accept it only if it is not dragged from the same node
-             * and if it has a string data */
-            if (event.getGestureSource() != null &&
-                    event.getDragboard().hasString()) {
-                /* allow for both copying and moving, whatever user chooses */
-                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-            }
-            event.consume();
-        });
-
-        node.setOnDragExited(event -> desktopDropRegion.setVisible(false));
-
         node.setOnDragDropped(event -> {
             /* data dropped */
             /* if there is a string data on dragboard, read it and use it */
@@ -575,13 +488,7 @@ public class JournalController {
                     if (dragAndDropType.equals(DragAndDropType.CONCEPT)) {
                         publicId = conceptFacade.publicId();
                         Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-
-                        Map<ConceptWindowSettings, Object> conceptWindowSettingsMap = new HashMap<>();
-                        conceptWindowSettingsMap.put(CONCEPT_XPOS, desktopDropRegion.getLayoutX());
-                        conceptWindowSettingsMap.put(CONCEPT_YPOS, desktopDropRegion.getLayoutY());
-                        conceptWindowSettingsMap.put(CONCEPT_WIDTH, desktopDropRegion.getWidth());
-                        conceptWindowSettingsMap.put(CONCEPT_HEIGHT, desktopDropRegion.getHeight());
-                        makeConceptWindow(windowView, ConceptFacade.make(entity.nid()), conceptWindowSettingsMap);
+                        makeConceptWindow(windowView, ConceptFacade.make(entity.nid()));
                     } else if (dragAndDropType.equals(DragAndDropType.PATTERN)) {
                         publicId = patternFacade.publicId();
                         makePatternWindow(patternFacade, windowView.makeOverridableViewProperties());
@@ -601,19 +508,13 @@ public class JournalController {
             /* let the source know whether the string was successfully
              * transferred and used */
             event.setDropCompleted(success);
-
             event.consume();
-            desktopDropRegion.setVisible(false);
         });
 
         // by default hide progress toggle button
         progressToggleButton.setVisible(false);
         // Listen for progress tasks
         setupProgressListener();
-    }
-
-    private boolean isMouseOverNode(Node node, DragEvent event) {
-        return event.getPickResult().getIntersectedNode() == node;
     }
 
     /**
@@ -720,19 +621,16 @@ public class JournalController {
     private Point2D supplyProgressPopupAnchorPoint() {
         final Bounds progressToggleButtonScreenBounds =
                 progressToggleButton.localToScreen(progressToggleButton.getBoundsInLocal());
-        final Bounds desktopScrollPaneScreenBounds =
-                desktopSurfaceScrollPane.localToScreen(desktopSurfaceScrollPane.getBoundsInLocal());
+        final Bounds workspaceScreenBounds = workspace.localToScreen(workspace.getBoundsInLocal());
         final double progressListVBoxPadding = 12.0;  // Padding around the progress list VBox
 
         // Adjust the progress popup’s height to fit within the workspace bounds.
-        progressPopupPane.setPrefHeight(desktopScrollPaneScreenBounds.getHeight()
-                - (4 * progressListVBoxPadding - 4.0));
+        progressPopupPane.setPrefHeight(workspaceScreenBounds.getHeight() - (4 * progressListVBoxPadding - 4.0));
 
         // Position the popup to the right of the toggle button, near the bottom of the workspace.
         final double popupAnchorX = progressToggleButtonScreenBounds.getMinX()
                 + progressToggleButton.getWidth() + progressListVBoxPadding;
-        final double popupAnchorY = desktopScrollPaneScreenBounds.getMaxY()
-                - 2 * progressListVBoxPadding;
+        final double popupAnchorY = workspaceScreenBounds.getMaxY() - 2 * progressListVBoxPadding;
         return new Point2D(popupAnchorX, popupAnchorY);
     }
 
@@ -955,33 +853,23 @@ public class JournalController {
     }
 
     private void makeConceptWindow(ObservableViewNoOverride windowView, ConceptFacade conceptFacade, NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
-        // each detail window will publish on their own activity stream.
-        String uniqueDetailsTopic = "details-%s".formatted(conceptFacade.nid());
-        UUID uuid = UuidT5Generator.get(uniqueDetailsTopic);
-        final PublicIdStringKey<ActivityStream> detailsActivityStreamKey = new PublicIdStringKey(PublicIds.of(uuid.toString()), uniqueDetailsTopic);
-        ActivityStream detailActivityStream = ActivityStreams.create(detailsActivityStreamKey);
-        activityStreams.add(detailsActivityStreamKey);
-        KometNodeFactory detailsNodeFactory = new DetailsNodeFactory();
-        DetailsNode detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
-                detailsActivityStreamKey,
-                ActivityStreamOption.PUBLISH.keyForOption(),
-                AlertStreams.ROOT_ALERT_STREAM_KEY,
-                true,
-                journalTopic);
+        ConceptKlWindowFactory conceptKlWindowFactory = new ConceptKlWindowFactory();
+        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
+        ConceptKlWindow conceptKlWindow = conceptKlWindowFactory.create(journalTopic, conceptFacade, windowView, viewProperties, null);
+        activityStreams.add(conceptKlWindow.getDetailsActivityStreamKey());
+
+        // Adding the concept window panel as a child to the workspace.
+        workspace.getWindows().add(conceptKlWindow);
+
+        // Getting the details node from the concept window
+        DetailsNode detailsNode = conceptKlWindow.getDetailsNode();
         detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
-
-        //Getting the concept window pane
-        Pane kometNodePanel = (Pane) detailsNode.getNode();
-        //Appling the CSS from draggable-region to the panel (makes it movable/sizable).
-        Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
-        Node[] draggables = new Node[draggableToolbar.size()];
-
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
-        //Adding the concept window panel as a child to the desktop pane.
-        desktopSurfacePane.getChildren().add(kometNodePanel);
 
         // This will refresh the Concept details, history, timeline
         detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
+
+        // Getting the concept window pane
+        Pane kometNodePanel = conceptKlWindow.getRootPane();
 
         // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
         Optional<String> conceptFolderName;
@@ -1020,39 +908,20 @@ public class JournalController {
      * @param conceptWindowSettingsMap
      */
     private void makeCreateConceptWindow(ObservableViewNoOverride windowView, NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
-
-        // each detail window will publish on their own activity stream.
-        String uniqueDetailsTopic = "details-%s".formatted(UUID.randomUUID());
-        UUID uuid = UuidT5Generator.get(uniqueDetailsTopic);
-        final PublicIdStringKey<ActivityStream> detailsActivityStreamKey = new PublicIdStringKey(PublicIds.of(uuid.toString()), uniqueDetailsTopic);
-        ActivityStream detailActivityStream = ActivityStreams.create(detailsActivityStreamKey);
-        activityStreams.add(detailsActivityStreamKey);
-        KometNodeFactory detailsNodeFactory = new DetailsNodeFactory();
-        DetailsNode detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
-                detailsActivityStreamKey,
-                ActivityStreamOption.PUBLISH.keyForOption(),
-                AlertStreams.ROOT_ALERT_STREAM_KEY,
-                true,
-                journalTopic);
-        detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
+        ConceptKlWindowFactory conceptKlWindowFactory = new ConceptKlWindowFactory();
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
-        // For Create mode for Creating a concept.
-        detailsNode.getDetailsViewController()
-                .getConceptViewModel()
-                .setPropertyValue(MODE, CREATE);
+        ConceptKlWindow conceptKlWindow = conceptKlWindowFactory.create(journalTopic, null, windowView, viewProperties, null);
+        activityStreams.add(conceptKlWindow.getDetailsActivityStreamKey());
 
-        detailsNode.getDetailsViewController().updateModel(viewProperties);
-        detailsNode.getDetailsViewController().updateView();
+        // Adding the concept window panel as a child to the workspace.
+        workspace.getWindows().add(conceptKlWindow);
 
-        //Getting the concept window pane
-        Pane kometNodePanel = (Pane) detailsNode.getNode();
-        //Appling the CSS from draggable-region to the panel (makes it movable/sizable).
-        Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
-        Node[] draggables = new Node[draggableToolbar.size()];
+        // Getting the details node from the concept window
+        DetailsNode detailsNode = conceptKlWindow.getDetailsNode();
+        detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
 
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
-        //Adding the concept window panel as a child to the desktop pane.
-        desktopSurfacePane.getChildren().add(kometNodePanel);
+        // Getting the concept window pane
+        Pane kometNodePanel = conceptKlWindow.getRootPane();
 
         // This will refresh the Concept details, history, timeline
         //detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
@@ -1086,40 +955,14 @@ public class JournalController {
     }
 
     private void makeCreateLidrWindow(ObservableViewNoOverride windowView, NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
-        // create a unique topic for each concept detail instance
-        UUID conceptTopic = UUID.randomUUID();
+        LidrKlWindowFactory lidrKlWindowFactory = new LidrKlWindowFactory();
+        LidrKlWindow lidrKlWindow = lidrKlWindowFactory.create(journalTopic, null, null,
+                windowView.makeOverridableViewProperties(), null);
+        // Adding the concept window panel as a child to the workspace.
+        workspace.getWindows().add(lidrKlWindow);
 
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
-
-        // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
-        StampViewModel stampViewModel = new StampViewModel();
-        stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
-                .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
-
-        // In create mode setup lidrViewModel for injection
-        ValidationViewModel lidrViewModel = new LidrViewModel()
-                .setPropertyValue(CONCEPT_TOPIC, conceptTopic)
-                .setPropertyValue(VIEW_PROPERTIES, viewProperties)
-                .setPropertyValue(MODE, CREATE)
-                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel);
-        lidrViewModel.save(true); // xfer to model values.
-
-        Config lidrConfig = new Config(LidrDetailsController.class.getResource("lidr-details.fxml"))
-                .addNamedViewModel(new NamedVm("lidrViewModel", lidrViewModel));
-
-        // create lidr window
-        JFXNode<Pane, LidrDetailsController> lidrJFXNode = FXMLMvvmLoader.make(lidrConfig);
-        lidrJFXNode.controller().updateView();
-
-        //Getting the lidr window pane
-        Pane kometNodePanel = lidrJFXNode.node();
-        //Applying the CSS from draggable-region to the panel (makes it movable/sizable).
-        Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
-        Node[] draggables = new Node[draggableToolbar.size()];
-
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
-        //Adding the concept window panel as a child to the desktop pane.
-        desktopSurfacePane.getChildren().add(kometNodePanel);
+        // Getting the concept window pane
+        Pane kometNodePanel = lidrKlWindow.getRootPane();
 
         // This will refresh the Concept details, history, timeline
         //detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
@@ -1139,59 +982,27 @@ public class JournalController {
         final String finalConceptFolderName = conceptFolderName.get();
         conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, -1, kometNodePanel));
 
-        //Calls the remove method to remove and concepts that were closed by the user.
-        lidrJFXNode.controller().setOnCloseConceptWindow(windowEvent -> {
-            // TODO more clean up such as view models and listeners just in case (memory).
-            removeLidrSetting(finalConceptFolderName);
-        });
-        //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
+        // Calls the remove method to remove and concepts that were closed by the user.
+        lidrKlWindow.setOnClose(() -> removeLidrSetting(finalConceptFolderName));
+
+        // Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
         if (conceptWindowSettingsMap != null) {
             kometNodePanel.setPrefHeight((Double) conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
             kometNodePanel.setPrefWidth((Double) conceptWindowSettingsMap.get(CONCEPT_WIDTH));
             kometNodePanel.setLayoutX((Double) conceptWindowSettingsMap.get(CONCEPT_XPOS));
             kometNodePanel.setLayoutY((Double) conceptWindowSettingsMap.get(CONCEPT_YPOS));
         }
-
     }
 
     private void makeViewEditLidrWindow(ObservableViewNoOverride windowView, ConceptFacade deviceConcept, NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
-        // create a unique topic for each concept detail instance
-        UUID conceptTopic = UUID.randomUUID();
+        LidrKlWindowFactory lidrKlWindowFactory = new LidrKlWindowFactory();
+        LidrKlWindow lidrKlWindow = lidrKlWindowFactory.create(journalTopic, null, deviceConcept,
+                windowView.makeOverridableViewProperties(), null);
+        // Adding the concept window panel as a child to the workspace.
+        workspace.getWindows().add(lidrKlWindow);
 
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
-
-        // fetch the device's concept entity let the JavaFX initialize() method populate stuff.
-
-        // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
-        StampViewModel stampViewModel = new StampViewModel();
-        stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
-                .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
-
-        // In create mode setup lidrViewModel for injection
-        ValidationViewModel lidrViewModel = new LidrViewModel()
-                .setPropertyValue(CONCEPT_TOPIC, conceptTopic)
-                .setPropertyValue(VIEW_PROPERTIES, viewProperties)
-                .setPropertyValue(DEVICE_ENTITY, deviceConcept) /* Device concept is set. JavaFX view will load and populate fields */
-                .setPropertyValue(MODE, VIEW)
-                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel);
-        lidrViewModel.save(true); // xfer to model values.
-
-        Config lidrConfig = new Config(LidrDetailsController.class.getResource("lidr-details.fxml"))
-                .addNamedViewModel(new NamedVm("lidrViewModel", lidrViewModel));
-
-        // create lidr window
-        JFXNode<Pane, LidrDetailsController> lidrJFXNode = FXMLMvvmLoader.make(lidrConfig);
-        lidrJFXNode.controller().updateView();
-
-        //Getting the concept window pane
-        Pane kometNodePanel = lidrJFXNode.node();
-        //Appling the CSS from draggable-region to the panel (makes it movable/sizable).
-        Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
-        Node[] draggables = new Node[draggableToolbar.size()];
-
-        WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
-        //Adding the concept window panel as a child to the desktop pane.
-        desktopSurfacePane.getChildren().add(kometNodePanel);
+        // Getting the concept window pane
+        Pane kometNodePanel = lidrKlWindow.getRootPane();
 
         // This will refresh the Concept details, history, timeline
         //detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
@@ -1211,19 +1022,16 @@ public class JournalController {
         final String finalConceptFolderName = conceptFolderName.get();
         conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, -1, kometNodePanel));
 
-        //Calls the remove method to remove and concepts that were closed by the user.
-        lidrJFXNode.controller().setOnCloseConceptWindow(windowEvent -> {
-            // TODO more clean up such as view models and listeners just in case (memory).
-            removeLidrSetting(finalConceptFolderName);
-        });
-        //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
+        // Calls the remove method to remove and concepts that were closed by the user.
+        lidrKlWindow.setOnClose(() -> removeLidrSetting(finalConceptFolderName));
+
+        // Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
         if (conceptWindowSettingsMap != null) {
             kometNodePanel.setPrefHeight((Double) conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
             kometNodePanel.setPrefWidth((Double) conceptWindowSettingsMap.get(CONCEPT_WIDTH));
             kometNodePanel.setLayoutX((Double) conceptWindowSettingsMap.get(CONCEPT_XPOS));
             kometNodePanel.setLayoutY((Double) conceptWindowSettingsMap.get(CONCEPT_YPOS));
         }
-
     }
 
     /**
@@ -1414,38 +1222,35 @@ public class JournalController {
         AtomicInteger staggerWindowsY = new AtomicInteger(0);
         Consumer<StringWithOptionalConceptFacade> displayInDetailsView = (treeItem) -> {
             treeItem.getOptionalConceptSpecification().ifPresent((conceptFacade -> {
-                // each detail window will publish on their own activity stream.
-                String uniqueDetailsTopic = "details-%s".formatted(conceptFacade.nid());
-                UUID uuid = UuidT5Generator.get(uniqueDetailsTopic);
-                final PublicIdStringKey<ActivityStream> detailsActivityStreamKey = new PublicIdStringKey(PublicIds.of(uuid.toString()), uniqueDetailsTopic);
-                ActivityStream detailActivityStream = ActivityStreams.create(detailsActivityStreamKey);
-                activityStreams.add(detailsActivityStreamKey);
-                KometNodeFactory detailsNodeFactory = new DetailsNodeFactory();
-                DetailsNode detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
-                        detailsActivityStreamKey,
-                        ActivityStreamOption.PUBLISH.keyForOption(),
-                        AlertStreams.ROOT_ALERT_STREAM_KEY,
-                        true,
-                        journalTopic);
+                ConceptKlWindowFactory conceptKlWindowFactory = new ConceptKlWindowFactory();
+                ViewProperties viewProperties = windowView.makeOverridableViewProperties();
+                ConceptKlWindow conceptKlWindow = conceptKlWindowFactory.create(journalTopic, conceptFacade, windowView, viewProperties, null);
+                activityStreams.add(conceptKlWindow.getDetailsActivityStreamKey());
+
+                // Getting the details node from the concept window
+                DetailsNode detailsNode = conceptKlWindow.getDetailsNode();
                 detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
-                Pane kometNodePanel = (Pane) detailsNode.getNode();
+
+                // Getting the concept window pane
+                Pane kometNodePanel = conceptKlWindow.getRootPane();
 
                 // Make the window compact sized.
                 detailsNode.getDetailsViewController().compactSizeWindow();
 
-                Set<Node> draggableToolbar = kometNodePanel.lookupAll(".draggable-region");
-                Node[] draggables = new Node[draggableToolbar.size()];
                 double x = kometNodePanel.getPrefWidth() * (staggerWindowsX.getAndAdd(1) % 3) + 5; // stagger windows
                 double y = kometNodePanel.getPrefHeight() * (staggerWindowsY.get()) + 5; // stagger windows
 
                 kometNodePanel.setLayoutX(x);
                 kometNodePanel.setLayoutY(y);
 
-                WindowSupport windowSupport = new WindowSupport(kometNodePanel, desktopSurfacePane, draggableToolbar.toArray(draggables));
+                // Adding the concept window panel as a child to the workspace.
                 if (staggerWindowsX.get() % 3 == 0) {
                     staggerWindowsY.incrementAndGet();
                 }
-                desktopSurfacePane.getChildren().add(kometNodePanel);
+
+                // Adding the concept window panel as a child to the workspace.
+                workspace.getWindows().add(conceptKlWindow);
+
                 // This will refresh the Concept details, history, timeline
                 detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
             }));
@@ -1657,7 +1462,6 @@ public class JournalController {
         makeCreateLidrWindow(windowSettings.getView(), null, null);
     }
 
-
     public void setWindowView(ObservableViewNoOverride windowView) {
         this.windowView = windowView;
     }
@@ -1674,15 +1478,15 @@ public class JournalController {
     private void makePatternWindow(EntityFacade patternFacade, ViewProperties viewProperties) {
         // TODO: Use pluggable service loader to load KlWindowFactories. and locate GenEditingKlWindow.
         PatternKlWindowFactory entityKlWindowFactory = new PatternKlWindowFactory();
-        PatternKlWindow patternKlWindow = entityKlWindowFactory.create(journalTopic, patternFacade, desktopSurfacePane, viewProperties, null);
-        Pane chapterWindow = patternKlWindow.getPaneWindow();
-        desktopSurfacePane.getChildren().add(chapterWindow);
+        PatternKlWindow patternKlWindow = entityKlWindowFactory.create(journalTopic, patternFacade, viewProperties, null);
+        workspace.getWindows().add(patternKlWindow);
 
-        //FIXME are both LIDR and Pattern windows borrowing the concept folder for preferences?
+        // FIXME are both LIDR and Pattern windows borrowing the concept folder for preferences?
         // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
         Optional<String> conceptFolderName;
         conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
         // create a conceptWindowSettingsMap
+        Pane chapterWindow = patternKlWindow.getRootPane();
         Map<ConceptWindowSettings, Object> conceptWindowSettingsObjectMap = createConceptPrefMap(conceptFolderName.get(), chapterWindow);
         chapterWindow.setUserData(conceptWindowSettingsObjectMap);
 
@@ -1690,11 +1494,8 @@ public class JournalController {
         final String finalConceptFolderName = conceptFolderName.get();
         conceptWindows.add(new ConceptPreference(conceptFolderName.get(), null, -1, chapterWindow));
 
-        patternKlWindow.setOnClose(() -> {
-            removeLidrSetting(finalConceptFolderName);
-        });
+        patternKlWindow.setOnClose(()-> removeLidrSetting(finalConceptFolderName));
         patternKlWindow.onShown();
-
     }
 
     private void makeGenEditWindow(EntityFacade entityFacade, ViewProperties viewProperties) {
@@ -1702,8 +1503,9 @@ public class JournalController {
 
         // TODO: Use pluggable service loader to load KlWindowFactories. and locate GenEditingKlWindow.
         GenEditingKlWindowFactory entityKlWindowFactory = new GenEditingKlWindowFactory();
-        GenEditingKlWindow genEditingKlWindow = entityKlWindowFactory.create(journalTopic, entityFacade, desktopSurfacePane, viewProperties, null);
-        desktopSurfacePane.getChildren().add(genEditingKlWindow.getPaneWindow());
+        GenEditingKlWindow genEditingKlWindow = entityKlWindowFactory.create(journalTopic, entityFacade, viewProperties, null);
+        // Adding the concept window panel to the workspace.
+        workspace.getWindows().add(genEditingKlWindow);
         genEditingKlWindow.onShown(); // TODO: Revisit. JavaFX post render issue. Must be called after Node is rendered (realized). When not realized the implied style classes don't exist and returns null.
     }
 }

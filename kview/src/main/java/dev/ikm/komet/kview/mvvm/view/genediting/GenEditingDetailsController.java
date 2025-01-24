@@ -44,6 +44,7 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
+import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.integerField.KlIntegerFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
@@ -61,6 +62,7 @@ import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.SemanticFacade;
 import dev.ikm.tinkar.terms.State;
@@ -321,13 +323,14 @@ public class GenEditingDetailsController {
         Consumer<FieldRecord<Object>> updateUIConsumer = (fieldRecord) -> {
 
             Node readOnlyNode = null;
-            System.out.println("---> dataType() " + fieldRecord.dataType().description());
             int dataTypeNid = fieldRecord.dataType().nid();
 
             // substitute each data type.
             if (dataTypeNid == TinkarTerm.COMPONENT_FIELD.nid()) {
                 // load a read-only component
-                readOnlyNode = rowf.createReadOnlyComponent(getViewProperties(), fieldRecord);
+                ObservableField<EntityProxy> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                KlComponentFieldFactory klComponentFieldFactory = new KlComponentFieldFactory();
+                readOnlyNode = klComponentFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
                 ObservableField<String> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlStringFieldFactory klStringFieldFactory = new KlStringFieldFactory();

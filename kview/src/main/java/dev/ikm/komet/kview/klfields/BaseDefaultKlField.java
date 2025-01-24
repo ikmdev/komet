@@ -9,7 +9,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Tooltip;
 
 public abstract class BaseDefaultKlField<T> implements KlField<T> {
-    protected final ObservableField<T> observableStringField;
+    protected final ObservableField<T> observableField;
     protected final ObservableView observableView;
 
     protected ObjectProperty<Node> klWidget = new SimpleObjectProperty<>() {
@@ -25,20 +25,25 @@ public abstract class BaseDefaultKlField<T> implements KlField<T> {
 
     private final String title;
 
-    public BaseDefaultKlField(ObservableField<T> observableStringField, ObservableView observableView, boolean isEditable) {
-        this.observableStringField = observableStringField;
+    public BaseDefaultKlField(ObservableField<T> observableField, ObservableView observableView, boolean isEditable) {
+        this.observableField = observableField;
         this.observableView = observableView;
 
         this.isEditable = isEditable;
 
         title = field().field().meaning().description() + ":";
 
-        tooltip.setText(observableView.getDescriptionTextOrNid(observableStringField.purposeNid()));
+        tooltip.setText(observableView.getDescriptionTextOrNid(observableField.purposeNid()));
     }
 
+    protected void updateTooltipText() {
+        tooltip.setText(observableView.getDescriptionTextOrNid(observableField.purposeNid()));
+    }
+
+    // -- field
     @Override
     public ObservableField<T> field() {
-        return observableStringField;
+        return observableField;
     }
 
     // -- title

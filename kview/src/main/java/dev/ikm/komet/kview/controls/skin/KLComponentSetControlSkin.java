@@ -2,7 +2,7 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLComponentSetControl;
 import dev.ikm.komet.kview.controls.KLComponentControl;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.event.Event;
@@ -31,7 +31,7 @@ public class KLComponentSetControlSkin extends SkinBase<KLComponentSetControl> {
     private final ListChangeListener<Node> nodeListChangeListener = change -> {
         while (change.next()) {
             if (change.wasAdded() && change.getAddedSize() == 1) {
-                Entity<?> entity = ((KLComponentControl) change.getAddedSubList().getFirst()).getEntity();
+                EntityProxy entity = ((KLComponentControl) change.getAddedSubList().getFirst()).getEntity();
                 if (entity != null) {
                     int index = change.getFrom() - FIRST_CC_INDEX;
                     if (index >= getSkinnable().getEntitiesList().size()) {

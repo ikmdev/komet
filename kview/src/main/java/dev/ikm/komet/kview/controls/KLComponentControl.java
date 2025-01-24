@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLComponentControlSkin;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -75,14 +76,14 @@ public class KLComponentControl extends Control {
     /**
      * This property holds the {@link Entity} that has been added to the control
      */
-    private final ObjectProperty<Entity<?>> entityProperty = new SimpleObjectProperty<>(this, "entity");
-    public final ObjectProperty<Entity<?>> entityProperty() {
+    private final ObjectProperty<EntityProxy> entityProperty = new SimpleObjectProperty<>(this, "entity");
+    public final ObjectProperty<EntityProxy> entityProperty() {
        return entityProperty;
     }
-    public final Entity<?> getEntity() {
+    public final EntityProxy getEntity() {
        return entityProperty.get();
     }
-    public final void setEntity(Entity<?> value) {
+    public final void setEntity(EntityProxy value) {
         entityProperty.set(value);
     }
 
