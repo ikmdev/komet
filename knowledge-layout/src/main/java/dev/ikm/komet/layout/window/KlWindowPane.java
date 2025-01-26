@@ -2,6 +2,7 @@ package dev.ikm.komet.layout.window;
 
 import dev.ikm.komet.layout.KlGadget;
 import dev.ikm.komet.layout.preferences.PropertyWithDefault;
+import dev.ikm.komet.preferences.KometPreferences;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.layout.BorderPane;
@@ -114,4 +115,13 @@ public interface KlWindowPane<P extends Parent> extends KlGadget<P> {
      * @return The {@link Node} object representing the root node of the scene.
      */
     P root();
+
+    /**
+     * Retrieves the {@code KometPreferences} instance associated with this {@code KlGadget}.
+     * The preferences provide configuration and customization options specific
+     * to the knowledge layout system and its components.
+     *
+     * @return the {@code KometPreferences} instance associated with this context.
+     */
+    KometPreferences preferences();
 }

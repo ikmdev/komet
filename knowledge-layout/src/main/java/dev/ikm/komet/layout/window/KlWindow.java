@@ -2,6 +2,7 @@ package dev.ikm.komet.layout.window;
 
 import dev.ikm.komet.layout.KlGadget;
 import dev.ikm.komet.layout.preferences.PropertyWithDefault;
+import dev.ikm.komet.preferences.KometPreferences;
 import javafx.scene.Parent;
 
 /**
@@ -125,4 +126,53 @@ public interface KlWindow<W> extends KlGadget<W> {
      * it to be shown again later through appropriate operations.
      */
     void hide();
+
+    /**
+     * Retrieves the {@code KometPreferences} instance associated with this {@code KlGadget}.
+     * The preferences provide configuration and customization options specific
+     * to the knowledge layout system and its components.
+     *
+     * @return the {@code KometPreferences} instance associated with this context.
+     */
+    KometPreferences preferences();
+
+    /**
+     * Saves the current preferences associated with the KlWindow.
+     * This method is used to persist any changes made to the window's configuration
+     * or state into the associated {@code KometPreferences}.
+     *
+     * Persisted preferences typically include layout, transformations, or other
+     * customizable and user-defined settings. These preferences ensure that any
+     * modifications remain consistent across sessions.
+     *
+     * It is recommended to call this method after making changes to the window's
+     * configuration or preferences to guarantee the data is saved correctly.
+     */
+    void savePreferences();
+
+    /**
+     * Deletes the preferences associated with the {@code KlWindow}.
+     * This method is used to clear the stored preferences for the window,
+     * removing this window from the database and/or filestore.
+     *
+     * After invoking this method, any changes stored in the associated
+     * {@code KometPreferences} will be removed. This can be useful for
+     * resetting the window to a default or initial state without retaining
+     * previous configurations.
+     *
+     * It is recommended to ensure that no critical preferences are needed
+     * before calling this method, as all associated data will be deleted.
+     */
+    void deletePreferences();
+
+    /**
+     * Saves the current state of the window or layout with the specified name.
+     * This method is typically used to persist the configuration, positioning, and other
+     * state-related data of the layout under a user-defined name.
+     *
+     * @param layoutName The name under which the layout state will be saved.
+     *                   This name can be used to identify and retrieve the saved layout in the future.
+     */
+    void saveAsLayout(String layoutName);
+
 }

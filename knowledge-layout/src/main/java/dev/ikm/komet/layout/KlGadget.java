@@ -206,4 +206,5 @@ public interface KlGadget<T> {
         }
         return fetchDefaultKnowledgeBaseViewCalculator();
     }
+
 }
