@@ -35,7 +35,7 @@ public class KometPreferencesWrapper implements KometPreferences {
     }
 
     @Override
-    public boolean copyThisSubtreeTo(Preferences subtreeCopyParent, boolean overwrite) throws BackingStoreException {
+    public boolean copyThisSubtreeTo(KometPreferences subtreeCopyParent, boolean overwrite) throws BackingStoreException {
         return KometPreferences.copyThisSubtreeTo(this, subtreeCopyParent, overwrite);
     }
 
