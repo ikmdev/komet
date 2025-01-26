@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.NodeChangeListener;
 import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 
 /**
  * An application preferences wrapper.
@@ -31,6 +32,11 @@ public class KometPreferencesWrapper implements KometPreferences {
 
     public KometPreferencesWrapper(KometPreferencesImpl delegate) {
         this.delegate = delegate;
+    }
+
+    @Override
+    public boolean copyThisSubtreeTo(Preferences subtreeCopyParent, boolean overwrite) throws BackingStoreException {
+        return KometPreferences.copyThisSubtreeTo(this, subtreeCopyParent, overwrite);
     }
 
     @Override

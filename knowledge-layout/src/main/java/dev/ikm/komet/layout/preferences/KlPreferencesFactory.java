@@ -20,15 +20,6 @@ public interface KlPreferencesFactory extends Supplier<KometPreferences>{
     @Override
     KometPreferences get();
 
-    /**
-     * Creates a new {@code KlPreferencesFactory} instance that provides preferences specific
-     * to the given implementation class within the context of the parent preferences node.
-     *
-     * @param implementationClass The class for which the specific preferences factory is being created.
-     * @return A {@code KlPreferencesFactory} instance associated with the provided implementation class.
-     */
-    KlPreferencesFactory childFactory(Class implementationClass);
-
 
     /**
      * Creates a new {@code KlPreferencesFactory} instance that encapsulates a parent preferences node

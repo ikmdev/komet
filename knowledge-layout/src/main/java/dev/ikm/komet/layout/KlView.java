@@ -1,6 +1,7 @@
 package dev.ikm.komet.layout;
 
 import dev.ikm.komet.layout.preferences.PropertyWithDefault;
+import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import javafx.scene.layout.BorderPane;
 
@@ -42,5 +43,13 @@ public interface KlView extends KlGadget<BorderPane> {
             return defaultValue;
         }
     }
+    /**
+     * Retrieves the {@code KometPreferences} instance associated with this {@code KlGadget}.
+     * The preferences provide configuration and customization options specific
+     * to the knowledge layout system and its components.
+     *
+     * @return the {@code KometPreferences} instance associated with this context.
+     */
+    KometPreferences preferences();
 
 }
