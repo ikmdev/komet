@@ -41,11 +41,11 @@ public interface KometPreferences {
      * @return true if the operation was successful, false otherwise
      * @throws BackingStoreException if an error occurs while trying to access or modify the backing store
      */
-    default boolean copyThisSubtreeTo(Preferences newParent, boolean overwrite) throws BackingStoreException {
+    default boolean copyThisSubtreeTo(KometPreferences newParent, boolean overwrite) throws BackingStoreException {
         return copyThisSubtreeTo(this, newParent, overwrite);
     }
 
-    static boolean copyThisSubtreeTo(KometPreferences oldNodeToCopyFrom, Preferences newParent, boolean overwrite) throws BackingStoreException {
+    static boolean copyThisSubtreeTo(KometPreferences oldNodeToCopyFrom, KometPreferences newParent, boolean overwrite) throws BackingStoreException {
         List<String> childrenNames = List.of(newParent.childrenNames());
         boolean childAlreadyExists = childrenNames.contains(oldNodeToCopyFrom.name());
         if (!overwrite && childAlreadyExists) {
@@ -57,16 +57,16 @@ public interface KometPreferences {
         }
         for (String childName : newParent.childrenNames()) {
             KometPreferences existingChild = oldNodeToCopyFrom.node(childName);
-            Preferences newChild = newParent.node(childName);
+            KometPreferences newChild = newParent.node(childName);
             recursiveAdd(existingChild, newChild);
         }
         newParent.flush();
         return true;
     }
-    static void recursiveAdd(KometPreferences oldNodeToCopyFrom, Preferences newParentToAddTo) throws BackingStoreException {
+    static void recursiveAdd(KometPreferences oldNodeToCopyFrom, KometPreferences newParentToAddTo) throws BackingStoreException {
         for (String childName : oldNodeToCopyFrom.childrenNames()) {
             KometPreferences existingChild = oldNodeToCopyFrom.node(childName);
-            Preferences newChild = newParentToAddTo.node(childName);
+            KometPreferences newChild = newParentToAddTo.node(childName);
             for (String key: existingChild.keys()) {
                 newChild.put(key, existingChild.get(key, null));
             }
