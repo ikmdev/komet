@@ -4,13 +4,16 @@ import dev.ikm.komet.kview.controls.skin.KLComponentListControlSkin;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.ListProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,7 +34,7 @@ import java.util.List;
  * </code></pre>
  *
  * @see KLComponentControl
- * @see KLComponentSetControl
+ * @see KLComponentListControl
  */
 public class KLComponentListControl extends Control {
 
@@ -59,8 +62,8 @@ public class KLComponentListControl extends Control {
     /**
      * This property holds the list of {@link Entity Entities} that have been added to the control
      */
-    private final ListProperty<EntityProxy> entitiesProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
-    public final ListProperty<EntityProxy> entitiesProperty() {
+    private final ObjectProperty<List<EntityProxy>> entitiesProperty = new SimpleObjectProperty<>(FXCollections.observableList(new ArrayList<>()));
+    public final ObjectProperty<List<EntityProxy>> entitiesProperty() {
        return entitiesProperty;
     }
     public final List<EntityProxy> getEntitiesList() {

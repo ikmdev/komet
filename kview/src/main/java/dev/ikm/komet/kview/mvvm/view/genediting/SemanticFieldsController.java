@@ -22,6 +22,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
+import dev.ikm.komet.kview.klfields.componentfield.KlComponentListFieldFactory;
 import dev.ikm.komet.kview.klfields.editable.EditableKLFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
@@ -128,6 +129,11 @@ public class SemanticFieldsController {
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 node = rowf.createReadOnlyComponentSet(getViewProperties(), fieldRecord);
                 observableFields.add(null);
+            } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
+                ObservableField<List<EntityProxy>> componentListObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                KlComponentListFieldFactory klComponentListFieldFactory = new KlComponentListFieldFactory();
+                node = klComponentListFieldFactory.create(componentListObservableField, getViewProperties().nodeView(), true).klWidget();
+                observableFields.add(componentListObservableField);
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
                 node = rowf.createReadOnlyDiTree(getViewProperties(), fieldRecord);
                 observableFields.add(null);
