@@ -19,6 +19,7 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.klfields.editable.EditableKLFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
@@ -138,6 +139,11 @@ public class SemanticFieldsController {
                 KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
                 node = klIntegerFieldFactory.create(integerObservableField, getViewProperties().nodeView(), true).klWidget();
                 observableFields.add(integerObservableField);
+            } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
+                ObservableField<Boolean> booleanObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
+                node = klBooleanFieldFactory.create(booleanObservableField, getViewProperties().nodeView(), true).klWidget();
+                observableFields.add(booleanObservableField);
             }
             // Add to VBox
             if (node != null) {

@@ -31,7 +31,7 @@ public class DefaultEditableKlComponentField implements EditableKlComponentField
 
             field().fieldProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue != null) {
-                    Entity entity = (Entity) newValue.value();
+                    EntityProxy entity = (EntityProxy) newValue.value();
                     Entity<?> entity2 = EntityService.get().getEntityFast(entity.nid());
 //                    componentControl.entityProperty().set(entity2);
                     componentControl.setTitle(newValue.meaning().description());
