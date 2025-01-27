@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="8.0" stylesheets="@../mvvm/view/kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label fx:id="title" styleClass="kl-boolean-label" text="Boolean" />
+      <HBox>
+         <children>
+            <Label prefWidth="378.0" styleClass="kl-boolean-selection" text="True" />
+            <RadioButton fx:id="radio1" mnemonicParsing="false" selected="true" styleClass="klradio">
+               <toggleGroup>
+                  <ToggleGroup fx:id="klBooleanToggleGroup" />
+               </toggleGroup>
+            </RadioButton>
+         </children>
+      </HBox>
+      <HBox fillHeight="false" layoutX="10.0" layoutY="27.0">
+         <children>
+            <Label prefWidth="378.0" styleClass="kl-boolean-selection" text="False" />
+            <RadioButton fx:id="radio2" mnemonicParsing="false" styleClass="klradio" toggleGroup="$klBooleanToggleGroup" />
+         </children>
+      </HBox>
+   </children>
+</VBox>

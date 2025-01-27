@@ -18,10 +18,15 @@ package dev.ikm.komet.kview.mvvm.view.search;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
+import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.PatternEntity;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
@@ -34,9 +39,12 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 
 public class SortResultConceptEntryController extends AbstractBasicController {
@@ -67,15 +75,14 @@ public class SortResultConceptEntryController extends AbstractBasicController {
 
     private boolean retired;
 
-    public <T extends ViewModel> T getViewModel() {
-        return null;
-    }
-
     private EvtBus eventBus;
 
-    private ConceptEntity conceptEntity;
+    private Entity<EntityVersion> entity;
 
     private ObservableViewNoOverride windowView;
+
+    @InjectViewModel
+    private SimpleViewModel searchEntryViewModel;
 
     @FXML
     @Override
@@ -83,7 +90,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         eventBus = EvtBusFactory.getDefaultEvtBus();
         showContextButton.setVisible(false);
         contextMenu.setHideOnEscape(true);
-        searchEntryHBox.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(true));
+        searchEntryHBox.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(entity instanceof ConceptEntity));
         searchEntryHBox.setOnMouseExited(mouseEvent -> {
             if (!contextMenu.isShowing()) {
                 showContextButton.setVisible(false);
@@ -95,11 +102,15 @@ public class SortResultConceptEntryController extends AbstractBasicController {
             // double left click creates the concept window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                 if (mouseEvent.getClickCount() == 2) {
-                    eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity, windowView));
+                    if (entity instanceof ConceptEntity conceptEntity) {
+                        eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity, windowView));
+                    } else if (entity instanceof PatternEntity patternEntity) {
+                        eventBus.publish(JOURNAL_TOPIC, new MakePatternWindowEvent(this, MakePatternWindowEvent.OPEN_PATTERN, patternEntity, getViewProperties()));
+                    }
                 }
             }
             // right click shows the context menu
-            if (mouseEvent.getButton().equals(MouseButton.SECONDARY)) {
+            if (mouseEvent.getButton().equals(MouseButton.SECONDARY) && entity instanceof ConceptEntity) {
                 contextMenu.show(showContextButton, Side.BOTTOM, 0, 0);
             }
         });
@@ -108,13 +119,17 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     @FXML
     private void populateConcept(ActionEvent actionEvent) {
         actionEvent.consume();
-        eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity, windowView));
+        if (entity instanceof ConceptEntity conceptEntity) {
+            eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity, windowView));
+        }
     }
 
     @FXML
-    private  void openInConceptNavigator(ActionEvent actionEvent){
+    private void openInConceptNavigator(ActionEvent actionEvent) {
         actionEvent.consume();
-        eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_CONCEPT, conceptEntity));
+        if (entity instanceof ConceptEntity conceptEntity) {
+            eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_CONCEPT, conceptEntity));
+        }
     }
 
     public boolean isRetired() {
@@ -160,12 +175,22 @@ public class SortResultConceptEntryController extends AbstractBasicController {
 
     }
 
-    public void setData(ConceptEntity conceptEntity) {
-        this.conceptEntity = conceptEntity;
+    public void setData(Entity<EntityVersion> entity) {
+        this.entity = entity;
     }
 
     public void setWindowView(ObservableViewNoOverride windowView) {
         this.windowView = windowView;
+    }
+
+    @Override
+    public ViewProperties getViewProperties() {
+        return searchEntryViewModel.getPropertyValue(VIEW_PROPERTIES);
+    }
+
+    @Override
+    public <T extends ViewModel> T getViewModel() {
+        return null;
     }
 
 }
