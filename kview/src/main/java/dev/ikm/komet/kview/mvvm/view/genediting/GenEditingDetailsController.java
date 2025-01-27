@@ -352,7 +352,6 @@ public class GenEditingDetailsController {
                 ObservableField<Boolean> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
                 readOnlyNode = klBooleanFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
-
             }
 
             // Add to VBox

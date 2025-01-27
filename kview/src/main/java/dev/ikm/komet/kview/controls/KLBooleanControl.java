@@ -52,21 +52,8 @@ public class KLBooleanControl extends RadioButton {
       * A string property that sets the title of the control, if any
       */
     private final StringProperty titleProperty = new SimpleStringProperty(this, "title");
-    public final StringProperty titleProperty() {
-         return titleProperty;
-    }
-    public final String getTitle() {
-         return titleProperty.get();
-    }
-    public final void setTitle(String value) {
-       titleProperty.set(value);
-    }
 
     private final BooleanProperty valueProperty = new SimpleBooleanProperty(this, "false");
-
-    public final BooleanProperty getValueProperty() {
-        return valueProperty;
-    }
 
 
     /**
@@ -84,6 +71,22 @@ public class KLBooleanControl extends RadioButton {
     public KLBooleanControl(String text) {
         super(text);
         getStyleClass().add("boolean-control");
+    }
+
+    public final StringProperty titleProperty() {
+        return titleProperty;
+    }
+
+    public final String getTitle() {
+        return titleProperty.get();
+    }
+
+    public final void setTitle(String value) {
+        titleProperty.set(value);
+    }
+
+    public final BooleanProperty getValueProperty() {
+        return valueProperty;
     }
 
     /** {@inheritDoc} */
