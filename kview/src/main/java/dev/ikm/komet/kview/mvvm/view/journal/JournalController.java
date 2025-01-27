@@ -15,44 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.journal;
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
-import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
-import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
-import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
-import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CREATE;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.MODE;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.CONCEPT_FOLDER_PREFIX;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_HEIGHT;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_XPOS;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_YPOS;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_HEIGHT;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_PREF_NAME;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_WIDTH;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_XPOS;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_YPOS;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_TYPE;
-import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_VALUE;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_FOLDER_PREFIX;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_COUNT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_NAMES;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
-import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
-import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
-import static java.io.File.separator;
-import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
-
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -139,7 +101,14 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -171,11 +140,50 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.prefs.BackingStoreException;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
+import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
+import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
+import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CREATE;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.MODE;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.CONCEPT_FOLDER_PREFIX;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_HEIGHT;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_XPOS;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_YPOS;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_HEIGHT;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_PREF_NAME;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_WIDTH;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_XPOS;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_YPOS;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_TYPE;
+import static dev.ikm.komet.preferences.ConceptWindowSettings.NID_VALUE;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_FOLDER_PREFIX;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_COUNT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_NAMES;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
+import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
+import static java.io.File.separator;
+import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
+
 /**
  * This view is responsible for updating the kView journal window by loading a navigation panel
  * and a concept details panel. Activity streams are dynamically created to be used in context to a journal instance.
  * This makes the navigator (published data) able to update windows downstream such as the Concept Details Panel
  * This is associated with the FXML file journal.fxml.
+ *
  * @see DetailsNode
  * @see JournalViewFactory
  */
@@ -302,8 +310,8 @@ public class JournalController {
 
     private ObservableViewNoOverride windowView;
 
-    public JournalController(){
-        journalTopic = UUID.randomUUID();;
+    public JournalController() {
+        journalTopic = UUID.randomUUID();
     }
 
     /**
@@ -350,11 +358,11 @@ public class JournalController {
             LOG.info("FIXME... edit pattern window");
             makePatternWindow(evt.getPatternFacade(), evt.getViewProperties());
         };
-        journalEventBus.subscribe(journalTopic, MakePatternWindowEvent.class, makePatternWindowEventSubscriber);
+        journalEventBus.subscribe(JOURNAL_TOPIC, MakePatternWindowEvent.class, makePatternWindowEventSubscriber);
 
         // Listening for when a General authoring Window needs to be summoned.
         Subscriber<MakeGenEditingWindowEvent> makeGenEditWindowEventSubscriber = evt ->
-            makeGenEditWindow(evt.getComponent(), evt.getViewProperties());
+                makeGenEditWindow(evt.getComponent(), evt.getViewProperties());
 
         journalEventBus.subscribe(journalTopic, MakeGenEditingWindowEvent.class, makeGenEditWindowEventSubscriber);
 
@@ -374,7 +382,8 @@ public class JournalController {
         journalEventBus.subscribe(JOURNAL_TOPIC, CloseReasonerPanelEvent.class, closeReasonerPanelEventSubscriber);
 
         // initialize drag and drop for search results of next gen search
-        setupDragNDrop(workspace, (publicId) -> {});
+        setupDragNDrop(workspace, (publicId) -> {
+        });
 
         workspace.addEventHandler(MouseEvent.MOUSE_CLICKED, this::onMouseClickedOnDesktopSurfacePane);
     }
@@ -680,10 +689,11 @@ public class JournalController {
         SlideOutTrayHelper.slideIn(trayPane);
 
     }
+
     public void shutdown() {
         // cleanup code here...
         LOG.info("kView Concept Details Viewer Journal is shutting down...");
-        activityStreams.forEach( activityStreamKey -> ActivityStreams.delete(activityStreamKey));
+        activityStreams.forEach(activityStreamKey -> ActivityStreams.delete(activityStreamKey));
 
         journalEventBus.unsubscribe(makeConceptWindowEventSubscriber,
                 makePatternWindowEventSubscriber,
@@ -694,8 +704,9 @@ public class JournalController {
     /**
      * Iterate through all available KometNodeFactories that will be displayed on the journal.
      * Note: Each journal will have a unique navigation activity stream.
+     *
      * @param navigationFactory A factory to create navigation view.
-     * @param searchFactory A factory to create a search bump out view.
+     * @param searchFactory     A factory to create a search bump out view.
      */
     public void launchKometFactoryNodes(String journalName,
                                         KometNodeFactory navigationFactory,
@@ -767,16 +778,21 @@ public class JournalController {
         // What to do when you can double-click on a cell
         SearchPanelController controller = searchNode.getController();
         Consumer<Object> displayInDetailsView = (treeItemValue) -> {
-            ConceptFacade conceptFacade = null;
             NidTextEnum nidTextEnum = null;
             if (treeItemValue instanceof SearchPanelController.NidTextRecord nidTextRecord) {
                 nidTextEnum = NID_TEXT;
-                conceptFacade = Entity.getFast(nidTextRecord.nid());
+                Entity entity = Entity.getFast(nidTextRecord.nid());
+                if (entity instanceof ConceptFacade conceptFacade) {
+                    makeConceptWindow(windowView, conceptFacade, nidTextEnum, null);
+                } else if (entity instanceof PatternFacade patternFacade) {
+                    makePatternWindow(patternFacade, getNavigatorNode().getViewProperties());
+                }
+
             } else if (treeItemValue instanceof SemanticEntityVersion semanticEntityVersion) {
                 nidTextEnum = SEMANTIC_ENTITY;
-                conceptFacade = Entity.getConceptForSemantic(semanticEntityVersion.nid()).get();
+                ConceptFacade conceptFacade = Entity.getConceptForSemantic(semanticEntityVersion.nid()).get();
+                makeConceptWindow(windowView, conceptFacade, nidTextEnum, null);
             }
-            makeConceptWindow(windowView, conceptFacade, nidTextEnum, null);
         };
         controller.getDoubleCLickConsumers().add(displayInDetailsView);
         searchNodePanel = (Pane) searchNode.getNode();
@@ -786,17 +802,18 @@ public class JournalController {
         controller.setItemContextMenu((searchTreeView -> {
             // Context menu to allow user to right-click a searched item to show concept in navigator view.
             ContextMenu contextMenu = new ContextMenu();
-            MenuItem openNewWindow = new MenuItem("Open Concept");
+            MenuItem openNewWindow = new MenuItem("Open");
             openNewWindow.setOnAction(actionEvent -> {
                 TreeItem<Object> treeItem = searchTreeView.getSelectionModel().getSelectedItem();
                 switch (treeItem.getValue()) {
-                    case LatestVersionSearchResult latestVersionSearchResult -> displayInDetailsView.accept(latestVersionSearchResult.latestVersion().get());
+                    case LatestVersionSearchResult latestVersionSearchResult ->
+                            displayInDetailsView.accept(latestVersionSearchResult.latestVersion().get());
                     default -> displayInDetailsView.accept(treeItem.getValue());
                 }
             });
             contextMenu.getItems().add(openNewWindow);
 
-            Runnable showInConceptNavigator = ()-> {
+            Runnable showInConceptNavigator = () -> {
                 TreeItem<Object> treeItem = searchTreeView.getSelectionModel().getSelectedItem();
                 switch (treeItem.getValue()) {
                     case LatestVersionSearchResult latestVersionSearchResult -> {
@@ -804,7 +821,8 @@ public class JournalController {
                         getNavigatorNode().getController().showConcept(conceptNid);
                         getNavigatorNode().getController().expandAndSelect(IntIds.list.of(conceptNid));
                     }
-                    default -> {}
+                    default -> {
+                    }
                 }
                 ConceptFacade conceptFacade = null;
                 Object treeItemValue = treeItem.getValue();
@@ -880,15 +898,16 @@ public class JournalController {
 
         //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
         if (conceptWindowSettingsMap != null) {
-            kometNodePanel.setTranslateX((Double)conceptWindowSettingsMap.get(CONCEPT_XPOS));
-            kometNodePanel.setTranslateY((Double)conceptWindowSettingsMap.get(CONCEPT_YPOS));
-            kometNodePanel.setPrefWidth((Double)conceptWindowSettingsMap.get(CONCEPT_WIDTH));
-            kometNodePanel.setPrefHeight((Double)conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
+            kometNodePanel.setTranslateX((Double) conceptWindowSettingsMap.get(CONCEPT_XPOS));
+            kometNodePanel.setTranslateY((Double) conceptWindowSettingsMap.get(CONCEPT_YPOS));
+            kometNodePanel.setPrefWidth((Double) conceptWindowSettingsMap.get(CONCEPT_WIDTH));
+            kometNodePanel.setPrefHeight((Double) conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
         }
     }
 
     /**
      * TODO: This displays a blank concept window to allow user to Create a Concept.
+     *
      * @param windowView
      * @param nidTextEnum
      * @param conceptWindowSettingsMap
@@ -933,10 +952,10 @@ public class JournalController {
         });
         //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
         if (conceptWindowSettingsMap != null) {
-            kometNodePanel.setPrefHeight((Double)conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
-            kometNodePanel.setPrefWidth((Double)conceptWindowSettingsMap.get(CONCEPT_WIDTH));
-            kometNodePanel.setLayoutX((Double)conceptWindowSettingsMap.get(CONCEPT_XPOS));
-            kometNodePanel.setLayoutY((Double)conceptWindowSettingsMap.get(CONCEPT_YPOS));
+            kometNodePanel.setPrefHeight((Double) conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
+            kometNodePanel.setPrefWidth((Double) conceptWindowSettingsMap.get(CONCEPT_WIDTH));
+            kometNodePanel.setLayoutX((Double) conceptWindowSettingsMap.get(CONCEPT_XPOS));
+            kometNodePanel.setLayoutY((Double) conceptWindowSettingsMap.get(CONCEPT_YPOS));
         }
     }
 
@@ -955,7 +974,7 @@ public class JournalController {
 
         // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
         Optional<String> conceptFolderName;
-        if (conceptWindowSettingsMap != null){
+        if (conceptWindowSettingsMap != null) {
             conceptFolderName = (Optional<String>) conceptWindowSettingsMap.getOrDefault(CONCEPT_PREF_NAME, CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
         } else {
             conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
@@ -973,10 +992,10 @@ public class JournalController {
 
         // Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
         if (conceptWindowSettingsMap != null) {
-            kometNodePanel.setPrefHeight((Double)conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
-            kometNodePanel.setPrefWidth((Double)conceptWindowSettingsMap.get(CONCEPT_WIDTH));
-            kometNodePanel.setLayoutX((Double)conceptWindowSettingsMap.get(CONCEPT_XPOS));
-            kometNodePanel.setLayoutY((Double)conceptWindowSettingsMap.get(CONCEPT_YPOS));
+            kometNodePanel.setPrefHeight((Double) conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
+            kometNodePanel.setPrefWidth((Double) conceptWindowSettingsMap.get(CONCEPT_WIDTH));
+            kometNodePanel.setLayoutX((Double) conceptWindowSettingsMap.get(CONCEPT_XPOS));
+            kometNodePanel.setLayoutY((Double) conceptWindowSettingsMap.get(CONCEPT_YPOS));
         }
     }
 
@@ -1022,8 +1041,9 @@ public class JournalController {
 
     /**
      * Creates a map containing the current concept panel (window's) preferences.
+     *
      * @param conceptPrefDirName - Unique name used in preferences as a directory name but also a way to remove a card.
-     * @param kometNodePanel - The detail concept view window (panel)
+     * @param kometNodePanel     - The detail concept view window (panel)
      * @return
      */
     private Map<ConceptWindowSettings, Object> createConceptPrefMap(String conceptPrefDirName, Pane kometNodePanel) {
@@ -1038,8 +1058,9 @@ public class JournalController {
 
     /**
      * Removes the concept details node (Pane) from the scene graph, closes activity streams, and removes preferences from locally.
+     *
      * @param conceptDirectoryName - The unique concept dir name used in each journal window.
-     * @param detailsNode - The Concept detailsNode - referencing both JavaFX Node and view.
+     * @param detailsNode          - The Concept detailsNode - referencing both JavaFX Node and view.
      */
     private void removeConceptSetting(String conceptDirectoryName, DetailsNode detailsNode) {
         // locate concept by unique directory name and remove from list.
@@ -1047,6 +1068,7 @@ public class JournalController {
         detailsNode.close();
         removeConceptPreferences(conceptDirectoryName);
     }
+
     private void removeLidrSetting(String conceptDirectoryName) {
         // locate concept by unique directory name and remove from list.
         conceptWindows.removeIf(c -> c.getDirectoryName().equals(conceptDirectoryName));
@@ -1055,6 +1077,7 @@ public class JournalController {
 
     /**
      * Removes a concept window's preference folder locally.
+     *
      * @param conceptPrefDirName A unique concept directory name. e.g., CONCEPT_1efe8e7d-c2ad-4a24-85ce-db8609f5d7ee
      */
     private void removeConceptPreferences(String conceptPrefDirName) {
@@ -1077,9 +1100,10 @@ public class JournalController {
 
     /**
      * Loads up a navigation panel into the sidebar area.
+     *
      * @param navigationActivityStreamKey The newly generated navigation activity stream for this Journal window and all children.
-     * @param windowView Any window view information
-     * @param navigationFactory The navigation factory to create the navigation panel to be used in the sidebar.
+     * @param windowView                  Any window view information
+     * @param navigationFactory           The navigation factory to create the navigation panel to be used in the sidebar.
      */
     private Pane loadClassicConceptNavigator(PublicIdStringKey<ActivityStream> navigationActivityStreamKey,
                                              ObservableViewNoOverride windowView,
@@ -1106,7 +1130,7 @@ public class JournalController {
         MenuItem launchLidrRecord = new MenuItem("LIDR Viewer");
         launchLidrRecord.setOnAction(event -> {
             TreeItem<ConceptFacade> item = treeView.getSelectionModel().getSelectedItem();
-            makeViewEditLidrWindow(windowView, item.getValue(), null,null);
+            makeViewEditLidrWindow(windowView, item.getValue(), null, null);
         });
         contextMenu2.getItems().add(launchLidrRecord);
         // check if there is an existing context menu popup event handler. If so, proxy by adding additional behavior.
@@ -1156,17 +1180,17 @@ public class JournalController {
         Config patternConceptConfig = new Config(ConceptPatternNavController.class.getResource(CONCEPT_PATTERN_NAV_FXML_URL))
                 .controller(new ConceptPatternNavController(navigatorNodePanel))
                 .updateViewModel("patternNavViewModel", (patternNavViewModel) ->
-                                patternNavViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
-                                        .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
-                        );
+                        patternNavViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                                .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
+                );
         JFXNode<StackPane, ConceptPatternNavController> conPatJFXNode = FXMLMvvmLoader.make(patternConceptConfig);
         patternConceptNavigationPanel = conPatJFXNode.node();
         conceptPatternNavController = conPatJFXNode.controller();
         setupSlideOutTrayPane(patternConceptNavigationPanel, navSlideoutTrayPane);
     }
 
-    private  void loadReasonerPanel(PublicIdStringKey<ActivityStream> activityStreamKey,
-                                    ObservableViewNoOverride windowView) {
+    private void loadReasonerPanel(PublicIdStringKey<ActivityStream> activityStreamKey,
+                                   ObservableViewNoOverride windowView) {
         // set up a tab group to hold 3 tabs for the reasoner bump out
         TabGroup reasonerTabGroup = TabGroup.create(windowView, TabGroup.REMOVAL.DISALLOW);
 
@@ -1259,7 +1283,7 @@ public class JournalController {
         return (detailToggleReasonerButton) -> {
             if (detailToggleReasonerButton.isSelected() && reasonerToggleButton.isSelected()) {
                 // if global button is already selected don't do anything
-            } else if (detailToggleReasonerButton.isSelected() && !reasonerToggleButton.isSelected()){
+            } else if (detailToggleReasonerButton.isSelected() && !reasonerToggleButton.isSelected()) {
                 // if global is not selected fire an event to trigger it.
                 slideOut(reasonerToggleButton);
                 reasonerToggleButton.setSelected(true);
@@ -1285,7 +1309,7 @@ public class JournalController {
 
     public double getWidth() {
         Stage jStage = (Stage) this.getSettingsToggleButton().getScene().getWindow();
-        return  jStage.getWidth();
+        return jStage.getWidth();
     }
 
     public double getX() {
@@ -1307,13 +1331,14 @@ public class JournalController {
      * This will use the title of the journal project and convert it to a unique journal directory name.
      * This function will convert Journal 1 to JOURNAL_Journal_1.
      * Todo Refactor code to allow user to change the name of the journal project and a unique name that doesn't conflict with the file system.
+     *
      * @return
      */
     public String generateJournalDirNameBasedOnTitle() {
         return JOURNAL_FOLDER_PREFIX + getTitle().replace(" ", "_");
     }
 
-    public void saveConceptWindowPreferences(KometPreferences journalSubWindowPreferences){
+    public void saveConceptWindowPreferences(KometPreferences journalSubWindowPreferences) {
         List<String> conceptFolderNames = new ArrayList<>();
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
 
@@ -1331,7 +1356,7 @@ public class JournalController {
             // Applying the preferences naming convention to the files.
             // e.g., journal-window/JOURNAL_Journal_1/CONCEPT_XXX
             try {
-                KometPreferences conceptPreferences =journalSubWindowPreferences.node(
+                KometPreferences conceptPreferences = journalSubWindowPreferences.node(
                         conceptPreference.getDirectoryName());
                 conceptPreferences.put(CONCEPT_PREF_NAME, conceptPreference.getDirectoryName());
                 conceptPreferences.put(NID_TYPE, conceptPreference.getNidType().toString());
@@ -1359,7 +1384,7 @@ public class JournalController {
         List<String> conceptList = journalPref.getValue(CONCEPT_NAMES);
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         //Looping through each concept in each journal.
-        for(String conceptFolder: conceptList){
+        for (String conceptFolder : conceptList) {
             KometPreferences conceptPreferences = appPreferences.node(JOURNAL_WINDOW +
                     separator + journalPref.getValue(JOURNAL_DIR_NAME) +
                     separator + conceptFolder);
@@ -1368,7 +1393,7 @@ public class JournalController {
             ObservableViewNoOverride window = windowSettings.getView();
 
             //Getting nid type via the Enum.
-            String nidTextString= conceptPreferences.get(conceptPreferences.enumToGeneralKey(NID_TYPE)).get();
+            String nidTextString = conceptPreferences.get(conceptPreferences.enumToGeneralKey(NID_TYPE)).get();
             Integer nidValue = Integer.valueOf(conceptPreferences.get(conceptPreferences.enumToGeneralKey(NID_VALUE)).get());
             ConceptFacade conceptFacade = null;
             NidTextEnum nidTextEnum = null;
@@ -1383,7 +1408,7 @@ public class JournalController {
             //Creating a hashmap to store all position and size values for each concept.
             Map<ConceptWindowSettings, Object> conceptWindowSettingsMap = new HashMap<>();
             conceptWindowSettingsMap.put(CONCEPT_PREF_NAME, conceptPreferences.get(CONCEPT_PREF_NAME));
-            conceptWindowSettingsMap.put(CONCEPT_HEIGHT,conceptPreferences.getDouble(conceptPreferences.enumToGeneralKey(CONCEPT_HEIGHT), DEFAULT_CONCEPT_HEIGHT));
+            conceptWindowSettingsMap.put(CONCEPT_HEIGHT, conceptPreferences.getDouble(conceptPreferences.enumToGeneralKey(CONCEPT_HEIGHT), DEFAULT_CONCEPT_HEIGHT));
             conceptWindowSettingsMap.put(CONCEPT_WIDTH, conceptPreferences.getDouble(conceptPreferences.enumToGeneralKey(CONCEPT_WIDTH), DEFAULT_CONCEPT_HEIGHT));
             conceptWindowSettingsMap.put(CONCEPT_XPOS, conceptPreferences.getDouble(conceptPreferences.enumToGeneralKey(CONCEPT_XPOS), DEFAULT_CONCEPT_XPOS));
             conceptWindowSettingsMap.put(CONCEPT_YPOS, conceptPreferences.getDouble(conceptPreferences.enumToGeneralKey(CONCEPT_YPOS), DEFAULT_CONCEPT_YPOS));
@@ -1406,13 +1431,15 @@ public class JournalController {
     private void popupAddContextMenu(ActionEvent actionEvent) {
         MenuHelper.fireContextMenuEvent(actionEvent, Side.BOTTOM, -50, 0);
     }
+
     /**
      * Returns a Region representing the icon for a menu item.
      * Utility to create a region with a style class defined in CSS as the icon graphic to the left of the menu item.
+     *
      * @param styleClass
      * @return
      */
-    private Region createMenuIcon(String styleClass){
+    private Region createMenuIcon(String styleClass) {
         Region graphic = new Region();
         graphic.getStyleClass().add(styleClass);
         return graphic;
@@ -1420,6 +1447,7 @@ public class JournalController {
 
     /**
      * When user selects menuitem to create a new concept
+     *
      * @param actionEvent - button press
      */
     @FXML
@@ -1471,7 +1499,7 @@ public class JournalController {
         final String finalConceptFolderName = conceptFolderName.get();
         conceptWindows.add(new ConceptPreference(conceptFolderName.get(), null, -1, chapterWindow));
 
-        patternKlWindow.setOnClose(()-> removeLidrSetting(finalConceptFolderName));
+        patternKlWindow.setOnClose(() -> removeLidrSetting(finalConceptFolderName));
         patternKlWindow.onShown();
     }
 

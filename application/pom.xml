@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>dev.ikm.komet</groupId>
@@ -196,10 +197,13 @@
                                 <option>--add-opens</option>
                                 <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
                                 <option>--add-exports</option>
-                                <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</option>
+                                <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
+                                </option>
                                 <option>--add-exports</option>
                                 <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
-                                <option>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</option>
+                                <option>
+                                    -Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer
+                                </option>
                             </options>
                         </configuration>
                     </execution>
@@ -248,10 +252,13 @@
                                 <option>--add-opens</option>
                                 <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
                                 <option>--add-exports</option>
-                                <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</option>
+                                <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
+                                </option>
                                 <option>--add-exports</option>
                                 <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
-                                <option>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</option>
+                                <option>
+                                    -Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer
+                                </option>
                                 <option>
                                     -agentpath:/Applications/JProfiler.app/Contents/Resources/app/bin/macos/libjprofilerti.jnilib=port=8849
                                 </option>
@@ -271,7 +278,8 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/kometDebugRuntimeImage/module-jars</outputDirectory>
+                            <outputDirectory>${project.build.directory}/kometDebugRuntimeImage/module-jars
+                            </outputDirectory>
                         </configuration>
                     </execution>
                     <execution>
@@ -281,7 +289,8 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/kometProfileRuntimeImage/module-jars</outputDirectory>
+                            <outputDirectory>${project.build.directory}/kometProfileRuntimeImage/module-jars
+                            </outputDirectory>
                         </configuration>
                     </execution>
                     <execution>
@@ -354,7 +363,8 @@
                                 <option>--add-opens</option>
                                 <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
                                 <option>--add-exports</option>
-                                <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</option>
+                                <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
+                                </option>
                                 <option>--add-exports</option>
                                 <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
                             </javaOptions>
@@ -550,10 +560,13 @@
                                 <JVMArg>--add-opens</JVMArg>
                                 <JVMArg>javafx.graphics/javafx.scene=org.controlsfx.controls</JVMArg>
                                 <JVMArg>--add-exports</JVMArg>
-                                <JVMArg>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</JVMArg>
+                                <JVMArg>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
+                                </JVMArg>
                                 <JVMArg>--add-exports</JVMArg>
                                 <JVMArg>javafx.base/com.sun.javafx.event=one.jpro.platform.file</JVMArg>
-                                <JVMArg>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</JVMArg>
+                                <JVMArg>
+                                    -Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer
+                                </JVMArg>
                             </JVMArgs>
                         </configuration>
                     </plugin>
