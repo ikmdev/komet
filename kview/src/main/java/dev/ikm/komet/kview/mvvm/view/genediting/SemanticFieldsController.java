@@ -16,18 +16,23 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
+import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
+import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
+import dev.ikm.komet.kview.klfields.componentfield.KlComponentSetFieldFactory;
 import dev.ikm.komet.kview.klfields.editable.EditableKLFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
-import dev.ikm.komet.layout.component.version.field.KlField;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.FieldRecord;
@@ -48,13 +53,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
-
-import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 
 public class SemanticFieldsController {
 
@@ -120,14 +120,17 @@ public class SemanticFieldsController {
                 KlComponentFieldFactory componentFieldFactory = new KlComponentFieldFactory();
                 ObservableField<EntityProxy> componentObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 node = componentFieldFactory.create(componentObservableField, getViewProperties().nodeView(), true).klWidget();
+                observableFields.add(componentObservableField);
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
                 KlStringFieldFactory stringFieldTextFactory = new KlStringFieldFactory();
                 ObservableField<String> stringObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 node = stringFieldTextFactory.create(stringObservableField, getViewProperties().nodeView(), true).klWidget();
                 observableFields.add(stringObservableField);
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
-                node = rowf.createReadOnlyComponentSet(getViewProperties(), fieldRecord);
-                observableFields.add(null);
+                ObservableField<Set<EntityProxy>> componentSetObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                KlComponentSetFieldFactory klComponentSetFieldFactory = new KlComponentSetFieldFactory();
+                node = klComponentSetFieldFactory.create(componentSetObservableField, getViewProperties().nodeView(), true).klWidget();
+                observableFields.add(componentSetObservableField);
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
                 node = rowf.createReadOnlyDiTree(getViewProperties(), fieldRecord);
                 observableFields.add(null);
