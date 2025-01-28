@@ -1,6 +1,7 @@
 package dev.ikm.komet.layout.window;
 
 import dev.ikm.komet.layout.KlGadget;
+import dev.ikm.komet.layout.KlStateCommands;
 import dev.ikm.komet.layout.preferences.PropertyWithDefault;
 import dev.ikm.komet.preferences.KometPreferences;
 import javafx.scene.Parent;
@@ -10,7 +11,7 @@ import javafx.scene.Parent;
  * The window may be a JavaFx Window or Stage, or some other window equivalent widget
  * such as is provided within the journal view. All KlWindows have a single Scene.
  */
-public interface KlWindow<W> extends KlGadget<W> {
+public interface KlWindow<W> extends KlGadget<W>, KlStateCommands {
 
     /**
      * Enumerates preference keys for managing the properties and default configuration states
@@ -135,36 +136,6 @@ public interface KlWindow<W> extends KlGadget<W> {
      * @return the {@code KometPreferences} instance associated with this context.
      */
     KometPreferences preferences();
-
-    /**
-     * Saves the current preferences associated with the KlWindow.
-     * This method is used to persist any changes made to the window's configuration
-     * or state into the associated {@code KometPreferences}.
-     *
-     * Persisted preferences typically include layout, transformations, or other
-     * customizable and user-defined settings. These preferences ensure that any
-     * modifications remain consistent across sessions.
-     *
-     * It is recommended to call this method after making changes to the window's
-     * configuration or preferences to guarantee the data is saved correctly.
-     */
-    void savePreferences();
-
-    /**
-     * Deletes the preferences associated with the {@code KlWindow}.
-     * This method is used to clear the stored preferences for the window,
-     * removing this window from the database and/or filestore.
-     *
-     * After invoking this method, any changes stored in the associated
-     * {@code KometPreferences} will be removed. This can be useful for
-     * resetting the window to a default or initial state without retaining
-     * previous configurations.
-     *
-     * It is recommended to ensure that no critical preferences are needed
-     * before calling this method, as all associated data will be deleted.
-     */
-    void deletePreferences();
-
     /**
      * Saves the current state of the window or layout with the specified name.
      * This method is typically used to persist the configuration, positioning, and other
