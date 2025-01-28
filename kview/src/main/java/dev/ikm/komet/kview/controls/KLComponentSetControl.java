@@ -3,8 +3,8 @@ package dev.ikm.komet.kview.controls;
 import dev.ikm.komet.kview.controls.skin.KLComponentSetControlSkin;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SetProperty;
+import javafx.beans.property.SimpleSetProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -60,8 +60,8 @@ public class KLComponentSetControl extends Control {
     /**
      * This property holds the list of {@link Entity Entities} that have been added to the control
      */
-    private final ObjectProperty<Set<EntityProxy>> entitiesProperty = new SimpleObjectProperty<>(FXCollections.observableSet(new HashSet<>()));
-    public final ObjectProperty<Set<EntityProxy>> entitiesProperty() {
+    private final SetProperty<EntityProxy> entitiesProperty = new SimpleSetProperty<>(FXCollections.observableSet(new HashSet<>()));
+    public final SetProperty<EntityProxy> entitiesProperty() {
        return entitiesProperty;
     }
     public final Set<EntityProxy> getEntitiesSet() {

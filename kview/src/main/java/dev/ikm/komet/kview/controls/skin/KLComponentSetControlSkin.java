@@ -4,7 +4,6 @@ import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentSetControl;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
 import javafx.collections.ListChangeListener;
 import javafx.event.Event;
 import javafx.geometry.Insets;
@@ -62,14 +61,9 @@ public class KLComponentSetControlSkin extends SkinBase<KLComponentSetControl> {
         getChildren().addAll(titleLabel, addEntryButton);
         getChildren().addListener(nodeListChangeListener);
         // Only allow one empty KLComponentControl
-        BooleanBinding booleanBinding = Bindings.createBooleanBinding(() ->
-                        getChildren().stream().anyMatch(n ->
-                            n instanceof KLComponentControl cc && cc.getEntity() == null
-                        )
-                ,getChildren(), control.entitiesProperty());
-
-        //TODO The binding is not working as expected.
-        addEntryButton.disableProperty().bind(booleanBinding);
+        addEntryButton.disableProperty().bind(Bindings.createBooleanBinding(() ->
+                        getChildren().stream().anyMatch(n -> n instanceof KLComponentControl cc && cc.getEntity() == null)
+                ,getChildren(), control.entitiesProperty()));
 
         getSkinnable().setOnMouseDragReleased(Event::consume);
 
@@ -91,11 +85,6 @@ public class KLComponentSetControlSkin extends SkinBase<KLComponentSetControl> {
             Subscription subscription = componentControl.entityProperty().subscribe(entity -> {
                 if (entity != null && !klComponentSetControl.getEntitiesSet().contains(entity)) {
                     klComponentSetControl.getEntitiesSet().add(entity);
-                    // TODO this is not a very good way to do the entityProxy addition. However for some reason binding with addEntryButton
-                    //  is not working. This is a temporary fix where we remove and add componentControl to enable the addEntry Button.
-                    getChildren().remove(componentControl);
-                    getChildren().add(componentControl);
-                    componentControl.setEntity(entity);
                 }
             });
 
