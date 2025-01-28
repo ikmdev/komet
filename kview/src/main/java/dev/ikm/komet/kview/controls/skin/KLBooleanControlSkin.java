@@ -1,54 +1,84 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLBooleanControl;
-import javafx.scene.control.skin.RadioButtonSkin;
-import javafx.scene.layout.StackPane;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.SkinBase;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 
 /**
- * Default skin implementation for the {@link KLBooleanControl} control,
- * based on the {@link RadioButtonSkin}, but with a customized layout, where
- * the visual indication of the selected state is placed to the right.
+ * Default skin implementation for the {@link KLBooleanControl} control
  *
  * @see KLBooleanControl
- * @see javafx.scene.control.RadioButton
  */
-public class KLBooleanControlSkin extends RadioButtonSkin {
+public class KLBooleanControlSkin extends SkinBase<KLBooleanControl> {
 
-    private final StackPane radio;
+    private final VBox mainContainer = new VBox();
+
+    private final Label titleLabel = new Label();
+    private final ComboBox<Boolean> comboBox = new ComboBox<>();
 
     /**
-     * Creates a new KLBooleanControlSkin instance, installing the necessary child
-     * nodes into the Control {@link javafx.scene.control.Control#getChildrenUnmodifiable() children} list, as
-     * well as the necessary input mappings for handling key, mouse, etc. events.
+     * Creates a new KLBooleanControlSkin instance.
      *
      * @param control The control that this skin should be installed onto.
      */
     public KLBooleanControlSkin(KLBooleanControl control) {
         super(control);
-        radio = getChildren().stream()
-                .filter(StackPane.class::isInstance)
-                .map(StackPane.class::cast)
-                .findFirst()
-                .orElseThrow();
+
+        mainContainer.getChildren().addAll(titleLabel, comboBox);
+        getChildren().add(mainContainer);
+
+        titleLabel.textProperty().bind(control.titleProperty());
+
+        addMenuItemsToComboBox();
+        comboBox.valueProperty().bindBidirectional(control.valueProperty());
+
+        mainContainer.setFillWidth(true);
+        comboBox.setPrefWidth(Double.MAX_VALUE);
+        comboBox.setMaxWidth(Region.USE_PREF_SIZE);
+
+        comboBox.setCellFactory(p -> new ListCell<>() {
+            {
+                setContentDisplay(ContentDisplay.TEXT_ONLY);
+            }
+
+            @Override protected void updateItem(Boolean item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (item == null || empty) {
+                    setText("");
+                } else {
+                    String booleanString = item.toString();
+                    String capitalized = booleanString.substring(0, 1).toUpperCase() + booleanString.substring(1);
+                    setText(capitalized);
+                }
+            }
+        });
+
+        comboBox.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(Boolean item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null || empty) {
+                    setText(control.getPromptText());
+                } else {
+                    String booleanString = item.toString();
+                    String capitalized = booleanString.substring(0, 1).toUpperCase() + booleanString.substring(1);
+                    setText(capitalized);
+                }
+            }
+        });
+
+        // CSS
+        mainContainer.getStyleClass().add("main-container");
+        titleLabel.getStyleClass().add("title");
     }
 
-    /** {@inheritDoc} */
-    @Override
-    protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
-        super.layoutChildren(contentX, contentY, contentWidth, contentHeight);
-        final KLBooleanControl control = (KLBooleanControl) getSkinnable();
-        final double radioWidth = radio.prefWidth(-1);
-        final double radioHeight = radio.prefHeight(-1);
-        final double computeWidth = Math.max(control.prefWidth(-1), control.minWidth(-1));
-        final double labelWidth = Math.min(computeWidth - radioWidth, computeWidth - snapSizeX(radioWidth));
-        final double labelHeight = Math.min(control.prefHeight(labelWidth), contentHeight);
-        final double maxHeight = Math.max(radioHeight, labelHeight);
-        final double y = contentY + (contentHeight - maxHeight) / 2;
-
-        layoutLabelInArea(contentX, y, labelWidth, maxHeight, control.getAlignment());
-        radio.resize(snapSizeX(radioWidth), snapSizeY(radioHeight));
-        positionInArea(radio, contentWidth - radioWidth, y, radioWidth, maxHeight, 0,
-                control.getAlignment().getHpos(), control.getAlignment().getVpos());
+    private void addMenuItemsToComboBox() {
+        comboBox.getItems().addAll(true, false);
     }
-
 }
