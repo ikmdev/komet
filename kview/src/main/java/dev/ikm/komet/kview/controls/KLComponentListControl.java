@@ -14,6 +14,7 @@ import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -62,8 +63,8 @@ public class KLComponentListControl extends Control {
     /**
      * This property holds the list of {@link Entity Entities} that have been added to the control
      */
-    private final ObjectProperty<List<EntityProxy>> entitiesProperty = new SimpleObjectProperty<>(FXCollections.observableList(new ArrayList<>()));
-    public final ObjectProperty<List<EntityProxy>> entitiesProperty() {
+    private final ListProperty<EntityProxy> entitiesProperty = new SimpleListProperty<>(FXCollections.observableList(new LinkedList<>()));
+    public final ListProperty<EntityProxy> entitiesProperty() {
        return entitiesProperty;
     }
     public final List<EntityProxy> getEntitiesList() {
