@@ -34,7 +34,10 @@ public class KLReadOnlyDataTypeControlSkin<T> extends KLReadOnlyBaseControlSkin<
                 if (control.getValue() == null) {
                     return "";
                 } else {
-                    return String.valueOf(control.getValue());
+                    String valueString = String.valueOf(control.getValue());
+                    // We always want the first letter to be upper case
+                    String capitalized = valueString.substring(0, 1).toUpperCase() + valueString.substring(1);
+                    return capitalized;
                 }
             }
         });
