@@ -4997,35 +4997,35 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: white;
 }
 
-/* FIXME this should be removed, since the boolean control will become a comboBox instead of a radioGroup */
-.klradio.radio-button > .radio {
-    -fx-background-color: #4277D8;
-    -fx-fill: white;
-    -fx-shape: "M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z";
+/*******************************************************************************
+ *                                                                             *
+ * KL Boolean Control (Popup)                                                  *
+ *                                                                             *
+ ******************************************************************************/
+
+.boolean-control .combo-box-popup > .list-view {
+    -fx-background-color: #2e3140;
+    -fx-background-radius: 4px;
 }
 
-.klradio.radio-button:selected > .radio .dot {
-    -fx-background-color: #4277D8;
-    -fx-fill: white;
-    -fx-shape: "M12 17C14.7614 17 17 14.7614 17 12C17 9.23858 14.7614 7 12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17Z";
-}
-
-.kl-boolean-label {
+.boolean-control .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
     -fx-font-family: "Noto Sans";
+
     -fx-font-size: 14px;
-    -fx-font-style: normal;
-    -fx-font-weight: 500;
-    -fx-line-height: 16px;
-    -fx-text-fill: black;
+    -fx-padding: 0.333333em 2em 0.333333em 0.833333em;  /* 4 24 4 10 */
+
+    -fx-background: transparent;
+
+    -fx-text-fill: white;
 }
 
-.kl-boolean-selection {
-    -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
-    -fx-font-style: normal;
-    -fx-font-weight: 500;
-    -fx-line-height: 16px;
-    -fx-text-fill: -Grey-11;
+.boolean-control .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:hover,
+.boolean-control .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:focused {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+.boolean-control .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:selected {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
 }
 
 /*******************************************************************************
