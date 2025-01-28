@@ -14,11 +14,12 @@ import javafx.scene.Scene;
 import javafx.stage.Window;
 
 /**
- * Highest level Knowledge Layout Component. Some components, such as {@code Window} do
- * not descend from {@code Node}, and this interface enables inclusion of those components
- * in the Knowledge Layout paradigm (i.e., consistent use of factories and preferences, and
- * provides an ability to serialize, share, and restore a layout.)
+ * Represents an interface for a knowledge layout gadget with functionality for managing
+ * properties, preferences, and view calculations associated with JavaFX components.
+ * This interface provides methods and enumerations to define property keys, user preferences,
+ * and mechanisms for retrieving contextual instances of {@code ViewCalculator}.
  *
+ * @param <T> the type of the JavaFX component associated with this gadget
  */
 public interface KlGadget<T> {
     /**
@@ -36,7 +37,15 @@ public interface KlGadget<T> {
          * and is based on an underlying {@code ViewCoordinateRecord}. Reading and writing of
          * {@code ViewCoordinateRecord}s is the responsibility of the KlView.
          */
-        VIEW_CALCULATOR
+        VIEW_CALCULATOR,
+        /**
+         * Represents a property key utilized within the property system of JavaFX {@code Nodes}
+         * and {@code Window} objects to provide a mechanism for associating specific objects or behaviors.
+         * The {@code KL_PEER} key is used to link JavaFx objects with their corresponding Knowledge layout peer.
+         * It allows for dynamic attachment of additional functionality or metadata
+         * to the Nodes, supporting advanced system configurations.
+         */
+        KL_PEER;
     }
 
     /**
@@ -82,11 +91,11 @@ public interface KlGadget<T> {
         }
     }
     /**
-     * Provides an instance of the generic type T associated with the knowledge layout component.
+     * Provides an instance of the generic type T JavaFx gadget associated with the knowledge layout component.
      *
      * @return an instance of type T, representing a specific knowledge layout gadget.
      */
-    T klGadget();
+    T fxGadget();
 
     /**
      * Retrieves the concrete class type of the {@link KlFactory} used to create
@@ -107,7 +116,7 @@ public interface KlGadget<T> {
      * @return a {@code ViewCalculator} instance associated with the current context.
      */
     default ViewCalculator viewCalculatorForContext() {
-        return  switch (this.klGadget()) {
+        return  switch (this.fxGadget()) {
             case Node node -> viewCalculatorForContext(node);
             case Window window -> viewCalculatorForContext(window);
             case Scene scene -> viewCalculatorForContext(scene);

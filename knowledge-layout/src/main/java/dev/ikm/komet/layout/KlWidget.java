@@ -25,7 +25,7 @@ public interface KlWidget<T extends Parent> extends KlGadget<T> {
      *
      * @return The widget instance, represented by the specific implementation of the KlWidget.
      */
-    default T klGadget() {
+    default T fxGadget() {
         return klWidget();
     }
 
