@@ -68,7 +68,6 @@ public class KLComponentSetControlSkin extends SkinBase<KLComponentSetControl> {
         getSkinnable().setOnMouseDragReleased(Event::consume);
 
         control.getEntitiesSet().forEach(this::createComponentUI);
-
     }
 
     private void createComponentUI(){
