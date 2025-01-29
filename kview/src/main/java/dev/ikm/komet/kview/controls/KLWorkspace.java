@@ -61,8 +61,8 @@ public class KLWorkspace extends Control {
      */
     public static final String DESKTOP_PANE_STYLE_CLASS = "desktop-pane";
 
-    public static final double DEFAULT_HORIZONTAL_GAP = 12.0;
-    public static final double DEFAULT_VERTICAL_GAP = 12.0;
+    public static final double DEFAULT_HORIZONTAL_GAP = 24.0;
+    public static final double DEFAULT_VERTICAL_GAP = 24.0;
     private final ObservableList<ChapterKlWindow<Pane>> DEFAULT_WINDOWS = FXCollections.observableArrayList();
 
     /**
@@ -105,6 +105,25 @@ public class KLWorkspace extends Control {
      * STANDARD height of the workspace.
      */
     public static final double STANDARD_HEIGHT = 1080.0;
+
+    /**
+     * Minimum width of concept panels placed in the workspace.
+     */
+    public static final double MIN_WINDOW_WIDTH = 460.0;
+
+    /**
+     * Minimum height of concept panels placed in the workspace.
+     */
+    public static final double MIN_WINDOW_HEIGHT = 432.0;
+
+    public static final double DEFAULT_WINDOW_WIDTH = 672.0;
+
+    public static final double DEFAULT_WINDOW_HEIGHT = 1032.0;
+
+    /**
+     * Maximum height of concept panels placed in the workspace.
+     */
+    public static final double MAX_WINDOW_HEIGHT = 1032.0;
 
     /**
      * Constructs a new KLWorkspace with default style classes and settings.
