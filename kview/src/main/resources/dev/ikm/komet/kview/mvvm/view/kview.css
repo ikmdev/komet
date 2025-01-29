@@ -4931,6 +4931,18 @@ Styling a context menu for kview ui/ux controls
     -fx-font-weight: 600;
 }
 
+.sub-container .button-bar .button:hover {
+    -fx-background-color: derive(-Grey-2, -2.5%);
+}
+
+.sub-container .button-bar .button:armed {
+    -fx-background-color: derive(-Grey-2, -4%);
+    -fx-border-color: derive(-Secondary-05, 40%);
+
+    -fx-scale-x: 0.99;
+    -fx-scale-y: 0.99;
+}
+
 /* submit button */
 .sub-container .button-bar .primary.button {
     -fx-border-radius: 4;
@@ -4940,7 +4952,15 @@ Styling a context menu for kview ui/ux controls
     -fx-font-weight: 600;
     -fx-font-style: normal;
     -fx-text-fill: -Grey-White;
-    /*-fx-border-width: 1px;*/
+}
+
+.sub-container .button-bar .primary.button:hover {
+    -fx-background-color: derive(-Secondary-05, -10%);
+}
+
+.sub-container .button-bar .primary.button:armed {
+    -fx-background-color: derive(-Secondary-05, -20%);
+    -fx-border-color: transparent;
 }
 
 /*******************************************************************************
