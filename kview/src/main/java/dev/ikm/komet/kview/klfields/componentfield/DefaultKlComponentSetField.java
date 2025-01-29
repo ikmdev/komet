@@ -30,6 +30,11 @@ public class DefaultKlComponentSetField extends BaseDefaultKlField<Set<EntityPro
                 EntityProxy entityProxy = EntityProxy.make(nid);
                 klComponentSetControl.getEntitiesSet().add(entityProxy);
             });
+
+            //TODO The data is bound with IntIdSet will need this to writeToDatabase. Commenting below code for now.
+
+            // klComponentSetControl.entitiesProperty().bindBidirectional(observablePropertySet);
+
             node = klComponentSetControl;
         } else {
             VBox vBox = new VBox();
