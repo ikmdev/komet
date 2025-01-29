@@ -50,6 +50,4 @@ public class DefaultKlComponentSetField extends BaseDefaultKlField<Set<EntityPro
         }
         setKlWidget(node);
     }
-
-
 }
