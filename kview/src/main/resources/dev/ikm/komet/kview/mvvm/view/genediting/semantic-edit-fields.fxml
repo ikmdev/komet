@@ -61,10 +61,10 @@
             <Insets bottom="12.0" left="12.0" right="12.0" top="12.0" />
          </BorderPane.margin>
          <children>
-            <Button fx:id="cancelButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#cancel" prefHeight="32.0" prefWidth="80.0" text="CANCEL" HBox.hgrow="ALWAYS" />
+            <Button fx:id="cancelButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#cancel" prefHeight="32.0" text="CANCEL" HBox.hgrow="ALWAYS" />
             <Region maxWidth="1.7976931348623157E308" prefHeight="32.0" prefWidth="150.0" HBox.hgrow="ALWAYS" />
-            <Button fx:id="clearFormButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#clearForm" prefWidth="105.0" text="CLEAR FORM" />
-            <Button fx:id="submitButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#submit" prefWidth="73.0" styleClass="primary" text="SUBMIT" />
+            <Button fx:id="clearFormButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#clearForm" text="CLEAR FORM" />
+            <Button fx:id="submitButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#submit" styleClass="primary" text="SUBMIT" />
          </children>
       </HBox>
    </bottom>
