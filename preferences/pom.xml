@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.46.0-IIA-1212-Synched-Build-Capability-to-Generically-Edit-Component-Set-Data-Type-Values-SNAPSHOT</version>
+        <version>1.46.0-SNAPSHOT</version>
     </parent>
     <artifactId>preferences</artifactId>
     <dependencies>
