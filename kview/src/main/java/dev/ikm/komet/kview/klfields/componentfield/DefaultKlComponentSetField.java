@@ -32,7 +32,6 @@ public class DefaultKlComponentSetField extends BaseDefaultKlField<Set<EntityPro
             });
 
             //TODO The data is bound with IntIdSet will need this to writeToDatabase. Commenting below code for now.
-
             // klComponentSetControl.entitiesProperty().bindBidirectional(observablePropertySet);
 
             node = klComponentSetControl;
