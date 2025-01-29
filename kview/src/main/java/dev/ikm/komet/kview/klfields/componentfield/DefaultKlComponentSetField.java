@@ -47,13 +47,6 @@ public class DefaultKlComponentSetField extends BaseDefaultKlField<Set<EntityPro
                 vBox.getChildren().add(readOnlyComponentControl);
             });
             node = vBox;
-
-
-
-
-
-
-
         }
         setKlWidget(node);
     }
