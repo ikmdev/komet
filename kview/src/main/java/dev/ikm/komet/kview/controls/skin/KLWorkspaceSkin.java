@@ -383,6 +383,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
         if (hasSavedPos) {
             if (canPlace(savedX, savedY, windowWidth, windowHeight, desktopWidth, desktopHeight)) {
+                windowPanel.setTranslateX(savedX);
+                windowPanel.setTranslateY(savedY);
                 windowPanel.setPrefSize(windowWidth, windowHeight);
                 desktopPane.getChildren().add(windowPanel);
                 // No auto-scrolling for returning windows
