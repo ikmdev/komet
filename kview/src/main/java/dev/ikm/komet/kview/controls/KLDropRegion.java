@@ -50,21 +50,6 @@ public class KLDropRegion extends Region {
     private static final PseudoClass LINE_PSEUDO_CLASS = PseudoClass.getPseudoClass("line");
 
     /**
-     * Minimum width of concept panels placed in the workspace.
-     */
-    private static final double MIN_WIDTH = 672.0;
-
-    /**
-     * Minimum height of concept panels placed in the workspace.
-     */
-    private static final double MIN_HEIGHT = 427.0;
-
-    /**
-     * Maximum height of concept panels placed in the workspace.
-     */
-    private static final double MAX_HEIGHT = 940.0;
-
-    /**
      * An enumeration of drop region types: {@code BOX} or {@code LINE}.
      * <ul>
      *     <li>{@code BOX} - indicates a box-like drop target</li>
