@@ -93,6 +93,11 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     private final WeakListChangeListener<ChapterKlWindow<Pane>> weakWindowsListChangeListener;
 
     /**
+     * The timeline used to animate auto-scrolling when creating and dragging windows.
+     */
+    private Timeline autoScrollTimeline;
+
+    /**
      * Constructs a new skin for the provided {@link KLWorkspace}.
      *
      * @param workspace The KLWorkspace to be skinned.
@@ -563,6 +568,10 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * @param nodeToView The node to bring into view (toward the top).
      */
     private void autoScrollToTopEdge(Node nodeToView) {
+        if (autoScrollTimeline != null && autoScrollTimeline.getStatus() == Timeline.Status.RUNNING) {
+            return;
+        }
+
         // Force layout to obtain accurate bounds
         desktopPane.layout();
 
@@ -599,13 +608,13 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         newV = Math.max(0, Math.min(newV, 1));
 
         // Animate scroll
-        Timeline timeline = new Timeline(new KeyFrame(Duration.ZERO,
+        autoScrollTimeline = new Timeline(new KeyFrame(Duration.ZERO,
                 new KeyValue(desktopScrollPane.hvalueProperty(), startH),
                 new KeyValue(desktopScrollPane.vvalueProperty(), startV)),
-                new KeyFrame(Duration.millis(300),
+                new KeyFrame(Duration.millis(250),
                         new KeyValue(desktopScrollPane.hvalueProperty(), newH, Interpolator.EASE_OUT),
                         new KeyValue(desktopScrollPane.vvalueProperty(), newV, Interpolator.EASE_OUT)));
-        timeline.play();
+        autoScrollTimeline.play();
     }
 
     // =========================================================================
