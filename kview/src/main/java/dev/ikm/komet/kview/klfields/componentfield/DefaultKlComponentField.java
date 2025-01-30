@@ -35,22 +35,36 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
             node = componentControl;
         } else {
             KLReadOnlyComponentControl readOnlyComponentControl = new KLReadOnlyComponentControl();
+            ObjectProperty<EntityProxy> valueProperty = observableComponentField.valueProperty();
 
             // text
-            ObjectProperty<EntityProxy> valueProperty = observableComponentField.valueProperty();
-            String description = valueProperty.get().description();
-            readOnlyComponentControl.setText(description);
+            updateControlText(valueProperty.get(), readOnlyComponentControl);
 
             // title
             String title = observableView.calculator().languageCalculator().getDescriptionText(observableComponentField.meaningNid()).orElse("Blank Title");
             readOnlyComponentControl.setTitle(title);
 
             // icon
-            readOnlyComponentControl.setIcon(Identicon.generateIdenticonImage(observableComponentField.purpose().publicId()));
+            updateControlIcon(observableComponentField, readOnlyComponentControl);
+
+            // Listen and update when EntityProxy changes
+            valueProperty.subscribe(newEntity -> {
+                updateControlText(newEntity, readOnlyComponentControl);
+                updateControlIcon(observableComponentField, readOnlyComponentControl);
+            });
 
             node = readOnlyComponentControl;
         }
 
         setKlWidget(node);
+    }
+
+    private void updateControlText(EntityProxy entityProxy, KLReadOnlyComponentControl klReadOnlyComponentControl) {
+        String description = entityProxy.description();
+        klReadOnlyComponentControl.setText(description);
+    }
+
+    private void updateControlIcon(ObservableField<EntityProxy> observableField, KLReadOnlyComponentControl klReadOnlyComponentControl) {
+        klReadOnlyComponentControl.setIcon(Identicon.generateIdenticonImage(observableField.purpose().publicId()));
     }
 }
