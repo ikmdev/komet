@@ -248,8 +248,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         workspace.setOnDragOver(event -> {
             if (event.getGestureSource() != null && event.getDragboard().hasString()) {
                 event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-                Point2D localPoint = desktopPane.screenToLocal(event.getScreenX(), event.getScreenY());
-                Bounds dropBounds = findDropRegionPlacement(localPoint.getX(), localPoint.getY());
+
+                // Use the occupant-based logic (with special handling if empty)
+                Bounds dropBounds = findDropRegionPlacement();
                 if (dropBounds != null) {
                     desktopPane.showDropRegion(dropBounds);
                     // Auto-scroll to keep the drop region in view while dragging
@@ -266,16 +267,21 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     }
 
     /**
-     * Attempts to locate a bounding region near the specified (mouseX, mouseY) coordinates
-     * for a new window using occupant-based layout constraints. Returns {@code null} if
-     * no suitable region is found. This method is used to show a "drop region" preview while dragging.
+     * Attempts to locate a bounding region for a new window (the drop region) based on
+     * whether the workspace is empty or not.
+     * <ul>
+     *   <li>If the workspace has no existing windows, it returns a bounding region
+     *       anchored to the top-left corner of the desktop (using horizontal/vertical gap).</li>
+     *   <li>If there are existing windows, the method uses the occupant-based 3-row approach
+     *       (via {@link #findThreeRowPlacement(double, double, double, double, double, double)})
+     *       to identify the next available free spot.</li>
+     * </ul>
      *
-     * @param mouseX The x-coordinate (in local space) where the drag is taking place.
-     * @param mouseY The y-coordinate (in local space) where the drag is taking place.
      * @return A {@link Bounds} object representing a potential drop region or {@code null}
      * if none is found.
      */
-    private Bounds findDropRegionPlacement(double mouseX, double mouseY) {
+    private Bounds findDropRegionPlacement() {
+        final KLWorkspace workspace = getSkinnable();
         final double width = DEFAULT_WINDOW_WIDTH;
         final double height = DEFAULT_WINDOW_HEIGHT;
 
@@ -286,30 +292,28 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                 ? desktopPane.getHeight()
                 : desktopPane.getPrefHeight();
 
-        // We collect all free spots with the simpler occupant-based approach
-        List<BoundingBox> freeSpots = collectAllFreeSpots3Row(width, height,
-                desktopWidth, desktopHeight,
-                getSkinnable().getHorizontalGap(),
-                getSkinnable().getVerticalGap());
-        if (freeSpots.isEmpty()) {
+        // 1) If there are no windows, place in top-left:
+        if (workspace.getWindows().isEmpty()) {
+            double x = workspace.getHorizontalGap();
+            double y = workspace.getVerticalGap();
+            // Ensure it fits in the desktop:
+            if (canPlace(x, y, width, height, desktopWidth, desktopHeight)) {
+                return new BoundingBox(x, y, width, height);
+            }
             return null;
         }
 
-        // pick the bounding box whose center is nearest (mouseX, mouseY)
-        double bestDistance = Double.MAX_VALUE;
-        BoundingBox best = null;
-        for (BoundingBox candidate : freeSpots) {
-            double cx = candidate.getMinX() + candidate.getWidth() / 2.0;
-            double cy = candidate.getMinY() + candidate.getHeight() / 2.0;
-            double dx = cx - mouseX;
-            double dy = cy - mouseY;
-            double dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < bestDistance) {
-                bestDistance = dist;
-                best = candidate;
-            }
+        // 2) If there are windows, use occupant-based approach:
+        Point2D placement = findThreeRowPlacement(width, height,
+                desktopWidth, desktopHeight,
+                workspace.getHorizontalGap(),
+                workspace.getVerticalGap());
+
+        if (placement != null) {
+            return new BoundingBox(placement.getX(), placement.getY(), width, height);
         }
-        return best;
+        // If no spot is found, return null
+        return null;
     }
 
     /**
