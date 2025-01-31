@@ -65,6 +65,6 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
     }
 
     private void updateControlIcon(ObservableField<EntityProxy> observableField, KLReadOnlyComponentControl klReadOnlyComponentControl) {
-        klReadOnlyComponentControl.setIcon(Identicon.generateIdenticonImage(observableField.purpose().publicId()));
+        klReadOnlyComponentControl.setIcon(Identicon.generateIdenticonImage(observableField.valueProperty().get().publicId()));
     }
 }
