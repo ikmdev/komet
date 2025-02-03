@@ -464,19 +464,12 @@ public class GenEditingDetailsController {
     @FXML
     private void openReasonerSlideout(ActionEvent actionEvent) {
         // TODO: perform reasoner
-        System.out.println("TODO: perform reasoner bumpout: " + actionEvent);
     }
 
     @FXML
     private void openTimelinePanel(ActionEvent actionEvent) {
         // TODO: perform reasoner
-        System.out.println("TODO: perform openTimelinePanel bumpout: " + actionEvent);
     }
-
-//    @FXML
-//    private void popupAddDescriptionContextMenu(ActionEvent actionEvent) {
-//        MenuHelper.fireContextMenuEvent(actionEvent, Side.RIGHT, 0, 0);
-//    }
 
     @FXML
     public void popupStampEdit(ActionEvent event) {
@@ -546,7 +539,6 @@ public class GenEditingDetailsController {
 
     @FXML
     private void save(ActionEvent actionEvent) {
-        System.out.println("Publish Globe button was pressed.");
         // TODO create a commit transaction of current Semantic (Add or edit will add a new Semantic Version)
     }
 

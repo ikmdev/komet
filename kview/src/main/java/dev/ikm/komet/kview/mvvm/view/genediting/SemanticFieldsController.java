@@ -81,7 +81,6 @@ public class SemanticFieldsController {
                                 semanticEntityVersionLatest));
             } else {
                 // TODO Add a new semantic based on a pattern (blank fields).
-                System.out.println("Display all fields for adding a semantic entity");
             }
 
         }
@@ -96,13 +95,11 @@ public class SemanticFieldsController {
         actionEvent.consume();
         // if previous state was closed cancel will close properties bump out.
         // else show
-        System.out.println(actionEvent);
     }
 
     @FXML
     private void clearForm(ActionEvent actionEvent) {
         actionEvent.consume();
-        System.out.println(actionEvent);
     }
 
     @FXML
@@ -119,6 +116,5 @@ public class SemanticFieldsController {
         //EventBus implementation changes to refresh the details area
         EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), PUBLISH, list));
 
-//        clearView(actionEvent);
     }
 }
