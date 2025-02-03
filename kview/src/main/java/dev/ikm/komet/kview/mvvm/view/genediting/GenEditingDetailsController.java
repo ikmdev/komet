@@ -24,6 +24,7 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
+import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentListFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
@@ -238,12 +239,12 @@ public class GenEditingDetailsController {
         setupReferenceComponentUI(semanticEntityVersionLatest);
 
         // Populate the Semantic Details
-        setupSemanticDetailsUI(semanticEntityVersionLatest);
-
+        //setupSemanticDetailsUI(semanticEntityVersionLatest);
+        observableFields.addAll(KlFieldHelper.displayReadOnlySemanticFields(getViewProperties(), semanticDetailsVBox, semanticEntityVersionLatest));
         // Setup Properties Bump out view.
         setupProperties();
 
-        //Set up the Listener to refresh the details area
+        //Set up the Listener to refresh the details area (After user hits submit button on the right side)
         Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
             if (evt.getEventType() == GenEditingEvent.PUBLISH) {
                 Platform.runLater(() -> {
@@ -251,7 +252,13 @@ public class GenEditingDetailsController {
                         ObservableField field = observableFields.get(i);
                         ObservableField updatedField = evt.getList().get(i);
                         if (updatedField != null && field != null) {
-                            field.valueProperty().setValue(updatedField.valueProperty().getValue());
+                            // readonly integer value 1, editable integer value 1 don't update
+                            // readonly integer value 1, editable integer value 5 do update
+                            // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
+                            // Should we check if the value is different before updating? (blindly updating now).
+                            //if (!field.value().equals(updatedField.valueProperty())) {
+                                field.valueProperty().setValue(updatedField.valueProperty().getValue());
+                            //}
                         }
                     }
                 });
@@ -348,62 +355,6 @@ public class GenEditingDetailsController {
         }
     }
 
-    private void setupSemanticDetailsUI(Latest<SemanticEntityVersion> semanticEntityVersionLatest) {
-
-        //FIXME use a different factory
-        ReadOnlyKLFieldFactory rowf = ReadOnlyKLFieldFactory.getInstance();
-
-        Consumer<FieldRecord<Object>> updateUIConsumer = (fieldRecord) -> {
-
-            Node readOnlyNode = null;
-            int dataTypeNid = fieldRecord.dataType().nid();
-
-            // substitute each data type.
-            if (dataTypeNid == TinkarTerm.COMPONENT_FIELD.nid()) {
-                // load a read-only component
-                ObservableField<EntityProxy> observableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
-                KlComponentFieldFactory klComponentFieldFactory = new KlComponentFieldFactory();
-                readOnlyNode = klComponentFieldFactory.create(observableField, getViewProperties().nodeView(), false).klWidget();
-                observableFields.add(observableField);
-            } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
-                ObservableField<String> observableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
-                KlStringFieldFactory klStringFieldFactory = new KlStringFieldFactory();
-                readOnlyNode = klStringFieldFactory.create(observableField, getViewProperties().nodeView(), false).klWidget();
-                observableFields.add(observableField);
-            } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
-                readOnlyNode = rowf.createReadOnlyComponentSet(getViewProperties(), fieldRecord);
-                observableFields.add(null);
-            } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
-                ObservableField<IntIdList> observableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
-                KlComponentListFieldFactory klComponentListFieldFactory = new KlComponentListFieldFactory();
-                readOnlyNode = klComponentListFieldFactory.create(observableField, getViewProperties().nodeView(), false).klWidget();
-                observableFields.add(observableField);
-            } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
-                readOnlyNode = rowf.createReadOnlyDiTree(getViewProperties(), fieldRecord);
-                observableFields.add(null);
-            } else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid()) {
-                ObservableField<Float> observableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
-                KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
-                readOnlyNode = klFloatFieldFactory.create(observableField, getViewProperties().nodeView(), false).klWidget();
-                observableFields.add(observableField);
-            } else if (dataTypeNid == TinkarTerm.INTEGER_FIELD.nid()) {
-                ObservableField<Integer> observableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
-                KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
-                readOnlyNode = klIntegerFieldFactory.create(observableField, getViewProperties().nodeView(), false).klWidget();
-                observableFields.add(observableField);
-            } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
-                ObservableField<Boolean> observableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
-                KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
-                readOnlyNode = klBooleanFieldFactory.create(observableField, getViewProperties().nodeView(), false).klWidget();
-                observableFields.add(observableField);
-            }
-            // Add to VBox
-            if (readOnlyNode != null) {
-                semanticDetailsVBox.getChildren().add(readOnlyNode);
-            }
-        };
-        rowf.setupSemanticDetailsUI(getViewProperties(), semanticEntityVersionLatest, updateUIConsumer);
-    }
 
     /**
      * Setup the Properties bump out when user clicks on the Properties toggle to slide open the Properties view.
@@ -517,19 +468,12 @@ public class GenEditingDetailsController {
     @FXML
     private void openReasonerSlideout(ActionEvent actionEvent) {
         // TODO: perform reasoner
-        System.out.println("TODO: perform reasoner bumpout: " + actionEvent);
     }
 
     @FXML
     private void openTimelinePanel(ActionEvent actionEvent) {
         // TODO: perform reasoner
-        System.out.println("TODO: perform openTimelinePanel bumpout: " + actionEvent);
     }
-
-//    @FXML
-//    private void popupAddDescriptionContextMenu(ActionEvent actionEvent) {
-//        MenuHelper.fireContextMenuEvent(actionEvent, Side.RIGHT, 0, 0);
-//    }
 
     @FXML
     public void popupStampEdit(ActionEvent event) {
@@ -599,7 +543,6 @@ public class GenEditingDetailsController {
 
     @FXML
     private void save(ActionEvent actionEvent) {
-        System.out.println("Publish Globe button was pressed.");
         // TODO create a commit transaction of current Semantic (Add or edit will add a new Semantic Version)
     }
 

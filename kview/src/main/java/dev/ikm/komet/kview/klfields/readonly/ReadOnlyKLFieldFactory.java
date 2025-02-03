@@ -3,6 +3,7 @@ package dev.ikm.komet.kview.klfields.readonly;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
+import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -86,7 +87,7 @@ public class ReadOnlyKLFieldFactory {
         JFXNode<Node, Void> jfxNode = FXMLMvvmLoader.make(getResource("/dev/ikm/komet/kview/controls/read-only-component-set-field.fxml"));
         Node componentRow = jfxNode.node();
         // obtain vbox to add items from set
-        VBox container = (VBox) componentRow.lookup(".semantic-field-set-container");
+        VBox container = (VBox) componentRow.lookup(".semantic-field-collection-container");
 
         // update field's meaning title label
         Label fieldMeaning = (Label) componentRow.lookup(".semantic-field-type-label");
@@ -96,6 +97,29 @@ public class ReadOnlyKLFieldFactory {
         // loop through all components
         IntIdSet componentSet = (IntIdSet) fieldRecord.value();
         componentSet.forEach(componentId -> {
+            Latest<EntityVersion> component = viewProperties.calculator().stampCalculator().latest(componentId);
+            component.ifPresent(entityVersion -> {
+                Node componentRow2 = createReadOnlyComponentListItem(viewProperties, component);
+                container.getChildren().add(componentRow2);
+            });
+        });
+        return componentRow;
+    }
+
+    public Node createReadOnlyComponentList(ViewProperties viewProperties, FieldRecord<?> fieldRecord) {
+        JFXNode<Node, Void> jfxNode = FXMLMvvmLoader.make(getResource("/dev/ikm/komet/kview/controls/read-only-component-list-field.fxml"));
+        Node componentRow = jfxNode.node();
+        // obtain vbox to add items from set
+        VBox container = (VBox) componentRow.lookup(".semantic-field-collection-container");
+
+        // update field's meaning title label
+        Label fieldMeaning = (Label) componentRow.lookup(".semantic-field-type-label");
+        fieldMeaning.setTooltip(new Tooltip(text(viewProperties, fieldRecord.purposeNid())));
+        fieldMeaning.setText(text(viewProperties, fieldRecord.meaningNid()));
+
+        // loop through all components
+        IntIdList componentList = (IntIdList) fieldRecord.value();
+        componentList.forEach(componentId -> {
             Latest<EntityVersion> component = viewProperties.calculator().stampCalculator().latest(componentId);
             component.ifPresent(entityVersion -> {
                 Node componentRow2 = createReadOnlyComponentListItem(viewProperties, component);
