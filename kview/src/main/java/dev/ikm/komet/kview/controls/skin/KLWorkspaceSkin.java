@@ -253,8 +253,6 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                 Bounds dropBounds = findDropRegionPlacement();
                 if (dropBounds != null) {
                     desktopPane.showDropRegion(dropBounds);
-                    // Auto-scroll to keep the drop region in view while dragging
-                    autoScrollToTopEdge(desktopPane.getDropRegion());
                 } else {
                     desktopPane.hideDropRegion();
                 }
@@ -370,6 +368,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                 windowPanel.setTranslateY(dropY);
                 windowPanel.setPrefSize(dropW, dropH);
                 desktopPane.getChildren().add(windowPanel);
+
+                // Auto-scroll the workspace to reveal the newly placed window after the drop
+                autoScrollToTopEdge(windowPanel);
             }
             return;
         }
