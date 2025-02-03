@@ -14,7 +14,10 @@ import javafx.beans.property.ObjectProperty;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 
+import java.util.Collections;
 import java.util.List;
 
 public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> implements KlComponentListField {
@@ -29,7 +32,11 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
             klComponentListControl.setTitle(getTitle());
             entities.forEach(nid -> {
                 EntityProxy entityProxy = EntityProxy.make(nid);
-                klComponentListControl.getEntitiesList().add(entityProxy);
+                //klComponentListControl.getEntitiesList().add(entityProxy);
+                IntIdList intIdList = klComponentListControl.getEntitiesList();
+                MutableList mutableList = Lists.mutable.ofAll(Collections.singleton(intIdList));
+                mutableList.add(entityProxy);
+                klComponentListControl.setEntitiesList((IntIdList) mutableList.toImmutableList());
             });
             node = klComponentListControl;
         } else {
