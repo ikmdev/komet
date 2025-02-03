@@ -52,9 +52,10 @@ public class KlFieldHelper {
      * @return A list of observable fields
      */
     public static List<ObservableField<?>> displayEditableSemanticFields(ViewProperties viewProperties, Pane container, Latest<SemanticEntityVersion> semanticEntityVersionLatest) {
-        List<ObservableField<?>> observableFields = new ArrayList<>();
         ReadOnlyKLFieldFactory rowf = ReadOnlyKLFieldFactory.getInstance();
+        List<ObservableField<?>> observableFields = new ArrayList<>();
         Consumer<FieldRecord<Object>> updateUIConsumer = (fieldRecord) -> {
+
             Node node = null;
             int dataTypeNid = fieldRecord.dataType().nid();
             ObservableField observableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
@@ -99,10 +100,12 @@ public class KlFieldHelper {
     }
 
     public static List<ObservableField<?>> displayReadOnlySemanticFields(ViewProperties viewProperties, Pane container, Latest<SemanticEntityVersion> semanticEntityVersionLatest) {
-            List<ObservableField<?>> observableFields = new ArrayList<>();
+
             //FIXME use a different factory
             ReadOnlyKLFieldFactory rowf = ReadOnlyKLFieldFactory.getInstance();
+            List<ObservableField<?>> observableFields = new ArrayList<>();
             Consumer<FieldRecord<Object>> updateUIConsumer = (fieldRecord) -> {
+
                 Node readOnlyNode = null;
                 int dataTypeNid = fieldRecord.dataType().nid();
                 ObservableField observableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
