@@ -9,6 +9,7 @@ import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.component.version.field.KlComponentListField;
 import dev.ikm.komet.layout.component.version.field.KlField;
 import dev.ikm.tinkar.common.id.IntIdList;
+import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.ObjectProperty;
 import javafx.scene.Node;
@@ -17,6 +18,7 @@ import javafx.scene.layout.VBox;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,14 +32,19 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
         if (isEditable) {
             KLComponentListControl klComponentListControl = new KLComponentListControl();
             klComponentListControl.setTitle(getTitle());
-            entities.forEach(nid -> {
-                EntityProxy entityProxy = EntityProxy.make(nid);
-                //klComponentListControl.getEntitiesList().add(entityProxy);
-                IntIdList intIdList = klComponentListControl.getEntitiesList();
-                MutableList mutableList = Lists.mutable.ofAll(Collections.singleton(intIdList));
-                mutableList.add(entityProxy);
-                klComponentListControl.setEntitiesList((IntIdList) mutableList.toImmutableList());
-            });
+            IntIdList intIdList = klComponentListControl.getEntitiesList();
+            List<Integer> ids = new ArrayList<>();
+            for(int i = 0; i < entities.size(); i++) {
+                EntityProxy entityProxy = EntityProxy.make(entities.get(i));
+            }
+//            entities.forEach(nid -> {
+//                EntityProxy entityProxy = EntityProxy.make(nid);
+//                //klComponentListControl.getEntitiesList().add(entityProxy);
+//
+//                mutableList[0] = Lists.mutable.of(intIdList);
+//                mutableList[0].add(entityProxy);
+//            });
+            //klComponentListControl.setEntitiesList(IntIds.list.of((IntIdList) mutableList[0].get(0)));
             node = klComponentListControl;
         } else {
             VBox vBox = new VBox();
