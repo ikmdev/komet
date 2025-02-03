@@ -1,12 +1,16 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLBooleanControl;
+import javafx.css.PseudoClass;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.SkinBase;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 /**
@@ -41,23 +45,7 @@ public class KLBooleanControlSkin extends SkinBase<KLBooleanControl> {
         comboBox.setPrefWidth(Double.MAX_VALUE);
         comboBox.setMaxWidth(Region.USE_PREF_SIZE);
 
-        comboBox.setCellFactory(p -> new ListCell<>() {
-            {
-                setContentDisplay(ContentDisplay.TEXT_ONLY);
-            }
-
-            @Override protected void updateItem(Boolean item, boolean empty) {
-                super.updateItem(item, empty);
-
-                if (item == null || empty) {
-                    setText("");
-                } else {
-                    String booleanString = item.toString();
-                    String capitalized = booleanString.substring(0, 1).toUpperCase() + booleanString.substring(1);
-                    setText(capitalized);
-                }
-            }
-        });
+        comboBox.setCellFactory(p -> new ComboBoxCell(control));
 
         comboBox.setButtonCell(new ListCell<>() {
             @Override
@@ -80,5 +68,53 @@ public class KLBooleanControlSkin extends SkinBase<KLBooleanControl> {
 
     private void addMenuItemsToComboBox() {
         comboBox.getItems().addAll(true, false);
+    }
+
+    /*******************************************************************************
+     *                                                                             *
+     * Supporting Classes                                                          *
+     *                                                                             *
+     ******************************************************************************/
+
+    private static class ComboBoxCell extends ListCell<Boolean> {
+        public static final PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass. getPseudoClass("selected");
+
+        private final HBox mainContainer = new HBox();
+        private final Label label = new Label();
+        private final StackPane checkMarkGraphic = new StackPane();
+
+        private final KLBooleanControl booleanControl;
+
+        public ComboBoxCell(KLBooleanControl control) {
+            this.booleanControl = control;
+
+            setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+
+            mainContainer.getChildren().addAll(label, checkMarkGraphic);
+
+            setMaxWidth(Double.MAX_VALUE);
+            label.setMaxWidth(Double.MAX_VALUE);
+            HBox.setHgrow(label, Priority.ALWAYS);
+
+            // CSS
+            mainContainer.getStyleClass().add("main-container");
+            checkMarkGraphic.getStyleClass().addAll("icon", "check-mark");
+        }
+
+        @Override protected void updateItem(Boolean item, boolean empty) {
+            super.updateItem(item, empty);
+
+            if (item == null || empty) {
+                setGraphic(null);
+            } else {
+                setGraphic(mainContainer);
+
+                pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, booleanControl.isValue() == item);
+
+                String booleanString = item.toString();
+                String capitalized = booleanString.substring(0, 1).toUpperCase() + booleanString.substring(1);
+                label.setText(capitalized);
+            }
+        }
     }
 }
