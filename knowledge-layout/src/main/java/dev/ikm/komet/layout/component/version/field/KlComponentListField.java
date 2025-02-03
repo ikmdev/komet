@@ -2,9 +2,7 @@ package dev.ikm.komet.layout.component.version.field;
 
 import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
 import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
-import dev.ikm.tinkar.terms.EntityProxy;
-
-import java.util.List;
+import dev.ikm.tinkar.common.id.IntIdList;
 
 /**
  * Represents a field that holds a list of component entities.
@@ -18,5 +16,5 @@ import java.util.List;
  */
 @RegularName("Component List Field")
 @ParentConcept(KlListField.class)
-public interface KlComponentListField extends KlField<List<EntityProxy>> {
+public interface KlComponentListField extends KlField<IntIdList> {
 }

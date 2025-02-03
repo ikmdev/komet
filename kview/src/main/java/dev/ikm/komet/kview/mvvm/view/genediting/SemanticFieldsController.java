@@ -28,6 +28,8 @@ import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
+import dev.ikm.komet.layout.component.version.field.KlField;
+import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.FieldRecord;
@@ -129,7 +131,7 @@ public class SemanticFieldsController {
                 node = rowf.createReadOnlyComponentSet(getViewProperties(), fieldRecord);
                 observableFields.add(null);
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
-                ObservableField<List<EntityProxy>> componentListObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                ObservableField<IntIdList> componentListObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlComponentListFieldFactory klComponentListFieldFactory = new KlComponentListFieldFactory();
                 node = klComponentListFieldFactory.create(componentListObservableField, getViewProperties().nodeView(), true).klWidget();
                 observableFields.add(componentListObservableField);

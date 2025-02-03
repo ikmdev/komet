@@ -34,6 +34,8 @@ import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
+import dev.ikm.komet.layout.component.version.field.KlField;
+import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -371,7 +373,7 @@ public class GenEditingDetailsController {
                 readOnlyNode = rowf.createReadOnlyComponentSet(getViewProperties(), fieldRecord);
                 observableFields.add(null);
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
-                ObservableField<List<EntityProxy>> observableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                ObservableField<IntIdList> observableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlComponentListFieldFactory klComponentListFieldFactory = new KlComponentListFieldFactory();
                 readOnlyNode = klComponentListFieldFactory.create(observableField, getViewProperties().nodeView(), false).klWidget();
                 observableFields.add(observableField);

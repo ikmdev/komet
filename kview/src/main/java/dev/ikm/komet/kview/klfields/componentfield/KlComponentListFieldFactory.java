@@ -4,24 +4,22 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.layout.component.version.field.KlField;
 import dev.ikm.komet.layout.component.version.field.KlFieldFactory;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.common.id.IntIdList;
 
-import java.util.List;
-
-public class KlComponentListFieldFactory implements KlFieldFactory<List<EntityProxy>> {
+public class KlComponentListFieldFactory implements KlFieldFactory<IntIdList> {
 
     @Override
-    public KlField<List<EntityProxy>> create(ObservableField<List<EntityProxy>> observableField, ObservableView observableView, boolean editable) {
+    public KlField<IntIdList> create(ObservableField<IntIdList> observableField, ObservableView observableView, boolean editable) {
         return new DefaultKlComponentListField(observableField, observableView, editable);
     }
 
     @Override
-    public Class<? extends KlField<List<EntityProxy>>> getFieldInterface() {
+    public Class<? extends KlField<IntIdList>> getFieldInterface() {
         return null;
     }
 
     @Override
-    public Class<? extends KlField<List<EntityProxy>>> getFieldImplementation() {
+    public Class<? extends KlField<IntIdList>> getFieldImplementation() {
         return DefaultKlComponentListField.class;
     }
 
