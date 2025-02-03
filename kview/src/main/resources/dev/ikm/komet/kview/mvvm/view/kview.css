@@ -4875,7 +4875,7 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 16px 8px 20px 8px;
     -fx-background-color: -Grey-1;
 }
-.semantic-field-set-container,
+.semantic-field-collection-container,
 .semantic-field-ditree-container {
     -fx-fill-width: true;
     -fx-padding: 8px 12px;

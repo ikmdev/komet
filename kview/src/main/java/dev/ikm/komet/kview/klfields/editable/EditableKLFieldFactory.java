@@ -91,7 +91,7 @@ public class EditableKLFieldFactory {
         JFXNode<Node, Void> jfxNode = FXMLMvvmLoader.make(getResource("/dev/ikm/komet/kview/controls/read-only-component-set-field.fxml"));
         Node componentRow = jfxNode.node();
         // obtain vbox to add items from set
-        VBox container = (VBox) componentRow.lookup(".semantic-field-set-container");
+        VBox container = (VBox) componentRow.lookup(".semantic-field-collection-container");
 
         // update field's meaning title label
         Label fieldMeaning = (Label) componentRow.lookup(".semantic-field-type-label");
