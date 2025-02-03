@@ -122,6 +122,7 @@ public class SemanticFieldsController {
                 KlComponentFieldFactory componentFieldFactory = new KlComponentFieldFactory();
                 ObservableField<EntityProxy> componentObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 node = componentFieldFactory.create(componentObservableField, getViewProperties().nodeView(), true).klWidget();
+                observableFields.add(componentObservableField);
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
                 KlStringFieldFactory stringFieldTextFactory = new KlStringFieldFactory();
                 ObservableField<String> stringObservableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);

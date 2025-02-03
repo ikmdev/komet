@@ -361,9 +361,10 @@ public class GenEditingDetailsController {
             // substitute each data type.
             if (dataTypeNid == TinkarTerm.COMPONENT_FIELD.nid()) {
                 // load a read-only component
-                ObservableField<EntityProxy> observableFields = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
+                ObservableField<EntityProxy> observableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlComponentFieldFactory klComponentFieldFactory = new KlComponentFieldFactory();
-                readOnlyNode = klComponentFieldFactory.create(observableFields, getViewProperties().nodeView(), false).klWidget();
+                readOnlyNode = klComponentFieldFactory.create(observableField, getViewProperties().nodeView(), false).klWidget();
+                observableFields.add(observableField);
             } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
                 ObservableField<String> observableField = obtainObservableField(getViewProperties(), semanticEntityVersionLatest, fieldRecord);
                 KlStringFieldFactory klStringFieldFactory = new KlStringFieldFactory();
