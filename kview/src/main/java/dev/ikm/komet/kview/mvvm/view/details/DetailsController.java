@@ -393,8 +393,8 @@ public class DetailsController  {
                 setUpDescriptionContextMenu(addDescriptionButton);
                 //TODO revisit: why should the mode ever be edit inside a create event?
             } else if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))){
-                conceptViewModel.addOtherName(viewProperties.calculator().viewCoordinateRecord().editCoordinate(), descrName);
-                otherNames.add(descrName);
+                    conceptViewModel.addOtherName(viewProperties.calculator().viewCoordinateRecord().editCoordinate(), descrName);
+                    otherNames.add(descrName);
             }
 
         };
