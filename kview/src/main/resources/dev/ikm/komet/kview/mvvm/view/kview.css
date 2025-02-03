@@ -5032,7 +5032,7 @@ Styling a context menu for kview ui/ux controls
     -fx-font-family: "Noto Sans";
 
     -fx-font-size: 14px;
-    -fx-padding: 0.333333em 2em 0.333333em 0.833333em;  /* 4 24 4 10 */
+    -fx-padding: 0.333333em 0.833333em 0.333333em 0.833333em;  /* 4 10 4 10 */
 
     -fx-background: transparent;
 
@@ -5046,6 +5046,32 @@ Styling a context menu for kview ui/ux controls
 
 .boolean-control .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:selected {
     -fx-background-color: rgba(255, 255, 255, 0.2);
+}
+
+.boolean-control .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:selected:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.23);
+}
+
+.boolean-control .list-cell .main-container {
+    -fx-alignment: center_left;
+}
+
+.boolean-control .list-cell .icon.check-mark {
+    width: 16px;
+    height: 12px;
+
+    -fx-min-width: width;
+    -fx-min-height: height;
+    -fx-pref-width: width;
+    -fx-pref-height: height;
+    -fx-max-width: width;
+    -fx-max-height: height;
+
+    -fx-background-color: transparent;
+}
+
+.boolean-control .list-cell:selected .icon.check-mark {
+    -fx-background-color: #5dcf16;
 }
 
 /*******************************************************************************
@@ -5064,5 +5090,9 @@ Styling a context menu for kview ui/ux controls
 
 .icon.plus {
     -fx-shape: "M9.99935 1.66699C5.40685 1.66699 1.66602 5.40782 1.66602 10.0003C1.66602 14.5928 5.40685 18.3337 9.99935 18.3337C14.5919 18.3337 18.3327 14.5928 18.3327 10.0003C18.3327 5.40782 14.5919 1.66699 9.99935 1.66699ZM9.99935 3.33366C13.6911 3.33366 16.666 6.30856 16.666 10.0003C16.666 13.6921 13.6911 16.667 9.99935 16.667C6.30758 16.667 3.33268 13.6921 3.33268 10.0003C3.33268 6.30856 6.30758 3.33366 9.99935 3.33366ZM9.16602 5.83366V9.16699H5.83268V10.8337H9.16602V14.167H10.8327V10.8337H14.166V9.16699H10.8327V5.83366H9.16602Z";
+}
+
+.icon.check-mark {
+    -fx-shape: "M7.50013 13.4749L4.02513 9.99987L2.8418 11.1749L7.50013 15.8332L17.5001 5.8332L16.3251 4.6582L7.50013 13.4749Z";
 }
 
