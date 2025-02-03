@@ -21,6 +21,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -32,6 +33,7 @@ import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +73,11 @@ public class PropertiesController {
 
     Subscriber<PropertyPanelEvent> showPanelSubscriber;
 
+    Subscriber<GenEditingEvent> genEditingEventSubscriber;
+
     JFXNode<Pane, SemanticFieldsController> editFieldsJfxNode;
+
+
 
     @FXML
     private void initialize() {
@@ -100,6 +106,17 @@ public class PropertiesController {
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(propertiesViewModel.getPropertyValue(WINDOW_TOPIC), PropertyPanelEvent.class, showPanelSubscriber);
+
+        genEditingEventSubscriber = evt -> {
+            LOG.info("Publish event type: " + evt.getEventType());
+            Config closePropertiesConfig = new Config(this.getClass().getResource("close-properties.fxml"))
+                    .addNamedViewModel(new NamedVm("propertiesViewModel", propertiesViewModel));
+
+            JFXNode<Pane, CloseProperitesController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
+            contentBorderPane.setCenter(closePropsJfxNode.node());
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(propertiesViewModel.getPropertyValue(WINDOW_TOPIC),
+                GenEditingEvent.class, genEditingEventSubscriber);
     }
 
 
