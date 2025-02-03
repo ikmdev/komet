@@ -26,9 +26,7 @@ import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableFie
 
 public class KlFieldHelper {
 
-    private List<ObservableField<?>> observableFields = new ArrayList<>();
-
-    private static Separator createSeparator() {
+   private static Separator createSeparator() {
         Separator separator = new Separator();
         separator.getStyleClass().add("field-separator");
         return separator;
