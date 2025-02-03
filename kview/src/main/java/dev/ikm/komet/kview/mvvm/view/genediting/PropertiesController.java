@@ -112,7 +112,7 @@ public class PropertiesController {
             Config closePropertiesConfig = new Config(this.getClass().getResource("close-properties.fxml"))
                     .addNamedViewModel(new NamedVm("propertiesViewModel", propertiesViewModel));
 
-            JFXNode<Pane, CloseProperitesController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
+            JFXNode<Pane, ClosePropertiesController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
             contentBorderPane.setCenter(closePropsJfxNode.node());
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(propertiesViewModel.getPropertyValue(WINDOW_TOPIC),

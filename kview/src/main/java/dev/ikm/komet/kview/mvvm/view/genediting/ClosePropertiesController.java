@@ -14,7 +14,7 @@ import org.carlfx.cognitive.viewmodel.SimpleViewModel;
  * controller for the confirmation screen post save on the
  * general editing/authoring bump out screen
  */
-public class CloseProperitesController {
+public class ClosePropertiesController {
 
     /**
      * view model to store the event topic
