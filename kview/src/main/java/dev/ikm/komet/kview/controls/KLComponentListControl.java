@@ -1,17 +1,15 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLComponentListControlSkin;
+import dev.ikm.tinkar.common.id.IntIdList;
+import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
-
-import java.util.List;
 
 /**
  * <p>KLComponentListControl is a custom control that acts as a template capable of populating multiple,
@@ -31,7 +29,7 @@ import java.util.List;
  * </code></pre>
  *
  * @see KLComponentControl
- * @see KLComponentSetControl
+ * @see KLComponentListControl
  */
 public class KLComponentListControl extends Control {
 
@@ -59,12 +57,15 @@ public class KLComponentListControl extends Control {
     /**
      * This property holds the list of {@link Entity Entities} that have been added to the control
      */
-    private final ListProperty<EntityProxy> entitiesProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
-    public final ListProperty<EntityProxy> entitiesProperty() {
+    private final ObjectProperty<IntIdList> entitiesProperty = new SimpleObjectProperty<>(IntIds.list.empty());
+    public final ObjectProperty<IntIdList> entitiesProperty() {
        return entitiesProperty;
     }
-    public final List<EntityProxy> getEntitiesList() {
+    public final IntIdList getEntitiesList() {
        return entitiesProperty.get();
+    }
+    public void setEntitiesList(IntIdList intIdList) {
+        entitiesProperty.set(intIdList);
     }
 
     /** {@inheritDoc} */

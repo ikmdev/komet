@@ -1,9 +1,11 @@
 package dev.ikm.komet.kview.klfields;
 
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
+import dev.ikm.komet.kview.klfields.componentfield.KlComponentListFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
@@ -15,14 +17,13 @@ import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.Pane;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
 
 public class KlFieldHelper {
 
@@ -39,7 +40,7 @@ public class KlFieldHelper {
             Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
             patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
                 List<FieldRecord<Object>> fieldRecords = DataModelHelper.fieldRecords(semanticEntityVersion, patternEntityVersion);
-                fieldRecords.forEach(fieldRecord -> Platform.runLater(() -> updateUIConsumer.accept(fieldRecord)));
+                fieldRecords.forEach(fieldRecord -> updateUIConsumer.accept(fieldRecord));
             });
         });
     }
@@ -70,7 +71,8 @@ public class KlFieldHelper {
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 node = rowf.createReadOnlyComponentSet(viewProperties, fieldRecord);
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
-                node = rowf.createReadOnlyComponentList(viewProperties, fieldRecord);
+                KlComponentListFieldFactory klComponentListFieldFactory = new KlComponentListFieldFactory();
+                node = klComponentListFieldFactory.create(observableField, viewProperties.nodeView(), true).klWidget();
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
                 node = rowf.createReadOnlyDiTree(viewProperties, fieldRecord);
             } else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.FLOAT.nid()) {
@@ -121,7 +123,8 @@ public class KlFieldHelper {
                 } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                     readOnlyNode = rowf.createReadOnlyComponentSet(viewProperties, fieldRecord);
                 } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
-                    readOnlyNode = rowf.createReadOnlyComponentList(viewProperties, fieldRecord);
+                    KlComponentListFieldFactory klComponentListFieldFactory = new KlComponentListFieldFactory();
+                    readOnlyNode = klComponentListFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
                 } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
                     readOnlyNode = rowf.createReadOnlyDiTree(viewProperties, fieldRecord);
                 } else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid()) {
@@ -139,7 +142,7 @@ public class KlFieldHelper {
                     container.getChildren().add(readOnlyNode);
                 }
             };
-            rowf.setupSemanticDetailsUI(viewProperties, semanticEntityVersionLatest, updateUIConsumer);
+            generateSemanticUIFields(viewProperties, semanticEntityVersionLatest, updateUIConsumer);
             return observableFields;
         }
 }

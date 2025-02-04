@@ -26,6 +26,7 @@ import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
+import dev.ikm.komet.kview.klfields.componentfield.KlComponentListFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
@@ -34,6 +35,8 @@ import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
+import dev.ikm.komet.layout.component.version.field.KlField;
+import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -352,6 +355,7 @@ public class GenEditingDetailsController {
         }
     }
 
+
     /**
      * Setup the Properties bump out when user clicks on the Properties toggle to slide open the Properties view.
      */
@@ -428,8 +432,8 @@ public class GenEditingDetailsController {
      * Workaround to place disclosure arrow button to the right of the accordion.
      */
     public void putTitlePanesArrowOnRight() {
-        putArrowOnRight(this.referenceComponentTitledPane);
-        putArrowOnRight(this.semanticDetailsTitledPane);
+//        putArrowOnRight(this.referenceComponentTitledPane);
+//        putArrowOnRight(this.semanticDetailsTitledPane);
     }
 
     @FXML

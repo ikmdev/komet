@@ -2,10 +2,7 @@ package dev.ikm.komet.layout.component.version.field;
 
 import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
 import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityVersion;
-
-import java.util.List;
+import dev.ikm.tinkar.common.id.IntIdList;
 
 /**
  * Represents a field that holds a list of component entities.
@@ -15,10 +12,9 @@ import java.util.List;
  * as a specialization designed to manage and interact specifically with component entities in
  * list-based collections.
  *
- * @param <E> The type of the component entity in the list.
- * @param <V> The type of the version associated with the component entity.
+ *
  */
 @RegularName("Component List Field")
 @ParentConcept(KlListField.class)
-public interface KlComponentListField<E extends Entity<V>, V extends EntityVersion> extends KlListField<List<E>> {
+public interface KlComponentListField extends KlField<IntIdList> {
 }

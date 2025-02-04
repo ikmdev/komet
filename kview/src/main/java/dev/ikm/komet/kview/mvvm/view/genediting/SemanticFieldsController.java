@@ -90,6 +90,7 @@ public class SemanticFieldsController {
         return semanticFieldsViewModel.getPropertyValue(VIEW_PROPERTIES);
     }
 
+
     @FXML
     private void cancel(ActionEvent actionEvent) {
         actionEvent.consume();
