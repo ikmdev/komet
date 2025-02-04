@@ -15,7 +15,6 @@ import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.Pane;
@@ -39,7 +38,7 @@ public class KlFieldHelper {
             Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
             patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
                 List<FieldRecord<Object>> fieldRecords = DataModelHelper.fieldRecords(semanticEntityVersion, patternEntityVersion);
-                fieldRecords.forEach(fieldRecord -> Platform.runLater(() -> updateUIConsumer.accept(fieldRecord)));
+                fieldRecords.forEach(fieldRecord -> updateUIConsumer.accept(fieldRecord));
             });
         });
     }
@@ -139,7 +138,7 @@ public class KlFieldHelper {
                     container.getChildren().add(readOnlyNode);
                 }
             };
-            rowf.setupSemanticDetailsUI(viewProperties, semanticEntityVersionLatest, updateUIConsumer);
+            generateSemanticUIFields(viewProperties, semanticEntityVersionLatest, updateUIConsumer);
             return observableFields;
         }
 }
