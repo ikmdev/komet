@@ -432,8 +432,8 @@ public class GenEditingDetailsController {
      * Workaround to place disclosure arrow button to the right of the accordion.
      */
     public void putTitlePanesArrowOnRight() {
-        putArrowOnRight(this.referenceComponentTitledPane);
-        putArrowOnRight(this.semanticDetailsTitledPane);
+//        putArrowOnRight(this.referenceComponentTitledPane);
+//        putArrowOnRight(this.semanticDetailsTitledPane);
     }
 
     @FXML

@@ -74,6 +74,6 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
      * Called when the window is shown.
      */
     public void onShown() {
-        jfxNode.controller().putTitlePanesArrowOnRight();
+        //jfxNode.controller().putTitlePanesArrowOnRight();
     }
 }

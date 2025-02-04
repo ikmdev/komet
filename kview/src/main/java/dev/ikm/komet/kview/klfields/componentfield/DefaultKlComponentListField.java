@@ -34,16 +34,7 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
         if (isEditable) {
             KLComponentListControl klComponentListControl = new KLComponentListControl();
             klComponentListControl.setTitle(getTitle());
-            IntIdList intIdList = klComponentListControl.getEntitiesList();
-            MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
-            for(int i = 0; i < entities.size(); i++) {
-                EntityProxy entityProxy = EntityProxy.make(entities.get(i));
-                mutableList.add(entityProxy.nid());
-            }
-            //IntIdList intIdListUpdated = IntIds.list.of(mutableList);
-            //intIdList.with(mutableList.)
-            klComponentListControl.setEntitiesList(IntIds.list.of(mutableList.toArray()));
-            //klComponentListControl.entitiesProperty().bindBidirectional(observablePropertyList);
+            klComponentListControl.entitiesProperty().bindBidirectional(observablePropertyList);
 
             node = klComponentListControl;
         } else {
