@@ -58,7 +58,7 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
                     //getSkinnable().getEntitiesList().remove(index);
                     IntIdList intIdList = getSkinnable().getEntitiesList();
                     MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
-                    mutableList.remove(index);
+                    mutableList.remove(intIdList.get(index));
                     getSkinnable().setEntitiesList(IntIds.list.of(mutableList.toArray()));
                 }
             }
