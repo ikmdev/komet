@@ -17,6 +17,8 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.list.primitive.MutableIntList;
+import org.eclipse.collections.impl.factory.primitive.IntLists;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,17 +33,17 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
         IntIdList entities = observablePropertyList.get();
         if (isEditable) {
             KLComponentListControl klComponentListControl = new KLComponentListControl();
-//            klComponentListControl.setTitle(getTitle());
-//            IntIdList intIdList = klComponentListControl.getEntitiesList();
-//            List mutableList = Lists.mutable.with(intIdList);
-//            for(int i = 0; i < entities.size(); i++) {
-//                EntityProxy entityProxy = EntityProxy.make(entities.get(i));
-//                mutableList.add(entityProxy.nid());
-//            }
+            klComponentListControl.setTitle(getTitle());
+            IntIdList intIdList = klComponentListControl.getEntitiesList();
+            MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
+            for(int i = 0; i < entities.size(); i++) {
+                EntityProxy entityProxy = EntityProxy.make(entities.get(i));
+                mutableList.add(entityProxy.nid());
+            }
             //IntIdList intIdListUpdated = IntIds.list.of(mutableList);
             //intIdList.with(mutableList.)
-            //klComponentListControl.setEntitiesList(IntIdList.wi mutableList.toImmutableList());
-            klComponentListControl.entitiesProperty().bindBidirectional(observablePropertyList);
+            klComponentListControl.setEntitiesList(IntIds.list.of(mutableList.toArray()));
+            //klComponentListControl.entitiesProperty().bindBidirectional(observablePropertyList);
 
             node = klComponentListControl;
         } else {
