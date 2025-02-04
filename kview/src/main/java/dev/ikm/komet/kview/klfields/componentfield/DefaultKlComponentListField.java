@@ -28,23 +28,21 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
         super(observableComponentListField, observableView, isEditable);
         Node node;
         ObjectProperty<IntIdList> observablePropertyList = observableComponentListField.valueProperty();
-        IntIdList entities = (IntIdList) observablePropertyList.get();
+        IntIdList entities = observablePropertyList.get();
         if (isEditable) {
             KLComponentListControl klComponentListControl = new KLComponentListControl();
-            klComponentListControl.setTitle(getTitle());
-            IntIdList intIdList = klComponentListControl.getEntitiesList();
-            List<Integer> ids = new ArrayList<>();
-            for(int i = 0; i < entities.size(); i++) {
-                EntityProxy entityProxy = EntityProxy.make(entities.get(i));
-            }
-//            entities.forEach(nid -> {
-//                EntityProxy entityProxy = EntityProxy.make(nid);
-//                //klComponentListControl.getEntitiesList().add(entityProxy);
-//
-//                mutableList[0] = Lists.mutable.of(intIdList);
-//                mutableList[0].add(entityProxy);
-//            });
-            //klComponentListControl.setEntitiesList(IntIds.list.of((IntIdList) mutableList[0].get(0)));
+//            klComponentListControl.setTitle(getTitle());
+//            IntIdList intIdList = klComponentListControl.getEntitiesList();
+//            List mutableList = Lists.mutable.with(intIdList);
+//            for(int i = 0; i < entities.size(); i++) {
+//                EntityProxy entityProxy = EntityProxy.make(entities.get(i));
+//                mutableList.add(entityProxy.nid());
+//            }
+            //IntIdList intIdListUpdated = IntIds.list.of(mutableList);
+            //intIdList.with(mutableList.)
+            //klComponentListControl.setEntitiesList(IntIdList.wi mutableList.toImmutableList());
+            klComponentListControl.entitiesProperty().bindBidirectional(observablePropertyList);
+
             node = klComponentListControl;
         } else {
             VBox vBox = new VBox();

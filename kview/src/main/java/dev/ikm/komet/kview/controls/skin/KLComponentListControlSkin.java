@@ -3,6 +3,7 @@ package dev.ikm.komet.kview.controls.skin;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentListControl;
 import dev.ikm.tinkar.common.id.IntIdList;
+import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
@@ -13,12 +14,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
 import javafx.util.Subscription;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.list.primitive.MutableIntList;
+import org.eclipse.collections.impl.factory.primitive.IntLists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.ResourceBundle;
 
 /**
@@ -41,15 +41,15 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
                     if (index >= getSkinnable().getEntitiesList().size()) {
                         //getSkinnable().getEntitiesList().add(entity);
                         IntIdList intIdList = getSkinnable().getEntitiesList();
-                        MutableList mutableList = Lists.mutable.ofAll(Collections.singleton(intIdList));
-                        mutableList.add(entity);
-                        getSkinnable().setEntitiesList((IntIdList) mutableList.toImmutableList());
+                        MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
+                        mutableList.add(entity.nid());
+                        getSkinnable().setEntitiesList(IntIds.list.of(mutableList.toArray()));
                     } else {
                         //getSkinnable().getEntitiesList().add(index, entity);
                         IntIdList intIdList = getSkinnable().getEntitiesList();
-                        MutableList mutableList = Lists.mutable.ofAll(Collections.singleton(intIdList));
-                        mutableList.add(index, entity);
-                        getSkinnable().setEntitiesList((IntIdList) mutableList.toImmutableList());
+                        MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
+                        mutableList.addAtIndex(index, entity.nid());
+                        getSkinnable().setEntitiesList(IntIds.list.of(mutableList.toArray()));
                     }
                 }
             } else if (change.wasRemoved() && change.getRemovedSize() == 1) {
@@ -57,9 +57,9 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
                 if (index >= 0) {
                     //getSkinnable().getEntitiesList().remove(index);
                     IntIdList intIdList = getSkinnable().getEntitiesList();
-                    MutableList mutableList = Lists.mutable.ofAll(Collections.singleton(intIdList));
+                    MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
                     mutableList.remove(index);
-                    getSkinnable().setEntitiesList((IntIdList) mutableList.toImmutableList());
+                    getSkinnable().setEntitiesList(IntIds.list.of(mutableList.toArray()));
                 }
             }
         }
@@ -93,15 +93,15 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
                     if (index < control.getEntitiesList().size()) {
                         //control.getEntitiesList().set(index, entity);
                         IntIdList intIdList = control.getEntitiesList();
-                        MutableList mutableList = Lists.mutable.ofAll(Collections.singleton(intIdList));
-                        mutableList.set(index, entity);
-                        control.setEntitiesList((IntIdList) mutableList.toImmutableList());
+                        MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
+                        mutableList.set(index, entity.nid());
+                        control.setEntitiesList(IntIds.list.of(mutableList.toArray()));
                     } else {
                         //control.getEntitiesList().add(entity);
                         IntIdList intIdList = control.getEntitiesList();
-                        MutableList mutableList = Lists.mutable.ofAll(Collections.singleton(intIdList));
-                        mutableList.add(entity);
-                        control.setEntitiesList((IntIdList) mutableList.toImmutableList());
+                        MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
+                        mutableList.add(entity.nid());
+                        control.setEntitiesList(IntIds.list.of(mutableList.toArray()));
                     }
                 }
             });
@@ -134,9 +134,9 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
             if (entity != null && !control.getEntitiesList().contains(entity.nid())) {
                 //control.getEntitiesList().add(entity);
                 IntIdList intIdList = control.getEntitiesList();
-                MutableList mutableList = Lists.mutable.ofAll(Collections.singleton(intIdList));
-                mutableList.add(entity);
-                control.setEntitiesList((IntIdList) mutableList.toImmutableList());
+                MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
+                mutableList.add(entity.nid());
+                control.setEntitiesList(IntIds.list.of(mutableList.toArray()));
             }
         });
         componentControl.setOnRemoveAction(ev -> {
