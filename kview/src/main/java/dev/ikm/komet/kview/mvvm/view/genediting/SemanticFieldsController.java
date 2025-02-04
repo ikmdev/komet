@@ -107,10 +107,9 @@ public class SemanticFieldsController {
         actionEvent.consume();
         List<ObservableField> list = new ArrayList<>();
         observableFields.forEach(observableField -> {
-            //Commenting writeToDataBase() to avoid creating versions for each key press
-//            if (observableField != null) {
-//                observableField.writeToDataBase();
-//            }
+            if (observableField != null) {
+                observableField.writeToDataBase();
+            }
             list.add(observableField);
         });
 
