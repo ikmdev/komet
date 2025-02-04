@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.47.0-SNAPSHOT</version>
+        <version>1.47.0-IIA-1349-fix-data-refresh-SNAPSHOT</version>
     </parent>
     <artifactId>preferences</artifactId>
     <dependencies>
