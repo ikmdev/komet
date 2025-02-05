@@ -10,14 +10,14 @@ public class GenEditingEvent extends Evt {
 
     public static final EvtType<GenEditingEvent> PUBLISH = new EvtType<>(Evt.ANY, "GEN_EDIT_PUBLISH_SEMANTIC");
 
-    private List<ObservableField> list;
+    private List<ObservableField<?>> list;
 
-    public GenEditingEvent(Object source,EvtType eventType, List<ObservableField> list){
+    public GenEditingEvent(Object source,EvtType eventType, List<ObservableField<?>> list){
         super(source,eventType);
         this.list = list;
     }
 
-    public List<ObservableField> getList(){
+    public List<ObservableField<?>> getList(){
         return list;
     }
 }

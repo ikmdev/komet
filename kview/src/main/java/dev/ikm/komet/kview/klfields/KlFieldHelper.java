@@ -1,9 +1,11 @@
 package dev.ikm.komet.kview.klfields;
 
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
+import dev.ikm.komet.kview.klfields.componentfield.KlComponentSetFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
@@ -18,10 +20,10 @@ import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.Node;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.Pane;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
 
 public class KlFieldHelper {
 
@@ -67,7 +69,8 @@ public class KlFieldHelper {
                 KlStringFieldFactory stringFieldTextFactory = new KlStringFieldFactory();
                 node = stringFieldTextFactory.create(observableField, viewProperties.nodeView(), true).klWidget();
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
-                node = rowf.createReadOnlyComponentSet(viewProperties, fieldRecord);
+                KlComponentSetFieldFactory klComponentSetFieldFactory = new KlComponentSetFieldFactory();
+                node = klComponentSetFieldFactory.create(observableField, viewProperties.nodeView(), true).klWidget();
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
                 node = rowf.createReadOnlyComponentList(viewProperties, fieldRecord);
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
@@ -118,7 +121,8 @@ public class KlFieldHelper {
                     KlStringFieldFactory klStringFieldFactory = new KlStringFieldFactory();
                     readOnlyNode = klStringFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
                 } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
-                    readOnlyNode = rowf.createReadOnlyComponentSet(viewProperties, fieldRecord);
+                    KlComponentSetFieldFactory klComponentSetFieldFactory = new KlComponentSetFieldFactory();
+                    readOnlyNode = klComponentSetFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
                 } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
                     readOnlyNode = rowf.createReadOnlyComponentList(viewProperties, fieldRecord);
                 } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
