@@ -25,7 +25,7 @@ public class SampleReadOnlyImageController {
 
     public void initialize()
     {
-        samplerDescription.setText("Read-Only Image Control used to display images");
+        samplerDescription.setText("Read-Only Image Control used to display images.");
 
         titleTextField.textProperty().bindBidirectional(readOnlyImageControl.titleProperty());
         editModeCheckBox.setSelected(readOnlyImageControl.isEditMode());

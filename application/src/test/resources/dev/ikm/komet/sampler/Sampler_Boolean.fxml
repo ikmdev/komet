@@ -75,18 +75,12 @@
                 </styleClass>
             </StackPane>
 
-            <Label styleClass="grid-label" text="Normal" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
-            <Label styleClass="grid-label" text="Selected" GridPane.columnIndex="2" GridPane.halignment="CENTER" />
+<!--            <Label styleClass="grid-label" text="Normal" GridPane.columnIndex="1" GridPane.halignment="CENTER" />-->
+<!--            <Label styleClass="grid-label" text="Selected" GridPane.columnIndex="2" GridPane.halignment="CENTER" />-->
 
-            <KLBooleanControl disable="true" mnemonicParsing="false" text="Button" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" />
-            <KLBooleanControl disable="true" mnemonicParsing="false" selected="true" text="Button" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="2" />
-            <KLBooleanControl mnemonicParsing="false" text="Button" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1">
-                <toggleGroup>
-                    <ToggleGroup fx:id="focusEnabledGroup" />
-                </toggleGroup></KLBooleanControl>
-            <KLBooleanControl mnemonicParsing="false" selected="true" text="Button" toggleGroup="$focusEnabledGroup" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
-            <Label styleClass="grid-label" text="Enabled:" GridPane.rowIndex="1" />
-            <Label styleClass="grid-label" text="Disabled:" GridPane.rowIndex="2" />
+<!--            <KLBooleanControl disable="true" text="Button" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" />-->
+<!--            <Label styleClass="grid-label" text="Enabled:" GridPane.rowIndex="1" />-->
+<!--            <Label styleClass="grid-label" text="Disabled:" GridPane.rowIndex="2" />-->
         </GridPane>
         <padding>
             <Insets bottom="60.0" right="60.0" />
