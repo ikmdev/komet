@@ -126,6 +126,11 @@ public class KlFieldHelper {
                 ObservableField<?> writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
                 ObservableField observableField = new ObservableField(writeObservableField.field(), false);
                 observableFields.add(observableField);
+
+                // TODO: this method below will be removed once the database has the capability to add and edit Image data types
+                // TODO: then all the code will be inside an if clause just like for the other data types.
+                maybeAddReadOnlyImageControl(viewProperties, container, semanticEntityVersionLatest, observableField);
+
                 // substitute each data type.
                 if (dataTypeNid == TinkarTerm.COMPONENT_FIELD.nid()) {
                     // load a read-only component
