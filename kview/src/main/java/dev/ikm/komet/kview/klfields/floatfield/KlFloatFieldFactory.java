@@ -6,7 +6,7 @@ import dev.ikm.komet.layout.component.version.field.KlField;
 import dev.ikm.komet.layout.component.version.field.KlFieldFactory;
 import dev.ikm.komet.layout.component.version.field.KlFloatField;
 
-public class KlFloatFieldFactory  implements KlFieldFactory<Float> {
+public class KlFloatFieldFactory implements KlFieldFactory<Float> {
 
     @Override
     public KlField<Float> create(ObservableField<Float> observableField, ObservableView observableView, boolean editable) {
