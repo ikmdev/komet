@@ -14,17 +14,6 @@
     -fx-font-size: 1.166667em; /* 14 */
 }
 
-.image-control .main-container .text-field {
-    -fx-font-family: "Noto Sans";
-
-    -fx-text-fill: #111;
-    -fx-font-size: 1.166667em;
-
-    -fx-background-color: #c3cddc, white;
-    -fx-background-insets: 0, 1px;
-    -fx-background-radius: 3px, 3px;
-}
-
 /******** Image and its Prompt Text ********/
 
 .image-control .main-container .image-container {

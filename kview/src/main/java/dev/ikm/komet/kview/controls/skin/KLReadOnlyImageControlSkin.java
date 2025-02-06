@@ -17,9 +17,6 @@ import java.io.File;
 public class KLReadOnlyImageControlSkin extends KLReadOnlyBaseControlSkin<KLReadOnlyImageControl> {
     private static final PseudoClass IMAGE_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("image-selected");
 
-    private final VBox textContainer = new VBox();
-    private final Label textLabel = new Label();
-
     private final StackPane imageContainer = new StackPane();
     private final ImageView imageView = new ImageView();
 
@@ -31,25 +28,18 @@ public class KLReadOnlyImageControlSkin extends KLReadOnlyBaseControlSkin<KLRead
     public KLReadOnlyImageControlSkin(KLReadOnlyImageControl control) {
         super(control);
 
-        mainContainer.getChildren().addAll(imageContainer, textContainer);
+        mainContainer.getChildren().add(imageContainer);
 
         imageContainer.getChildren().addAll(imageView, promptTextLabel);
-        textContainer.getChildren().add(textLabel);
-
-        textLabel.setPrefWidth(Double.MAX_VALUE);
-        textLabel.setMaxWidth(Region.USE_PREF_SIZE);
 
         // Initial texts
         control.setTitle("IMAGE:");
         control.setPromptText("Add image");
-        textLabel.setText("No Selection");
 
         initImage(control);
         setupContextMenu(control);
 
         // CSS
-        textContainer.getStyleClass().add("text-container");
-        textLabel.getStyleClass().add("text");
         imageContainer.getStyleClass().add("image-container");
     }
 
@@ -80,7 +70,6 @@ public class KLReadOnlyImageControlSkin extends KLReadOnlyBaseControlSkin<KLRead
             String fileName = imageFile.getName();
 
             imageView.setImage(image);
-            textLabel.setText(fileName);
 
             pseudoClassStateChanged(IMAGE_SELECTED_PSEUDO_CLASS, true);
         }
