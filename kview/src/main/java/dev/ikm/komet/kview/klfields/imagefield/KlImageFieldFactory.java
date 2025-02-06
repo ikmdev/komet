@@ -31,6 +31,6 @@ public class KlImageFieldFactory implements KlFieldFactory<Image> {
 
     @Override
     public String getDescription() {
-        return "A Image field";
+        return "An Image field";
     }
 }
