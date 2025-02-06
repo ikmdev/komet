@@ -10,6 +10,8 @@ import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.FieldRecord;
@@ -21,6 +23,7 @@ import javafx.scene.control.Separator;
 import javafx.scene.layout.Pane;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
 
@@ -101,6 +104,9 @@ public class KlFieldHelper {
             }
         };
         generateSemanticUIFields(viewProperties, semanticEntityVersionLatest, updateUIConsumer);
+
+        hasAddedEditableImage = false;
+
         return observableFields;
     }
 
@@ -150,6 +156,9 @@ public class KlFieldHelper {
             }
         };
         generateSemanticUIFields(viewProperties, semanticEntityVersionLatest, updateUIConsumer);
+
+        hasAddedReadOnlyImage = false;
+
         return observableFields;
     }
 
@@ -159,21 +168,22 @@ public class KlFieldHelper {
     private static boolean hasAddedEditableImage = false;
 
     private static void maybeAddEditableImageControl(ViewProperties viewProperties, Pane container, Latest<SemanticEntityVersion> semanticEntityVersionLatest, ObservableField observableField) {
-        if (semanticEntityVersionLatest.get().nid() == -2147480044 && !hasAddedEditableImage) {
+        if (PublicId.equals(semanticEntityVersionLatest.get().entity().publicId(), PublicIds.of(UUID.fromString("39b29eba-362e-4d52-a677-95d9c77fdd52")))
+                && !hasAddedEditableImage) {
             KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
             Node node = imageFieldFactory.create(observableField, viewProperties.nodeView(), true).klWidget();
             if (node != null) {
                 container.getChildren().add(node);
                 // Add separator
                 container.getChildren().add(createSeparator());
-
                 hasAddedEditableImage = true;
             }
         }
     }
 
     private static void maybeAddReadOnlyImageControl(ViewProperties viewProperties, Pane container, Latest<SemanticEntityVersion> semanticEntityVersionLatest, ObservableField observableField) {
-        if (semanticEntityVersionLatest.get().nid() == -2147480044 && !hasAddedReadOnlyImage) {
+        if (PublicId.equals(semanticEntityVersionLatest.get().entity().publicId(), PublicIds.of(UUID.fromString("39b29eba-362e-4d52-a677-95d9c77fdd52")))
+                && !hasAddedReadOnlyImage) {
             KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
             Node readOnlyNode = imageFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
             if (readOnlyNode != null) {
