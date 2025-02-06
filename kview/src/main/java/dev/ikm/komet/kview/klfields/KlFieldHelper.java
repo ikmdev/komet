@@ -1,9 +1,11 @@
 package dev.ikm.komet.kview.klfields;
 
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
+import dev.ikm.komet.kview.klfields.componentfield.KlComponentSetFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.imagefield.KlImageFieldFactory;
 import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
@@ -21,11 +23,11 @@ import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.Node;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.Pane;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
 
 public class KlFieldHelper {
 
@@ -61,7 +63,8 @@ public class KlFieldHelper {
 
             Node node = null;
             int dataTypeNid = fieldRecord.dataType().nid();
-            ObservableField observableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
+            ObservableField writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
+            ObservableField observableField = new ObservableField(writeObservableField.field(), true);
             observableFields.add(observableField);
 
             // TODO: this method below will be removed once the database has the capability to add and edit Image data types
@@ -76,7 +79,8 @@ public class KlFieldHelper {
                 KlStringFieldFactory stringFieldTextFactory = new KlStringFieldFactory();
                 node = stringFieldTextFactory.create(observableField, viewProperties.nodeView(), true).klWidget();
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
-                node = rowf.createReadOnlyComponentSet(viewProperties, fieldRecord);
+                KlComponentSetFieldFactory klComponentSetFieldFactory = new KlComponentSetFieldFactory();
+                node = klComponentSetFieldFactory.create(observableField, viewProperties.nodeView(), true).klWidget();
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
                 node = rowf.createReadOnlyComponentList(viewProperties, fieldRecord);
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
@@ -112,55 +116,53 @@ public class KlFieldHelper {
 
     public static List<ObservableField<?>> displayReadOnlySemanticFields(ViewProperties viewProperties, Pane container, Latest<SemanticEntityVersion> semanticEntityVersionLatest) {
 
-        //FIXME use a different factory
-        ReadOnlyKLFieldFactory rowf = ReadOnlyKLFieldFactory.getInstance();
-        List<ObservableField<?>> observableFields = new ArrayList<>();
-        Consumer<FieldRecord<Object>> updateUIConsumer = (fieldRecord) -> {
+            //FIXME use a different factory
+            ReadOnlyKLFieldFactory rowf = ReadOnlyKLFieldFactory.getInstance();
+            List<ObservableField<?>> observableFields = new ArrayList<>();
+            Consumer<FieldRecord<Object>> updateUIConsumer = (fieldRecord) -> {
 
-            Node readOnlyNode = null;
-            int dataTypeNid = fieldRecord.dataType().nid();
-            ObservableField observableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
-            observableFields.add(observableField);
+                Node readOnlyNode = null;
+                int dataTypeNid = fieldRecord.dataType().nid();
+                ObservableField<?> writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
+                ObservableField observableField = new ObservableField(writeObservableField.field(), false);
+                observableFields.add(observableField);
+                // substitute each data type.
+                if (dataTypeNid == TinkarTerm.COMPONENT_FIELD.nid()) {
+                    // load a read-only component
+                    KlComponentFieldFactory klComponentFieldFactory = new KlComponentFieldFactory();
+                    readOnlyNode = klComponentFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+                } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
+                    KlStringFieldFactory klStringFieldFactory = new KlStringFieldFactory();
+                    readOnlyNode = klStringFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+                } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
+                    KlComponentSetFieldFactory klComponentSetFieldFactory = new KlComponentSetFieldFactory();
+                    readOnlyNode = klComponentSetFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+                } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
+                    readOnlyNode = rowf.createReadOnlyComponentList(viewProperties, fieldRecord);
+                } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
+                    readOnlyNode = rowf.createReadOnlyDiTree(viewProperties, fieldRecord);
+                } else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid()) {
+                    KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
+                    readOnlyNode = klFloatFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+                } else if (dataTypeNid == TinkarTerm.INTEGER_FIELD.nid()) {
+                    KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
+                    readOnlyNode = klIntegerFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+                } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
+                    KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
+                    readOnlyNode = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+                }
+                // Add to VBox
+                if (readOnlyNode != null) {
+                    container.getChildren().add(readOnlyNode);
+                }
+            };
+            generateSemanticUIFields(viewProperties, semanticEntityVersionLatest, updateUIConsumer);
 
-            // TODO: this method below will be removed once the database has the capability to add and edit Image data types
-            // TODO: then all the code will be inside an if clause just like for the other data types.
-            maybeAddReadOnlyImageControl(viewProperties, container, semanticEntityVersionLatest, observableField);
+            hasAddedReadOnlyImage = false;
 
-            // substitute each data type.
-            if (dataTypeNid == TinkarTerm.COMPONENT_FIELD.nid()) {
-                // load a read-only component
-                KlComponentFieldFactory klComponentFieldFactory = new KlComponentFieldFactory();
-                readOnlyNode = klComponentFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
-            } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
-                KlStringFieldFactory klStringFieldFactory = new KlStringFieldFactory();
-                readOnlyNode = klStringFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
-            } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
-                readOnlyNode = rowf.createReadOnlyComponentSet(viewProperties, fieldRecord);
-            } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
-                readOnlyNode = rowf.createReadOnlyComponentList(viewProperties, fieldRecord);
-            } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
-                readOnlyNode = rowf.createReadOnlyDiTree(viewProperties, fieldRecord);
-            } else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid()) {
-                KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
-                readOnlyNode = klFloatFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
-            } else if (dataTypeNid == TinkarTerm.INTEGER_FIELD.nid()) {
-                KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
-                readOnlyNode = klIntegerFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
-            } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
-                KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
-                readOnlyNode = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
-            }
-            // Add to VBox
-            if (readOnlyNode != null) {
-                container.getChildren().add(readOnlyNode);
-            }
-        };
-        generateSemanticUIFields(viewProperties, semanticEntityVersionLatest, updateUIConsumer);
+            return observableFields;
+        }
 
-        hasAddedReadOnlyImage = false;
-
-        return observableFields;
-    }
 
     // TODO: These methods below are in temporarily so we can add a Image data type that doesn't fetch anything from the database.
     // TODO: once the database has the capability for Image Data types we can remove these methods
