@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.47.0-SNAPSHOT</version>
+        <version>1.47.0-IIA-1437-Semantic-background-SNAPSHOT</version>
     </parent>
     <artifactId>classification</artifactId>
     <dependencies>
