@@ -30,7 +30,6 @@ public class KLImageControlSkin extends SkinBase<KLImageControl> {
     private final VBox mainContainer = new VBox();
 
     protected final Label titleLabel = new Label();
-    private final TextField textField = new TextField();
 
     private final StackPane attachImageButtonContainer = new StackPane();
     private final Button attachImageButton = new Button();
@@ -58,7 +57,6 @@ public class KLImageControlSkin extends SkinBase<KLImageControl> {
         mainContainer.getChildren().addAll(
                 titleLabel,
                 imageContainer,
-                textField,
                 attachImageButtonContainer
         );
 
@@ -89,13 +87,6 @@ public class KLImageControlSkin extends SkinBase<KLImageControl> {
             }
         });
 
-        textField.setPrefWidth(Double.MAX_VALUE);
-        textField.setMaxWidth(Region.USE_PREF_SIZE);
-
-        textField.setText(NO_SELECTION_TEXT_FIELD_TEXT);
-        textField.setEditable(false);
-        textField.setFocusTraversable(false);
-
         attachImageButton.setText(ATTACH_BUTTON_TEXT);
         attachImageButton.setOnAction(this::attachImageAction);
 
@@ -106,7 +97,6 @@ public class KLImageControlSkin extends SkinBase<KLImageControl> {
         mainContainer.getStyleClass().add("main-container");
         titleLabel.getStyleClass().add("title");
         promptTextLabel.getStyleClass().add("prompt-text");
-        textField.getStyleClass().add("text");
         imageContainer.getStyleClass().add("image-container");
         attachImageButtonContainer.getStyleClass().add("image-button-container");
 
@@ -165,7 +155,6 @@ public class KLImageControlSkin extends SkinBase<KLImageControl> {
             String fileName = imageFile.getName();
 
             imageView.setImage(image);
-            textField.setText(fileName);
 
             pseudoClassStateChanged(IMAGE_SELECTED_PSEUDO_CLASS, true);
         }

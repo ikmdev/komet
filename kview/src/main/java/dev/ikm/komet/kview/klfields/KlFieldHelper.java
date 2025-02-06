@@ -175,7 +175,7 @@ public class KlFieldHelper {
     private static boolean hasAddedEditableImage = false;
 
     private static void maybeAddEditableImageControl(ViewProperties viewProperties, Pane container, Latest<SemanticEntityVersion> semanticEntityVersionLatest, ObservableField observableField) {
-        if (PublicId.equals(semanticEntityVersionLatest.get().entity().publicId(), PublicIds.of(UUID.fromString("39b29eba-362e-4d52-a677-95d9c77fdd52")))
+        if (PublicId.equals(semanticEntityVersionLatest.get().entity().publicId(), PublicIds.of(UUID.fromString("48633874-f3d2-434a-9f11-2a07e4c4311b")))
                 && !hasAddedEditableImage) {
             KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
             Node node = imageFieldFactory.create(observableField, viewProperties.nodeView(), true).klWidget();
@@ -189,7 +189,7 @@ public class KlFieldHelper {
     }
 
     private static void maybeAddReadOnlyImageControl(ViewProperties viewProperties, Pane container, Latest<SemanticEntityVersion> semanticEntityVersionLatest, ObservableField observableField) {
-        if (PublicId.equals(semanticEntityVersionLatest.get().entity().publicId(), PublicIds.of(UUID.fromString("39b29eba-362e-4d52-a677-95d9c77fdd52")))
+        if (PublicId.equals(semanticEntityVersionLatest.get().entity().publicId(), PublicIds.of(UUID.fromString("48633874-f3d2-434a-9f11-2a07e4c4311b")))
                 && !hasAddedReadOnlyImage) {
             KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
             Node readOnlyNode = imageFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
