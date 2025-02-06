@@ -59,7 +59,8 @@ public class KlFieldHelper {
 
             Node node = null;
             int dataTypeNid = fieldRecord.dataType().nid();
-            ObservableField observableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
+            ObservableField writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
+            ObservableField observableField = new ObservableField(writeObservableField.field(), true);
             observableFields.add(observableField);
             if (dataTypeNid == TinkarTerm.COMPONENT_FIELD.nid()) {
                 // load a read-only component
@@ -110,7 +111,8 @@ public class KlFieldHelper {
 
                 Node readOnlyNode = null;
                 int dataTypeNid = fieldRecord.dataType().nid();
-                ObservableField observableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
+                ObservableField<?> writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
+                ObservableField observableField = new ObservableField(writeObservableField.field(), false);
                 observableFields.add(observableField);
                 // substitute each data type.
                 if (dataTypeNid == TinkarTerm.COMPONENT_FIELD.nid()) {

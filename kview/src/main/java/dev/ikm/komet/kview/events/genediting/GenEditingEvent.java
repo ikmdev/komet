@@ -12,12 +12,19 @@ public class GenEditingEvent extends Evt {
 
     private List<ObservableField<?>> list;
 
-    public GenEditingEvent(Object source,EvtType eventType, List<ObservableField<?>> list){
+    private int nid;
+
+    public GenEditingEvent(Object source,EvtType eventType, List<ObservableField<?>> list, int nid){
         super(source,eventType);
         this.list = list;
+        this.nid = nid;
     }
 
     public List<ObservableField<?>> getList(){
         return list;
+    }
+
+    public int getNid() {
+        return nid;
     }
 }

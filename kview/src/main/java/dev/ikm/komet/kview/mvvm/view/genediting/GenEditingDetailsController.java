@@ -25,6 +25,7 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
@@ -59,7 +60,6 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.SemanticFacade;
 import dev.ikm.tinkar.terms.State;
-import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -231,8 +231,8 @@ public class GenEditingDetailsController {
 
         //Set up the Listener to refresh the details area (After user hits submit button on the right side)
         Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
-            if (evt.getEventType() == GenEditingEvent.PUBLISH) {
-                Platform.runLater(() -> {
+            if (evt.getEventType() == GenEditingEvent.PUBLISH && evt.getNid() == semantic.nid()) {
+//                Platform.runLater(() -> {
                     for (int i = 0; i < evt.getList().size(); i++) {
                         ObservableField field = observableFields.get(i);
                         ObservableField updatedField = evt.getList().get(i);
@@ -246,10 +246,10 @@ public class GenEditingDetailsController {
                             //}
                         }
                     }
-                });
+//                });
             }
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, refreshSubscriber);
     }
 
@@ -348,6 +348,7 @@ public class GenEditingDetailsController {
         // Load Concept Properties View Panel (FXML & Controller)
         Config config = new Config(GENEDITING_PROPERTIES_VIEW_FXML_URL)
                 .updateViewModel("propertiesViewModel", (propertiesViewModel) -> propertiesViewModel
+                        .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC))
                         .setPropertyValue(WINDOW_TOPIC, genEditingViewModel.getPropertyValue(WINDOW_TOPIC))
                         .setPropertyValue(VIEW_PROPERTIES, genEditingViewModel.getPropertyValue(VIEW_PROPERTIES))
                 );
