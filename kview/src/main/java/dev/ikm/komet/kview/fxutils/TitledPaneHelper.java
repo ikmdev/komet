@@ -73,11 +73,10 @@ public class TitledPaneHelper {
     }
 
     /**
-     * TODO: Commented out putArrowOnRight causing exception for translateXProperty
      * default params wrapper method for putArrowOnRight
      * @param pane
      */
     public static void putArrowOnRight(TitledPane pane) {
-        //putArrowOnRight(pane, DEFAULT_BUTTON_SPACING, ".title", ".arrow-button");
+        putArrowOnRight(pane, DEFAULT_BUTTON_SPACING, ".title", ".arrow-button");
     }
 }
