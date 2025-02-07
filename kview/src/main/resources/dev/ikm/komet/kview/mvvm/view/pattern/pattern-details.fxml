@@ -364,7 +364,7 @@
                               </Pane>
                            </children>
                         </HBox>
-                        <HBox layoutX="14.0" layoutY="135.0" prefWidth="711.0">
+                        <HBox layoutX="14.0" layoutY="135.0" prefWidth="711.0" VBox.vgrow="ALWAYS">
                            <children>
                               <TitledPane fx:id="fieldsTitledPane" contentDisplay="BOTTOM" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" prefWidth="5000.0" styleClass="pattern-titled-pane" text="FIELDS">
                                  <font>
