@@ -211,7 +211,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                             int nid = EntityService.get().nidForPublicId(dropInfo.publicId());
                             EntityProxy entity = EntityProxy.make(nid);
                             if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
-                                    !componentSetControl.getEntitiesList().contains(entity)) {
+                                    !componentSetControl.getValue().contains(nid)) {
                                 control.setEntity(entity);
                                 addConceptNode(entity);
                                 success = true;
@@ -230,7 +230,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
     private boolean hasAllowedDND(KLComponentControl control) {
         return control != null && control.getEntity() != null &&
-                ((control.getParent() instanceof KLComponentSetControl cs && cs.getEntitiesList().size() > 1) ||
+                ((control.getParent() instanceof KLComponentSetControl cs && cs.getValue().size() > 1) ||
                 (control.getParent() instanceof KLComponentListControl cl && cl.getEntitiesList().size() > 1));
     }
 

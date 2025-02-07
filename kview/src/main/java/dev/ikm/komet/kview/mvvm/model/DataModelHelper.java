@@ -300,9 +300,8 @@ public class DataModelHelper {
      * @param semanticEntityVersionLatest
      * @param fieldRecord
      * @return the observable field
-     * @param <T>
      */
-    public static <T> ObservableField<T> obtainObservableField(ViewProperties viewProperties, Latest<SemanticEntityVersion> semanticEntityVersionLatest, FieldRecord<Object> fieldRecord){
+    public static ObservableField<?> obtainObservableField(ViewProperties viewProperties, Latest<SemanticEntityVersion> semanticEntityVersionLatest, FieldRecord<Object> fieldRecord){
         ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
         ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
         ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();

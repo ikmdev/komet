@@ -26,7 +26,9 @@ import javafx.animation.Timeline;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
-import javafx.geometry.*;
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
@@ -46,17 +48,20 @@ import java.util.List;
 import static dev.ikm.komet.kview.controls.KLWorkspace.*;
 
 /**
- * A custom skin implementation for the {@link KLWorkspace} control. This skin sets up
- * a scrollable "desktop" area in which {@code ChapterKlWindow} objects.
- *
- * <p>Primary features include:</p>
+ * A custom skin implementation for the {@link KLWorkspace} control, providing a scrollable
+ * “desktop” area that can host multiple {@link ChapterKlWindow} objects.
+ * <p>
+ * <strong>Included Features:</strong>
  * <ul>
- *     <li>A fallback "3-row" placement logic for automatically positioning windows.</li>
- *     <li>Panning the desktop pane (via holding down the Control key).</li>
- *     <li>Displaying a drop region when external data is dragged over the workspace.</li>
- *     <li>Adding or removing windows from the desktop in response to changes in the
- *         workspace's list of {@code ChapterKlWindow} objects.</li>
- *     <li>Resizing and dragging support for individual windows via {@link WindowSupport}.</li>
+ *     <li><strong>Desktop Pane Layout:</strong> The workspace arranges windows in a user-defined
+ *         scrollable pane, optionally using a 3-row “occupant-based” placement strategy.</li>
+ *     <li><strong>Drag and Drop:</strong> Displays a drop region to indicate where new content can be added.</li>
+ *     <li><strong>Panning:</strong> Allows the user to hold the {@code Control} key to pan the workspace
+ *         by dragging.</li>
+ *     <li><strong>Dynamic Window Management:</strong> Responds to additions and removals in the
+ *         workspace’s {@link ChapterKlWindow} list and reflects these changes on the desktop pane.</li>
+ *     <li><strong>Window Support:</strong> Each {@code ChapterKlWindow} is made resizable and draggable
+ *         through {@link WindowSupport}.</li>
  * </ul>
  */
 public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
@@ -86,6 +91,11 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * A weak wrapper around {@link #windowsListChangeListener} to avoid strong reference leaks.
      */
     private final WeakListChangeListener<ChapterKlWindow<Pane>> weakWindowsListChangeListener;
+
+    /**
+     * The timeline used to animate auto-scrolling when creating and dragging windows.
+     */
+    private Timeline autoScrollTimeline;
 
     /**
      * Constructs a new skin for the provided {@link KLWorkspace}.
@@ -167,17 +177,18 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     // =========================================================================
 
     /**
-     * Configures the workspace to support panning with Ctrl+drag.
+     * Sets up keyboard and mouse event handlers to enable panning of the {@link KLWorkspace}'s
+     * desktop via Ctrl+drag.
+     * <p>
+     * When the user presses and holds the {@code Control} key, the {@code DesktopPane} becomes
+     * mouse-transparent, and the enclosing {@link ScrollPane} is set to pannable. This allows
+     * the user to click and drag anywhere on the desktop to pan the visible area.
+     * <p>
+     * Upon releasing the Control key, default interaction is restored: the desktop accepts
+     * mouse events, and the scroll pane is no longer pannable. The mouse cursor is updated
+     * accordingly (e.g., open hand, closed hand) during these interactions.
      *
-     * <p>When the Control key is pressed:
-     * <ul>
-     *     <li>The {@code desktopPane} becomes mouse-transparent.</li>
-     *     <li>The {@code desktopScrollPane} is set to pannable.</li>
-     *     <li>The mouse cursor changes to an open-hand (grab) icon.</li>
-     * </ul>
-     * When the Control key is released, these changes are reverted.</p>
-     *
-     * @param workspace the {@link KLWorkspace} to be panned.
+     * @param workspace the {@link KLWorkspace} to be configured for panning
      */
     private void configurePanningHandlers(KLWorkspace workspace) {
         // Activate panning when Ctrl is pressed
@@ -186,8 +197,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             if (keyEvent.getCode() == KeyCode.CONTROL) {
                 desktopPane.setMouseTransparent(true);
                 desktopScrollPane.setPannable(true);
-                StackPane viewport = (StackPane) desktopScrollPane.lookup(".viewport");
-                viewport.setCursor(Cursor.OPEN_HAND); // Indicate dragging with an open hand
+                changeViewportCursor(Cursor.OPEN_HAND); // Indicate dragging with an open hand
                 desktopScrollPane.requestFocus();
             }
         });
@@ -197,23 +207,20 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             if (keyEvent.getCode() == KeyCode.CONTROL) {
                 desktopPane.setMouseTransparent(false);
                 desktopScrollPane.setPannable(false);
-                StackPane viewport = (StackPane) desktopScrollPane.lookup(".viewport");
-                viewport.setCursor(Cursor.DEFAULT); // Revert to default cursor
+                changeViewportCursor(Cursor.DEFAULT); // Revert to default cursor
             }
         });
 
         // Register mouse event handlers on the scroll pane to provide visual cues during panning.
         desktopScrollPane.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
             if (mouseEvent.isPrimaryButtonDown() && desktopScrollPane.isPannable()) {
-                StackPane viewport = (StackPane) desktopScrollPane.lookup(".viewport");
-                viewport.setCursor(Cursor.CLOSED_HAND); // Indicate active dragging
+                changeViewportCursor(Cursor.CLOSED_HAND); // Indicate active dragging
             }
         });
 
         desktopScrollPane.addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
             if (desktopScrollPane.isPannable()) {
-                StackPane viewport = (StackPane) desktopScrollPane.lookup(".viewport");
-                viewport.setCursor(Cursor.OPEN_HAND); // Revert to open hand after drag
+                changeViewportCursor(Cursor.OPEN_HAND); // Revert to open hand after drag
             }
         });
     }
@@ -223,27 +230,88 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     // =========================================================================
 
     /**
-     * Configures drag-over and drag-exit handlers for placing new windows in the workspace.
+     * Configures drag-and-drop behavior for the specified {@link KLWorkspace}.
+     * <p>
+     * When a valid item (e.g., a string in the clipboard) is dragged over the workspace,
+     * this method shows a "drop region" preview within the {@code DesktopPane}. If the user
+     * continues and drops the item, the new content (i.e., a new {@link ChapterKlWindow})
+     * can be placed at the preview's location.
+     * <p>
+     * The drop region automatically hides when the drag exits the workspace boundaries
+     * or if the drag is canceled/invalid.
      *
-     * <p>When a valid item (e.g., a string payload in the clipboard) is dragged over the
-     * {@code KLWorkspace}, the fixed drop region at the top-left is shown. If the user
-     * drops the item, the newly created window will appear at (0, 0) or wherever you have
-     * chosen within the skin logic.</p>
-     *
-     * @param workspace The {@link KLWorkspace} control for which drag handling is being configured.
+     * @param workspace the {@link KLWorkspace} control for which drag-and-drop
+     *                  behavior should be configured
      */
     private void configureDragDropHandlers(KLWorkspace workspace) {
+        // Show drop-region if a valid item is dragged over
         workspace.setOnDragOver(event -> {
-            desktopPane.showDropRegion();
-            // Accept drag if the payload has string content (adjust as needed)
             if (event.getGestureSource() != null && event.getDragboard().hasString()) {
                 event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+
+                // Use the occupant-based logic (with special handling if empty)
+                Bounds dropBounds = findDropRegionPlacement();
+                if (dropBounds != null) {
+                    desktopPane.showDropRegion(dropBounds);
+                } else {
+                    desktopPane.hideDropRegion();
+                }
             }
             event.consume();
         });
 
         // Hide the drop region when the drag exits the workspace
         workspace.setOnDragExited(event -> desktopPane.hideDropRegion());
+    }
+
+    /**
+     * Attempts to locate a bounding region for a new window (the drop region) based on
+     * whether the workspace is empty or not.
+     * <ul>
+     *   <li>If the workspace has no existing windows, it returns a bounding region
+     *       anchored to the top-left corner of the desktop (using horizontal/vertical gap).</li>
+     *   <li>If there are existing windows, the method uses the occupant-based 3-row approach
+     *       (via {@link #findThreeRowPlacement(double, double, double, double, double, double)})
+     *       to identify the next available free spot.</li>
+     * </ul>
+     *
+     * @return A {@link Bounds} object representing a potential drop region or {@code null}
+     * if none is found.
+     */
+    private Bounds findDropRegionPlacement() {
+        final KLWorkspace workspace = getSkinnable();
+        final double width = DEFAULT_WINDOW_WIDTH;
+        final double height = DEFAULT_WINDOW_HEIGHT;
+
+        final double desktopWidth = (desktopPane.getWidth() > 0)
+                ? desktopPane.getWidth()
+                : desktopPane.getPrefWidth();
+        final double desktopHeight = (desktopPane.getHeight() > 0)
+                ? desktopPane.getHeight()
+                : desktopPane.getPrefHeight();
+
+        // 1) If there are no windows, place in top-left:
+        if (workspace.getWindows().isEmpty()) {
+            double x = workspace.getHorizontalGap();
+            double y = workspace.getVerticalGap();
+            // Ensure it fits in the desktop:
+            if (canPlace(x, y, width, height, desktopWidth, desktopHeight)) {
+                return new BoundingBox(x, y, width, height);
+            }
+            return null;
+        }
+
+        // 2) If there are windows, use occupant-based approach:
+        Point2D placement = findThreeRowPlacement(width, height,
+                desktopWidth, desktopHeight,
+                workspace.getHorizontalGap(),
+                workspace.getVerticalGap());
+
+        if (placement != null) {
+            return new BoundingBox(placement.getX(), placement.getY(), width, height);
+        }
+        // If no spot is found, return null
+        return null;
     }
 
     // =========================================================================
@@ -290,10 +358,21 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         // 1) If the drop region is visible, place the window at the drop spot
         // --------------------------------------------------------------------
         if (dropRegion.isVisible()) {
-            windowPanel.setTranslateX(dropRegion.getLayoutX());
-            windowPanel.setTranslateY(dropRegion.getLayoutY());
-            windowPanel.setPrefWidth(dropRegion.getWidth());
-            windowPanel.setPrefHeight(dropRegion.getHeight());
+            double dropX = dropRegion.getLayoutX();
+            double dropY = dropRegion.getLayoutY();
+            double dropW = dropRegion.getWidth();
+            double dropH = dropRegion.getHeight();
+
+            if (canPlace(dropX, dropY, dropW, dropH, desktopWidth, desktopHeight)) {
+                windowPanel.setTranslateX(dropX);
+                windowPanel.setTranslateY(dropY);
+                windowPanel.setPrefSize(dropW, dropH);
+                desktopPane.getChildren().add(windowPanel);
+
+                // Auto-scroll the workspace to reveal the newly placed window after the drop
+                autoScrollToTopEdge(windowPanel);
+            }
+            return;
         }
 
         // --------------------------------------------------------------------
@@ -304,11 +383,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         boolean hasSavedPos = (savedX != 0 || savedY != 0);
 
         if (hasSavedPos) {
-            boolean fits = fitsInDesktop(savedX, savedY, windowWidth, windowHeight,
-                    desktopWidth, desktopHeight);
-            boolean noOverlap = !overlapsWithExistingWindows(savedX, savedY, windowWidth, windowHeight);
-
-            if (fits && noOverlap) {
+            if (canPlace(savedX, savedY, windowWidth, windowHeight, desktopWidth, desktopHeight)) {
+                windowPanel.setTranslateX(savedX);
+                windowPanel.setTranslateY(savedY);
                 windowPanel.setPrefSize(windowWidth, windowHeight);
                 desktopPane.getChildren().add(windowPanel);
                 // No auto-scrolling for returning windows
@@ -322,9 +399,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         Point2D placement = findThreeRowPlacement(windowWidth, windowHeight,
                 desktopWidth, desktopHeight, workspace.getHorizontalGap(), workspace.getVerticalGap());
 
-        if (dropRegion.isVisible()) {
-            desktopPane.getChildren().add(windowPanel);
-        } else if (placement != null) {
+        if (placement != null) {
             windowPanel.setTranslateX(placement.getX());
             windowPanel.setTranslateY(placement.getY());
             windowPanel.setPrefSize(windowWidth, windowHeight);
@@ -421,6 +496,10 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * @param nodeToView The node to bring into view (toward the top).
      */
     private void autoScrollToTopEdge(Node nodeToView) {
+        if (autoScrollTimeline != null && autoScrollTimeline.getStatus() == Timeline.Status.RUNNING) {
+            return;
+        }
+
         // Force layout to obtain accurate bounds
         desktopPane.layout();
 
@@ -457,13 +536,13 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         newV = Math.max(0, Math.min(newV, 1));
 
         // Animate scroll
-        Timeline timeline = new Timeline(new KeyFrame(Duration.ZERO,
-                new KeyValue(desktopScrollPane.hvalueProperty(), startH, Interpolator.EASE_BOTH),
-                new KeyValue(desktopScrollPane.vvalueProperty(), startV, Interpolator.EASE_BOTH)),
-                new KeyFrame(Duration.millis(300),
-                        new KeyValue(desktopScrollPane.hvalueProperty(), newH, Interpolator.EASE_BOTH),
-                        new KeyValue(desktopScrollPane.vvalueProperty(), newV, Interpolator.EASE_BOTH)));
-        timeline.play();
+        autoScrollTimeline = new Timeline(new KeyFrame(Duration.ZERO,
+                new KeyValue(desktopScrollPane.hvalueProperty(), startH),
+                new KeyValue(desktopScrollPane.vvalueProperty(), startV)),
+                new KeyFrame(Duration.millis(250),
+                        new KeyValue(desktopScrollPane.hvalueProperty(), newH, Interpolator.EASE_OUT),
+                        new KeyValue(desktopScrollPane.vvalueProperty(), newV, Interpolator.EASE_OUT)));
+        autoScrollTimeline.play();
     }
 
     // =========================================================================
@@ -471,10 +550,36 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     // =========================================================================
 
     /**
-     * Determines whether the specified rectangle (x, y, width, height)
-     * fits entirely within the workspace (desktop) boundaries.
+     * Determines whether the specified rectangle can be placed on the desktop without
+     * exceeding its boundaries or overlapping any existing windows (excluding the drop region).
      *
-     * @return {@code true} if the rectangle is fully within the desktop bounds; {@code false} otherwise.
+     * @param x            the x-coordinate of the rectangle’s top-left corner
+     * @param y            the y-coordinate of the rectangle’s top-left corner
+     * @param width        the width of the rectangle
+     * @param height       the height of the rectangle
+     * @param desktopWidth the total width of the desktop
+     * @param desktopHeight the total height of the desktop
+     * @return {@code true} if the rectangle is entirely within the desktop bounds
+     *         and does not intersect any existing window; {@code false} otherwise
+     */
+    private boolean canPlace(double x, double y, double width, double height,
+                             double desktopWidth, double desktopHeight) {
+        return fitsInDesktop(x, y, width, height, desktopWidth, desktopHeight)
+                && !overlapsWithExistingWindows(x, y, width, height);
+    }
+
+    /**
+     * Checks if the specified rectangle (x, y, width, height) falls completely within
+     * the boundaries of the desktop area.
+     *
+     * @param x            the x-coordinate of the rectangle’s top-left corner
+     * @param y            the y-coordinate of the rectangle’s top-left corner
+     * @param width        the width of the rectangle
+     * @param height       the height of the rectangle
+     * @param desktopWidth the width of the desktop area
+     * @param desktopHeight the height of the desktop area
+     * @return {@code true} if the entire rectangle lies within the desktop;
+     *         {@code false} otherwise
      */
     private boolean fitsInDesktop(double x, double y, double width, double height,
                                   double desktopWidth, double desktopHeight) {
@@ -482,10 +587,15 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     }
 
     /**
-     * Checks if a proposed rectangle for a new window overlaps with
-     * any existing window (excluding the drop region).
+     * Determines whether a rectangle at the given coordinates overlaps any
+     * existing window in the desktop. The drop region is excluded from this check.
      *
-     * @return {@code true} if an overlap is detected; {@code false} otherwise.
+     * @param x      the x-coordinate of the rectangle’s top-left corner
+     * @param y      the y-coordinate of the rectangle’s top-left corner
+     * @param width  the width of the rectangle
+     * @param height the height of the rectangle
+     * @return {@code true} if the rectangle intersects at least one existing window;
+     *         {@code false} otherwise
      */
     private boolean overlapsWithExistingWindows(double x, double y, double width, double height) {
         Bounds newWindowBounds = new BoundingBox(x, y, width, height);
@@ -493,6 +603,23 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                 .filter(n -> n != desktopPane.getDropRegion() && n.isVisible())
                 .map(Node::getBoundsInParent)
                 .anyMatch(newWindowBounds::intersects);
+    }
+
+    /**
+     * Sets the specified cursor on the {@code ScrollPane}'s internal viewport, if available.
+     * <p>
+     * This method looks up the node with the CSS selector <em>.viewport</em> inside the
+     * associated {@code ScrollPane} and updates its cursor, typically to indicate
+     * user interactions such as panning or dragging. If the viewport node cannot be found,
+     * this method does nothing.
+     *
+     * @param cursor the new {@link Cursor} to apply to the viewport
+     */
+    private void changeViewportCursor(Cursor cursor) {
+        StackPane viewport = (StackPane) desktopScrollPane.lookup(".viewport");
+        if (viewport != null) {
+            viewport.setCursor(cursor);
+        }
     }
 
     // =========================================================================
@@ -586,21 +713,6 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             this.vgap = value;
         }
 
-        @Override
-        protected void layoutChildren() {
-            super.layoutChildren();
-
-            final double width = getWidth();
-            final double height = getHeight();
-
-            if (dropRegion != null) {
-                final double dropRegionWidth = dropRegion.prefWidth(height);
-                final double dropRegionHeight = dropRegion.prefHeight(width);
-                layoutInArea(dropRegion, hgap, vgap,
-                        dropRegionWidth, dropRegionHeight, 0, HPos.CENTER, VPos.CENTER);
-            }
-        }
-
         /**
          * Returns the {@link KLDropRegion} representing the drop target area.
          *
@@ -612,12 +724,17 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
         /**
          * Makes the drop region visible and adds it to the pane if not already present.
+         *
+         * @param bounds the bounding box (x, y, width, height) to show the drop region
          */
-        final void showDropRegion() {
+        final void showDropRegion(Bounds bounds) {
             if (!getChildren().contains(dropRegion)) {
                 getChildren().add(dropRegion);
             }
             dropRegion.setVisible(true);
+
+            // Position and size the region directly
+            dropRegion.resizeRelocate(bounds.getMinX(), bounds.getMinY(), bounds.getWidth(), bounds.getHeight());
         }
 
         /**
