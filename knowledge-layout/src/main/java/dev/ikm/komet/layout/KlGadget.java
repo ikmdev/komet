@@ -35,7 +35,7 @@ import static dev.ikm.komet.layout.KlObject.PropertyKeys.*;
  * @param <T> the type of the JavaFX component associated with this gadget
  */
 public sealed interface KlGadget<T> extends KlContextSensitiveComponent, KlObject
-        permits KlView, KlWidget, KlFxWindow, KlWindowPane {
+        permits KlView, KlWidget, KlFxWindow, KlJournalWindow, KlWindowPane {
 
     /**
      * Provides an instance of the generic type T JavaFx gadget associated with the knowledge layout component.
@@ -120,6 +120,7 @@ public sealed interface KlGadget<T> extends KlContextSensitiveComponent, KlObjec
                     }
                     case KlWidget widget -> recursiveAddContexts(widget.fxGadget().getParent(), contexts);
                     case KlFxWindow ignored -> contexts.add(KnowledgeBaseContext.INSTANCE.context());
+                    case KlJournalWindow ignored ->contexts.add(KnowledgeBaseContext.INSTANCE.context());
                     case KlWindowPane windowPane -> {
                         if ((windowPane.fxGadget().getParent() != null)) {
                             recursiveAddContexts(windowPane.fxGadget().getParent(), contexts);
@@ -301,6 +302,11 @@ public sealed interface KlGadget<T> extends KlContextSensitiveComponent, KlObjec
                 action.accept(klWindow);
                 Window fxWindow = klWindow.fxGadget();
                 dfsProcessNodesWithKlPeer(fxWindow.getScene().getRoot(), action);
+            }
+            case KlJournalWindow klJournalWindow -> {
+                action.accept(klJournalWindow);
+                Node journalWindow = (Node) klJournalWindow.fxGadget();
+                dfsProcessNodesWithKlPeer(journalWindow.getScene().getRoot(), action);
             }
             case KlView view -> {
                 action.accept(view);

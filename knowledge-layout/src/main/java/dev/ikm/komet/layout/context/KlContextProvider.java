@@ -22,5 +22,8 @@ public interface KlContextProvider {
      * @return the {@code KlObject} instance representing a gadget configuration or functionality
      *         within the broader knowledge layout orchestration context
      */
-    KlObject klObject();
+    default KlObject klObject() {
+        return (KlObject) this;
+    }
+
 }

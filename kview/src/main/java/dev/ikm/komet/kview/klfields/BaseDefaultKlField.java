@@ -49,10 +49,5 @@ public abstract class BaseDefaultKlField<T> implements KlField<T> {
     // -- title
     public String getTitle() { return title; }
 
-    // -- klwidget
-    @Override
-    public <SGN extends Node> SGN klWidget() {
-        return (SGN) klWidget.get();
-    }
     protected void setKlWidget(Node klWidget) { this.klWidget.set(klWidget); }
 }
