@@ -7,7 +7,7 @@ import java.util.function.Supplier;
  * The KlPreferencesFactory interface provides a method for creating instances of
  * KometPreferences.
  */
-public interface KlPreferencesFactory extends Supplier<KometPreferences>{
+public interface KlPreferencesFactory extends Supplier<KometPreferences> {
 
     /**
      * Provides a new unique instance of {@code KometPreferences} associated with the specified
@@ -31,7 +31,7 @@ public interface KlPreferencesFactory extends Supplier<KometPreferences>{
      * @return a new {@code KlPreferencesFactory} instance for managing preferences associated with the specified
      *         implementation class
      */
-    public static KlPreferencesFactory create(KometPreferences parentPreferences, Class implementationClass) {
+    static KlPreferencesFactory create(KometPreferences parentPreferences, Class implementationClass) {
         return new KlPreferenceFactoryProvider.PreferenceFactoryWithParentPreferences(parentPreferences, implementationClass);
     }
 
@@ -46,7 +46,7 @@ public interface KlPreferencesFactory extends Supplier<KometPreferences>{
      * @return a new {@code KlPreferencesFactory} instance for managing preferences
      *         associated with the specified implementation class
      */
-    public static KlPreferencesFactory create(KlPreferencesFactory preferencesFactory, Class implementationClass) {
+    static KlPreferencesFactory create(KlPreferencesFactory preferencesFactory, Class implementationClass) {
         return new KlPreferenceFactoryProvider.PreferenceFactoryWithParentFactory(preferencesFactory, implementationClass);
     }
 

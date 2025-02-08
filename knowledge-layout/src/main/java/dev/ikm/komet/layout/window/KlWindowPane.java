@@ -1,5 +1,6 @@
 package dev.ikm.komet.layout.window;
 
+import dev.ikm.komet.layout.KlContextSensitiveComponent;
 import dev.ikm.komet.layout.KlGadget;
 import dev.ikm.komet.layout.preferences.PropertyWithDefault;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -19,7 +20,7 @@ import javafx.scene.layout.BorderPane;
  * Methods defined in this interface allow integration with the JavaFX framework, such as
  * retrieving the root node of the scene and accessing the entire JavaFX Scene instance.
  */
-public interface KlWindowPane<P extends Parent> extends KlGadget<P> {
+public non-sealed interface KlWindowPane extends KlGadget<Parent> {
 
     /**
      * Enumerates preference keys for managing transformations and properties of a Knowledge Layout (KL) Scene in the Komet application.
@@ -114,14 +115,5 @@ public interface KlWindowPane<P extends Parent> extends KlGadget<P> {
      *
      * @return The {@link Node} object representing the root node of the scene.
      */
-    P root();
-
-    /**
-     * Retrieves the {@code KometPreferences} instance associated with this {@code KlGadget}.
-     * The preferences provide configuration and customization options specific
-     * to the knowledge layout system and its components.
-     *
-     * @return the {@code KometPreferences} instance associated with this context.
-     */
-    KometPreferences preferences();
+    Parent root();
 }

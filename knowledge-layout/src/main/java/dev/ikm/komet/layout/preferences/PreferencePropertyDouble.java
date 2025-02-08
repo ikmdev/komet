@@ -1,6 +1,6 @@
 package dev.ikm.komet.layout.preferences;
 
-import dev.ikm.komet.layout.KlGadget;
+import dev.ikm.komet.layout.KlObject;
 import dev.ikm.tinkar.common.bind.ClassConceptBinding;
 import javafx.beans.property.SimpleDoubleProperty;
 
@@ -26,12 +26,12 @@ public class PreferencePropertyDouble extends PreferenceProperty<Number, SimpleD
     /**
      * Creates a new instance of {@code PreferencePropertyDouble} with the specified gadget and binding.
      *
-     * @param gadget the {@code KlGadget} instance associated with the property
-     * @param binding the {@code ClassConceptBinding} providing class-related context and property interaction details
+     * @param klObject the {@code KlGadget} instance associated with the property
+     * @param binding  the {@code ClassConceptBinding} providing class-related context and property interaction details
      * @return a new {@code PreferencePropertyDouble} initialized with the provided gadget and binding
      */
-    protected static PreferencePropertyDouble create(KlGadget gadget, ClassConceptBinding binding) {
-        return new PreferencePropertyDouble(new SimpleDoubleProperty(gadget, binding.fullyQualifiedNames().getAny(),
+    protected static PreferencePropertyDouble create(KlObject klObject, ClassConceptBinding binding) {
+        return new PreferencePropertyDouble(new SimpleDoubleProperty(klObject, binding.fullyQualifiedNames().getAny(),
                 PreferenceProperty.INITIAL_DOUBLE_VALUE), binding);
     }
 

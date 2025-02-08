@@ -51,12 +51,15 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.LongConsumer;
 
 public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
+    private static final Logger LOG = LoggerFactory.getLogger(ViewMenuTask.class);
     ViewCalculator viewCalculator;
     ObservableCoordinate observableCoordinate;
 
@@ -66,6 +69,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         this.observableCoordinate = observableCoordinate;
         updateTitle("Updating View Menu");
         updateProgress(-1, -1);
+        LOG.info("New ViewMenuTask");
     }
 
     private static void addSeparator(List<MenuItem> menuItems) {
@@ -518,6 +522,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
                 CheckMenuItem typeOrderItem = new CheckMenuItem(viewCalculator.toEntityString(typePreferenceList.castToList(), viewCalculator::toEntityStringOrPublicIdAndNid));
                 changeDescriptionPreferenceMenu.getItems().add(typeOrderItem);
                 typeOrderItem.setSelected(languageCoordinate.descriptionTypePreferenceListProperty().getValue().equals(typePreferenceList.castToList()));
+                typeOrderItem.setDisable(typeOrderItem.isSelected());
                 typeOrderItem.setOnAction(event -> {
                     ObservableList<ConceptFacade> prefList = FXCollections.observableArrayList(typePreferenceList.toArray(new ConceptFacade[0]));
                     Platform.runLater(() ->
@@ -665,6 +670,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
                 observableCoordinate);
         updateTitle("Updated View Menu");
         updateMessage("In " + durationString());
+        LOG.info("Updated View Menu in " + durationString());
         return menuItems;
     }
 

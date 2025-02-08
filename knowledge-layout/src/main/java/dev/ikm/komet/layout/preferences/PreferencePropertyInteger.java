@@ -1,6 +1,6 @@
 package dev.ikm.komet.layout.preferences;
 
-import dev.ikm.komet.layout.KlGadget;
+import dev.ikm.komet.layout.KlObject;
 import dev.ikm.tinkar.common.bind.ClassConceptBinding;
 import javafx.beans.property.SimpleIntegerProperty;
 
@@ -23,15 +23,15 @@ public class PreferencePropertyInteger extends PreferenceProperty<Number, Simple
 
     /**
      * Creates a new instance of {@code PreferencePropertyInteger} associated with the given
-     * {@code KlGadget} and {@code ClassConceptBinding}.
+     * {@code KlObject} and {@code ClassConceptBinding}.
      *
-     * @param gadget the {@code KlGadget} instance to associate with this property
-     * @param binding the {@code ClassConceptBinding} providing the fully qualified names
-     *                for associating semantic meanings
+     * @param klObject the {@code KlObject} instance to associate with this property
+     * @param binding  the {@code ClassConceptBinding} providing the fully qualified names
+     *                 for associating semantic meanings
      * @return a new {@code PreferencePropertyInteger} instance
      */
-    protected static PreferencePropertyInteger create(KlGadget gadget, ClassConceptBinding binding) {
-        return new PreferencePropertyInteger(new SimpleIntegerProperty(gadget, binding.fullyQualifiedNames().getAny(),
+    protected static PreferencePropertyInteger create(KlObject klObject, ClassConceptBinding binding) {
+        return new PreferencePropertyInteger(new SimpleIntegerProperty(klObject, binding.fullyQualifiedNames().getAny(),
                 PreferenceProperty.INITIAL_INTEGER_VALUE), binding);
     }
 
