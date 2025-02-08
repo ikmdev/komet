@@ -1,6 +1,7 @@
 package dev.ikm.komet.layout.preferences;
 
 import dev.ikm.komet.layout.KlGadget;
+import dev.ikm.komet.layout.KlObject;
 import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.bind.ClassConceptBinding;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -116,65 +117,65 @@ public abstract class PreferenceProperty<T, I extends Property<T>> implements Pr
     }
 
     /**
-     * Creates a new {@code PreferencePropertyString} instance for the given {@code KlGadget} and {@code ClassConceptBinding}.
-     * This method initializes a string property associated with the provided gadget and binding.
+     * Creates a new {@code PreferencePropertyString} instance for the given {@code KlObject} and {@code ClassConceptBinding}.
+     * This method initializes a string property associated with the provided klObject and binding.
      *
-     * @param gadget  the {@code KlGadget} instance associated with the preference property
+     * @param klObject  the {@code KlObject} instance associated with the preference property
      * @param binding the {@code ClassConceptBinding} used to define bindings and initialize the property
-     * @return a new instance of {@code PreferencePropertyString} configured with the given gadget and binding
+     * @return a new instance of {@code PreferencePropertyString} configured with the given klObject and binding
      */
-    public static PreferencePropertyString stringProp(KlGadget gadget, ClassConceptBinding binding) {
-        return PreferencePropertyString.create(gadget, binding);
+    public static PreferencePropertyString stringProp(KlObject klObject, ClassConceptBinding binding) {
+        return PreferencePropertyString.create(klObject, binding);
     }
 
     /**
-     * Creates a new {@code PreferencePropertyInteger} instance for the given {@code KlGadget} and {@code ClassConceptBinding}.
-     * This method initializes an integer preference property associated with the specified gadget and binding.
+     * Creates a new {@code PreferencePropertyInteger} instance for the given {@code KlObject} and {@code ClassConceptBinding}.
+     * This method initializes an integer preference property associated with the specified klObject and binding.
      *
-     * @param gadget  the {@code KlGadget} instance associated with the preference property
-     * @param binding the {@code ClassConceptBinding} used to define bindings and initialize the property
+     * @param klObject the {@code KlObject} instance associated with the preference property
+     * @param binding  the {@code ClassConceptBinding} used to define bindings and initialize the property
      * @return a new instance of {@code PreferencePropertyInteger} configured with the given gadget and binding
      */
-    public static PreferencePropertyInteger integerProp(KlGadget gadget, ClassConceptBinding binding) {
-        return PreferencePropertyInteger.create(gadget, binding);
+    public static PreferencePropertyInteger integerProp(KlObject klObject, ClassConceptBinding binding) {
+        return PreferencePropertyInteger.create(klObject, binding);
     }
 
     /**
-     * Creates a new {@code PreferencePropertyBoolean} instance for the specified {@code KlGadget} and {@code ClassConceptBinding}.
-     * This method initializes a Boolean preference property associated with the given gadget and binding.
+     * Creates a new {@code PreferencePropertyBoolean} instance for the specified {@code KlObject} and {@code ClassConceptBinding}.
+     * This method initializes a Boolean preference property associated with the given klObject and binding.
      *
-     * @param gadget  the {@code KlGadget} instance associated with the preference property
-     * @param binding the {@code ClassConceptBinding} used to define bindings and initialize the property
-     * @return a new instance of {@code PreferencePropertyBoolean} configured with the given gadget and binding
+     * @param klObject the {@code KlObject} instance associated with the preference property
+     * @param binding  the {@code ClassConceptBinding} used to define bindings and initialize the property
+     * @return a new instance of {@code PreferencePropertyBoolean} configured with the given klObject and binding
      */
-    public static PreferencePropertyBoolean booleanProp(KlGadget gadget, ClassConceptBinding binding) {
-        return PreferencePropertyBoolean.create(gadget, binding);
+    public static PreferencePropertyBoolean booleanProp(KlObject klObject, ClassConceptBinding binding) {
+        return PreferencePropertyBoolean.create(klObject, binding);
     }
 
     /**
-     * Creates a new {@code PreferencePropertyDouble} instance for the specified {@code KlGadget}
+     * Creates a new {@code PreferencePropertyDouble} instance for the specified {@code KlObject}
      * and {@code ClassConceptBinding}. This method initializes a double preference
-     * property associated with the provided gadget and binding.
+     * property associated with the provided klObject and binding.
      *
-     * @param gadget the {@code KlGadget} instance associated with the preference property
-     * @param binding the {@code ClassConceptBinding} used to define bindings and initialize the property
-     * @return a new instance of {@code PreferencePropertyDouble} configured with the given gadget and binding
+     * @param klObject the {@code KlObject} instance associated with the preference property
+     * @param binding  the {@code ClassConceptBinding} used to define bindings and initialize the property
+     * @return a new instance of {@code PreferencePropertyDouble} configured with the given klObject and binding
      */
-    public static PreferencePropertyDouble doubleProp(KlGadget gadget, ClassConceptBinding binding) {
-        return PreferencePropertyDouble.create(gadget, binding);
+    public static PreferencePropertyDouble doubleProp(KlObject klObject, ClassConceptBinding binding) {
+        return PreferencePropertyDouble.create(klObject, binding);
     }
 
     /**
-     * Creates a new {@code PreferencePropertyObject} instance for the given {@code KlGadget}
+     * Creates a new {@code PreferencePropertyObject} instance for the given {@code KlObject}
      * and {@code ClassConceptBinding}. This method initializes a preference property object
-     * configured with the specified gadget and binding.
+     * configured with the specified klObject and binding.
      *
-     * @param gadget  the {@code KlGadget} instance associated with the preference property.
-     * @param binding the {@code ClassConceptBinding} used to define bindings and initialize the property.
-     * @return a new instance of {@code PreferencePropertyObject} configured with the given gadget and binding.
+     * @param klObject the {@code KlObject} instance associated with the preference property.
+     * @param binding  the {@code ClassConceptBinding} used to define bindings and initialize the property.
+     * @return a new instance of {@code PreferencePropertyObject} configured with the given klObject and binding.
      */
-    public static PreferencePropertyObject objectProp(KlGadget gadget, ClassConceptBinding binding) {
-        return PreferencePropertyObject.create(gadget, binding);
+    public static PreferencePropertyObject objectProp(KlObject klObject, ClassConceptBinding binding) {
+        return PreferencePropertyObject.create(klObject, binding);
     }
 
     @Override
@@ -229,9 +230,9 @@ public abstract class PreferenceProperty<T, I extends Property<T>> implements Pr
 
     /**
      * Retrieves the name associated with this {@code PreferenceProperty}.
-     * This method checks if the associated bean is an instance of {@code KlGadget},
+     * This method checks if the associated bean is an instance of {@code KlObject},
      * and if a public ID exists for the binding. If so, it attempts to fetch
-     * the description text using the associated gadget's view calculator.
+     * the description text using the associated klObject's view calculator.
      * If no valid description is retrieved or the conditions are not met,
      * the name from the implementation instance is returned.
      *
@@ -243,7 +244,7 @@ public abstract class PreferenceProperty<T, I extends Property<T>> implements Pr
         if (this.getBean() != null && this.getBean() instanceof KlGadget gadget) {
             if (PrimitiveData.get().hasPublicId(this.binding.publicId())) {
                 //TODO need calculator to accept publicIds in addition to nids...
-                Optional<String> optionalText = gadget.viewCalculatorForContext().getDescriptionText(
+                Optional<String> optionalText = gadget.viewForContext().getDescriptionText(
                         PrimitiveData.nid(this.binding.publicId()));
                 if (optionalText.isPresent()) {
                         return optionalText.get();

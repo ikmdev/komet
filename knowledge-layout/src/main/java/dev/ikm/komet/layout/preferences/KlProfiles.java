@@ -23,6 +23,13 @@ public class KlProfiles {
      * to differentiate shared profiles from user-specific or other configuration nodes.
      */
     public static final String SHARED_PROFILE = "/profiles/shared";
+
+    /**
+     * Defines the path to the knowledge base preferences node within the shared profile structure.
+     * This constant is constructed by appending the `/knowledgebase` suffix to the base shared profile path.
+     * It is used to reference or work with preference settings specific to the knowledge base.
+     */
+    public static final String KNOWLEDGE_BASE = SHARED_PROFILE + "/knowledgebase";
     /**
      * A constant representing the path suffix for accessing layout preference nodes.
      * This value is used as a postfix to construct paths or keys related to layouts
@@ -57,7 +64,14 @@ public class KlProfiles {
     public static KometPreferences sharedProfilePreferences() {
         return PreferencesService.configurationPreferences().node(SHARED_PROFILE);
     }
-
+    /**
+     * Provides access to the shared knowledge base preference node.
+     *
+     * @return A {@code KometPreferences} instance representing the shared knowledge base preferences.
+     */
+    public static KometPreferences sharedKnowledgeBasePreferences() {
+        return PreferencesService.configurationPreferences().node(KNOWLEDGE_BASE);
+    }
     /**
      * Provides access to the shared layout preferences node.
      *

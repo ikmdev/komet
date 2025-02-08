@@ -1,5 +1,7 @@
 package dev.ikm.komet.layout;
 
+import dev.ikm.komet.layout.context.KlContext;
+import dev.ikm.komet.layout.context.KlContextFactory;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import javafx.scene.Node;
@@ -25,6 +27,19 @@ public interface KlFactory<T extends KlGadget> {
      */
     T create(KlPreferencesFactory preferencesFactory);
 
+    /**
+     * Creates an instance of type T using the provided KlPreferencesFactory
+     * and KlContextFactory. This method utilizes the preferences and context
+     * configurations to instantiate the desired object.
+     *
+     * @param preferencesFactory an instance of KlPreferencesFactory used to
+     *                           provide necessary preferences for creating the object.
+     * @param contextFactory an instance of KlContextFactory used to provide
+     *                       the contextual information required for object creation.
+     * @return an instance of type T created using the given preferencesFactory
+     *         and contextFactory.
+     */
+    T createWithContext(KlPreferencesFactory preferencesFactory, KlContextFactory contextFactory);
     /**
      * Restores an instance of type T using the provided preferences.
      *

@@ -1,6 +1,6 @@
 package dev.ikm.komet.layout.preferences;
 
-import dev.ikm.komet.layout.KlGadget;
+import dev.ikm.komet.layout.KlObject;
 import dev.ikm.tinkar.common.bind.ClassConceptBinding;
 import javafx.beans.property.SimpleBooleanProperty;
 
@@ -21,15 +21,15 @@ public class PreferencePropertyBoolean extends PreferenceProperty<Boolean, Simpl
     }
 
     /**
-     * Creates a new instance of {@link PreferencePropertyBoolean} using the provided {@link KlGadget}
+     * Creates a new instance of {@link PreferencePropertyBoolean} using the provided {@link KlObject}
      * and {@link ClassConceptBinding}.
      *
-     * @param gadget the {@link KlGadget} instance associated with this preference property
-     * @param binding the {@link ClassConceptBinding} instance providing binding details for the property
-     * @return a new {@link PreferencePropertyBoolean} instance with the specified {@link KlGadget} and binding
+     * @param klObject the {@link KlObject} instance associated with this preference property
+     * @param binding  the {@link ClassConceptBinding} instance providing binding details for the property
+     * @return a new {@link PreferencePropertyBoolean} instance with the specified {@link KlObject} and binding
      */
-    protected static PreferencePropertyBoolean create(KlGadget gadget, ClassConceptBinding binding) {
-        return new PreferencePropertyBoolean(new SimpleBooleanProperty(gadget, binding.fullyQualifiedNames().getAny(),
+    protected static PreferencePropertyBoolean create(KlObject klObject, ClassConceptBinding binding) {
+        return new PreferencePropertyBoolean(new SimpleBooleanProperty(klObject, binding.fullyQualifiedNames().getAny(),
                 PreferenceProperty.INITIAL_BOOLEAN_VALUE), binding);
     }
 }

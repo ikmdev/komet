@@ -1,6 +1,6 @@
 package dev.ikm.komet.layout.preferences;
 
-import dev.ikm.komet.layout.window.KlWindow;
+import dev.ikm.komet.layout.window.KlFxWindow;
 import dev.ikm.komet.preferences.KometPreferences;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -94,7 +94,7 @@ class KlPreferenceFactoryProvider {
      * @return a string representing the sequentially generated node name in the format
      * "{ClassSimpleName}_{sequence}"
      */
-    private static String sequentialNodeName(Class<? extends KlWindow> implementationClass,
+    private static String sequentialNodeName(Class<? extends KlFxWindow> implementationClass,
                                              int sequence) {
         return implementationClass.getSimpleName() + "_" + sequence;
     }
