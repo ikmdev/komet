@@ -131,7 +131,6 @@ public abstract class ObservableViewBase
     private void languageCoordinateChanged(ObservableValue<? extends LanguageCoordinateRecord> observableValue,
                                            LanguageCoordinateRecord oldValue,
                                            LanguageCoordinateRecord newValue) {
-        LOG.info("Language coordinate changed: {}", newValue);
         MutableList<LanguageCoordinateRecord> languageRecordList = Lists.mutable.empty();
         languageCoordinates.forEach(observableLanguageCoordinateBase -> languageRecordList.add(observableLanguageCoordinateBase.getValue()));
         this.setValue(this.getValue().withLanguageCoordinateList(languageRecordList.toImmutable()));
