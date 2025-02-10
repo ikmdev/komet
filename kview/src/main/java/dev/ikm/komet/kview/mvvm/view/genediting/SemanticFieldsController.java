@@ -134,8 +134,8 @@ public class SemanticFieldsController {
     }
 
     /**  This method is used to create and return transaction instance when records are modified.
-     * TODO If not data is modified and the transacti
-     * @return
+     *
+     * @return transaction
      */
     private Transaction writeToTempTranscation() {
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
