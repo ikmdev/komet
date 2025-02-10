@@ -12,7 +12,7 @@ import javafx.beans.property.ObjectProperty;
  * @see ObservableVersion
  */
 public sealed interface KlVersionPane <OV extends ObservableVersion> extends KlPane
-        permits KlConceptVersionPane, KlPatternVersionPane, KlSemanticVersionPane, KlStampVersionPane {
+        permits KlConceptVersionPane, KlGenericVersionPane, KlPatternVersionPane, KlSemanticVersionPane, KlStampVersionPane {
     /**
      * Returns the version of the observable entity associated with this pane.
      *

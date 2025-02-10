@@ -2,13 +2,25 @@ package dev.ikm.komet.layout.component;
 
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import javafx.beans.property.ObjectProperty;
+import javafx.scene.layout.Pane;
 
 
 /**
- * Represents a single component presented in a Pane.
+ * Defines a sealed interface representing component panes that handle observable entities.
+ * This interface extends {@code KlPane}, with its generic type bound to {@code Pane},
+ * integrating observable components into JavaFX pane structures.
+ *
+ * Subinterfaces of {@code KlComponentPane} include specialized implementations
+ * for handling specific types of observable entities such as patterns, semantics, stamps,
+ * concepts, and generic components. These subinterfaces add context-specific
+ * functionalities while leveraging the base features provided by {@code KlComponentPane}.
+ *
+ * The interface permits concrete, non-sealed subinterfaces: {@code KlConceptPane},
+ * {@code KlGenericComponentPane}, {@code KlPatternPane}, {@code KlSemanticPane},
+ * and {@code KlStampPane}.
  */
-public sealed interface KlComponentPane<OE extends ObservableEntity> extends KlPane
-        permits KlConceptPane, KlPatternPane, KlSemanticPane, KlStampPane {
+public sealed interface KlComponentPane<OE extends ObservableEntity> extends KlPane<Pane>
+        permits KlConceptPane, KlGenericComponentPane, KlPatternPane, KlSemanticPane, KlStampPane {
     /**
      * Retrieves the observable component associated with this pane.
      *

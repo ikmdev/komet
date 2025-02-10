@@ -23,7 +23,6 @@ module dev.ikm.komet.kview {
     requires org.carlfx.cognitive;
     requires org.carlfx.axonic;
     requires dev.ikm.tinkar.composer;
-    requires dev.ikm.jpms.google.common;
 
     // JPro related modules
     requires jpro.webapi;

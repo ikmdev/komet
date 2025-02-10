@@ -22,7 +22,7 @@ import dev.ikm.komet.preferences.KometPreferences;
  */
 public sealed interface KlComponentPaneFactory<T extends KlComponentPane, OE extends ObservableEntity>
         extends KlEntityType<OE>, KlFactory<T>
-        permits KlConceptPaneFactory, KlPatternPaneFactory, KlSemanticPaneFactory, KlStampPaneFactory {
+        permits KlConceptPaneFactory, KlGenericComponentPaneFactory, KlPatternPaneFactory, KlSemanticPaneFactory, KlStampPaneFactory {
 
     /**
      * Creates an instance of type T, associates it with the provided {@code ObservableEntity},

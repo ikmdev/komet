@@ -49,7 +49,7 @@ import dev.ikm.komet.preferences.KometPreferences;
  */
 public sealed interface KlVersionPaneFactory <T extends KlVersionPane, OV extends ObservableVersion>
         extends KlFactory<T>, KlVersionType<OV>
-        permits KlConceptVersionPaneFactory, KlPatternVersionPaneFactory, KlSemanticVersionPaneFactory, KlStampVersionPaneFactory {
+        permits KlConceptVersionPaneFactory, KlGenericVersionPaneFactory, KlPatternVersionPaneFactory, KlSemanticVersionPaneFactory, KlStampVersionPaneFactory {
 
     /**
      * Creates an instance of type {@code T} that represents a version pane for the specified
