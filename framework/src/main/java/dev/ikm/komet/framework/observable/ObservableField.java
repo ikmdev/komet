@@ -15,16 +15,21 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import dev.ikm.tinkar.component.FieldDataType;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.Field;
+import dev.ikm.tinkar.entity.FieldRecord;
+import dev.ikm.tinkar.entity.SemanticRecord;
+import dev.ikm.tinkar.entity.SemanticVersionRecord;
+import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.StampRecord;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import dev.ikm.tinkar.component.FieldDataType;
-import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.entity.transaction.Transaction;
 
 public class ObservableField<T> implements Field<T> {
 

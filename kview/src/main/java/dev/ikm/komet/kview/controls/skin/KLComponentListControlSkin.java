@@ -38,56 +38,36 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
                 EntityProxy entity = ((KLComponentControl) change.getAddedSubList().getFirst()).getEntity();
                 if (entity != null) {
                     int index = change.getFrom();
-                    System.out.println("1111 nodeListChangeListener Adding item: %s at index %s".formatted(entity.description(), index));
                     IntIdList intIdList = getSkinnable().getValue();
                     MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
 
                     if (index >= getSkinnable().getValue().size()) {
-                        //getSkinnable().getEntitiesList().add(entity);
-                        System.out.println("2222 nodeListChangeListener Adding item: %s at index %s".formatted(entity.description(), index));
                         mutableList.add(entity.nid());
                     } else {
-                        //getSkinnable().getEntitiesList().add(index, entity);
-                        System.out.println("3333 nodeListChangeListener inserting item: %s at index %s".formatted(entity.description(), index));
                         if (index < 0) {
                             mutableList.addAtIndex(0, entity.nid());
                         } else {
                             mutableList.addAtIndex(index, entity.nid());
                         }
                     }
-//                    if (mutableList.contains(0)) {
-//                        mutableList.removeIf(intPred -> intPred==0);
-//                    }
-                    mutableList.forEach(intProc -> {
-                        System.out.println("-----> " + intProc);
-                    });
                     getSkinnable().setValue(IntIds.list.of(mutableList.toArray()));
                 }
             } else if (change.wasRemoved() && change.getRemovedSize() == 1) {
                 EntityProxy entity = ((KLComponentControl) change.getRemoved().getFirst()).getEntity();
                 int index = change.getFrom();
-                System.out.println("4444 nodeListChangeListener Removing item: %s at index %s".formatted(entity.description(), index));
-//                if (index >= 0) {
-//                    getSkinnable().getEntitiesList().remove(index);
-
-                    System.out.println("5555 nodeListChangeListener Removing item: %s at index %s".formatted(entity.description(), index));
-                    IntIdList intIdList = getSkinnable().getValue();
-                    MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
-                    if (index < 0) {
-                        mutableList.remove(intIdList.get(0));
+                IntIdList intIdList = getSkinnable().getValue();
+                MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
+                if (index < 0) {
+                    mutableList.remove(intIdList.get(0));
+                } else {
+                    if (index >= getSkinnable().getValue().size()) {
+                        mutableList.remove(intIdList.get(index-1));
                     } else {
-                        if (index >= getSkinnable().getValue().size()) {
-                            mutableList.remove(intIdList.get(index-1));
-                        } else {
-                            mutableList.remove(intIdList.get(index));
-                        }
-
+                        mutableList.remove(intIdList.get(index));
                     }
-//                    if (mutableList.contains(0)) {
-//                        mutableList.removeIf(intPred -> intPred==0);
-//                    }
-                    getSkinnable().setValue(IntIds.list.of(mutableList.toArray()));
-//                }
+
+                }
+                getSkinnable().setValue(IntIds.list.of(mutableList.toArray()));
             }
         }
     };
@@ -105,9 +85,13 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
         titleLabel.getStyleClass().add("title-label");
         titleLabel.textProperty().bind(control.titleProperty());
         for(int i = 0; i < control.getValue().size(); i++) {
-            EntityProxy entityProxy = EntityProxy.make(control.getValue().get(i));
-            createComponentUI(entityProxy.nid());
-        }        addEntryButton = new Button(getString("add.entry.button.text"));
+            int nid = control.getValue().get(i);
+            if (nid != 0) {
+                EntityProxy entityProxy = EntityProxy.make(nid);
+                createComponentUI(entityProxy.nid());
+            }
+        }
+        addEntryButton = new Button(getString("add.entry.button.text"));
         addEntryButton.getStyleClass().add("add-entry-button");
         addEntryButton.setOnAction(e -> {
             KLComponentControl componentControl = new KLComponentControl();
@@ -115,15 +99,11 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
                 if (entity != null) {
                     int index = getChildren().indexOf(componentControl) - FIRST_CC_INDEX;
                     if (index < control.getValue().size()) {
-                        System.out.println("1. addEntryButton/subscription insert : index:" + index);
-//                        control.getEntitiesList().set(index, entity);
                         IntIdList intIdList = control.getValue();
                         MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
                         mutableList.set(index, entity.nid());
                         control.setValue(IntIds.list.of(mutableList.toArray()));
                     } else {
-                        System.out.println("2. addEntryButton/subscription add : index:" + index);
-//                        control.getEntitiesList().add(entity);
                         IntIdList intIdList = control.getValue();
                         MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
                         mutableList.add(entity.nid());

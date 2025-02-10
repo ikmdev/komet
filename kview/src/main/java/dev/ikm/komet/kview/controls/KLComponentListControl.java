@@ -3,7 +3,6 @@ package dev.ikm.komet.kview.controls;
 import dev.ikm.komet.kview.controls.skin.KLComponentListControlSkin;
 import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIds;
-import dev.ikm.tinkar.common.id.impl.IntIdListArray;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -66,30 +65,6 @@ public class KLComponentListControl extends Control {
     }
     public void setValue(IntIdList intIdList) {
         valueProperty.set(intIdList);
-    }
-
-    public void addValue(int nid) {
-        IntIdList intIdList = getValue().with(nid);
-        setValue(intIdList);
-    }
-    public void addValue(int index, int nid) {
-        IntIdList intIdList = getValue().with(nid);
-        setValue(intIdList);
-    }
-    public final int removeIndexItem(int index) {
-        int[] nids = valueProperty.get().toArray();
-        int[] nids2 = new int[nids.length-1];
-        int j = -1;
-        for (int i = 0; i < nids.length; i++) {
-            if (nids[i] == index) {
-                continue;
-            }
-            j++;
-            nids2[j] = nids[i];
-        }
-        IntIdList newIntIdList = new IntIdListArray(nids2);
-        valueProperty.set(newIntIdList);
-        return nids[index];
     }
 
     /** {@inheritDoc} */

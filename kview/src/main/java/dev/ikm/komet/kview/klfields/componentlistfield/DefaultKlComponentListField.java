@@ -31,11 +31,13 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
                 vBox.getChildren().clear();
                 vBox.getChildren().add(new Label(getTitle()));
                 intIdList.forEach(nid -> {
-                    KLReadOnlyComponentControl readOnlyComponentControl = new KLReadOnlyComponentControl();
-                    EntityProxy entityProxy = EntityProxy.make(nid);
-                    readOnlyComponentControl.setText(entityProxy.description());
-                    readOnlyComponentControl.setIcon(Identicon.generateIdenticonImage(entityProxy.publicId()));
-                    vBox.getChildren().add(readOnlyComponentControl);
+                    if (nid != 0) {
+                        KLReadOnlyComponentControl readOnlyComponentControl = new KLReadOnlyComponentControl();
+                        EntityProxy entityProxy = EntityProxy.make(nid);
+                        readOnlyComponentControl.setText(entityProxy.description());
+                        readOnlyComponentControl.setIcon(Identicon.generateIdenticonImage(entityProxy.publicId()));
+                        vBox.getChildren().add(readOnlyComponentControl);
+                    }
                 });
             });
             node = vBox;
