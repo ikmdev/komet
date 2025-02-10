@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.47.0-SNAPSHOT</version>
+        <version>1.47.0-IIA-1367-Implement-Capability-to-Submit-Data-in-database-for-Component-ComponentList-and-ComponentSet-SNAPSHOT</version>
     </parent>
     <artifactId>details</artifactId>
     <dependencies>
