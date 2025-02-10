@@ -117,7 +117,7 @@ public class PropertiesController {
             JFXNode<Pane, ClosePropertiesController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
             contentBorderPane.setCenter(closePropsJfxNode.node());
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(propertiesViewModel.getPropertyValue(WINDOW_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().subscribe(propertiesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, genEditingEventSubscriber);
     }
 
