@@ -2,6 +2,8 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentListControl;
+import dev.ikm.tinkar.common.id.IntIdList;
+import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
@@ -12,6 +14,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
 import javafx.util.Subscription;
+import org.eclipse.collections.api.factory.primitive.IntLists;
+import org.eclipse.collections.api.list.primitive.MutableIntList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +26,7 @@ import java.util.ResourceBundle;
  */
 public class KLComponentListControlSkin extends SkinBase<KLComponentListControl> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(KLComponentListControl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KLComponentListControlSkin.class);;
 
     private final Label titleLabel;
     private final Button addEntryButton;
@@ -33,18 +37,37 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
             if (change.wasAdded() && change.getAddedSize() == 1) {
                 EntityProxy entity = ((KLComponentControl) change.getAddedSubList().getFirst()).getEntity();
                 if (entity != null) {
-                    int index = change.getFrom() - FIRST_CC_INDEX;
-                    if (index >= getSkinnable().getEntitiesList().size()) {
-                        getSkinnable().getEntitiesList().add(entity);
+                    int index = change.getFrom();
+                    IntIdList intIdList = getSkinnable().getValue();
+                    MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
+
+                    if (index >= getSkinnable().getValue().size()) {
+                        mutableList.add(entity.nid());
                     } else {
-                        getSkinnable().getEntitiesList().add(index, entity);
+                        if (index < 0) {
+                            mutableList.addAtIndex(0, entity.nid());
+                        } else {
+                            mutableList.addAtIndex(index, entity.nid());
+                        }
                     }
+                    getSkinnable().setValue(IntIds.list.of(mutableList.toArray()));
                 }
             } else if (change.wasRemoved() && change.getRemovedSize() == 1) {
-                int index = change.getFrom() - FIRST_CC_INDEX;
-                if (index >= 0) {
-                    getSkinnable().getEntitiesList().remove(index);
+                EntityProxy entity = ((KLComponentControl) change.getRemoved().getFirst()).getEntity();
+                int index = change.getFrom();
+                IntIdList intIdList = getSkinnable().getValue();
+                MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
+                if (index < 0) {
+                    mutableList.remove(intIdList.get(0));
+                } else {
+                    if (index >= getSkinnable().getValue().size()) {
+                        mutableList.remove(intIdList.get(index-1));
+                    } else {
+                        mutableList.remove(intIdList.get(index));
+                    }
+
                 }
+                getSkinnable().setValue(IntIds.list.of(mutableList.toArray()));
             }
         }
     };
@@ -58,11 +81,16 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
      */
     public KLComponentListControlSkin(KLComponentListControl control) {
         super(control);
-
         titleLabel = new Label();
         titleLabel.getStyleClass().add("title-label");
         titleLabel.textProperty().bind(control.titleProperty());
-
+        for(int i = 0; i < control.getValue().size(); i++) {
+            int nid = control.getValue().get(i);
+            if (nid != 0) {
+                EntityProxy entityProxy = EntityProxy.make(nid);
+                createComponentUI(entityProxy.nid());
+            }
+        }
         addEntryButton = new Button(getString("add.entry.button.text"));
         addEntryButton.getStyleClass().add("add-entry-button");
         addEntryButton.setOnAction(e -> {
@@ -70,17 +98,23 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
             Subscription subscription = componentControl.entityProperty().subscribe(entity -> {
                 if (entity != null) {
                     int index = getChildren().indexOf(componentControl) - FIRST_CC_INDEX;
-                    if (index < control.getEntitiesList().size()) {
-                        control.getEntitiesList().set(index, entity);
+                    if (index < control.getValue().size()) {
+                        IntIdList intIdList = control.getValue();
+                        MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
+                        mutableList.set(index, entity.nid());
+                        control.setValue(IntIds.list.of(mutableList.toArray()));
                     } else {
-                        control.getEntitiesList().add(entity);
+                        IntIdList intIdList = control.getValue();
+                        MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
+                        mutableList.add(entity.nid());
+                        control.setValue(IntIds.list.of(mutableList.toArray()));
                     }
                 }
             });
             componentControl.setOnRemoveAction(ev -> {
                 subscription.unsubscribe();
                 getChildren().remove(componentControl);
-                if (control.getEntitiesList().isEmpty()) {
+                if (control.getValue().isEmpty()) {
                     addEntryButton.fire();
                 }
             });
@@ -91,11 +125,49 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
         getChildren().addListener(nodeListChangeListener);
         addEntryButton.fire();
         // Only allow one empty KLComponentControl
-        addEntryButton.disableProperty().bind(Bindings.createBooleanBinding(() ->
-                getChildren().stream().anyMatch(n -> n instanceof KLComponentControl cc && cc.getEntity() == null),
-                getChildren(), control.entitiesProperty()));
+        addEntryButton
+                .disableProperty()
+                .bind(Bindings.createBooleanBinding(() ->
+                        getChildren()
+                                .stream()
+                                .anyMatch(n -> n instanceof KLComponentControl cc && cc.getEntity() == null),
+                        getChildren(),
+                        control.valueProperty()));
 
         getSkinnable().setOnMouseDragReleased(Event::consume);
+    }
+
+    private void createComponentUI(int nid) {
+        KLComponentListControl control = getSkinnable();
+        KLComponentControl componentControl = new KLComponentControl();
+        if (nid != 0) {
+            EntityProxy entityProxy = EntityProxy.make(nid);
+            componentControl.setEntity(entityProxy);
+        }
+        Subscription subscription = componentControl.entityProperty().subscribe(entity -> {
+            if (entity != null && !control.getValue().contains(entity.nid())) {
+                //control.getEntitiesList().add(entity);
+                IntIdList intIdList = control.getValue();
+                MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
+                mutableList.add(entity.nid());
+                control.setValue(IntIds.list.of(mutableList.toArray()));
+            }
+        });
+        componentControl.setOnRemoveAction(ev -> {
+            subscription.unsubscribe();
+            getChildren().remove(componentControl);
+            if (control.getValue().isEmpty()) {
+                addEntryButton.fire();
+            }
+        });
+
+        // This needs testing: Label, component1, component2, add button.
+        int index = 0;
+        if (!getChildren().isEmpty()) {
+            index = getChildren().size() - 1;
+        }
+        getChildren().add(componentControl);
+        getSkinnable().requestLayout();
     }
 
     /** {@inheritDoc} */

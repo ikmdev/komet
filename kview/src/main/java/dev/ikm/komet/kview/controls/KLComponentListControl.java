@@ -1,17 +1,14 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLComponentListControlSkin;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.SimpleListProperty;
+import dev.ikm.tinkar.common.id.IntIdList;
+import dev.ikm.tinkar.common.id.IntIds;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
-
-import java.util.List;
 
 /**
  * <p>KLComponentListControl is a custom control that acts as a template capable of populating multiple,
@@ -57,14 +54,17 @@ public class KLComponentListControl extends Control {
     }
 
     /**
-     * This property holds the list of {@link Entity Entities} that have been added to the control
+     * This property holds an {@link IntIdList} that have been added to the control
      */
-    private final ListProperty<EntityProxy> entitiesProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
-    public final ListProperty<EntityProxy> entitiesProperty() {
-       return entitiesProperty;
+    private final ObjectProperty<IntIdList> valueProperty = new SimpleObjectProperty<>(IntIds.list.empty());
+    public final ObjectProperty<IntIdList> valueProperty() {
+        return valueProperty;
     }
-    public final List<EntityProxy> getEntitiesList() {
-       return entitiesProperty.get();
+    public final IntIdList getValue() {
+        return valueProperty.get();
+    }
+    public void setValue(IntIdList intIdList) {
+        valueProperty.set(intIdList);
     }
 
     /** {@inheritDoc} */

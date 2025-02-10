@@ -20,7 +20,6 @@ import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
-import static java.util.concurrent.CompletableFuture.runAsync;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -118,10 +117,9 @@ public class SemanticFieldsController {
 
     @FXML
     public void submit(ActionEvent actionEvent) {
-        actionEvent.consume();
+        cancelButton.requestFocus();
         //create new list to pass to to the event.
         List<ObservableField<?>> list = new ArrayList<>(observableFields);
-
         //Run async transaction to commit to DB.
         runAsync(() -> {
             Transaction transaction = writeToTempTranscation();
