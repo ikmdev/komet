@@ -15,6 +15,31 @@
  */
 package dev.ikm.komet.app;
 
+import static dev.ikm.komet.app.AppState.LOADING_DATA_SOURCE;
+import static dev.ikm.komet.app.AppState.SHUTDOWN;
+import static dev.ikm.komet.app.AppState.STARTING;
+import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
+import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
+import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
+import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.CENTER_TAB_PREFERENCES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.LEFT_TAB_PREFERENCES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.RIGHT_TAB_PREFERENCES;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_NAMES;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CAN_DELETE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
 import dev.ikm.komet.details.DetailsNodeFactory;
@@ -39,8 +64,8 @@ import dev.ikm.komet.framework.window.WindowComponent;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.JournalTileEvent;
-import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
 import dev.ikm.komet.kview.mvvm.view.changeset.ExportController;
+import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalViewFactory;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
@@ -69,7 +94,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -100,18 +129,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
-
-import static dev.ikm.komet.app.AppState.*;
-import static dev.ikm.komet.app.util.CssFile.*;
-import static dev.ikm.komet.app.util.CssUtils.*;
-import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
-import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
-import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
 /**
  * JavaFX App
@@ -448,6 +465,7 @@ public class App extends Application {
 
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
 
+        // Ask service loader for a journal window factory.
         Stage journalStageWindow = new Stage();
         FXMLLoader journalLoader = JournalViewFactory.createFXMLLoader();
         JournalController journalController;
@@ -458,7 +476,6 @@ public class App extends Application {
             addStylesheets(sourceScene, KOMET_CSS, KVIEW_CSS);
 
             journalStageWindow.setScene(sourceScene);
-
             // if NOT on Mac OS
             if(System.getProperty("os.name")!=null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
                 generateMsWindowsMenu(journalBorderPane, journalStageWindow);

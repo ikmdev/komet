@@ -32,7 +32,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="560.0" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.genediting.GenEditingDetailsController">
+<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.genediting.GenEditingDetailsController">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0">
          <top>
@@ -209,7 +209,7 @@
                               </Pane>
                            </children>
                         </HBox>
-                        <HBox layoutX="14.0" layoutY="135.0" prefWidth="711.0">
+                        <HBox layoutX="14.0" layoutY="135.0" prefWidth="711.0" VBox.vgrow="ALWAYS">
                            <children>
                               <TitledPane fx:id="semanticDetailsTitledPane" contentDisplay="BOTTOM" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" prefWidth="5000.0" styleClass="pattern-titled-pane" text="SEMANTIC DETAILS">
                                  <font>
@@ -217,19 +217,10 @@
                                  </font>
                                  <content>
                                     <VBox fx:id="semanticDetailsVBox" maxWidth="1.7976931348623157E308" prefWidth="610.0" styleClass="titled-content-background">
-                                       <children>
-                                          <VBox maxWidth="1.7976931348623157E308" styleClass="semantic-field-container">
-                                             <children>
-                                                <Label styleClass="semantic-field-type-label" text="TEST PERFORMED ANALYTE OBSERVABLE (LOINC):" />
-                                                <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" prefHeight="32.0" prefWidth="673.0" spacing="3.0">
-                                                   <children>
-                                                      <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true" styleClass="identicon-image-view" />
-                                                      <Label maxWidth="1.7976931348623157E308" styleClass="semantic-field-value" text="Concept FQN / Semantic Name D" HBox.hgrow="ALWAYS" />
-                                                   </children>
-                                                </HBox>
-                                             </children>
-                                          </VBox>
-                                       </children>
+                                       <styleClass>
+                                          <String fx:value="titled-content-background" />
+                                          <String fx:value="semantic-field-container" />
+                                       </styleClass>
                                     </VBox>
                                  </content>
                               </TitledPane>

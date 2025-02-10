@@ -1,6 +1,25 @@
 @font-face {
     font-family: 'Noto Sans';
+    font-weight: normal;
     src: url('noto-sans.regular.ttf');
+}
+
+@font-face {
+    font-family: 'Noto Sans Medium';
+    font-weight: 500;
+    src: url('noto-sans.medium.ttf');
+}
+
+@font-face {
+    font-family: 'Noto Sans SemiBold';
+    font-weight: 600;
+    src: url('noto-sans.semibold.ttf');
+}
+
+@font-face {
+    font-family: 'Noto Sans Bold';
+    font-weight: 700;
+    src: url('noto-sans.bold.ttf');
 }
 
 .root {
@@ -1072,83 +1091,6 @@ selected(active) - dark black
     -fx-min-width: -1;
     -fx-pref-width: -1;
     -fx-max-width: 2000;
-}
-
-.desktop-area {
-    /*-fx-background-image: url("journal/grid-2x2-segment.png");*/
-    -fx-background-color: transparent;
-}
-
-.desktop-scroll-pane {
-    -fx-background-color: #cad3e2;
-    -fx-background-insets: 0;
-    -fx-padding: 0 -12 -12 0;
-}
-
-.desktop-scroll-pane > .viewport {
-    -fx-background-color: transparent;
-    -fx-padding: 0;
-}
-
-.desktop-scroll-pane > .corner {
-    -fx-background-color: transparent;
-}
-
-.desktop-scroll-pane > .scroll-bar {
-    -fx-background-color: transparent;
-}
-
-.desktop-scroll-pane > .scroll-bar:vertical {
-    -fx-min-width: 0;
-    -fx-pref-width: 0;
-    -fx-max-width: 0;
-    -fx-padding: 3 3 3 -12;
-}
-
-.desktop-scroll-pane > .scroll-bar:horizontal {
-    -fx-min-height: 0;
-    -fx-pref-height: 0;
-    -fx-max-height: 0;
-    -fx-padding: -12 3 3 3;
-}
-
-.desktop-scroll-pane > .scroll-bar .track {
-    -fx-background-color: transparent;
-}
-
-.desktop-scroll-pane > .scroll-bar:vertical .track {
-    -fx-background-insets: 0 12 0 0;
-}
-
-.desktop-scroll-pane > .scroll-bar:horizontal .track {
-    -fx-background-insets: 0 0 12 0;
-}
-
-.desktop-scroll-pane > .scroll-bar .thumb {
-     -fx-background-color: -Grey-1, rgba(0, 0, 0, 0.4);
-     -fx-background-insets: 0, 1;
-     -fx-background-radius: 6px;
-    -fx-padding: 0;
-}
-
-.desktop-scroll-pane > .scroll-bar:hover .thumb {
-    -fx-background-color: -Grey-1, rgba(0, 0, 0, 0.5);
-}
-
-.desktop-scroll-pane > .scroll-bar .increment-button,
-.desktop-scroll-pane > .scroll-bar .decrement-button {
-    -fx-background-insets: 0;
-    -fx-min-width: 0;
-    -fx-pref-width: 0;
-    -fx-min-height: 0;
-    -fx-pref-height: 0;
-    -fx-padding: 0;
-}
-
-.desktop-scroll-pane > .scroll-bar .increment-arrow,
-.desktop-scroll-pane > .scroll-bar .decrement-arrow {
-    -fx-shape: " ";
-    -fx-padding: 0;
 }
 
 .chapter-block-bar-stack {
@@ -3057,23 +2999,6 @@ Timeline Year line segment (will overlay change circles)
     -fx-min-width: 212px;
 }
 
-.desktop-drop-region {
-    -height: 940px;
-    -width: 672px;
-    -fx-min-width: -width;
-    -fx-min-height: -height;
-    -fx-pref-width: -width;
-    -fx-pref-height: -height;
-    -fx-border-color: -Primary-04;
-    -fx-border-radius: 8;
-    -fx-border-width: 4;
-    -fx-border-style: segments(12, 16) phase -8 line-join round line-cap round;
-    -fx-background-radius: 8;
-    -fx-background-insets: 0, 4;
-    /* The second color is obtained as a result of blending the current workspace background color and the white color with 50% opacity */
-    -fx-background-color: white, #e5e9f1;
-}
-
 .draggable-node:snapshot {
     -fx-border-color: -Primary-05;
     -fx-border-radius: 0;
@@ -4346,12 +4271,16 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: rgba(70, 70, 70, 0.1);
 }
 
-/* kview Progress bar popup */
+/*****************************
+* kview Progress bar popup
+*****************************/
+
 .kview-progress-container {
     -fx-background-insets: 0;
     -fx-background-radius: 6;
     -fx-background-color: transparent;
 }
+
 .kview-progress {
     -fx-background-insets: 0;
     -fx-background-radius: 6;
@@ -4360,7 +4289,7 @@ Styling a context menu for kview ui/ux controls
     -fx-border-width: 1px;
     -fx-border-radius: 6;
     -fx-padding: 14px 20px;
-    -fx-effect: dropshadow(one-pass-box, rgba(0, 0, 0, 0.20), 10, 0.01, 4, 4);
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.3), 4, 0, 0, 4);
 }
 
 .kview-progress-container .button.close-button,
@@ -4384,20 +4313,74 @@ Styling a context menu for kview ui/ux controls
     -fx-indeterminate-bar-flip: true;
     -fx-indeterminate-bar-animation-time: 2;
 }
+
 .kview-progress .progress-bar > .bar {
     -fx-background-color: -Accent-color-green;
-    -fx-background-insets: 3 3 4 3;
-    /*-fx-background-radius: 0.583em; *//* 7 */
+    -fx-background-insets: 0;
     -fx-background-radius: 6;
-    -fx-padding: 0.75em;
 }
+
 .kview-progress .progress-bar:indeterminate > .bar {
     -fx-background-color: linear-gradient(to left, transparent, -Accent-color-green);
 }
+
 .kview-progress .progress-bar > .track {
     -fx-background-color: #545D72;
     -fx-background-insets: 0;
     -fx-background-radius: 6;
+}
+
+.kview-progress #titleText {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 18px;
+    -fx-font-weight: 500;
+    -fx-font-style: normal;
+    -fx-fill: -Grey-White;
+}
+
+.kview-progress #messageText {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-weight: 400;
+    -fx-fill: -Grey-3;
+}
+
+.kview-progress #valueText {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-font-style: normal;
+    -fx-fill: -Accent-color-green;
+}
+
+.kview-progress #statusText {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: 400;
+    -fx-fill: -Grey-3;
+}
+
+.kview-progress #cancelProgressButton {
+    -fx-background-insets: 1;
+    -fx-background-color: -Grey-11;
+    -fx-border-color: -Secondary-05;
+    -fx-border-radius: 4;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+    -fx-text-fill: -Secondary-04;
+    -fx-text-alignment: center;
+}
+
+/*****************************
+* Notification popup
+*****************************/
+
+.notification-popup .progress-popup-pane {
+    -fx-spacing: 14;
+    -fx-alignment: bottom_center;
 }
 
 /*****************************
@@ -4679,8 +4662,8 @@ Styling a context menu for kview ui/ux controls
     -fx-border-insets: 0;
 }
 
-.pattern-window.concept-detail-pane .main-center-container .titled-pane .title,
-.lidr-window.concept-detail-pane .main-center-container .titled-pane .title {
+.pattern-window.concept-detail-pane .main-center-container .titled-pane >  .title,
+.lidr-window.concept-detail-pane .main-center-container .titled-pane > .title {
     -fx-padding: 8 4 4 6;
 }
 
@@ -4884,14 +4867,15 @@ Styling a context menu for kview ui/ux controls
 
 /* Semantic Details section - VBox */
 .semantic-field-container {
-    -height: 58;
-    -fx-min-height: -height;
-    -fx-pref-height: -height;
+    -fx-min-height: 58px;
+
+    -fx-spacing: 12px;
+
     -fx-fill-width: true;
-    -fx-padding: 8px 12px;
+    -fx-padding: 16px 12px 20px 12px;
     -fx-background-color: -Grey-1;
 }
-.semantic-field-set-container,
+.semantic-field-collection-container,
 .semantic-field-ditree-container {
     -fx-fill-width: true;
     -fx-padding: 8px 12px;
@@ -4947,6 +4931,18 @@ Styling a context menu for kview ui/ux controls
     -fx-font-weight: 600;
 }
 
+.sub-container .button-bar .button:hover {
+    -fx-background-color: derive(-Grey-2, -2.5%);
+}
+
+.sub-container .button-bar .button:armed {
+    -fx-background-color: derive(-Grey-2, -4%);
+    -fx-border-color: derive(-Secondary-05, 40%);
+
+    -fx-scale-x: 0.99;
+    -fx-scale-y: 0.99;
+}
+
 /* submit button */
 .sub-container .button-bar .primary.button {
     -fx-border-radius: 4;
@@ -4956,7 +4952,15 @@ Styling a context menu for kview ui/ux controls
     -fx-font-weight: 600;
     -fx-font-style: normal;
     -fx-text-fill: -Grey-White;
-    /*-fx-border-width: 1px;*/
+}
+
+.sub-container .button-bar .primary.button:hover {
+    -fx-background-color: derive(-Secondary-05, -10%);
+}
+
+.sub-container .button-bar .primary.button:armed {
+    -fx-background-color: derive(-Secondary-05, -20%);
+    -fx-border-color: transparent;
 }
 
 /*******************************************************************************
@@ -4999,13 +5003,7 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 0.416667em 0.583333em 0.416667em 0em; /* 5 7 5 0 */
 }
 
-/*******************************************************************************
- *                                                                             *
- * Icons                                                                       *
- *                                                                             *
- ******************************************************************************/
-
-.icon {
+.icon-klcontext-menu {
     size: 12px;
 
     -fx-pref-width: size;
@@ -5019,6 +5017,69 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: white;
 }
 
+/*******************************************************************************
+ *                                                                             *
+ * KL Boolean Control (Popup)                                                  *
+ *                                                                             *
+ ******************************************************************************/
+
+.boolean-control .combo-box-popup > .list-view {
+    -fx-background-color: #2e3140;
+    -fx-background-radius: 4px;
+}
+
+.boolean-control .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-font-family: "Noto Sans";
+
+    -fx-font-size: 14px;
+    -fx-padding: 0.333333em 0.833333em 0.333333em 0.833333em;  /* 4 10 4 10 */
+
+    -fx-background: transparent;
+
+    -fx-text-fill: white;
+}
+
+.boolean-control .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:hover,
+.boolean-control .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:focused {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+.boolean-control .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:selected {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+}
+
+.boolean-control .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:selected:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.23);
+}
+
+.boolean-control .list-cell .main-container {
+    -fx-alignment: center_left;
+}
+
+.boolean-control .list-cell .icon.check-mark {
+    width: 16px;
+    height: 12px;
+
+    -fx-min-width: width;
+    -fx-min-height: height;
+    -fx-pref-width: width;
+    -fx-pref-height: height;
+    -fx-max-width: width;
+    -fx-max-height: height;
+
+    -fx-background-color: transparent;
+}
+
+.boolean-control .list-cell:selected .icon.check-mark {
+    -fx-background-color: #5dcf16;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Icons                                                                       *
+ *                                                                             *
+ ******************************************************************************/
+
 .icon.pencil {
     -fx-shape: "M11.7167 7.5L12.5 8.28333L4.93333 15.8333H4.16667V15.0667L11.7167 7.5ZM14.7167 2.5C14.5083 2.5 14.2917 2.58333 14.1333 2.74167L12.6083 4.26667L15.7333 7.39167L17.2583 5.86667C17.5833 5.54167 17.5833 5 17.2583 4.69167L15.3083 2.74167C15.1417 2.575 14.9333 2.5 14.7167 2.5ZM11.7167 5.15833L2.5 14.375V17.5H5.625L14.8417 8.28333L11.7167 5.15833Z";
 }
@@ -5029,4 +5090,12 @@ Styling a context menu for kview ui/ux controls
 
 .icon.plus {
     -fx-shape: "M9.99935 1.66699C5.40685 1.66699 1.66602 5.40782 1.66602 10.0003C1.66602 14.5928 5.40685 18.3337 9.99935 18.3337C14.5919 18.3337 18.3327 14.5928 18.3327 10.0003C18.3327 5.40782 14.5919 1.66699 9.99935 1.66699ZM9.99935 3.33366C13.6911 3.33366 16.666 6.30856 16.666 10.0003C16.666 13.6921 13.6911 16.667 9.99935 16.667C6.30758 16.667 3.33268 13.6921 3.33268 10.0003C3.33268 6.30856 6.30758 3.33366 9.99935 3.33366ZM9.16602 5.83366V9.16699H5.83268V10.8337H9.16602V14.167H10.8327V10.8337H14.166V9.16699H10.8327V5.83366H9.16602Z";
+}
+
+.icon.check-mark {
+    -fx-shape: "M7.50013 13.4749L4.02513 9.99987L2.8418 11.1749L7.50013 15.8332L17.5001 5.8332L16.3251 4.6582L7.50013 13.4749Z";
+}
+
+.icon.cross {
+    -fx-shape: "M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z";
 }

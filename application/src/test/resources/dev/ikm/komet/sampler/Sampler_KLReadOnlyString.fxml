@@ -8,11 +8,10 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Button?>
-<?import dev.ikm.komet.kview.controls.KLReadOnlyStringControl?>
-
+<?import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
-<?import javafx.collections.FXCollections?>
+
 <ScrollPane styleClass="sample-container" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.sampler.controllers.SamplerReadOnlyStringController">
     <VBox>
@@ -25,7 +24,7 @@
         <BorderPane styleClass="sample-control-container">
             <left>
                 <VBox prefWidth="500" styleClass="inner-container" fillWidth="true">
-                    <KLReadOnlyStringControl fx:id="readOnlyStringControl" title="A TITLE:" text="[Placehoder]" />
+                    <KLReadOnlyDataTypeControl fx:id="readOnlyStringControl" title="A TITLE:" promptText="[Placeholder]" />
                 </VBox>
             </left>
             <right>

@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>dev.ikm.build</groupId>
@@ -10,7 +11,7 @@
     <groupId>dev.ikm.komet</groupId>
     <artifactId>komet-parent</artifactId>
     <name>KOMET</name>
-    <version>1.46.0-SNAPSHOT</version>
+    <version>1.47.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <inceptionYear>2015</inceptionYear>
     <licenses>
@@ -69,7 +70,8 @@
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.4.0</tinkar-composer.version>
-        <tinkar-core.version>1.82.0-IKM-BIND-03-SNAPSHOT</tinkar-core.version>
+        <tinkar-core.version>1.83.0</tinkar-core.version>
+
 
         <!-- IKM Evrete Variables -->
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
@@ -84,8 +86,8 @@
         <jsr305.version>3.0.2-r7</jsr305.version>
 
         <!-- JPRO Variables -->
-        <jpro.version>2024.4.1</jpro.version>
-        <jpro-platform.version>0.5.0</jpro-platform.version>
+        <jpro.version>2025.1.0</jpro.version>
+        <jpro-platform.version>0.5.1</jpro-platform.version>
         <!-- A special build for Komet using the ikmdev Guava module name -->
         <jpro-auth-core.version>${jpro-platform.version}-ikmdev</jpro-auth-core.version>
 
@@ -662,7 +664,8 @@
                         </annotationProcessorPath>
                     </annotationProcessorPaths>
                     <annotationProcessors>
-                        <annotationProcessor>io.soabase.recordbuilder.processor.RecordBuilderProcessor</annotationProcessor>
+                        <annotationProcessor>io.soabase.recordbuilder.processor.RecordBuilderProcessor
+                        </annotationProcessor>
                     </annotationProcessors>
                 </configuration>
             </plugin>

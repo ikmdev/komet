@@ -5,8 +5,8 @@ import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentListControl;
 import dev.ikm.komet.kview.controls.KLComponentSetControl;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -88,11 +88,15 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                conceptContainer.setVisible(true);
             }
         });
+
         control.entityProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 addConceptNode(getSkinnable().getEntity());
             }
         });
+        if (control.getEntity() != null) {
+            addConceptNode(control.getEntity());
+        }
     }
 
     /** {@inheritDoc} */
@@ -188,8 +192,16 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     KLComponentListControlSkin skin = (KLComponentListControlSkin) componentListControl.getSkin();
                     int sourceIndex = skin.getChildren().indexOf(cc);
                     int targetIndex = skin.getChildren().indexOf(control);
-                    final Node node = skin.getChildren().remove(sourceIndex);
-                    skin.getChildren().add(targetIndex, node);
+                    final KLComponentControl node = (KLComponentControl) skin.getChildren().remove(sourceIndex);
+//                    skin.getChildren().remove(sourceIndex);
+//                    if (targetIndex >= skin.getChildren().size()) {
+//                        skin.getChildren().add(node);
+//                    } else {
+                        skin.getChildren().add(targetIndex, node);
+//                    }
+//                    skin.getSkinnable().removeIndexItem(sourceIndex);
+//                    skin.getSkinnable().addValue(targetIndex, node.getEntity().nid());
+
                     success = true;
                 }
             } else if (dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
@@ -204,9 +216,10 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     ) { // TODO: should this be needed? shouldn't we get PublicId from dragboard content?
 
                         //if (control.getEntity() == null) {
-                            Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(dropInfo.publicId()));
+                            int nid = EntityService.get().nidForPublicId(dropInfo.publicId());
+                            EntityProxy entity = EntityProxy.make(nid);
                             if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
-                                    !componentSetControl.getEntitiesList().contains(entity)) {
+                                    !componentSetControl.getValue().contains(nid)) {
                                 control.setEntity(entity);
                                 addConceptNode(entity);
                                 success = true;
@@ -225,8 +238,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
     private boolean hasAllowedDND(KLComponentControl control) {
         return control != null && control.getEntity() != null &&
-                ((control.getParent() instanceof KLComponentSetControl cs && cs.getEntitiesList().size() > 1) ||
-                (control.getParent() instanceof KLComponentListControl cl && cl.getEntitiesList().size() > 1));
+                ((control.getParent() instanceof KLComponentSetControl cs && cs.getValue().size() > 1) ||
+                (control.getParent() instanceof KLComponentListControl cl && cl.getValue().size() > 1));
     }
 
     private boolean haveAllowedDND(KLComponentControl source, KLComponentControl target) {
@@ -279,7 +292,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         return aboutToDropHBox;
     }
 
-    private void addConceptNode(Entity<?> entity) {
+    private void addConceptNode(EntityProxy entity) {
         Image identicon = Identicon.generateIdenticonImage(entity.publicId());
         ImageView imageView = new ImageView();
         imageView.setFitWidth(20);

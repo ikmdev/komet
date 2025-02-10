@@ -94,4 +94,18 @@ public class DefaultEvtBus implements EvtBus {
         }
     }
 
+    @Override
+    public <T extends Evt> void unsubscribe(Subscriber<T> subscriber) {
+        subscribersMap.forEach((k, v) -> v.remove(subscriber));
+    }
+
+    @Override
+    public void unsubscribe(Subscriber<?> ...subscriber) {
+        if (null != subscriber) {
+            for (Subscriber<?> s : subscriber) {
+                unsubscribe(s);
+            }
+        }
+    }
+
 }

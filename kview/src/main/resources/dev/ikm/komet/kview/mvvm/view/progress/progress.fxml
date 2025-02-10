@@ -3,14 +3,12 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ButtonBar?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
@@ -20,28 +18,24 @@
          <bottom>
             <ButtonBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
               <buttons>
-                <Button fx:id="cancelProgressButton" alignment="CENTER" mnemonicParsing="false" prefHeight="32.0" prefWidth="148.0" style="-fx-background-insets: 1; -fx-background-color: #2e3240; -fx-border-color: #4A7AD2; -fx-border-radius: 4; -fx-font-size: 14; -fx-font-family: Noto Sans; -fx-font-weight: 600; -fx-text-fill: -Secondary-04; -fx-font-style: normal; -fx-text-alignment: center;" text="CANCEL" />
+                <Button fx:id="cancelProgressButton" alignment="CENTER" mnemonicParsing="false" prefHeight="32.0" prefWidth="148.0" text="CANCEL" />
               </buttons>
             </ButtonBar>
          </bottom>
          <center>
             <VBox spacing="8.0" BorderPane.alignment="CENTER">
                <children>
-                  <TextFlow prefHeight="41.0" prefWidth="358.0">
+                  <TextFlow prefHeight="40.0" prefWidth="340.0" maxWidth="340.0">
                      <children>
-                        <Text fx:id="titleText" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-fill: #fff; -fx-font-family: Noto Sans; -fx-font-size: 18px; -fx-font-weight: 500; -fx-font-style: normal;" text="Export in progress ..." />
+                        <Text fx:id="titleText" strokeType="OUTSIDE" strokeWidth="0.0" text="Export in progress ..." />
                      </children>
                   </TextFlow>
-                  <Text fx:id="messageText" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 14px; -fx-font-weight: 400; -fx-fill: -Grey-3;" text="IKM_Snapshot_Feb23rd.xml" />
+                  <Text fx:id="messageText" strokeType="OUTSIDE" strokeWidth="0.0" text="IKM_Snapshot_Feb23rd.xml" />
                   <ProgressBar fx:id="progressBar" maxHeight="12.0" maxWidth="1.7976931348623157E308" progress="0.0" />
                   <HBox alignment="CENTER_LEFT" spacing="4.0">
                      <children>
-                        <Label fx:id="valueLabel" prefHeight="23.0" style="-fx-text-fill: #00BC62; -fx-font-family: Noto Sans; -fx-font-size: 18px; -fx-font-weight: 700; -fx-font-style: normal;" text="80% ">
-                           <font>
-                              <Font name="System Bold" size="13.0" />
-                           </font>
-                        </Label>
-                        <Text fx:id="statusText" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12px; -fx-font-style: normal; -fx-font-weight: 400; -fx-fill: #E1E8F1;" text="completed" />
+                        <Text fx:id="valueText" text="80%"/>
+                        <Text fx:id="statusText" text="completed" />
                      </children>
                   </HBox>
                </children>
@@ -53,7 +47,7 @@
       </BorderPane>
       <Pane prefHeight="0.0" prefWidth="0.0">
          <children>
-            <Button fx:id="closeProgressButton" contentDisplay="GRAPHIC_ONLY" layoutX="-35.0" layoutY="8.0" mnemonicParsing="false" styleClass="close-button" text="Button">
+            <Button fx:id="closeProgressButton" contentDisplay="GRAPHIC_ONLY" layoutX="-35.0" layoutY="12.0" mnemonicParsing="false" styleClass="close-button" text="Button">
                <graphic>
                   <Region styleClass="close-window" />
                </graphic>

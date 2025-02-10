@@ -25,9 +25,12 @@ public class SamplerApp extends Application {
     private static final String STRING_SAMPLER = "Sampler_KLStringControl.fxml";
     private static final String INTEGER_SAMPLER = "Sampler_KLIntegerControl.fxml";
     private static final String FLOAT_SAMPLER = "Sampler_KLFloatControl.fxml";
+    private static final String IMAGE_SAMPLER = "Sampler_KLImageControl.fxml";
 
     private static final String READ_ONLY_STRING_SAMPLER = "Sampler_KLReadOnlyString.fxml";
     private static final String READ_ONLY_COMPONENT_SAMPLER = "Sampler_KLReadOnlyComponent.fxml";
+    private static final String READ_ONLY_STRING_LIST_SAMPLER = "Sampler_KLReadOnlyStringList.fxml";
+    private static final String READ_ONLY_IMAGE_SAMPLER = "Sampler_KLReadOnlyImage.fxml";
 
     public static SamplerApp INSTANCE;
 
@@ -46,16 +49,8 @@ public class SamplerApp extends Application {
 
         addItemsToNavigationPane();
 
-        navigationPane.selectedMenuItemProperty().addListener(observable -> {
-            MenuItem selectedMenuItem = navigationPane.getSelectedMenuItem();
-            if (selectedMenuItem != null) {
-                System.out.println("Selected menu item changed to -> " + selectedMenuItem.getText());
-            }
-        });
-
         stage.setTitle("Komet Sampler");
 
-        // Setup conditions for background blur to show through
         StackPane root = new StackPane(navigationPane);
         Scene scene = new Scene(root, 1250, 630);
 
@@ -72,21 +67,20 @@ public class SamplerApp extends Application {
         // menu items
         navigationPane.getMenuItems().add(createMenuItemOrMenu("Home", "home-20.png", HOME, false));
 
-        // Basic data types menu
-        Menu basicControlsMenu = createMenu("Basic Data Types", "alt-20.png");
-        basicControlsMenu.getItems().add(createMenuItemWithContent("Boolean Control", BOOLEAN_SAMPLER));
-
         // Read-Only Data Controls
         Menu readOnlyControls = createMenu("Read-Only Data Controls", "eye-20.png");
         readOnlyControls.getItems().add(createMenuItemWithContent("String Control", READ_ONLY_STRING_SAMPLER));
-        readOnlyControls.getItems().add(createMenuItemWithContent("Read-Only Component Control", READ_ONLY_COMPONENT_SAMPLER));
+        readOnlyControls.getItems().add(createMenuItemWithContent("String List Control", READ_ONLY_STRING_LIST_SAMPLER));
+        readOnlyControls.getItems().add(createMenuItemWithContent("Component Control", READ_ONLY_COMPONENT_SAMPLER));
+        readOnlyControls.getItems().add(createMenuItemWithContent("Image Control", READ_ONLY_IMAGE_SAMPLER));
 
         // Editable Data Controls
         Menu editableControlsMenu = createMenu("Editable Data Controls", "edit-row-20.png");
         editableControlsMenu.getItems().add(createMenuItemWithContent("Boolean Control", BOOLEAN_SAMPLER));
         editableControlsMenu.getItems().add(createMenuItemWithContent("String Control", STRING_SAMPLER));
-        editableControlsMenu.getItems().add(createMenuItemWithContent("IntegerControl", INTEGER_SAMPLER));
-        editableControlsMenu.getItems().add(createMenuItemWithContent("FloatControl", FLOAT_SAMPLER));
+        editableControlsMenu.getItems().add(createMenuItemWithContent("Integer Control", INTEGER_SAMPLER));
+        editableControlsMenu.getItems().add(createMenuItemWithContent("Float Control", FLOAT_SAMPLER));
+        editableControlsMenu.getItems().add(createMenuItemWithContent("Image Control", IMAGE_SAMPLER));
 
         // Other Controls
         Menu otherControlsMenu = createMenu("Other Controls", "plus-math-20.png");

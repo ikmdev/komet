@@ -16,11 +16,13 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -32,6 +34,7 @@ import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +74,11 @@ public class PropertiesController {
 
     Subscriber<PropertyPanelEvent> showPanelSubscriber;
 
+    Subscriber<GenEditingEvent> genEditingEventSubscriber;
+
     JFXNode<Pane, SemanticFieldsController> editFieldsJfxNode;
+
+
 
     @FXML
     private void initialize() {
@@ -83,13 +90,14 @@ public class PropertiesController {
         showPanelSubscriber = evt -> {
             LOG.info("Show Panel by event type: " + evt.getEventType());
             if (evt.getEventType() == PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
-                System.out.println("show edit semantic_fields panel");
+//                System.out.println("show edit semantic_fields panel");
                 if (editFieldsJfxNode == null) {
-                    System.out.println(evt.getSemantic());
+//                    System.out.println(evt.getSemantic());
                     propertyToggleButtonGroup.selectToggle(addEditButton);
                     Config config = new Config(this.getClass().getResource("semantic-edit-fields.fxml"));
                     config.updateViewModel("semanticFieldsViewModel", (semanticFieldsViewModel) -> {
                         semanticFieldsViewModel
+                                .addProperty(CURRENT_JOURNAL_WINDOW_TOPIC, propertiesViewModel.getObjectProperty(CURRENT_JOURNAL_WINDOW_TOPIC))
                                 .addProperty(WINDOW_TOPIC, propertiesViewModel.getObjectProperty(WINDOW_TOPIC))
                                 .addProperty(VIEW_PROPERTIES, propertiesViewModel.getObjectProperty(VIEW_PROPERTIES))
                                 .addProperty(SEMANTIC, evt.getSemantic());
@@ -100,6 +108,17 @@ public class PropertiesController {
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(propertiesViewModel.getPropertyValue(WINDOW_TOPIC), PropertyPanelEvent.class, showPanelSubscriber);
+
+        genEditingEventSubscriber = evt -> {
+            LOG.info("Publish event type: " + evt.getEventType());
+            Config closePropertiesConfig = new Config(this.getClass().getResource("close-properties.fxml"))
+                    .addNamedViewModel(new NamedVm("propertiesViewModel", propertiesViewModel));
+
+            JFXNode<Pane, ClosePropertiesController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
+            contentBorderPane.setCenter(closePropsJfxNode.node());
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(propertiesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                GenEditingEvent.class, genEditingEventSubscriber);
     }
 
 

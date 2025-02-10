@@ -10,7 +10,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.util.Duration;
 import javafx.util.Subscription;
-import javafx.util.converter.DoubleStringConverter;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
@@ -57,21 +56,23 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
 
         getChildren().addAll(titleLabel, textField, errorLabel);
 
-        textField.setTextFormatter(new TextFormatter<>(new DoubleStringConverter(), null, change -> {
+        textField.setTextFormatter(new TextFormatter<>(null, null, change -> {
             errorLabel.setText(null);
             String oldText = change.getControlText();
             String newText = change.getControlNewText();
             String addedText = change.getText();
+            int exponentPosition = exponentPosition(oldText);
 
             // Valid change (even if number is still not valid):
             // - empty (null value)
             // - adding e/E if oldText didn't have e/E, and wasn't empty
-            // - back when text ends in [-, e, e-, E, E-]
+            // - adding '-' or '+' if empty or ends in e/E
+            // - back when text ends in [-/+, e, e-/+, E, E-/+]
             // - pattern
             if (newText.isEmpty() ||
                     (hasExponent(newText) && !hasExponent(oldText) && !oldText.isEmpty()) ||
-                    ("-".equals(addedText) && (oldText.isEmpty() || endsWithExponent(oldText))) ||
-                    (addedText.isEmpty() && ("-".equals(newText) || hasExponent(newText) || hasNegativeExponent(newText))) ||
+                    (("-".equals(addedText) || "+".equals(addedText)) && (oldText.isEmpty() || endsWithExponent(oldText))) ||
+                    (addedText.isEmpty() && ("+".equals(newText) || "-".equals(newText) || hasExponent(newText) || hasSignedExponent(newText))) ||
                     NUMERICAL_PATTERN.matcher(newText).matches()) {
                 try {
                     double value = Double.parseDouble(newText);
@@ -84,6 +85,30 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
                     // ignore
                 }
                 return change;
+            } else if ("-".equals(addedText) || "+".equals(addedText)) { // typing '-'/'+' in any other position
+                // start is position 0 when typing without exponent or before it, or
+                // exponent position + 1 when typing to the right of the exponent
+                int start = change.getRangeStart() <= exponentPosition ? 0 : exponentPosition + 1;
+
+                if (oldText.charAt(start) == addedText.charAt(0)) {
+                    // if text at start is '-'/'+', typing same '-'/'+', cancels it
+                    change.setText("");
+                    change.setRange(start, start + 1);
+                    change.setCaretPosition(Math.max(0, change.getCaretPosition() - 2));
+                    change.setAnchor(Math.max(0, change.getAnchor() - 2));
+                    return change;
+                } else if ((oldText.charAt(start) == '-' && "+".equals(addedText)) ||
+                        (oldText.charAt(start) == '+' && "-".equals(addedText))) {
+                    // if text at start is '-'/'+', typing '+'/'-', replaces it with '+'/'-'
+                    change.setRange(start, start + 1);
+                    change.setCaretPosition(Math.max(0, change.getCaretPosition() - 1));
+                    change.setAnchor(Math.max(0, change.getAnchor() - 1));
+                    return change;
+                } else if (oldText.charAt(start) != '-' && oldText.charAt(start) != '+') {
+                    // if text at start is not '-'/'+', typing '-'/'+' from any position, sets it
+                    change.setRange(start, start);
+                    return change;
+                }
             }
             errorLabel.setText(MessageFormat.format(resources.getString("error.input.text"), addedText));
             return null;
@@ -97,18 +122,17 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
         });
         subscription = subscription.and(textField.textProperty().subscribe(nv -> {
             textChangedViaKeyEvent = true;
-            // When text is null or has a valid expression but not a valid number yet:
-            if (nv == null || nv.isEmpty() || "-".equals(nv) || endsWithExponent(nv) || endsWithNegativeExponent(nv)) {
+            if (nv == null || nv.isEmpty()) {
+                // When new text is null or empty, reset control's value
                 control.setValue(null);
-            } else {
+            } else if (!("-".equals(nv) || "+".equals(nv) || endsWithExponent(nv) || endsWithSignedExponent(nv))) {
                 try {
-                    // only set when it is a valid number
-                    double value = Double.parseDouble(nv);
+                    // only set control's value when it is a valid number
+                    float value = Float.parseFloat(nv);
                     control.setValue(value);
                 } catch (NumberFormatException e) {
-                    // ignore
+                    // ignore, and keep control with its old value
                 }
-                control.setValue(null);
             }
             textChangedViaKeyEvent = false;
         }));
@@ -189,6 +213,13 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
         return text.contains("e") || text.contains("E");
     }
 
+    private static int exponentPosition(String text) {
+        if (!hasExponent(text)) {
+            return Integer.MAX_VALUE;
+        }
+        return text.contains("e") ? text.indexOf("e") : text.indexOf("E");
+    }
+
     private static boolean endsWithExponent(String text) {
         if (text == null || text.isEmpty()) {
             return false;
@@ -196,18 +227,18 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
         return text.endsWith("e") || text.endsWith("E");
     }
 
-    private static boolean hasNegativeExponent(String text) {
+    private static boolean hasSignedExponent(String text) {
         if (text == null || text.isEmpty()) {
             return false;
         }
-        return text.contains("e-") || text.contains("E-");
+        return text.contains("e-") || text.contains("E-") || text.endsWith("e+") || text.endsWith("E+");
     }
 
-    private static boolean endsWithNegativeExponent(String text) {
+    private static boolean endsWithSignedExponent(String text) {
         if (text == null || text.isEmpty()) {
             return false;
         }
-        return text.endsWith("e-") || text.endsWith("E-");
+        return text.endsWith("e-") || text.endsWith("E-") || text.endsWith("e+") || text.endsWith("E+");
     }
 
 }

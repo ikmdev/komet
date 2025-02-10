@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.IDENTIFIER_PATTERN_PROXY;
 import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.INFERRED_DEFINITION_PATTERN_PROXY;
 import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.INFERRED_NAVIGATION_PATTERN_PROXY;
@@ -24,11 +25,13 @@ import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -57,6 +60,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 
 public class PatternNavEntryController {
@@ -111,14 +115,14 @@ public class PatternNavEntryController {
         identicon.setImage(identiconImage);
 
         // set the pattern's name
-        patternName.setText(patternFacade.description());
+        patternName.setText(retriveDisplayName((PatternFacade)patternFacade));
 
         // add listener for double click to summon the pattern into the journal view
         patternEntryHBox.setOnMouseClicked(mouseEvent -> {
             // double left click creates the concept window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                 if (mouseEvent.getClickCount() == 2) {
-                    EvtBusFactory.getDefaultEvtBus().publish(instancesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                    EvtBusFactory.getDefaultEvtBus().publish(JOURNAL_TOPIC,
                             new MakePatternWindowEvent(this,
                                     MakePatternWindowEvent.OPEN_PATTERN, instancesViewModel.getPropertyValue(PATTERN_FACADE), instancesViewModel.getPropertyValue(VIEW_PROPERTIES)));
                 }
@@ -128,6 +132,15 @@ public class PatternNavEntryController {
 
         setupListView();
     }
+
+    private String retriveDisplayName(PatternFacade patternFacade) {
+        ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
+        ViewCalculator viewCalculator = viewProperties.calculator();
+        Optional<String> optionalStringRegularName = viewCalculator.getRegularDescriptionText(patternFacade);
+        Optional<String> optionalStringFQN = viewCalculator.getFullyQualifiedNameText(patternFacade);
+        return optionalStringRegularName.orElseGet(optionalStringFQN::get);
+    }
+
     private void setupListView() {
 
         patternInstancesListView.setFixedCellSize(LIST_VIEW_CELL_SIZE);

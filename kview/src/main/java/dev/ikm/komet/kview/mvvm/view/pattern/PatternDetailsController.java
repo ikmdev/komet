@@ -52,6 +52,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAMES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_DATE_STR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
@@ -64,6 +65,7 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
+import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -103,6 +105,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -160,6 +164,9 @@ public class PatternDetailsController {
 
     @FXML
     private VerticallyFilledPane timelineSlideoutTrayPane;
+
+    @FXML
+    private ImageView identiconImageView;
 
     @FXML
     private Label patternTitleText;
@@ -347,12 +354,11 @@ public class PatternDetailsController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
 
-
-
         // bind view model
         if (!patternTitleText.textProperty().isBound()) {
-            patternTitleText.textProperty().bind(patternViewModel.getProperty(PATTERN).map(p -> ((EntityFacade) p).description()));
+            patternTitleText.textProperty().bind(patternViewModel.getProperty(PATTERN_TITLE_TEXT));
         }
+
         // bind stamp
         lastUpdatedText.textProperty().bind(getStampViewModel().getProperty(TIME).map(t -> {
             if (!t.equals(PREMUNDANE_TIME) && patternViewModel.getPropertyValue(MODE).equals(EDIT)) {
@@ -368,6 +374,10 @@ public class PatternDetailsController {
         moduleText.textProperty().bind(getStampViewModel().getProperty(MODULE).map(m -> ((ConceptEntity) m).description()));
         pathText.textProperty().bind(getStampViewModel().getProperty(PATH).map(p -> ((ConceptEntity) p).description()));
         statusText.textProperty().bind(getStampViewModel().getProperty(STATUS).map(s -> s.toString()));
+
+        // set the identicon
+        Image identicon = Identicon.generateIdenticonImage(((EntityFacade)patternViewModel.getPropertyValue(PATTERN)).publicId());
+        identiconImageView.setImage(identicon);
 
         // show the public id
         //identifierText.setText(patternViewModel.getPatternIdentifierText());
@@ -856,6 +866,7 @@ public class PatternDetailsController {
                             MakePatternWindowEvent.OPEN_PATTERN, patternViewModel.getPropertyValue(PATTERN), patternViewModel.getViewProperties()));
 
             patternViewModel.setPropertyValue(IS_INVALID, true);
+            patternViewModel.reLoadPatternValues();
         }
     }
 

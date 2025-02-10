@@ -1,17 +1,17 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLComponentSetControlSkin;
+import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.impl.IntIdSetArray;
 import dev.ikm.tinkar.entity.Entity;
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * <p>KLComponentSetControl is a custom control that acts as a template capable of populating multiple,
@@ -59,13 +59,29 @@ public class KLComponentSetControl extends Control {
     /**
      * This property holds the list of {@link Entity Entities} that have been added to the control
      */
-    private final ListProperty<Entity<?>> entitiesProperty = new SimpleListProperty<>(FXCollections.observableList(new LinkedList<>()));
-    public final ListProperty<Entity<?>> entitiesProperty() {
-       return entitiesProperty;
+    private final ObjectProperty<IntIdSet> valueProperty =  new SimpleObjectProperty<>(this, null);
+    public final ObjectProperty<IntIdSet> valueProperty() {
+        return valueProperty;
     }
-    public final List<Entity<?>> getEntitiesList() {
-       return entitiesProperty.get();
+    public final IntIdSet getValue() {
+        return valueProperty.get();
     }
+
+    public final void setValue(IntIdSet intIdSet) {
+        valueProperty.set(intIdSet);
+    }
+
+    public void addValue(int nid) {
+        IntIdSet intIdSet = getValue().with(nid);
+        setValue(intIdSet);
+    }
+
+    public final void removeValue(int nid) {
+        IntStream intStream = valueProperty.get().with(nid).intStream().filter((p) -> p != nid);
+        IntIdSet newIntIdSet = IntIdSetArray.newIntIdSet(intStream.toArray());
+        valueProperty.set(newIntIdSet);
+    }
+
 
     /** {@inheritDoc} */
     @Override
