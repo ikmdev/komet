@@ -65,6 +65,7 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
+import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -104,6 +105,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -161,6 +164,9 @@ public class PatternDetailsController {
 
     @FXML
     private VerticallyFilledPane timelineSlideoutTrayPane;
+
+    @FXML
+    private ImageView identiconImageView;
 
     @FXML
     private Label patternTitleText;
@@ -368,6 +374,10 @@ public class PatternDetailsController {
         moduleText.textProperty().bind(getStampViewModel().getProperty(MODULE).map(m -> ((ConceptEntity) m).description()));
         pathText.textProperty().bind(getStampViewModel().getProperty(PATH).map(p -> ((ConceptEntity) p).description()));
         statusText.textProperty().bind(getStampViewModel().getProperty(STATUS).map(s -> s.toString()));
+
+        // set the identicon
+        Image identicon = Identicon.generateIdenticonImage(((EntityFacade)patternViewModel.getPropertyValue(PATTERN)).publicId());
+        identiconImageView.setImage(identicon);
 
         // show the public id
         //identifierText.setText(patternViewModel.getPatternIdentifierText());
