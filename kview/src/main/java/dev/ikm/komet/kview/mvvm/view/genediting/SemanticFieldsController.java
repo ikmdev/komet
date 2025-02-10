@@ -20,7 +20,6 @@ import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
-import static java.util.concurrent.CompletableFuture.runAsync;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -104,19 +103,19 @@ public class SemanticFieldsController {
 
     @FXML
     public void submit(ActionEvent actionEvent) {
-        actionEvent.consume();
+        cancelButton.requestFocus();
+
         List<ObservableField<?>> list = new ArrayList<>();
         observableFields.forEach(observableField -> {
             if (observableField != null) {
-                runAsync(() -> {
-                    observableField.writeToDataBase();
-                });
+                observableField.writeToDataBase();
             }
             list.add(observableField);
         });
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         //EventBus implementation changes to refresh the details area
         EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
+
 
     }
 }

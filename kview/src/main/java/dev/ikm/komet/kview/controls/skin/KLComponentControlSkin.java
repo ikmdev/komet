@@ -192,8 +192,16 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     KLComponentListControlSkin skin = (KLComponentListControlSkin) componentListControl.getSkin();
                     int sourceIndex = skin.getChildren().indexOf(cc);
                     int targetIndex = skin.getChildren().indexOf(control);
-                    final Node node = skin.getChildren().remove(sourceIndex);
-                    skin.getChildren().add(targetIndex, node);
+                    final KLComponentControl node = (KLComponentControl) skin.getChildren().remove(sourceIndex);
+//                    skin.getChildren().remove(sourceIndex);
+//                    if (targetIndex >= skin.getChildren().size()) {
+//                        skin.getChildren().add(node);
+//                    } else {
+                        skin.getChildren().add(targetIndex, node);
+//                    }
+//                    skin.getSkinnable().removeIndexItem(sourceIndex);
+//                    skin.getSkinnable().addValue(targetIndex, node.getEntity().nid());
+
                     success = true;
                 }
             } else if (dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
@@ -231,7 +239,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private boolean hasAllowedDND(KLComponentControl control) {
         return control != null && control.getEntity() != null &&
                 ((control.getParent() instanceof KLComponentSetControl cs && cs.getValue().size() > 1) ||
-                (control.getParent() instanceof KLComponentListControl cl && cl.getEntitiesList().size() > 1));
+                (control.getParent() instanceof KLComponentListControl cl && cl.getValue().size() > 1));
     }
 
     private boolean haveAllowedDND(KLComponentControl source, KLComponentControl target) {
