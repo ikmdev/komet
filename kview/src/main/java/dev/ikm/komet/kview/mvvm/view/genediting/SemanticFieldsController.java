@@ -125,7 +125,7 @@ public class SemanticFieldsController {
         //Run async transaction to commit to DB.
         runAsync(() -> {
             Transaction transaction = writeToTempTranscation();
-            if(transaction !=null){
+            if(transaction != null){
                 commitTransactionTask(transaction);
             }
         });

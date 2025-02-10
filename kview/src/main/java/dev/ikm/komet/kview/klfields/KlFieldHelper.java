@@ -64,7 +64,7 @@ public class KlFieldHelper {
             Node node = null;
             int dataTypeNid = fieldRecord.dataType().nid();
             ObservableField writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
-            ObservableField observableField = new ObservableField(writeObservableField.field(), true);
+            ObservableField observableField = new ObservableField(writeObservableField.field(), false);
             observableFields.add(observableField);
 
             // TODO: this method below will be removed once the database has the capability to add and edit Image data types
