@@ -3,7 +3,7 @@ package dev.ikm.komet.layout.component;
 import dev.ikm.komet.layout.KlWidget;
 import javafx.scene.layout.Pane;
 
-public interface KlPane extends KlWidget {
+public interface KlPane<T extends Pane> extends KlWidget<T> {
 
     /**
      * Returns the JavaFX {@code Pane} associated with this version pane.

@@ -74,6 +74,18 @@ public class KometPreferencesImpl
             }
         }
     }
+    /**
+     * Initializes the current instance with the preference data of a nodeToCopy {@code KometPreferencesImpl}.
+     * This method clears the current preferences data and replaces it by merging with the preferences
+     * from the provided nodeToCopy instance.
+     *
+     * @param nodeToCopy the nodeToCopy {@code KometPreferencesImpl} instance whose preference data will be merged
+     *              into the current instance.
+     */
+    private void init(KometPreferencesImpl nodeToCopy) {
+        init();
+        this.preferencesTree.putAll(nodeToCopy.preferencesTree);
+    }
 
     static void importMap(InputStream is, Map<String, String> map)
             throws Exception {
