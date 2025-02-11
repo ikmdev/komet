@@ -83,4 +83,29 @@ public abstract class AbstractChapterKlWindow<T extends Node> implements Chapter
     protected void setRootPane(T paneWindow) {
         this.paneWindow = paneWindow;
     }
+
+    @Override
+    public void save() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
+    public void revert() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
+    public void delete() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
+    public T fxGadget() {
+        return paneWindow;
+    }
+
+    @Override
+    public KometPreferences preferences() {
+        return preferences;
+    }
 }

@@ -2,6 +2,7 @@ package dev.ikm.komet.layout.component.version;
 
 
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
+import javafx.beans.property.ObjectProperty;
 
 /**
  * The {@code KlSemanticVersionPane} interface represents a pane that displays a single version
@@ -13,6 +14,12 @@ import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
  * @see KlVersionPane
  * @see ObservableSemanticVersion
  */
-public interface KlSemanticVersionPane extends KlVersionPane<ObservableSemanticVersion> {
+public non-sealed interface KlSemanticVersionPane extends KlVersionPane<ObservableSemanticVersion> {
+    default ObservableSemanticVersion semanticVersion() {
+        return KlVersionPane.super.version();
+    }
 
+    default ObjectProperty<ObservableSemanticVersion> semanticVersionProperty() {
+        return versionProperty();
+    }
 }
