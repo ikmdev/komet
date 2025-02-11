@@ -141,12 +141,11 @@
     </dependencies>
     <build>
         <plugins>
-            <!-- TODO https://ikmdev.atlassian.net/browse/IKM-1286 - Defect in javadoc plugin. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <skip>true</skip>
+                    <doclint>all,-missing</doclint>
                 </configuration>
             </plugin>
         </plugins>
