@@ -90,9 +90,9 @@ public class PropertiesController {
         showPanelSubscriber = evt -> {
             LOG.info("Show Panel by event type: " + evt.getEventType());
             if (evt.getEventType() == PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
-                System.out.println("show edit semantic_fields panel");
+//                System.out.println("show edit semantic_fields panel");
                 if (editFieldsJfxNode == null) {
-                    System.out.println(evt.getSemantic());
+//                    System.out.println(evt.getSemantic());
                     propertyToggleButtonGroup.selectToggle(addEditButton);
                     Config config = new Config(this.getClass().getResource("semantic-edit-fields.fxml"));
                     config.updateViewModel("semanticFieldsViewModel", (semanticFieldsViewModel) -> {
@@ -117,7 +117,7 @@ public class PropertiesController {
             JFXNode<Pane, ClosePropertiesController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
             contentBorderPane.setCenter(closePropsJfxNode.node());
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(propertiesViewModel.getPropertyValue(WINDOW_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().subscribe(propertiesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, genEditingEventSubscriber);
     }
 
