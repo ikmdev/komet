@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.47.0-SNAPSHOT</version>
+        <version>1.47.0-jpro-96-unable-to-generate-javadoc-for-komet-framework-module-SNAPSHOT</version>
     </parent>
     <artifactId>details</artifactId>
     <dependencies>
