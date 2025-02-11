@@ -47,8 +47,10 @@ public class ObservableField<T> implements Field<T> {
         }
         valueProperty.addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                handleValueChange(newValue);
-                fieldProperty.set(field().withValue(newValue));
+                int stampNid = handleValueChange(newValue);
+                if(stampNid != 0){
+                    fieldProperty.set(field().withValue(newValue).withSemanticVersionStampNid(stampNid));
+                }
             }
         });
         refreshProperties.addListener((observable, oldValue, newValue) -> {
@@ -62,17 +64,18 @@ public class ObservableField<T> implements Field<T> {
         this(fieldRecord, true);
     }
 
-    private void handleValueChange(Object newValue) {
+    private int handleValueChange(Object newValue) {
         if (writeOnEveryChange && !refreshProperties.get()) {
-            writeToDatabase(newValue);
+           return writeToDatabase(newValue);
         }
+        return 0;
     }
 
     public void writeToDataBase() {
         this.writeToDatabase(value());
     }
 
-    public void writeToDatabase(Object newValue) {
+    public int writeToDatabase(Object newValue) {
         StampRecord stamp = Entity.getStamp(fieldProperty.get().semanticVersionStampNid());
         // Get current version
         SemanticVersionRecord version = Entity.getVersionFast(field().semanticNid(), field().semanticVersionStampNid());
@@ -94,6 +97,7 @@ public class ObservableField<T> implements Field<T> {
 
             // Entity provider will broadcast the nid of the changed entity.
             Entity.provider().putEntity(analogue);
+            return newStamp.nid();
         } else {
             SemanticVersionRecord newVersion = version.withFieldValues(fieldsForNewVersion.toImmutable());
             // if a version with the same stamp as newVersion exists, that version will be removed
@@ -101,6 +105,7 @@ public class ObservableField<T> implements Field<T> {
             SemanticRecord analogue = semantic.with(newVersion).build();
             // Entity provider will broadcast the nid of the changed entity.
             Entity.provider().putEntity(analogue);
+            return newVersion.stampNid();
         }
     }
 
