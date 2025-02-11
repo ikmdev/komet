@@ -70,7 +70,7 @@
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.4.0</tinkar-composer.version>
-        <tinkar-core.version>1.82.0</tinkar-core.version>
+        <tinkar-core.version>1.83.0</tinkar-core.version>
 
         <!-- IKM Evrete Variables -->
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
@@ -85,8 +85,8 @@
         <jsr305.version>3.0.2-r7</jsr305.version>
 
         <!-- JPRO Variables -->
-        <jpro.version>2024.4.1</jpro.version>
-        <jpro-platform.version>0.5.0</jpro-platform.version>
+        <jpro.version>2025.1.0</jpro.version>
+        <jpro-platform.version>0.5.1</jpro-platform.version>
         <!-- A special build for Komet using the ikmdev Guava module name -->
         <jpro-auth-core.version>${jpro-platform.version}-ikmdev</jpro-auth-core.version>
 

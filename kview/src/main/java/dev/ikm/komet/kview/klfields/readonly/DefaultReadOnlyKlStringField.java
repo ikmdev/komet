@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.klfields.readonly;
 
 import dev.ikm.komet.framework.observable.ObservableField;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Pane;
@@ -10,7 +11,7 @@ import org.carlfx.cognitive.loader.JFXNode;
 
 public class DefaultReadOnlyKlStringField implements ReadOnlyKlStringField {
     private ObservableField<String> field = new ObservableField<>(null);
-    private Node node;
+    private Parent node;
 
     @Override
     public ObservableField<String> field() {
@@ -18,7 +19,7 @@ public class DefaultReadOnlyKlStringField implements ReadOnlyKlStringField {
     }
 
     @Override
-    public Node klWidget() {
+    public Parent klWidget() {
         if (node == null) {
             JFXNode<Pane, Void> jfxNode = FXMLMvvmLoader.make(this.getClass().getResource("/dev/ikm/komet/kview/controls/read-only-value-field.fxml"));
             Pane componentRow = jfxNode.node();

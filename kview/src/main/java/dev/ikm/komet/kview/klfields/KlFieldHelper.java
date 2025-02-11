@@ -6,6 +6,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentSetFieldFactory;
+import dev.ikm.komet.kview.klfields.componentlistfield.KlComponentListFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.imagefield.KlImageFieldFactory;
 import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
@@ -64,7 +65,7 @@ public class KlFieldHelper {
             Node node = null;
             int dataTypeNid = fieldRecord.dataType().nid();
             ObservableField writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
-            ObservableField observableField = new ObservableField(writeObservableField.field(), true);
+            ObservableField observableField = new ObservableField(writeObservableField.field(), false);
             observableFields.add(observableField);
 
             // TODO: this method below will be removed once the database has the capability to add and edit Image data types
@@ -82,7 +83,8 @@ public class KlFieldHelper {
                 KlComponentSetFieldFactory klComponentSetFieldFactory = new KlComponentSetFieldFactory();
                 node = klComponentSetFieldFactory.create(observableField, viewProperties.nodeView(), true).klWidget();
             } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
-                node = rowf.createReadOnlyComponentList(viewProperties, fieldRecord);
+                KlComponentListFieldFactory klComponentListFieldFactory = new KlComponentListFieldFactory();
+                node = klComponentListFieldFactory.create(observableField, viewProperties.nodeView(), true).klWidget();
             } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
                 node = rowf.createReadOnlyDiTree(viewProperties, fieldRecord);
             } else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.FLOAT.nid()) {
@@ -143,7 +145,8 @@ public class KlFieldHelper {
                     KlComponentSetFieldFactory klComponentSetFieldFactory = new KlComponentSetFieldFactory();
                     readOnlyNode = klComponentSetFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
                 } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
-                    readOnlyNode = rowf.createReadOnlyComponentList(viewProperties, fieldRecord);
+                    KlComponentListFieldFactory klComponentListFieldFactory = new KlComponentListFieldFactory();
+                    readOnlyNode = klComponentListFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
                 } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
                     readOnlyNode = rowf.createReadOnlyDiTree(viewProperties, fieldRecord);
                 } else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid()) {

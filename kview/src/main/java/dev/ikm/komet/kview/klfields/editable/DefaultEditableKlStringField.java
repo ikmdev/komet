@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.klfields.editable;
 
 import dev.ikm.komet.framework.observable.ObservableField;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
@@ -11,7 +12,7 @@ import org.carlfx.cognitive.loader.JFXNode;
 
 public class DefaultEditableKlStringField implements EditableKlStringField {
     private ObservableField<String> field = new ObservableField<>(null, false);
-    private Node node;
+    private Parent node;
 
     @Override
     public ObservableField<String> field() {
@@ -19,7 +20,7 @@ public class DefaultEditableKlStringField implements EditableKlStringField {
     }
 
     @Override
-    public Node klWidget() {
+    public Parent klWidget() {
         if (node == null) {
             JFXNode<Pane, Void> jfxNode = FXMLMvvmLoader.make(this.getClass().getResource("/dev/ikm/komet/kview/controls/editable-value-field.fxml"));
             Pane componentRow = jfxNode.node();

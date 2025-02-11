@@ -15,12 +15,12 @@
  */
 package dev.ikm.komet.kview.klwindows;
 
-import dev.ikm.komet.layout.window.KlWindow;
+import dev.ikm.komet.layout.context.KlContext;
+import dev.ikm.komet.layout.window.KlJournalWindow;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 
 /**
- * The {@code ChapterKlWindow} interface extends the {@link KlWindow} interface
+ * The {@code ChapterKlWindow} interface extends the {@link KlJournalWindow} interface
  * and provides a generic contract for Komet Layout windows that manage
  * a root pane of type {@code T}.
  *
@@ -28,7 +28,7 @@ import javafx.scene.Scene;
  */
 // TODO: This interface is purely a placeholder and temporarily replacement for the original KlWindow interface.
 //       It can be removed once the original KlWindow interface will be updated.
-public interface ChapterKlWindow<T extends Node> extends KlWindow {
+public interface ChapterKlWindow<T extends Node> extends KlJournalWindow<T> {
 
     /**
      * Returns the root pane for this window.
@@ -39,23 +39,4 @@ public interface ChapterKlWindow<T extends Node> extends KlWindow {
      * @return the root pane of this window, or {@code null} if not set
      */
     T getRootPane();
-
-    /**
-     * Provides the {@link Scene} associated with the root pane.
-     * <p>
-     * This default implementation retrieves the scene from the {@code root}
-     * node returned by {@link #getRootPane()}.
-     * If the root pane is {@code null}, this method returns {@code null}.
-     *
-     * @return the {@link Scene} associated with the root pane,
-     * or {@code null} if the root pane is {@code null}
-     */
-    @Override
-    default Scene scene() {
-        final T root = getRootPane();
-        if (root != null) {
-            return root.getScene();
-        }
-        return null;
-    }
 }
