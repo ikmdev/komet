@@ -387,6 +387,8 @@ public class PatternDetailsController {
         //identifierText.setText(patternViewModel.getPatternIdentifierText());
         identifierText.textProperty().bind(patternViewModel.getProperty(PATTERN).map(pf ->
                 String.valueOf(((EntityFacade) pf).toProxy().publicId().asUuidList().getLastOptional().get())));
+        identifierText.textProperty().bind(patternViewModel.getProperty(PATTERN).map(pf ->
+                String.valueOf(patternFacade.toProxy().publicId().asUuidList().getLastOptional().get())));
 
         // capture pattern definition information
         purposeText.textProperty().bind(patternViewModel.getProperty(PURPOSE_TEXT));
