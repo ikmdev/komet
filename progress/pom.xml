@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.47.0-SNAPSHOT</version>
+        <version>1.47.0-jpro-95-exception-thrown-when-creating-new-pattern-window-SNAPSHOT</version>
     </parent>
     <artifactId>progress</artifactId>
     <dependencies>
