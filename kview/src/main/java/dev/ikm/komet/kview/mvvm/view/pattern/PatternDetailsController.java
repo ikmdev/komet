@@ -831,7 +831,7 @@ public class PatternDetailsController {
     private void openPropertiesPanel(ActionEvent event) {
         ToggleButton propertyToggle = (ToggleButton) event.getSource();
         EvtType<PropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? OPEN_PANEL : CLOSE_PANEL;
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType, patternViewModel.getObservableList(FIELDS_COLLECTION).size()));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType));
     }
 
     public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
