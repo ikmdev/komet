@@ -75,7 +75,7 @@ public class SemanticFieldsController {
 
     private ChangeListener fieldPropertyChangeListner  = (obs, oldValue, newValue) -> {
         if(newValue instanceof FieldRecord<?> fieldRecord){
-            Platform.runLater(() -> updateStampVersionsNidsForAllFields(fieldRecord));
+            Platform.runLater(this::updateStampVersionsNidsForAllFields);
         }
     };
 
@@ -103,13 +103,12 @@ public class SemanticFieldsController {
         }
     }
 
-    private void updateStampVersionsNidsForAllFields(FieldRecord<?> fieldRecord) {
+    private void updateStampVersionsNidsForAllFields() {
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
         semanticEntityVersionLatest.ifPresent(ver -> {
             int latestStampNid = ver.stamp().nid();
-            System.out.println("SEMANTIC ENTITY VERSION LATEST STAMP NID : " + ver.stamp().nid());
             observableFields.forEach(observableField -> {
                 //Remove the listener to update the fieldProperty, fieldRecord.
                 observableField.fieldProperty().removeListener(fieldPropertyChangeListner);
