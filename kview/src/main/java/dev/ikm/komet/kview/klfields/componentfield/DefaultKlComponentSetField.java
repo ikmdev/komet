@@ -3,12 +3,15 @@ package dev.ikm.komet.kview.klfields.componentfield;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ObservableView;
+import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLComponentSetControl;
-import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.component.version.field.KlComponentSetField;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.terms.EntityProxy;
+import javafx.scene.Node;
+import javafx.scene.image.Image;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
@@ -24,21 +27,24 @@ public class DefaultKlComponentSetField extends BaseDefaultKlField<IntIdSet> imp
             klComponentSetControl.valueProperty().bindBidirectional(observableComponentSetField.valueProperty());
             node = klComponentSetControl;
         } else {
-            VBox vBox = new VBox();
+            KLReadOnlyComponentSetControl klReadOnlyComponentSetControl = new KLReadOnlyComponentSetControl();
+
+            klReadOnlyComponentSetControl.setTitle(getTitle());
+
             observableComponentSetField.valueProperty().subscribe(intIdSet -> {
-                vBox.getChildren().clear();
-                vBox.getChildren().add(new Label(getTitle()));
+                klReadOnlyComponentSetControl.getItems().clear();
                 intIdSet.forEach(nid -> {
-                    KLReadOnlyComponentControl readOnlyComponentControl = new KLReadOnlyComponentControl();
                     EntityProxy entityProxy = EntityProxy.make(nid);
-                    readOnlyComponentControl.setText(entityProxy.description());
-                    readOnlyComponentControl.setIcon(Identicon.generateIdenticonImage(entityProxy.publicId()));
-                    vBox.getChildren().add(readOnlyComponentControl);
+                    Image icon = Identicon.generateIdenticonImage(entityProxy.publicId());
+
+                    ComponentItem componentItem = new ComponentItem(entityProxy.description(), icon);
+                    klReadOnlyComponentSetControl.getItems().add(componentItem);
                 });
             });
-            node = vBox;
 
+            node = klReadOnlyComponentSetControl;
         }
+
         setKlWidget(node);
     }
 }
