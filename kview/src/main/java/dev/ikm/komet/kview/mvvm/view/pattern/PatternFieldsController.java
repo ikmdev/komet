@@ -488,7 +488,9 @@ public class PatternFieldsController {
 
     @FXML
     private void clearView(ActionEvent actionEvent) {
-        patternFieldsViewModel.setPropertyValue(FIELD_ORDER, 1);
+        //Reset the field order selection to the last value
+        IntegerProperty totalFields = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
+        patternFieldsViewModel.setPropertyValue(FIELD_ORDER, (totalFields.get()+1));
         patternFieldsViewModel.setPropertyValue(DISPLAY_NAME, "");
         patternFieldsViewModel.setPropertyValue(DATA_TYPE, null);
         patternFieldsViewModel.setPropertyValue(PREVIOUS_PATTERN_FIELD, null);

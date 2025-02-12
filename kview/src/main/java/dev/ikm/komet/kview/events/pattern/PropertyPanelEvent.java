@@ -34,6 +34,8 @@ public class PropertyPanelEvent extends Evt {
 
     public static final EvtType<PropertyPanelEvent> ADD_FIELDS_CONFIRMATION = new EvtType<>(CONFIRMATION_PANEL, "ADD_FIELDS_CONFIRMATION");
 
+    private final int totalFields;
+
     /**
      *
      * @param source        the object on which the Event initially occurred
@@ -41,5 +43,21 @@ public class PropertyPanelEvent extends Evt {
      */
     public PropertyPanelEvent(Object source, EvtType<PropertyPanelEvent> eventType) {
         super(source, eventType);
+        totalFields = 0;
+    }
+
+    /**
+     * @param source        the object on which the Event initially occurred
+     * @param eventType     type of the event
+     * @param totalFields   total number of fileds added.
+     */
+
+    public PropertyPanelEvent(Object source, EvtType<PropertyPanelEvent> eventType, int totalFields) {
+        super(source, eventType);
+        this.totalFields = totalFields;
+    }
+
+    public int getTotalFields() {
+        return totalFields;
     }
 }
