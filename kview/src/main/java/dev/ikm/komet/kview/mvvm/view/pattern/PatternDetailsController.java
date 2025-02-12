@@ -147,6 +147,7 @@ public class PatternDetailsController {
     public static final URL PATTERN_PROPERTIES_VIEW_FXML_URL = PatternDetailsController.class.getResource("pattern-properties.fxml");
 
     private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
+    public Text semanticPurposeText;
 
     private Consumer<ToggleButton> reasonerResultsControllerConsumer;
 
@@ -201,12 +202,6 @@ public class PatternDetailsController {
 
     @FXML
     private Button addDefinitionButton;
-
-    @FXML
-    private Text semanticMeaningText;
-
-    @FXML
-    private Text semanticPurposeText;
 
     @FXML
     private Button savePatternButton;
@@ -277,6 +272,8 @@ public class PatternDetailsController {
 
     @FXML
     private void initialize() {
+        purposeText.setText("");
+        meaningText.setText("");
         identifierText.setText("");
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
