@@ -47,10 +47,8 @@ public class ObservableField<T> implements Field<T> {
         }
         valueProperty.addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                int stampNid = handleValueChange(newValue);
-                if(stampNid != 0){
-                    fieldProperty.set(field().withValue(newValue).withSemanticVersionStampNid(stampNid));
-                }
+                handleValueChange(newValue);
+                fieldProperty.set(field().withValue(newValue));
             }
         });
         refreshProperties.addListener((observable, oldValue, newValue) -> {
@@ -64,32 +62,31 @@ public class ObservableField<T> implements Field<T> {
         this(fieldRecord, true);
     }
 
-    private int handleValueChange(Object newValue) {
+    private void handleValueChange(Object newValue) {
         if (writeOnEveryChange && !refreshProperties.get()) {
-           return writeToDatabase(newValue);
+            writeToDatabase(newValue);
         }
-        return 0;
     }
 
     public void writeToDataBase() {
         this.writeToDatabase(value());
     }
 
-    public int writeToDatabase(Object newValue) {
+    public void writeToDatabase(Object newValue) {
         StampRecord stamp = Entity.getStamp(fieldProperty.get().semanticVersionStampNid());
         // Get current version
         SemanticVersionRecord version = Entity.getVersionFast(field().semanticNid(), field().semanticVersionStampNid());
         SemanticRecord semantic = Entity.getFast(field().semanticNid());
         MutableList fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
         fieldsForNewVersion.set(fieldIndex(), newValue);
-
+        System.out.println("BEFORE IF / ELSE STAMP : " +  stamp.nid()   + "  IS STAMP COMMITTED: " + stamp.lastVersion().committed());
         if (stamp.lastVersion().committed()) {
 
             // Create transaction
             Transaction t = Transaction.make();
             // newStamp already written to the entity store.
             StampEntity newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), version.entity());
-
+            System.out.println("IF BLOCK NEW CREATED STAMP : " +  newStamp.nid());
             // Create new version...
             SemanticVersionRecord newVersion = version.with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
 
@@ -97,15 +94,15 @@ public class ObservableField<T> implements Field<T> {
 
             // Entity provider will broadcast the nid of the changed entity.
             Entity.provider().putEntity(analogue);
-            return newStamp.nid();
         } else {
+
+            System.out.println(" IN ELSE BLOCK UNCOMITTED STAMP. CREATED STAMP : " +  stamp.nid());
             SemanticVersionRecord newVersion = version.withFieldValues(fieldsForNewVersion.toImmutable());
             // if a version with the same stamp as newVersion exists, that version will be removed
             // prior to adding the new version so you don't get duplicate versions with the same stamp.
             SemanticRecord analogue = semantic.with(newVersion).build();
             // Entity provider will broadcast the nid of the changed entity.
             Entity.provider().putEntity(analogue);
-            return newVersion.stampNid();
         }
     }
 

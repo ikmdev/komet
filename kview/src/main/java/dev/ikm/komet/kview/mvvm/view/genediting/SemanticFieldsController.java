@@ -32,16 +32,13 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.FieldRecord;
-import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
-import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.entity.StampEntityVersion;
 import dev.ikm.tinkar.entity.StampRecord;
-import dev.ikm.tinkar.entity.StampRecordBuilder;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -78,7 +75,7 @@ public class SemanticFieldsController {
 
     private ChangeListener fieldPropertyChangeListner  = (obs, oldValue, newValue) -> {
         if(newValue instanceof FieldRecord<?> fieldRecord){
-            updateStampVersionsNidsForAllFields(fieldRecord);
+            Platform.runLater(() -> updateStampVersionsNidsForAllFields(fieldRecord));
         }
     };
 
@@ -87,7 +84,6 @@ public class SemanticFieldsController {
         // clear all semantic details.
         editFieldsVBox.setSpacing(8.0);
         editFieldsVBox.getChildren().clear();
-
 
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         if (semantic != null) {
@@ -104,30 +100,24 @@ public class SemanticFieldsController {
             } else {
                 // TODO Add a new semantic based on a pattern (blank fields).
             }
-
         }
     }
 
     private void updateStampVersionsNidsForAllFields(FieldRecord<?> fieldRecord) {
-        StampRecord stampRecord = Entity.getStamp(fieldRecord.semanticVersionStampNid());
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
-        SemanticEntity semanticEntity = Entity.getFast(semantic);
-        semanticEntity.versions();
-        StampEntity<? extends StampEntityVersion> stampEntity = StampRecordBuilder.builder(stampRecord).versions(semanticEntity.versions()).build();
-
-        int altStampNid = stampEntity.nid();
-        int stampNid = fieldRecord.semanticVersionStampNid();
-
-        if(stampNid == altStampNid){
-            System.out.println(" STAMPS NIDS ARE EQUAL...");
-        }
-
-        observableFields.forEach(observableField -> {
-            //Remove the listener to update the fieldProperty, fieldRecord.
-            observableField.fieldProperty().removeListener(fieldPropertyChangeListner);
-            //Update the stampNid for
-            observableField.fieldProperty().set(observableField.field().withSemanticVersionStampNid(altStampNid));
-            observableField.fieldProperty().addListener(fieldPropertyChangeListner);
+        StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
+        Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
+        semanticEntityVersionLatest.ifPresent(ver -> {
+            int latestStampNid = ver.stamp().nid();
+            System.out.println("SEMANTIC ENTITY VERSION LATEST STAMP NID : " + ver.stamp().nid());
+            observableFields.forEach(observableField -> {
+                //Remove the listener to update the fieldProperty, fieldRecord.
+                observableField.fieldProperty().removeListener(fieldPropertyChangeListner);
+                //Update the stampNid with the latest stamp nid value.
+                observableField.fieldProperty().set(observableField.field().withSemanticVersionStampNid(latestStampNid));
+                //Add back the listener.
+                observableField.fieldProperty().addListener(fieldPropertyChangeListner);
+            });
         });
     }
 
@@ -169,7 +159,6 @@ public class SemanticFieldsController {
         EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
 
     }
-
 
     private static void commitTransactionTask(Transaction transaction) {
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
