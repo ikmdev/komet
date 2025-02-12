@@ -28,7 +28,7 @@ public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KL
         textLabel.textProperty().bind(control.textProperty());
         iconImageView.imageProperty().bind(control.iconProperty());
 
-        textLabel.setMaxWidth(Region.USE_PREF_SIZE);
+        textLabel.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(textLabel, Priority.ALWAYS);
 
         iconImageView.setFitWidth(20);
