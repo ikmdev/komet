@@ -87,7 +87,9 @@ public class LidrKlWindow extends AbstractEntityChapterKlWindow {
         setRootPane(lidrJFXNode.node());
 
         // Calls the remove method to remove and concepts that were closed by the user.
-        lidrJFXNode.controller().setOnCloseConceptWindow(windowEvent ->
-                getOnClose().ifPresent(Runnable::run));
+        lidrJFXNode.controller().setOnCloseConceptWindow(windowEvent -> {
+            getOnClose().ifPresent(Runnable::run);
+            // TODO more clean up such as view models and listeners just in case (memory).
+        });
     }
 }

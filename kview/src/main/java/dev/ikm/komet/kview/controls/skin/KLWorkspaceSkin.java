@@ -114,10 +114,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         // --------------------------------------------------------------------
         // 1) Initialize the Desktop Pane
         // --------------------------------------------------------------------
-        this.desktopPane = new DesktopPane(workspace);
+        this.desktopPane = new DesktopPane();
         this.desktopPane.getStyleClass().add(DESKTOP_PANE_STYLE_CLASS);
-        this.desktopPane.setHGap(workspace.getHorizontalGap());
-        this.desktopPane.setVGap(workspace.getVerticalGap());
 
         // --------------------------------------------------------------------
         // 2) Prepare the ScrollPane
@@ -168,14 +166,6 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                 workspaceWindows.forEach(win -> clampWindowPosition(win.getRootPane())));
         registerChangeListener(desktopPane.heightProperty(), o ->
                 workspaceWindows.forEach(win -> clampWindowPosition(win.getRootPane())));
-        registerChangeListener(workspace.horizontalGapProperty(), o -> {
-            desktopPane.setHGap(workspace.getHorizontalGap());
-            desktopPane.requestLayout();
-        });
-        registerChangeListener(workspace.verticalGapProperty(), o -> {
-            desktopPane.setVGap(workspace.getVerticalGap());
-            desktopPane.requestLayout();
-        });
     }
 
     // =========================================================================
@@ -722,7 +712,6 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             workspaceWindows = null;
         }
         getChildren().clear();
-        desktopPane.dispose();
         super.dispose();
     }
 
@@ -751,52 +740,15 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      */
     private static class DesktopPane extends Pane {
 
-        private double hgap = 0.0;
-        private double vgap = 0.0;
-
         private final KLDropRegion dropRegion;
-        private final ListChangeListener<Node> desktopPaneChildrenListener;
 
         /**
          * Constructs a new DesktopPane.
-         *
-         * @param workspace The {@link KLWorkspace} associated with this pane.
          */
-        DesktopPane(final KLWorkspace workspace) {
-            // Listen for direct child removals to keep the workspace
-            // window list consistent if a window node is removed from the pane.
-            desktopPaneChildrenListener = change -> {
-                while (change.next()) {
-                    if (change.wasRemoved()) {
-                        for (Node node : change.getRemoved()) {
-                            workspace.getWindows().removeIf(w -> w.getRootPane() == node);
-                        }
-                    }
-                }
-            };
-            getChildren().addListener(desktopPaneChildrenListener);
-
+        DesktopPane() {
             this.dropRegion = new KLDropRegion();
             dropRegion.setManaged(false);
             dropRegion.setVisible(false);
-        }
-
-        /**
-         * Sets the horizontal gap between items on the desktop pane.
-         *
-         * @param value the new horizontal gap
-         */
-        final void setHGap(double value) {
-            this.hgap = value;
-        }
-
-        /**
-         * Sets the vertical gap between items on the desktop pane.
-         *
-         * @param value the new vertical gap
-         */
-        final void setVGap(double value) {
-            this.vgap = value;
         }
 
         /**
@@ -829,13 +781,6 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         final void hideDropRegion() {
             getChildren().remove(dropRegion);
             dropRegion.setVisible(false);
-        }
-
-        /**
-         * Disposes of this desktop pane, removing the children listener.
-         */
-        final void dispose() {
-            getChildren().removeListener(desktopPaneChildrenListener);
         }
     }
 }

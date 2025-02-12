@@ -39,4 +39,11 @@ public interface ChapterKlWindow<T extends Node> extends KlJournalWindow<T> {
      * @return the root pane of this window, or {@code null} if not set
      */
     T getRootPane();
+
+    /**
+     * Sets a callback that is invoked when this window is closed.
+     *
+     * @param onClose A {@link Runnable} to be executed on close, or null if no action is required.
+     */
+    void setOnClose(Runnable onClose);
 }
