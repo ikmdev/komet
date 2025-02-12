@@ -21,6 +21,8 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import dev.ikm.tinkar.coordinate.ImmutableCoordinate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +34,7 @@ import java.util.Objects;
  * 
  */
 public abstract class ObservableCoordinateAbstract<T extends ImmutableCoordinate> implements ObservableCoordinate<T> {
+    protected static final Logger LOG = LoggerFactory.getLogger(ObservableCoordinateAbstract.class);
     /**
      * Since immutable coordinates are singletons, using SimpleEqualityBasedObjectProperty is not necessary, and
      *  inefficient.

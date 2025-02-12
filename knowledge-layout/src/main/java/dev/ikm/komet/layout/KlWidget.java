@@ -1,21 +1,38 @@
 package dev.ikm.komet.layout;
 
+import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import javafx.collections.ObservableMap;
 import javafx.geometry.*;
-import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 
 import java.util.UUID;
 
 /**
- * KlWidget is an interface contract enabling service discovery of Knowledge Layout Widgets
- * and providing methods to enable layout and configuration of user interacting plugins that extend the
- * JavaFx Scene Graph Node.
+ * The {@code KlWidget} interface defines a contract for a customizable widget
+ * that integrates with a scene graph and provides various layout and styling
+ * functionalities. It extends {@code KlGadget} and genericizes the
+ * {@code Node} class, representing the underlying JavaFX node.
+ *
+ * @param <T> the type of {@code Node} that this widget extends or encapsulates.
  */
 
-public interface KlWidget {
+public non-sealed interface KlWidget<T extends Parent> extends KlGadget<T> {
+
+    default KometPreferences preferences() {
+        // TODO eliminate this after refactoring existing KlWidgets to support KlGadget, and factories with preferences.
+        throw new UnsupportedOperationException("Please override and implement...");
+    }
+    /**
+     * Retrieves the widget representation for this KlWidget.
+     *
+     * @return The widget instance, represented by the specific implementation of the KlWidget.
+     */
+    default T fxGadget() {
+        return klWidget();
+    }
 
     /**
      * Retrieves the scene graph node that presents this KlWidget.
@@ -23,7 +40,7 @@ public interface KlWidget {
      * @param <SGN> The type of the scene graph node extending {@code Node}.
      * @return The scene graph node instance.
      */
-    default <SGN extends Node> SGN klWidget() {
+    default <SGN extends Parent> SGN klWidget() {
         return (SGN) this;
     }
 

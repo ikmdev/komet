@@ -1,6 +1,7 @@
 package dev.ikm.komet.layout.component.version;
 
 import dev.ikm.komet.framework.observable.ObservableStampVersion;
+import javafx.beans.property.ObjectProperty;
 
 
 /**
@@ -12,5 +13,14 @@ import dev.ikm.komet.framework.observable.ObservableStampVersion;
  *
  * @see KlVersionPane
  * @see ObservableStampVersion
- */public interface KlStampVersionPane extends KlVersionPane<ObservableStampVersion> {
+ */
+public non-sealed interface KlStampVersionPane extends KlVersionPane<ObservableStampVersion> {
+
+     default ObservableStampVersion stampVersion() {
+        return KlVersionPane.super.version();
+    }
+
+    default ObjectProperty<ObservableStampVersion> stampVersionProperty() {
+         return versionProperty();
+    }
 }

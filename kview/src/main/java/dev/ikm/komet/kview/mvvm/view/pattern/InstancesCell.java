@@ -9,7 +9,6 @@ import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.STATED_NAVIG
 import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.UK_DIALECT_PATTERN_PROXY;
 import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.US_DIALECT_PATTERN_PROXY;
 import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.VERSION_CONTROL_PATH_ORIGIN_PATTERN_PROXY;
-import com.google.common.base.CaseFormat;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
@@ -103,7 +102,7 @@ public class InstancesCell<T> extends ListCell<T> {
                 // generate the subtitle of status and last updated
                 EntityVersion latest = (EntityVersion) stampCalculator.latest(entity).get();
                 LocalDate date = Instant.ofEpochMilli(latest.stamp().time()).atZone(ZoneId.systemDefault()).toLocalDate();
-                String instanceSubTitle = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, latest.stamp().state().toString())
+                String instanceSubTitle = latest.stamp().state().toString()
                         + ", Last Updated " + DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(date);
                 if (entity instanceof SemanticEntity<?> semanticEntity) {
                     if (semanticEntity.patternNid() == IDENTIFIER_PATTERN_PROXY.nid()) {
