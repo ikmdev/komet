@@ -11,7 +11,7 @@
     <groupId>dev.ikm.komet</groupId>
     <artifactId>komet-parent</artifactId>
     <name>KOMET</name>
-    <version>1.47.0-IIA-1273-text-overlap-SNAPSHOT</version>
+    <version>1.47.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <inceptionYear>2015</inceptionYear>
     <licenses>
