@@ -8,14 +8,14 @@ import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.ObjectProperty;
-import javafx.scene.Node;
+import javafx.scene.Parent;
 
 public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
 
     public DefaultKlComponentField(ObservableField<EntityProxy> observableComponentField, ObservableView observableView, boolean isEditable) {
         super(observableComponentField, observableView, isEditable);
 
-        Node node;
+        Parent node;
         if (isEditable) {
             KLComponentControl componentControl = new KLComponentControl();
 

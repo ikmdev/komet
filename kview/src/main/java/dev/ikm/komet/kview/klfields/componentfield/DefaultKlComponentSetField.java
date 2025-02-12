@@ -9,7 +9,7 @@ import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.component.version.field.KlComponentSetField;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
@@ -17,7 +17,7 @@ public class DefaultKlComponentSetField extends BaseDefaultKlField<IntIdSet> imp
 
     public DefaultKlComponentSetField(ObservableField<IntIdSet> observableComponentSetField, ObservableView observableView, boolean isEditable) {
         super(observableComponentSetField, observableView, isEditable);
-        Node node;
+        Parent node;
         if (isEditable) {
             KLComponentSetControl klComponentSetControl = new KLComponentSetControl();
             klComponentSetControl.setTitle(getTitle());

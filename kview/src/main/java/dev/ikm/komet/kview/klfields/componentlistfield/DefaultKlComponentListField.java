@@ -10,7 +10,7 @@ import dev.ikm.komet.layout.component.version.field.KlComponentListField;
 import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.ObjectProperty;
-import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
@@ -18,7 +18,7 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
 
     public DefaultKlComponentListField(ObservableField<IntIdList> observableComponentListField, ObservableView observableView, boolean isEditable) {
         super(observableComponentListField, observableView, isEditable);
-        Node node;
+        Parent node;
         ObjectProperty<IntIdList> observableProperty = observableComponentListField.valueProperty();
         if (isEditable) {
             KLComponentListControl klComponentListControl = new KLComponentListControl();
