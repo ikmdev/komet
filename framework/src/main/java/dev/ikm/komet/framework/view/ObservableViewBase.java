@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.view;
 
+import javafx.beans.Observable;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -55,10 +56,15 @@ public abstract class ObservableViewBase
      * a direct lambda expression, you will not be able to remove the listener, since each method reference will create
      * a new object, and they won't compare equal using object identity.
      * https://stackoverflow.com/questions/42146360/how-do-i-remove-lambda-expressions-method-handles-that-are-used-as-listeners
+     *
+     * TODO: updating to use the new Subscription interface (since JavaFX 21 https://download.java.net/java/early_access/javafx23/docs/api/javafx.base/javafx/util/Subscription.html)
+     * may be a better solution, and worth a refactor.
      */
     private final ChangeListener<StampCoordinateRecord> stampChangeListener = this::stampChanged;
     private final ChangeListener<NavigationCoordinateRecord> navigationChangedListener = this::navigationChanged;
-    private final ListChangeListener<ObservableLanguageCoordinateBase> languageCoordinateListener = this::languageChanged;
+    private final ListChangeListener<ObservableLanguageCoordinateBase> languageCoordinateListListener = this::languageCoordinateListChanged;
+    private final ChangeListener<LanguageCoordinateRecord>  languageCoordinateChangeListener = this::languageCoordinateChanged;
+
     private final ChangeListener<LogicCoordinateRecord> logicCoordinateListener = this::logicChanged;
     private final ChangeListener<EditCoordinateRecord> editCoordinateListener = this::editChanged;
 
@@ -116,9 +122,17 @@ public abstract class ObservableViewBase
         return ViewCalculatorWithCache.getCalculator(getValue());
     }
 
-    private void languageChanged(ListChangeListener.Change<? extends ObservableLanguageCoordinateBase> c) {
+    private void languageCoordinateListChanged(ListChangeListener.Change<? extends ObservableLanguageCoordinateBase> c) {
         MutableList<LanguageCoordinateRecord> languageRecordList = Lists.mutable.empty();
         c.getList().forEach(observableLanguageCoordinateBase -> languageRecordList.add(observableLanguageCoordinateBase.getValue()));
+        this.setValue(this.getValue().withLanguageCoordinateList(languageRecordList.toImmutable()));
+    }
+
+    private void languageCoordinateChanged(ObservableValue<? extends LanguageCoordinateRecord> observableValue,
+                                           LanguageCoordinateRecord oldValue,
+                                           LanguageCoordinateRecord newValue) {
+        MutableList<LanguageCoordinateRecord> languageRecordList = Lists.mutable.empty();
+        languageCoordinates.forEach(observableLanguageCoordinateBase -> languageRecordList.add(observableLanguageCoordinateBase.getValue()));
         this.setValue(this.getValue().withLanguageCoordinateList(languageRecordList.toImmutable()));
     }
 
@@ -190,7 +204,10 @@ public abstract class ObservableViewBase
     protected void addListeners() {
         this.stampCoordinateObservable.addListener(this.stampChangeListener);
         this.navigationCoordinateObservable.addListener(this.navigationChangedListener);
-        this.languageCoordinates.addListener(this.languageCoordinateListener);
+        this.languageCoordinates.addListener(this.languageCoordinateListListener);
+        for (ObservableLanguageCoordinateBase languageCoordinate : this.languageCoordinates) {
+            languageCoordinate.addListener( this.languageCoordinateChangeListener);
+        }
         this.logicCoordinateObservable.addListener(this.logicCoordinateListener);
         listening.set(true);
     }
@@ -200,7 +217,10 @@ public abstract class ObservableViewBase
     protected void removeListeners() {
         this.stampCoordinateObservable.removeListener(this.stampChangeListener);
         this.navigationCoordinateObservable.removeListener(this.navigationChangedListener);
-        this.languageCoordinates.removeListener(this.languageCoordinateListener);
+        this.languageCoordinates.removeListener(this.languageCoordinateListListener);
+        for (ObservableLanguageCoordinateBase languageCoordinate : this.languageCoordinates) {
+            languageCoordinate.removeListener( this.languageCoordinateChangeListener);
+        }
         this.logicCoordinateObservable.removeListener(this.logicCoordinateListener);
         listening.set(false);
     }
