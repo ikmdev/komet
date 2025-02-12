@@ -6,7 +6,7 @@ import dev.ikm.komet.kview.controls.KLImageControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyImageControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.component.version.field.KlImageField;
-import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.image.Image;
 
 public class DefaultKlImageField extends BaseDefaultKlField<Image> implements KlImageField {
@@ -17,7 +17,7 @@ public class DefaultKlImageField extends BaseDefaultKlField<Image> implements Kl
     public DefaultKlImageField(ObservableField<Image> observableFloatField, ObservableView observableView, boolean isEditable) {
         super(observableFloatField, observableView, isEditable);
 
-        Node node;
+        Parent node;
         if (isEditable) {
             imageControl.setTitle("Image"); //TODO: for now the title is hardcoded but we need to get it from the ObservableField
 
