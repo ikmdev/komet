@@ -1,6 +1,8 @@
 package dev.ikm.komet.kview.klwindows;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.layout.KlGadget;
+import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.scene.layout.Pane;

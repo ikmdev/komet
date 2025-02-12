@@ -2,6 +2,9 @@ package dev.ikm.komet.kview.klwindows.genediting;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindowFactory;
+import dev.ikm.komet.layout.context.KlContextFactory;
+import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
+import dev.ikm.komet.layout.window.KlJournalWindow;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.terms.EntityFacade;
 
@@ -26,13 +29,32 @@ public class GenEditingKlWindowFactory extends AbstractEntityChapterKlWindowFact
     }
 
     @Override
-    public String klWidgetDescription() {
+    public Class<KlJournalWindow> klInterfaceClass() {
+        return KlJournalWindow.class;
+    }
+
+    @Override
+    public Class<? extends KlJournalWindow> klImplementationClass() {
+        return GenEditingKlWindow.class;
+    }
+
+    @Override
+    public String klDescription() {
         return "General Editing Chapter Window are displayed inside of the Journal Window desktop workspace";
     }
 
     @Override
-    public Class<?> klWidgetImplementationClass() {
-        return GenEditingKlWindow.class;
+    public KlJournalWindow create(KlPreferencesFactory preferencesFactory) {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
+    @Override
+    public KlJournalWindow createWithContext(KlPreferencesFactory preferencesFactory, KlContextFactory contextFactory) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
+    public KlJournalWindow restore(KometPreferences preferences) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
 }

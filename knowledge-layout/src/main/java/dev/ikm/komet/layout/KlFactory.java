@@ -1,10 +1,53 @@
 package dev.ikm.komet.layout;
 
+import dev.ikm.komet.layout.context.KlContext;
+import dev.ikm.komet.layout.context.KlContextFactory;
+import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
+import dev.ikm.komet.preferences.KometPreferences;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 
-public interface KlFactory {
+/**
+ * Defines a factory for creating and restoring instances of {@link KlGadget}.
+ * This interface provides methods for retrieving metadata about the factory,
+ * such as the names and descriptions of the gadgets it produces, and supports
+ * customization for layout tools through palette icons.
+ *
+ * @param <T> The type of {@link KlGadget} produced by this factory.
+ */
+public interface KlFactory<T extends KlGadget> {
+
+    /**
+     * Creates an instance of type T using the provided KlPreferencesFactory.
+     *
+     * @param preferencesFactory an instance of KlPreferencesFactory used to provide
+     *                           necessary preferences for creating the object.
+     * @return an instance of type T created using the given preferencesFactory.
+     */
+    T create(KlPreferencesFactory preferencesFactory);
+
+    /**
+     * Creates an instance of type T using the provided KlPreferencesFactory
+     * and KlContextFactory. This method utilizes the preferences and context
+     * configurations to instantiate the desired object.
+     *
+     * @param preferencesFactory an instance of KlPreferencesFactory used to
+     *                           provide necessary preferences for creating the object.
+     * @param contextFactory an instance of KlContextFactory used to provide
+     *                       the contextual information required for object creation.
+     * @return an instance of type T created using the given preferencesFactory
+     *         and contextFactory.
+     */
+    T createWithContext(KlPreferencesFactory preferencesFactory, KlContextFactory contextFactory);
+    /**
+     * Restores an instance of type T using the provided preferences.
+     *
+     * @param preferences an instance of KometPreferences that contains the
+     *                    configuration or state required to restore the object.
+     * @return an instance of type T restored using the given preferences.
+     */
+    T restore(KometPreferences preferences);
 
     /**
      * Provides a palette icon for the layout tool that represents this factory.
@@ -12,46 +55,46 @@ public interface KlFactory {
      * @return A Node object representing the visual icon of the layout palette.
      */
     default Node layoutPaletteIcon() {
-        Label paletteIcon = new Label(klWidgetName());
-        Tooltip.install(paletteIcon, new Tooltip(klWidgetDescription()));
+        Label paletteIcon = new Label(klGadgetName());
+        Tooltip.install(paletteIcon, new Tooltip(klDescription()));
         return paletteIcon;
     }
 
     /**
-     * Retrieves the KlWidget interface of the KlWidget produced by the factory.
+     * Retrieves the KlGadget interface of the KlGadget produced by the factory.
       *
      * @return A {@link Class} object representing the class type of the field
      *         interface extending {@link KlWidget}.
      */
-    Class<? extends KlWidget> klWidgetInterfaceClass();
+    Class<T> klInterfaceClass();
 
     /**
-     * Retrieves the concrete class of the KlWidget
+     * Retrieves the concrete class of the KlGadget
      * that is produced by the factory.
      *
      * @return A {@link Class} object representing the class type of the implementation
-     *         of {@link KlWidget} associated with this factory.
+     *         of {@link KlGadget} associated with this factory.
      */
-    Class<?> klWidgetImplementationClass();
+    Class<? extends T> klImplementationClass();
 
 
     /**
-     * Retrieves the name of the widget created by this factory.
+     * Retrieves the name of the KlWidget or KlGadget created by this factory.
      *
      * @return A string representing the name of the widget.
      */
-    default String klWidgetName() {
-        return camelCaseToWords(this.klWidgetImplementationClass().getSimpleName());
+    default String klGadgetName() {
+        return camelCaseToWords(this.klImplementationClass().getSimpleName());
     }
 
     /**
-     * Retrieves a description of the widget created by this factory.
+     * Retrieves a description of the gadget created by this factory.
      *
-     * @return A string representing the description of the widget.
+     * @return A string representing the description of the gadget.
      */
-    default String klWidgetDescription() {
-        return "A Knowledge Layout Widget that implements the " +
-                camelCaseToWords(this.klWidgetInterfaceClass().getSimpleName() +
+    default String klDescription() {
+        return "A Knowledge Layout Widget or Gadget that implements the " +
+                camelCaseToWords(this.klInterfaceClass().getSimpleName() +
                         " interface.");
     }
 

@@ -3,28 +3,40 @@ package dev.ikm.komet.layout.component;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.layout.KlEntityType;
-import dev.ikm.komet.layout.KlWidgetFactory;
+import dev.ikm.komet.layout.KlFactory;
+import dev.ikm.komet.layout.KlWidget;
+import dev.ikm.komet.layout.context.KlContextFactory;
+import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 
 /**
- * A factory interface for creating instances of KlComponentPane associated with a specific
- * type of ObservableEntity. Provides methods to integrate user preferences and view-related
- * configurations into the creation of component panes.
+ * A factory interface for creating instances of {@code KlComponentPane} associated
+ * with a specific type of {@code ObservableEntity}. This interface extends
+ * {@code KlEntityType} and {@code KlFactory}, providing methods for creating
+ * component panes that are associated with a given observable entity and
+ * initialized with user preferences. Implementations of this factory specialize
+ * in creating specific types of component panes for various observable entities.
  *
- * @param <OE> the type of ObservableEntity that this factory works with
+ * @param <T>  the specific type of {@code KlComponentPane} created by this factory
+ * @param <OE> the type of {@code ObservableEntity} associated with the created component pane
  */
-public interface KlComponentPaneFactory<OE extends ObservableEntity> extends KlWidgetFactory, KlEntityType<OE> {
+public sealed interface KlComponentPaneFactory<T extends KlComponentPane, OE extends ObservableEntity>
+        extends KlEntityType<OE>, KlFactory<T>
+        permits KlConceptPaneFactory, KlGenericComponentPaneFactory, KlPatternPaneFactory, KlSemanticPaneFactory, KlStampPaneFactory {
 
     /**
-     * Creates a KlComponentPane instance for the given observable entity, observable view,
-     * and user preferences.
+     * Creates an instance of type T, associates it with the provided {@code ObservableEntity},
+     * and initializes it using the specified {@code KlPreferencesFactory}.
      *
-     * @param observableEntity the observable entity of type OE to associate with the component pane
-     * @param observableView the observable view that provides the view-related coordinate settings
-     * @param preferences the user preferences to configure the component pane
-     * @return an instance of KlComponentPane configured with the provided parameters
+     * @param observableEntity the observable entity of type {@code OE} to be associated with the created component pane
+     * @param preferencesFactory an instance of {@code KlPreferencesFactory} used to provide
+     *                           preferences for initializing the created component pane
+     * @return an instance of type {@code T} that is initialized with the given preferences and associated with the provided observable entity
      */
-    KlComponentPane<OE> create(OE observableEntity,
-                           ObservableView observableView,
-                           KometPreferences preferences);
+    default T create(OE observableEntity,
+                     KlPreferencesFactory preferencesFactory) {
+        T componentPane = create(preferencesFactory);
+        componentPane.componentProperty().setValue(observableEntity);
+        return componentPane;
+    }
 }
