@@ -5,29 +5,48 @@ import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.kview.controls.KLImageControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyImageControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
-import dev.ikm.komet.layout.component.version.field.KlImageField;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 
-public class DefaultKlImageField extends BaseDefaultKlField<Image> implements KlImageField {
-    // TODO: For now we are using only one instance of each Image Data type control so we can bind them together
-    private static KLImageControl imageControl = new KLImageControl();
-    private static KLReadOnlyImageControl readOnlyImageControl = new KLReadOnlyImageControl();
+import java.io.ByteArrayInputStream;
 
-    public DefaultKlImageField(ObservableField<Image> observableFloatField, ObservableView observableView, boolean isEditable) {
-        super(observableFloatField, observableView, isEditable);
+public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
+
+    public DefaultKlImageField(ObservableField<byte[]> observableImageField, ObservableView observableView, boolean isEditable) {
+        super(observableImageField, observableView, isEditable);
 
         Node node;
         if (isEditable) {
-            imageControl.setTitle("Image"); //TODO: for now the title is hardcoded but we need to get it from the ObservableField
+            KLImageControl imageControl = new KLImageControl();
+
+            byte[] imageBytes = observableImageField.value();
+
+            // Convert byte array to Image and set it on the control
+            imageControl.setImage(newImageFromByteArray(imageBytes));
 
             node = imageControl;
         } else {
-            readOnlyImageControl.setTitle("Image"); //TODO: for now the title is hardcoded but we need to get it from the ObservableField
-            readOnlyImageControl.imageFileProperty().bind(imageControl.imageFileProperty()); //TODO: this should later be bound to the ObservableField
+            KLReadOnlyImageControl readOnlyImageControl = new KLReadOnlyImageControl();
+
+            byte[] imageBytes = observableImageField.value(); // Your byte array here
+
+            // Convert byte array to Image and set it on the control
+            readOnlyImageControl.setImage(newImageFromByteArray(imageBytes));
+            observableImageField.valueProperty().subscribe(newByteArray -> {
+                readOnlyImageControl.setImage(newImageFromByteArray(imageBytes));
+            });
+
+            // Title
+            readOnlyImageControl.setTitle(getTitle());
 
             node = readOnlyImageControl;
         }
         setKlWidget(node);
+    }
+
+    private Image newImageFromByteArray(byte[] imageByteArray) {
+        ByteArrayInputStream bis = new ByteArrayInputStream(imageByteArray);
+        Image image = new Image(bis);
+        return image;
     }
 }

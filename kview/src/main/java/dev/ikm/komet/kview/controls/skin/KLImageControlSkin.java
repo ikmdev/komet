@@ -10,7 +10,6 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -24,7 +23,6 @@ import java.io.File;
 public class KLImageControlSkin extends SkinBase<KLImageControl> {
     private static final PseudoClass IMAGE_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("image-selected");
 
-    private static final String NO_SELECTION_TEXT_FIELD_TEXT = "No Selection";
     private static final String ATTACH_BUTTON_TEXT = "ATTACH IMAGE";
 
     private final VBox mainContainer = new VBox();
@@ -105,7 +103,7 @@ public class KLImageControlSkin extends SkinBase<KLImageControl> {
     }
 
     private void onClearAction(MouseEvent mouseEvent) {
-        getSkinnable().setImageFile(null);
+        getSkinnable().setImage(null);
     }
 
     private void attachImageAction(ActionEvent actionEvent) {
@@ -123,12 +121,13 @@ public class KLImageControlSkin extends SkinBase<KLImageControl> {
 
         // Show open file dialog
         File selectedFile = fileChooser.showOpenDialog(control.getScene().getWindow());
+        Image image = new Image(selectedFile.toURI().toString());
 
-        getSkinnable().setImageFile(selectedFile);
+        getSkinnable().setImage(image);
     }
 
     private void initImage(KLImageControl control) {
-        control.imageFileProperty().addListener(observable -> {
+        control.imageProperty().addListener(observable -> {
             updateImage(control);
         });
         updateImage(control);
@@ -140,21 +139,17 @@ public class KLImageControlSkin extends SkinBase<KLImageControl> {
     }
 
     private void updatePromptTextAndClearButtonVisibility(KLImageControl control) {
-        NodeUtils.setShowing(promptTextLabel, control.getImageFile() == null);
-        NodeUtils.setShowing(clearContainer, control.getImageFile() != null);
+        NodeUtils.setShowing(promptTextLabel, control.getImage() == null);
+        NodeUtils.setShowing(clearContainer, control.getImage() != null);
     }
 
     private void updateImageToShow(KLImageControl control) {
-        if (control.getImageFile() == null) {
+        if (control.getImage() == null) {
             imageView.setImage(promptImage);
 
             pseudoClassStateChanged(IMAGE_SELECTED_PSEUDO_CLASS, false);
         } else {
-            File imageFile = control.getImageFile();
-            Image image = new Image(imageFile.toURI().toString());
-            String fileName = imageFile.getName();
-
-            imageView.setImage(image);
+            imageView.setImage(control.getImage());
 
             pseudoClassStateChanged(IMAGE_SELECTED_PSEUDO_CLASS, true);
         }

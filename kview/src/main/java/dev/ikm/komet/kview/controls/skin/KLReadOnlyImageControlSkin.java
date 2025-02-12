@@ -4,15 +4,10 @@ import dev.ikm.komet.kview.NodeUtils;
 import dev.ikm.komet.kview.controls.KLReadOnlyImageControl;
 import dev.ikm.komet.kview.controls.KometIcon;
 import javafx.css.PseudoClass;
-import javafx.scene.control.Label;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-
-import java.io.File;
 
 public class KLReadOnlyImageControlSkin extends KLReadOnlyBaseControlSkin<KLReadOnlyImageControl> {
     private static final PseudoClass IMAGE_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("image-selected");
@@ -44,7 +39,7 @@ public class KLReadOnlyImageControlSkin extends KLReadOnlyBaseControlSkin<KLRead
     }
 
     private void initImage(KLReadOnlyImageControl control) {
-        control.imageFileProperty().addListener(observable -> {
+        control.imageProperty().addListener(observable -> {
             updateImage(control);
         });
         updateImage(control);
@@ -56,20 +51,16 @@ public class KLReadOnlyImageControlSkin extends KLReadOnlyBaseControlSkin<KLRead
     }
 
     private void updatePromptTextVisibility(KLReadOnlyImageControl control) {
-        NodeUtils.setShowing(promptTextLabel, control.getImageFile() == null);
+        NodeUtils.setShowing(promptTextLabel, control.getImage() == null);
     }
 
     private void updateImageToShow(KLReadOnlyImageControl control) {
-        if (control.getImageFile() == null) {
+        if (control.getImage() == null) {
             imageView.setImage(promptImage);
 
             pseudoClassStateChanged(IMAGE_SELECTED_PSEUDO_CLASS, false);
         } else {
-            File imageFile = control.getImageFile();
-            Image image = new Image(imageFile.toURI().toString());
-            String fileName = imageFile.getName();
-
-            imageView.setImage(image);
+            imageView.setImage(control.getImage());
 
             pseudoClassStateChanged(IMAGE_SELECTED_PSEUDO_CLASS, true);
         }
