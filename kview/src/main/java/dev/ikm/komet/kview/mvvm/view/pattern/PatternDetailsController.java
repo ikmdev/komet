@@ -203,12 +203,6 @@ public class PatternDetailsController {
     private Button addDefinitionButton;
 
     @FXML
-    private Text semanticMeaningText;
-
-    @FXML
-    private Text semanticPurposeText;
-
-    @FXML
     private Button savePatternButton;
 
     // pattern definition fields
@@ -277,6 +271,8 @@ public class PatternDetailsController {
 
     @FXML
     private void initialize() {
+        purposeText.setText("");
+        meaningText.setText("");
         identifierText.setText("");
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
