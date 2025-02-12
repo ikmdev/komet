@@ -7,13 +7,13 @@ import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.component.version.field.KlBooleanField;
 import javafx.beans.property.ObjectProperty;
-import javafx.scene.Node;
+import javafx.scene.Parent;
 
 public class DefaultKlBooleanField extends BaseDefaultKlField<Boolean> implements KlBooleanField {
     public DefaultKlBooleanField(ObservableField<Boolean> observableBooleanField, ObservableView observableView, boolean isEditable) {
         super(observableBooleanField, observableView, isEditable);
 
-        Node klWidget;
+        Parent klWidget;
         if (isEditable) {
             KLBooleanControl klBooleanControl = new KLBooleanControl();
 
