@@ -23,6 +23,7 @@ import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
@@ -98,6 +99,11 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     private Timeline autoScrollTimeline;
 
     /**
+     * Internal property key for storing the clamp-listener reference in each window’s properties map.
+     */
+    private static final String CLAMP_WINDOW_POSITION_LISTENER = "clampWindowPositionListener";
+
+    /**
      * Constructs a new skin for the provided {@link KLWorkspace}.
      *
      * @param workspace The KLWorkspace to be skinned.
@@ -129,12 +135,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         this.windowsListChangeListener = change -> {
             while (change.next()) {
                 if (change.wasRemoved()) {
-                    // Remove the ChapterKlWindows' root panes from the desktop
-                    desktopPane.getChildren().removeAll(
-                            change.getRemoved().stream()
-                                    .map(ChapterKlWindow::getRootPane)
-                                    .toList()
-                    );
+                    // For each removed window, remove it from the workspace
+                    change.getRemoved().forEach(this::removeWindow);
                 }
                 if (change.wasAdded()) {
                     // For each newly added window, place it in the workspace
@@ -162,6 +164,10 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         // 5) Listen for property changes that affect layout
         // --------------------------------------------------------------------
         registerChangeListener(workspace.windowsProperty(), o -> updateWorkspaceWindows());
+        registerChangeListener(desktopPane.widthProperty(), o ->
+                workspaceWindows.forEach(win -> clampWindowPosition(win.getRootPane())));
+        registerChangeListener(desktopPane.heightProperty(), o ->
+                workspaceWindows.forEach(win -> clampWindowPosition(win.getRootPane())));
         registerChangeListener(workspace.horizontalGapProperty(), o -> {
             desktopPane.setHGap(workspace.getHorizontalGap());
             desktopPane.requestLayout();
@@ -336,6 +342,15 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         // Make the window draggable/resizable
         new WindowSupport(windowPanel, desktopPane);
 
+        // Add listeners to keep the window in bounds
+        final ChangeListener<? super Number> clampListener =
+                (obs, oldVal, newVal) -> clampWindowPosition(windowPanel);
+        windowPanel.translateXProperty().addListener(clampListener);
+        windowPanel.translateYProperty().addListener(clampListener);
+        windowPanel.widthProperty().addListener(clampListener);
+        windowPanel.heightProperty().addListener(clampListener);
+        windowPanel.getProperties().put(CLAMP_WINDOW_POSITION_LISTENER, clampListener);
+
         // Apply a maximum height constraint to the window panel
         windowPanel.setMaxHeight(KLWorkspace.MAX_WINDOW_HEIGHT);
 
@@ -407,6 +422,28 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
             // Auto-scroll the workspace to reveal the newly placed window
             autoScrollToTopEdge(windowPanel);
+        }
+    }
+
+    /**
+     * Removes a {@link ChapterKlWindow} from the desktop pane and detaches any
+     * associated clamp listeners.
+     *
+     * @param window the window to remove
+     */
+    private void removeWindow(ChapterKlWindow<Pane> window) {
+        final Pane windowPanel = window.getRootPane();
+        desktopPane.getChildren().remove(windowPanel);
+
+        // Remove clamp listeners stored in the window's properties
+        if (windowPanel.getProperties().containsKey(CLAMP_WINDOW_POSITION_LISTENER)) {
+            @SuppressWarnings("unchecked") final ChangeListener<? super Number> clampListener =
+                    (ChangeListener<? super Number>) windowPanel.getProperties().get(CLAMP_WINDOW_POSITION_LISTENER);
+            windowPanel.translateXProperty().removeListener(clampListener);
+            windowPanel.translateYProperty().removeListener(clampListener);
+            windowPanel.widthProperty().removeListener(clampListener);
+            windowPanel.heightProperty().removeListener(clampListener);
+            windowPanel.getProperties().remove(CLAMP_WINDOW_POSITION_LISTENER);
         }
     }
 
@@ -619,6 +656,55 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         StackPane viewport = (StackPane) desktopScrollPane.lookup(".viewport");
         if (viewport != null) {
             viewport.setCursor(cursor);
+        }
+    }
+
+    /**
+     * Clamps the position and size of the specified window pane so that it remains fully visible
+     * within the bounds of the desktop pane.
+     * <p>
+     * This method adjusts the pane's horizontal (translateX) and vertical (translateY) positions
+     * to ensure that the entire window fits inside the desktop pane. If any part of the window
+     * extends beyond the desktop boundaries, its position is modified to bring it back into view.
+     * Additionally, if the window's size exceeds the dimensions of the desktop pane, the preferred
+     * width and height are reduced accordingly.
+     * <p>
+     * Typically, this method is registered as a change listener on the pane's translate and size
+     * properties (i.e., {@code translateXProperty()}, {@code translateYProperty()},
+     * {@code widthProperty()}, and {@code heightProperty()}) to dynamically enforce that the window
+     * remains within the visible workspace area.
+     *
+     * @param pane the window pane to be clamped within the desktop pane's boundaries.
+     */
+    private void clampWindowPosition(Pane pane) {
+        final double desktopPaneWidth = desktopPane.getWidth();
+        final double desktopPaneHeight = desktopPane.getHeight();
+        final double windowWidth = pane.getWidth();
+        final double windowHeight = pane.getHeight();
+
+        if (desktopPaneWidth <= 0 || desktopPaneHeight <= 0 || windowWidth <= 0 || windowHeight <= 0) {
+            return;
+        }
+
+        final double newX = pane.getTranslateX();
+        final double newY = pane.getTranslateY();
+
+        if (newX < 0) {
+            pane.setTranslateX(0);
+        } else if (newX + windowWidth > desktopPaneWidth) {
+            pane.setTranslateX(desktopPaneWidth - windowWidth);
+        }
+        if (newY < 0) {
+            pane.setTranslateY(0);
+        } else if (newY + windowHeight > desktopPaneHeight) {
+            pane.setTranslateY(desktopPaneHeight - windowHeight);
+        }
+
+        if (pane.getWidth() > desktopPaneWidth) {
+            pane.setPrefWidth(desktopPaneWidth);
+        }
+        if (pane.getHeight() > desktopPaneHeight) {
+            pane.setPrefHeight(desktopPaneHeight);
         }
     }
 
