@@ -103,6 +103,11 @@ import static dev.ikm.komet.kview.controls.KLWorkspace.*;
 public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
     /**
+     * Internal property key for storing the clamp-listener reference in each window’s properties map.
+     */
+    private static final String CLAMP_WINDOW_POSITION_LISTENER = "clampWindowPositionListener";
+
+    /**
      * The pane that holds all {@link ChapterKlWindow} nodes within the workspace.
      * This pane is scrollable through a {@link ScrollPane}.
      */
@@ -134,9 +139,10 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     private Timeline autoScrollTimeline;
 
     /**
-     * Internal property key for storing the clamp-listener reference in each window’s properties map.
+     * The flag to indicate whether this is the first time the skin is being initialized.
+     * Used to prevent unnecessary auto-scrolling during the initial setup.
      */
-    private static final String CLAMP_WINDOW_POSITION_LISTENER = "clampWindowPositionListener";
+    private boolean firstTime = true;
 
     /**
      * Constructs a new skin for the provided {@link KLWorkspace}.
@@ -186,6 +192,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         for (ChapterKlWindow<Pane> window : workspaceWindows) {
             addWindow(window);
         }
+
+        // Enable auto-scrolling after the initial setup
+        firstTime = false;
 
         // --------------------------------------------------------------------
         // 4) Configure user interactions (panning and drag-drop)
@@ -425,6 +434,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         final double defaultWinWidth = DEFAULT_WINDOW_WIDTH;
         final double defaultWinHeight = DEFAULT_WINDOW_HEIGHT;
         final double hgap = workspace.getHorizontalGap();
+        final double vgap = workspace.getVerticalGap();
 
         // Identify which row occupant(s) might be relevant by checking vertical overlap
         final List<Node> visibleWindows = desktopPane.getChildren().stream()
@@ -490,13 +500,14 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                 // We'll define a vertical position for the drop region.
                 double occupantRight = left.getMaxX();
                 double yTop = Math.min(left.getMinY(), right.getMinY());
+                yTop = Math.max(yTop, vgap);
 
                 // 1) If enough space for the default-size window -> BOX
                 if (gapSize >= (defaultWinWidth + 2 * hgap)) {
                     final double boxX = occupantRight + hgap;
                     // Ensure the BOX does not exceed the gap
                     if (boxX + defaultWinWidth <= gapEndX) {
-                        double boxY = yTop + 5.0;
+                        double boxY = yTop;
                         double boxHeight = defaultWinHeight;
 
                         BoundingBox boxBounds = new BoundingBox(boxX, boxY, defaultWinWidth, boxHeight);
@@ -505,12 +516,12 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                 }
 
                 // 2) Otherwise, check if the gap is at least hgap to show a LINE
-                if (gapSize >= hgap - LINE.getWidth() / 2.0) {
+                else if (gapSize >= hgap - LINE.getWidth() / 2.0) {
                     // Position line region so that it is centered in the sub-gap of hgap
                     final double lineWidth = DEFAULT_HORIZONTAL_GAP / 2.0;
                     final double lineX = occupantRight + (hgap - lineWidth) / 2.0 - lineWidth / 4.0;
 
-                    final double lineY = Math.max(0, yTop + 5.0);
+                    final double lineY = Math.max(0, yTop);
                     final double lineHeight = defaultWinHeight;
 
                     final BoundingBox lineBounds = new BoundingBox(lineX, lineY, lineWidth, lineHeight);
@@ -600,7 +611,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                         desktopPane.getChildren().add(windowPanel);
 
                         // Auto-scroll the workspace to reveal the newly dropped window
-                        autoScrollToTopEdge(windowPanel);
+                        autoScrollToTopEdge(windowPanel, desktopWidth, desktopHeight);
                     }
                     return;
                 }
@@ -638,7 +649,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                     desktopPane.getChildren().add(windowPanel);
 
                     // Auto-scroll the workspace to reveal the newly dropped window
-                    autoScrollToTopEdge(windowPanel);
+                    autoScrollToTopEdge(windowPanel, desktopWidth, desktopHeight);
 
                     // -------------------------------------------------------------
                     // 3) Re-add previously removed windows (in the order they
@@ -647,7 +658,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                     // -------------------------------------------------------------
                     final double nextStartX = newX + workspace.getHorizontalGap();
                     final double nextStartY = newY;
-                    reLayoutRemovedWindows(removedWindows, nextStartX, nextStartY);
+                    reLayoutRemovedWindows(removedWindows, nextStartX, nextStartY, desktopWidth, desktopHeight);
                     return;
                 }
             }
@@ -666,6 +677,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                 windowPanel.setTranslateY(savedY);
                 windowPanel.setPrefSize(windowWidth, windowHeight);
                 desktopPane.getChildren().add(windowPanel);
+                desktopPane.layout();
                 // No auto-scrolling for returning windows
                 return;
             }
@@ -684,8 +696,13 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             windowPanel.setPrefSize(windowWidth, windowHeight);
             desktopPane.getChildren().add(windowPanel);
 
+            if (firstTime) {
+                // Skip auto-scrolling during the initial setup
+                return;
+            }
+
             // Auto-scroll the workspace to reveal the newly placed window
-            autoScrollToTopEdge(windowPanel);
+            autoScrollToTopEdge(windowPanel, desktopWidth, desktopHeight);
         }
     }
 
@@ -743,7 +760,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * </ul>
      * <p>
      * The returned list is sorted in ascending order by row index, then by {@code minX}. This
-     * ensures that when these windows are re-laid out (in {@link #reLayoutRemovedWindows(List, double, double)}),
+     * ensures that when these windows are re-laid out
+     * (in {@link #reLayoutRemovedWindows(List, double, double, double, double)}),
      * they appear in a left-to-right flow for each row, beginning with the row of the drop line,
      * followed by subsequent rows.
      *
@@ -836,25 +854,22 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * @param startX            the horizontal coordinate from which to begin placing the windows
      * @param startY            the vertical coordinate that determines which row the first insertion
      *                          should occupy (the row of the dropped window)
+     * @param desktopWidth  the total width of the desktop pane
+     * @param desktopHeight the total height of the desktop pane
      */
-    private void reLayoutRemovedWindows(List<Pane> windowsToReLayout, double startX, double startY) {
+    private void reLayoutRemovedWindows(List<Pane> windowsToReLayout, double startX, double startY,
+                                        double desktopWidth, double desktopHeight) {
         if (windowsToReLayout.isEmpty()) {
             return;
         }
 
         final KLWorkspace workspace = getSkinnable();
-        final double desktopWidth = (desktopPane.getWidth() > 0)
-                ? desktopPane.getWidth()
-                : desktopPane.getPrefWidth();
-        final double desktopHeight = (desktopPane.getHeight() > 0)
-                ? desktopPane.getHeight()
-                : desktopPane.getPrefHeight();
 
         // Ensure layout is current
         desktopPane.layout();
 
         // Collect occupant windows relevant for re-laying out
-        List<Bounds> occupantBounds = collectRelevantOccupants(startX, startY);
+        List<Bounds> occupantBounds = collectRelevantOccupants(startX, startY, desktopHeight);
 
         // Place each removed window in sorted order
         for (Pane pane : windowsToReLayout) {
@@ -887,15 +902,12 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      *
      * @param startX the horizontal boundary from which windows to the left are ignored in that row
      * @param startY used to determine the start row so earlier rows can be ignored
+     * @param desktopHeight the total height of the desktop pane
      * @return a list of occupant {@link Bounds} that affect the layout
      */
-    private List<Bounds> collectRelevantOccupants(double startX, double startY) {
+    private List<Bounds> collectRelevantOccupants(double startX, double startY, double desktopHeight) {
         List<Bounds> occupantBounds = new ArrayList<>();
         final KLDropRegion dropRegion = desktopPane.getDropRegion();
-
-        final double desktopHeight = desktopPane.getHeight() > 0
-                ? desktopPane.getHeight()
-                : desktopPane.getPrefHeight();
         final double rowHeight = desktopHeight / ROWS;
         final int startRowIndex = Math.max(0, Math.min(ROWS - 1, (int) Math.floor(startY / rowHeight)));
 
@@ -958,6 +970,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                                           double startX, double startY,
                                           double desktopWidth, double desktopHeight,
                                           double hgap, double vgap) {
+        // Force layout to obtain accurate bounds
+        desktopPane.layout();
 
         // Collect occupant bounds once, excluding the drop region
         final List<Bounds> occupantBounds = desktopPane.getChildren().stream()
@@ -1064,8 +1078,10 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * is visible. Uses a brief animation for a user-friendly experience.
      *
      * @param nodeToView The node to bring into view (toward the top).
+     * @param desktopWidth  the total width of the desktop pane
+     * @param desktopHeight the total height of the desktop pane
      */
-    private void autoScrollToTopEdge(Node nodeToView) {
+    private void autoScrollToTopEdge(Node nodeToView, double desktopWidth, double desktopHeight) {
         if (autoScrollTimeline != null && autoScrollTimeline.getStatus() == Timeline.Status.RUNNING) {
             return;
         }
@@ -1076,9 +1092,6 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         final Bounds nodeBounds = nodeToView.localToScene(nodeToView.getBoundsInLocal());
         final Bounds desktopBounds = desktopPane.localToScene(desktopPane.getBoundsInLocal());
         final Bounds viewportBounds = desktopScrollPane.getViewportBounds();
-
-        final double contentWidth = desktopPane.getWidth();
-        final double contentHeight = desktopPane.getHeight();
 
         // Calculate node's top relative to the desktop
         final double nodeTopY = nodeBounds.getMinY() - desktopBounds.getMinY() - DEFAULT_VERTICAL_GAP;
@@ -1091,8 +1104,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         final double desiredLeft = nodeCenterX - (viewportWidth / 2.0);
         final double desiredTop = nodeTopY;
 
-        final double maxX = Math.max(0, contentWidth - viewportWidth);
-        final double maxY = Math.max(0, contentHeight - viewportHeight);
+        final double maxX = Math.max(0, desktopWidth - viewportWidth);
+        final double maxY = Math.max(0, desktopHeight - viewportHeight);
 
         final double startH = desktopScrollPane.getHvalue();
         final double startV = desktopScrollPane.getVvalue();
