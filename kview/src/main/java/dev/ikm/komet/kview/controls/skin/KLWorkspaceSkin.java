@@ -434,7 +434,6 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         final double defaultWinWidth = DEFAULT_WINDOW_WIDTH;
         final double defaultWinHeight = DEFAULT_WINDOW_HEIGHT;
         final double hgap = workspace.getHorizontalGap();
-        final double vgap = workspace.getVerticalGap();
 
         // Identify which row occupant(s) might be relevant by checking vertical overlap
         final List<Node> visibleWindows = desktopPane.getChildren().stream()
@@ -500,14 +499,13 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                 // We'll define a vertical position for the drop region.
                 double occupantRight = left.getMaxX();
                 double yTop = Math.min(left.getMinY(), right.getMinY());
-                yTop = Math.max(yTop, vgap);
 
                 // 1) If enough space for the default-size window -> BOX
                 if (gapSize >= (defaultWinWidth + 2 * hgap)) {
                     final double boxX = occupantRight + hgap;
                     // Ensure the BOX does not exceed the gap
                     if (boxX + defaultWinWidth <= gapEndX) {
-                        double boxY = yTop;
+                        double boxY = yTop + 5.0; // Offset from the top due to window borders
                         double boxHeight = defaultWinHeight;
 
                         BoundingBox boxBounds = new BoundingBox(boxX, boxY, defaultWinWidth, boxHeight);
@@ -521,7 +519,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                     final double lineWidth = DEFAULT_HORIZONTAL_GAP / 2.0;
                     final double lineX = occupantRight + (hgap - lineWidth) / 2.0 - lineWidth / 4.0;
 
-                    final double lineY = Math.max(0, yTop);
+                    final double lineY = Math.max(0, yTop + 5.0); // Offset from the top due to window borders
                     final double lineHeight = defaultWinHeight;
 
                     final BoundingBox lineBounds = new BoundingBox(lineX, lineY, lineWidth, lineHeight);
