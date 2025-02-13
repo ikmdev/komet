@@ -613,12 +613,24 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                     final List<Pane> removedWindows = removeWindowsRightOfLine(dropX);
 
                     // -------------------------------------------------------------
-                    // 2) Place the new window at a position that respects
-                    //    horizontal gap from occupant on the left
-                    // -------------------------------------------------------------
+                    // 2) Place the new window at a position that respects horizontal gap from occupant on the left
+                    //
+                    // Before placing the window, check if the dropX + windowWidth exceeds the available width.
+                    // If so, and if we are not in the last row, move the window to the start of the next row.
+                    // Determine the row based on dropY.
+                    final double rowHeight = desktopHeight / ROWS;
+                    int currentRow = (int) Math.floor(dropY / rowHeight);
                     final double occupantRight = findRightmostOccupantBefore(dropX);
-                    final double newX = occupantRight + workspace.getHorizontalGap();
-                    final double newY = dropY;
+                    double newX = occupantRight + workspace.getHorizontalGap();
+                    double newY = dropY;
+                    if (newX + windowWidth > desktopWidth) {
+                        if (currentRow < ROWS - 1) {
+                            // Move to the beginning of the next row
+                            currentRow++;
+                            newX = workspace.getHorizontalGap();
+                            newY = currentRow * rowHeight + workspace.getVerticalGap();
+                        }
+                    }
 
                     windowPanel.setTranslateX(newX);
                     windowPanel.setTranslateY(newY);
