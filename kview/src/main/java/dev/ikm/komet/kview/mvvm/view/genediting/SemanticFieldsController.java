@@ -38,7 +38,6 @@ import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -75,7 +74,7 @@ public class SemanticFieldsController {
 
     private ChangeListener fieldPropertyChangeListner  = (obs, oldValue, newValue) -> {
         if(newValue instanceof FieldRecord<?> fieldRecord){
-            Platform.runLater(this::updateStampVersionsNidsForAllFields);
+           updateStampVersionsNidsForAllFields();
         }
     };
 
