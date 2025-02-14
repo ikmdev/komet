@@ -92,12 +92,10 @@ public class KlFieldHelper {
             } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
                 KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
                 node = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), true).klWidget();
-            } else if (dataTypeNid == TinkarTerm.IMAGE_FIELD.nid()) {
-                KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
-                node = imageFieldFactory.create(observableField, viewProperties.nodeView(), true).klWidget();
+//            } else if (dataTypeNid == TinkarTerm.IMAGE_FIELD.nid()) {
+//                KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
+//                node = imageFieldFactory.create(observableField, viewProperties.nodeView(), true).klWidget();
             } else if (dataTypeNid == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
-                System.out.println("EDITABLE - Byte array Data Type");
-            } else if (dataTypeNid == -2147479932) {
                 KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
                 node = imageFieldFactory.create(observableField, viewProperties.nodeView(), true).klWidget();
             }
@@ -151,12 +149,10 @@ public class KlFieldHelper {
                 } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
                     KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
                     readOnlyNode = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
-                }  else if (dataTypeNid == TinkarTerm.IMAGE_FIELD.nid()) {
-                    KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
-                    readOnlyNode = imageFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+//                } else if (dataTypeNid == TinkarTerm.IMAGE_FIELD.nid()) {
+//                    KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
+//                    readOnlyNode = imageFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
                 } else if (dataTypeNid == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
-                    System.out.println("READ-ONLY - Byte array Data Type");
-                } else if (dataTypeNid == -2147479932) {
                     KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
                     readOnlyNode = imageFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
                 }

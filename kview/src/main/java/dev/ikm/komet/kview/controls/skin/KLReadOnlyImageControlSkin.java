@@ -27,8 +27,6 @@ public class KLReadOnlyImageControlSkin extends KLReadOnlyBaseControlSkin<KLRead
 
         imageContainer.getChildren().addAll(imageView, promptTextLabel);
 
-        // Initial texts
-        control.setTitle("IMAGE:");
         control.setPromptText("Add image");
 
         initImage(control);
