@@ -5,29 +5,75 @@ import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.kview.controls.KLImageControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyImageControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
-import dev.ikm.komet.layout.component.version.field.KlImageField;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Parent;
 import javafx.scene.image.Image;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
-public class DefaultKlImageField extends BaseDefaultKlField<Image> implements KlImageField {
-    // TODO: For now we are using only one instance of each Image Data type control so we can bind them together
-    private static KLImageControl imageControl = new KLImageControl();
-    private static KLReadOnlyImageControl readOnlyImageControl = new KLReadOnlyImageControl();
+public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
 
-    public DefaultKlImageField(ObservableField<Image> observableFloatField, ObservableView observableView, boolean isEditable) {
-        super(observableFloatField, observableView, isEditable);
+    public DefaultKlImageField(ObservableField<byte[]> observableImageField, ObservableView observableView, boolean isEditable) {
+        super(observableImageField, observableView, isEditable);
 
         Parent node;
         if (isEditable) {
-            imageControl.setTitle("Image"); //TODO: for now the title is hardcoded but we need to get it from the ObservableField
+            KLImageControl imageControl = new KLImageControl();
+
+            byte[] imageBytes = observableImageField.value();
+
+            imageControl.setTitle(getTitle());
+
+            // Sync ObservableField and ImageControl
+            imageControl.setImage(newImageFromByteArray(imageBytes));
+            imageControl.imageProperty().subscribe(newImage -> {
+                if (newImage == null) {
+                    return;
+                }
+
+                byte[] newByteArray = newByteArrayFromImage(newImage);
+                field().valueProperty().set(newByteArray);
+            });
 
             node = imageControl;
         } else {
-            readOnlyImageControl.setTitle("Image"); //TODO: for now the title is hardcoded but we need to get it from the ObservableField
-            readOnlyImageControl.imageFileProperty().bind(imageControl.imageFileProperty()); //TODO: this should later be bound to the ObservableField
+            KLReadOnlyImageControl readOnlyImageControl = new KLReadOnlyImageControl();
+
+            readOnlyImageControl.setTitle(getTitle());
+
+            // Sync ObservableField and ReadOnlyImageControl
+            byte[] imageBytes = observableImageField.value();
+            readOnlyImageControl.setImage(newImageFromByteArray(imageBytes));
+
+            observableImageField.valueProperty().subscribe(newByteArray -> {
+                readOnlyImageControl.setImage(newImageFromByteArray(newByteArray));
+            });
+
+            // Title
+            readOnlyImageControl.setTitle(getTitle());
 
             node = readOnlyImageControl;
         }
         setKlWidget(node);
+    }
+
+    private Image newImageFromByteArray(byte[] imageByteArray) {
+        ByteArrayInputStream bis = new ByteArrayInputStream(imageByteArray);
+        Image image = new Image(bis);
+        return image;
+    }
+
+    private byte[] newByteArrayFromImage(Image image) {
+        BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(bufferedImage, "png", bos);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return bos.toByteArray();
     }
 }
