@@ -116,8 +116,7 @@ public class KLImageControlSkin extends SkinBase<KLImageControl> {
 
         // Set extension filters to only show image files
         fileChooser.getExtensionFilters().addAll(
-//                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif")
-                new FileChooser.ExtensionFilter("Image Files", "*.png")
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp")
         );
 
         // Show open file dialog
