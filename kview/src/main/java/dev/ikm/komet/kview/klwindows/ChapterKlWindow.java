@@ -15,28 +15,23 @@
  */
 package dev.ikm.komet.kview.klwindows;
 
-import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.layout.window.KlJournalWindow;
 import javafx.scene.Node;
 
 /**
  * The {@code ChapterKlWindow} interface extends the {@link KlJournalWindow} interface
- * and provides a generic contract for Komet Layout windows that manage
- * a root pane of type {@code T}.
+ * and provides additional methods for setting a callback that is invoked when the window is closed.
  *
  * @param <T> the type of the root pane, must extend {@link Node}.
  */
-// TODO: This interface is purely a placeholder and temporarily replacement for the original KlWindow interface.
-//       It can be removed once the original KlWindow interface will be updated.
+// TODO: This interface is purely a placeholder and temporarily replacement for the original KlJournalWindow interface.
+//       It can be removed once the original KlJournalWindow interface will be updated.
 public interface ChapterKlWindow<T extends Node> extends KlJournalWindow<T> {
 
     /**
-     * Returns the root pane for this window.
-     * <p>
-     * The root pane serves as the main container for all UI components within
-     * this window. It must be a subclass of {@link Node}.
+     * Sets a callback that is invoked when this window is closed.
      *
-     * @return the root pane of this window, or {@code null} if not set
+     * @param onClose A {@link Runnable} to be executed on close, or null if no action is required.
      */
-    T getRootPane();
+    void setOnClose(Runnable onClose);
 }

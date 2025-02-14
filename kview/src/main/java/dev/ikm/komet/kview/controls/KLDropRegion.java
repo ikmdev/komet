@@ -20,6 +20,8 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.PseudoClass;
 import javafx.scene.layout.Region;
 
+import static dev.ikm.komet.kview.controls.KLWorkspace.DEFAULT_WINDOW_WIDTH;
+
 /**
  * A draggable and stylable region that indicates a drop target in a Komet workspace.
  * <p>
@@ -57,7 +59,18 @@ public class KLDropRegion extends Region {
      * </ul>
      */
     public enum Type {
-        BOX, LINE
+        BOX(DEFAULT_WINDOW_WIDTH),
+        LINE(12);
+
+        private final double width;
+
+        Type(double width) {
+            this.width = width;
+        }
+
+        public double getWidth() {
+            return width;
+        }
     }
 
     /**
@@ -103,6 +116,7 @@ public class KLDropRegion extends Region {
     public ObjectProperty<Type> typeProperty() {
         if (type == null) {
             type = new SimpleObjectProperty<>(this, "type", DEFAULT_TYPE) {
+
                 @Override
                 protected void invalidated() {
                     updatePseudoClass(get());
