@@ -20,6 +20,7 @@ public class SamplerApp extends Application {
     private static final String HOME = "Sampler_Home.fxml";
 
     private static final String SORTED_COMBO_BOX_SAMPLER = "Sampler_SortedComboBox.fxml";
+    private static final String CONCEPT_NAVIGATOR_SAMPLER = "Sampler_KLConceptNavigatorControl.fxml";
 
     private static final String BOOLEAN_SAMPLER = "Sampler_Boolean.fxml";
     private static final String STRING_SAMPLER = "Sampler_KLStringControl.fxml";
@@ -85,6 +86,7 @@ public class SamplerApp extends Application {
         // Other Controls
         Menu otherControlsMenu = createMenu("Other Controls", "plus-math-20.png");
         otherControlsMenu.getItems().add(createMenuItemWithContent("Sorted ComboBox", SORTED_COMBO_BOX_SAMPLER));
+        otherControlsMenu.getItems().add(createMenuItemWithContent("Concept Navigator", CONCEPT_NAVIGATOR_SAMPLER));
 
         navigationPane.getMenuItems().addAll(
                 readOnlyControls,

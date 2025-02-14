@@ -1,0 +1,280 @@
+/** CONCEPT NAVIGATOR **/
+
+.concept-navigator-control.tree-view,
+.concept-navigator-control.tree-view:focused {
+    -fx-background: #E1E8F1;
+    -fx-background-color: -fx-background;
+    -fx-background-insets: 0;
+    -fx-background-radius: 5;
+    -fx-padding: 3;
+    -fx-min-width: 448;
+    -fx-pref-width: 448;
+    -fx-max-width: 448;
+}
+
+.concept-navigator-control.tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-cell:filled:selected,
+.concept-navigator-control.tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-cell:focused {
+    -fx-background: #E1E8F1;
+    -fx-table-cell-border-color: #E1E8F1;
+    -fx-background-insets: 0;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal {
+    -fx-padding: 0;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal:focused,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical:focused {
+    -fx-background-color: #E1E8F1;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical > .track,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal > .track {
+    fx-background-insets: 0;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .corner {
+    -fx-background-insets: 0;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal .track,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical .track {
+    -fx-background-color: #E1E8F1;
+    -fx-border-width: 0;
+    -fx-background-radius: 0em;
+    -fx-border-radius: 0;
+    -fx-background-insets: 0;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal .increment-button,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0 0 4 0;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical .increment-button,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0 4 0 0;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar .increment-arrow,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal .thumb,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical .thumb {
+    -fx-background-color: transparent, #545D7299;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 2, 2;
+}
+
+.tree-cell {
+    -fx-background: #E1E8F1;
+    -fx-background-insets: 0;
+    -fx-background-color: -fx-background;
+    -fx-text-fill: -fx-text-background-color;
+    -fx-padding: 1;
+    -fx-indent: 1em;
+    -fx-min-width: 438;
+    -fx-pref-width: 438;
+    -fx-max-width: 438;
+}
+
+.tree-cell:filled:selected {
+    -fx-background: #E1E8F1;
+    -fx-table-cell-border-color: #E1E8F1;
+    -fx-background-insets: 0;
+}
+
+.cell-box {
+    -fx-background-color: #CFD8E4, white;
+    -fx-background-radius: 3;
+    -fx-background-insets: 0, 1;
+    -fx-alignment: center-left;
+    -fx-spacing: 0;
+    -fx-padding: 2;
+}
+
+.tree-cell .label {
+    -fx-padding: 0 0 0 2;
+}
+
+.tree-cell:hover > .cell-box {
+    -fx-background-color: #5896F6, #F4F9FF;
+}
+
+.tree-cell:line-long-hover > .cell-box {
+    -fx-background-color: #5896F6, #F4F9FF;
+    -fx-background-insets: 0, 2;
+}
+
+.tree-cell:selected > .cell-box {
+    -fx-background-color: #5E5E5E, #5E5E5E;
+}
+
+.tree-cell > .cell-box > .concept-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12;
+    -fx-text-fill: #2E3240;
+}
+
+.tree-cell:selected > .cell-box > .concept-label {
+    -fx-text-fill: white;
+}
+
+.tree-cell > .cell-box > .region {
+    -fx-background-color: transparent, #6E7989;
+    -fx-background-insets: 0, 1;
+    -fx-padding: 1;
+    -width-size: 16;
+    -height-size: 16;
+    -fx-background-radius: 16;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-pref-height: -height-size;
+    -fx-pref-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+}
+
+.tree-cell > .cell-box > .region:expanded {
+    -fx-background-color: #E1E8F1;
+}
+.tree-cell > .cell-box > .region:leaf {
+    -fx-background-color: #B3BDCD;
+}
+
+.tree-cell > .cell-box > .region.select {
+    -fx-background-color: transparent, transparent;
+    -fx-background-radius: 2;
+    visibility: hidden;
+    -fx-managed: false;
+}
+
+.tree-cell:hover > .cell-box > .region.select,
+.tree-cell:selected > .cell-box > .region.select,
+.tree-cell:selected:hover > .cell-box > .region.select {
+    -fx-background-color: transparent, transparent;
+    visibility: visible;
+    -fx-managed: true;
+}
+
+.tree-cell > .cell-box > .region.tree {
+    -fx-background-color: transparent, #DEEBFF;
+    -fx-background-radius: 2;
+}
+
+.tree-cell > .cell-box > .region.select:hover,
+.tree-cell > .cell-box > .region.tree:hover {
+    -fx-background-color: transparent, #9DC4FF;
+}
+
+.tree-cell > .cell-box > .region > .icon {
+    -width-size: 14;
+    -height-size: 14;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-pref-height: -height-size;
+    -fx-pref-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-scale-shape: false;
+}
+
+.tree-cell > .cell-box > .region > .icon.disclosure {
+    -fx-background-color: white;
+    -fx-shape: "M 17.291 38.416 L 16.233 37.358 L 18.523 35.063 L 16.233 32.767 L 17.291 31.709 L 20.644 35.063 Z";
+    -fx-rotate: 0;
+    transition-property: -fx-rotate;
+    transition-duration: 0.5s;
+}
+
+.tree-cell > .cell-box > .region:hover > .icon.disclosure {
+    -fx-rotate: 90;
+}
+
+.tree-cell > .cell-box > .region:expanded:hover > .icon.disclosure {
+    -fx-rotate: -90;
+}
+
+.tree-cell > .cell-box > .region:expanded > .icon.disclosure {
+    -fx-background-color: #2E3240;
+    -fx-shape: "M 15.085 33.915 L 16.143 32.857 L 18.438 35.147 L 20.734 32.857 L 21.792 33.915 L 18.438 37.268 L 15.085 33.915 Z"
+}
+
+.tree-cell > .cell-box > .region > .icon.leaf {
+    -fx-background-color: black;
+    -fx-shape: "M 11 7 L 11 8.5 L 5 8.5 L 5 7 Z";
+    -fx-rotate: 0;
+}
+
+.tree-cell > .cell-box > .region.select > .icon.select {
+    -fx-background-color: #4A7AD2;
+    -fx-shape: "M 5.998 2.898 C 5.998 3.616 5.416 4.198 4.698 4.198 C 3.98 4.198 3.398 3.616 3.398 2.898 C 3.398 2.18 3.98 1.598 4.698 1.598 C 5.416 1.598 5.998 2.18 5.998 2.898 Z M 10.6 2.898 C 10.6 3.616 10.018 4.198 9.3 4.198 C 8.582 4.198 8 3.616 8 2.898 C 8 2.18 8.582 1.598 9.3 1.598 C 10.018 1.598 10.6 2.18 10.6 2.898 Z M 5.998 7.499 C 5.998 8.217 5.416 8.799 4.698 8.799 C 3.98 8.799 3.398 8.217 3.398 7.499 C 3.398 6.781 3.98 6.199 4.698 6.199 C 5.416 6.199 5.998 6.781 5.998 7.499 Z M 10.6 7.499 C 10.6 8.217 10.018 8.799 9.3 8.799 C 8.582 8.799 8 8.217 8 7.499 C 8 6.781 8.582 6.199 9.3 6.199 C 10.018 6.199 10.6 6.781 10.6 7.499 Z M 5.998 12.101 C 5.998 12.819 5.416 13.401 4.698 13.401 C 3.98 13.401 3.398 12.819 3.398 12.101 C 3.398 11.383 3.98 10.801 4.698 10.801 C 5.416 10.801 5.998 11.383 5.998 12.101 Z M 10.6 12.101 C 10.6 12.819 10.018 13.401 9.3 13.401 C 8.582 13.401 8 12.819 8 12.101 C 8 11.383 8.582 10.801 9.3 10.801 C 10.018 10.801 10.6 11.383 10.6 12.101 Z"
+}
+
+.tree-cell > .cell-box > .region.select:hover > .icon.select {
+    -fx-background-color: #304971;
+}
+
+.tree-cell:selected > .cell-box > .region.select > .icon.select,
+.tree-cell:selected > .cell-box > .region.select:hover > .icon.select {
+    -fx-background-color: white;
+}
+
+.tree-cell > .cell-box > .region.tree > .icon.tree {
+    -fx-background-color: #4A7AD2;
+    -fx-shape: "M19.651 24.278L19.651 22.746L26.651 22.746L26.651 26.746L19.651 26.746L19.651 25.278L16.706 25.278L16.706 21.111L14.839 21.111L14.839 17.028L21.839 17.028L21.839 21.111L17.706 21.111L17.706 24.278L19.651 24.278ZM20.672 18.194L16.005 18.194L16.005 19.944L20.672 19.944L20.672 18.194ZM20.818 23.913L20.818 25.58L25.484 25.58L25.484 23.913L20.818 23.913z"
+}
+
+.tree-cell > .cell-box > .region.tree:hover > .icon.tree {
+    -fx-background-color: #304971;
+    -fx-shape: "M5.91406 9V7.46875H12.9141V11.4688H5.91406V10H2.96875V5.25H1.46875L3.46875 2.25L5.46875 5.25H3.96875V9H5.91406ZM7.08073 8.63542V10.3021H11.7474V8.63542H7.08073Z"
+}
+
+.tree-cell > .line {
+    -fx-stroke: #C3CDDC;
+    -fx-stroke-width: 1;
+    -fx-stroke-dash-array: 1.5 1.5;
+}
+
+.tree-cell > .selected-line-0,
+.tree-cell > .selected-line-1,
+.tree-cell > .selected-line-2,
+.tree-cell > .selected-line-3,
+.tree-cell > .selected-line-4,
+.tree-cell > .selected-line-5,
+.tree-cell > .selected-line-6,
+.tree-cell > .selected-line-7,
+.tree-cell > .selected-line-8,
+.tree-cell > .selected-line-9,
+.tree-cell > .selected-curved-line {
+    -fx-stroke: #5896F6;
+    -fx-stroke-width: 2;
+    visibility: hidden;
+    -fx-managed: false;
+}
+
+.tree-cell:line-selected-0 > .selected-line-0,
+.tree-cell:line-selected-1 > .selected-line-1,
+.tree-cell:line-selected-2 > .selected-line-2,
+.tree-cell:line-selected-3 > .selected-line-3,
+.tree-cell:line-selected-4 > .selected-line-4,
+.tree-cell:line-selected-5 > .selected-line-5,
+.tree-cell:line-selected-6 > .selected-line-6,
+.tree-cell:line-selected-7 > .selected-line-7,
+.tree-cell:line-selected-8 > .selected-line-8,
+.tree-cell:line-selected-9 > .selected-line-9,
+.tree-cell:line-curved-selected > .selected-curved-line {
+    visibility: visible;
+    -fx-managed: true;
+}
+
