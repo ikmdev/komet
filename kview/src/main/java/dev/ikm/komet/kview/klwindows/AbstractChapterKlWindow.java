@@ -17,8 +17,8 @@ public abstract class AbstractChapterKlWindow<T extends Node> implements Chapter
 
     private final ViewProperties viewProperties;
     private KometPreferences preferences;
-    private Optional<Runnable> optionalOnCloseRunnable = Optional.empty();
-    private T paneWindow;
+    private Runnable onCloseRunnable;
+    protected T paneWindow;
 
     /**
      * Constructs a base "chapter window" with the specified view properties and preferences.
@@ -54,34 +54,16 @@ public abstract class AbstractChapterKlWindow<T extends Node> implements Chapter
         this.preferences = preferences;
     }
 
-    /**
-     * Sets a callback that is invoked when this window is closed.
-     *
-     * @param runnable A {@link Runnable} to be executed on close, or null if no action is required.
-     */
-    public void setOnClose(Runnable runnable) {
-        this.optionalOnCloseRunnable = Optional.ofNullable(runnable);
+    @Override
+    public void setOnClose(Runnable onClose) {
+        this.onCloseRunnable = onClose;
     }
 
     /**
      * @return An {@link Optional} containing the close callback, if any.
      */
     protected Optional<Runnable> getOnClose() {
-        return optionalOnCloseRunnable;
-    }
-
-    @Override
-    public T getRootPane() {
-        return paneWindow;
-    }
-
-    /**
-     * Sets the root JavaFX {@link Node} for this window.
-     *
-     * @param paneWindow The node serving as the root pane.
-     */
-    protected void setRootPane(T paneWindow) {
-        this.paneWindow = paneWindow;
+        return Optional.ofNullable(onCloseRunnable);
     }
 
     @Override

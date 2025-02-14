@@ -97,12 +97,12 @@ public class KLWorkspace extends Control {
     public static final double MAX_HEIGHT = 1696.0;
 
     /**
-     * Standard width of the workspace.
+     * Standard width of the workspace viewport.
      */
     public static final double STANDARD_WIDTH = 1728.0;
 
     /**
-     * STANDARD height of the workspace.
+     * STANDARD height of the workspace viewport.
      */
     public static final double STANDARD_HEIGHT = 1080.0;
 
