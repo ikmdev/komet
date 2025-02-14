@@ -1372,8 +1372,8 @@ public class JournalController {
                 conceptPreferences.putInt(NID_VALUE, conceptPreference.getNid());
                 conceptPreferences.putDouble(CONCEPT_HEIGHT, conceptPreference.getConceptPane().getPrefHeight());
                 conceptPreferences.putDouble(CONCEPT_WIDTH, conceptPreference.getConceptPane().getPrefWidth());
-                conceptPreferences.putDouble(CONCEPT_XPOS, conceptPreference.getConceptPane().getBoundsInParent().getMinX());
-                conceptPreferences.putDouble(CONCEPT_YPOS, conceptPreference.getConceptPane().getBoundsInParent().getMinY());
+                conceptPreferences.putDouble(CONCEPT_XPOS, conceptPreference.getConceptPane().getTranslateX());
+                conceptPreferences.putDouble(CONCEPT_YPOS, conceptPreference.getConceptPane().getTranslateY());
 
                 conceptPreferences.flush();
             } catch (Exception e) {
