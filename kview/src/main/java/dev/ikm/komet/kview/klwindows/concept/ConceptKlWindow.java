@@ -91,8 +91,8 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
             detailsNode.getDetailsViewController().updateView();
         }
 
-        // Assign the details pane as the root pane for this window.
-        setRootPane((Pane) detailsNode.getNode());
+        // Getting the concept window pane
+        this.paneWindow = (Pane) detailsNode.getNode();
 
         // Set the onClose callback for the details window.
         detailsNode.getDetailsViewController().setOnCloseConceptWindow(detailsController -> {
