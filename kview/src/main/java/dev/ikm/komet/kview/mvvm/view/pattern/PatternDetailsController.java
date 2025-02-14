@@ -203,9 +203,6 @@ public class PatternDetailsController {
     private Button addDefinitionButton;
 
     @FXML
-    private Text semanticMeaningText;
-
-    @FXML
     private Text semanticPurposeText;
 
     @FXML
@@ -277,6 +274,8 @@ public class PatternDetailsController {
 
     @FXML
     private void initialize() {
+        purposeText.setText("");
+        meaningText.setText("");
         identifierText.setText("");
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
@@ -376,13 +375,16 @@ public class PatternDetailsController {
         statusText.textProperty().bind(getStampViewModel().getProperty(STATUS).map(s -> s.toString()));
 
         // set the identicon
-        Image identicon = Identicon.generateIdenticonImage(((EntityFacade)patternViewModel.getPropertyValue(PATTERN)).publicId());
-        identiconImageView.setImage(identicon);
+        EntityFacade patternFacade = patternViewModel.getPropertyValue(PATTERN);
+        if (patternFacade != null) {
+            Image identicon = Identicon.generateIdenticonImage(patternFacade.publicId());
+            identiconImageView.setImage(identicon);
+        }
 
         // show the public id
         //identifierText.setText(patternViewModel.getPatternIdentifierText());
-        identifierText.textProperty().bind(patternViewModel.getProperty(PATTERN).map(patternFacade ->
-                String.valueOf(((EntityFacade)patternFacade).toProxy().publicId().asUuidList().getLastOptional().get())));
+        identifierText.textProperty().bind(patternViewModel.getProperty(PATTERN).map(pf ->
+                String.valueOf(((EntityFacade) pf).toProxy().publicId().asUuidList().getLastOptional().get())));
 
         // capture pattern definition information
         purposeText.textProperty().bind(patternViewModel.getProperty(PURPOSE_TEXT));

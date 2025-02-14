@@ -127,6 +127,7 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
                 IntIds.list.of(c.getList().stream().mapToInt(value -> value.nid()).toArray()),
                 dialectPatternPreferenceNidList(),
                 modulePreferenceNidListForLanguage()));
+        LOG.info("\n\nLanguage coordinate after: " + this.getValue());
     }
 
     private void dialectPatternPreferenceListChanged(ListChangeListener.Change<? extends PatternFacade> c) {

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Cursor?>
@@ -35,8 +36,8 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
-<?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
-<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="560.0" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
+
+<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="560.0" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0">
          <top>
@@ -166,7 +167,7 @@
             </HBox>
          </right>
          <center>
-            <BorderPane styleClass="main-center-container" prefWidth="762.0" BorderPane.alignment="CENTER">
+            <BorderPane prefWidth="762.0" styleClass="main-center-container" BorderPane.alignment="CENTER">
                <center>
                   <VBox focusTraversable="true" maxHeight="1.7976931348623157E308" opacity="0.92" prefWidth="762.0">
                      <children>
@@ -176,39 +177,41 @@
                                  <content>
                                     <GridPane prefWidth="711.0">
                                        <columnConstraints>
-                                          <ColumnConstraints hgrow="SOMETIMES" maxWidth="326.0" minWidth="10.0" prefWidth="302.0" />
-                                          <ColumnConstraints hgrow="SOMETIMES" maxWidth="645.0" minWidth="10.0" prefWidth="387.0" />
+                                          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                                          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
                                        </columnConstraints>
                                        <rowConstraints>
                                           <RowConstraints maxHeight="16.0" minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                          <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                        </rowConstraints>
                                        <children>
-                                          <Text GridPane.columnIndex="1" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 600; -fx-fill: -Grey-12;" text="SEMANTIC MEANING:" wrappingWidth="121.474609375">
-                                             <font>
-                                                <Font name="Noto Sans Batak Regular" size="12.0" />
-                                             </font>
-                                          </Text>
-                                          <Label />
-                                          <Text GridPane.columnIndex="1" fx:id="semanticMeaningText" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="227.6090087890625">
-                                             <font>
-                                                <Font name="Noto Sans Batak Regular" size="13.0" />
-                                             </font>
-                                          </Text>
-                                          <Text GridPane.columnIndex="0" fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 500; -fx-fill: -Grey-12;" text="SEMANTIC PURPOSE" wrappingWidth="117.490234375" >
+                                          <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 500; -fx-fill: -Grey-12;" text="SEMANTIC PURPOSE" wrappingWidth="117.490234375" GridPane.columnIndex="0">
                                              <font>
                                                 <Font name="Open Sans Bold" size="14.0" />
                                              </font>
                                           </Text>
-                                          <Text GridPane.columnIndex="0" GridPane.rowIndex="2" fx:id="purposeDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-normal-grey-eight" >
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 600; -fx-fill: -Grey-12;" text="SEMANTIC MEANING:" wrappingWidth="121.474609375" GridPane.columnIndex="1">
+                                             <font>
+                                                <Font name="Noto Sans Batak Regular" size="12.0" />
+                                             </font>
+                                          </Text>
+                                          <TextFlow GridPane.rowIndex="1">
+                                             <children>
+                                                <Text fx:id="purposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" text="Capsular pattern of joint movement limitation (finding)" />
+                                             </children>
+                                          </TextFlow>
+                                          <Text fx:id="purposeDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-normal-grey-eight" text="Date Added: Feb 02" GridPane.columnIndex="0" GridPane.rowIndex="2">
                                              <font>
                                                 <Font name="Noto Sans Batak Regular" size="13.0" />
                                              </font>
                                           </Text>
-                                          <Text GridPane.columnIndex="1" GridPane.rowIndex="1" fx:id="meaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve"  />
-                                          <Text GridPane.columnIndex="1" GridPane.rowIndex="2" fx:id="meaningDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-normal-grey-eight"  />
-                                          <Text  GridPane.columnIndex="0" GridPane.rowIndex="1" fx:id="purposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" />
+                                          <TextFlow GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                             <children>
+                                                <Text fx:id="meaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" text="Capsular pattern of joint movement limitation (finding)" />
+                                             </children>
+                                          </TextFlow>
+                                          <Text fx:id="meaningDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-normal-grey-eight" text="Date Added: Feb 02" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                        </children>
                                     </GridPane>
                                  </content>

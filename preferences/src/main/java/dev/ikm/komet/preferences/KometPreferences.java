@@ -20,6 +20,7 @@ import dev.ikm.tinkar.terms.*;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.NodeChangeListener;
@@ -31,6 +32,56 @@ import java.util.prefs.Preferences;
  */
 public interface KometPreferences {
 
+    /**
+     * Copies the current subtree to the specified subtreeCopyParent node in the preferences tree.
+     *
+     * @param newParent the Preferences node to which the current subtree will be copied
+     * @param overwrite a boolean flag indicating whether to overwrite existing preferences
+     *                  at the destination node if they conflict with this subtree
+     * @return true if the operation was successful, false otherwise
+     * @throws BackingStoreException if an error occurs while trying to access or modify the backing store
+     */
+    default boolean copyThisSubtreeTo(KometPreferences newParent, boolean overwrite) throws BackingStoreException {
+        return copyThisSubtreeTo(this, newParent, overwrite);
+    }
+
+    static boolean copyThisSubtreeTo(KometPreferences oldNodeToCopyFrom, KometPreferences newParent, boolean overwrite) throws BackingStoreException {
+        List<String> childrenNames = List.of(newParent.childrenNames());
+        boolean childAlreadyExists = childrenNames.contains(oldNodeToCopyFrom.name());
+        if (!overwrite && childAlreadyExists) {
+            return false;
+        }
+        if (childAlreadyExists) {
+            newParent.node(oldNodeToCopyFrom.name()).removeNode();
+            newParent.flush();
+        }
+        for (String childName : newParent.childrenNames()) {
+            KometPreferences existingChild = oldNodeToCopyFrom.node(childName);
+            KometPreferences newChild = newParent.node(childName);
+            recursiveAdd(existingChild, newChild);
+        }
+        newParent.flush();
+        return true;
+    }
+    static void recursiveAdd(KometPreferences oldNodeToCopyFrom, KometPreferences newParentToAddTo) throws BackingStoreException {
+        for (String childName : oldNodeToCopyFrom.childrenNames()) {
+            KometPreferences existingChild = oldNodeToCopyFrom.node(childName);
+            KometPreferences newChild = newParentToAddTo.node(childName);
+            for (String key: existingChild.keys()) {
+                newChild.put(key, existingChild.get(key, null));
+            }
+            newChild.flush();
+            recursiveAdd(existingChild, newChild);
+        }
+    }
+
+
+    /**
+     * Associates the specified value with the specified key in this map.
+     *
+     * @param key   an enumeration used to reference the key
+     * @param value the value to be associated with the specified key
+     */
     default void put(Enum key, String value) {
         put(enumToGeneralKey(key), value);
     }
@@ -50,6 +101,15 @@ public interface KometPreferences {
      */
     void put(String key, String value);
 
+    /**
+     * Converts an Enum key into a generalized string representation suitable for use as a unique key.
+     * The generated string format includes parts of the package name, class name, enum name, and a UUID suffix.
+     * Ensures the resulting key does not exceed the maximum allowed length.
+     *
+     * @param key the Enum key to be converted into a generalized string representation
+     * @return a generated string representing the Enum key, which satisfies the maximum length constraint
+     * @throws IllegalStateException if the generated key exceeds the maximum allowed length
+     */
     default String enumToGeneralKey(Enum key) {
         UUID uuidSuffix = UUID.nameUUIDFromBytes(key.getDeclaringClass().getName().getBytes());
         StringBuilder sb = new StringBuilder();
@@ -117,6 +177,13 @@ public interface KometPreferences {
         throw new NullPointerException("Default value cannot be null");
     }
 
+    /**
+     * Retrieves the value associated with the specified enum key. If no value is found, returns the provided default value.
+     *
+     * @param key the enum key whose associated value is to be retrieved
+     * @param defaultValue the value to return if no value is associated with the specified key
+     * @return the value associated with the specified key, or the default value if no value is found
+     */
     default String get(Enum key, String defaultValue) {
         return get(enumToGeneralKey(key), defaultValue);
     }
@@ -145,6 +212,12 @@ public interface KometPreferences {
      */
     String get(String key, String defaultValue);
 
+    /**
+     * Retrieves an Optional UUID from the given key.
+     *
+     * @param key the enumeration key used to retrieve the associated value
+     * @return an Optional containing the UUID if present and successfully parsed; otherwise, an empty Optional
+     */
     default Optional<UUID> getUuid(Enum key) {
         Optional<String> optionalString = get(key);
         if (optionalString.isPresent()) {
@@ -153,10 +226,21 @@ public interface KometPreferences {
         return Optional.empty();
     }
 
+    /**
+     * Retrieves the value associated with the specified key.
+     *
+     * @param key the enum key used to retrieve the associated value
+     * @return an Optional containing the value if found, or an empty Optional if no value is associated with the key
+     */
     default Optional<String> get(Enum key) {
         return Optional.ofNullable(get(key, null));
     }
 
+    /**
+     * Removes the entry associated with the specified key.
+     *
+     * @param key the enumeration key whose associated entry is to be removed
+     */
     default void remove(Enum key) {
         remove(enumToGeneralKey(key));
     }
@@ -196,6 +280,12 @@ public interface KometPreferences {
      */
     void clear() throws BackingStoreException;
 
+    /**
+     * Stores the given integer value associated with the specified key.
+     *
+     * @param key   the enumeration key to be used as the identifier for storing the value
+     * @param value the integer value to be stored
+     */
     default void putInt(Enum key, int value) {
         putInt(enumToGeneralKey(key), value);
     }
@@ -218,6 +308,14 @@ public interface KometPreferences {
      */
     void putInt(String key, int value);
 
+    /**
+     * Retrieves an integer value associated with the specified Enum key,
+     * returning a default value if no matching data is found.
+     *
+     * @param key the Enum key to retrieve the value for
+     * @param value the default integer value to return if no data is found
+     * @return the integer value associated with the Enum key or the default value if no data is found
+     */
     default int getInt(Enum key, int value) {
         return getInt(enumToGeneralKey(key), value);
     }
@@ -254,6 +352,14 @@ public interface KometPreferences {
      */
     int getInt(String key, int defaultValue);
 
+    /**
+     * Retrieves an integer value associated with the specified key.
+     * If the key exists and its value can be parsed as an integer, it returns an OptionalInt containing the integer value.
+     * Otherwise, it returns an empty OptionalInt.
+     *
+     * @param key the key whose associated integer value is to be returned
+     * @return an OptionalInt containing the integer value if present and parseable, or an empty OptionalInt if not
+     */
     default OptionalInt getInt(String key) {
         Optional<String> optionalValue = get(key);
         if (optionalValue.isPresent()) {
@@ -262,10 +368,23 @@ public interface KometPreferences {
         return OptionalInt.empty();
     }
 
+    /**
+     * Retrieves the value associated with the specified key.
+     *
+     * @param key the key used to retrieve the associated value
+     * @return an {@link Optional} containing the value associated with the key,
+     *         or an empty {@link Optional} if no value is found
+     */
     default Optional<String> get(String key) {
         return Optional.ofNullable(get(key, null));
     }
 
+    /**
+     * Stores a long value associated with the specified Enum key.
+     *
+     * @param key the Enum key to be associated with the long value
+     * @param value the long value to be stored
+     */
     default void putLong(Enum key, long value) {
         putLong(enumToGeneralKey(key), value);
     }
@@ -320,6 +439,14 @@ public interface KometPreferences {
      */
     long getLong(String key, long defaultValue);
 
+    /**
+     * Retrieves the value associated with the given key, parses it into a long, and returns it
+     * wrapped in an {@code OptionalLong} if present.
+     *
+     * @param key the key whose associated value is to be retrieved
+     * @return an {@code OptionalLong} containing the parsed long value if the key exists
+     *         and the value can be successfully parsed; otherwise, an empty {@code OptionalLong}
+     */
     default OptionalLong getLong(String key) {
         Optional<String> optionalValue = get(key);
         if (optionalValue.isPresent()) {
@@ -328,6 +455,12 @@ public interface KometPreferences {
         return OptionalLong.empty();
     }
 
+    /**
+     * Stores a boolean value associated with the specified enum key.
+     *
+     * @param key the enum key to associate with the boolean value
+     * @param value the boolean value to be stored
+     */
     default void putBoolean(Enum key, boolean value) {
         putBoolean(enumToGeneralKey(key), value);
     }
@@ -351,6 +484,14 @@ public interface KometPreferences {
      */
     void putBoolean(String key, boolean value);
 
+    /**
+     * Retrieves a boolean value associated with the given enumeration key.
+     * If the value cannot be found, the provided default value is returned.
+     *
+     * @param key the enumeration key used to identify the boolean value
+     * @param defaultValue the value to return if no associated value is found
+     * @return the boolean value associated with the key, or the default value if none is found
+     */
     default boolean getBoolean(Enum key, boolean defaultValue) {
         return getBoolean(enumToGeneralKey(key), defaultValue);
     }
@@ -392,10 +533,24 @@ public interface KometPreferences {
      */
     boolean getBoolean(String key, boolean defaultValue);
 
+    /**
+     * Retrieves an optional boolean value associated with the given enum key.
+     *
+     * @param key the enum key for which the boolean value is to be retrieved
+     * @return an {@code Optional} containing the boolean value if present, or an empty {@code Optional} otherwise
+     */
     default Optional<Boolean> getBoolean(Enum key) {
         return getBoolean(enumToGeneralKey(key));
     }
 
+    /**
+     * Retrieves the boolean value associated with the given key.
+     * The method checks if the key exists, and if so, attempts
+     * to parse its value as a boolean.
+     *
+     * @param key the key for which the boolean value is to be retrieved
+     * @return an Optional containing the parsed boolean value if the key exists and is parsable, or an empty Optional if the key does not exist
+     */
     default Optional<Boolean> getBoolean(String key) {
         Optional<String> optionalValue = get(key);
         if (optionalValue.isPresent()) {
@@ -407,6 +562,82 @@ public interface KometPreferences {
         return Optional.empty();
     }
 
+    /**
+     * Stores a BigDecimal value associated with the specified Enum key.
+     *
+     * @param key   the Enum key used to associate with the BigDecimal value
+     * @param value the BigDecimal value to store
+     */
+    default void putBigDecimal(Enum key, BigDecimal value) {
+        putBigDecimal(enumToGeneralKey(key), value);
+    }
+    /**
+     * Stores a BigDecimal value as a string representation associated with the specified key.
+     *
+     * @param key the key with which the specified BigDecimal value is to be associated
+     * @param value the BigDecimal value to be stored, which will be converted to its string representation
+     */
+    default void putBigDecimal(String key, BigDecimal value) {
+        put(key, value.toString());
+    }
+    /**
+     * Retrieves a BigDecimal value associated with a given Enum key. If the key does not have
+     * an associated value, returns the provided default BigDecimal value.
+     *
+     * @param key the Enum key used to identify the value
+     * @param bigDecimal the default BigDecimal value to return if no value is found for the key
+     * @return the BigDecimal value associated with the key, or the provided default value if none is found
+     */
+    default BigDecimal getBigDecimal(Enum key, BigDecimal bigDecimal) {
+        return getBigDecimal(enumToGeneralKey(key), bigDecimal);
+    }
+    /**
+     * Retrieves the BigDecimal value associated with the specified key. If the value
+     * is not present, the provided default value is returned.
+     *
+     * @param key the key to retrieve the BigDecimal value associated with it
+     * @param defaultValue the default BigDecimal value to return if the key is not present
+     * @return the BigDecimal value associated with the key, or the default value if not present
+     */
+    default BigDecimal getBigDecimal(String key, BigDecimal defaultValue) {
+        Optional<BigDecimal> optionalValue = getBigDecimal(key);
+        if (optionalValue.isPresent()) {
+            return optionalValue.get();
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Retrieves the BigDecimal value associated with the key.
+     *
+     * @param key the key whose associated value is to be retrieved
+     * @return an Optional containing the BigDecimal representation of the value if present,
+     *         or an empty Optional if the value is absent
+     */
+    default Optional<BigDecimal> getBigDecimal(String key) {
+        Optional<String> optionalString = get(key);
+        if (optionalString.isPresent()) {
+            return Optional.of(new BigDecimal(optionalString.get()));
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Retrieves an Optional containing a BigDecimal value associated with the specified Enum key.
+     *
+     * @param key the Enum key used to identify and retrieve the associated BigDecimal value
+     * @return an Optional containing the BigDecimal value if present, or an empty Optional if no value is found
+     */
+    default Optional<BigDecimal> getBigDecimal(Enum key) {
+        return getBigDecimal(enumToGeneralKey(key));
+    }
+
+    /**
+     * Associates the specified double value with the specified key in the underlying storage.
+     *
+     * @param key   the enumeration key to be used for storing the value
+     * @param value the double value to be stored
+     */
     default void putDouble(Enum key, double value) {
         putDouble(enumToGeneralKey(key), value);
     }
@@ -429,6 +660,13 @@ public interface KometPreferences {
      */
     void putDouble(String key, double value);
 
+    /**
+     * Retrieves a double value associated with the given Enum key. If no value is found, the specified default value is returned.
+     *
+     * @param key the Enum key used to retrieve the value
+     * @param defaultValue the default value to return if no value is associated with the key
+     * @return the double value associated with the key, or the defaultValue if no value is found
+     */
     default double getDouble(Enum key, double defaultValue) {
         return getDouble(enumToGeneralKey(key), defaultValue);
     }
@@ -472,10 +710,23 @@ public interface KometPreferences {
         return OptionalDouble.empty();
     }
 
+    /**
+     * Stores a double array associated with the specified key.
+     *
+     * @param key the enumeration key used to identify the double array
+     * @param array the double array to be stored
+     */
     default void putDoubleArray(Enum key, double[] array) {
         putDoubleArray(enumToGeneralKey(key), array);
     }
 
+    /**
+     * Stores a double array in the underlying key-value store by converting
+     * it to a list of string representations of the double values.
+     *
+     * @param key the key associated with the double array
+     * @param array the array of double values to be stored
+     */
     default void putDoubleArray(String key, double[] array) {
         List<String> doubleList = new ArrayList<>(array.length);
         for (double value : array) {
@@ -484,6 +735,13 @@ public interface KometPreferences {
         putList(key, doubleList);
     }
 
+    /**
+     * Stores a list of strings associated with a given key, concatenating list elements
+     * into a single string separated by the delimiter "|!%|".
+     *
+     * @param key the key to associate with the concatenated string
+     * @param list the list of strings to be concatenated and stored
+     */
     default void putList(String key, List<String> list) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < list.size(); i++) {
@@ -495,10 +753,26 @@ public interface KometPreferences {
         put(key, builder.toString());
     }
 
+    /**
+     * Retrieves a double array associated with the specified Enum key.
+     * If no value is associated with the key, returns the provided default array.
+     *
+     * @param key the Enum key used to retrieve the associated double array
+     * @param defaultArray the default double array to return if no value is associated with the key
+     * @return the double array associated with the specified key, or the provided default array if no value is found
+     */
     default double[] getDoubleArray(Enum key, double[] defaultArray) {
         return getDoubleArray(enumToGeneralKey(key), defaultArray);
     }
 
+    /**
+     * Retrieves a double array associated with the specified key. If no such array exists,
+     * the provided default array is returned.
+     *
+     * @param key the key for which the double array is to be retrieved
+     * @param defaultArray the default double array to return if no value is found for the key
+     * @return the double array associated with the key, or the default array if the key is not present
+     */
     default double[] getDoubleArray(String key, double[] defaultArray) {
         Optional<double[]> optionalArray = getDoubleArray(key);
         if (optionalArray.isPresent()) {
@@ -507,6 +781,16 @@ public interface KometPreferences {
         return defaultArray;
     }
 
+    /**
+     * Retrieves an optional array of doubles corresponding to the specified key.
+     * The method attempts to fetch a list of strings associated with the key,
+     * convert those strings to doubles, and return them as an array.
+     *
+     * @param key the key used to retrieve the list of strings
+     * @return an {@code Optional} containing a double array if the list exists and
+     *         conversion is successful, or an empty {@code Optional} if the list is not found
+     *         or cannot be converted
+     */
     default Optional<double[]> getDoubleArray(String key) {
         Optional<List<String>> optionalValue = getOptionalList(key);
         if (optionalValue.isPresent()) {
@@ -520,6 +804,14 @@ public interface KometPreferences {
         return Optional.empty();
     }
 
+    /**
+     * Retrieves an optional list of strings based on the provided key.
+     * If the value associated with the key is present, it returns an Optional containing the list.
+     * Otherwise, it returns an empty Optional.
+     *
+     * @param key the key to retrieve the value and corresponding list
+     * @return an Optional containing the list of strings if the value is present, otherwise an empty Optional
+     */
     default Optional<List<String>> getOptionalList(String key) {
         Optional<String> value = get(key);
         if (value.isPresent()) {
@@ -528,6 +820,14 @@ public interface KometPreferences {
         return Optional.empty();
     }
 
+    /**
+     * Retrieves a list of strings by splitting the value associated with the specified key.
+     * If no value is present for the key or the value is empty, an empty list is returned.
+     *
+     * @param key the key whose associated value is to be retrieved and processed
+     * @return a list of strings obtained by splitting the value associated with the key,
+     *         or an empty list if the key has no associated value or the value is empty
+     */
     default List<String> getList(String key) {
         Optional<String> value = get(key);
         if (value.isPresent()) {
@@ -542,10 +842,22 @@ public interface KometPreferences {
         return new ArrayList<>();
     }
 
+    /**
+     * Retrieves an optional double array associated with the specified enum key.
+     *
+     * @param key the enum key for which the double array is to be retrieved
+     * @return an Optional containing the double array if it exists, or an empty Optional if it does not
+     */
     default Optional<double[]> getDoubleArray(Enum key) {
         return getDoubleArray(enumToGeneralKey(key));
     }
 
+    /**
+     * Stores a byte array associated with the specified enum key.
+     *
+     * @param key the enumeration key to associate with the byte array
+     * @param value the byte array to be stored
+     */
     default void putByteArray(Enum key, byte[] value) {
         putByteArray(enumToGeneralKey(key), value);
     }
@@ -574,10 +886,30 @@ public interface KometPreferences {
      */
     void putByteArray(String key, byte[] value);
 
+    /**
+     * Retrieves an object associated with the specified key. If the key does not
+     * exist or cannot be resolved, the provided default value will be returned.
+     *
+     * @param <T>          the type of the object to be retrieved
+     * @param key          the unique identifier for the object
+     * @param defaultValue the default object to return if the key is not present
+     *                      or the associated value cannot be resolved
+     * @return the object corresponding to the key if found, otherwise the
+     *         provided default value
+     */
     default <T extends Object> T getObject(UUID key, T defaultValue) {
         return getObject(key.toString(), defaultValue);
     }
 
+    /**
+     * Retrieves an object associated with the given key. If the key does not
+     * exist or if decoding fails, the provided default value is returned.
+     *
+     * @param <T> the type of the object to be retrieved
+     * @param key the key used to locate the object in the storage
+     * @param defaultValue the value to return if the key is not found or if the object cannot be decoded
+     * @return the retrieved object associated with the key, or the default value if the object is not found or decoding fails
+     */
     default <T extends Object> T getObject(String key, T defaultValue) {
         Optional<byte[]> optionalBytes = getByteArray(key);
         if (optionalBytes.isPresent()) {
@@ -586,6 +918,12 @@ public interface KometPreferences {
         return defaultValue;
     }
 
+    /**
+     * Retrieves a byte array associated with the given key.
+     *
+     * @param key the key used to retrieve the associated byte array
+     * @return an Optional containing the byte array if present, otherwise an empty Optional
+     */
     default Optional<byte[]> getByteArray(String key) {
         Optional<String> optionalValue = get(key);
         if (optionalValue.isPresent()) {
@@ -632,6 +970,15 @@ public interface KometPreferences {
      */
     byte[] getByteArray(String key, byte[] defaultValue);
 
+    /**
+     * Retrieves an object associated with the specified key. If no object is found,
+     * returns the provided default value.
+     *
+     * @param <T>          the type of the object to be retrieved
+     * @param key          the enumeration key used to retrieve the object
+     * @param defaultValue the default value to be returned if an object is not found
+     * @return the object associated with the specified key, or the default value if none exists
+     */
     default <T extends Object> T getObject(Enum key, T defaultValue) {
         Optional<byte[]> optionalBytes = getByteArray(key);
         if (optionalBytes.isPresent()) {
@@ -640,10 +987,23 @@ public interface KometPreferences {
         return defaultValue;
     }
 
+    /**
+     * Retrieves a byte array associated with the specified Enum key.
+     *
+     * @param key the Enum key used to access the corresponding byte array
+     * @return an Optional containing the byte array if present, otherwise an empty Optional
+     */
     default Optional<byte[]> getByteArray(Enum key) {
         return getByteArray(enumToGeneralKey(key));
     }
 
+    /**
+     * Retrieves an object by decoding a byte array associated with the specified key.
+     *
+     * @param <T> the type of the decoded object
+     * @param key the key used for lookup to retrieve and decode the byte array
+     * @return an Optional containing the decoded object, or an empty Optional if the byte array is not present or decoding fails
+     */
     default <T extends Object> Optional<T> getObject(Enum key) {
         Optional<byte[]> optionalBytes = getByteArray(key);
         if (optionalBytes.isPresent()) {
@@ -652,10 +1012,29 @@ public interface KometPreferences {
         return Optional.empty();
     }
 
+    /**
+     * Retrieves an object of a specified type associated with the given key.
+     *
+     * @param <T> the type of the object to be retrieved
+     * @param key the UUID associated with the object
+     * @return an Optional containing the object if found, or an empty Optional if not found
+     */
     default <T extends Object> Optional<T> getObject(UUID key) {
         return getObject(key.toString());
     }
 
+    /**
+     * Retrieves an object associated with a given key.
+     *
+     * This method attempts to retrieve a serialized object in the form of a byte array
+     * using the specified key. If the byte array is present, it decodes the byte array
+     * into an object of the specified type. If no associated data is found, an empty
+     * Optional is returned.
+     *
+     * @param <T> the type of the object to be retrieved
+     * @param key the identifier associated with the object
+     * @return an Optional containing the decoded object if present, otherwise an empty Optional
+     */
     default <T extends Object> Optional<T> getObject(String key) {
         Optional<byte[]> optionalBytes = getByteArray(key);
         if (optionalBytes.isPresent()) {
@@ -664,22 +1043,54 @@ public interface KometPreferences {
         return Optional.empty();
     }
 
+    /**
+     * Stores the given Encodable object associated with the specified Enum key.
+     *
+     * @param key the Enum key used to associate the Encodable object
+     * @param encodable the Encodable object to be stored
+     */
     default void putObject(Enum key, Encodable encodable) {
         putObject(enumToGeneralKey(key), encodable);
     }
 
+    /**
+     * Stores an object represented by an Encodable instance into a data structure using the specified key.
+     *
+     * @param key The unique string key associated with the object.
+     * @param encodable The Encodable instance representing the object to be stored, which will be converted to a byte array.
+     */
     default void putObject(String key, Encodable encodable) {
         putByteArray(key, encodable.toBytes());
     }
 
+    /**
+     * Puts an object into a storage system using the provided UUID as the key.
+     *
+     * @param key the unique identifier of the object to be stored
+     * @param encodable the object to be stored, which must implement the Encodable interface
+     */
     default void putObject(UUID key, Encodable encodable) {
         putObject(key.toString(), encodable);
     }
 
+    /**
+     * Retrieves a byte array associated with the given key. If no value is associated
+     * with the key, returns the provided default value.
+     *
+     * @param key the Enum key to identify the byte array
+     * @param defaultValue the default byte array to return if no value is associated with the key
+     * @return the byte array associated with the given key, or the default value if no value is found
+     */
     default byte[] getByteArray(Enum key, byte[] defaultValue) {
         return getByteArray(enumToGeneralKey(key), defaultValue);
     }
 
+    /**
+     * Retrieves all child nodes of the current preferences node as an array of KometPreferences.
+     *
+     * @return an array of KometPreferences representing the child nodes of the current preferences node.
+     * @throws BackingStoreException if there is a failure accessing the backing store for the preferences.
+     */
     default KometPreferences[] children() throws BackingStoreException {
         String[] childrenNames = childrenNames();
         KometPreferences[] children = new KometPreferences[childrenNames.length];
@@ -727,6 +1138,12 @@ public interface KometPreferences {
      */
     KometPreferences node(String pathName);
 
+    /**
+     * Checks if the current node contains any child nodes.
+     *
+     * @return true if the current node has one or more child nodes, false otherwise
+     * @throws BackingStoreException if a failure occurs while attempting to retrieve child nodes
+     */
     default boolean hasChildren() throws BackingStoreException {
         return childrenNames().length != 0;
     }
@@ -741,10 +1158,27 @@ public interface KometPreferences {
      */
     KometPreferences parent();
 
+    /**
+     * Retrieves the preferences node associated with the specified class.
+     *
+     * @param c the class for which to retrieve the preferences node
+     * @return the preferences node associated with the specified class
+     */
     default KometPreferences node(Class<?> c) {
         return node(nodeName(c));
     }
 
+    /**
+     * Generates a preferences node name based on the package name of the specified class.
+     * If the class belongs to an array, an {@link IllegalArgumentException} is thrown.
+     * The node name is constructed by replacing dots in the package name with slashes,
+     * prefixed by a slash. If the specified class does not belong to any package,
+     * returns "/<unnamed>" as the node name.
+     *
+     * @param c the class to generate the preferences node name for
+     * @return the preferences node name based on the class's package name
+     * @throws IllegalArgumentException if the specified class is an array
+     */
     static String nodeName(Class<?> c) {
         if (c.isArray()) {
             throw new IllegalArgumentException(
@@ -759,6 +1193,14 @@ public interface KometPreferences {
         return "/" + packageName.replace('.', '/');
     }
 
+    /**
+     * Checks if a preferences node associated with the specified class exists.
+     *
+     * @param c the class for which the preferences node is to be checked
+     * @return true if the preferences node exists, false otherwise
+     * @throws BackingStoreException if an error occurs while attempting to check
+     *         the existence of the preferences node
+     */
     default boolean nodeExists(Class<?> c) throws BackingStoreException {
         return nodeExists(nodeName(c));
     }
@@ -1053,6 +1495,13 @@ public interface KometPreferences {
         return (T) Enum.valueOf(defaultValue.getClass(), value);
     }
 
+    /**
+     * Retrieves an enum constant of the specified type from a storage based on its canonical name.
+     *
+     * @param <T>       the type of the enum.
+     * @param enumClass the class object of the enum type.
+     * @return an {@code Optional} containing the enum constant if present, otherwise an empty {@code Optional}.
+     */
     default <T extends Enum<T>> Optional<T> getEnum(Class<T> enumClass) {
         String key = enumClass.getCanonicalName();
         Optional<String> value = get(key);
@@ -1062,43 +1511,105 @@ public interface KometPreferences {
         return Optional.empty();
     }
 
+    /**
+     * Stores the provided enum value in a key-value pair format. The key is generated using the canonical name
+     * of the enum's class, and the value is the name of the enum constant.
+     *
+     * @param value the enum value to be stored; must not be null
+     */
     default void putEnum(Enum value) {
         String key = value.getClass().getCanonicalName();
         put(key, value.name());
     }
 
+    /**
+     * Checks if a specific key, represented by the given enum, is present.
+     *
+     * @param enumDefault the enum representing the key to check
+     * @return true if the key is present, false otherwise
+     */
     default boolean hasKey(Enum enumDefault) {
         return get(enumToGeneralKey(enumDefault)).isPresent();
     }
 
+    /**
+     * Checks if the specified key exists in the underlying structure.
+     *
+     * @param key the key to be checked for presence
+     * @return true if the key exists, false otherwise
+     */
     default boolean hasKey(String key) {
         return get(key).isPresent();
     }
 
+    /**
+     * Associates the specified array of strings with the specified key in the form of a list.
+     *
+     * @param key the key with which the specified array is to be associated
+     * @param array the array of strings to be associated with the specified key
+     */
     default void putArray(Enum key, String[] array) {
         putList(key, Arrays.asList(array));
     }
 
+    /**
+     * Adds a list of strings to a storage mechanism identified by the given key.
+     *
+     * @param key  the enumeration key used to identify where the list will be stored
+     * @param list the list of strings to be stored
+     */
     default void putList(Enum key, List<String> list) {
         putList(enumToGeneralKey(key), list);
     }
 
+    /**
+     * Stores an array of strings associated with a specific key by converting the array into a list.
+     *
+     * @param key The unique identifier to associate with the array.
+     * @param array The array of strings to be stored.
+     */
     default void putArray(String key, String[] array) {
         putList(key, Arrays.asList(array));
     }
 
+    /**
+     * Retrieves an array of Strings derived from a specified Enum key.
+     *
+     * @param key the Enum key used to retrieve the associated data
+     * @return an array of Strings corresponding to the given Enum key
+     */
     default String[] getArray(Enum key) {
         return getList(enumToGeneralKey(key)).toArray(new String[2]);
     }
 
+    /**
+     * Retrieves an array of strings corresponding to the specified key.
+     *
+     * @param key the key used to retrieve the associated list of strings
+     * @return an array of strings derived from the list associated with the specified key
+     */
     default String[] getArray(String key) {
         return getList(key).toArray(new String[2]);
     }
 
+    /**
+     * Adds a list of ConceptFacade objects associated with the specified key to the underlying data structure.
+     *
+     * @param key the enumeration key used to identify the list of ConceptFacade objects
+     * @param list the list of ConceptFacade objects to be added
+     */
     default void putConceptList(Enum key, List<? extends ConceptFacade> list) {
         putConceptList(enumToGeneralKey(key), list);
     }
 
+    /**
+     * Stores a list of ConceptFacade objects in a delimited string format associated with a specified key.
+     *
+     * @param key the key used to associate the delimited string representation of the concept list
+     *            in the underlying storage mechanism.
+     * @param list the list of ConceptFacade objects to be stored. The objects are serialized into
+     *             XML fragments and concatenated using a predefined delimiter.
+     */
     default void putConceptList(String key, List<? extends ConceptFacade> list) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < list.size(); i++) {
@@ -1110,10 +1621,23 @@ public interface KometPreferences {
         put(key, builder.toString());
     }
 
+    /**
+     * Associates a collection of EntityFacade components with a specified key in the underlying storage.
+     *
+     * @param key an Enum representing the key used for storing the component list
+     * @param list a collection of EntityFacade objects to be stored under the specified key
+     */
     default void putComponentList(Enum key, Collection<? extends EntityFacade> list) {
         putComponentList(enumToGeneralKey(key), list);
     }
 
+    /**
+     * Stores a list of components into a specified key in a serialized format. Each component in the
+     * list is converted to its XML fragment representation and joined with a specific delimiter.
+     *
+     * @param key The key under which the serialized list of components will be stored.
+     * @param list A collection of EntityFacade objects to be serialized and stored.
+     */
     default void putComponentList(String key, Collection<? extends EntityFacade> list) {
         StringBuilder builder = new StringBuilder();
         Iterator<? extends EntityFacade> itr = list.iterator();
@@ -1127,10 +1651,28 @@ public interface KometPreferences {
         put(key, builder.toString());
     }
 
+    /**
+     * Retrieves a list of entities based on the provided key or returns the default list if no entities are found.
+     *
+     * @param <T>          the type parameter extending EntityFacade representing the entity type
+     * @param key          the key used to identify the desired entity list
+     * @param defaultList  the default list to return if no entities are found for the given key
+     * @return a list of entities of the specified type
+     */
     default <T extends EntityFacade> List<T> getEntityList(Enum key, T[] defaultList) {
         return getEntityList(enumToGeneralKey(key), defaultList);
     }
 
+    /**
+     * Retrieves a list of entity facades based on the provided key. If a list is available for the key,
+     * it converts the items in the list from XML fragments to entity facades. If no list is available,
+     * it returns the default list provided.
+     *
+     * @param <T> the type of entity facade
+     * @param key the key used to retrieve the optional list
+     * @param defaultList the default list of entity facades to return if no list is found for the key
+     * @return a list of entity facades, either retrieved and converted based on the key or the default list
+     */
     default <T extends EntityFacade> List<T> getEntityList(String key, T[] defaultList) {
         Optional<List<String>> optionalList = getOptionalList(key);
         List<T> componentList = new ArrayList<>(defaultList.length);
@@ -1146,10 +1688,22 @@ public interface KometPreferences {
         return componentList;
     }
 
+    /**
+     * Retrieves a list of EntityFacade objects based on the provided Enum key.
+     *
+     * @param key the enumeration key used to determine which entities to retrieve
+     * @return a list of EntityFacade objects corresponding to the specified key
+     */
     default List<EntityFacade> getEntityList(Enum key) {
         return getEntityList(enumToGeneralKey(key));
     }
 
+    /**
+     * Retrieves a list of EntityFacade objects associated with the given key.
+     *
+     * @param key the key used to fetch the list of associated entity XML fragments
+     * @return a list of EntityFacade objects parsed and constructed from the XML fragments
+     */
     default List<EntityFacade> getEntityList(String key) {
         List<String> list = getList(key);
         List<EntityFacade> proxyList = new ArrayList<>(list.size());
@@ -1159,10 +1713,24 @@ public interface KometPreferences {
         return proxyList;
     }
 
+    /**
+     * Retrieves a list of strings associated with a specified enumeration key.
+     *
+     * @param key the enumeration key used to retrieve the corresponding list
+     * @return a list of strings mapped to the given enumeration key
+     */
     default List<String> getList(Enum key) {
         return getList(enumToGeneralKey(key));
     }
 
+    /**
+     * Retrieves a list of strings associated with the specified key. If the list is empty,
+     * the provided default list is returned instead.
+     *
+     * @param key the enumeration key used to retrieve the associated list
+     * @param defaultList the default list to return if the retrieved list is empty
+     * @return the list of strings corresponding to the specified key, or the default list if the retrieved list is empty
+     */
     default List<String> getList(Enum key, List<String> defaultList) {
         List<String> list = getList(enumToGeneralKey(key));
         if (list.isEmpty()) {
@@ -1171,10 +1739,22 @@ public interface KometPreferences {
         return list;
     }
 
+    /**
+     * Retrieves a list of concept entities associated with a specified enum key.
+     *
+     * @param key the enum key used to retrieve the associated list of concept entities
+     * @return a list of EntityProxy.Concept objects corresponding to the provided key
+     */
     default List<EntityProxy.Concept> getConceptList(Enum key) {
         return getConceptList(enumToGeneralKey(key));
     }
 
+    /**
+     * Retrieves a list of concept proxies associated with the specified key.
+     *
+     * @param key the key used to retrieve the associated list of concept proxies
+     * @return a list of EntityProxy.Concept objects corresponding to the given key
+     */
     default List<EntityProxy.Concept> getConceptList(String key) {
         List<String> list = getList(key);
         List<EntityProxy.Concept> proxyList = new ArrayList<>(list.size());
@@ -1184,10 +1764,25 @@ public interface KometPreferences {
         return proxyList;
     }
 
+    /**
+     * Retrieves a list of PatternFacade objects associated with the given key.
+     * If no patterns are found, an empty list is returned.
+     *
+     * @param key an Enum representing the key used to retrieve the patterns
+     * @return a list of PatternFacade objects
+     */
     default List<PatternFacade> getPatternList(Enum key) {
         return getPatternList(key, new ArrayList<>());
     }
 
+    /**
+     * Retrieves a list of PatternFacade objects associated with the specified key.
+     * If no such list is present, returns a copy of the provided default list.
+     *
+     * @param key the enum key used to retrieve the list
+     * @param defaultList the default list of PatternFacade objects to return if no list is found
+     * @return a list of PatternFacade objects, either from the stored data or a copy of the provided default list
+     */
     default List<PatternFacade> getPatternList(Enum key, List<PatternFacade> defaultList) {
         Optional<List<PatternFacade>> optionalList = getOptionalPatternList(enumToGeneralKey(key));
         if (optionalList.isEmpty()) {
@@ -1200,6 +1795,17 @@ public interface KometPreferences {
         return optionalList.get();
     }
 
+    /**
+     * Retrieves an optional list of {@link PatternFacade} objects based on the provided key.
+     * The method converts a list of string representations into a list of {@link PatternFacade} objects
+     * using the {@link ProxyFactory#fromXmlFragmentOptional(String)} method. If the key does not map to
+     * any list or if the list is empty, an empty {@link Optional} is returned.
+     *
+     * @param key the key used to retrieve the optional list of string representations
+     *            from an underlying data source
+     * @return an {@link Optional} containing a list of {@link PatternFacade} objects if present,
+     *         or an empty {@link Optional} if no data is available or conversion fails
+     */
     default Optional<List<PatternFacade>> getOptionalPatternList(String key) {
         Optional<List<String>> optionalList = getOptionalList(key);
         if (optionalList.isPresent()) {
@@ -1213,14 +1819,39 @@ public interface KometPreferences {
         return Optional.empty();
     }
 
+    /**
+     * Retrieves a list of PatternFacade objects based on the specified key.
+     *
+     * @param key the enumeration key used to identify the list of patterns.
+     * @param defaultList an array of PatternFacade objects to be used as the default list.
+     * @return a List of PatternFacade objects associated with the specified key, or the provided default list if no specific list is found.
+     */
     default List<PatternFacade> getPatternList(Enum key, PatternFacade[] defaultList) {
         return getPatternList(key, Arrays.asList(defaultList));
     }
 
+    /**
+     * Retrieves a list of ConceptFacade objects associated with the specified key. If no
+     * associated list exists for the given key, the provided default list is returned.
+     *
+     * @param key the key used to retrieve the associated list of ConceptFacade objects
+     * @param defaultList the default array of ConceptFacade objects to be returned if no
+     *                    list is associated with the provided key
+     * @return a list of ConceptFacade objects associated with the key, or the default list
+     *         if no such list is found
+     */
     default List<ConceptFacade> getConceptList(Enum key, ConceptFacade[] defaultList) {
         return getConceptList(key, Arrays.asList(defaultList));
     }
 
+    /**
+     * Retrieves a list of ConceptFacade objects associated with the specified key.
+     * If no list is found, the provided default list is returned as a copy.
+     *
+     * @param key the enumeration key used to retrieve the concept list
+     * @param defaultList the default list of ConceptFacade objects to be used if no associated list is found
+     * @return a list of ConceptFacade objects. If no associated list is found, a copy of the default list is returned
+     */
     default List<ConceptFacade> getConceptList(Enum key, List<ConceptFacade> defaultList) {
         Optional<List<ConceptFacade>> optionalList = getOptionalConceptList(enumToGeneralKey(key));
         if (optionalList.isEmpty()) {
@@ -1233,6 +1864,16 @@ public interface KometPreferences {
         return optionalList.get();
     }
 
+    /**
+     * Retrieves an optional list of concept facades associated with the provided key.
+     * If the key corresponds to an optional list of strings, each string is converted
+     * to a ConceptFacade using the ProxyFactory. If no such list exists, or if the
+     * conversion fails, an empty optional is returned.
+     *
+     * @param key the key used to retrieve the optional list of strings representing concept facades
+     * @return an optional list of ConceptFacade objects; returns an empty optional if no list exists
+     *         or if the conversion fails
+     */
     default Optional<List<ConceptFacade>> getOptionalConceptList(String key) {
         Optional<List<String>> optionalList = getOptionalList(key);
         if (optionalList.isPresent()) {
@@ -1246,6 +1887,14 @@ public interface KometPreferences {
         return Optional.empty();
     }
 
+    /**
+     * Retrieves a list associated with the given key. If the retrieved list is empty,
+     * the provided default list is returned.
+     *
+     * @param key the key used to retrieve the associated list
+     * @param defaultList the default list to return if the retrieved list is empty
+     * @return the list associated with the key or the default list if the retrieved list is empty
+     */
     default List<String> getList(String key, List<String> defaultList) {
         List<String> list = getList(key);
         if (list.isEmpty()) {
@@ -1254,10 +1903,23 @@ public interface KometPreferences {
         return list;
     }
 
+    /**
+     * Associates the specified password with the provided key. The key is
+     * converted to a general key representation before storing the password.
+     *
+     * @param key the enumeration key to be converted and used for storing the password
+     * @param password the password to be associated with the given key
+     */
     default void putPassword(Enum key, char[] password) {
         putPassword(enumToGeneralKey(key), password);
     }
 
+    /**
+     * Stores an encrypted version of the given password associated with the specified key.
+     *
+     * @param key the key to associate with the encrypted password
+     * @param password the password to be encrypted and stored
+     */
     default void putPassword(String key, char[] password) {
         try {
             String encryptedPassword = PasswordHasher.encrypt("obfuscate-komet".toCharArray(), password);
@@ -1267,10 +1929,25 @@ public interface KometPreferences {
         }
     }
 
+    /**
+     * Retrieves the password associated with the given key.
+     *
+     * @param key the enumeration key for which the password is to be retrieved
+     * @return an {@code Optional} containing the password as a character array, or an empty {@code Optional}
+     *         if no password is found for the given key
+     */
     default Optional<char[]> getPassword(Enum key) {
         return getPassword(enumToGeneralKey(key));
     }
 
+    /**
+     * Retrieves and decrypts the password associated with the specified key.
+     *
+     * @param key the identifier used to retrieve the encrypted password
+     * @return an Optional containing the decrypted password as a char array if present and valid,
+     *         or an empty Optional if no valid password is associated with the given key
+     * @throws RuntimeException if an error occurs during password retrieval or decryption
+     */
     default Optional<char[]> getPassword(String key) {
         try {
             Optional<String> encryptedPassword = get(key);
@@ -1284,6 +1961,14 @@ public interface KometPreferences {
         }
     }
 
+    /**
+     * Retrieves a password associated with the given key. If no password is found,
+     * the default password is returned.
+     *
+     * @param key the enum key used to locate the password
+     * @param defaultPassword the default password to return if no saved password is found
+     * @return the saved password if present, otherwise the default password
+     */
     default char[] getPassword(Enum key, char[] defaultPassword) {
         Optional<char[]> savedPassword = getPassword(enumToGeneralKey(key));
         if (savedPassword.isPresent()) {
@@ -1292,6 +1977,14 @@ public interface KometPreferences {
         return defaultPassword;
     }
 
+    /**
+     * Retrieves the password associated with the specified key. If no password is found,
+     * the provided default password will be returned.
+     *
+     * @param key the identifier used to retrieve the saved password
+     * @param defaultPassword the default password to return if no saved password is found
+     * @return the password associated with the specified key, or the default password if none is found
+     */
     default char[] getPassword(String key, char[] defaultPassword) {
         Optional<char[]> savedPassword = getPassword(key);
         if (savedPassword.isPresent()) {
@@ -1300,10 +1993,23 @@ public interface KometPreferences {
         return defaultPassword;
     }
 
+    /**
+     * Retrieves a concept proxy associated with the given enum key.
+     *
+     * @param key the enum key for which the concept proxy is to be retrieved
+     * @return an optional containing the associated concept proxy if found, or an empty optional if none exists
+     */
     default Optional<EntityProxy.Concept> getConceptProxy(Enum key) {
         return getConceptProxy(enumToGeneralKey(key));
     }
 
+    /**
+     * Retrieves a concept proxy based on the provided key.
+     *
+     * @param key the key used to retrieve the concept specification
+     * @return an optional containing the concept proxy if the key corresponds to a valid specification,
+     *         or an empty optional if the specification is not present or invalid
+     */
     default Optional<EntityProxy.Concept> getConceptProxy(String key) {
         Optional<String> spec = get(key);
 
@@ -1313,10 +2019,26 @@ public interface KometPreferences {
         return Optional.empty();
     }
 
+    /**
+     * Retrieves the concept proxy associated with the specified enum key, or returns the provided default value
+     * if the association cannot be found.
+     *
+     * @param key the enum used to lookup the concept proxy
+     * @param defaultValue the default concept proxy to be returned if no matching association is found
+     * @return the concept proxy associated with the specified enum key, or the specified default value
+     */
     default EntityProxy.Concept getConceptProxy(Enum key, EntityProxy.Concept defaultValue) {
         return getConceptProxy(enumToGeneralKey(key), defaultValue);
     }
 
+    /**
+     * Retrieves a concept proxy associated with the given key.
+     * If the key is not found, returns the provided default value.
+     *
+     * @param key the key to lookup in the underlying data source
+     * @param defaultValue the default concept proxy to return if the key is not found
+     * @return the concept proxy corresponding to the key, or the default value if the key is not found
+     */
     default EntityProxy.Concept getConceptProxy(String key, EntityProxy.Concept defaultValue) {
         Optional<String> spec = get(key);
         if (spec.isPresent()) {
@@ -1325,26 +2047,69 @@ public interface KometPreferences {
         return defaultValue;
     }
 
+    /**
+     * Stores a concept proxy associated with the specified key.
+     * Converts the concept proxy into its XML fragment representation before storing.
+     *
+     * @param key the key with which the specified concept proxy is to be associated
+     * @param conceptProxy the concept proxy to be stored
+     */
     default void putConceptProxy(String key, EntityProxy.Concept conceptProxy) {
         put(key, conceptProxy.toXmlFragment());
     }
 
+    /**
+     * Associates the specified concept proxy with the specified key in the underlying data structure.
+     * This method uses the provided enumeration key to generate a general key and maps it to the XML
+     * fragment representation of the given concept proxy.
+     *
+     * @param key the enumeration key used to generate the general key for mapping
+     * @param conceptProxy the concept proxy to be stored, whose XML fragment will be used
+     */
     default void putConceptProxy(Enum key, EntityProxy.Concept conceptProxy) {
         put(enumToGeneralKey(key), conceptProxy.toXmlFragment());
     }
 
+    /**
+     * Associates the specified entity with the key derived from the given Enum.
+     *
+     * @param key the enumeration value to be converted into a general key
+     * @param entityFacade the entity to be associated with the derived key
+     */
     default void putEntity(Enum key, EntityFacade entityFacade) {
         putEntity(enumToGeneralKey(key), entityFacade);
     }
 
+    /**
+     * Stores an entity in a specific format by converting it to an XML fragment and associating it with a given key.
+     *
+     * @param key the unique identifier used to store the entity
+     * @param entityFacade the facade object representing the entity to be stored
+     */
     default void putEntity(String key, EntityFacade entityFacade) {
         put(key, entityFacade.toXmlFragment());
     }
 
+    /**
+     * Retrieves an EntityFacade instance associated with the specified enumeration key.
+     * This method converts the provided Enum key into a general key and retrieves
+     * the corresponding EntityFacade instance, if it exists.
+     *
+     * @param key the enumeration key used to identify the EntityFacade
+     * @return an Optional containing the EntityFacade if found, or an empty Optional if no match is found
+     */
     default Optional<EntityFacade> getEntity(Enum key) {
         return getEntity(enumToGeneralKey(key));
     }
 
+    /**
+     * Retrieves an entity represented as an {@link EntityFacade} object based on the given key.
+     * The entity is constructed from an XML fragment if the key is associated with a non-empty value.
+     *
+     * @param key the identifier used to look up the associated XML data
+     * @return an {@link Optional} containing the {@link EntityFacade} object if the key exists and XML data is valid,
+     *         otherwise an empty {@link Optional}
+     */
     default Optional<EntityFacade> getEntity(String key) {
         Optional<String> optionalXml = get(key);
         if (optionalXml.isPresent()) {
@@ -1354,10 +2119,26 @@ public interface KometPreferences {
     }
 
 
+    /**
+     * Retrieves an entity based on the provided key. If the entity is not found, a default value is returned.
+     *
+     * @param key the enumeration key used to locate the entity
+     * @param defaultValue the default value to return if the entity is not found
+     * @return the entity associated with the provided key, or the default value if the entity is not found
+     */
     default EntityFacade getEntity(Enum key, EntityFacade defaultValue) {
         return getEntity(enumToGeneralKey(key), defaultValue);
     }
 
+    /**
+     * Retrieves an EntityFacade object associated with the specified key.
+     * If the key does not exist or cannot be mapped to a valid EntityFacade,
+     * the provided default value is returned.
+     *
+     * @param key the unique identifier used to locate the desired EntityFacade
+     * @param defaultValue the default EntityFacade to return if the key is not found or invalid
+     * @return the EntityFacade object associated with the key, or the defaultValue if no mapping exists
+     */
     default EntityFacade getEntity(String key, EntityFacade defaultValue) {
         Optional<String> optionalXml = get(key);
         if (optionalXml.isPresent()) {
