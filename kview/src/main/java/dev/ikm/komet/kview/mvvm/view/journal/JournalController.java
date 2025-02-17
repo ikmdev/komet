@@ -259,7 +259,7 @@ public class JournalController {
 
     /////////////////////////////////////////////////////////////////
     // Private Data
-    /////////////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////////////
     private final VBox progressPopupPane = new VBox();
     private Pane navigatorNodePanel;
     private Pane searchNodePanel;
@@ -847,11 +847,35 @@ public class JournalController {
         }));
     }
 
+    /**
+     * Creates and displays a concept window for the given concept using default settings.
+     * <p>
+     * This method is a convenience overload that delegates to
+     * {@link #makeConceptWindow(ObservableViewNoOverride, ConceptFacade, NidTextEnum, Map)}
+     * with the default {@link NidTextEnum} value of {@code NID_TEXT} and no concept window settings.
+     *
+     * @param windowView    the current window view context (of type {@link ObservableViewNoOverride})
+     * @param conceptFacade the {@link ConceptFacade} representing the concept to be displayed
+     */
     private void makeConceptWindow(ObservableViewNoOverride windowView, ConceptFacade conceptFacade) {
         // This is our overloaded method to call makeConceptWindow when no map is created yet.
         makeConceptWindow(windowView, conceptFacade, NID_TEXT, null);
     }
 
+    /**
+     * Creates and displays a concept window for the given concept.
+     * <p>
+     * An on-close handler is attached so that when the window is closed, it is removed from the workspace and its
+     * associated preferences are cleaned up.
+     *
+     * @param windowView               the current window view context (of type {@link ObservableViewNoOverride})
+     * @param conceptFacade            the {@link ConceptFacade} representing the concept to be displayed
+     * @param nidTextEnum              the {@link NidTextEnum} indicating the type of the concept (e.g.,
+     *                                 {@code NID_TEXT} or {@code SEMANTIC_ENTITY})
+     * @param conceptWindowSettingsMap an optional map of {@link ConceptWindowSettings} to configure the window's
+     *                                 initial properties. May be {@code null} if no concept window settings are
+     *                                 provided
+     */
     private void makeConceptWindow(ObservableViewNoOverride windowView, ConceptFacade conceptFacade,
                                    NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
         ConceptKlWindowFactory conceptKlWindowFactory = new ConceptKlWindowFactory();
@@ -887,11 +911,17 @@ public class JournalController {
     }
 
     /**
-     * TODO: This displays a blank concept window to allow user to Create a Concept.
+     * Creates and displays a blank concept window intended for creating a new concept.
+     * <p>
+     * An on-close handler is attached to ensure that when the window is closed, it is removed from the workspace and
+     * its associated preferences are cleaned up.
      *
-     * @param windowView
-     * @param nidTextEnum
-     * @param conceptWindowSettingsMap
+     * @param windowView               the current window view context (of type {@link ObservableViewNoOverride})
+     * @param nidTextEnum              the {@link NidTextEnum} representing the type of the concept window
+     *                                 (e.g., {@code NID_TEXT})
+     * @param conceptWindowSettingsMap an optional map of {@link ConceptWindowSettings} to configure the window's
+     *                                 initial properties (such as folder name, position, and size). May be
+     *                                 {@code null} if no concept window settings are provided
      */
     private void makeCreateConceptWindow(ObservableViewNoOverride windowView, NidTextEnum nidTextEnum,
                                          Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
@@ -927,6 +957,18 @@ public class JournalController {
         });
     }
 
+    /**
+     * Creates and displays a new LIDR window for editing or creating a LIDR record.
+     * <p>
+     * An on-close handler is attached to ensure that when the window is closed, it is removed from the workspace and
+     * its associated preferences are cleaned up.
+     *
+     * @param windowView               the current window view context (of type {@link ObservableViewNoOverride})
+     * @param nidTextEnum              the {@link NidTextEnum} representing the type of the window for display purposes
+     * @param conceptWindowSettingsMap an optional map of {@link ConceptWindowSettings} to configure the window's
+     *                                 initial properties. May be {@code null} if no concept window settings are
+     *                                 provided
+     */
     private void makeCreateLidrWindow(ObservableViewNoOverride windowView, NidTextEnum nidTextEnum,
                                       Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
         LidrKlWindowFactory lidrKlWindowFactory = new LidrKlWindowFactory();
@@ -954,6 +996,19 @@ public class JournalController {
         });
     }
 
+    /**
+     * Creates and displays a view/edit LIDR window for the specified device concept.
+     * <p>
+     * An on-close handler is attached to ensure that when the window is closed, it is removed from the workspace and
+     * its associated preferences are cleaned up.
+     *
+     * @param windowView               the current window view context (of type {@link ObservableViewNoOverride})
+     * @param deviceConcept            the {@link ConceptFacade} representing the device concept to be viewed or edited
+     * @param nidTextEnum              the {@link NidTextEnum} representing the type of the window for display purposes
+     * @param conceptWindowSettingsMap an optional map of {@link ConceptWindowSettings} to configure the window's
+     *                                 initial properties. May be {@code null} if no concept window settings are
+     *                                 provided
+     */
     private void makeViewEditLidrWindow(ObservableViewNoOverride windowView, ConceptFacade deviceConcept,
                                         NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
         LidrKlWindowFactory lidrKlWindowFactory = new LidrKlWindowFactory();
@@ -1027,7 +1082,7 @@ public class JournalController {
      *
      * @param conceptPrefDirName a unique name used as the directory name in preferences and for identifying
      *                           the concept window
-     * @param conceptWindowPane the JavaFX pane representing the concept window whose settings are being captured
+     * @param conceptWindowPane  the JavaFX pane representing the concept window whose settings are being captured
      * @return a map of {@link ConceptWindowSettings} keys to their corresponding preference values
      */
     private Map<ConceptWindowSettings, Object> createConceptPrefMap(String conceptPrefDirName, Pane conceptWindowPane) {
