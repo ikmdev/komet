@@ -1,16 +1,13 @@
 package dev.ikm.komet.controls;
 
-import dev.ikm.komet.controls.skin.ConceptNavigatorVirtualFlow;
 import dev.ikm.komet.controls.skin.KLConceptNavigatorTreeViewSkin;
-import javafx.scene.Group;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
 public class KLConceptNavigatorControl extends TreeView<String> {
-
-    private Group sheet;
-    private ConceptNavigatorVirtualFlow conceptNavigatorVirtualFlow;
 
     public KLConceptNavigatorControl() {
         TreeItem<String> root = new TreeItem<>("Root");
@@ -24,19 +21,20 @@ public class KLConceptNavigatorControl extends TreeView<String> {
         getStylesheets().add(KLConceptNavigatorControl.class.getResource("concept-navigator.css").toExternalForm());
     }
 
+    // headerProperty
+    private final StringProperty headerProperty = new SimpleStringProperty(this, "header");
+    public final StringProperty headerProperty() {
+       return headerProperty;
+    }
+    public final String getHeader() {
+       return headerProperty.get();
+    }
+    public final void setHeader(String value) {
+        headerProperty.set(value);
+    }
+    
     @Override
     protected Skin<?> createDefaultSkin() {
-        KLConceptNavigatorTreeViewSkin skin = new KLConceptNavigatorTreeViewSkin(this);
-        conceptNavigatorVirtualFlow = skin.getConceptNavigatorVirtualFlow();
-        sheet = (Group) conceptNavigatorVirtualFlow.lookup(".sheet");
-        return skin;
-    }
-
-    public Group getSheet() {
-        return sheet;
-    }
-
-    public ConceptNavigatorVirtualFlow getConceptNavigatorVirtualFlow() {
-        return conceptNavigatorVirtualFlow;
+        return new KLConceptNavigatorTreeViewSkin(this);
     }
 }

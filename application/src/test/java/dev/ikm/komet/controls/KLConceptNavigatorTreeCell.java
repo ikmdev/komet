@@ -1,6 +1,7 @@
 package dev.ikm.komet.controls;
 
 import dev.ikm.komet.controls.skin.KLConceptNavigatorTreeCellSkin;
+import dev.ikm.komet.controls.skin.KLConceptNavigatorTreeViewSkin;
 import javafx.animation.PauseTransition;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -43,6 +44,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<String> {
     private final Label label;
     private final HBox box;
     private final KLConceptNavigatorControl treeView;
+    private KLConceptNavigatorTreeViewSkin treeViewSkin;
     private KLConceptNavigatorTreeCellSkin myTreeCellSkin;
 
     private PauseTransition hoverTransition;
@@ -68,11 +70,13 @@ public class KLConceptNavigatorTreeCell extends TreeCell<String> {
 
         label = new Label();
         label.getStyleClass().add("concept-label");
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         box = new HBox(disclosurePane, label, spacer, selectPane, treePane);
         box.getStyleClass().add("cell-box");
 
+        this.treeView.skinProperty().subscribe(skin -> this.treeViewSkin = (KLConceptNavigatorTreeViewSkin) skin);
         treeItemProperty().subscribe(tree -> {
             if (tree != null) {
                 disclosureIconRegion.getStyleClass().setAll("icon", tree.isLeaf() ? "leaf" : "disclosure");
@@ -207,7 +211,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<String> {
     }
 
     private void unselectAllItems() {
-        treeView.getSheet().getChildren().stream()
+        treeViewSkin.getSheet().getChildren().stream()
                 .filter(KLConceptNavigatorTreeCell.class::isInstance)
                 .map(KLConceptNavigatorTreeCell.class::cast)
                 .forEach(c -> {
@@ -240,7 +244,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<String> {
                                         }, () -> {
                                             // the ancestor is outside the viewport, we just get all the cells above the current cell until first one visible
                                             if (currentSibling.get() != null) {
-                                                treeView.getConceptNavigatorVirtualFlow().applyToAllVisibleCellsBefore(currentSibling.get(),
+                                                treeViewSkin.getConceptNavigatorVirtualFlow().applyToAllVisibleCellsBefore(currentSibling.get(),
                                                         cell -> cell.pseudoClassStateChanged(LINE_SELECTED_PSEUDO_CLASS[level], true));
                                             }
                                         });
@@ -250,14 +254,14 @@ public class KLConceptNavigatorTreeCell extends TreeCell<String> {
                     });
             parent = parent.getParent();
         }
-        treeView.getConceptNavigatorVirtualFlow().requestLayout();
+        treeViewSkin.getConceptNavigatorVirtualFlow().requestLayout();
     }
 
     private Optional<KLConceptNavigatorTreeCell> getCellForTreeItem(TreeItem<String> treeItem) {
         if (treeItem == null) {
             return Optional.empty();
         }
-        return treeView.getSheet().getChildren().stream()
+        return treeViewSkin.getSheet().getChildren().stream()
                 .filter(KLConceptNavigatorTreeCell.class::isInstance)
                 .map(KLConceptNavigatorTreeCell.class::cast)
                 .filter(cell -> treeItem.equals(cell.getTreeItem()))

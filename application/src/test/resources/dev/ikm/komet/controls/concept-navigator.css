@@ -6,12 +6,29 @@
     -fx-background-color: -fx-background;
     -fx-background-insets: 0;
     -fx-background-radius: 5;
-    -fx-padding: 3;
+    -fx-padding: 4 3 3 3;
     -fx-min-width: 448;
     -fx-pref-width: 448;
     -fx-max-width: 448;
 }
 
+.concept-navigator-control.tree-view > .concept-header.label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 500;
+    -fx-font-size: 14;
+    -fx-text-fill: #2E3240;
+    -fx-padding: 0 0 4 0;
+    -fx-alignment: center;
+    -fx-background: #E1E8F1;
+    -fx-background-color: -fx-background;
+    -fx-min-width: 448;
+    -fx-pref-width: 448;
+    -fx-max-width: 448;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .clipped-container > .sheet {
+    -fx-padding: 40 0 0 0;
+}
 .concept-navigator-control.tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-cell:filled:selected,
 .concept-navigator-control.tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-cell:focused {
     -fx-background: #E1E8F1;

@@ -19,6 +19,7 @@ public class SamplerConceptNavigatorController {
 
     public void initialize() {
         samplerDescription.setText("The Concept Navigator control is a tree view to display a hierarchy of concepts");
+        conceptNavigatorControl.setHeader("Concept Header");
         conceptNavigatorControl.getRoot().getChildren().addAll(generateChildren(1));
     }
 
