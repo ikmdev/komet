@@ -6,7 +6,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.47.0-jpro-97-journal-window-closure-fails-node-name-too-long-exception-thrown-SNAPSHOT</version>
+        <version>1.47.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>knowledge-layout</artifactId>
