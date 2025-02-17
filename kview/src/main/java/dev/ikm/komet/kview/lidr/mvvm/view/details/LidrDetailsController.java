@@ -443,8 +443,6 @@ public class LidrDetailsController {
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
-        Pane parent = (Pane) detailsOuterBorderPane.getParent();
-        parent.getChildren().remove(detailsOuterBorderPane);
     }
     public Pane getPropertiesSlideoutTrayPane() {
         return propertiesSlideoutTrayPane;

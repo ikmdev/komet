@@ -7,20 +7,20 @@ import dev.ikm.komet.layout.component.version.field.KlFieldFactory;
 import dev.ikm.komet.layout.component.version.field.KlImageField;
 import javafx.scene.image.Image;
 
-public class KlImageFieldFactory implements KlFieldFactory<Image> {
+public class KlImageFieldFactory implements KlFieldFactory<byte[]> {
 
     @Override
-    public KlField<Image> create(ObservableField<Image> observableField, ObservableView observableView, boolean editable) {
+    public KlField<byte[]> create(ObservableField<byte[]> observableField, ObservableView observableView, boolean editable) {
         return new DefaultKlImageField(observableField, observableView, editable);
     }
 
     @Override
-    public Class<? extends KlField<Image>> getFieldInterface() {
-        return KlImageField.class;
+    public Class<? extends KlField<byte[]>> getFieldInterface() {
+        return null;
     }
 
     @Override
-    public Class<? extends KlField<Image>> getFieldImplementation() {
+    public Class<? extends KlField<byte[]>> getFieldImplementation() {
         return DefaultKlImageField.class;
     }
 

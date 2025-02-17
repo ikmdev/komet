@@ -95,6 +95,8 @@
     -fx-min-height: -default-height;
     -fx-pref-width: -default-width;
     -fx-pref-height: -default-height;
+    -fx-max-width: -default-width;
+    -fx-max-height: -default-width;
 }
 
 .workspace .desktop-pane > .drop-region:line {
@@ -104,9 +106,11 @@
     -fx-min-height: -default-height;
     -fx-pref-width: -default-width;
     -fx-pref-height: -default-height;
+    -fx-max-width: -default-width;
+    -fx-max-height: -default-width;
 
     -fx-border-color: transparent, -Primary-04;
-    -fx-border-style: solid, segments(12, 16) phase 9.75 line-join round line-cap round;
+    -fx-border-style: solid, segments(12, 16) phase 15.65 line-join round line-cap round;
     -fx-border-width: 2, 4;
     -fx-background-insets: 2;
     -fx-background-color: white;

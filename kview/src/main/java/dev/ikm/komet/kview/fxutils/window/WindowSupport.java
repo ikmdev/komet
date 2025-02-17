@@ -137,7 +137,6 @@ public class WindowSupport {
                     getPane().setTranslateY(previousLocationProperty.get().getY()
                             + mouseEvent.getSceneY()
                             - anchorPtProperty.get().getY());
-                    clampWindowPosition(); // Clamp position after dragging
                 }
             }
         });
@@ -214,14 +213,6 @@ public class WindowSupport {
             lowerLeft.setCenterY(h);
         });
 
-        // Add listeners to workspace size changes to ensure windows stay within bounds
-        desktopPane.widthProperty().addListener((obs, oldVal, newVal) -> clampWindowPosition());
-        desktopPane.heightProperty().addListener((obs, oldVal, newVal) -> clampWindowPosition());
-
-        // Add listeners to pane's width and height properties
-        pane.widthProperty().addListener((obs, oldVal, newVal) -> clampWindowPosition());
-        pane.heightProperty().addListener((obs, oldVal, newVal) -> clampWindowPosition());
-
         ///////////////////////////////////////////////////
         // Code to resize the window pane in the journal
         //////////////////////////////////////////////////
@@ -229,27 +220,19 @@ public class WindowSupport {
         resizeWidthValue.addListener( obs -> {
             double newWidth = resizeWidthValue.get();
             this.pane.setPrefWidth(newWidth);
-            clampWindowPosition();
         });
 
         // Change stage's bindYToHeight
         resizeHeightValue.addListener( obs -> {
             double newHeight = resizeHeightValue.get();
             this.pane.setPrefHeight(newHeight);
-            clampWindowPosition();
         });
 
         // Change pane's upper left corner's X
-        paneXCoordValue.addListener(obs -> {
-            this.pane.setTranslateX(paneXCoordValue.get());
-            clampWindowPosition();
-        });
+        paneXCoordValue.addListener(obs -> this.pane.setTranslateX(paneXCoordValue.get()));
 
         // Change pane's upper left corner's Y
-        paneYCoordValue.addListener(obs -> {
-            this.pane.setTranslateY(paneYCoordValue.get());
-            clampWindowPosition();
-        });
+        paneYCoordValue.addListener(obs -> this.pane.setTranslateY(paneYCoordValue.get()));
 
         // Listener to drag edges of windows
         Line[] lines = new Line[] { northEdge, eastEdge, southEdge, westEdge};
@@ -353,8 +336,6 @@ public class WindowSupport {
             setPositionWindowDrag(defaultPositionWindowDrag);
         }
         getPositionWindowDrag().accept(mouseEvent);
-
-        clampWindowPosition();
     }
 
     /**
@@ -464,7 +445,6 @@ public class WindowSupport {
                     wt.currentResizeDirection.set(CursorMappings.RESIZE_DIRECTION.NONE);
                 }
             }
-
         });
 
         setOnMouseDragged((mouseEvent, wt) -> {
@@ -504,7 +484,6 @@ public class WindowSupport {
                 default:
                     break;
             }
-            clampWindowPosition();
         });
 
         // after user resizes (mouse release) the previous location is reset
@@ -569,44 +548,5 @@ public class WindowSupport {
     }
     public void setOnMouseReleased(PaneMouseReleased mouseReleased) {
         this.mouseReleased = mouseReleased;
-    }
-
-
-    private void clampWindowPosition() {
-        double desktopPaneWidth = desktopPane.getWidth();
-        double desktopPaneHeight = desktopPane.getHeight();
-        double windowWidth = pane.getWidth();
-        double windowHeight = pane.getHeight();
-
-        // Check if dimensions are valid
-        if (desktopPaneWidth <= 0 || desktopPaneHeight <= 0 || windowWidth <= 0 || windowHeight <= 0) {
-            // Sizes are not initialized yet; skip clamping
-            return;
-        }
-
-        double newX = pane.getTranslateX();
-        double newY = pane.getTranslateY();
-
-        // Clamp X position
-        if (newX < 0) {
-            pane.setTranslateX(0);
-        } else if (newX + windowWidth > desktopPaneWidth) {
-            pane.setTranslateX(desktopPaneWidth - windowWidth);
-        }
-
-        // Clamp Y position
-        if (newY < 0) {
-            pane.setTranslateY(0);
-        } else if (newY + windowHeight > desktopPaneHeight) {
-            pane.setTranslateY(desktopPaneHeight - windowHeight);
-        }
-
-        // Ensure window size does not exceed workspace
-        if (pane.getWidth() > desktopPaneWidth) {
-            pane.setPrefWidth(desktopPaneWidth);
-        }
-        if (pane.getHeight() > desktopPaneHeight) {
-            pane.setPrefHeight(desktopPaneHeight);
-        }
     }
 }
