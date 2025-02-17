@@ -39,14 +39,15 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
     /**
      * Constructs a new pattern window for a specific semantic entity.
      *
-     * @param journalTopic the UUID representing the journal topic the owning Journal Window uses to communicate events.
-     * @param entityFacade entity facade when not null usually this will load and display the current details.
+     * @param journalTopic   the UUID representing the journal topic the owning Journal Window uses to communicate events.
+     * @param entityFacade   entity facade when not null usually this will load and display the current details.
      * @param viewProperties view properties is access to view calculators to query data.
-     * @param preferences komet preferences assists on reading and writing data to preferences user.home/Solor/database_folder/preferences.
+     * @param preferences    komet preferences assists on reading and writing data to preferences user.home/Solor/database_folder/preferences.
      */
     public PatternKlWindow(UUID journalTopic, EntityFacade entityFacade,
                            ViewProperties viewProperties, KometPreferences preferences) {
         super(journalTopic, entityFacade, viewProperties, preferences);
+
         // Initialize stampsViewModel with basic data.
         StampViewModel stampViewModel = new StampViewModel();
         stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
@@ -73,12 +74,12 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
         Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
                 .updateViewModel("patternViewModel", (PatternViewModel patternViewModel) ->
                         patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
-                        .setPropertyValue(MODE, mode)
-                        .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
-                        .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
-                        .setPropertyValue(STATE_MACHINE, patternSM)
-                        .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
-                        .setPropertyValue(PATTERN, entityFacade));
+                                .setPropertyValue(MODE, mode)
+                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
+                                .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
+                                .setPropertyValue(STATE_MACHINE, patternSM)
+                                .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
+                                .setPropertyValue(PATTERN, entityFacade));
 
         // Create pattern window
         jfxNode = FXMLMvvmLoader.make(patternConfig);
@@ -87,12 +88,12 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
         optPatternViewModel.ifPresent(PatternViewModel::loadPatternValues);
 
         // Getting the concept window pane
-        setRootPane(jfxNode.node());
+        paneWindow = jfxNode.node();
 
         // Calls the remove method to remove and concepts that were closed by the user.
         jfxNode.controller().setOnCloseConceptWindow(windowEvent -> {
-            // TODO more clean up such as view models and listeners just in case (memory).
             getOnClose().ifPresent(Runnable::run);
+            // TODO more clean up such as view models and listeners just in case (memory).
         });
     }
 

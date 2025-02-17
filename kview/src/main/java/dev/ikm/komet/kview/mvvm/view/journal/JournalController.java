@@ -873,7 +873,7 @@ public class JournalController {
         detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
 
         // Getting the concept window pane
-        Pane kometNodePanel = conceptKlWindow.getRootPane();
+        Pane kometNodePanel = conceptKlWindow.fxGadget();
 
         // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
         Optional<String> conceptFolderName;
@@ -887,15 +887,17 @@ public class JournalController {
             kometNodePanel.setUserData(conceptWindowSettingsObjectMap);
         }
 
-        // add to the list of concept windows
+        // Add to the list of concept windows
         final String finalConceptFolderName = conceptFolderName.get();
         conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, conceptFacade.nid(), kometNodePanel));
 
-        //Calls the remove method to remove and concepts that were closed by the user.
-        detailsNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent ->
-                removeConceptSetting(finalConceptFolderName, detailsNode));
+        // Calls the remove method to remove and concepts that were closed by the user.
+        conceptKlWindow.setOnClose(() -> {
+            removeConceptSetting(finalConceptFolderName, detailsNode);
+            workspace.getWindows().remove(conceptKlWindow);
+        });
 
-        //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
+        // Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
         if (conceptWindowSettingsMap != null) {
             kometNodePanel.setTranslateX((Double) conceptWindowSettingsMap.get(CONCEPT_XPOS));
             kometNodePanel.setTranslateY((Double) conceptWindowSettingsMap.get(CONCEPT_YPOS));
@@ -925,48 +927,7 @@ public class JournalController {
         detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
 
         // Getting the concept window pane
-        Pane kometNodePanel = conceptKlWindow.getRootPane();
-
-        // This will refresh the Concept details, history, timeline
-        //detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
-
-        // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
-        Optional<String> conceptFolderName;
-        if (conceptWindowSettingsMap != null) {
-            conceptFolderName = (Optional<String>) conceptWindowSettingsMap.getOrDefault(CONCEPT_PREF_NAME, CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
-        } else {
-            conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
-            // create a conceptWindowSettingsMap
-            Map<ConceptWindowSettings, Object> conceptWindowSettingsObjectMap = createConceptPrefMap(conceptFolderName.get(), kometNodePanel);
-            kometNodePanel.setUserData(conceptWindowSettingsObjectMap);
-        }
-
-        // add to the list of concept windows
-        final String finalConceptFolderName = conceptFolderName.get();
-        conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, -1, kometNodePanel));
-
-        //Calls the remove method to remove and concepts that were closed by the user.
-        detailsNode.getDetailsViewController().setOnCloseConceptWindow(windowEvent -> {
-            removeConceptSetting(finalConceptFolderName, detailsNode);
-        });
-        //Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
-        if (conceptWindowSettingsMap != null) {
-            kometNodePanel.setPrefHeight((Double) conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
-            kometNodePanel.setPrefWidth((Double) conceptWindowSettingsMap.get(CONCEPT_WIDTH));
-            kometNodePanel.setLayoutX((Double) conceptWindowSettingsMap.get(CONCEPT_XPOS));
-            kometNodePanel.setLayoutY((Double) conceptWindowSettingsMap.get(CONCEPT_YPOS));
-        }
-    }
-
-    private void makeCreateLidrWindow(ObservableViewNoOverride windowView, NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
-        LidrKlWindowFactory lidrKlWindowFactory = new LidrKlWindowFactory();
-        LidrKlWindow lidrKlWindow = lidrKlWindowFactory.create(journalTopic, null, null,
-                windowView.makeOverridableViewProperties(), null);
-        // Adding the concept window panel as a child to the workspace.
-        workspace.getWindows().add(lidrKlWindow);
-
-        // Getting the concept window pane
-        Pane kometNodePanel = lidrKlWindow.getRootPane();
+        Pane kometNodePanel = conceptKlWindow.fxGadget();
 
         // This will refresh the Concept details, history, timeline
         //detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
@@ -987,7 +948,53 @@ public class JournalController {
         conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, -1, kometNodePanel));
 
         // Calls the remove method to remove and concepts that were closed by the user.
-        lidrKlWindow.setOnClose(() -> removeLidrSetting(finalConceptFolderName));
+        conceptKlWindow.setOnClose(() -> {
+            removeConceptSetting(finalConceptFolderName, detailsNode);
+            workspace.getWindows().remove(conceptKlWindow);
+        });
+
+        // Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
+        if (conceptWindowSettingsMap != null) {
+            kometNodePanel.setPrefHeight((Double) conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
+            kometNodePanel.setPrefWidth((Double) conceptWindowSettingsMap.get(CONCEPT_WIDTH));
+            kometNodePanel.setLayoutX((Double) conceptWindowSettingsMap.get(CONCEPT_XPOS));
+            kometNodePanel.setLayoutY((Double) conceptWindowSettingsMap.get(CONCEPT_YPOS));
+        }
+    }
+
+    private void makeCreateLidrWindow(ObservableViewNoOverride windowView, NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
+        LidrKlWindowFactory lidrKlWindowFactory = new LidrKlWindowFactory();
+        LidrKlWindow lidrKlWindow = lidrKlWindowFactory.create(journalTopic, null, null,
+                windowView.makeOverridableViewProperties(), null);
+        // Adding the concept window panel as a child to the workspace.
+        workspace.getWindows().add(lidrKlWindow);
+
+        // Getting the concept window pane
+        Pane kometNodePanel = lidrKlWindow.fxGadget();
+
+        // This will refresh the Concept details, history, timeline
+        //detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
+
+        // If a concept window is newly launched assign it a unique id 'CONCEPT_XXX-XXXX-XX'
+        Optional<String> conceptFolderName;
+        if (conceptWindowSettingsMap != null) {
+            conceptFolderName = (Optional<String>) conceptWindowSettingsMap.getOrDefault(CONCEPT_PREF_NAME, CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
+        } else {
+            conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
+            // create a conceptWindowSettingsMap
+            Map<ConceptWindowSettings, Object> conceptWindowSettingsObjectMap = createConceptPrefMap(conceptFolderName.get(), kometNodePanel);
+            kometNodePanel.setUserData(conceptWindowSettingsObjectMap);
+        }
+
+        // Add to the list of concept windows
+        final String finalConceptFolderName = conceptFolderName.get();
+        conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, -1, kometNodePanel));
+
+        // Calls the remove method to remove and concepts that were closed by the user.
+        lidrKlWindow.setOnClose(() -> {
+            removeLidrSetting(finalConceptFolderName);
+            workspace.getWindows().remove(lidrKlWindow);
+        });
 
         // Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
         if (conceptWindowSettingsMap != null) {
@@ -1006,7 +1013,7 @@ public class JournalController {
         workspace.getWindows().add(lidrKlWindow);
 
         // Getting the concept window pane
-        Pane kometNodePanel = lidrKlWindow.getRootPane();
+        Pane kometNodePanel = lidrKlWindow.fxGadget();
 
         // This will refresh the Concept details, history, timeline
         //detailsNode.handleActivity(Lists.immutable.of(conceptFacade));
@@ -1027,7 +1034,10 @@ public class JournalController {
         conceptWindows.add(new ConceptPreference(conceptFolderName.get(), nidTextEnum, -1, kometNodePanel));
 
         // Calls the remove method to remove and concepts that were closed by the user.
-        lidrKlWindow.setOnClose(() -> removeLidrSetting(finalConceptFolderName));
+        lidrKlWindow.setOnClose(() -> {
+            removeLidrSetting(finalConceptFolderName);
+            workspace.getWindows().remove(lidrKlWindow);
+        });
 
         // Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
         if (conceptWindowSettingsMap != null) {
@@ -1236,7 +1246,7 @@ public class JournalController {
                 detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
 
                 // Getting the concept window pane
-                Pane kometNodePanel = conceptKlWindow.getRootPane();
+                Pane kometNodePanel = conceptKlWindow.fxGadget();
 
                 // Make the window compact sized.
                 detailsNode.getDetailsViewController().compactSizeWindow();
@@ -1362,8 +1372,8 @@ public class JournalController {
                 conceptPreferences.putInt(NID_VALUE, conceptPreference.getNid());
                 conceptPreferences.putDouble(CONCEPT_HEIGHT, conceptPreference.getConceptPane().getPrefHeight());
                 conceptPreferences.putDouble(CONCEPT_WIDTH, conceptPreference.getConceptPane().getPrefWidth());
-                conceptPreferences.putDouble(CONCEPT_XPOS, conceptPreference.getConceptPane().getBoundsInParent().getMinX());
-                conceptPreferences.putDouble(CONCEPT_YPOS, conceptPreference.getConceptPane().getBoundsInParent().getMinY());
+                conceptPreferences.putDouble(CONCEPT_XPOS, conceptPreference.getConceptPane().getTranslateX());
+                conceptPreferences.putDouble(CONCEPT_YPOS, conceptPreference.getConceptPane().getTranslateY());
 
                 conceptPreferences.flush();
             } catch (Exception e) {
@@ -1490,7 +1500,7 @@ public class JournalController {
         Optional<String> conceptFolderName;
         conceptFolderName = Optional.of(CONCEPT_FOLDER_PREFIX + UUID.randomUUID());
         // create a conceptWindowSettingsMap
-        Pane chapterWindow = patternKlWindow.getRootPane();
+        Pane chapterWindow = patternKlWindow.fxGadget();
         Map<ConceptWindowSettings, Object> conceptWindowSettingsObjectMap = createConceptPrefMap(conceptFolderName.get(), chapterWindow);
         chapterWindow.setUserData(conceptWindowSettingsObjectMap);
 
@@ -1498,18 +1508,21 @@ public class JournalController {
         final String finalConceptFolderName = conceptFolderName.get();
         conceptWindows.add(new ConceptPreference(conceptFolderName.get(), null, -1, chapterWindow));
 
-        patternKlWindow.setOnClose(() -> removeLidrSetting(finalConceptFolderName));
+        patternKlWindow.setOnClose(() -> {
+            removeLidrSetting(finalConceptFolderName);
+            workspace.getWindows().remove(patternKlWindow);
+        });
         patternKlWindow.onShown();
     }
 
     private void makeGenEditWindow(EntityFacade entityFacade, ViewProperties viewProperties) {
-//        System.out.println("Launching General editing window: " + entityFacade);
-
         // TODO: Use pluggable service loader to load KlWindowFactories. and locate GenEditingKlWindow.
         GenEditingKlWindowFactory entityKlWindowFactory = new GenEditingKlWindowFactory();
         GenEditingKlWindow genEditingKlWindow = entityKlWindowFactory.create(journalTopic, entityFacade, viewProperties, null);
         // Adding the concept window panel to the workspace.
         workspace.getWindows().add(genEditingKlWindow);
         genEditingKlWindow.onShown(); // TODO: Revisit. JavaFX post render issue. Must be called after Node is rendered (realized). When not realized the implied style classes don't exist and returns null.
+
+        genEditingKlWindow.setOnClose(() -> workspace.getWindows().remove(genEditingKlWindow));
     }
 }

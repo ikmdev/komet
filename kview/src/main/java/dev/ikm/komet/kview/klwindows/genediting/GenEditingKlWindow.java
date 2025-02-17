@@ -58,10 +58,7 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
         jfxNode = FXMLMvvmLoader.make(config);
 
         // Getting the concept window pane
-        Pane chapterWindow = jfxNode.node();
-
-        // Set the JavaFX Pane as the visible UI (chapter window)
-        setRootPane(chapterWindow);
+        this.paneWindow = jfxNode.node();
 
         // Calls the remove method to remove and concepts that were closed by the user.
         jfxNode.controller().setOnCloseConceptWindow(windowEvent -> {
