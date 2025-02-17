@@ -1359,22 +1359,20 @@ public class JournalController {
                 continue;
             }
 
-            String conceptPrefName = conceptPreference.getDirectoryName();
+            final String conceptPrefName = conceptPreference.getDirectoryName();
             conceptFolderNames.add(conceptPrefName);
 
             // Applying the preferences naming convention to the files.
             // e.g., journal-window/JOURNAL_Journal_1/CONCEPT_XXX
             try {
-                KometPreferences conceptPreferences = journalSubWindowPreferences.node(
-                        conceptPreference.getDirectoryName());
-                conceptPreferences.put(CONCEPT_PREF_NAME, conceptPreference.getDirectoryName());
+                KometPreferences conceptPreferences = journalSubWindowPreferences.node(conceptPrefName);
+                conceptPreferences.put(CONCEPT_PREF_NAME, conceptPrefName);
                 conceptPreferences.put(NID_TYPE, conceptPreference.getNidType().toString());
                 conceptPreferences.putInt(NID_VALUE, conceptPreference.getNid());
                 conceptPreferences.putDouble(CONCEPT_HEIGHT, conceptPreference.getConceptPane().getPrefHeight());
                 conceptPreferences.putDouble(CONCEPT_WIDTH, conceptPreference.getConceptPane().getPrefWidth());
                 conceptPreferences.putDouble(CONCEPT_XPOS, conceptPreference.getConceptPane().getTranslateX());
                 conceptPreferences.putDouble(CONCEPT_YPOS, conceptPreference.getConceptPane().getTranslateY());
-
                 conceptPreferences.flush();
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -1416,7 +1414,7 @@ public class JournalController {
             }
             //Creating a hashmap to store all position and size values for each concept.
             Map<ConceptWindowSettings, Object> conceptWindowSettingsMap = new HashMap<>();
-            conceptWindowSettingsMap.put(CONCEPT_PREF_NAME, conceptPreferences.get(CONCEPT_PREF_NAME));
+            conceptWindowSettingsMap.put(CONCEPT_PREF_NAME, conceptPreferences.get(CONCEPT_PREF_NAME).orElse(null));
             conceptWindowSettingsMap.put(CONCEPT_HEIGHT, conceptPreferences.getDouble(conceptPreferences.enumToGeneralKey(CONCEPT_HEIGHT), DEFAULT_CONCEPT_HEIGHT));
             conceptWindowSettingsMap.put(CONCEPT_WIDTH, conceptPreferences.getDouble(conceptPreferences.enumToGeneralKey(CONCEPT_WIDTH), DEFAULT_CONCEPT_HEIGHT));
             conceptWindowSettingsMap.put(CONCEPT_XPOS, conceptPreferences.getDouble(conceptPreferences.enumToGeneralKey(CONCEPT_XPOS), DEFAULT_CONCEPT_XPOS));
