@@ -427,8 +427,6 @@ public class GenEditingDetailsController {
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
-        Pane parent = (Pane) detailsOuterBorderPane.getParent();
-        parent.getChildren().remove(detailsOuterBorderPane);
         // TODO Create an event to notify children panes to clean up their subscribers.
         EvtBusFactory.getDefaultEvtBus().unsubscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), PropertyPanelEvent.class, propertiesEventSubscriber);
     }

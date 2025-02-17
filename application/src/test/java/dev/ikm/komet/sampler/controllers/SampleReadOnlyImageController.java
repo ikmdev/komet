@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.stage.FileChooser;
 
 import java.io.File;
@@ -55,7 +56,8 @@ public class SampleReadOnlyImageController {
         } else {
             System.out.println("No file selected.");
         }
+        Image image = new Image(selectedFile.toURI().toString());
 
-        readOnlyImageControl.setImageFile(selectedFile);
+        readOnlyImageControl.setImage(image);
     }
 }
