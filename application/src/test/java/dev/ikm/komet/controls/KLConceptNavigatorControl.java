@@ -35,8 +35,8 @@ public class KLConceptNavigatorControl extends TreeView<ConceptNavigatorModel> {
             if (conceptNavigatorTreeViewSkin == null) {
                 return;
             }
+            conceptNavigatorTreeViewSkin.unhoverAllItems();
             if (o != null) {
-                conceptNavigatorTreeViewSkin.unhoverAllItems();
                 conceptNavigatorTreeViewSkin.unselectAllItems();
             }
             if (n != null) {

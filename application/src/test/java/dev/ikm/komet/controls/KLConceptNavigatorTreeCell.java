@@ -97,6 +97,10 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
                 subscription = subscription.and(box.hoverProperty().subscribe(h -> {
                     if (h) {
                         treeViewSkin.unhoverAllItems();
+                        if (treeView.getSelectionModel().getSelectedItem() == getTreeItem()) {
+                            // don't long-hover the selected item
+                            return;
+                        }
                         hoverTransition = new PauseTransition(Duration.seconds(0.5));
                         hoverTransition.setOnFinished(e -> treeViewSkin.hoverAllAncestors(getTreeItem()));
                         hoverTransition.playFromStart();
