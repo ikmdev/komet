@@ -7,12 +7,12 @@ import javafx.scene.control.Skin;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
-public class KLConceptNavigatorControl extends TreeView<String> {
+public class KLConceptNavigatorControl extends TreeView<ConceptNavigatorModel> {
 
     private KLConceptNavigatorTreeViewSkin conceptNavigatorTreeViewSkin;
 
     public KLConceptNavigatorControl() {
-        TreeItem<String> root = new TreeItem<>("Root");
+        TreeItem<ConceptNavigatorModel> root = new TreeItem<>(new ConceptNavigatorModel("Root"));
         root.setExpanded(true);
         setShowRoot(false);
         setRoot(root);
@@ -26,7 +26,7 @@ public class KLConceptNavigatorControl extends TreeView<String> {
             // clean up
             conceptNavigatorTreeViewSkin.unhoverAllItems();
             conceptNavigatorTreeViewSkin.unselectAllItems();
-            TreeItem<String> selectedItem = getSelectionModel().getSelectedItem();
+            TreeItem<ConceptNavigatorModel> selectedItem = getSelectionModel().getSelectedItem();
             if (selectedItem != null) {
                 conceptNavigatorTreeViewSkin.selectItem(selectedItem);
             }

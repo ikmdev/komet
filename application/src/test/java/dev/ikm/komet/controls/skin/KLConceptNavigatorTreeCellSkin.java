@@ -1,16 +1,17 @@
 package dev.ikm.komet.controls.skin;
 
+import dev.ikm.komet.controls.ConceptNavigatorModel;
 import javafx.scene.Node;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.skin.TreeCellSkin;
 
-public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<String> {
+public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptNavigatorModel> {
 
     private TreeItem<?> treeItem;
 
-    public KLConceptNavigatorTreeCellSkin(TreeCell<String> treeCell) {
+    public KLConceptNavigatorTreeCellSkin(TreeCell<ConceptNavigatorModel> treeCell) {
         super(treeCell);
         treeItem = treeCell.getTreeItem();
         registerChangeListener(treeCell.treeItemProperty(), e -> {
@@ -25,7 +26,7 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<String> {
 
         double pw = snappedLeftInset() + snappedRightInset();
 
-        TreeView<String> tree = getSkinnable().getTreeView();
+        TreeView<ConceptNavigatorModel> tree = getSkinnable().getTreeView();
         if (tree == null) return pw;
 
         if (treeItem == null) return pw;
@@ -41,7 +42,7 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<String> {
 
     @Override
     protected void layoutChildren(double x, final double y, double w, final double h) {
-        TreeView<String> tree = getSkinnable().getTreeView();
+        TreeView<ConceptNavigatorModel> tree = getSkinnable().getTreeView();
         if (tree == null) return;
 
         int level = tree.getTreeItemLevel(treeItem);

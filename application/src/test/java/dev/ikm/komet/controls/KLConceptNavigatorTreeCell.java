@@ -23,12 +23,33 @@ import javafx.util.Duration;
 import javafx.util.Subscription;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
-public class KLConceptNavigatorTreeCell extends TreeCell<String> {
+import static dev.ikm.komet.controls.ConceptNavigatorModel.PS_STATE;
+import static dev.ikm.komet.controls.ConceptNavigatorModel.MAX_LEVEL;
+
+public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> {
 
     private static final PseudoClass EXPANDED_PSEUDO_CLASS = PseudoClass.getPseudoClass("expanded");
     private static final PseudoClass LEAF_PSEUDO_CLASS = PseudoClass.getPseudoClass("leaf");
+
+    private static final PseudoClass LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-long-hover");
+    private static final PseudoClass BORDER_LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-border-long-hover");
+    private static final PseudoClass BORDER_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-border-selected");
+
+    private static final PseudoClass CURVED_LINE_LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-curved-line-long-hover");
+    private static final PseudoClass CURVED_LINE_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-curved-line-selected");
+    public static final PseudoClass[] LINE_I_LONG_HOVER_PSEUDO_CLASS;
+    public static final PseudoClass[] LINE_I_SELECTED_PSEUDO_CLASS;
+    static {
+        LINE_I_LONG_HOVER_PSEUDO_CLASS = new PseudoClass[MAX_LEVEL];
+        LINE_I_SELECTED_PSEUDO_CLASS = new PseudoClass[MAX_LEVEL];
+        for (int i = 0; i < MAX_LEVEL; i++) {
+            LINE_I_LONG_HOVER_PSEUDO_CLASS[i] = PseudoClass.getPseudoClass("cn-line-long-hover-" + i);
+            LINE_I_SELECTED_PSEUDO_CLASS[i] = PseudoClass.getPseudoClass("cn-line-selected-" + i);
+        }
+    }
 
     private final Label label;
     private final HBox box;
@@ -74,10 +95,6 @@ public class KLConceptNavigatorTreeCell extends TreeCell<String> {
                 subscription = tree.expandedProperty().subscribe(e -> disclosurePane.pseudoClassStateChanged(EXPANDED_PSEUDO_CLASS, e));
                 subscription = subscription.and(tree.leafProperty().subscribe(l -> disclosurePane.pseudoClassStateChanged(LEAF_PSEUDO_CLASS, l)));
                 subscription = subscription.and(box.hoverProperty().subscribe(h -> {
-                    if (treeView.getSelectionModel().getSelectedItem() != null) {
-                        // if there is a selection, the marked state prevails and there is no long-hovering
-                        return;
-                    }
                     if (h) {
                         treeViewSkin.unhoverAllItems();
                         hoverTransition = new PauseTransition(Duration.seconds(0.5));
@@ -115,6 +132,9 @@ public class KLConceptNavigatorTreeCell extends TreeCell<String> {
         }
         unselectItem();
         getChildren().removeIf(Path.class::isInstance);
+        getPseudoClassStates().stream()
+                .filter(p -> p.getPseudoClassName().startsWith("cn-"))
+                .forEach(p -> pseudoClassStateChanged(p, false));
     }
 
     @Override
@@ -125,32 +145,67 @@ public class KLConceptNavigatorTreeCell extends TreeCell<String> {
         }
     }
 
+    private boolean itemDirty = false;
+    public final void markCellDirty() {
+        itemDirty = true;
+        requestLayout();
+    }
+
     @Override
-    protected void updateItem(String item, boolean empty) {
+    protected void layoutChildren() {
+        if (itemDirty) {
+            updateItem(getItem(), isEmpty());
+            itemDirty = false;
+        }
+        super.layoutChildren();
+    }
+
+    @Override
+    protected void updateItem(ConceptNavigatorModel item, boolean empty) {
         super.updateItem(item, empty);
+        getPseudoClassStates().stream()
+                .filter(p -> p.getPseudoClassName().startsWith("cn-"))
+                .forEach(p -> pseudoClassStateChanged(p, false));
         if (item != null && !empty) {
-            label.setText(item);
+            label.setText(item.getText());
             setGraphic(box);
+            updateConnections();
+            updateState(item.getBitSet());
         } else {
             setGraphic(null);
+            cleanup();
         }
-        updateConnections();
+    }
+
+    private void updateState(BitSet bitSet) {
+        pseudoClassStateChanged(LONG_HOVER_PSEUDO_CLASS, bitSet.get(PS_STATE.LONG_HOVER.getBit()));
+        pseudoClassStateChanged(BORDER_LONG_HOVER_PSEUDO_CLASS, bitSet.get(PS_STATE.BORDER_LONG_HOVER.getBit()));
+        pseudoClassStateChanged(BORDER_SELECTED_PSEUDO_CLASS, bitSet.get(PS_STATE.BORDER_SELECTED.getBit()));
+        pseudoClassStateChanged(CURVED_LINE_LONG_HOVER_PSEUDO_CLASS, bitSet.get(PS_STATE.CURVED_LINE_LONG_HOVER.getBit()));
+        pseudoClassStateChanged(CURVED_LINE_SELECTED_PSEUDO_CLASS, bitSet.get(PS_STATE.CURVED_LINE_SELECTED.getBit()));
+        for (int i = 0; i < Math.min(treeView.getTreeItemLevel(getTreeItem()) - 1, MAX_LEVEL); i++) {
+            pseudoClassStateChanged(LINE_I_LONG_HOVER_PSEUDO_CLASS[i], bitSet.get(PS_STATE.LINE_I_LONG_HOVER.getBit() + i));
+            pseudoClassStateChanged(LINE_I_SELECTED_PSEUDO_CLASS[i], bitSet.get(PS_STATE.LINE_I_SELECTED.getBit() + i));
+        }
     }
 
     private void updateConnections() {
+        TreeItem<ConceptNavigatorModel> treeItem = getTreeItem();
+        if (treeView == null || myTreeCellSkin == null || treeItem == null) {
+            return;
+        }
+
         List<Path> oldPaths = getChildren().stream()
                 .filter(Path.class::isInstance)
                 .map(Path.class::cast)
                 .toList();
-        TreeItem<String> treeItem = getTreeItem();
-        if (treeView == null || myTreeCellSkin == null || treeItem == null) return;
         int level = treeView.getTreeItemLevel(treeItem) - 1;
         double indent = myTreeCellSkin.getIndent();
         List<Path> paths = new ArrayList<>();
         for (int i = 0; i < level; i++) {
             double x = 10.5 + indent * i;
             if (i < level - 1) {
-                TreeItem<String> ancestor = getAncestor(treeItem, i + 1);
+                TreeItem<ConceptNavigatorModel> ancestor = getAncestor(treeItem, i + 1);
                 if (ancestor.nextSibling() != null) {
                     paths.add(getLine(x, "dashed-line"));
                     paths.add(getLine(x, "solid-line-" + i));
@@ -167,11 +222,11 @@ public class KLConceptNavigatorTreeCell extends TreeCell<String> {
         }
     }
 
-    private TreeItem<String> getAncestor(TreeItem<String> treeItem, int level) {
+    private TreeItem<ConceptNavigatorModel> getAncestor(TreeItem<ConceptNavigatorModel> treeItem, int level) {
         if (treeItem == null) {
             return null;
         }
-        TreeItem<String> ancestor = treeItem.getParent();
+        TreeItem<ConceptNavigatorModel> ancestor = treeItem.getParent();
         while (ancestor != null) {
             if (treeView.getTreeItemLevel(ancestor) - 1 == level) {
                 return ancestor;
