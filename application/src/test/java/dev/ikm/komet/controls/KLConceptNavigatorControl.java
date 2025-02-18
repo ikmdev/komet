@@ -9,13 +9,40 @@ import javafx.scene.control.TreeView;
 
 public class KLConceptNavigatorControl extends TreeView<String> {
 
+    private KLConceptNavigatorTreeViewSkin conceptNavigatorTreeViewSkin;
+
     public KLConceptNavigatorControl() {
         TreeItem<String> root = new TreeItem<>("Root");
         root.setExpanded(true);
         setShowRoot(false);
         setRoot(root);
         setFixedCellSize(24);
+
         setCellFactory(p -> new KLConceptNavigatorTreeCell(this));
+        expandedItemCountProperty().subscribe((o, n) -> {
+            if (conceptNavigatorTreeViewSkin == null) {
+                return;
+            }
+            // clean up
+            conceptNavigatorTreeViewSkin.unhoverAllItems();
+            conceptNavigatorTreeViewSkin.unselectAllItems();
+            TreeItem<String> selectedItem = getSelectionModel().getSelectedItem();
+            if (selectedItem != null) {
+                conceptNavigatorTreeViewSkin.selectItem(selectedItem);
+            }
+        });
+        getSelectionModel().selectedItemProperty().subscribe((o, n) -> {
+            if (conceptNavigatorTreeViewSkin == null) {
+                return;
+            }
+            if (o != null) {
+                conceptNavigatorTreeViewSkin.unhoverAllItems();
+                conceptNavigatorTreeViewSkin.unselectAllItems();
+            }
+            if (n != null) {
+                conceptNavigatorTreeViewSkin.selectItem(n);
+            }
+        });
 
         getStyleClass().add("concept-navigator-control");
         getStylesheets().add(KLConceptNavigatorControl.class.getResource("concept-navigator.css").toExternalForm());
@@ -35,6 +62,7 @@ public class KLConceptNavigatorControl extends TreeView<String> {
     
     @Override
     protected Skin<?> createDefaultSkin() {
-        return new KLConceptNavigatorTreeViewSkin(this);
+        conceptNavigatorTreeViewSkin = new KLConceptNavigatorTreeViewSkin(this);
+        return conceptNavigatorTreeViewSkin;
     }
 }

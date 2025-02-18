@@ -10,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -23,23 +24,11 @@ import javafx.util.Subscription;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class KLConceptNavigatorTreeCell extends TreeCell<String> {
-    private static final int MAX_LEVEL = 10;
+
     private static final PseudoClass EXPANDED_PSEUDO_CLASS = PseudoClass.getPseudoClass("expanded");
     private static final PseudoClass LEAF_PSEUDO_CLASS = PseudoClass.getPseudoClass("leaf");
-
-    private static final PseudoClass LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("line-long-hover");
-    private static final PseudoClass LINE_CURVED_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("line-curved-selected");
-    public static final PseudoClass[] LINE_SELECTED_PSEUDO_CLASS;
-    static {
-        LINE_SELECTED_PSEUDO_CLASS = new PseudoClass[MAX_LEVEL];
-        for (int i = 0; i < LINE_SELECTED_PSEUDO_CLASS.length; i++) {
-            LINE_SELECTED_PSEUDO_CLASS[i] = PseudoClass.getPseudoClass("line-selected-" + i);
-        }
-    }
 
     private final Label label;
     private final HBox box;
@@ -52,12 +41,14 @@ public class KLConceptNavigatorTreeCell extends TreeCell<String> {
 
     public KLConceptNavigatorTreeCell(KLConceptNavigatorControl treeView) {
         this.treeView = treeView;
+
         IconRegion disclosureIconRegion = new IconRegion();
         StackPane disclosurePane = new StackPane(disclosureIconRegion);
         disclosurePane.getStyleClass().add("region");
-        disclosurePane.setOnMouseClicked(e -> {
+        disclosurePane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (getTreeItem() != null) {
                 getTreeItem().setExpanded(!getTreeItem().isExpanded());
+                e.consume();
             }
         });
         IconRegion selectIconRegion = new IconRegion("icon", "select");
@@ -83,10 +74,14 @@ public class KLConceptNavigatorTreeCell extends TreeCell<String> {
                 subscription = tree.expandedProperty().subscribe(e -> disclosurePane.pseudoClassStateChanged(EXPANDED_PSEUDO_CLASS, e));
                 subscription = subscription.and(tree.leafProperty().subscribe(l -> disclosurePane.pseudoClassStateChanged(LEAF_PSEUDO_CLASS, l)));
                 subscription = subscription.and(box.hoverProperty().subscribe(h -> {
-                    unselectAllItems();
+                    if (treeView.getSelectionModel().getSelectedItem() != null) {
+                        // if there is a selection, the marked state prevails and there is no long-hovering
+                        return;
+                    }
                     if (h) {
+                        treeViewSkin.unhoverAllItems();
                         hoverTransition = new PauseTransition(Duration.seconds(0.5));
-                        hoverTransition.setOnFinished(e -> selectAllAncestors());
+                        hoverTransition.setOnFinished(e -> treeViewSkin.hoverAllAncestors(getTreeItem()));
                         hoverTransition.playFromStart();
                     }
                 }));
@@ -107,18 +102,18 @@ public class KLConceptNavigatorTreeCell extends TreeCell<String> {
         setText(null);
     }
 
-    private void unselectItem() {
+    public void unselectItem() {
         if (hoverTransition != null) {
             hoverTransition.stop();
             hoverTransition = null;
         }
     }
 
-    private void cleanup() {
+    public void cleanup() {
         if (subscription != null) {
             subscription.unsubscribe();
         }
-        unselectAllItems();
+        unselectItem();
         getChildren().removeIf(Path.class::isInstance);
     }
 
@@ -157,13 +152,13 @@ public class KLConceptNavigatorTreeCell extends TreeCell<String> {
             if (i < level - 1) {
                 TreeItem<String> ancestor = getAncestor(treeItem, i + 1);
                 if (ancestor.nextSibling() != null) {
-                    paths.add(getLine(x, "line"));
-                    paths.add(getLine(x, "selected-line-" + i));
+                    paths.add(getLine(x, "dashed-line"));
+                    paths.add(getLine(x, "solid-line-" + i));
                 }
             } else {
-                paths.add(getCurvedLine(x, treeItem.nextSibling() == null, "line"));
-                paths.add(getLine(x, "selected-line-" + i));
-                paths.add(getCurvedLine(x, true, "selected-curved-line"));
+                paths.add(getCurvedLine(x, treeItem.nextSibling() == null, "dashed-curved-line"));
+                paths.add(getLine(x, "solid-line-" + i));
+                paths.add(getCurvedLine(x, true, "solid-curved-line"));
             }
         }
         if (!oldPaths.equals(paths)) {
@@ -208,72 +203,6 @@ public class KLConceptNavigatorTreeCell extends TreeCell<String> {
         }
         curvedLine.getStyleClass().add(styleClass);
         return curvedLine;
-    }
-
-    private void unselectAllItems() {
-        treeViewSkin.getSheet().getChildren().stream()
-                .filter(KLConceptNavigatorTreeCell.class::isInstance)
-                .map(KLConceptNavigatorTreeCell.class::cast)
-                .forEach(c -> {
-                    c.getPseudoClassStates().stream()
-                            .filter(p -> p.getPseudoClassName().startsWith("line-"))
-                            .forEach(p -> c.pseudoClassStateChanged(p, false));
-                    c.unselectItem();
-                });
-    }
-
-    private void selectAllAncestors() {
-        TreeItem<String> parent = getTreeItem(); // item that was long-hovered
-        while (parent != null) {
-            getCellForTreeItem(parent)
-                    .ifPresent(c -> {
-                        int level = treeView.getTreeItemLevel(c.getTreeItem()) - 2;
-                        // for each ancestor
-                        c.pseudoClassStateChanged(LONG_HOVER_PSEUDO_CLASS, true); // mark as long-hovered
-                        c.pseudoClassStateChanged(LINE_CURVED_SELECTED_PSEUDO_CLASS, true); // show curved-line
-                        if (level >= 0) {
-                            // for each previous sibling of this ancestor:
-                            TreeItem<String> previousSibling = c.getTreeItem().previousSibling();
-                            AtomicReference<KLConceptNavigatorTreeCell> currentSibling = new AtomicReference<>(getCellForTreeItem(c.getTreeItem()).orElse(null));
-                            while (previousSibling != null) {
-                                getCellForTreeItem(previousSibling)
-                                        .ifPresentOrElse(p -> {
-                                            currentSibling.set(p);
-                                            // and all expanded descendants if these are expanded
-                                            applyPseudoClassState(p, level);
-                                        }, () -> {
-                                            // the ancestor is outside the viewport, we just get all the cells above the current cell until first one visible
-                                            if (currentSibling.get() != null) {
-                                                treeViewSkin.getConceptNavigatorVirtualFlow().applyToAllVisibleCellsBefore(currentSibling.get(),
-                                                        cell -> cell.pseudoClassStateChanged(LINE_SELECTED_PSEUDO_CLASS[level], true));
-                                            }
-                                        });
-                                previousSibling = previousSibling.previousSibling();
-                            }
-                        }
-                    });
-            parent = parent.getParent();
-        }
-        treeViewSkin.getConceptNavigatorVirtualFlow().requestLayout();
-    }
-
-    private Optional<KLConceptNavigatorTreeCell> getCellForTreeItem(TreeItem<String> treeItem) {
-        if (treeItem == null) {
-            return Optional.empty();
-        }
-        return treeViewSkin.getSheet().getChildren().stream()
-                .filter(KLConceptNavigatorTreeCell.class::isInstance)
-                .map(KLConceptNavigatorTreeCell.class::cast)
-                .filter(cell -> treeItem.equals(cell.getTreeItem()))
-                .findFirst();
-    }
-
-    private void applyPseudoClassState(KLConceptNavigatorTreeCell treeCell, int level) {
-        treeCell.pseudoClassStateChanged(LINE_SELECTED_PSEUDO_CLASS[level], true);
-        if (treeCell.getTreeItem().isExpanded()) {
-            treeCell.getTreeItem().getChildren().forEach(i ->
-                    getCellForTreeItem(i).ifPresent(t -> applyPseudoClassState(t, level)));
-        }
     }
 
     @Override

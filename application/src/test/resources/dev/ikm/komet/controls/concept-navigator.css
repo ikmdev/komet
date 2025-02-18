@@ -111,7 +111,11 @@
     -fx-background-insets: 0;
 }
 
-.cell-box {
+.tree-cell .label {
+    -fx-padding: 0 0 0 2;
+}
+
+.tree-cell > .cell-box {
     -fx-background-color: #CFD8E4, white;
     -fx-background-radius: 3;
     -fx-background-insets: 0, 1;
@@ -120,21 +124,30 @@
     -fx-padding: 2;
 }
 
-.tree-cell .label {
-    -fx-padding: 0 0 0 2;
-}
-
 .tree-cell:hover > .cell-box {
     -fx-background-color: #5896F6, #F4F9FF;
+    -fx-background-insets: 0, 1;
 }
 
-.tree-cell:line-long-hover > .cell-box {
+.tree-cell:cn-border-long-hover > .cell-box { /* ancestors of long-hovered cell */
     -fx-background-color: #5896F6, #F4F9FF;
     -fx-background-insets: 0, 2;
 }
 
-.tree-cell:selected > .cell-box {
+.tree-cell:cn-long-hover > .cell-box { /* actual cell with long hover */
+    -fx-background-color: #5896F6, #DEEBFF;
+    -fx-background-insets: 0, 2;
+}
+
+.tree-cell:selected > .cell-box,
+.tree-cell:hover:selected > .cell-box { /* actual selected cell */
     -fx-background-color: #5E5E5E, #5E5E5E;
+    -fx-background-insets: 0, 1;
+}
+
+.tree-cell:cn-border-selected > .cell-box { /* ancestors of selected cell */
+    -fx-background-color: #5E5E5E, white;
+    -fx-background-insets: 0, 1;
 }
 
 .tree-cell > .cell-box > .concept-label {
@@ -257,40 +270,59 @@
     -fx-shape: "M5.91406 9V7.46875H12.9141V11.4688H5.91406V10H2.96875V5.25H1.46875L3.46875 2.25L5.46875 5.25H3.96875V9H5.91406ZM7.08073 8.63542V10.3021H11.7474V8.63542H7.08073Z"
 }
 
-.tree-cell > .line {
+.tree-cell > .dashed-line,
+.tree-cell > .dashed-curved-line {
     -fx-stroke: #C3CDDC;
     -fx-stroke-width: 1;
     -fx-stroke-dash-array: 1.5 1.5;
 }
 
-.tree-cell > .selected-line-0,
-.tree-cell > .selected-line-1,
-.tree-cell > .selected-line-2,
-.tree-cell > .selected-line-3,
-.tree-cell > .selected-line-4,
-.tree-cell > .selected-line-5,
-.tree-cell > .selected-line-6,
-.tree-cell > .selected-line-7,
-.tree-cell > .selected-line-8,
-.tree-cell > .selected-line-9,
-.tree-cell > .selected-curved-line {
-    -fx-stroke: #5896F6;
-    -fx-stroke-width: 2;
+.tree-cell > .solid-line-0,
+.tree-cell > .solid-line-1,
+.tree-cell > .solid-line-2,
+.tree-cell > .solid-line-3,
+.tree-cell > .solid-line-4,
+.tree-cell > .solid-line-5,
+.tree-cell > .solid-line-6,
+.tree-cell > .solid-line-7,
+.tree-cell > .solid-line-8,
+.tree-cell > .solid-line-9,
+.tree-cell > .solid-curved-line {
+    -fx-stroke-width: 1;
     visibility: hidden;
     -fx-managed: false;
 }
 
-.tree-cell:line-selected-0 > .selected-line-0,
-.tree-cell:line-selected-1 > .selected-line-1,
-.tree-cell:line-selected-2 > .selected-line-2,
-.tree-cell:line-selected-3 > .selected-line-3,
-.tree-cell:line-selected-4 > .selected-line-4,
-.tree-cell:line-selected-5 > .selected-line-5,
-.tree-cell:line-selected-6 > .selected-line-6,
-.tree-cell:line-selected-7 > .selected-line-7,
-.tree-cell:line-selected-8 > .selected-line-8,
-.tree-cell:line-selected-9 > .selected-line-9,
-.tree-cell:line-curved-selected > .selected-curved-line {
+.tree-cell:cn-line-long-hover-0 > .solid-line-0,
+.tree-cell:cn-line-long-hover-1 > .solid-line-1,
+.tree-cell:cn-line-long-hover-2 > .solid-line-2,
+.tree-cell:cn-line-long-hover-3 > .solid-line-3,
+.tree-cell:cn-line-long-hover-4 > .solid-line-4,
+.tree-cell:cn-line-long-hover-5 > .solid-line-5,
+.tree-cell:cn-line-long-hover-6 > .solid-line-6,
+.tree-cell:cn-line-long-hover-7 > .solid-line-7,
+.tree-cell:cn-line-long-hover-8 > .solid-line-8,
+.tree-cell:cn-line-long-hover-9 > .solid-line-9,
+.tree-cell:cn-curved-line-long-hover > .solid-curved-line {
+    -fx-stroke: #5896F6;
+    -fx-stroke-width: 2;
+    visibility: visible;
+    -fx-managed: true;
+}
+
+.tree-cell:cn-line-selected-0 > .solid-line-0,
+.tree-cell:cn-line-selected-1 > .solid-line-1,
+.tree-cell:cn-line-selected-2 > .solid-line-2,
+.tree-cell:cn-line-selected-3 > .solid-line-3,
+.tree-cell:cn-line-selected-4 > .solid-line-4,
+.tree-cell:cn-line-selected-5 > .solid-line-5,
+.tree-cell:cn-line-selected-6 > .solid-line-6,
+.tree-cell:cn-line-selected-7 > .solid-line-7,
+.tree-cell:cn-line-selected-8 > .solid-line-8,
+.tree-cell:cn-line-selected-9 > .solid-line-9,
+.tree-cell:cn-curved-line-selected > .solid-curved-line {
+    -fx-stroke: #5E5E5E;
+    -fx-stroke-width: 1;
     visibility: visible;
     -fx-managed: true;
 }
