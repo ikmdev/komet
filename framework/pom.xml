@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.47.0-IKDT-803-coordinate-reasoner-changes-with-komet-SNAPSHOT</version>
+        <version>1.47.0-SNAPSHOT</version>
     </parent>
     <artifactId>framework</artifactId>
     <dependencies>
