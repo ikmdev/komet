@@ -161,6 +161,7 @@
 }
 
 .tree-cell > .cell-box > .ellipse {
+    -fx-min-width: 4;
     -fx-pref-width: 4;
     -fx-max-width: 4;
     -fx-pref-height: 4;
@@ -342,4 +343,52 @@
     -fx-stroke-width: 2;
     visibility: visible;
     -fx-managed: true;
+}
+
+.tooltip {
+    -fx-background-color: #44495E;
+    -fx-background-radius: 4;
+    -fx-border-color: #2E3240;
+    -fx-border-radius: 4;
+    -fx-border-width: 0.5;
+    -fx-effect: dropshadow(three-pass-box, #00000040, 4, 0, 0, 4);
+    -fx-min-width: 120;
+    -fx-max-width: 480;
+    -fx-min-height: 24;
+    -fx-padding: 4 8 4 8;
+    -fx-content-display: bottom;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 13;
+    -fx-font-weight: 400;
+    -fx-text-fill: white;
+    -fx-wrap-text: true;
+    -fx-alignment: center-left;
+}
+
+.tooltip > .tooltip-box {
+    -fx-spacing: 2;
+    -fx-alignment: center-left;
+}
+
+.tooltip > .tooltip-box > .tooltip-ellipse {
+    -fx-min-width: 12;
+    -fx-pref-width: 12;
+    -fx-max-width: 12;
+    -fx-pref-height: 12;
+    -fx-max-height: 12;
+    -fx-background-color: #FDAD15, #44495E;
+    -fx-background-insets: 0, 3;
+    -fx-background-radius: 12;
+}
+
+.tooltip > .tooltip-box:defined > .tooltip-ellipse {
+    -fx-background-color: #00BD63, #00BD63;
+}
+
+.tooltip > .tooltip-box > .type-tooltip-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 10;
+    -fx-font-weight: 600;
+    -fx-text-fill: white;
+    -fx-alignment: center-left;
 }

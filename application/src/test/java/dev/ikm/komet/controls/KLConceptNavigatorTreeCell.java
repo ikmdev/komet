@@ -6,8 +6,12 @@ import javafx.animation.PauseTransition;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.css.PseudoClass;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Skin;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.input.MouseEvent;
@@ -19,6 +23,7 @@ import javafx.scene.shape.ArcTo;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
 import javafx.util.Subscription;
 
@@ -54,6 +59,8 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
 
     private final Label label;
     private final HBox box;
+    private final ConceptNavigatorTooltip tooltip;
+
     private final KLConceptNavigatorControl treeView;
     private KLConceptNavigatorTreeViewSkin treeViewSkin;
     private KLConceptNavigatorTreeCellSkin myTreeCellSkin;
@@ -124,6 +131,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
             }
         });
         setText(null);
+        tooltip = new ConceptNavigatorTooltip(box);
     }
 
     public void unselectItem() {
@@ -133,7 +141,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         }
     }
 
-    public void cleanup() {
+    private void cleanup() {
         if (subscription != null) {
             subscription.unsubscribe();
         }
@@ -180,9 +188,21 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
             setGraphic(box);
             updateConnections();
             updateState(item.getBitSet());
+            updateTooltip(item);
         } else {
             cleanup();
             setGraphic(null);
+        }
+    }
+
+    private void updateTooltip(ConceptNavigatorModel item) {
+        tooltip.setGraphicText(item.isDefined() ? "Defined Concept" : "Primitive Concept");
+        tooltip.getGraphic().pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, item.isDefined());
+        Node lookup = label.lookup(".text");
+        if (lookup instanceof Text labelledText && !labelledText.getText().equals(item.getText())) {
+            tooltip.setText(item.getText());
+        } else {
+            tooltip.setText(null);
         }
     }
 
@@ -275,4 +295,95 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         return myTreeCellSkin;
     }
 
+    private static class ConceptNavigatorTooltip extends Tooltip {
+
+        private final Node node;
+        private final Label typeTooltipLabel;
+
+        public ConceptNavigatorTooltip(Node node) {
+            this.node = node;
+
+            Region ellipse = new Region();
+            ellipse.getStyleClass().add("tooltip-ellipse");
+            typeTooltipLabel = new Label();
+            typeTooltipLabel.getStyleClass().add("type-tooltip-label");
+            HBox box = new HBox(ellipse, typeTooltipLabel);
+            box.getStyleClass().add("tooltip-box");
+
+            setGraphic(box);
+            getStyleClass().add("tooltip");
+
+            Tooltip.install(node, this);
+        }
+
+        public void setGraphicText(String text) {
+            typeTooltipLabel.setText(text);
+        }
+
+        @Override
+        protected void show() {
+            final Bounds bounds = node.localToScreen(node.getBoundsInLocal());
+            Point2D anchor = new Point2D(bounds.getMinX() + 18, bounds.getMaxY());
+            setAnchorX(anchor.getX());
+            setAnchorY(anchor.getY());
+            super.show();
+        }
+
+        @Override
+        protected Skin<?> createDefaultSkin() {
+            return new ConceptNavigatorTooltipSkin(this);
+        }
+    }
+
+    private static class ConceptNavigatorTooltipSkin implements Skin<ConceptNavigatorTooltip> {
+
+        private Label tipLabel;
+        private ConceptNavigatorTooltip tooltip;
+
+        public ConceptNavigatorTooltipSkin(ConceptNavigatorTooltip t) {
+            this.tooltip = t;
+            tipLabel = new Label() {
+                @Override
+                protected void layoutChildren() {
+                    super.layoutChildren();
+                    // relocate graphic at bottom-left
+                    getGraphic().relocate(getPadding().getLeft(), getGraphic().getLayoutY());
+                }
+            };
+            tipLabel.contentDisplayProperty().bind(t.contentDisplayProperty());
+            tipLabel.fontProperty().bind(t.fontProperty());
+            tipLabel.graphicProperty().bind(t.graphicProperty());
+            tipLabel.graphicTextGapProperty().bind(t.graphicTextGapProperty());
+            tipLabel.textAlignmentProperty().bind(t.textAlignmentProperty());
+            tipLabel.textOverrunProperty().bind(t.textOverrunProperty());
+            tipLabel.textProperty().bind(t.textProperty());
+            tipLabel.wrapTextProperty().bind(t.wrapTextProperty());
+            tipLabel.minWidthProperty().bind(t.minWidthProperty());
+            tipLabel.prefWidthProperty().bind(t.prefWidthProperty());
+            tipLabel.maxWidthProperty().bind(t.maxWidthProperty());
+            tipLabel.minHeightProperty().bind(t.minHeightProperty());
+            tipLabel.prefHeightProperty().bind(t.prefHeightProperty());
+            tipLabel.maxHeightProperty().bind(t.maxHeightProperty());
+
+            tipLabel.getStyleClass().setAll(t.getStyleClass());
+            tipLabel.setStyle(t.getStyle());
+            tipLabel.setId(t.getId());
+        }
+
+        @Override
+        public ConceptNavigatorTooltip getSkinnable() {
+            return tooltip;
+        }
+
+        @Override
+        public Node getNode() {
+            return tipLabel;
+        }
+
+        @Override
+        public void dispose() {
+            tooltip = null;
+            tipLabel = null;
+        }
+    }
 }

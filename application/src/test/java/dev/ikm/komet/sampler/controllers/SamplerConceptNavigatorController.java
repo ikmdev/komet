@@ -27,7 +27,7 @@ public class SamplerConceptNavigatorController {
     private static List<TreeItem<ConceptNavigatorModel>> generateChildren(int level) {
         List<TreeItem<ConceptNavigatorModel>> children = new ArrayList<>();
         for (int idx = 0; idx < Math.max(5, new Random().nextInt(10)); idx++) {
-            ConceptNavigatorModel conceptNavigatorModel = new ConceptNavigatorModel("Concept Navigator - item for level " + level + " and index " + idx);
+            ConceptNavigatorModel conceptNavigatorModel = new ConceptNavigatorModel("Concept Navigator - this is text for item for level " + level + " and index " + idx);
             conceptNavigatorModel.setDefined(new Random().nextInt(10) < 2);
             TreeItem<ConceptNavigatorModel> child = new TreeItem<>(conceptNavigatorModel);
             if (level < 10 && new Random().nextBoolean()) {
