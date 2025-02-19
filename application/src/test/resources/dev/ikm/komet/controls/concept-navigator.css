@@ -160,6 +160,23 @@
     -fx-text-fill: white;
 }
 
+.tree-cell > .cell-box > .ellipse {
+    -fx-pref-width: 4;
+    -fx-max-width: 4;
+    -fx-pref-height: 4;
+    -fx-max-height: 4;
+    -fx-background-color: #00BD63;
+    -fx-background-radius: 4;
+    -fx-translate-y: -6.5;
+    visibility: hidden;
+    -fx-managed: false;
+}
+
+.tree-cell > .cell-box:defined > .ellipse {
+    visibility: visible;
+    -fx-managed: true;
+}
+
 .tree-cell > .cell-box > .region {
     -fx-background-color: transparent, #6E7989;
     -fx-background-insets: 0, 1;

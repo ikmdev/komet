@@ -1,5 +1,7 @@
 package dev.ikm.komet.controls;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -35,11 +37,11 @@ public class ConceptNavigatorModel {
             return bit;
         }
 
-        public static List<Integer> getStatesBits(STATE state) {
+        public static List<Integer> getStatesBitRange(STATE state) {
             if (state == STATE.LONG_HOVER) {
                 return List.of(PS_STATE.LONG_HOVER.getBit(), PS_STATE.BORDER_SELECTED.getBit());
             }
-            return List.of(PS_STATE.BORDER_SELECTED.getBit(), PS_STATE.LINE_I_SELECTED.getBit() + MAX_LEVEL);
+            return List.of(PS_STATE.BORDER_SELECTED.getBit(), PS_STATE.LINE_I_SELECTED.getBit() + MAX_LEVEL + 1);
         }
     }
 
@@ -59,6 +61,19 @@ public class ConceptNavigatorModel {
         textProperty.set(value);
     }
 
+    // definedProperty
+    private final BooleanProperty definedProperty = new SimpleBooleanProperty(this, "defined");
+    public final BooleanProperty definedProperty() {
+       return definedProperty;
+    }
+    public final boolean isDefined() {
+       return definedProperty.get();
+    }
+    public final void setDefined(boolean value) {
+        definedProperty.set(value);
+    }
+
+
     private BitSet bitset;
 
     public BitSet getBitSet() {
@@ -70,6 +85,6 @@ public class ConceptNavigatorModel {
 
     @Override
     public String toString() {
-        return "Model[" + textProperty.get() + ", b=" + bitset + "]";
+        return "Model[" + textProperty.get() + (isDefined() ? ", defined" : "") + ", b=" + bitset + "]";
     }
 }

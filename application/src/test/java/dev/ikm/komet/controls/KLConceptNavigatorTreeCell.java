@@ -33,6 +33,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
 
     private static final PseudoClass EXPANDED_PSEUDO_CLASS = PseudoClass.getPseudoClass("expanded");
     private static final PseudoClass LEAF_PSEUDO_CLASS = PseudoClass.getPseudoClass("leaf");
+    private static final PseudoClass DEFINED_PSEUDO_CLASS = PseudoClass.getPseudoClass("defined");
 
     private static final PseudoClass LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-long-hover");
     private static final PseudoClass BORDER_LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-border-long-hover");
@@ -80,12 +81,14 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         StackPane treePane = new StackPane(treeIconRegion);
         treePane.getStyleClass().addAll("region", "tree");
 
-        label = new Label();
+        Region ellipse = new Region();
+        ellipse.getStyleClass().add("ellipse");
+        label = new Label(null);
         label.getStyleClass().add("concept-label");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        box = new HBox(disclosurePane, label, spacer, selectPane, treePane);
+        box = new HBox(disclosurePane, ellipse, label, spacer, selectPane, treePane);
         box.getStyleClass().add("cell-box");
 
         this.treeView.skinProperty().subscribe(skin -> this.treeViewSkin = (KLConceptNavigatorTreeViewSkin) skin);
@@ -139,6 +142,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         getPseudoClassStates().stream()
                 .filter(p -> p.getPseudoClassName().startsWith("cn-"))
                 .forEach(p -> pseudoClassStateChanged(p, false));
+        box.pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, false);
     }
 
     @Override
@@ -172,12 +176,13 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
                 .forEach(p -> pseudoClassStateChanged(p, false));
         if (item != null && !empty) {
             label.setText(item.getText());
+            box.pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, item.isDefined());
             setGraphic(box);
             updateConnections();
             updateState(item.getBitSet());
         } else {
-            setGraphic(null);
             cleanup();
+            setGraphic(null);
         }
     }
 

@@ -28,7 +28,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptNavigatorModel> {
             conceptNavigatorTreeViewSkin.unselectAllItems();
             TreeItem<ConceptNavigatorModel> selectedItem = getSelectionModel().getSelectedItem();
             if (selectedItem != null) {
-                conceptNavigatorTreeViewSkin.selectItem(selectedItem);
+                conceptNavigatorTreeViewSkin.selectAllAncestors(selectedItem);
             }
         });
         getSelectionModel().selectedItemProperty().subscribe((o, n) -> {
@@ -40,7 +40,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptNavigatorModel> {
                 conceptNavigatorTreeViewSkin.unselectAllItems();
             }
             if (n != null) {
-                conceptNavigatorTreeViewSkin.selectItem(n);
+                conceptNavigatorTreeViewSkin.selectAllAncestors(n);
             }
         });
 

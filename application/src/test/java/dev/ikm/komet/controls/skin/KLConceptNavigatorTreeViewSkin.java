@@ -3,7 +3,6 @@ package dev.ikm.komet.controls.skin;
 import dev.ikm.komet.controls.ConceptNavigatorModel;
 import dev.ikm.komet.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.controls.KLConceptNavigatorTreeCell;
-import javafx.animation.PauseTransition;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
@@ -13,7 +12,6 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.skin.TreeViewSkin;
 import javafx.scene.control.skin.VirtualFlow;
-import javafx.util.Duration;
 
 import java.util.List;
 import java.util.Optional;
@@ -56,15 +54,6 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
         return sheet;
     }
 
-    public void selectItem(TreeItem<ConceptNavigatorModel> selectedItem) {
-        PauseTransition p = new PauseTransition(Duration.seconds(0.05));
-        p.setOnFinished(f -> {
-            // restore selection
-            selectAllAncestors(selectedItem);
-        });
-        p.playFromStart();
-    }
-
     public void unselectAllItems() {
         unmarkAllItems(STATE.SELECTED);
     }
@@ -78,7 +67,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
                 .filter(KLConceptNavigatorTreeCell.class::isInstance)
                 .map(KLConceptNavigatorTreeCell.class::cast)
                 .forEach(KLConceptNavigatorTreeCell::unselectItem);
-        List<Integer> statesBits = PS_STATE.getStatesBits(state);
+        List<Integer> statesBits = PS_STATE.getStatesBitRange(state);
         iterateTree(getSkinnable().getRoot(), item -> {
             item.getValue().getBitSet().clear(statesBits.getFirst(), statesBits.getLast());
             markCellDirty(item);
