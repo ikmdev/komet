@@ -59,6 +59,7 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
 
         textField.setTextFormatter(new TextFormatter<>(new IntegerStringConverter(), null, change -> {
             errorLabel.setText(null);
+            control.setShowError(false);
             String text = change.getControlNewText();
             if (text.isEmpty() || NUMERICAL_PATTERN.matcher(text).matches()) {
                 if (!text.isEmpty() && !"-".equals(text)) {
@@ -68,6 +69,7 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
                     } catch (Exception e) {
                         // or else discard the change and warn
                         errorLabel.setText(MessageFormat.format(resources.getString("error.integer.text"), text));
+                        control.setShowError(true);
                         return null;
                     }
                 }
@@ -83,7 +85,8 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
                 }
                 return change;
             } else {
-                errorLabel.setText(MessageFormat.format(resources.getString("error.input.text"), change.getText()));
+                errorLabel.setText(MessageFormat.format(resources.getString("error.integer.text"), change.getText()));
+                control.setShowError(true);
             }
             return null;
         }));
@@ -167,9 +170,9 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
 
         if (getSkinnable().isShowError()) {
             y += textFieldPrefHeight + 2;
-            labelPrefWidth = errorLabel.prefWidth(-1);
+            labelPrefWidth = errorLabel.prefWidth(textField.getWidth());
             labelPrefHeight = errorLabel.prefHeight(labelPrefWidth);
-            errorLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
+            errorLabel.resizeRelocate(x, y, textField.getWidth(), labelPrefHeight);
         }
     }
 
