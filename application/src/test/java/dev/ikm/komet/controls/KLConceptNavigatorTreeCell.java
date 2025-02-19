@@ -5,10 +5,12 @@ import dev.ikm.komet.controls.skin.KLConceptNavigatorTreeViewSkin;
 import javafx.animation.PauseTransition;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
 import javafx.css.PseudoClass;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.Skin;
 import javafx.scene.control.Tooltip;
@@ -132,6 +134,15 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         });
         setText(null);
         tooltip = new ConceptNavigatorTooltip(box);
+
+        addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (e.getClickCount() == 2 && !isEmpty()) {
+                if (treeView.getOnDoubleClick() != null) {
+                    treeView.getOnDoubleClick().accept(getItem());
+                }
+                e.consume();
+            }
+        });
     }
 
     public void unselectItem() {
@@ -311,6 +322,10 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
             box.getStyleClass().add("tooltip-box");
 
             setGraphic(box);
+            contentDisplayProperty().bind(
+                    Bindings.when(textProperty().isNotEmpty())
+                        .then(ContentDisplay.BOTTOM)
+                        .otherwise(ContentDisplay.GRAPHIC_ONLY));
             getStyleClass().add("tooltip");
 
             Tooltip.install(node, this);

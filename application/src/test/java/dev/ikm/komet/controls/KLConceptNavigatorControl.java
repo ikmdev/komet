@@ -1,11 +1,15 @@
 package dev.ikm.komet.controls;
 
 import dev.ikm.komet.controls.skin.KLConceptNavigatorTreeViewSkin;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+
+import java.util.function.Consumer;
 
 public class KLConceptNavigatorControl extends TreeView<ConceptNavigatorModel> {
 
@@ -59,7 +63,19 @@ public class KLConceptNavigatorControl extends TreeView<ConceptNavigatorModel> {
     public final void setHeader(String value) {
         headerProperty.set(value);
     }
-    
+
+    // onDoubleClickProperty
+    private final ObjectProperty<Consumer<ConceptNavigatorModel>> onDoubleClickProperty = new SimpleObjectProperty<>(this, "onDoubleClick");
+    public final ObjectProperty<Consumer<ConceptNavigatorModel>> onDoubleClickProperty() {
+       return onDoubleClickProperty;
+    }
+    public final Consumer<ConceptNavigatorModel> getOnDoubleClick() {
+       return onDoubleClickProperty.get();
+    }
+    public final void setOnDoubleClick(Consumer<ConceptNavigatorModel> value) {
+        onDoubleClickProperty.set(value);
+    }
+
     @Override
     protected Skin<?> createDefaultSkin() {
         conceptNavigatorTreeViewSkin = new KLConceptNavigatorTreeViewSkin(this);
