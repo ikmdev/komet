@@ -23,6 +23,11 @@
                     <KLConceptNavigatorControl fx:id="conceptNavigatorControl"/>
                 </VBox>
             </left>
+            <center>
+                <VBox fx:id="conceptArea" styleClass="center-container">
+
+                </VBox>
+            </center>
             <right>
                 <VBox prefHeight="100.0" styleClass="control-configuration-container" BorderPane.alignment="CENTER">
                     <HBox spacing="5">

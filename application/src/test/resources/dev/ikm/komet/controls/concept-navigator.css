@@ -150,6 +150,11 @@
     -fx-background-insets: 0, 1;
 }
 
+.tree-cell:drag-selected > .cell-box {
+    -fx-background-color: #5DCF16, white;
+    -fx-background-insets: 0, 2;
+}
+
 .tree-cell > .cell-box > .concept-label {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 12;
@@ -198,6 +203,11 @@
 }
 .tree-cell > .cell-box > .region:leaf {
     -fx-background-color: #B3BDCD;
+}
+.tree-cell:drag-selected > .cell-box > .region,
+.tree-cell:drag-selected > .cell-box > .region:expanded,
+.tree-cell:drag-selected > .cell-box > .region:leaf {
+    -fx-background-color: transparent;
 }
 
 .tree-cell > .cell-box > .region.select {
@@ -262,6 +272,12 @@
     -fx-background-color: black;
     -fx-shape: "M 11 7 L 11 8.5 L 5 8.5 L 5 7 Z";
     -fx-rotate: 0;
+}
+
+.tree-cell:drag-selected > .cell-box > .region > .icon.disclosure,
+.tree-cell:drag-selected > .cell-box > .region > .icon.leaf {
+    -fx-background-color: #545D72;
+    -fx-shape: "M3.91 9.66667L3.91 7.91667H6.08333L6.08333 10.09L4.33333 10.09L3.91 10.09V9.66667ZM3.81954 10.1806L3.91 10.2713V10.2708L4.15678 10.517L6.82345 13.177L7 13.3531L7.17656 13.177L9.84322 10.517L10.09 10.2708V10.2713L10.1807 10.1804L10.2713 10.09H10.2708L10.517 9.84322L13.177 7.17656L13.3531 7L13.177 6.82344L10.517 4.15678L10.2708 3.91H10.2713L10.1805 3.81945L10.09 3.72871V3.72916L9.84322 3.483L7.17656 0.823002L7 0.646888L6.82344 0.823002L4.15678 3.483L3.91 3.72916V3.72871L3.8193 3.81964L3.72871 3.91H3.72916L3.483 4.15678L0.823002 6.82345L0.646888 7L0.823002 7.17656L3.483 9.84322L3.72916 10.09H3.72871L3.81954 10.1806ZM3.91 4.33333V3.91H4.33333H6.08333V6.08333L3.91 6.08333V4.33333ZM9.66667 3.91H10.09V4.33333V6.08333H7.91667V3.91L9.66667 3.91ZM10.09 9.66667V10.09H9.66667H7.91667L7.91667 7.91667H10.09V9.66667Z"
 }
 
 .tree-cell > .cell-box > .region.select > .icon.select {

@@ -10,13 +10,22 @@ import javafx.css.PseudoClass;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.Skin;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DataFormat;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -26,6 +35,7 @@ import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.scene.text.Text;
+import javafx.scene.transform.Scale;
 import javafx.util.Duration;
 import javafx.util.Subscription;
 
@@ -41,6 +51,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
     private static final PseudoClass EXPANDED_PSEUDO_CLASS = PseudoClass.getPseudoClass("expanded");
     private static final PseudoClass LEAF_PSEUDO_CLASS = PseudoClass.getPseudoClass("leaf");
     private static final PseudoClass DEFINED_PSEUDO_CLASS = PseudoClass.getPseudoClass("defined");
+    private static final PseudoClass DRAG_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("drag-selected");
 
     private static final PseudoClass LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-long-hover");
     private static final PseudoClass BORDER_LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-border-long-hover");
@@ -57,6 +68,12 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
             LINE_I_LONG_HOVER_PSEUDO_CLASS[i] = PseudoClass.getPseudoClass("cn-line-long-hover-" + i);
             LINE_I_SELECTED_PSEUDO_CLASS[i] = PseudoClass.getPseudoClass("cn-line-selected-" + i);
         }
+    }
+
+    public static final DataFormat CONCEPT_NAVIGATOR_DRAG_FORMAT;
+    static {
+        DataFormat dataFormat = DataFormat.lookupMimeType("object/concept-navigator-format");
+        CONCEPT_NAVIGATOR_DRAG_FORMAT = dataFormat == null ? new DataFormat("object/concept-navigator-format") : dataFormat;
     }
 
     private final Label label;
@@ -84,6 +101,14 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         });
         IconRegion selectIconRegion = new IconRegion("icon", "select");
         StackPane selectPane = new StackPane(selectIconRegion);
+        selectPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, true);
+            e.consume();
+        });
+        selectPane.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
+            pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, false);
+            e.consume();
+        });
         selectPane.getStyleClass().addAll("region", "select");
 
         IconRegion treeIconRegion = new IconRegion("icon", "tree");
@@ -142,6 +167,22 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
                 }
                 e.consume();
             }
+        });
+
+        selectPane.addEventFilter(MouseEvent.DRAG_DETECTED, e -> {
+            if (!isEmpty()) {
+                Dragboard dragboard = box.startDragAndDrop(TransferMode.COPY_OR_MOVE);
+                ClipboardContent clipboardContent = new ClipboardContent();
+                clipboardContent.put(CONCEPT_NAVIGATOR_DRAG_FORMAT, getItem().getText()); // TODO: Add Concept model, must be serializable
+                clipboardContent.putString(getItem().toString());
+                dragboard.setContent(clipboardContent);
+                SnapshotParameters p = new SnapshotParameters();
+                p.setTransform(new Scale(10, 10));
+                WritableImage snapshot = box.snapshot(p, null);
+                dragboard.setDragView(scale(snapshot, (int) (snapshot.getWidth() / 10), (int) (snapshot.getHeight() / 10)));
+                pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, false);
+            }
+            e.consume();
         });
     }
 
@@ -298,6 +339,14 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         }
         curvedLine.getStyleClass().add(styleClass);
         return curvedLine;
+    }
+
+    private Image scale(Image source, int targetWidth, int targetHeight) {
+        ImageView imageView = new ImageView(source);
+        imageView.setPreserveRatio(true);
+        imageView.setFitWidth(targetWidth);
+        imageView.setFitHeight(targetHeight);
+        return imageView.snapshot(null, null);
     }
 
     @Override
