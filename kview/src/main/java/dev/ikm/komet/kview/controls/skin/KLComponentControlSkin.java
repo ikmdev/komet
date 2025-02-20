@@ -51,6 +51,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private final StackPane conceptContainer;
     private final HBox aboutToDropHBox;
     private final HBox aboutToRearrangeHBox;
+    private final HBox doNotDropHBox;
 
     /**
      * Creates a new KLComponentControlSkin instance, installing the necessary child
@@ -73,8 +74,10 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         selectedConceptContainer.managedProperty().bind(selectedConceptContainer.visibleProperty());
 
         aboutToDropHBox = createDragOverAnimation();
+        doNotDropHBox = createDoNotDropDragOverAnimation();
         aboutToRearrangeHBox = createDragOverAnimation();
-        conceptContainer = new StackPane(createSearchBox(), aboutToDropHBox);
+
+        conceptContainer = new StackPane(createSearchBox(), aboutToDropHBox , doNotDropHBox);
         conceptContainer.getStyleClass().add("concept-container");
         conceptContainer.managedProperty().bind(conceptContainer.visibleProperty());
         selectedConceptContainer.visibleProperty().bind(conceptContainer.visibleProperty().not());
@@ -145,7 +148,12 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     if (hasAllowedDND(control)) {
                         aboutToRearrangeHBox.setVisible(true);
                     }
+                } else if (control.getParent() instanceof KLComponentSetControl componentSetControl) {
+                   // componentSetControl.getValue().contains();
+                    System.out.println("2222  GREEN DOTTED BOX SHOWN");
+                    doNotDropHBox.setVisible(true);
                 } else {
+                    System.out.println("33333  GREEN DOTTED BOX SHOWN");
                     aboutToDropHBox.setVisible(true);
                 }
             }
@@ -156,6 +164,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
             conceptContainer.setOpacity(1);
             aboutToRearrangeHBox.setVisible(false);
             aboutToDropHBox.setVisible(false);
+            doNotDropHBox.setVisible(false);
             event.consume();
         });
 
@@ -291,6 +300,20 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         aboutToDropHBox.setVisible(false);
         return aboutToDropHBox;
     }
+
+    private HBox createDoNotDropDragOverAnimation(){
+        Region iconRegion = new Region();
+        iconRegion.getStyleClass().add("concept-donot-drag-and-drop-icon");
+        Label doNotDragAndDropLabel = new Label(getString("textfield.donot.drag.text"), iconRegion);
+
+        HBox doNotDragAndDropHBox = new HBox(doNotDragAndDropLabel);
+        doNotDragAndDropHBox.setAlignment(Pos.CENTER);
+        doNotDragAndDropHBox.getStyleClass().add("concept-donot-drop-area");
+        doNotDragAndDropHBox.managedProperty().bind(doNotDragAndDropHBox.visibleProperty());
+        doNotDragAndDropHBox.setVisible(false);
+        return doNotDragAndDropHBox;
+    }
+
 
     private void addConceptNode(EntityProxy entity) {
         Image identicon = Identicon.generateIdenticonImage(entity.publicId());
