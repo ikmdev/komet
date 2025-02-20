@@ -304,13 +304,22 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private HBox createDoNotDropDragOverAnimation(){
         Region iconRegion = new Region();
         iconRegion.getStyleClass().add("concept-donot-drag-and-drop-icon");
+
         Label doNotDragAndDropLabel = new Label(getString("textfield.donot.drag.text"), iconRegion);
+        doNotDragAndDropLabel.getStyleClass().add("error-msg-label");
+
+  //      doNotDragAndDropLabel.setContentDisplay(ContentDisplay.RIGHT);
+  //      doNotDragAndDropLabel.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
+ //       doNotDragAndDropLabel.setGraphicTextGap(150);
+
+ //       doNotDragAndDropLabel.setPrefWidth(500);
 
         HBox doNotDragAndDropHBox = new HBox(doNotDragAndDropLabel);
         doNotDragAndDropHBox.setAlignment(Pos.CENTER);
         doNotDragAndDropHBox.getStyleClass().add("concept-donot-drop-area");
         doNotDragAndDropHBox.managedProperty().bind(doNotDragAndDropHBox.visibleProperty());
-        doNotDragAndDropHBox.setVisible(false);
+        doNotDragAndDropHBox.setVisible(true);
+
         return doNotDragAndDropHBox;
     }
 
