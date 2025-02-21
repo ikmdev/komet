@@ -135,7 +135,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
                             // don't long-hover the selected item
                             return;
                         }
-                        hoverTransition = new PauseTransition(Duration.seconds(0.5));
+                        hoverTransition = new PauseTransition(new Duration(treeView.getActivation()));
                         hoverTransition.setOnFinished(e -> treeViewSkin.hoverAllAncestors(getTreeItem()));
                         hoverTransition.playFromStart();
                     }
@@ -155,7 +155,11 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
             }
         });
         setText(null);
+
         tooltip = new ConceptNavigatorTooltip(box);
+        tooltip.showDelayProperty().bind(Bindings.createObjectBinding(() ->
+                new Duration(treeView.getActivation()), treeView.activationProperty()));
+        tooltip.setHideDelay(Duration.ZERO);
 
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (e.getClickCount() == 2 && !isEmpty()) {
