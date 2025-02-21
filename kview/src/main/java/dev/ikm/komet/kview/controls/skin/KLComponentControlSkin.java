@@ -150,11 +150,11 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                         aboutToRearrangeHBox.setVisible(true);
                     }
                 } else if (control.getParent() instanceof KLComponentSetControl klComponentSetControl //If the parent if of type KLComponentSetControl then,
-                        && event.getGestureSource() instanceof Node source &&   //Get source
-                        source.getUserData() instanceof DragAndDropInfo dropInfo && // get the dropInfo
-                        dropInfo.publicId() != null // check for publicID
-                        && klComponentSetControl.getValue().contains(EntityService.get().nidForPublicId(dropInfo.publicId())) // check if the nid already exists in the set.
-                    ) {
+                        && event.getGestureSource() instanceof Node source //Get source
+                        && source.getUserData() instanceof DragAndDropInfo dropInfo // get the dropInfo
+                        && dropInfo.publicId() != null // check for publicID
+                        && klComponentSetControl.getValue().contains(EntityService.get().nidForPublicId(dropInfo.publicId()))) // check if the nid already exists in the set.
+                {
                     doNotDropHBox.setVisible(true);  // show error message.
                 } else {
                     aboutToDropHBox.setVisible(true);
