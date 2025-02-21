@@ -149,7 +149,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     if (hasAllowedDND(control)) {
                         aboutToRearrangeHBox.setVisible(true);
                     }
-                } else if (control.getParent() instanceof KLComponentSetControl klComponentSetControl
+                } else if (control.getParent() instanceof KLComponentSetControl klComponentSetControl //If the parent if of type KLComponentSetControl then,
                         && event.getGestureSource() instanceof Node source &&   //Get source
                         source.getUserData() instanceof DragAndDropInfo dropInfo && // get the dropInfo
                         dropInfo.publicId() != null // check for publicID
@@ -304,6 +304,10 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         return aboutToDropHBox;
     }
 
+    /***
+     * This method show the error message to let user know tht the value is duplicate.
+     * @return hbox
+     */
     private HBox createDoNotDropDragOverAnimation(){
         Region iconRegion = new Region();
         iconRegion.getStyleClass().add("concept-donot-drag-and-drop-icon");
