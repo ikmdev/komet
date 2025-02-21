@@ -52,7 +52,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private final StackPane conceptContainer;
     private final HBox aboutToDropHBox;
     private final HBox aboutToRearrangeHBox;
-    private final BorderPane doNotDropHBox;
+    private final BorderPane doNotDropBorderPane;
 
     /**
      * Creates a new KLComponentControlSkin instance, installing the necessary child
@@ -75,10 +75,10 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         selectedConceptContainer.managedProperty().bind(selectedConceptContainer.visibleProperty());
 
         aboutToDropHBox = createDragOverAnimation();
-        doNotDropHBox = createDoNotDropDragOverAnimation();
+        doNotDropBorderPane = createDoNotDropDragOverAnimation();
         aboutToRearrangeHBox = createDragOverAnimation();
 
-        conceptContainer = new StackPane(createSearchBox(), aboutToDropHBox , doNotDropHBox);
+        conceptContainer = new StackPane(createSearchBox(), aboutToDropHBox , doNotDropBorderPane);
         conceptContainer.getStyleClass().add("concept-container");
         conceptContainer.managedProperty().bind(conceptContainer.visibleProperty());
         selectedConceptContainer.visibleProperty().bind(conceptContainer.visibleProperty().not());
@@ -155,7 +155,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                         && dropInfo.publicId() != null // check for publicID
                         && klComponentSetControl.getValue().contains(EntityService.get().nidForPublicId(dropInfo.publicId()))) // check if the nid already exists in the set.
                 {
-                    doNotDropHBox.setVisible(true);  // show error message.
+                    doNotDropBorderPane.setVisible(true);  // show error message.
                 } else {
                     aboutToDropHBox.setVisible(true);
                 }
@@ -167,7 +167,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
             conceptContainer.setOpacity(1);
             aboutToRearrangeHBox.setVisible(false);
             aboutToDropHBox.setVisible(false);
-            doNotDropHBox.setVisible(false);
+            doNotDropBorderPane.setVisible(false);
             event.consume();
         });
 
