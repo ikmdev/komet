@@ -9,6 +9,7 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
+import javafx.geometry.NodeOrientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
@@ -307,12 +308,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         Label doNotDragAndDropLabel = new Label(getString("textfield.donot.drag.text"), iconRegion);
         doNotDragAndDropLabel.getStyleClass().add("error-msg-label");
-
-  //      doNotDragAndDropLabel.setContentDisplay(ContentDisplay.RIGHT);
-  //      doNotDragAndDropLabel.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
- //       doNotDragAndDropLabel.setGraphicTextGap(150);
-
- //       doNotDragAndDropLabel.setPrefWidth(500);
+        doNotDragAndDropLabel.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
 
         HBox doNotDragAndDropHBox = new HBox(doNotDragAndDropLabel);
         doNotDragAndDropHBox.setAlignment(Pos.CENTER);
