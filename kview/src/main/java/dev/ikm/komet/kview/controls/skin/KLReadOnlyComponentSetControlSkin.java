@@ -3,6 +3,7 @@ package dev.ikm.komet.kview.controls.skin;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
 import dev.ikm.komet.kview.controls.KometIcon;
+import javafx.collections.ListChangeListener;
 import javafx.collections.SetChangeListener;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.SeparatorMenuItem;
@@ -22,14 +23,20 @@ public class KLReadOnlyComponentSetControlSkin extends KLReadOnlyMultiComponentC
         control.getItems().addListener(this::itemsChanged);
     }
 
-    private void itemsChanged(SetChangeListener.Change<? extends ComponentItem> change) {
-        if (change.wasAdded()) {
-            addNewUIItem(change.getElementAdded());
-        } else if (change.wasRemoved()) {
-            removeUIItem(change.getElementRemoved());
+    private void itemsChanged(ListChangeListener.Change<? extends ComponentItem> change) {
+        while (change.next()) {
+            if (change.wasRemoved()) {
+                for (ComponentItem removedComponentItem : change.getRemoved()) {
+                    removeUIItem(removedComponentItem);
+                }
+            }
+            if (change.wasAdded()) {
+                for (ComponentItem addedComponentItem : change.getAddedSubList()) {
+                    addNewUIItem(addedComponentItem);
+                }
+            }
         }
     }
-
     private void addNewUIItem(ComponentItem componentItem) {
         ComponentItemNode componentItemNode = new ComponentItemNode(componentItem);
 
