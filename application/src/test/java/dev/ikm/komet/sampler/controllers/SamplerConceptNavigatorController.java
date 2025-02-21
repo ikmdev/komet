@@ -2,8 +2,6 @@ package dev.ikm.komet.sampler.controllers;
 
 import dev.ikm.komet.controls.ConceptNavigatorModel;
 import dev.ikm.komet.controls.KLConceptNavigatorControl;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeItem;
@@ -93,16 +91,7 @@ public class SamplerConceptNavigatorController {
             conceptArea.getStyleClass().remove("dashed-border");
             event.consume();
         });
-
-        conceptArea.sceneProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                if (conceptArea.getScene() != null) {
-                    conceptArea.getScene().getStylesheets().add(STYLE);
-                    conceptArea.sceneProperty().removeListener(this);
-                }
-            }
-        });
+        conceptArea.getStylesheets().add(STYLE);
     }
 
     private static List<TreeItem<ConceptNavigatorModel>> generateChildren(int level) {

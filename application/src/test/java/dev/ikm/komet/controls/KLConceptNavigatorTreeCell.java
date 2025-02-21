@@ -17,12 +17,9 @@ import javafx.scene.control.Skin;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
-import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
@@ -177,9 +174,10 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
                 clipboardContent.putString(getItem().toString());
                 dragboard.setContent(clipboardContent);
                 SnapshotParameters p = new SnapshotParameters();
-                p.setTransform(new Scale(10, 10));
+                double scale = getScene().getWindow().getOutputScaleY();
+                p.setTransform(new Scale(scale, scale));
                 WritableImage snapshot = box.snapshot(p, null);
-                dragboard.setDragView(scale(snapshot, (int) (snapshot.getWidth() / 10), (int) (snapshot.getHeight() / 10)));
+                dragboard.setDragView(snapshot);
                 pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, false);
             }
             e.consume();
@@ -339,14 +337,6 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         }
         curvedLine.getStyleClass().add(styleClass);
         return curvedLine;
-    }
-
-    private Image scale(Image source, int targetWidth, int targetHeight) {
-        ImageView imageView = new ImageView(source);
-        imageView.setPreserveRatio(true);
-        imageView.setFitWidth(targetWidth);
-        imageView.setFitHeight(targetHeight);
-        return imageView.snapshot(null, null);
     }
 
     @Override
