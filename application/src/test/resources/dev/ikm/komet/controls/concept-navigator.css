@@ -99,7 +99,7 @@
     -fx-background-color: -fx-background;
     -fx-text-fill: -fx-text-background-color;
     -fx-padding: 1;
-    -fx-indent: 1em;
+    -fx-indent: 15;
     -fx-min-width: 438;
     -fx-pref-width: 438;
     -fx-max-width: 438;

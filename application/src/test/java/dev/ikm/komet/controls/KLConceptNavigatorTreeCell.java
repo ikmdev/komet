@@ -286,7 +286,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         double indent = myTreeCellSkin.getIndent();
         List<Path> paths = new ArrayList<>();
         for (int i = 0; i < level; i++) {
-            double x = 10.5 + indent * i;
+            double x = 10 + indent * i;
             if (i < level - 1) {
                 TreeItem<ConceptNavigatorModel> ancestor = getAncestor(treeItem, i + 1);
                 if (ancestor.nextSibling() != null) {
@@ -330,13 +330,13 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         Path curvedLine = new Path();
         if (isLastSibling) {
             curvedLine.getElements().addAll(
-                    new MoveTo(x, 0), new LineTo(x, 9),
-                    new ArcTo(3, 3, 90, x + 3, 12, false, false)
+                    new MoveTo(x, 0), new LineTo(x, 7),
+                    new ArcTo(5, 5, 90, x + 5, 12, false, false)
             );
         } else {
             curvedLine.getElements().addAll(
-                    new MoveTo(x, 0), new LineTo(x, 24), new MoveTo(x, 9),
-                    new ArcTo(3, 3, 90, x + 3, 12, false, false)
+                    new MoveTo(x, 0), new LineTo(x, 24), new MoveTo(x, 7),
+                    new ArcTo(5, 5, 90, x + 5, 12, false, false)
             );
         }
         curvedLine.getStyleClass().add(styleClass);
