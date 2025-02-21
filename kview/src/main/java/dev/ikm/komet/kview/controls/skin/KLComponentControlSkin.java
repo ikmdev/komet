@@ -9,7 +9,6 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
-import javafx.geometry.NodeOrientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
@@ -24,6 +23,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -52,7 +52,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private final StackPane conceptContainer;
     private final HBox aboutToDropHBox;
     private final HBox aboutToRearrangeHBox;
-    private final HBox doNotDropHBox;
+    private final BorderPane doNotDropHBox;
 
     /**
      * Creates a new KLComponentControlSkin instance, installing the necessary child
@@ -308,21 +308,27 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
      * This method show the error message to let user know tht the value is duplicate.
      * @return hbox
      */
-    private HBox createDoNotDropDragOverAnimation(){
+    private BorderPane createDoNotDropDragOverAnimation(){
+        // Initialize the borderpane
+        BorderPane borderPane = new BorderPane();
+        StackPane stackPane = new StackPane();
+        //add stackPane to right of borderPane.
+        borderPane.setRight(stackPane);
+
         Region iconRegion = new Region();
         iconRegion.getStyleClass().add("concept-donot-drag-and-drop-icon");
+        // add Region/Icon to the stackpane
+        stackPane.getChildren().add(iconRegion);
 
-        Label doNotDragAndDropLabel = new Label(getString("textfield.donot.drag.text"), iconRegion);
+        Label doNotDragAndDropLabel = new Label(getString("textfield.donot.drag.text"));
         doNotDragAndDropLabel.getStyleClass().add("error-msg-label");
-        doNotDragAndDropLabel.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
+        //Add label to the center of borderpane.
+        borderPane.setCenter(doNotDragAndDropLabel);
 
-        HBox doNotDragAndDropHBox = new HBox(doNotDragAndDropLabel);
-        doNotDragAndDropHBox.setAlignment(Pos.CENTER);
-        doNotDragAndDropHBox.getStyleClass().add("concept-donot-drop-area");
-        doNotDragAndDropHBox.managedProperty().bind(doNotDragAndDropHBox.visibleProperty());
-        doNotDragAndDropHBox.setVisible(false);
-
-        return doNotDragAndDropHBox;
+        borderPane.getStyleClass().add("concept-donot-drop-area");
+        borderPane.managedProperty().bind(borderPane.visibleProperty());
+        borderPane.setVisible(false);
+        return borderPane;
     }
 
 
