@@ -15,9 +15,9 @@
  */
 package dev.ikm.komet.reasoner.ui;
 
-import dev.ikm.komet.reasoner.ClassifierResults;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.service.TrackingCallable;
+import dev.ikm.tinkar.reasoner.service.ClassifierResults;
 import dev.ikm.tinkar.reasoner.service.ReasonerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,6 +97,15 @@ public class RunReasonerTask extends TrackingCallable<ReasonerService> {
 		Future<ReasonerService> classifyFuture = TinkExecutor.threadPool().submit(classifyTask);
 		classifyFuture.get();
 		updateProgress(workDone++, maxWork);
+
+		msg = "Step " + workDone + ": Building necessary normal form";
+		updateMessage(msg);
+		LOG.info(msg);
+		BuildNecessaryNormalFormTask task = new BuildNecessaryNormalFormTask(reasonerService);
+		Future<ReasonerService> future = TinkExecutor.threadPool().submit(task);
+		future.get();
+		updateProgress(workDone++, maxWork);
+
 		//
 		msg = "Step " + workDone + ": Processing results";
 		updateMessage(msg);
