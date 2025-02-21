@@ -42,7 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * TODO: work with LogicalExpression rather than DiTree<EntityVertex> when LogicalExpression moves to TinkarCore.
+ * TODO: work with LogicalExpression rather than {@code DiTree<EntityVertex>} when LogicalExpression moves to TinkarCore.
+ *
  * @author kec
  */
 public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
@@ -198,7 +199,7 @@ public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
             LOG.info("axiomTreeSemanticVersion is null... Fix handling");
             return "Version is not available... ";
         }
-     }
+    }
 
     public final void setPremiseTypePseudoClasses(Node node) {
         switch (premiseType) {
