@@ -170,7 +170,7 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
 
         if (getSkinnable().isShowError()) {
             y += textFieldPrefHeight + 2;
-            labelPrefWidth = errorLabel.prefWidth(textField.getWidth());
+            labelPrefWidth = errorLabel.prefWidth(-1);
             labelPrefHeight = errorLabel.prefHeight(labelPrefWidth);
             errorLabel.resizeRelocate(x, y, textField.getWidth(), labelPrefHeight);
         }
