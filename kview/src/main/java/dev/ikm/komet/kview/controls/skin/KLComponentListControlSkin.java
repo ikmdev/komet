@@ -31,7 +31,7 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
     private static final Logger LOG = LoggerFactory.getLogger(KLComponentListControlSkin.class);
 
     private final static double SPACE_BETWEEN_COMPONENTS = 10;
-    private final static double spacingBetweenNumberAndControl = 5;
+    private final static double SPACE_BETWEEN_NUMBER_AND_CONTROL = 5;
 
     private final Label titleLabel;
     private final Button addEntryButton;
@@ -210,7 +210,7 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
                     control.setValue(IntIds.list.of(mutableList.toArray()));
 
                     // Component Control was empty so had no drop line we need to create one now
-                    createDropLineForComponent(componentControl);
+                    createDropLine(componentControl);
 
                 } else { // we're setting the control's valid nid to another nid
                     IntIdList intIdList = control.getValue();
@@ -239,7 +239,7 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
         Label numberLabel = createNumberLabel(componentControl);
 
         if (nid != 0) {
-            createDropLineForComponent(componentControl);
+            createDropLine(componentControl);
         }
 
         getChildren().add(componentControl);
@@ -248,13 +248,20 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
         getSkinnable().requestLayout();
     }
 
-    private void createDropLineForComponent(KLComponentControl componentControl) {
+    private void createDropLine(KLComponentControl componentControl) {
         Line dropLine = new Line();
         dropLine.getStyleClass().add("drop-line");
         componentToDropLine.put(componentControl, dropLine);
         dropLine.setVisible(false);
 
         getChildren().add(dropLine);
+    }
+
+    private Label createNumberLabel(KLComponentControl componentControl) {
+        Label numberLabel = new Label();
+        numberLabel.getStyleClass().add("number-label");
+        componentControlToNumberGraphic.put(componentControl, numberLabel);
+        return numberLabel;
     }
 
     private void removeComponentControl(KLComponentControl componentControl, Subscription subscription) {
@@ -277,13 +284,6 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
         MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
         mutableList.remove(nidToRemove);
         control.setValue(IntIds.list.of(mutableList.toArray()));
-    }
-
-    private Label createNumberLabel(KLComponentControl componentControl) {
-        Label numberLabel = new Label();
-        numberLabel.getStyleClass().add("number-label");
-        componentControlToNumberGraphic.put(componentControl, numberLabel);
-        return numberLabel;
     }
 
     /** {@inheritDoc} */
@@ -342,7 +342,7 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
         double labelWidth = numberLabel.prefWidth(-1);
         double labelHeight = numberLabel.prefHeight(labelWidth);
 
-        double componentControlPrefWidth = contentWidth - padding.getRight() - componentStartX - labelWidth - spacingBetweenNumberAndControl;
+        double componentControlPrefWidth = contentWidth - padding.getRight() - componentStartX - labelWidth - SPACE_BETWEEN_NUMBER_AND_CONTROL;
         double componentControlPrefHeight = componentControl.prefHeight(componentControlPrefWidth);
 
         // Layout number label
@@ -353,7 +353,7 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
         numberLabel.setText(String.valueOf(labelNumber));
 
         // Layout component Control
-        componentStartX += labelX + labelWidth + spacingBetweenNumberAndControl;
+        componentStartX += labelX + labelWidth + SPACE_BETWEEN_NUMBER_AND_CONTROL;
         componentControl.resizeRelocate(componentStartX, componentStartY, componentControlPrefWidth, componentControlPrefHeight);
 
         // Layout drop line

@@ -177,7 +177,6 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         });
 
         control.setOnDragDropped(event -> {
-            boolean success = false;
             Dragboard dragboard = event.getDragboard();
             if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT) &&
                     event.getGestureSource() instanceof KLComponentControl cc && haveAllowedDND(control, cc)) {
@@ -188,27 +187,10 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     int targetIndex = skin.getChildren().indexOf(control);
                     final Node node = skin.getChildren().remove(sourceIndex);
                     skin.getChildren().add(targetIndex, node);
-                    success = true;
 
-                    event.setDropCompleted(success);
+                    event.setDropCompleted(true);
                     event.consume();
                 }
-//                else if (control.getParent() instanceof KLComponentListControl componentListControl) {
-//                    KLComponentListControlSkin skin = (KLComponentListControlSkin) componentListControl.getSkin();
-//                    int sourceIndex = skin.getChildren().indexOf(cc);
-//                    int targetIndex = skin.getChildren().indexOf(control);
-//                    final KLComponentControl node = (KLComponentControl) skin.getChildren().remove(sourceIndex);
-//                    skin.getChildren().remove(sourceIndex);
-//                    if (targetIndex >= skin.getChildren().size()) {
-//                        skin.getChildren().add(node);
-//                    } else {
-//                        skin.getChildren().add(targetIndex, node);
-//                    }
-//                    skin.getSkinnable().removeIndexItem(sourceIndex);
-//                    skin.getSkinnable().addValue(targetIndex, node.getEntity().nid());
-
-//                    success = true;
-//                }
             } else if (dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
                 // drop concept
                 try {
@@ -216,31 +198,22 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     if (event.getGestureSource() instanceof Node source &&
                             source.getUserData() instanceof DragAndDropInfo dropInfo &&
                             dropInfo.publicId() != null
-//                            &&
-//                            dropInfo.publicId().toString().equals(dragboard.getString())
                     ) { // TODO: should this be needed? shouldn't we get PublicId from dragboard content?
+                        int nid = EntityService.get().nidForPublicId(dropInfo.publicId());
+                        EntityProxy entity = EntityProxy.make(nid);
+                        if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
+                                !componentSetControl.getValue().contains(nid)) {
+                            control.setEntity(entity);
+                            addConceptNode(entity);
 
-                        //if (control.getEntity() == null) {
-                            int nid = EntityService.get().nidForPublicId(dropInfo.publicId());
-                            EntityProxy entity = EntityProxy.make(nid);
-                            if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
-                                    !componentSetControl.getValue().contains(nid)) {
-                                control.setEntity(entity);
-                                addConceptNode(entity);
-                                success = true;
-
-                                event.setDropCompleted(success);
-                                event.consume();
-                            }
-                        //}
+                            event.setDropCompleted(true);
+                            event.consume();
+                        }
                     }
                 } catch (Exception e) {
                     LOG.error("exception: ", e);
                 }
             }
-
-//            event.setDropCompleted(success);
-//            event.consume();
         });
     }
 
