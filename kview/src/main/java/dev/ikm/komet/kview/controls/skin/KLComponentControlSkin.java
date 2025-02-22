@@ -41,10 +41,11 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
     private static final Logger LOG = LoggerFactory.getLogger(KLComponentControl.class);
     private static final String SEARCH_TEXT_VALUE = "search.text.value";
-    private static final DataFormat CONTROL_DRAG_FORMAT;
+    public static final DataFormat COMPONENT_CONTROL_DRAG_FORMAT;
+
     static {
         DataFormat dataFormat = DataFormat.lookupMimeType("text/concept-control-format");
-        CONTROL_DRAG_FORMAT = dataFormat == null ? new DataFormat("text/concept-control-format") : dataFormat;
+        COMPONENT_CONTROL_DRAG_FORMAT = dataFormat == null ? new DataFormat("text/concept-control-format") : dataFormat;
     }
 
     private final Label titleLabel;
@@ -134,7 +135,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private void setupDragNDrop() {
         KLComponentControl control = getSkinnable();
         control.setOnDragOver(event -> {
-            if (event.getDragboard().hasContent(CONTROL_DRAG_FORMAT)) {
+            if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT)) {
                 event.acceptTransferModes(TransferMode.MOVE);
             } else if (event.getGestureSource() != control && event.getDragboard().hasString()) {
                 event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
@@ -145,7 +146,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         control.setOnDragEntered(event -> {
             if (event.getGestureSource() != control && event.getDragboard().hasString()) {
                 conceptContainer.setOpacity(.90);
-                if (event.getDragboard().hasContent(CONTROL_DRAG_FORMAT)) {
+                if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT)) {
                     if (hasAllowedDND(control)) {
                         aboutToRearrangeHBox.setVisible(true);
                     }
@@ -175,7 +176,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
             if (hasAllowedDND(control)) {
                 Dragboard dragboard = control.startDragAndDrop(TransferMode.MOVE);
                 ClipboardContent clipboardContent = new ClipboardContent();
-                clipboardContent.put(CONTROL_DRAG_FORMAT, "concept-control");
+                clipboardContent.put(COMPONENT_CONTROL_DRAG_FORMAT, "concept-control");
                 control.setUserData(control.getEntity().publicId());
                 clipboardContent.putString(control.getEntity().toString());
                 dragboard.setContent(clipboardContent);
@@ -188,9 +189,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         });
 
         control.setOnDragDropped(event -> {
-            boolean success = false;
             Dragboard dragboard = event.getDragboard();
-            if (event.getDragboard().hasContent(CONTROL_DRAG_FORMAT) &&
+            if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT) &&
                     event.getGestureSource() instanceof KLComponentControl cc && haveAllowedDND(control, cc)) {
                 // reorder components
                 if (control.getParent() instanceof KLComponentSetControl componentSetControl) {
@@ -199,22 +199,9 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     int targetIndex = skin.getChildren().indexOf(control);
                     final Node node = skin.getChildren().remove(sourceIndex);
                     skin.getChildren().add(targetIndex, node);
-                    success = true;
-                } else if (control.getParent() instanceof KLComponentListControl componentListControl) {
-                    KLComponentListControlSkin skin = (KLComponentListControlSkin) componentListControl.getSkin();
-                    int sourceIndex = skin.getChildren().indexOf(cc);
-                    int targetIndex = skin.getChildren().indexOf(control);
-                    final KLComponentControl node = (KLComponentControl) skin.getChildren().remove(sourceIndex);
-//                    skin.getChildren().remove(sourceIndex);
-//                    if (targetIndex >= skin.getChildren().size()) {
-//                        skin.getChildren().add(node);
-//                    } else {
-                        skin.getChildren().add(targetIndex, node);
-//                    }
-//                    skin.getSkinnable().removeIndexItem(sourceIndex);
-//                    skin.getSkinnable().addValue(targetIndex, node.getEntity().nid());
 
-                    success = true;
+                    event.setDropCompleted(true);
+                    event.consume();
                 }
             } else if (dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
                 // drop concept
@@ -223,42 +210,38 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     if (event.getGestureSource() instanceof Node source &&
                             source.getUserData() instanceof DragAndDropInfo dropInfo &&
                             dropInfo.publicId() != null
-//                            &&
-//                            dropInfo.publicId().toString().equals(dragboard.getString())
                     ) { // TODO: should this be needed? shouldn't we get PublicId from dragboard content?
+                        int nid = EntityService.get().nidForPublicId(dropInfo.publicId());
+                        EntityProxy entity = EntityProxy.make(nid);
+                        if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
+                                !componentSetControl.getValue().contains(nid)) {
+                            control.setEntity(entity);
+                            addConceptNode(entity);
 
-                        //if (control.getEntity() == null) {
-                            int nid = EntityService.get().nidForPublicId(dropInfo.publicId());
-                            EntityProxy entity = EntityProxy.make(nid);
-                            if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
-                                    !componentSetControl.getValue().contains(nid)) {
-                                control.setEntity(entity);
-                                addConceptNode(entity);
-                                success = true;
-                            }
-                        //}
+                            event.setDropCompleted(true);
+                            event.consume();
+                        }
                     }
                 } catch (Exception e) {
                     LOG.error("exception: ", e);
                 }
             }
-
-            event.setDropCompleted(success);
-            event.consume();
         });
     }
 
     private boolean hasAllowedDND(KLComponentControl control) {
         return control != null && control.getEntity() != null &&
-                ((control.getParent() instanceof KLComponentSetControl cs && cs.getValue().size() > 1) ||
-                (control.getParent() instanceof KLComponentListControl cl && cl.getValue().size() > 1));
+                ((control.getParent() instanceof KLComponentSetControl cs && cs.getValue().size() > 1)
+                    ||  (control.getParent() instanceof KLComponentListControl cl && cl.getValue().size() > 1)
+                );
     }
 
     private boolean haveAllowedDND(KLComponentControl source, KLComponentControl target) {
         // only allowed if both source and target have the same parent
         return hasAllowedDND(source) && hasAllowedDND(target) &&
-                ((source.getParent() instanceof KLComponentSetControl cs1 && target.getParent() instanceof KLComponentSetControl cs2 && cs1 == cs2) ||
-                 (source.getParent() instanceof KLComponentListControl cl1 && target.getParent() instanceof KLComponentListControl cl2 && cl1 == cl2));
+                ((source.getParent() instanceof KLComponentSetControl cs1 && target.getParent() instanceof KLComponentSetControl cs2 && cs1 == cs2)
+//                    || (source.getParent() instanceof KLComponentListControl cl1 && target.getParent() instanceof KLComponentListControl cl2 && cl1 == cl2)
+                );
     }
 
     private HBox createSearchBox() {
