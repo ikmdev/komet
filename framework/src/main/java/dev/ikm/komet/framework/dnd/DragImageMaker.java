@@ -39,7 +39,6 @@ import java.util.Objects;
  * <p>
  * It captures a snapshot of the specified node, applies scaling based on the screen's DPI,
  * adds a rounded border to the image, and calculates the appropriate offset for the drag view.
- * </p>
  *
  * <p>
  * Usage Example:
@@ -50,12 +49,10 @@ import java.util.Objects;
  * double offsetX = dragImageMaker.getDragViewOffsetX();
  * // Use dragImage and offsetX in your drag-and-drop logic
  * }</pre>
- * </p>
  *
  * <p>
  * Note: This class requires that the provided node is part of a scene graph and is attached
  * to a {@link Scene}. If the node is not attached, an error dialog is displayed.
- * </p>
  *
  * @see DraggableWithImage
  * @see Node
@@ -80,7 +77,6 @@ public class DragImageMaker implements DraggableWithImage {
      * <p>
      * The constructor initializes the instance with the provided node. If the node is {@code null},
      * a {@link NullPointerException} is thrown.
-     * </p>
      *
      * @param node the JavaFX node for which the drag image is to be created
      * @throws NullPointerException if the provided node is {@code null}
