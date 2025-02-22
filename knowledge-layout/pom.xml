@@ -6,7 +6,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.47.0-IIA-1335-Numbered-Editable-List-SNAPSHOT</version>
+        <version>1.48.0-IIA-1335-Numbered-Editable-List-SNAPSHOT</version>
     </parent>
 
     <artifactId>knowledge-layout</artifactId>
