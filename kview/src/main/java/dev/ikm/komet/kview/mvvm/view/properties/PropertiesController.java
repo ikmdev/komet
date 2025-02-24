@@ -177,7 +177,6 @@ public class PropertiesController implements Serializable {
         // ! confirmation panel reused by several forms
         // +-----------------------------------------------------------------------
         Config confirmationPanelConfig = new Config(CONFIRMATION_FXML_URL);
-//                .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel));
         JFXNode<Pane, ConfirmationController> confirmationPanelJFXNode = FXMLMvvmLoader.make(confirmationPanelConfig);
         confirmationController = confirmationPanelJFXNode.controller();
         confirmationPane = confirmationPanelJFXNode.node();
