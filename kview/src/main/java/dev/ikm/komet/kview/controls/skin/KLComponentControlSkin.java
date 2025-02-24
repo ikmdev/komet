@@ -23,6 +23,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -51,6 +52,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private final StackPane conceptContainer;
     private final HBox aboutToDropHBox;
     private final HBox aboutToRearrangeHBox;
+    private final BorderPane doNotDropBorderPane;
 
     /**
      * Creates a new KLComponentControlSkin instance, installing the necessary child
@@ -73,8 +75,10 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         selectedConceptContainer.managedProperty().bind(selectedConceptContainer.visibleProperty());
 
         aboutToDropHBox = createDragOverAnimation();
+        doNotDropBorderPane = createDoNotDropDragOverAnimation();
         aboutToRearrangeHBox = createDragOverAnimation();
-        conceptContainer = new StackPane(createSearchBox(), aboutToDropHBox);
+
+        conceptContainer = new StackPane(createSearchBox(), aboutToDropHBox , doNotDropBorderPane);
         conceptContainer.getStyleClass().add("concept-container");
         conceptContainer.managedProperty().bind(conceptContainer.visibleProperty());
         selectedConceptContainer.visibleProperty().bind(conceptContainer.visibleProperty().not());
@@ -145,6 +149,13 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     if (hasAllowedDND(control)) {
                         aboutToRearrangeHBox.setVisible(true);
                     }
+                } else if (control.getParent() instanceof KLComponentSetControl klComponentSetControl //If the parent if of type KLComponentSetControl then,
+                        && event.getGestureSource() instanceof Node source //Get source
+                        && source.getUserData() instanceof DragAndDropInfo dropInfo // get the dropInfo
+                        && dropInfo.publicId() != null // check for publicID
+                        && klComponentSetControl.getValue().contains(EntityService.get().nidForPublicId(dropInfo.publicId()))) // check if the nid already exists in the set.
+                {
+                    doNotDropBorderPane.setVisible(true);  // show error message.
                 } else {
                     aboutToDropHBox.setVisible(true);
                 }
@@ -156,6 +167,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
             conceptContainer.setOpacity(1);
             aboutToRearrangeHBox.setVisible(false);
             aboutToDropHBox.setVisible(false);
+            doNotDropBorderPane.setVisible(false);
             event.consume();
         });
 
@@ -291,6 +303,34 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         aboutToDropHBox.setVisible(false);
         return aboutToDropHBox;
     }
+
+    /***
+     * This method show the error message to let user know tht the value is duplicate.
+     * @return hbox
+     */
+    private BorderPane createDoNotDropDragOverAnimation(){
+        // Initialize the borderpane
+        BorderPane borderPane = new BorderPane();
+        StackPane stackPane = new StackPane();
+        //add stackPane to right of borderPane.
+        borderPane.setRight(stackPane);
+
+        Region iconRegion = new Region();
+        iconRegion.getStyleClass().add("concept-donot-drag-and-drop-icon");
+        // add Region/Icon to the stackpane
+        stackPane.getChildren().add(iconRegion);
+
+        Label doNotDragAndDropLabel = new Label(getString("textfield.donot.drag.text"));
+        doNotDragAndDropLabel.getStyleClass().add("error-msg-label");
+        //Add label to the center of borderpane.
+        borderPane.setCenter(doNotDragAndDropLabel);
+
+        borderPane.getStyleClass().add("concept-donot-drop-area");
+        borderPane.managedProperty().bind(borderPane.visibleProperty());
+        borderPane.setVisible(false);
+        return borderPane;
+    }
+
 
     private void addConceptNode(EntityProxy entity) {
         Image identicon = Identicon.generateIdenticonImage(entity.publicId());
