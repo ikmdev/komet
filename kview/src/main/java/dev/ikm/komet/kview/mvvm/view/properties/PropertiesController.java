@@ -15,11 +15,25 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
+import static dev.ikm.komet.kview.fxutils.CssHelper.genText;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CASE_SIGNIFICANCE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_SUBMITTED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.PARENT_PUBLIC_ID;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.events.*;
+import dev.ikm.komet.kview.events.AddFullyQualifiedNameEvent;
+import dev.ikm.komet.kview.events.AddOtherNameToConceptEvent;
+import dev.ikm.komet.kview.events.EditConceptFullyQualifiedNameEvent;
+import dev.ikm.komet.kview.events.EditOtherNameConceptEvent;
+import dev.ikm.komet.kview.events.OpenPropertiesPanelEvent;
+import dev.ikm.komet.kview.events.ShowEditDescriptionPanelEvent;
+import dev.ikm.komet.kview.mvvm.view.pattern.ConfirmationController;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -33,6 +47,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.SVGPath;
+import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.slf4j.Logger;
@@ -40,10 +55,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.UUID;
-
-import static dev.ikm.komet.kview.fxutils.CssHelper.genText;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 
 /**
  * The properties window providing tabs of Edit, Hierarchy, History, and Comments.
@@ -65,6 +78,10 @@ public class PropertiesController implements Serializable {
     protected static final String EDIT_FQN_FXML_FILE = "edit-fully-qualified-name.fxml";
 
     protected static final String ADD_FQN_FXML_FILE = "add-fully-qualified-name.fxml";
+
+    private static final URL CONFIRMATION_FXML_URL = ConfirmationController.class.getResource("confirmation-pane.fxml");
+    private ConfirmationController confirmationController;
+    private Pane confirmationPane;
 
     @FXML
     private SVGPath commentsButton;
@@ -155,6 +172,15 @@ public class PropertiesController implements Serializable {
         clearView();
 
         eventBus = EvtBusFactory.getDefaultEvtBus();
+
+        // +-----------------------------------------------------------------------
+        // ! confirmation panel reused by several forms
+        // +-----------------------------------------------------------------------
+        Config confirmationPanelConfig = new Config(CONFIRMATION_FXML_URL);
+//                .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel));
+        JFXNode<Pane, ConfirmationController> confirmationPanelJFXNode = FXMLMvvmLoader.make(confirmationPanelConfig);
+        confirmationController = confirmationPanelJFXNode.controller();
+        confirmationPane = confirmationPanelJFXNode.node();
 
         // Load History tabs View Panel (FXML & Controller)
         FXMLLoader loader = new FXMLLoader(getClass().getResource(HISTORY_CHANGE_FXML_FILE));
@@ -272,24 +298,29 @@ public class PropertiesController implements Serializable {
         // Fully Qualified Name in the Concept, we want to change the Pane in the
         // Edit Concept bump out to be the Edit Fully Qualified Name form
         editConceptFullyQualifiedNameEventSubscriber = evt -> {
-            // don't go into edit mode if there is no FQN yet
-            if (evt.getPublicId() == null && evt.getDescrName() == null) {
-                // default to adding an FQN is there isn't one
-                eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(evt,
-                        AddFullyQualifiedNameEvent.ADD_FQN, getViewProperties()));
-                return;
-            }
-            // check if the center pane is already showing, we don't want duplicate entries in the dropdowns
-            if (!contentBorderPane.getCenter().equals(editFqnPane)) {
-                editFullyQualifiedNameController.updateModel(getViewProperties(), null);
-                contentBorderPane.setCenter(editFqnPane);
-                editButton.setSelected(true);
-                editButton.setText("EDIT");
-                if (evt.getPublicId() != null) {
-                    editFullyQualifiedNameController.setConceptAndPopulateForm(evt.getPublicId());
-                }else {
-                    editFullyQualifiedNameController.setConceptAndPopulateForm(evt.getDescrName());
+            if(evt.getEventType() == EditConceptFullyQualifiedNameEvent.EDIT_FQN) {
+                // don't go into edit mode if there is no FQN yet
+                if (evt.getPublicId() == null && evt.getDescrName() == null) {
+                    // default to adding an FQN is there isn't one
+                    eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(evt,
+                            AddFullyQualifiedNameEvent.ADD_FQN, getViewProperties()));
+                    return;
                 }
+                // check if the center pane is already showing, we don't want duplicate entries in the dropdowns
+                if (!contentBorderPane.getCenter().equals(editFqnPane)) {
+                    editFullyQualifiedNameController.updateModel(getViewProperties(), null);
+                    contentBorderPane.setCenter(editFqnPane);
+                    editButton.setSelected(true);
+                    editButton.setText("EDIT");
+                    if (evt.getPublicId() != null) {
+                        editFullyQualifiedNameController.setConceptAndPopulateForm(evt.getPublicId());
+                    } else {
+                        editFullyQualifiedNameController.setConceptAndPopulateForm(evt.getDescrName());
+                    }
+                }
+            } else if (evt.getEventType() == EditConceptFullyQualifiedNameEvent.FQN_ADDED) {
+                contentBorderPane.setCenter(confirmationPane);
+                confirmationController.showFqnAdded();
             }
         };
         eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, editConceptFullyQualifiedNameEventSubscriber);

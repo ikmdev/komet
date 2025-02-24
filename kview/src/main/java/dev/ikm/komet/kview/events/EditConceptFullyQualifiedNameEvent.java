@@ -23,6 +23,7 @@ import dev.ikm.tinkar.common.id.PublicId;
 public class EditConceptFullyQualifiedNameEvent extends Evt  {
 
     public static final EvtType<EditConceptFullyQualifiedNameEvent> EDIT_FQN = new EvtType<>(Evt.ANY, "EDIT_FQN");
+    public static final EvtType<EditConceptFullyQualifiedNameEvent> FQN_ADDED = new EvtType<>(Evt.ANY, "FQN_ADDED");
 
     private final PublicId publicId;
 
