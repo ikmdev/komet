@@ -18,10 +18,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptNavigatorModel> {
     private KLConceptNavigatorTreeViewSkin conceptNavigatorTreeViewSkin;
 
     public KLConceptNavigatorControl() {
-        TreeItem<ConceptNavigatorModel> root = new TreeItem<>(new ConceptNavigatorModel("Root"));
-        root.setExpanded(true);
         setShowRoot(false);
-        setRoot(root);
         setFixedCellSize(24);
 
         setCellFactory(p -> new KLConceptNavigatorTreeCell(this));

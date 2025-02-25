@@ -174,7 +174,9 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
             if (!isEmpty()) {
                 Dragboard dragboard = box.startDragAndDrop(TransferMode.COPY_OR_MOVE);
                 ClipboardContent clipboardContent = new ClipboardContent();
-                clipboardContent.put(CONCEPT_NAVIGATOR_DRAG_FORMAT, getItem().getText()); // TODO: Add Concept model, must be serializable
+                if (getItem().getModel() != null && getItem().getModel().publicId() != null) {
+                    clipboardContent.put(CONCEPT_NAVIGATOR_DRAG_FORMAT, getItem().getModel().publicId().asUuidArray());
+                }
                 clipboardContent.putString(getItem().toString());
                 dragboard.setContent(clipboardContent);
                 SnapshotParameters p = new SnapshotParameters();
@@ -237,7 +239,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
                 .filter(p -> p.getPseudoClassName().startsWith("cn-"))
                 .forEach(p -> pseudoClassStateChanged(p, false));
         if (item != null && !empty) {
-            label.setText(item.getText());
+            label.setText(item.getModel() != null ? item.getModel().description() : "");
             box.pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, item.isDefined());
             setGraphic(box);
             updateConnections();
@@ -253,8 +255,9 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         tooltip.setGraphicText(item.isDefined() ? "Defined Concept" : "Primitive Concept");
         tooltip.getGraphic().pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, item.isDefined());
         Node lookup = label.lookup(".text");
-        if (lookup instanceof Text labelledText && !labelledText.getText().equals(item.getText())) {
-            tooltip.setText(item.getText());
+        String description = item.getModel() != null ? item.getModel().description() : "";
+        if (lookup instanceof Text labelledText && !labelledText.getText().equals(description)) {
+            tooltip.setText(description);
         } else {
             tooltip.setText(null);
         }

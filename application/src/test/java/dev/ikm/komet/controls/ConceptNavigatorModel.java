@@ -1,9 +1,10 @@
 package dev.ikm.komet.controls;
 
+import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
 import java.util.BitSet;
 import java.util.List;
@@ -45,20 +46,20 @@ public class ConceptNavigatorModel {
         }
     }
 
-    public ConceptNavigatorModel(String text) {
-        setText(text);
+    public ConceptNavigatorModel(ConceptFacade conceptFacade) {
+        setModel(conceptFacade);
     }
 
-    // textProperty
-    private final StringProperty textProperty = new SimpleStringProperty(this, "text");
-    public final StringProperty textProperty() {
-       return textProperty;
+    // modelProperty
+    private final ObjectProperty<ConceptFacade> modelProperty = new SimpleObjectProperty<>(this, "model");
+    public final ObjectProperty<ConceptFacade> modelProperty() {
+       return modelProperty;
     }
-    public final String getText() {
-       return textProperty.get();
+    public final ConceptFacade getModel() {
+       return modelProperty.get();
     }
-    public final void setText(String value) {
-        textProperty.set(value);
+    public final void setModel(ConceptFacade value) {
+        modelProperty.set(value);
     }
 
     // definedProperty
@@ -73,6 +74,17 @@ public class ConceptNavigatorModel {
         definedProperty.set(value);
     }
 
+    // multiParentProperty
+    private final BooleanProperty multiParentProperty = new SimpleBooleanProperty(this, "multiParent");
+    public final BooleanProperty multiParentProperty() {
+       return multiParentProperty;
+    }
+    public final boolean isMultiParent() {
+       return multiParentProperty.get();
+    }
+    public final void setMultiParent(boolean value) {
+        multiParentProperty.set(value);
+    }
 
     private BitSet bitset;
 
@@ -85,6 +97,6 @@ public class ConceptNavigatorModel {
 
     @Override
     public String toString() {
-        return "Model[" + textProperty.get() + (isDefined() ? ", defined" : "") + ", b=" + bitset + "]";
+        return "Model[" + modelProperty.get() + (isDefined() ? ", defined" : "") + (isMultiParent() ? ", multiParent" : "") + ", b=" + bitset + "]";
     }
 }

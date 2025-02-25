@@ -1,7 +1,24 @@
 package dev.ikm.komet.sampler.controllers;
 
+import dev.ikm.komet.app.AppState;
+import dev.ikm.komet.app.LoadDataSourceTask;
 import dev.ikm.komet.controls.ConceptNavigatorModel;
 import dev.ikm.komet.controls.KLConceptNavigatorControl;
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.komet.navigator.graph.ViewNavigator;
+import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.komet.preferences.KometPreferencesImpl;
+import dev.ikm.tinkar.common.service.DataUriOption;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeItem;
@@ -11,11 +28,16 @@ import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.UUID;
 
+import static dev.ikm.komet.app.AppState.RUNNING;
+import static dev.ikm.komet.app.AppState.STARTING;
 import static dev.ikm.komet.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
 
 public class SamplerConceptNavigatorController {
+
+    private static final SimpleObjectProperty<Navigator> navigatorProperty = new SimpleObjectProperty<>();
 
     @FXML
     private Label samplerDescription;
@@ -58,15 +80,18 @@ public class SamplerConceptNavigatorController {
     public void initialize() {
         samplerDescription.setText("The Concept Navigator control is a tree view to display a hierarchy of concepts");
         conceptNavigatorControl.setHeader("Concept Header");
-        conceptNavigatorControl.setOnDoubleClick(item ->
-                conceptArea.getChildren().setAll(new Label(item.getText())));
+        conceptNavigatorControl.setOnDoubleClick(item -> {
+            Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(item.getModel().publicId()));
+            conceptArea.getChildren().setAll(new Label(entity.entityToString()));
+        });
 
-        conceptNavigatorControl.getRoot().getChildren().addAll(generateChildren(1));
         conceptArea.setOnDragDropped(event -> {
             boolean success = false;
             if (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)) {
                 Dragboard dragboard = event.getDragboard();
-                conceptArea.getChildren().setAll(new Label(dragboard.getString()));
+                UUID[] uuids = (UUID[]) dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
+                Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForUuids(uuids));
+                conceptArea.getChildren().setAll(new Label(entity.entityToString()));
                 success = true;
             }
             event.setDropCompleted(success);
@@ -92,19 +117,79 @@ public class SamplerConceptNavigatorController {
             event.consume();
         });
         conceptArea.getStylesheets().add(STYLE);
+
+        navigatorProperty.subscribe((o, n) -> {
+            List<TreeItem<ConceptNavigatorModel>> root = getRoot(n);
+            conceptNavigatorControl.setRoot(root.getFirst());
+        });
+        LoadDataset.open();
     }
 
-    private static List<TreeItem<ConceptNavigatorModel>> generateChildren(int level) {
+    private static List<TreeItem<ConceptNavigatorModel>> getRoot(Navigator navigator) {
         List<TreeItem<ConceptNavigatorModel>> children = new ArrayList<>();
-        for (int idx = 0; idx < Math.max(5, new Random().nextInt(10)); idx++) {
-            ConceptNavigatorModel conceptNavigatorModel = new ConceptNavigatorModel("Concept Navigator - this is text for item for level " + level + " and index " + idx);
-            conceptNavigatorModel.setDefined(new Random().nextInt(10) < 2);
-            TreeItem<ConceptNavigatorModel> child = new TreeItem<>(conceptNavigatorModel);
-            if (level < 10 && new Random().nextBoolean()) {
-                child.getChildren().addAll(generateChildren(level + 1));
-            }
-            children.add(child);
+        if (navigator == null) {
+            return children;
+        }
+        for (int rootNid : navigator.getRootNids()) {
+            TreeItem<ConceptNavigatorModel> treeItem = getConceptNavigatorModelTreeItem(navigator, rootNid);
+            treeItem.setExpanded(true);
+            children.add(treeItem);
         }
         return children;
+    }
+
+    private static List<TreeItem<ConceptNavigatorModel>> getChildren(Navigator navigator, ConceptFacade facade) {
+        List<TreeItem<ConceptNavigatorModel>> children = new ArrayList<>();
+        for (Edge edge : navigator.getChildEdges(facade.nid())) {
+            TreeItem<ConceptNavigatorModel> treeItem = getConceptNavigatorModelTreeItem(navigator, edge.destinationNid());
+            children.add(treeItem);
+        }
+        return children;
+    }
+
+    private static TreeItem<ConceptNavigatorModel> getConceptNavigatorModelTreeItem(Navigator navigator, int nid) {
+        ConceptFacade facade = Entity.getFast(nid);
+        ConceptNavigatorModel conceptNavigatorModel = new ConceptNavigatorModel(facade);
+        TreeItem<ConceptNavigatorModel> treeItem = new TreeItem<>(conceptNavigatorModel);
+        if (!navigator.getChildEdges(facade.nid()).isEmpty()) {
+            treeItem.getChildren().addAll(getChildren(navigator, facade));
+        }
+        return treeItem;
+    }
+
+    /**
+     * Requires ~/Solor/tinkar-starter-with-sample-data-Reasoned-1.0.4
+     */
+    private static class LoadDataset {
+
+        private static final SimpleObjectProperty<AppState> state = new SimpleObjectProperty<>(STARTING);
+
+        private LoadDataset() {}
+
+        static void open() {
+            // Load dataset
+            PrimitiveData.getControllerOptions().stream()
+                    .filter(dsc -> "Open SpinedArrayStore".equals(dsc.controllerName()))
+                    .findFirst()
+                    .ifPresent(controller -> {
+                        List<DataUriOption> list = controller.providerOptions();
+                        list.stream()
+                                .filter(p -> p.toString().contains("1.0.4"))
+                                .findFirst()
+                                .ifPresent(controller::setDataUriOption);
+                        PrimitiveData.setController(controller);
+                    });
+
+            state.subscribe(s -> {
+                if (RUNNING == s) {
+                    KometPreferences windowPreferences = KometPreferencesImpl.getConfigurationRootPreferences().node(MAIN_KOMET_WINDOW);
+                    ObservableViewNoOverride view = new WindowSettings(windowPreferences).getView();
+                    ViewProperties viewProperties = view.makeOverridableViewProperties();
+                    Navigator navigator = new ViewNavigator(viewProperties.nodeView());
+                    navigatorProperty.set(navigator);
+                }
+            });
+            TinkExecutor.threadPool().submit(new LoadDataSourceTask(state));
+        }
     }
 }
