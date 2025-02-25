@@ -34,31 +34,6 @@
                      <graphic>
                         <SVGPath content="M0 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" fill="#9a9da0" stroke="#9a9da0" strokeLineCap="ROUND" strokeLineJoin="ROUND" />
                      </graphic>
-                     <contextMenu>
-                        <ContextMenu fx:id="contextMenu" styleClass="search-context-menu-container">
-                           <items>
-                              <MenuItem mnemonicParsing="false" styleClass="search-context-menu-item" text="Add New Instance">
-                                 <graphic>
-                                    <Region styleClass="add-new-instance-icon">
-                                       <padding>
-                                          <Insets right="16.0" />
-                                       </padding>
-                                    </Region>
-                                 </graphic>
-                              </MenuItem>
-                              <SeparatorMenuItem mnemonicParsing="false" styleClass="search-option-menu-line" />
-                              <MenuItem mnemonicParsing="false" styleClass="search-context-menu-item" text="Remove">
-                                 <graphic>
-                                    <Region styleClass="remove-icon">
-                                       <padding>
-                                          <Insets right="16.0" />
-                                       </padding>
-                                    </Region>
-                                 </graphic>
-                              </MenuItem>
-                           </items>
-                        </ContextMenu>
-                     </contextMenu>
                   </Button>
                </children>
                <VBox.margin>
@@ -69,6 +44,31 @@
                </padding>
             </HBox>
             <TitledPane fx:id="instancesTitledPane" animated="false" expanded="false" styleClass="search-entry-title-pane" text="SEMANTIC ELEMENTS" VBox.vgrow="ALWAYS">
+               <contextMenu>
+                  <ContextMenu fx:id="contextMenu" styleClass="search-context-menu-container">
+                     <items>
+                        <MenuItem mnemonicParsing="false" styleClass="search-context-menu-item" text="Add New Instance">
+                           <graphic>
+                              <Region styleClass="add-new-instance-icon">
+                                 <padding>
+                                    <Insets right="16.0" />
+                                 </padding>
+                              </Region>
+                           </graphic>
+                        </MenuItem>
+                        <SeparatorMenuItem mnemonicParsing="false" styleClass="search-option-menu-line" />
+                        <MenuItem mnemonicParsing="false" styleClass="search-context-menu-item" text="Remove">
+                           <graphic>
+                              <Region styleClass="remove-icon">
+                                 <padding>
+                                    <Insets right="16.0" />
+                                 </padding>
+                              </Region>
+                           </graphic>
+                        </MenuItem>
+                     </items>
+                  </ContextMenu>
+               </contextMenu>
                <VBox.margin>
                   <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                </VBox.margin>
