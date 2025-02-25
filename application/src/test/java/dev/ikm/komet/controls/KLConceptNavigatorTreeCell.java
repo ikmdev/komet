@@ -266,7 +266,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         pseudoClassStateChanged(BORDER_SELECTED_PSEUDO_CLASS, bitSet.get(PS_STATE.BORDER_SELECTED.getBit()));
         pseudoClassStateChanged(CURVED_LINE_LONG_HOVER_PSEUDO_CLASS, bitSet.get(PS_STATE.CURVED_LINE_LONG_HOVER.getBit()));
         pseudoClassStateChanged(CURVED_LINE_SELECTED_PSEUDO_CLASS, bitSet.get(PS_STATE.CURVED_LINE_SELECTED.getBit()));
-        for (int i = 0; i < Math.min(treeView.getTreeItemLevel(getTreeItem()) - 1, MAX_LEVEL); i++) {
+        for (int i = 0; i < Math.min(getLevel(getTreeItem()), MAX_LEVEL); i++) {
             pseudoClassStateChanged(LINE_I_LONG_HOVER_PSEUDO_CLASS[i], bitSet.get(PS_STATE.LINE_I_LONG_HOVER.getBit() + i));
             pseudoClassStateChanged(LINE_I_SELECTED_PSEUDO_CLASS[i], bitSet.get(PS_STATE.LINE_I_SELECTED.getBit() + i));
         }
@@ -282,20 +282,21 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
                 .filter(Path.class::isInstance)
                 .map(Path.class::cast)
                 .toList();
-        int level = treeView.getTreeItemLevel(treeItem) - 1;
+        int level = getLevel(treeItem);
         double indent = myTreeCellSkin.getIndent();
         List<Path> paths = new ArrayList<>();
-        for (int i = 0; i < level; i++) {
+        int start = treeView.isShowRoot() ? 1 : 0;
+        for (int i = start; i < level; i++) {
             double x = 10 + indent * i;
             if (i < level - 1) {
                 TreeItem<ConceptNavigatorModel> ancestor = getAncestor(treeItem, i + 1);
                 if (ancestor.nextSibling() != null) {
                     paths.add(getLine(x, "dashed-line"));
-                    paths.add(getLine(x, "solid-line-" + i));
+                    paths.add(getLine(x, "solid-line-" + (i - start)));
                 }
             } else {
                 paths.add(getCurvedLine(x, treeItem.nextSibling() == null, "dashed-curved-line"));
-                paths.add(getLine(x, "solid-line-" + i));
+                paths.add(getLine(x, "solid-line-" + (i - start)));
                 paths.add(getCurvedLine(x, true, "solid-curved-line"));
             }
         }
@@ -311,12 +312,16 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         }
         TreeItem<ConceptNavigatorModel> ancestor = treeItem.getParent();
         while (ancestor != null) {
-            if (treeView.getTreeItemLevel(ancestor) - 1 == level) {
+            if (getLevel(ancestor) == level) {
                 return ancestor;
             }
             ancestor = ancestor.getParent();
         }
         return null;
+    }
+
+    private int getLevel(TreeItem<ConceptNavigatorModel> treeItem) {
+        return treeView.getTreeItemLevel(treeItem) - (treeView.isShowRoot() ? 0 : 1);
     }
 
     private Path getLine(double x, String styleClass) {

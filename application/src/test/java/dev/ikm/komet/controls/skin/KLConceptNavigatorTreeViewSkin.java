@@ -31,6 +31,8 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
         header = new Label();
         header.getStyleClass().add("concept-header");
         header.textProperty().bind(((KLConceptNavigatorControl) treeView).headerProperty());
+        header.visibleProperty().bind(header.textProperty().isNotEmpty());
+        header.managedProperty().bind(header.visibleProperty());
 
         getChildren().add(header);
     }
@@ -41,10 +43,16 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
         return virtualFlow;
     }
 
+
     @Override
     protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
-        super.layoutChildren(contentX, contentY, contentWidth, contentHeight);
-        layoutInArea(header, contentX, contentY, contentWidth, contentHeight, -1, HPos.CENTER, VPos.TOP);
+        if (header.isVisible()) {
+            double titleHeight = header.prefHeight(contentWidth);
+            super.layoutChildren(contentX, contentY + titleHeight, contentWidth, contentHeight - titleHeight);
+            header.resizeRelocate(contentX, contentY, contentWidth, titleHeight);
+        } else {
+            super.layoutChildren(contentX, contentY, contentWidth, contentHeight);
+        }
     }
 
     private Group getSheet() {
@@ -115,7 +123,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
         virtualFlow.requestLayout();
 
         // debug:
-//        printTree(getSkinnable().getRoot());
+//        printTree(getSkinnable().getRoot(), false);
 
     }
 
@@ -151,17 +159,17 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
         }
     }
 
-    private void printTree(TreeItem<ConceptNavigatorModel> treeItem) {
+    private void printTree(TreeItem<ConceptNavigatorModel> treeItem, boolean printAll) {
         for (TreeItem<ConceptNavigatorModel> child : treeItem.getChildren()) {
             if (child.isLeaf()) {
-                if (!child.getValue().getBitSet().isEmpty()) {
+                if (printAll || !child.getValue().getBitSet().isEmpty()) {
                     System.out.println("-".repeat(getSkinnable().getTreeItemLevel(child)) + " " + child.getValue());
                 }
             } else {
-                if (!child.getValue().getBitSet().isEmpty()) {
+                if (printAll || !child.getValue().getBitSet().isEmpty()) {
                     System.out.println("+".repeat(getSkinnable().getTreeItemLevel(child)) + " " + child.getValue());
                 }
-                printTree(child);
+                printTree(child, printAll);
             }
         }
     }
