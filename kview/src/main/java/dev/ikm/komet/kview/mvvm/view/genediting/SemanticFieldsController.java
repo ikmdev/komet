@@ -77,6 +77,7 @@ public class SemanticFieldsController {
            updateStampVersionsNidsForAllFields();
         }
     };
+    private EntityFacade semantic;
 
     @FXML
     private void initialize() {
@@ -106,6 +107,7 @@ public class SemanticFieldsController {
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
+
         semanticEntityVersionLatest.ifPresent(ver -> {
             int latestStampNid = ver.stamp().nid();
             observableFields.forEach(observableField -> {

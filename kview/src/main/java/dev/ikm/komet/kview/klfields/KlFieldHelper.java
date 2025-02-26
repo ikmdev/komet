@@ -13,8 +13,6 @@ import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
-import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.FieldRecord;
@@ -27,7 +25,6 @@ import javafx.scene.layout.Pane;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 public class KlFieldHelper {
@@ -64,7 +61,7 @@ public class KlFieldHelper {
 
             Node node = null;
             int dataTypeNid = fieldRecord.dataType().nid();
-            ObservableField writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
+            ObservableField writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, false);
             ObservableField observableField = new ObservableField(writeObservableField.field(), true);
             observableFields.add(observableField);
 
@@ -113,55 +110,55 @@ public class KlFieldHelper {
 
     public static List<ObservableField<?>> displayReadOnlySemanticFields(ViewProperties viewProperties, Pane container, Latest<SemanticEntityVersion> semanticEntityVersionLatest) {
 
-            //FIXME use a different factory
-            ReadOnlyKLFieldFactory rowf = ReadOnlyKLFieldFactory.getInstance();
-            List<ObservableField<?>> observableFields = new ArrayList<>();
-            Consumer<FieldRecord<Object>> updateUIConsumer = (fieldRecord) -> {
+        //FIXME use a different factory
+        ReadOnlyKLFieldFactory rowf = ReadOnlyKLFieldFactory.getInstance();
+        List<ObservableField<?>> observableFields = new ArrayList<>();
+        Consumer<FieldRecord<Object>> updateUIConsumer = (fieldRecord) -> {
 
-                Node readOnlyNode = null;
-                int dataTypeNid = fieldRecord.dataType().nid();
-                ObservableField<?> writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
-                ObservableField observableField = new ObservableField(writeObservableField.field(), false);
-                observableFields.add(observableField);
+            Node readOnlyNode = null;
+            int dataTypeNid = fieldRecord.dataType().nid();
+            ObservableField<?> writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, true);
+            ObservableField observableField = new ObservableField(writeObservableField.field(), false);
+            observableFields.add(observableField);
 
-                // substitute each data type.
-                if (dataTypeNid == TinkarTerm.COMPONENT_FIELD.nid()) {
-                    // load a read-only component
-                    KlComponentFieldFactory klComponentFieldFactory = new KlComponentFieldFactory();
-                    readOnlyNode = klComponentFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
-                } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
-                    KlStringFieldFactory klStringFieldFactory = new KlStringFieldFactory();
-                    readOnlyNode = klStringFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
-                } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
-                    KlComponentSetFieldFactory klComponentSetFieldFactory = new KlComponentSetFieldFactory();
-                    readOnlyNode = klComponentSetFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
-                } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
-                    KlComponentListFieldFactory klComponentListFieldFactory = new KlComponentListFieldFactory();
-                    readOnlyNode = klComponentListFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
-                } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
-                    readOnlyNode = rowf.createReadOnlyDiTree(viewProperties, fieldRecord);
-                } else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid()) {
-                    KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
-                    readOnlyNode = klFloatFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
-                } else if (dataTypeNid == TinkarTerm.INTEGER_FIELD.nid()) {
-                    KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
-                    readOnlyNode = klIntegerFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
-                } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
-                    KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
-                    readOnlyNode = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+            // substitute each data type.
+            if (dataTypeNid == TinkarTerm.COMPONENT_FIELD.nid()) {
+                // load a read-only component
+                KlComponentFieldFactory klComponentFieldFactory = new KlComponentFieldFactory();
+                readOnlyNode = klComponentFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+            } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
+                KlStringFieldFactory klStringFieldFactory = new KlStringFieldFactory();
+                readOnlyNode = klStringFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+            } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
+                KlComponentSetFieldFactory klComponentSetFieldFactory = new KlComponentSetFieldFactory();
+                readOnlyNode = klComponentSetFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+            } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
+                KlComponentListFieldFactory klComponentListFieldFactory = new KlComponentListFieldFactory();
+                readOnlyNode = klComponentListFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+            } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
+                readOnlyNode = rowf.createReadOnlyDiTree(viewProperties, fieldRecord);
+            } else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid()) {
+                KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
+                readOnlyNode = klFloatFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+            } else if (dataTypeNid == TinkarTerm.INTEGER_FIELD.nid()) {
+                KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
+                readOnlyNode = klIntegerFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+            } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
+                KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
+                readOnlyNode = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
 //                } else if (dataTypeNid == TinkarTerm.IMAGE_FIELD.nid()) {
 //                    KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
 //                    readOnlyNode = imageFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
-                } else if (dataTypeNid == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
-                    KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
-                    readOnlyNode = imageFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
-                }
-                // Add to VBox
-                if (readOnlyNode != null) {
-                    container.getChildren().add(readOnlyNode);
-                }
-            };
-            generateSemanticUIFields(viewProperties, semanticEntityVersionLatest, updateUIConsumer);
-            return observableFields;
-        }
+            } else if (dataTypeNid == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
+                KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
+                readOnlyNode = imageFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+            }
+            // Add to VBox
+            if (readOnlyNode != null) {
+                container.getChildren().add(readOnlyNode);
+            }
+        };
+        generateSemanticUIFields(viewProperties, semanticEntityVersionLatest, updateUIConsumer);
+        return observableFields;
+    }
 }

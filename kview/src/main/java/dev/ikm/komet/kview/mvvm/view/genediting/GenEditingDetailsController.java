@@ -52,7 +52,9 @@ import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -93,6 +95,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 public class GenEditingDetailsController {
 
@@ -197,11 +200,10 @@ public class GenEditingDetailsController {
         semanticDetailsVBox.getChildren().clear();
 
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
-        Latest<SemanticEntityVersion> semanticEntityVersionLatest = null;
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
-        if (semantic != null) {
-            semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
+        Latest<SemanticEntityVersion> semanticEntityVersionLatest = retriveUncommittedLatestVersion();
+        if(semanticEntityVersionLatest != null){
             semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
                 Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
                 patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
@@ -251,6 +253,21 @@ public class GenEditingDetailsController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, refreshSubscriber);
+    }
+
+    private Latest<SemanticEntityVersion> retriveUncommittedLatestVersion() {
+        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+        Latest<SemanticEntityVersion> semanticEntityVersionLatest = null;
+        if (semantic != null) {
+            SemanticEntity semanticEntity = Entity.getFast(semantic);
+            IntStream intstream =  semanticEntity.stampNids().intStream().filter(p -> {
+                StampEntity stampEntity = Entity.getStamp(p);
+                return stampEntity.time() != Long.MAX_VALUE;
+            });
+
+            semanticEntityVersionLatest = new Latest(semanticEntity.getVersion(intstream.max().getAsInt()).get());
+        }
+        return semanticEntityVersionLatest;
     }
 
     /**
