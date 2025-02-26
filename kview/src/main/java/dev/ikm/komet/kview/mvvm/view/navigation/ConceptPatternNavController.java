@@ -1,6 +1,8 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
 
+import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
+import static dev.ikm.komet.kview.controls.KometIcon.IconValue.TRASH;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
@@ -13,6 +15,7 @@ import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
@@ -26,10 +29,9 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
@@ -80,6 +82,8 @@ public class ConceptPatternNavController {
     @FXML
     private VBox scrollPaneContent;
 
+    private ContextMenu contextMenu;
+
     @InjectViewModel
     private PatternNavViewModel patternNavViewModel;
 
@@ -96,6 +100,16 @@ public class ConceptPatternNavController {
 
         patternNavigationPane.setContent(patternsVBox);
         patternsVBox.getChildren().clear();
+
+        contextMenu = new ContextMenu();
+        contextMenu.setHideOnEscape(true);
+        KometIcon kometPlusIcon = KometIcon.create(PLUS,"icon-klcontext-menu");
+        KometIcon kometTrashIcon = KometIcon.create(TRASH, "icon-klcontext-menu");
+
+        MenuItem addNewSemanticElement = new MenuItem("Add New Semantic Element",kometPlusIcon);
+        MenuItem removeSemanticElement = new MenuItem("Remove",kometTrashIcon);
+        contextMenu.getItems().addAll(addNewSemanticElement,removeSemanticElement);
+        this.contextMenu.getStyleClass().add("klcontext-menu");
 
         // default to classic concept navigation
         navContentPane.setCenter(classicConceptNavigator);
@@ -145,6 +159,8 @@ public class ConceptPatternNavController {
                     JFXNode<Pane, PatternNavEntryController> patternNavEntryJFXNode = FXMLMvvmLoader.make(patternInstanceConfig);
                     HBox patternHBox = (HBox) patternNavEntryJFXNode.node();
 
+                    patternHBox.setOnContextMenuRequested(contextMenuEvent ->
+                            showPatternContextMenu(contextMenuEvent,patternHBox));
                     patternsVBox.setSpacing(4); // space between pattern entries
                     patternHBox.setAlignment(Pos.CENTER);
                     Region leftPadding = new Region();
@@ -161,6 +177,10 @@ public class ConceptPatternNavController {
 
         // initial loading of the patterns.
         patternNavViewModel.reload();
+    }
+
+    private void showPatternContextMenu(ContextMenuEvent contextMenuEvent, Node node) {
+        contextMenu.show(node,contextMenuEvent.getScreenX(),contextMenuEvent.getScreenY());
     }
 
     @FXML

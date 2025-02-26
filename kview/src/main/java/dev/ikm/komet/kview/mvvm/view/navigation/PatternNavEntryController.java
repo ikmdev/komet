@@ -101,6 +101,7 @@ public class PatternNavEntryController {
 
         instancesTitledPane.setExpanded(false);
         showContextButton.setVisible(false);
+        contextMenu = new ContextMenu();
         contextMenu.setHideOnEscape(true);
         patternEntryHBox.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(true));
         patternEntryHBox.setOnMouseExited(mouseEvent -> {
