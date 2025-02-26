@@ -5,10 +5,26 @@
 
 .component-list-control > .title-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em;  /* 14 */
     -fx-font-style: normal;
     -fx-text-fill: -Grey-11;
     -fx-font-weight: 500;
+}
+
+.component-list-control > .number-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 1.166667em; /* 14 */
+
+    -fx-background-color: #c3cddc, #f1f3f8;
+    -fx-background-insets: 0, 1px;
+    -fx-background-radius: 3px, 3px;
+
+    -fx-padding: 5px 7px 5px 7px;
+}
+
+.component-list-control > .drop-line {
+    -fx-stroke: #5dcf16;
+    -fx-stroke-dash-array: 4 , 5;
 }
 
 .component-list-control > .add-entry-button {
