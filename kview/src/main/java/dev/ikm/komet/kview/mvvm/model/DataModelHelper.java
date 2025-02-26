@@ -38,6 +38,7 @@ import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -75,6 +76,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -304,7 +306,35 @@ public class DataModelHelper {
     public static ObservableField<?> obtainObservableField(ViewProperties viewProperties, Latest<SemanticEntityVersion> semanticEntityVersionLatest, FieldRecord<Object> fieldRecord, boolean committed){
         ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
         ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
-        ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
-        return observableFields.get(fieldRecord.fieldIndex());
+        ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
+        if(!committed || observableSemanticVersionImmutableList == null || observableSemanticVersionImmutableList.isEmpty()){
+
+            ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
+            return observableFields.get(fieldRecord.fieldIndex());
+        }else{
+            // Get all the committed versions
+//            ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
+
+            //Cast to immutable list
+            List<ObservableSemanticVersion> observableSemanticVersionList = new ArrayList<>(observableSemanticVersionImmutableList.castToList());
+
+            //filter list to have only the latest semantic version passed as argument and remove rest of the entries.
+            observableSemanticVersionList.removeIf(p -> !semanticEntityVersionLatest.stampNids().contains(p.stampNid()));
+
+            AtomicReference<ImmutableList<ObservableField>> observableFields = new AtomicReference<>();
+            //If no historic data available then return the last uncommited value
+            if(observableSemanticVersionList.isEmpty()){
+              return obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, false);
+            }
+            observableSemanticVersionList.forEach(observableSemanticVersion -> {
+                Latest<PatternEntityVersion> latestPatternEntityVersion = viewProperties.calculator().latestPatternEntityVersion(observableSemanticVersion.patternNid());
+                latestPatternEntityVersion.ifPresent(patternEntityVersion -> {
+                    observableFields.set(observableSemanticVersion.fields(patternEntityVersion));
+                });
+            });
+
+          //  ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
+            return observableFields.get().get(fieldRecord.fieldIndex());
+        }
     }
 }
