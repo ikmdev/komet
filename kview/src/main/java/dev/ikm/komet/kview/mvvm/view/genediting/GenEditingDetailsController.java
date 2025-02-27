@@ -19,6 +19,7 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SINGLE_SEMANTIC_FIELD;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
@@ -42,6 +43,9 @@ import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
@@ -52,6 +56,7 @@ import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
@@ -92,6 +97,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 public class GenEditingDetailsController {
@@ -180,6 +186,8 @@ public class GenEditingDetailsController {
 
     private List<ObservableField<?>> observableFields = new ArrayList<>();
 
+    private List<Node> nodes = new ArrayList<>();
+
     /**
      * Stamp Edit
      */
@@ -187,6 +195,8 @@ public class GenEditingDetailsController {
     private StampEditController stampEditController;
 
     private Subscriber<PropertyPanelEvent> propertiesEventSubscriber;
+
+    private Latest<SemanticEntityVersion> semanticEntityVersionLatest;
 
     public GenEditingDetailsController() {
     }
@@ -197,7 +207,6 @@ public class GenEditingDetailsController {
         semanticDetailsVBox.getChildren().clear();
 
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
-        Latest<SemanticEntityVersion> semanticEntityVersionLatest = null;
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
         if (semantic != null) {
@@ -213,6 +222,7 @@ public class GenEditingDetailsController {
                 });
             });
         } else {
+            semanticEntityVersionLatest = null;
             semanticDescriptionLabel.setText("New Semantic no Pattern associated.");
         }
 
@@ -224,8 +234,36 @@ public class GenEditingDetailsController {
         setupReferenceComponentUI(semanticEntityVersionLatest);
 
         // Populate the Semantic Details
-        //setupSemanticDetailsUI(semanticEntityVersionLatest);
-        observableFields.addAll(KlFieldHelper.displayReadOnlySemanticFields(getViewProperties(), semanticDetailsVBox, semanticEntityVersionLatest));
+
+        // populate the observable fields and nodes for this semantic
+        observableFields.addAll(KlFieldHelper
+                .generateObservableFieldsAndNodes(getViewProperties(),
+                        nodes,
+                        semanticEntityVersionLatest, false));
+
+        // function to apply for the components' edit action (a.k.a. right click > Edit)
+        BiFunction<Node, Integer, Runnable> editAction = (node, fieldIndex) ->
+                () -> {
+                    final EntityVersion finalEntityVersion = getSemanticVersion().get();
+                    EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                            new PropertyPanelEvent(node, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
+                    EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                            new PropertyPanelEvent(node, OPEN_PANEL));
+                };
+
+        // add setEditOnAction
+        for (int index = 0; index < nodes.size(); index++) {
+            Node node = nodes.get(index);
+            if (node instanceof KLReadOnlyBaseControl klReadOnlyBaseControl) {
+                klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index));
+            } else if (node instanceof KLReadOnlyComponentSetControl klReadOnlyComponentSetControl) {
+                klReadOnlyComponentSetControl.setOnEditAction(editAction.apply(klReadOnlyComponentSetControl, index));
+            } else if (node instanceof KLReadOnlyComponentListControl klReadOnlyComponentListControl) {
+                klReadOnlyComponentListControl.setOnEditAction(editAction.apply(klReadOnlyComponentListControl, index));
+            }
+            semanticDetailsVBox.getChildren().add(node);
+        }
+
         // Setup Properties Bump out view.
         setupProperties();
 
@@ -251,6 +289,14 @@ public class GenEditingDetailsController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, refreshSubscriber);
+    }
+
+    private void setSemanticVersion(Latest<SemanticEntityVersion> semanticEntityVersionLatest) {
+        this.semanticEntityVersionLatest = semanticEntityVersionLatest;
+    }
+
+    private Latest<SemanticEntityVersion> getSemanticVersion() {
+        return semanticEntityVersionLatest;
     }
 
     /**
@@ -351,6 +397,7 @@ public class GenEditingDetailsController {
                         .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC))
                         .setPropertyValue(WINDOW_TOPIC, genEditingViewModel.getPropertyValue(WINDOW_TOPIC))
                         .setPropertyValue(VIEW_PROPERTIES, genEditingViewModel.getPropertyValue(VIEW_PROPERTIES))
+                        .setPropertyValue(SEMANTIC, genEditingViewModel.getPropertyValue(SEMANTIC))
                 );
 
         JFXNode<BorderPane, PropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(config);
