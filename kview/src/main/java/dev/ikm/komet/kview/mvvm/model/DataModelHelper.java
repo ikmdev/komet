@@ -301,39 +301,34 @@ public class DataModelHelper {
      * @param viewProperties viewProperties cannot be null. Required to get the calculator.
      * @param semanticEntityVersionLatest
      * @param fieldRecord
-     * @return the observable field
+     * @return observableField
      */
     public static ObservableField<?> obtainObservableField(ViewProperties viewProperties, Latest<SemanticEntityVersion> semanticEntityVersionLatest, FieldRecord<Object> fieldRecord, boolean committed){
         ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
         ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
         ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
         if(!committed || observableSemanticVersionImmutableList == null || observableSemanticVersionImmutableList.isEmpty()){
-
+            //Get the latest version which is uncommited version
             ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
             return observableFields.get(fieldRecord.fieldIndex());
         }else{
-            // Get all the committed versions
-//            ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
-
-            //Cast to immutable list
+            //Cast to mutable list
             List<ObservableSemanticVersion> observableSemanticVersionList = new ArrayList<>(observableSemanticVersionImmutableList.castToList());
-
             //filter list to have only the latest semantic version passed as argument and remove rest of the entries.
             observableSemanticVersionList.removeIf(p -> !semanticEntityVersionLatest.stampNids().contains(p.stampNid()));
-
             AtomicReference<ImmutableList<ObservableField>> observableFields = new AtomicReference<>();
-            //If no historic data available then return the last uncommited value
+            //If no historic data is available then return the last uncommited value, this is true when creating a new Semantic.
             if(observableSemanticVersionList.isEmpty()){
               return obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, false);
             }
-            observableSemanticVersionList.forEach(observableSemanticVersion -> {
-                Latest<PatternEntityVersion> latestPatternEntityVersion = viewProperties.calculator().latestPatternEntityVersion(observableSemanticVersion.patternNid());
-                latestPatternEntityVersion.ifPresent(patternEntityVersion -> {
-                    observableFields.set(observableSemanticVersion.fields(patternEntityVersion));
-                });
+            //Get the 1st version value of the matched stamp
+            ObservableSemanticVersion observableSemanticVersion = observableSemanticVersionList.getFirst();
+            Latest<PatternEntityVersion> latestPatternEntityVersion = viewProperties.calculator().latestPatternEntityVersion(observableSemanticVersion.patternNid());
+            //Get the latest commited fields from patternEntityVersion
+            latestPatternEntityVersion.ifPresent(patternEntityVersion -> {
+                observableFields.set(observableSemanticVersion.fields(patternEntityVersion));
             });
 
-          //  ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
             return observableFields.get().get(fieldRecord.fieldIndex());
         }
     }
