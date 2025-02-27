@@ -103,8 +103,8 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
                 if (draggedItems.isEmpty()) {
                     setDragging(false);
                 }
+                e.consume();
             }
-            e.consume();
         });
 
         treeView.addEventFilter(MouseEvent.DRAG_DETECTED, e -> {

@@ -120,7 +120,7 @@
     -fx-padding: 0 0 0 2;
 }
 
-.tree-cell > .cell-box {
+.tree-cell > .concept-tile {
     -fx-background-color: #CFD8E4, white;
     -fx-background-radius: 3;
     -fx-background-insets: 0, 1;
@@ -129,48 +129,52 @@
     -fx-padding: 2;
 }
 
-.tree-cell:hover > .cell-box {
+.tree-cell:hover > .concept-tile {
     -fx-background-color: #5896F6, #F4F9FF;
     -fx-background-insets: 0, 1;
 }
 
-.tree-cell:cn-border-long-hover > .cell-box { /* ancestors of long-hovered cell */
+.tree-cell:cn-border-long-hover > .concept-tile { /* ancestors of long-hovered cell */
     -fx-background-color: #5896F6, #F4F9FF;
     -fx-background-insets: 0, 2;
 }
 
-.tree-cell:cn-long-hover > .cell-box { /* actual cell with long hover */
+.tree-cell:cn-long-hover > .concept-tile { /* actual cell with long hover */
     -fx-background-color: #5896F6, #DEEBFF;
     -fx-background-insets: 0, 2;
 }
 
-.tree-cell:selected > .cell-box,
-.tree-cell:hover:selected > .cell-box { /* actual selected cell */
+.tree-cell:selected > .concept-tile,
+.tree-cell:hover:selected > .concept-tile { /* actual selected cell */
     -fx-background-color: #5E5E5E, #5E5E5E;
     -fx-background-insets: 0, 1;
 }
 
-.tree-cell:cn-border-selected > .cell-box { /* ancestors of selected cell */
+.tree-cell:cn-border-selected > .concept-tile { /* ancestors of selected cell */
     -fx-background-color: #5E5E5E, white;
     -fx-background-insets: 0, 1;
 }
 
-.tree-cell:drag-selected > .cell-box {
+.tree-cell:drag-selected > .concept-tile,
+.tree-cell:selected:drag-selected > .concept-tile {
     -fx-background-color: #5DCF16, white;
     -fx-background-insets: 0, 2;
 }
 
-.tree-cell > .cell-box > .concept-label {
+.tree-cell > .concept-tile > .concept-label {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 12;
     -fx-text-fill: #2E3240;
 }
 
-.tree-cell:selected > .cell-box > .concept-label {
+.tree-cell:selected > .concept-tile > .concept-label {
     -fx-text-fill: white;
 }
+.tree-cell:selected:drag-selected > .concept-tile > .concept-label {
+    -fx-text-fill: #2E3240;
+}
 
-.tree-cell > .cell-box > .ellipse {
+.tree-cell > .concept-tile > .ellipse {
     -fx-min-width: 4;
     -fx-pref-width: 4;
     -fx-max-width: 4;
@@ -183,12 +187,12 @@
     -fx-managed: false;
 }
 
-.tree-cell > .cell-box:defined > .ellipse {
+.tree-cell > .concept-tile:defined > .ellipse {
     visibility: visible;
     -fx-managed: true;
 }
 
-.tree-cell > .cell-box > .region {
+.tree-cell > .concept-tile > .region {
     -fx-background-color: transparent, #6E7989;
     -fx-background-insets: 0, 1;
     -fx-padding: 1;
@@ -203,45 +207,48 @@
     -fx-max-width: -width-size;
 }
 
-.tree-cell > .cell-box > .region:expanded {
+.tree-cell > .concept-tile > .region:expanded {
     -fx-background-color: #E1E8F1;
 }
-.tree-cell > .cell-box > .region:leaf {
+.tree-cell > .concept-tile > .region:leaf {
     -fx-background-color: #B3BDCD;
 }
-.tree-cell:drag-selected > .cell-box > .region,
-.tree-cell:drag-selected > .cell-box > .region:expanded,
-.tree-cell:drag-selected > .cell-box > .region:leaf {
+.tree-cell:drag-selected > .concept-tile > .region,
+.tree-cell:drag-selected > .concept-tile > .region:expanded,
+.tree-cell:drag-selected > .concept-tile > .region:leaf,
+.tree-cell:selected:drag-selected > .concept-tile > .region,
+.tree-cell:selected:drag-selected > .concept-tile > .region:expanded,
+.tree-cell:selected:drag-selected > .concept-tile > .region:leaf {
     -fx-background-color: transparent;
 }
 
-.tree-cell > .cell-box > .region.select {
+.tree-cell > .concept-tile > .region.select {
     -fx-background-color: transparent, transparent;
     -fx-background-radius: 2;
     visibility: hidden;
     -fx-managed: false;
 }
 
-.tree-cell:cn-long-hover > .cell-box > .region.select,
-.tree-cell:hover > .cell-box > .region.select,
-.tree-cell:selected > .cell-box > .region.select,
-.tree-cell:selected:hover > .cell-box > .region.select {
+.tree-cell:cn-long-hover > .concept-tile > .region.select,
+.tree-cell:hover > .concept-tile > .region.select,
+.tree-cell:selected > .concept-tile > .region.select,
+.tree-cell:selected:hover > .concept-tile > .region.select {
     -fx-background-color: transparent, transparent;
     visibility: visible;
     -fx-managed: true;
 }
 
-.tree-cell > .cell-box > .region.tree {
+.tree-cell > .concept-tile > .region.tree {
     -fx-background-color: transparent, #DEEBFF;
     -fx-background-radius: 2;
 }
 
-.tree-cell > .cell-box > .region.select:hover,
-.tree-cell > .cell-box > .region.tree:hover {
+.tree-cell > .concept-tile > .region.select:hover,
+.tree-cell > .concept-tile > .region.tree:hover {
     -fx-background-color: transparent, #9DC4FF;
 }
 
-.tree-cell > .cell-box > .region > .icon {
+.tree-cell > .concept-tile > .region > .icon {
     -width-size: 14;
     -height-size: 14;
     -fx-min-height: -height-size;
@@ -253,7 +260,7 @@
     -fx-scale-shape: false;
 }
 
-.tree-cell > .cell-box > .region > .icon.disclosure {
+.tree-cell > .concept-tile > .region > .icon.disclosure {
     -fx-background-color: white;
     -fx-shape: "M 17.291 38.416 L 16.233 37.358 L 18.523 35.063 L 16.233 32.767 L 17.291 31.709 L 20.644 35.063 Z";
     -fx-rotate: 0;
@@ -261,52 +268,54 @@
     transition-duration: 0.5s;
 }
 
-.tree-cell > .cell-box > .region:hover > .icon.disclosure {
+.tree-cell > .concept-tile > .region:hover > .icon.disclosure {
     -fx-rotate: 90;
 }
 
-.tree-cell > .cell-box > .region:expanded:hover > .icon.disclosure {
+.tree-cell > .concept-tile > .region:expanded:hover > .icon.disclosure {
     -fx-rotate: -90;
 }
 
-.tree-cell > .cell-box > .region:expanded > .icon.disclosure {
+.tree-cell > .concept-tile > .region:expanded > .icon.disclosure {
     -fx-background-color: #2E3240;
     -fx-shape: "M 15.085 33.915 L 16.143 32.857 L 18.438 35.147 L 20.734 32.857 L 21.792 33.915 L 18.438 37.268 L 15.085 33.915 Z"
 }
 
-.tree-cell > .cell-box > .region > .icon.leaf {
+.tree-cell > .concept-tile > .region > .icon.leaf {
     -fx-background-color: black;
     -fx-shape: "M 11 7 L 11 8.5 L 5 8.5 L 5 7 Z";
     -fx-rotate: 0;
 }
 
-.tree-cell:drag-selected > .cell-box > .region > .icon.disclosure,
-.tree-cell:drag-selected > .cell-box > .region > .icon.leaf {
+.tree-cell:drag-selected > .concept-tile > .region > .icon.disclosure,
+.tree-cell:drag-selected > .concept-tile > .region > .icon.leaf,
+.tree-cell:selected:drag-selected > .concept-tile > .region > .icon.disclosure,
+.tree-cell:selected:drag-selected > .concept-tile > .region > .icon.leaf {
     -fx-background-color: #545D72;
     -fx-shape: "M3.91 9.66667L3.91 7.91667H6.08333L6.08333 10.09L4.33333 10.09L3.91 10.09V9.66667ZM3.81954 10.1806L3.91 10.2713V10.2708L4.15678 10.517L6.82345 13.177L7 13.3531L7.17656 13.177L9.84322 10.517L10.09 10.2708V10.2713L10.1807 10.1804L10.2713 10.09H10.2708L10.517 9.84322L13.177 7.17656L13.3531 7L13.177 6.82344L10.517 4.15678L10.2708 3.91H10.2713L10.1805 3.81945L10.09 3.72871V3.72916L9.84322 3.483L7.17656 0.823002L7 0.646888L6.82344 0.823002L4.15678 3.483L3.91 3.72916V3.72871L3.8193 3.81964L3.72871 3.91H3.72916L3.483 4.15678L0.823002 6.82345L0.646888 7L0.823002 7.17656L3.483 9.84322L3.72916 10.09H3.72871L3.81954 10.1806ZM3.91 4.33333V3.91H4.33333H6.08333V6.08333L3.91 6.08333V4.33333ZM9.66667 3.91H10.09V4.33333V6.08333H7.91667V3.91L9.66667 3.91ZM10.09 9.66667V10.09H9.66667H7.91667L7.91667 7.91667H10.09V9.66667Z"
 }
 
-.tree-cell > .cell-box > .region.select > .icon.select {
+.tree-cell > .concept-tile > .region.select > .icon.select {
     -fx-background-color: #4A7AD2;
     -fx-shape: "M 5.998 2.898 C 5.998 3.616 5.416 4.198 4.698 4.198 C 3.98 4.198 3.398 3.616 3.398 2.898 C 3.398 2.18 3.98 1.598 4.698 1.598 C 5.416 1.598 5.998 2.18 5.998 2.898 Z M 10.6 2.898 C 10.6 3.616 10.018 4.198 9.3 4.198 C 8.582 4.198 8 3.616 8 2.898 C 8 2.18 8.582 1.598 9.3 1.598 C 10.018 1.598 10.6 2.18 10.6 2.898 Z M 5.998 7.499 C 5.998 8.217 5.416 8.799 4.698 8.799 C 3.98 8.799 3.398 8.217 3.398 7.499 C 3.398 6.781 3.98 6.199 4.698 6.199 C 5.416 6.199 5.998 6.781 5.998 7.499 Z M 10.6 7.499 C 10.6 8.217 10.018 8.799 9.3 8.799 C 8.582 8.799 8 8.217 8 7.499 C 8 6.781 8.582 6.199 9.3 6.199 C 10.018 6.199 10.6 6.781 10.6 7.499 Z M 5.998 12.101 C 5.998 12.819 5.416 13.401 4.698 13.401 C 3.98 13.401 3.398 12.819 3.398 12.101 C 3.398 11.383 3.98 10.801 4.698 10.801 C 5.416 10.801 5.998 11.383 5.998 12.101 Z M 10.6 12.101 C 10.6 12.819 10.018 13.401 9.3 13.401 C 8.582 13.401 8 12.819 8 12.101 C 8 11.383 8.582 10.801 9.3 10.801 C 10.018 10.801 10.6 11.383 10.6 12.101 Z"
 }
 
-.tree-cell:cn-long-hover > .cell-box > .region.select > .icon.select,
-.tree-cell > .cell-box > .region.select:hover > .icon.select {
+.tree-cell:cn-long-hover > .concept-tile > .region.select > .icon.select,
+.tree-cell > .concept-tile > .region.select:hover > .icon.select {
     -fx-background-color: #304971;
 }
 
-.tree-cell:selected > .cell-box > .region.select > .icon.select,
-.tree-cell:selected > .cell-box > .region.select:hover > .icon.select {
+.tree-cell:selected > .concept-tile > .region.select > .icon.select,
+.tree-cell:selected > .concept-tile > .region.select:hover > .icon.select {
     -fx-background-color: white;
 }
 
-.tree-cell > .cell-box > .region.tree > .icon.tree {
+.tree-cell > .concept-tile > .region.tree > .icon.tree {
     -fx-background-color: #4A7AD2;
     -fx-shape: "M19.651 24.278L19.651 22.746L26.651 22.746L26.651 26.746L19.651 26.746L19.651 25.278L16.706 25.278L16.706 21.111L14.839 21.111L14.839 17.028L21.839 17.028L21.839 21.111L17.706 21.111L17.706 24.278L19.651 24.278ZM20.672 18.194L16.005 18.194L16.005 19.944L20.672 19.944L20.672 18.194ZM20.818 23.913L20.818 25.58L25.484 25.58L25.484 23.913L20.818 23.913z"
 }
 
-.tree-cell > .cell-box > .region.tree:hover > .icon.tree {
+.tree-cell > .concept-tile > .region.tree:hover > .icon.tree {
     -fx-background-color: #304971;
     -fx-shape: "M5.91406 9V7.46875H12.9141V11.4688H5.91406V10H2.96875V5.25H1.46875L3.46875 2.25L5.46875 5.25H3.96875V9H5.91406ZM7.08073 8.63542V10.3021H11.7474V8.63542H7.08073Z"
 }

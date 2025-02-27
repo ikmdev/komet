@@ -87,7 +87,7 @@ public class ConceptTile extends HBox {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         getChildren().addAll(disclosurePane, ellipse, label, spacer, selectPane, treePane);
-        getStyleClass().add("cell-box");
+        getStyleClass().add("concept-tile");
 
         tooltip = new ConceptNavigatorTooltip(this);
         tooltip.showDelayProperty().bind(Bindings.createObjectBinding(() ->
