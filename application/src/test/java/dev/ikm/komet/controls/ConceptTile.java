@@ -66,11 +66,11 @@ public class ConceptTile extends HBox {
         IconRegion selectIconRegion = new IconRegion("icon", "select");
         StackPane selectPane = new StackPane(selectIconRegion);
         selectPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, true);
+            cell.pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, true);
             e.consume();
         });
         selectPane.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
-            pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, false);
+            cell.pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, false);
             e.consume();
         });
         selectPane.getStyleClass().addAll("region", "select");
@@ -115,7 +115,7 @@ public class ConceptTile extends HBox {
                 p.setTransform(new Scale(scale, scale));
                 WritableImage snapshot = snapshot(p, null);
                 dragboard.setDragView(snapshot);
-                pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, false);
+                cell.pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, false);
                 treeViewSkin.setDraggingAllowed(true);
             }
             e.consume();
