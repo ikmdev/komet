@@ -509,6 +509,14 @@ public class GenEditingDetailsController {
     @FXML
     public void popupStampEdit(ActionEvent event) {
         if (stampEdit != null && stampEditController != null) {
+            // refresh modules
+            stampViewModel.getObservableList(StampViewModel.MODULES_PROPERTY).clear();
+            stampViewModel.getObservableList(StampViewModel.MODULES_PROPERTY).addAll(stampViewModel.findAllModules(getViewProperties()));
+
+            // refresh path
+            stampViewModel.getObservableList(PATHS_PROPERTY).clear();
+            stampViewModel.getObservableList(PATHS_PROPERTY).addAll(stampViewModel.findAllPaths(getViewProperties()));
+
             stampEdit.show((Node) event.getSource());
             stampEditController.selectActiveStatusToggle();
             return;
