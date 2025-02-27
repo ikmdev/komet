@@ -2,15 +2,11 @@ package dev.ikm.komet.kview.klfields.editable;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldRecord;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.scene.Node;
@@ -24,9 +20,7 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 
 import java.net.URL;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public class EditableKLFieldFactory {
 
@@ -140,16 +134,4 @@ public class EditableKLFieldFactory {
         return viewProperties.calculator().languageCalculator().getDescriptionText(nid).orElse("No Description found");
     }
 
-    public void setupSemanticDetailsUI(ViewProperties viewProperties,
-                                        Latest<SemanticEntityVersion> semanticEntityVersionLatest,
-                                        Consumer<FieldRecord<Object>> updateUIConsumer) {
-        semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
-            StampCalculator stampCalculator = viewProperties.calculator().stampCalculator();
-            Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
-            patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
-                List<FieldRecord<Object>> fieldRecords = DataModelHelper.fieldRecords(semanticEntityVersion, patternEntityVersion);
-                fieldRecords.forEach(updateUIConsumer);
-            });
-        });
-    }
 }
