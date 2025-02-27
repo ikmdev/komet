@@ -27,7 +27,7 @@
 }
 
 .concept-navigator-control.tree-view > .virtual-flow > .clipped-container > .sheet {
-    -fx-padding: 40 0 0 0;
+    -fx-padding: 0 0 0 0;
 }
 .concept-navigator-control.tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-cell:filled:selected,
 .concept-navigator-control.tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-cell:focused {
@@ -91,6 +91,11 @@
     -fx-background-color: transparent, #545D7299;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 2, 2;
+}
+
+.concept-navigator-control.tree-view > .dragging-box {
+    -fx-fill: #5587D933;
+    -fx-stroke: null;
 }
 
 .tree-cell {
@@ -217,6 +222,7 @@
     -fx-managed: false;
 }
 
+.tree-cell:cn-long-hover > .cell-box > .region.select,
 .tree-cell:hover > .cell-box > .region.select,
 .tree-cell:selected > .cell-box > .region.select,
 .tree-cell:selected:hover > .cell-box > .region.select {
@@ -285,6 +291,7 @@
     -fx-shape: "M 5.998 2.898 C 5.998 3.616 5.416 4.198 4.698 4.198 C 3.98 4.198 3.398 3.616 3.398 2.898 C 3.398 2.18 3.98 1.598 4.698 1.598 C 5.416 1.598 5.998 2.18 5.998 2.898 Z M 10.6 2.898 C 10.6 3.616 10.018 4.198 9.3 4.198 C 8.582 4.198 8 3.616 8 2.898 C 8 2.18 8.582 1.598 9.3 1.598 C 10.018 1.598 10.6 2.18 10.6 2.898 Z M 5.998 7.499 C 5.998 8.217 5.416 8.799 4.698 8.799 C 3.98 8.799 3.398 8.217 3.398 7.499 C 3.398 6.781 3.98 6.199 4.698 6.199 C 5.416 6.199 5.998 6.781 5.998 7.499 Z M 10.6 7.499 C 10.6 8.217 10.018 8.799 9.3 8.799 C 8.582 8.799 8 8.217 8 7.499 C 8 6.781 8.582 6.199 9.3 6.199 C 10.018 6.199 10.6 6.781 10.6 7.499 Z M 5.998 12.101 C 5.998 12.819 5.416 13.401 4.698 13.401 C 3.98 13.401 3.398 12.819 3.398 12.101 C 3.398 11.383 3.98 10.801 4.698 10.801 C 5.416 10.801 5.998 11.383 5.998 12.101 Z M 10.6 12.101 C 10.6 12.819 10.018 13.401 9.3 13.401 C 8.582 13.401 8 12.819 8 12.101 C 8 11.383 8.582 10.801 9.3 10.801 C 10.018 10.801 10.6 11.383 10.6 12.101 Z"
 }
 
+.tree-cell:cn-long-hover > .cell-box > .region.select > .icon.select,
 .tree-cell > .cell-box > .region.select:hover > .icon.select {
     -fx-background-color: #304971;
 }

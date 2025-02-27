@@ -39,6 +39,7 @@ import javafx.util.Subscription;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import java.util.UUID;
 
 import static dev.ikm.komet.controls.ConceptNavigatorModel.PS_STATE;
 import static dev.ikm.komet.controls.ConceptNavigatorModel.MAX_LEVEL;
@@ -50,7 +51,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
     private static final PseudoClass DEFINED_PSEUDO_CLASS = PseudoClass.getPseudoClass("defined");
     private static final PseudoClass DRAG_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("drag-selected");
 
-    private static final PseudoClass LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-long-hover");
+    public static final PseudoClass LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-long-hover");
     private static final PseudoClass BORDER_LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-border-long-hover");
     private static final PseudoClass BORDER_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-border-selected");
 
@@ -131,8 +132,8 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
                 subscription = subscription.and(box.hoverProperty().subscribe(h -> {
                     if (h) {
                         treeViewSkin.unhoverAllItems();
-                        if (treeView.getSelectionModel().getSelectedItem() == getTreeItem()) {
-                            // don't long-hover the selected item
+                        if (treeView.getSelectionModel().getSelectedItem() == getTreeItem() || treeViewSkin.isDragging()) {
+                            // don't long-hover the selected item or if there's a treeView dragging event
                             return;
                         }
                         hoverTransition = new PauseTransition(new Duration(treeView.getActivation()));
@@ -170,12 +171,18 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
             }
         });
 
+        selectPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            e.consume();
+            treeViewSkin.setDraggingAllowed(false);
+        });
+        selectPane.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> treeViewSkin.setDraggingAllowed(true));
         selectPane.addEventFilter(MouseEvent.DRAG_DETECTED, e -> {
             if (!isEmpty()) {
                 Dragboard dragboard = box.startDragAndDrop(TransferMode.COPY_OR_MOVE);
                 ClipboardContent clipboardContent = new ClipboardContent();
                 if (getItem().getModel() != null && getItem().getModel().publicId() != null) {
-                    clipboardContent.put(CONCEPT_NAVIGATOR_DRAG_FORMAT, getItem().getModel().publicId().asUuidArray());
+                    clipboardContent.put(CONCEPT_NAVIGATOR_DRAG_FORMAT,
+                            List.<UUID[]>of(getItem().getModel().publicId().asUuidArray()));
                 }
                 clipboardContent.putString(getItem().toString());
                 dragboard.setContent(clipboardContent);
@@ -185,9 +192,11 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
                 WritableImage snapshot = box.snapshot(p, null);
                 dragboard.setDragView(snapshot);
                 pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, false);
+                treeViewSkin.setDraggingAllowed(true);
             }
             e.consume();
         });
+        selectPane.setOnDragDone(e -> treeViewSkin.setDraggingAllowed(true));
     }
 
     public void unselectItem() {

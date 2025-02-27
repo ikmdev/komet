@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -20,6 +21,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptNavigatorModel> {
     public KLConceptNavigatorControl() {
         setShowRoot(false);
         setFixedCellSize(24);
+        getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         setCellFactory(p -> new KLConceptNavigatorTreeCell(this));
         expandedItemCountProperty().subscribe((o, n) -> {

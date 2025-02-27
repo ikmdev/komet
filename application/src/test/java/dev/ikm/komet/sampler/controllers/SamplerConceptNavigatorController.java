@@ -58,6 +58,7 @@ public class SamplerConceptNavigatorController {
                 -fx-border-radius: 5px;
                 -fx-alignment: center;
                 -fx-padding: 1.5em;
+                -fx-spacing: 20;
             }
             
             .sample-control-container > .center-container.dashed-border {
@@ -89,9 +90,12 @@ public class SamplerConceptNavigatorController {
             boolean success = false;
             if (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)) {
                 Dragboard dragboard = event.getDragboard();
-                UUID[] uuids = (UUID[]) dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
-                Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForUuids(uuids));
-                conceptArea.getChildren().setAll(new Label(entity.entityToString()));
+                List<UUID[]> uuids = (List<UUID[]>) dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
+                conceptArea.getChildren().clear();
+                for (UUID[] uuid : uuids) {
+                    Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForUuids(uuid));
+                    conceptArea.getChildren().add(new Label(entity.entityToString()));
+                }
                 success = true;
             }
             event.setDropCompleted(success);
