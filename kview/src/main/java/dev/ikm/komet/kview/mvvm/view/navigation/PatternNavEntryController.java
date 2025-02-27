@@ -66,7 +66,7 @@ import java.util.function.Function;
 public class PatternNavEntryController {
     private static final Logger LOG = LoggerFactory.getLogger(PatternNavEntryController.class);
 
-    private static final int LIST_VIEW_CELL_SIZE = 36;
+    private static final int LIST_VIEW_CELL_SIZE = 40;
     public enum PatternNavEntry{
         PATTERN_FACADE,
         INSTANCES,
