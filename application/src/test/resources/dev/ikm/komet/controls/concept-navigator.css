@@ -232,6 +232,7 @@
 .tree-cell:cn-long-hover > .concept-tile > .region.select,
 .tree-cell:hover > .concept-tile > .region.select,
 .tree-cell:selected > .concept-tile > .region.select,
+.tree-cell:selected:drag-selected > .concept-tile > .region.select,
 .tree-cell:selected:hover > .concept-tile > .region.select {
     -fx-background-color: transparent, transparent;
     visibility: visible;
@@ -246,6 +247,13 @@
 .tree-cell > .concept-tile > .region.select:hover,
 .tree-cell > .concept-tile > .region.tree:hover {
     -fx-background-color: transparent, #9DC4FF;
+}
+
+.tree-cell:drag-selected > .concept-tile > .region.select,
+.tree-cell:drag-selected > .concept-tile > .region.select:hover,
+.tree-cell:selected:drag-selected > .concept-tile > .region.select,
+.tree-cell:selected:drag-selected > .concept-tile > .region.select:hover {
+    -fx-background-color: transparent, transparent;
 }
 
 .tree-cell > .concept-tile > .region > .icon {
@@ -308,6 +316,11 @@
 .tree-cell:selected > .concept-tile > .region.select > .icon.select,
 .tree-cell:selected > .concept-tile > .region.select:hover > .icon.select {
     -fx-background-color: white;
+}
+.tree-cell:drag-selected > .concept-tile > .region.select > .icon.select,
+.tree-cell:selected:drag-selected > .concept-tile > .region.select > .icon.select,
+.tree-cell:selected:drag-selected > .concept-tile > .region.select:hover > .icon.select {
+    -fx-background-color: #9CAABF;
 }
 
 .tree-cell > .concept-tile > .region.tree > .icon.tree {

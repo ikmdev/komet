@@ -73,20 +73,17 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
         getChildren().addAll(header, draggingBox);
 
         treeView.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            if (isDragging()) {
-                Rectangle2D rectangle2D = new Rectangle2D(xMin, yMin,
-                        xMax - xMin, yMax - yMin);
-
-                if (e.getButton() == MouseButton.SECONDARY ||
-                        (e.getButton() == MouseButton.PRIMARY && !rectangle2D.contains(e.getSceneX(), e.getSceneY()))) {
-                    setDragging(false);
-                }
+            if (isDragging() &&
+                    e.getButton() == MouseButton.SECONDARY ||
+                    (e.getButton() == MouseButton.PRIMARY &&
+                            !new Rectangle2D(xMin, yMin, xMax - xMin, yMax - yMin).contains(e.getSceneX(), e.getSceneY()))) {
+                setDragging(false);
             }
             x = e.getX();
             y = e.getY();
         });
         treeView.addEventFilter(MouseEvent.MOUSE_DRAGGED, e -> {
-            if (isDraggingAllowed()) {
+            if (isDraggingAllowed() && draggedItems.isEmpty()) {
                 setDragging(true);
                 virtualFlow.setMouseTransparent(true);
                 double newX = e.getX();
@@ -300,7 +297,6 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
     }
 
     private void prepareDrag() {
-        draggedItems.clear();
         if (draggingBox.getLayoutBounds().getWidth() < 10 || draggingBox.getLayoutBounds().getHeight() < 10) {
             draggingBox.getElements().clear();
             return;
