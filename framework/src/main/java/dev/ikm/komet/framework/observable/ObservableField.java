@@ -80,7 +80,9 @@ public class ObservableField<T> implements Field<T> {
         MutableList fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
         fieldsForNewVersion.set(fieldIndex(), newValue);
 
-        if (stamp.lastVersion().committed()) {
+        //if the transaction version is missing for this transaction the create a new one.
+        //TODO validate with Keith is the OR condition for transaction is correct, this condition will save transctions across sessions.
+        if (stamp.lastVersion().committed() || Transaction.forVersion(version).isEmpty()) {
 
             // Create transaction
             Transaction t = Transaction.make();

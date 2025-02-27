@@ -111,12 +111,8 @@ public class SemanticFieldsController {
         semanticEntityVersionLatest.ifPresent(ver -> {
             int latestStampNid = ver.stamp().nid();
             observableFields.forEach(observableField -> {
-                //Remove the listener to update the fieldProperty, fieldRecord.
-                observableField.fieldProperty().removeListener(fieldPropertyChangeListner);
                 //Update the stampNid with the latest stamp nid value.
                 observableField.fieldProperty().set(observableField.field().withSemanticVersionStampNid(latestStampNid));
-                //Add back the listener.
-                observableField.fieldProperty().addListener(fieldPropertyChangeListner);
             });
         });
     }
