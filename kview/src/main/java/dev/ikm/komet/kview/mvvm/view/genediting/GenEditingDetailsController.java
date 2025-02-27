@@ -235,6 +235,7 @@ public class GenEditingDetailsController {
 
         // Populate the Semantic Details
 
+        // populate the observable fields and nodes for this semantic
         observableFields.addAll(KlFieldHelper
                 .generateObservableFieldsAndNodes(getViewProperties(),
                         nodes,
