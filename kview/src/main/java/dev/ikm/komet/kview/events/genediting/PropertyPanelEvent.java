@@ -56,9 +56,8 @@ public class PropertyPanelEvent extends Evt {
         this.semantic = semantic;
     }
 
-    public PropertyPanelEvent(Object source, EvtType<PropertyPanelEvent> eventType, EntityFacade semantic, int fieldIndex) {
+    public PropertyPanelEvent(Object source, EvtType<PropertyPanelEvent> eventType, int fieldIndex) {
         super(source, eventType);
-        this.semantic = semantic;
         this.fieldIndex = fieldIndex;
     }
 

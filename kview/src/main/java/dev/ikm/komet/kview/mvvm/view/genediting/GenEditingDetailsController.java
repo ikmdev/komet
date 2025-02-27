@@ -246,7 +246,7 @@ public class GenEditingDetailsController {
                 () -> {
                     final EntityVersion finalEntityVersion = getSemanticVersion().get();
                     EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                            new PropertyPanelEvent(node, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, finalEntityVersion.entity().toProxy(), fieldIndex));
+                            new PropertyPanelEvent(node, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
                     EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
                             new PropertyPanelEvent(node, OPEN_PANEL));
                 };
