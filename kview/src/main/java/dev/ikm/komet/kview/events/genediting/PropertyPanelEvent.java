@@ -30,8 +30,13 @@ public class PropertyPanelEvent extends Evt {
     public static final EvtType<PropertyPanelEvent> SHOW_EDIT_SEMANTIC_FIELDS = new EvtType<>(SHOW_PANEL, "SHOW_EDIT_SEMANTIC_FIELDS");
     public static final EvtType<PropertyPanelEvent> CONFIRMATION_PANEL = new EvtType<>(SHOW_PANEL, "CONFIRMATION_PANEL");
 
+    public static final EvtType<PropertyPanelEvent> SHOW_EDIT_SINGLE_SEMANTIC_FIELD = new EvtType<>(SHOW_EDIT_SEMANTIC_FIELDS, "SHOW_EDIT_SINGLE_SEMANTIC_FIELD");
+
     /*** private variables ***/
     private EntityFacade semantic;
+
+    private int fieldIndex;
+
     /**
      *
      * @param source        the object on which the Event initially occurred
@@ -50,7 +55,18 @@ public class PropertyPanelEvent extends Evt {
         super(source, eventType);
         this.semantic = semantic;
     }
+
+    public PropertyPanelEvent(Object source, EvtType<PropertyPanelEvent> eventType, EntityFacade semantic, int fieldIndex) {
+        super(source, eventType);
+        this.semantic = semantic;
+        this.fieldIndex = fieldIndex;
+    }
+
     public EntityFacade getSemantic() {
         return semantic;
+    }
+
+    public int getObservableFieldIndex() {
+        return fieldIndex;
     }
 }
