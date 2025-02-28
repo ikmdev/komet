@@ -1,5 +1,7 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
+import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
+import static dev.ikm.komet.kview.controls.KometIcon.IconValue.TRASH;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.IDENTIFIER_PATTERN_PROXY;
 import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.INFERRED_DEFINITION_PATTERN_PROXY;
@@ -19,6 +21,7 @@ import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
@@ -37,22 +40,20 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TitledPane;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
@@ -75,6 +76,9 @@ public class PatternNavEntryController {
     private HBox patternEntryHBox;
 
     @FXML
+    private HBox semanticElementHBox;
+
+    @FXML
     private ImageView identicon;
 
     @FXML
@@ -85,7 +89,6 @@ public class PatternNavEntryController {
 
     @FXML
     private ContextMenu contextMenu;
-
 
     @FXML
     private TitledPane instancesTitledPane;
@@ -101,6 +104,7 @@ public class PatternNavEntryController {
 
         instancesTitledPane.setExpanded(false);
         showContextButton.setVisible(false);
+        contextMenu = new ContextMenu();
         contextMenu.setHideOnEscape(true);
         patternEntryHBox.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(true));
         patternEntryHBox.setOnMouseExited(mouseEvent -> {
@@ -108,7 +112,27 @@ public class PatternNavEntryController {
                 showContextButton.setVisible(false);
             }
         });
+
+        KometIcon kometPlusIcon = KometIcon.create(PLUS,"icon-klcontext-menu");
+        KometIcon kometTrashIcon = KometIcon.create(TRASH, "icon-klcontext-menu");
+
+        MenuItem addNewSemanticElement = new MenuItem("Add New Semantic Element",kometPlusIcon);
+        MenuItem removeSemanticElement = new MenuItem("Remove",kometTrashIcon);
+        contextMenu.getItems().addAll(addNewSemanticElement,removeSemanticElement);
+        this.contextMenu.getStyleClass().add("klcontext-menu");
+
+        //Context Menu appears on the Pattern tile and Six Dots Icon as well.
+        semanticElementHBox.setOnContextMenuRequested(contextMenuEvent ->
+                contextMenu.show(semanticElementHBox,contextMenuEvent.getScreenX(),contextMenuEvent.getScreenY())
+        );
+
         EntityFacade patternFacade = instancesViewModel.getPropertyValue(PATTERN_FACADE);
+        addNewSemanticElement.setOnAction(actionEvent -> {
+            LOG.info("TODO: Summon create new Semantic Element. "+patternFacade.description());
+        });
+        removeSemanticElement.setOnAction(actionEvent -> {
+            LOG.info("TODO: Verify if the Pattern needs to be removed. "+patternFacade.description());
+        });
 
         // set identicon
         Image identiconImage = Identicon.generateIdenticonImage(patternFacade.publicId());
@@ -129,7 +153,6 @@ public class PatternNavEntryController {
             }
         });
         showContextButton.setOnAction(event -> contextMenu.show(showContextButton, Side.BOTTOM, 0, 0));
-
         setupListView();
     }
 

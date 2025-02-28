@@ -5,7 +5,7 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
-import dev.ikm.komet.kview.klfields.componentfield.KlComponentSetFieldFactory;
+import dev.ikm.komet.kview.klfields.componentsetfield.KlComponentSetFieldFactory;
 import dev.ikm.komet.kview.klfields.componentlistfield.KlComponentListFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.imagefield.KlImageFieldFactory;
