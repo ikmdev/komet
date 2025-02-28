@@ -110,11 +110,7 @@ public class ConceptTile extends HBox {
                 }
                 clipboardContent.putString(item.toString());
                 dragboard.setContent(clipboardContent);
-                SnapshotParameters p = new SnapshotParameters();
-                double scale = getScene().getWindow().getOutputScaleY();
-                p.setTransform(new Scale(scale, scale));
-                WritableImage snapshot = snapshot(p, null);
-                dragboard.setDragView(snapshot);
+                dragboard.setDragView(getTileSnapshot());
                 cell.pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, false);
                 treeViewSkin.setDraggingAllowed(true);
             }
@@ -132,11 +128,6 @@ public class ConceptTile extends HBox {
 
     public void cleanup() {
         setConcept(null);
-        if (subscription != null) {
-            subscription.unsubscribe();
-        }
-        unselectItem();
-        pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, false);
     }
 
     // conceptProperty
@@ -155,7 +146,7 @@ public class ConceptTile extends HBox {
                 subscription = subscription.and(hoverProperty().subscribe(h -> {
                     if (h) {
                         treeViewSkin.unhoverAllItems();
-                        if (treeView.getSelectionModel().getSelectedItem() == treeItem || treeViewSkin.isDragging()) {
+                        if (treeView.getSelectionModel().getSelectedItem() == treeItem || treeViewSkin.isMultipleSelectionByBoundingBox()) {
                             // don't long-hover the selected item or if there's a treeView dragging event
                             return;
                         }
@@ -168,16 +159,8 @@ public class ConceptTile extends HBox {
                 String description = model.getModel() != null ? model.getModel().description() : "";
                 label.setText(description);
                 pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, model.isDefined());
-
-                tooltip.setGraphicText(model.isDefined() ? "Defined Concept" : "Primitive Concept");
-                tooltip.getGraphic().pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, model.isDefined());
-                Node lookup = label.lookup(".text");
-                if (lookup instanceof Text labelledText && !labelledText.getText().equals(description)) {
-                    tooltip.setText(description);
-                } else {
-                    tooltip.setText(null);
-                }
             } else {
+                unselectItem();
                 label.setText(null);
                 pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, false);
             }
@@ -191,6 +174,25 @@ public class ConceptTile extends HBox {
     }
     public final void setConcept(ConceptNavigatorModel value) {
         conceptProperty.set(value);
+    }
+
+    public void updateTooltip() {
+        tooltip.setGraphicText(getConcept().isDefined() ? "Defined Concept" : "Primitive Concept");
+        tooltip.getGraphic().pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, getConcept().isDefined());
+        Node lookup = label.lookup(".text");
+        String description = getConcept().getModel() != null ? getConcept().getModel().description() : "";
+        if (lookup instanceof Text labelledText && !labelledText.getText().equals(description)) {
+            tooltip.setText(description);
+        } else {
+            tooltip.setText(null);
+        }
+    }
+
+    public WritableImage getTileSnapshot() {
+        SnapshotParameters p = new SnapshotParameters();
+        double scale = getScene().getWindow().getOutputScaleY();
+        p.setTransform(new Scale(scale, scale));
+        return snapshot(p, null);
     }
 
 }

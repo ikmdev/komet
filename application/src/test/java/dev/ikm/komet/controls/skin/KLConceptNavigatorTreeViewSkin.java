@@ -1,11 +1,15 @@
 package dev.ikm.komet.controls.skin;
 
 import dev.ikm.komet.controls.ConceptNavigatorModel;
+import dev.ikm.komet.controls.ConceptTile;
 import dev.ikm.komet.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.controls.KLConceptNavigatorTreeCell;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
@@ -18,20 +22,26 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.skin.TreeViewSkin;
 import javafx.scene.control.skin.VirtualFlow;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.ClosePath;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.transform.Scale;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -43,6 +53,8 @@ import static dev.ikm.komet.controls.KLConceptNavigatorTreeCell.LONG_HOVER_PSEUD
 
 public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigatorModel> {
 
+    private static final PseudoClass MULTIPLE_SELECTION_PSEUDO_CLASS = PseudoClass.getPseudoClass("multiple");
+
     private final Label header;
     private ConceptNavigatorVirtualFlow virtualFlow;
     private final Path draggingBox;
@@ -51,6 +63,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
     private double xMin, yMin, xMax, yMax;
 
     private final List<ConceptNavigatorModel> draggedItems = new ArrayList<>();
+    private final Map<ConceptNavigatorModel, WritableImage> imageMap = new HashMap<>();
 
     public KLConceptNavigatorTreeViewSkin(TreeView<ConceptNavigatorModel> treeView) {
         super(treeView);
@@ -72,19 +85,45 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
         draggingBox.setClip(clip);
         getChildren().addAll(header, draggingBox);
 
+        ObservableList<TreeItem<ConceptNavigatorModel>> selectedItems = treeView.getSelectionModel().getSelectedItems();
+        selectedItems.addListener((ListChangeListener<TreeItem<ConceptNavigatorModel>>) c -> {
+            boolean multiple = selectedItems.size() > 1;
+            setMultipleSelectionByClicking(multiple);
+            if (multiple) {
+                unhoverAllItems();
+                unselectAllItems();
+            }
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    pseudoClassStateChanged(MULTIPLE_SELECTION_PSEUDO_CLASS, true);
+                    for (TreeItem<ConceptNavigatorModel> item : c.getAddedSubList()) {
+                        getCellForTreeItem(item).ifPresent(cell -> {
+                            if (cell.getGraphic() instanceof ConceptTile tile) {
+                                imageMap.put(item.getValue(), tile.getTileSnapshot());
+                            }
+                        });
+                    }
+                } else if (c.wasRemoved()) {
+                    for (TreeItem<ConceptNavigatorModel> item : c.getRemoved()) {
+                        imageMap.remove(item.getValue());
+                    }
+                }
+                pseudoClassStateChanged(MULTIPLE_SELECTION_PSEUDO_CLASS, multiple);
+            }
+        });
         treeView.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            if (isDragging() &&
+            if (isMultipleSelectionByBoundingBox() &&
                     e.getButton() == MouseButton.SECONDARY ||
                     (e.getButton() == MouseButton.PRIMARY &&
                             !new Rectangle2D(xMin, yMin, xMax - xMin, yMax - yMin).contains(e.getSceneX(), e.getSceneY()))) {
-                setDragging(false);
+                setMultipleSelectionByBoundingBox(false);
             }
             x = e.getX();
             y = e.getY();
         });
         treeView.addEventFilter(MouseEvent.MOUSE_DRAGGED, e -> {
-            if (isDraggingAllowed() && draggedItems.isEmpty()) {
-                setDragging(true);
+            if (isDraggingAllowed() && draggedItems.isEmpty() && !isMultipleSelectionByClicking()) {
+                setMultipleSelectionByBoundingBox(true);
                 virtualFlow.setMouseTransparent(true);
                 double newX = e.getX();
                 double newY = e.getY();
@@ -95,16 +134,22 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
             }
         });
         treeView.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
-            if (isDragging()) {
+            if (isMultipleSelectionByBoundingBox()) {
                 prepareDrag();
                 if (draggedItems.isEmpty()) {
-                    setDragging(false);
+                    setMultipleSelectionByBoundingBox(false);
                 }
                 e.consume();
             }
         });
 
         treeView.addEventFilter(MouseEvent.DRAG_DETECTED, e -> {
+            if (isMultipleSelectionByClicking()) {
+                draggedItems.clear();
+                draggedItems.addAll(selectedItems.stream()
+                        .map(TreeItem::getValue)
+                        .toList());
+            }
             if (!draggedItems.isEmpty()) {
                 List<UUID[]> list = draggedItems.stream()
                         .filter(i -> i.getModel() != null && i.getModel().publicId() != null)
@@ -114,17 +159,15 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
                 ClipboardContent clipboardContent = new ClipboardContent();
                 clipboardContent.put(CONCEPT_NAVIGATOR_DRAG_FORMAT, list);
                 dragboard.setContent(clipboardContent);
-                SnapshotParameters p = new SnapshotParameters();
-                Point2D point2D = new Point2D(xMin, yMin);
-                point2D = sheet.sceneToLocal(point2D);
-                p.setViewport(new Rectangle2D(point2D.getX(), point2D.getY(),
-                        xMax - xMin, yMax - yMin));
-                WritableImage snapshot = sheet.snapshot(p, null);
+                WritableImage snapshot = createSnapshot();
                 dragboard.setDragView(snapshot);
                 e.consume();
             }
         });
-        treeView.setOnDragDone(e -> setDragging(false));
+        treeView.setOnDragDone(e -> {
+            setMultipleSelectionByBoundingBox(false);
+            setMultipleSelectionByClicking(false);
+        });
     }
 
     @Override
@@ -133,8 +176,8 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
         return virtualFlow;
     }
 
-    // draggingProperty
-    private final BooleanProperty draggingProperty = new SimpleBooleanProperty(this, "dragging") {
+    // multipleSelectionByBoundingBoxProperty
+    private final BooleanProperty multipleSelectionByBoundingBoxProperty = new SimpleBooleanProperty(this, "multipleSelectionByBoundingBox") {
         @Override
         protected void invalidated() {
             if (get()) {
@@ -144,14 +187,28 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
             }
         }
     };
-    public final BooleanProperty draggingProperty() {
-       return draggingProperty;
+    public final boolean isMultipleSelectionByBoundingBox() {
+       return multipleSelectionByBoundingBoxProperty.get();
     }
-    public final boolean isDragging() {
-       return draggingProperty.get();
+    public final void setMultipleSelectionByBoundingBox(boolean value) {
+        multipleSelectionByBoundingBoxProperty.set(value);
     }
-    public final void setDragging(boolean value) {
-        draggingProperty.set(value);
+
+    // multipleSelectionByClickingProperty
+    private final BooleanProperty multipleSelectionByClickingProperty = new SimpleBooleanProperty(this, "multipleSelectionByClicking") {
+        @Override
+        protected void invalidated() {
+            if (!get()) {
+                draggedItems.clear();
+                getSkinnable().getSelectionModel().clearSelection();
+            }
+        }
+    };
+    public final boolean isMultipleSelectionByClicking() {
+       return multipleSelectionByClickingProperty.get();
+    }
+    public final void setMultipleSelectionByClicking(boolean value) {
+        multipleSelectionByClickingProperty.set(value);
     }
 
     // draggingAllowedProperty
@@ -214,6 +271,9 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
     }
 
     private void markAllAncestors(TreeItem<ConceptNavigatorModel> child, boolean select) {
+        if (isMultipleSelectionByClicking()) {
+            return;
+        }
         TreeItem<ConceptNavigatorModel> treeItem = child;
         while (treeItem != null) {
             // for each ancestor (including starting one)
@@ -345,8 +405,33 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
                         cell.pseudoClassStateChanged(LONG_HOVER_PSEUDO_CLASS, false);
                     }
                 });
-        setDragging(false);
+        setMultipleSelectionByBoundingBox(false);
         virtualFlow.setMouseTransparent(false);
+    }
+
+    private WritableImage createSnapshot() {
+        SnapshotParameters p = new SnapshotParameters();
+        if (isMultipleSelectionByBoundingBox()) {
+            Point2D point2D = new Point2D(xMin, yMin);
+            point2D = sheet.sceneToLocal(point2D);
+            p.setViewport(new Rectangle2D(point2D.getX(), point2D.getY(), xMax - xMin, yMax - yMin));
+            return sheet.snapshot(p, null);
+        } else if (isMultipleSelectionByClicking()) {
+            List<ImageView> list = getSkinnable().getSelectionModel().getSelectedItems().stream()
+                    .map(item -> {
+                        ImageView imageView = new ImageView(imageMap.get(item.getValue()));
+                        imageView.setPreserveRatio(true);
+                        return imageView;
+                    })
+                    .toList();
+            VBox box = new VBox();
+            box.getChildren().addAll(list);
+            double scale = getSkinnable().getScene().getWindow().getOutputScaleY();
+            p.setTransform(new Scale(scale, scale));
+            p.setFill(Color.TRANSPARENT);
+            return box.snapshot(p, null);
+        }
+        return null;
     }
 
 }

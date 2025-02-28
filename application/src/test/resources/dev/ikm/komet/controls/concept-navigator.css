@@ -1,4 +1,17 @@
 /** CONCEPT NAVIGATOR **/
+.concept-navigator-control {
+    -fx-outer-cell-color: #5E5E5E;
+    -fx-inner-cell-color: #5E5E5E;
+    -fx-text-cell-color: white;
+    -fx-dots-cell-color: white;
+}
+
+.concept-navigator-control:multiple {
+    -fx-outer-cell-color: #5896F6;
+    -fx-inner-cell-color: #DEEBFF;
+    -fx-text-cell-color: #2E3240;
+    -fx-dots-cell-color: #4A7AD2;
+}
 
 .concept-navigator-control.tree-view,
 .concept-navigator-control.tree-view:focused {
@@ -146,8 +159,8 @@
 
 .tree-cell:selected > .concept-tile,
 .tree-cell:hover:selected > .concept-tile { /* actual selected cell */
-    -fx-background-color: #5E5E5E, #5E5E5E;
-    -fx-background-insets: 0, 1;
+    -fx-background-color: -fx-outer-cell-color, -fx-inner-cell-color;
+    -fx-background-insets: 0, 2;
 }
 
 .tree-cell:cn-border-selected > .concept-tile { /* ancestors of selected cell */
@@ -168,7 +181,7 @@
 }
 
 .tree-cell:selected > .concept-tile > .concept-label {
-    -fx-text-fill: white;
+    -fx-text-fill: -fx-text-cell-color;
 }
 .tree-cell:selected:drag-selected > .concept-tile > .concept-label {
     -fx-text-fill: #2E3240;
@@ -315,7 +328,7 @@
 
 .tree-cell:selected > .concept-tile > .region.select > .icon.select,
 .tree-cell:selected > .concept-tile > .region.select:hover > .icon.select {
-    -fx-background-color: white;
+    -fx-background-color: -fx-dots-cell-color;
 }
 .tree-cell:drag-selected > .concept-tile > .region.select > .icon.select,
 .tree-cell:selected:drag-selected > .concept-tile > .region.select > .icon.select,

@@ -125,6 +125,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
             setGraphic(conceptTile);
             updateConnections();
             updateState(item.getBitSet());
+            conceptTile.updateTooltip();
         } else {
             cleanup();
             setGraphic(null);
