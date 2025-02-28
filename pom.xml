@@ -86,9 +86,7 @@
 
         <!-- JPRO Variables -->
         <jpro.version>2025.1.0</jpro.version>
-        <jpro-platform.version>0.5.1</jpro-platform.version>
-        <!-- A special build for Komet using the ikmdev Guava module name -->
-        <jpro-auth-core.version>${jpro-platform.version}-ikmdev</jpro-auth-core.version>
+        <jpro-platform.version>0.5.4</jpro-platform.version>
 
         <!-- TestFX Variables -->
         <tinkar-starter-data-reasoned.version>1.0.0</tinkar-starter-data-reasoned.version>
@@ -414,7 +412,7 @@
             <dependency>
                 <groupId>one.jpro.platform</groupId>
                 <artifactId>jpro-auth-core</artifactId>
-                <version>${jpro-auth-core.version}</version>
+                <version>${jpro-platform.version}</version>
             </dependency>
             <dependency>
                 <groupId>one.jpro.platform</groupId>
