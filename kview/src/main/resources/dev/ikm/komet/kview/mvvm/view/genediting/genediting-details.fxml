@@ -33,7 +33,10 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.genediting.GenEditingDetailsController">
+
+<?import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl?>
+
+<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.genediting.GenEditingDetailsController">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0">
          <top>
@@ -175,15 +178,7 @@
                                  </font>
                                  <content>
                                     <VBox maxWidth="1.7976931348623157E308" styleClass="semantic-field-container">
-                                       <children>
-                                          <Label fx:id="refComponentType" styleClass="semantic-field-type-label" text="Concept" />
-                                          <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="3.0">
-                                             <children>
-                                                <ImageView fx:id="refComponentIdenticonImageView" fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true" />
-                                                <Label fx:id="refComponentLabel" maxWidth="1.7976931348623157E308" styleClass="semantic-field-value" text="Concept FQN / Semantic Name D" HBox.hgrow="ALWAYS" />
-                                             </children>
-                                          </HBox>
-                                       </children>
+                                       <KLReadOnlyComponentControl fx:id="referenceComponent" />
                                     </VBox>
                                  </content>
                               </TitledPane>
