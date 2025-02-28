@@ -40,6 +40,12 @@ public abstract class BaseDefaultKlField<T> implements KlField<T> {
         tooltip.setText(observableView.getDescriptionTextOrNid(observableField.purposeNid()));
     }
 
+    // -- on edit action
+    private ObjectProperty<Runnable> onEditAction = new SimpleObjectProperty<>();
+    public Runnable getOnEditAction() { return onEditAction.get(); }
+    public ObjectProperty<Runnable> onEditActionProperty() { return onEditAction; }
+    public void setOnEditAction(Runnable onEditAction) { this.onEditAction.set(onEditAction); }
+
     // -- field
     @Override
     public ObservableField<T> field() {
