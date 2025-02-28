@@ -4,6 +4,7 @@ import dev.ikm.komet.controls.ConceptNavigatorModel;
 import dev.ikm.komet.controls.ConceptTile;
 import dev.ikm.komet.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.controls.KLConceptNavigatorTreeCell;
+import dev.ikm.komet.controls.MultipleSelectionContextMenu;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -65,6 +66,8 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
     private final List<ConceptNavigatorModel> draggedItems = new ArrayList<>();
     private final Map<ConceptNavigatorModel, WritableImage> imageMap = new HashMap<>();
 
+    private MultipleSelectionContextMenu contextMenu;
+
     public KLConceptNavigatorTreeViewSkin(TreeView<ConceptNavigatorModel> treeView) {
         super(treeView);
         header = new Label();
@@ -93,6 +96,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
                 unhoverAllItems();
                 unselectAllItems();
             }
+            setupContextMenu(selectedItems.stream().map(TreeItem::getValue).toList());
             while (c.next()) {
                 if (c.wasAdded()) {
                     pseudoClassStateChanged(MULTIPLE_SELECTION_PSEUDO_CLASS, true);
@@ -108,14 +112,12 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
                         imageMap.remove(item.getValue());
                     }
                 }
-                pseudoClassStateChanged(MULTIPLE_SELECTION_PSEUDO_CLASS, multiple);
             }
+            pseudoClassStateChanged(MULTIPLE_SELECTION_PSEUDO_CLASS, multiple);
         });
         treeView.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (isMultipleSelectionByBoundingBox() &&
-                    e.getButton() == MouseButton.SECONDARY ||
-                    (e.getButton() == MouseButton.PRIMARY &&
-                            !new Rectangle2D(xMin, yMin, xMax - xMin, yMax - yMin).contains(e.getSceneX(), e.getSceneY()))) {
+                    !new Rectangle2D(xMin, yMin, xMax - xMin, yMax - yMin).contains(e.getSceneX(), e.getSceneY())) {
                 setMultipleSelectionByBoundingBox(false);
             }
             x = e.getX();
@@ -167,6 +169,12 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
         treeView.setOnDragDone(e -> {
             setMultipleSelectionByBoundingBox(false);
             setMultipleSelectionByClicking(false);
+        });
+
+        treeView.setOnContextMenuRequested(e -> {
+            if (contextMenu != null) {
+                contextMenu.show(treeView.getScene().getWindow(), e.getScreenX(), e.getScreenY());
+            }
         });
     }
 
@@ -390,6 +398,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
                             }
                         }
                     });
+            setupContextMenu(draggedItems.stream().toList());
             draggingBox.getElements().clear();
         }
     }
@@ -434,4 +443,18 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
         return null;
     }
 
+    private void setupContextMenu(List<ConceptNavigatorModel> items) {
+        contextMenu = new MultipleSelectionContextMenu();
+        contextMenu.setPopulateMessageAction(e -> {
+            if (((KLConceptNavigatorControl) getSkinnable()).getOnAction() != null) {
+                ((KLConceptNavigatorControl) getSkinnable()).getOnAction().accept(items);
+            }
+            setMultipleSelectionByClicking(false);
+            setMultipleSelectionByBoundingBox(false);
+        });
+        contextMenu.setJournalMessageAction(e -> System.out.println("Journal action"));
+        contextMenu.setChapterMessageAction(e -> System.out.println("Chapter action"));
+        contextMenu.setCopyMessageAction(e -> System.out.println("Copy action"));
+        contextMenu.setSaveMessageAction(e -> System.out.println("Save action"));
+    }
 }

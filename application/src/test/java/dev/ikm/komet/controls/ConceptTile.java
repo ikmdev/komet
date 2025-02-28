@@ -25,6 +25,7 @@ import javafx.util.Duration;
 import javafx.util.Subscription;
 
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.UUID;
 
 import static dev.ikm.komet.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
@@ -44,7 +45,7 @@ public class ConceptTile extends HBox {
     private final StackPane disclosurePane;
     private final Label label;
     private final ConceptNavigatorTooltip tooltip;
-
+    private final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.controls.concept-navigator");
 
     private Subscription subscription;
     private PauseTransition hoverTransition;
@@ -177,7 +178,7 @@ public class ConceptTile extends HBox {
     }
 
     public void updateTooltip() {
-        tooltip.setGraphicText(getConcept().isDefined() ? "Defined Concept" : "Primitive Concept");
+        tooltip.setGraphicText(getConcept().isDefined() ? resources.getString("defined.concept") : resources.getString("primitive.concept"));
         tooltip.getGraphic().pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, getConcept().isDefined());
         Node lookup = label.lookup(".text");
         String description = getConcept().getModel() != null ? getConcept().getModel().description() : "";

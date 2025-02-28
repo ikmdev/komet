@@ -12,6 +12,7 @@ import javafx.scene.control.Skin;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public class KLConceptNavigatorControl extends TreeView<ConceptNavigatorModel> {
@@ -65,16 +66,16 @@ public class KLConceptNavigatorControl extends TreeView<ConceptNavigatorModel> {
         headerProperty.set(value);
     }
 
-    // onDoubleClickProperty
-    private final ObjectProperty<Consumer<ConceptNavigatorModel>> onDoubleClickProperty = new SimpleObjectProperty<>(this, "onDoubleClick");
-    public final ObjectProperty<Consumer<ConceptNavigatorModel>> onDoubleClickProperty() {
-       return onDoubleClickProperty;
+    // onActionProperty
+    private final ObjectProperty<Consumer<List<ConceptNavigatorModel>>> onActionProperty = new SimpleObjectProperty<>(this, "onAction");
+    public final ObjectProperty<Consumer<List<ConceptNavigatorModel>>> onActionProperty() {
+       return onActionProperty;
     }
-    public final Consumer<ConceptNavigatorModel> getOnDoubleClick() {
-       return onDoubleClickProperty.get();
+    public final Consumer<List<ConceptNavigatorModel>> getOnAction() {
+       return onActionProperty.get();
     }
-    public final void setOnDoubleClick(Consumer<ConceptNavigatorModel> value) {
-        onDoubleClickProperty.set(value);
+    public final void setOnAction(Consumer<List<ConceptNavigatorModel>> value) {
+        onActionProperty.set(value);
     }
 
     // activationProperty

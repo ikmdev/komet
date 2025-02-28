@@ -67,8 +67,8 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
 
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (e.getClickCount() == 2 && !isEmpty()) {
-                if (treeView.getOnDoubleClick() != null) {
-                    treeView.getOnDoubleClick().accept(getItem());
+                if (treeView.getOnAction() != null) {
+                    treeView.getOnAction().accept(List.of(getItem()));
                 }
                 e.consume();
             }

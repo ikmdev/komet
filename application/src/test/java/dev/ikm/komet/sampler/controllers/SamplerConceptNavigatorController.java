@@ -81,21 +81,17 @@ public class SamplerConceptNavigatorController {
     public void initialize() {
         samplerDescription.setText("The Concept Navigator control is a tree view to display a hierarchy of concepts");
         conceptNavigatorControl.setHeader("Concept Header");
-        conceptNavigatorControl.setOnDoubleClick(item -> {
-            Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(item.getModel().publicId()));
-            conceptArea.getChildren().setAll(new Label(entity.entityToString()));
-        });
+        conceptNavigatorControl.setOnAction(items ->
+                populateArea(items.stream()
+                        .map(item -> item.getModel().publicId().asUuidArray())
+                        .toList()));
 
         conceptArea.setOnDragDropped(event -> {
             boolean success = false;
             if (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)) {
                 Dragboard dragboard = event.getDragboard();
                 List<UUID[]> uuids = (List<UUID[]>) dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
-                conceptArea.getChildren().clear();
-                for (UUID[] uuid : uuids) {
-                    Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForUuids(uuid));
-                    conceptArea.getChildren().add(new Label(entity.entityToString()));
-                }
+                populateArea(uuids);
                 success = true;
             }
             event.setDropCompleted(success);
@@ -159,6 +155,14 @@ public class SamplerConceptNavigatorController {
             treeItem.getChildren().addAll(getChildren(navigator, facade));
         }
         return treeItem;
+    }
+
+    private void populateArea(List<UUID[]> uuids) {
+        conceptArea.getChildren().clear();
+        for (UUID[] uuid : uuids) {
+            Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForUuids(uuid));
+            conceptArea.getChildren().add(new Label(entity.entityToString()));
+        }
     }
 
     /**
