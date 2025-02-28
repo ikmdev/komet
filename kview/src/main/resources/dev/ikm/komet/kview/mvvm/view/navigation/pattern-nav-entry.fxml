@@ -15,7 +15,7 @@
    <children>
       <VBox HBox.hgrow="ALWAYS">
          <children>
-            <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="24.0" prefHeight="40.0" prefWidth="332.0" spacing="11.0" VBox.vgrow="NEVER">
+            <HBox fx:id="semanticElementHBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="24.0" prefHeight="40.0" prefWidth="332.0" spacing="11.0" VBox.vgrow="NEVER">
                <children>
                   <ImageView fx:id="identicon" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" />
                   <TextFlow prefWidth="253.0">
