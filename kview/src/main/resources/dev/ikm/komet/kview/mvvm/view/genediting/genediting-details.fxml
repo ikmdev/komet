@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.String?>
+<?import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.Cursor?>
-<?import javafx.scene.Group?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ContextMenu?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.Tooltip?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.Group?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -31,9 +31,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
-
-<?import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl?>
-
+<?import java.lang.String?>
 <BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.genediting.GenEditingDetailsController">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0">
@@ -210,12 +208,16 @@
                                     <Font name="Noto Sans Batak Regular" size="12.0" />
                                  </font>
                                  <content>
-                                    <VBox fx:id="semanticDetailsVBox" maxWidth="1.7976931348623157E308" prefWidth="610.0" styleClass="titled-content-background">
-                                       <styleClass>
-                                          <String fx:value="titled-content-background" />
-                                          <String fx:value="semantic-field-container" />
-                                       </styleClass>
-                                    </VBox>
+                                    <ScrollPane>
+                                       <content>
+                                          <VBox fx:id="semanticDetailsVBox" maxWidth="1.7976931348623157E308" prefWidth="610.0" styleClass="titled-content-background">
+                                             <styleClass>
+                                                <String fx:value="titled-content-background" />
+                                                <String fx:value="semantic-field-container" />
+                                             </styleClass>
+                                          </VBox>
+                                       </content>
+                                    </ScrollPane>
                                  </content>
                               </TitledPane>
                               <Pane>
