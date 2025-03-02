@@ -43,17 +43,13 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Text;
-import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
-import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
@@ -82,7 +78,7 @@ public class PatternNavEntryController {
     private ImageView identicon;
 
     @FXML
-    private Text patternName;
+    private Label patternName;
 
     @FXML
     private Button showContextButton;
@@ -194,7 +190,10 @@ public class PatternNavEntryController {
             private final Label label;
             {
                 setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+
                 label = new Label();
+                label.setMaxWidth(Double.MAX_VALUE);
+                HBox.setHgrow(label, Priority.ALWAYS);
             }
 
             @Override
@@ -258,8 +257,8 @@ public class PatternNavEntryController {
                         if (!entityDescriptionText.isEmpty()) {
                             Image identicon = Identicon.generateIdenticonImage(entity.publicId());
                             ImageView imageView = new ImageView(identicon);
-                            imageView.setFitWidth(24);
-                            imageView.setFitHeight(24);
+                            imageView.setFitWidth(16);
+                            imageView.setFitHeight(16);
                             label.setGraphic(imageView);
                         }
                         HBox hbox = new HBox();
@@ -293,8 +292,10 @@ public class PatternNavEntryController {
 
     private void updateListViewPrefHeight() {
         int itemsNumber = patternInstancesListView.getItems().size();
-        double newPrefHeight = itemsNumber * LIST_VIEW_CELL_SIZE;
+        /* adding a number to LIST_VIEW_CELL_SIZE to account for padding, etc */
+        double newPrefHeight = itemsNumber * (LIST_VIEW_CELL_SIZE + 10);
         double maxHeight = patternInstancesListView.getMaxHeight();
+
         patternInstancesListView.setPrefHeight(Math.min(newPrefHeight, maxHeight));
     }
     private void setUpDraggable(Node node, EntityFacade entity, DragAndDropType dropType) {
