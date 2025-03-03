@@ -62,6 +62,7 @@ import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -70,6 +71,7 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +80,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * utitity class for accessing and modifying common data operations
@@ -303,11 +306,11 @@ public class DataModelHelper {
      * @param fieldRecord
      * @return observableField
      */
-    public static ObservableField<?> obtainObservableField(ViewProperties viewProperties, Latest<SemanticEntityVersion> semanticEntityVersionLatest, FieldRecord<Object> fieldRecord, boolean committed){
+    public static ObservableField<?> obtainObservableField(ViewProperties viewProperties, Latest<SemanticEntityVersion> semanticEntityVersionLatest, FieldRecord<Object> fieldRecord, boolean uncommitted){
         ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
         ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
         ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
-        if(!committed || observableSemanticVersionImmutableList == null || observableSemanticVersionImmutableList.isEmpty()){
+        if(uncommitted || observableSemanticVersionImmutableList == null || observableSemanticVersionImmutableList.isEmpty()){
             //Get the latest version which is uncommited version
             ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
             return observableFields.get(fieldRecord.fieldIndex());
@@ -319,7 +322,7 @@ public class DataModelHelper {
             AtomicReference<ImmutableList<ObservableField>> observableFields = new AtomicReference<>();
             //If no historic data is available then return the last uncommited value, this is true when creating a new Semantic.
             if(observableSemanticVersionList.isEmpty()){
-              return obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, false);
+              return obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, true);
             }
             //Get the 1st version value of the matched stamp
             ObservableSemanticVersion observableSemanticVersion = observableSemanticVersionList.getFirst();
@@ -331,5 +334,41 @@ public class DataModelHelper {
 
             return observableFields.get().get(fieldRecord.fieldIndex());
         }
+    }
+
+    /**
+     * This method will return the latest commited version.
+     * //TODO this method can be generalized to return latest<EntityVersion> As of now it is just returning SemanticEntityVersion.
+     *
+     * @return entityVersionLatest
+     * */
+    public static Latest<SemanticEntityVersion> retriveCommittedLatestVersion(EntityFacade entityFacade) {
+        Latest<SemanticEntityVersion> entityVersionLatest = null;
+        if (entityFacade != null) {
+            Entity entity = Entity.getFast(entityFacade);
+            IntStream intstream =  entity.stampNids().intStream().filter(p -> {
+                StampEntity stampEntity = Entity.getStamp(p);
+                return stampEntity.time() != Long.MAX_VALUE;
+            });
+
+            entityVersionLatest = new Latest(entity.getVersion(intstream.max().getAsInt()).get());
+        }
+        return entityVersionLatest;
+    }
+
+    public static void createMissingFieldTransaction(SemanticRecord semanticRecord, StampRecord stamp, SemanticVersionRecord version){
+        MutableList fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
+        // Create transaction
+        Transaction t = Transaction.make();
+        // newStamp already written to the entity store.
+        StampEntity newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), version.entity());
+
+        // Create new version...
+        SemanticVersionRecord newVersion = version.with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
+
+        SemanticRecord analogue = semanticRecord.with(newVersion).build();
+
+        // Entity provider will broadcast the nid of the changed entity.
+        Entity.provider().putEntity(analogue);
     }
 }
