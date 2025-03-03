@@ -32,7 +32,6 @@ import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampRecord;
@@ -75,8 +74,10 @@ public class SemanticFieldsController {
 
     private List<ObservableField<?>> observableFields = new ArrayList<>();
 
+    private boolean updateStampVersions;
+
     private ChangeListener fieldPropertyChangeListner  = (obs, oldValue, newValue) -> {
-        if(newValue instanceof FieldRecord<?> fieldRecord){
+        if(updateStampVersions){
            updateStampVersionsNidsForAllFields();
         }
     };
@@ -89,7 +90,7 @@ public class SemanticFieldsController {
         // clear all semantic details.
         editFieldsVBox.setSpacing(8.0);
         editFieldsVBox.getChildren().clear();
-
+        updateStampVersions = true;
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         if (semantic != null) {
             StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
@@ -132,18 +133,22 @@ public class SemanticFieldsController {
         });
     }
 
+    private int counter = 0;
     private void updateStampVersionsNidsForAllFields() {
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
-
+        updateStampVersions = false;
         semanticEntityVersionLatest.ifPresent(ver -> {
             int latestStampNid = ver.stamp().nid();
             observableFields.forEach(observableField -> {
+                counter++;
+                System.out.println(" THIS METHOD IS GETTING CALLED " +  counter +" time!");
                 //Update the stampNid with the latest stamp nid value.
                 observableField.fieldProperty().set(observableField.field().withSemanticVersionStampNid(latestStampNid));
             });
         });
+        updateStampVersions = true;
     }
 
     private static Separator createSeparator() {

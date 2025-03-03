@@ -135,7 +135,7 @@ public class KlFieldHelper {
 
             // In edit view when we load uncommited data, we need to check if the transactions exists.
             if(editable){
-                checkUncommitedTransactions(writeObservableField.field());
+                checkUncommitedTransactions(observableField.field());
             }
 
             // TODO: this method below will be removed once the database has the capability to add and edit Image data types

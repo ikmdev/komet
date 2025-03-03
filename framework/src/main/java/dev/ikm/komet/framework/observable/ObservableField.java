@@ -80,7 +80,7 @@ public class ObservableField<T> implements Field<T> {
         MutableList fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
         fieldsForNewVersion.set(fieldIndex(), newValue);
 
-        if (stamp.lastVersion().committed()) {
+        if (stamp.lastVersion().committed() && Transaction.forVersion(version).isEmpty()) {
 
             // Create transaction
             Transaction t = Transaction.make();
