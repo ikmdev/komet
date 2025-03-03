@@ -92,7 +92,11 @@ public class ConceptPatternNavController {
     @FXML
     public void initialize() {
         patternNavigationPane = new ScrollPane();
+        patternNavigationPane.setFitToWidth(true);
+        patternNavigationPane.getStyleClass().add("pattern-navigation-scroll-pane");
+
         patternsVBox = new VBox();
+        patternsVBox.getStyleClass().add("pattern-navigation-container");
 
         patternNavigationPane.setContent(patternsVBox);
         patternsVBox.getChildren().clear();
@@ -129,7 +133,6 @@ public class ConceptPatternNavController {
                     NumberFormat numberFormat = NumberFormat.getInstance();
                     patternChildren.add(numberFormat.format(childCount.get() - maxChildrenInPatternViewer) + " additional semantics suppressed...");
                 }
-                boolean hasChildren = childCount.get() > 0;
 
                 Platform.runLater(() -> {
                     // load the pattern entry FXML and controller
@@ -143,17 +146,13 @@ public class ConceptPatternNavController {
                             );
 
                     JFXNode<Pane, PatternNavEntryController> patternNavEntryJFXNode = FXMLMvvmLoader.make(patternInstanceConfig);
-                    HBox patternHBox = (HBox) patternNavEntryJFXNode.node();
 
-                    patternsVBox.setSpacing(4); // space between pattern entries
-                    patternHBox.setAlignment(Pos.CENTER);
-                    Region leftPadding = new Region();
-                    leftPadding.setPrefWidth(12); // pad each entry with an empty region
-                    leftPadding.setPrefHeight(1);
+                    HBox patternHBox = (HBox) patternNavEntryJFXNode.node();
+                    patternHBox.getStyleClass().add("pattern-instance-container");
 
                     setUpDraggable(patternHBox, patternItem, PATTERN);
 
-                    patternsVBox.getChildren().addAll(new HBox(leftPadding, patternHBox));
+                    patternsVBox.getChildren().add(patternHBox);
                 });
             });
         });
