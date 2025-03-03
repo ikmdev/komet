@@ -208,4 +208,7 @@ public class ConceptPatternNavController {
         });
     }
 
+    public void toggleConcepts() {
+        conceptsToggleButton.setSelected(true);
+    }
 }

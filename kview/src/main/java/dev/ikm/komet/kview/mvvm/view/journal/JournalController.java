@@ -373,6 +373,9 @@ public class JournalController {
                 LOG.error("Unable to process event: ", e);
             }
             navigatorToggleButton.setSelected(true);
+
+            // toggle CONCEPTS inside conceptPatternNavController
+            toggleConcepts();
         };
         journalEventBus.subscribe(JOURNAL_TOPIC, ShowNavigationalPanelEvent.class, showNavigationalPanelEventSubscriber);
 
@@ -386,6 +389,10 @@ public class JournalController {
         });
 
         workspace.addEventHandler(MouseEvent.MOUSE_CLICKED, this::onMouseClickedOnDesktopSurfacePane);
+    }
+
+    private void toggleConcepts() {
+        conceptPatternNavController.toggleConcepts();
     }
 
     private void onMouseClickedOnDesktopSurfacePane(MouseEvent mouseEvent) {
