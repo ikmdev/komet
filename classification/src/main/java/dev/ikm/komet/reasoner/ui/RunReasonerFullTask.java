@@ -15,32 +15,26 @@
  */
 package dev.ikm.komet.reasoner.ui;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
-import dev.ikm.tinkar.common.service.TrackingCallable;
+import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.reasoner.service.ClassifierResults;
 import dev.ikm.tinkar.reasoner.service.ReasonerService;
 
-public class LoadDataTask extends TrackingCallable<ReasonerService> {
+public class RunReasonerFullTask extends RunReasonerTaskBase {
 
-	private static final Logger LOG = LoggerFactory.getLogger(LoadDataTask.class);
+	public RunReasonerFullTask(ReasonerService reasonerService, Consumer<ClassifierResults> classifierResultsConsumer) {
+		super(reasonerService, classifierResultsConsumer);
 
-	private final ReasonerService reasonerService;
-
-	public LoadDataTask(ReasonerService reasonerService) {
-		super(true, true);
-		this.reasonerService = reasonerService;
-		updateTitle("Loading data into reasoner");
 	}
 
-	@Override
-	protected ReasonerService compute() throws Exception {
-		reasonerService.extractData();
-		reasonerService.loadData();
-		String msg = "Load in " + durationString();
-		updateMessage(msg);
-		LOG.info(msg);
-		return reasonerService;
+	protected void loadData(int workDone) throws Exception {
+		updateMessage("Step " + workDone + ": Loading data into reasoner");
+		LoadDataTask task = new LoadDataTask(reasonerService);
+		Future<ReasonerService> future = TinkExecutor.threadPool().submit(task);
+		future.get();
+		updateProgress(workDone);
 	}
 
 }
