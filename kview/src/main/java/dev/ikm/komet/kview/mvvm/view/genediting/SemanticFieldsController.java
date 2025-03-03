@@ -20,6 +20,7 @@ import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
+import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -33,7 +34,9 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
+import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
@@ -41,16 +44,21 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Separator;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class SemanticFieldsController {
 
@@ -79,6 +87,8 @@ public class SemanticFieldsController {
     };
     private EntityFacade semantic;
 
+    private List<Node> nodes = new ArrayList<>();
+
     @FXML
     private void initialize() {
         // clear all semantic details.
@@ -93,14 +103,36 @@ public class SemanticFieldsController {
                 // Populate the Semantic Details
                 // Displaying editable controls and populating the observable fields array list.
                 observableFields.addAll(KlFieldHelper
-                        .displayEditableSemanticFields(getViewProperties(),
-                                editFieldsVBox,
-                                semanticEntityVersionLatest));
-                observableFields.forEach(observableField -> observableField.fieldProperty().addListener(fieldPropertyChangeListner));
+                        .generateObservableFieldsAndNodes(getViewProperties(),
+                                nodes,
+                                semanticEntityVersionLatest, true));
+                editFieldsVBox.getChildren().clear();
             } else {
                 // TODO Add a new semantic based on a pattern (blank fields).
             }
         }
+
+        // subscribe to changes... if the FIELD_INDEX is -1 or unset, then the user clicked the
+        //  pencil icon and wants to edit all the fields
+        // if the FIELD_INDEX is >= 0 then the user chose the context menu of a single field
+        //  to edit that field
+        semanticFieldsViewModel.getObjectProperty(FIELD_INDEX).subscribe(fieldIndex -> {
+            int fieldIdx = (int)fieldIndex;
+            editFieldsVBox.getChildren().clear();
+
+            // single field to edit
+            if (fieldIdx >= 0) {
+                editFieldsVBox.getChildren().add(nodes.get(fieldIdx));
+            } else {
+                // all fields to edit
+                for (int i = 0; i < nodes.size(); i++) {
+                    editFieldsVBox.getChildren().add(nodes.get(i));
+                    if (i < nodes.size() - 1) {
+                        editFieldsVBox.getChildren().add(createSeparator());
+                    }
+                }
+            }
+        });
     }
 
     private void updateStampVersionsNidsForAllFields() {
@@ -115,6 +147,12 @@ public class SemanticFieldsController {
                 observableField.fieldProperty().set(observableField.field().withSemanticVersionStampNid(latestStampNid));
             });
         });
+    }
+
+    private static Separator createSeparator() {
+        Separator separator = new Separator();
+        separator.getStyleClass().add("field-separator");
+        return separator;
     }
 
     public ViewProperties getViewProperties() {

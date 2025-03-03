@@ -42,6 +42,10 @@ import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
@@ -53,6 +57,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -94,8 +99,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.stream.IntStream;
 
 public class GenEditingDetailsController {
 
@@ -104,6 +109,9 @@ public class GenEditingDetailsController {
     public static final URL GENEDITING_PROPERTIES_VIEW_FXML_URL = GenEditingDetailsController.class.getResource("genediting-properties.fxml");
 
     private Consumer<ToggleButton> reasonerResultsControllerConsumer;
+
+    @FXML
+    private KLReadOnlyComponentControl referenceComponent;
 
     @FXML
     private BorderPane detailsOuterBorderPane;
@@ -142,15 +150,6 @@ public class GenEditingDetailsController {
     private TitledPane referenceComponentTitledPane;
 
     @FXML
-    private Label refComponentType;
-
-    @FXML
-    private ImageView refComponentIdenticonImageView;
-
-    @FXML
-    private Label refComponentLabel;
-
-    @FXML
     private TitledPane semanticDetailsTitledPane;
 
     @FXML
@@ -183,6 +182,8 @@ public class GenEditingDetailsController {
 
     private List<ObservableField<?>> observableFields = new ArrayList<>();
 
+    private List<Node> nodes = new ArrayList<>();
+
     /**
      * Stamp Edit
      */
@@ -190,6 +191,8 @@ public class GenEditingDetailsController {
     private StampEditController stampEditController;
 
     private Subscriber<PropertyPanelEvent> propertiesEventSubscriber;
+
+    private Latest<SemanticEntityVersion> semanticEntityVersionLatest;
 
     public GenEditingDetailsController() {
     }
@@ -202,8 +205,8 @@ public class GenEditingDetailsController {
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
-        Latest<SemanticEntityVersion> semanticEntityVersionLatest = retriveUncommittedLatestVersion();
-        if(semanticEntityVersionLatest != null){
+        if (semantic != null) {
+            semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
             semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
                 Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
                 patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
@@ -215,6 +218,7 @@ public class GenEditingDetailsController {
                 });
             });
         } else {
+            semanticEntityVersionLatest = null;
             semanticDescriptionLabel.setText("New Semantic no Pattern associated.");
         }
 
@@ -226,8 +230,36 @@ public class GenEditingDetailsController {
         setupReferenceComponentUI(semanticEntityVersionLatest);
 
         // Populate the Semantic Details
-        //setupSemanticDetailsUI(semanticEntityVersionLatest);
-        observableFields.addAll(KlFieldHelper.displayReadOnlySemanticFields(getViewProperties(), semanticDetailsVBox, semanticEntityVersionLatest));
+
+        // populate the observable fields and nodes for this semantic
+        observableFields.addAll(KlFieldHelper
+                .generateObservableFieldsAndNodes(getViewProperties(),
+                        nodes,
+                        semanticEntityVersionLatest, false));
+
+        // function to apply for the components' edit action (a.k.a. right click > Edit)
+        BiFunction<Node, Integer, Runnable> editAction = (node, fieldIndex) ->
+                () -> {
+                    final EntityVersion finalEntityVersion = getSemanticVersion().get();
+                    EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                            new PropertyPanelEvent(node, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
+                    EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                            new PropertyPanelEvent(node, OPEN_PANEL));
+                };
+
+        // add setEditOnAction
+        for (int index = 0; index < nodes.size(); index++) {
+            Node node = nodes.get(index);
+            if (node instanceof KLReadOnlyBaseControl klReadOnlyBaseControl) {
+                klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index));
+            } else if (node instanceof KLReadOnlyComponentSetControl klReadOnlyComponentSetControl) {
+                klReadOnlyComponentSetControl.setOnEditAction(editAction.apply(klReadOnlyComponentSetControl, index));
+            } else if (node instanceof KLReadOnlyComponentListControl klReadOnlyComponentListControl) {
+                klReadOnlyComponentListControl.setOnEditAction(editAction.apply(klReadOnlyComponentListControl, index));
+            }
+            semanticDetailsVBox.getChildren().add(node);
+        }
+
         // Setup Properties Bump out view.
         setupProperties();
 
@@ -267,6 +299,14 @@ public class GenEditingDetailsController {
 
             semanticEntityVersionLatest = new Latest(semanticEntity.getVersion(intstream.max().getAsInt()).get());
         }
+        return semanticEntityVersionLatest;
+    }
+
+    private void setSemanticVersion(Latest<SemanticEntityVersion> semanticEntityVersionLatest) {
+        this.semanticEntityVersionLatest = semanticEntityVersionLatest;
+    }
+
+    private Latest<SemanticEntityVersion> getSemanticVersion() {
         return semanticEntityVersionLatest;
     }
 
@@ -335,9 +375,10 @@ public class GenEditingDetailsController {
                 case PatternFacade ignored -> "Pattern";
                 default -> "Unknown";
             };
-            refComponentType.setText(refType);
-            refComponentIdenticonImageView.setImage(Identicon.generateIdenticonImage(refComponent2.publicId()));
-            refComponentLabel.setText(refComponent2.description());
+
+            referenceComponent.setIcon(Identicon.generateIdenticonImage(refComponent2.publicId()));
+            referenceComponent.setTitle(refType);
+            referenceComponent.setText(refComponent2.description());
         };
 
         // when ever the property REF_COMPONENT changes update the UI.
@@ -368,6 +409,7 @@ public class GenEditingDetailsController {
                         .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC))
                         .setPropertyValue(WINDOW_TOPIC, genEditingViewModel.getPropertyValue(WINDOW_TOPIC))
                         .setPropertyValue(VIEW_PROPERTIES, genEditingViewModel.getPropertyValue(VIEW_PROPERTIES))
+                        .setPropertyValue(SEMANTIC, genEditingViewModel.getPropertyValue(SEMANTIC))
                 );
 
         JFXNode<BorderPane, PropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(config);
@@ -479,6 +521,14 @@ public class GenEditingDetailsController {
     @FXML
     public void popupStampEdit(ActionEvent event) {
         if (stampEdit != null && stampEditController != null) {
+            // refresh modules
+            stampViewModel.getObservableList(StampViewModel.MODULES_PROPERTY).clear();
+            stampViewModel.getObservableList(StampViewModel.MODULES_PROPERTY).addAll(stampViewModel.findAllModules(getViewProperties()));
+
+            // refresh path
+            stampViewModel.getObservableList(PATHS_PROPERTY).clear();
+            stampViewModel.getObservableList(PATHS_PROPERTY).addAll(stampViewModel.findAllPaths(getViewProperties()));
+
             stampEdit.show((Node) event.getSource());
             stampEditController.selectActiveStatusToggle();
             return;
