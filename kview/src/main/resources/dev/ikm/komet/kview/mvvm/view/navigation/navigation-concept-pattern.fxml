@@ -16,9 +16,9 @@
 <StackPane maxHeight="-Infinity" maxWidth="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1">
       <VBox fx:id="scrollPaneContent" maxHeight="1.7976931348623157E308" prefWidth="372.0" styleClass="grey-vertical-scroll-area">
          <children>
-            <HBox alignment="CENTER" minHeight="-Infinity" prefHeight="56.0">
+            <HBox alignment="CENTER" minHeight="-Infinity">
                <children>
-                  <GridPane HBox.hgrow="ALWAYS">
+                  <GridPane styleClass="concept-pattern-header" HBox.hgrow="ALWAYS">
                     <columnConstraints>
                         <ColumnConstraints hgrow="NEVER" maxWidth="60.0" minWidth="60.0" prefWidth="60.0" />
                       <ColumnConstraints hgrow="ALWAYS" maxWidth="286.0" minWidth="10.0" prefWidth="252.0" />
@@ -63,5 +63,9 @@
             </HBox>
             <BorderPane fx:id="navContentPane" VBox.vgrow="ALWAYS" />
          </children>
+          <styleClass>
+              <String fx:value="concept-pattern-container" />
+              <String fx:value="grey-vertical-scroll-area" />
+          </styleClass>
       </VBox>
 </StackPane>
