@@ -52,7 +52,6 @@ import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
 import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
 import static java.io.File.separator;
 import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
-
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -373,6 +372,9 @@ public class JournalController {
                 LOG.error("Unable to process event: ", e);
             }
             navigatorToggleButton.setSelected(true);
+
+            // toggle CONCEPTS inside conceptPatternNavController
+            conceptPatternNavController.toggleConcepts();
         };
         journalEventBus.subscribe(JOURNAL_TOPIC, ShowNavigationalPanelEvent.class, showNavigationalPanelEventSubscriber);
 
