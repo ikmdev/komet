@@ -6,9 +6,12 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.PseudoClass;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
@@ -78,6 +81,18 @@ public class ConceptTile extends HBox {
 
         IconRegion treeIconRegion = new IconRegion("icon", "tree");
         StackPane treePane = new StackPane(treeIconRegion);
+        Tooltip treeTooltip = new Tooltip(resources.getString("alternate.parents")) {
+
+            @Override
+            protected void show() {
+                final Bounds bounds = treePane.localToScreen(treePane.getBoundsInLocal());
+                Point2D anchor = new Point2D(bounds.getMaxX() + 2, bounds.getMinY());
+                setAnchorX(anchor.getX());
+                setAnchorY(anchor.getY());
+                super.show();
+            }
+        };
+        Tooltip.install(treePane, treeTooltip);
         treePane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             getConcept().setExpanded(!getConcept().isExpanded());
             e.consume();
@@ -94,7 +109,7 @@ public class ConceptTile extends HBox {
         getChildren().addAll(disclosurePane, ellipse, label, spacer, selectPane, treePane);
         getStyleClass().add("concept-tile");
 
-        tooltip = new ConceptNavigatorTooltip(this);
+        tooltip = new ConceptNavigatorTooltip(label);
         tooltip.showDelayProperty().bind(Bindings.createObjectBinding(() ->
                 new Duration(treeView.getActivation()), treeView.activationProperty()));
         tooltip.setHideDelay(Duration.ZERO);

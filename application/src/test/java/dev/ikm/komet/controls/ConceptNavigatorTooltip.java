@@ -14,11 +14,11 @@ import javafx.scene.layout.Region;
 
 public class ConceptNavigatorTooltip extends Tooltip {
 
-    private final Node node;
+    private final Node parent;
     private final Label typeTooltipLabel;
 
     public ConceptNavigatorTooltip(Node node) {
-        this.node = node;
+        this.parent = node.getParent();
 
         Region ellipse = new Region();
         ellipse.getStyleClass().add("tooltip-ellipse");
@@ -43,7 +43,7 @@ public class ConceptNavigatorTooltip extends Tooltip {
 
     @Override
     protected void show() {
-        final Bounds bounds = node.localToScreen(node.getBoundsInLocal());
+        final Bounds bounds = parent.localToScreen(parent.getBoundsInLocal());
         Point2D anchor = new Point2D(bounds.getMinX() + 18, bounds.getMaxY());
         setAnchorX(anchor.getX());
         setAnchorY(anchor.getY());
