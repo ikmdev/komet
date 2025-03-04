@@ -73,10 +73,10 @@ public class ObservableField<T> implements Field<T> {
     }
 
     public void writeToDatabase(Object newValue) {
-        StampRecord stamp = Entity.getStamp(fieldProperty.get().semanticVersionStampNid());
+        StampRecord stamp = Entity.getStamp(fieldProperty.get().versionStampNid());
         // Get current version
-        SemanticVersionRecord version = Entity.getVersionFast(field().semanticNid(), field().semanticVersionStampNid());
-        SemanticRecord semantic = Entity.getFast(field().semanticNid());
+        SemanticVersionRecord version = Entity.getVersionFast(field().nid(), field().versionStampNid());
+        SemanticRecord semantic = Entity.getFast(field().nid());
         MutableList fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
         fieldsForNewVersion.set(fieldIndex(), newValue);
 

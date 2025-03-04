@@ -33,7 +33,7 @@ viewed historically.
 ### Pre-requisites:
 1. Local Git repo and GitBash or similar shell-prompt installed/configured on your local machine.
 2. Set up GitHub by following the [instructions provided here](https://ikmdev.atlassian.net/wiki/spaces/IKM/pages/390201368/GitHub+Account+Creation+IKM+FDA+Shield)
-3. Download and install Open JDK Java 21 or greater [latest version](https://openjdk.org/projects/jdk/)
+3. Download and install Open JDK Java 23 or greater [latest version](https://openjdk.org/projects/jdk/)
 4. Download and install Apache Maven 3.9 or greater [link here](https://maven.apache.org/download.cgi)
 5. Prior to building Komet, there are additional repositories to clone and build. Please use
    the [`tinkar-core` README](https://github.com/ikmdev/tinkar-core/blob/main/README.md) file to build the `tinkar-core`
