@@ -342,7 +342,7 @@ public class DataModelHelper {
      *
      * @return entityVersionLatest
      * */
-    public static Latest<SemanticEntityVersion> retriveCommittedLatestVersion(EntityFacade entityFacade) {
+    public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(EntityFacade entityFacade) {
         Latest<SemanticEntityVersion> entityVersionLatest = null;
         if (entityFacade != null) {
             Entity entity = Entity.getFast(entityFacade);
