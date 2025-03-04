@@ -34,7 +34,7 @@ public class ConceptDetailsStateMachineTest {
     private static final Logger LOG = LoggerFactory.getLogger(ConceptDetailsStateMachineTest.class);
 
     @Test
-    @Disabled("Java 23")
+    // @Disabled("Java 23")
     @DisplayName("Test Concept Details state machine UI flow happy path.")
     void conceptDetailsStateMachineFlowTest() {
         StateMachine sm = StateMachine.create(new ConceptDetailsPattern());
