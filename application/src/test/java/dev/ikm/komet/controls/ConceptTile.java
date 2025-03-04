@@ -78,6 +78,10 @@ public class ConceptTile extends HBox {
 
         IconRegion treeIconRegion = new IconRegion("icon", "tree");
         StackPane treePane = new StackPane(treeIconRegion);
+        treePane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            getConcept().setExpanded(!getConcept().isExpanded());
+            e.consume();
+        });
         treePane.getStyleClass().addAll("region", "tree");
 
         Region ellipse = new Region();
@@ -138,6 +142,8 @@ public class ConceptTile extends HBox {
             if (subscription != null) {
                 subscription.unsubscribe();
             }
+            cell.expandedProperty().unbind();
+            cell.expandedProperty().set(false);
             ConceptNavigatorModel model = get();
             if (model != null) {
                 TreeItem<ConceptNavigatorModel> treeItem = cell.getTreeItem();
@@ -160,6 +166,7 @@ public class ConceptTile extends HBox {
                 String description = model.getModel() != null ? model.getModel().description() : "";
                 label.setText(description);
                 pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, model.isDefined());
+                cell.expandedProperty().bind(model.expandedProperty());
             } else {
                 unselectItem();
                 label.setText(null);

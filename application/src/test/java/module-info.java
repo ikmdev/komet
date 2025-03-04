@@ -33,6 +33,7 @@ module dev.ikm.komet.application.test {
     opens dev.ikm.komet.sampler to javafx.fxml;
     exports dev.ikm.komet.sampler.controllers;
     opens dev.ikm.komet.sampler.controllers to javafx.fxml;
+    exports dev.ikm.komet.controls;
     opens dev.ikm.komet.controls to javafx.fxml;
 
     // TODO Not happy that I have to specify these here... Can't dynamically add modules?

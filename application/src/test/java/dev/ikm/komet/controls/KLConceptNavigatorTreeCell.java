@@ -3,18 +3,16 @@ package dev.ikm.komet.controls;
 import dev.ikm.komet.controls.skin.KLConceptNavigatorTreeCellSkin;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.css.PseudoClass;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.shape.ArcTo;
-import javafx.scene.shape.LineTo;
-import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
@@ -26,6 +24,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
     public static final PseudoClass LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-long-hover");
     private static final PseudoClass BORDER_LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-border-long-hover");
     private static final PseudoClass BORDER_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-border-selected");
+    private static final PseudoClass EXPAND_CONCEPT_PSEUDO_CLASS = PseudoClass.getPseudoClass("expand-concept");
 
     private static final PseudoClass CURVED_LINE_LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-curved-line-long-hover");
     private static final PseudoClass CURVED_LINE_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-curved-line-selected");
@@ -48,7 +47,6 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
 
     private final ConceptTile conceptTile;
     private final KLConceptNavigatorControl treeView;
-    private KLConceptNavigatorTreeCellSkin myTreeCellSkin;
 
     public KLConceptNavigatorTreeCell(KLConceptNavigatorControl treeView) {
         this.treeView = treeView;
@@ -123,7 +121,6 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         if (item != null && !empty) {
             conceptTile.setConcept(item);
             setGraphic(conceptTile);
-            updateConnections();
             updateState(item.getBitSet());
             conceptTile.updateTooltip();
         } else {
@@ -144,86 +141,30 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         }
     }
 
-    private void updateConnections() {
-        TreeItem<ConceptNavigatorModel> treeItem = getTreeItem();
-        if (treeView == null || myTreeCellSkin == null || treeItem == null) {
-            return;
-        }
-
-        List<Path> oldPaths = getChildren().stream()
-                .filter(Path.class::isInstance)
-                .map(Path.class::cast)
-                .toList();
-        int level = getLevel(treeItem);
-        double indent = myTreeCellSkin.getIndent();
-        List<Path> paths = new ArrayList<>();
-        int start = treeView.isShowRoot() ? 1 : 0;
-        for (int i = start; i < level; i++) {
-            double x = 10 + indent * i;
-            if (i < level - 1) {
-                TreeItem<ConceptNavigatorModel> ancestor = getAncestor(treeItem, i + 1);
-                if (ancestor.nextSibling() != null) {
-                    paths.add(getLine(x, "dashed-line"));
-                    paths.add(getLine(x, "solid-line-" + (i - start)));
-                }
-            } else {
-                paths.add(getCurvedLine(x, treeItem.nextSibling() == null, "dashed-curved-line"));
-                paths.add(getLine(x, "solid-line-" + (i - start)));
-                paths.add(getCurvedLine(x, true, "solid-curved-line"));
-            }
-        }
-        if (!oldPaths.equals(paths)) {
-            getChildren().removeAll(oldPaths);
-            getChildren().addAll(paths);
-        }
-    }
-
-    private TreeItem<ConceptNavigatorModel> getAncestor(TreeItem<ConceptNavigatorModel> treeItem, int level) {
-        if (treeItem == null) {
-            return null;
-        }
-        TreeItem<ConceptNavigatorModel> ancestor = treeItem.getParent();
-        while (ancestor != null) {
-            if (getLevel(ancestor) == level) {
-                return ancestor;
-            }
-            ancestor = ancestor.getParent();
-        }
-        return null;
-    }
-
     private int getLevel(TreeItem<ConceptNavigatorModel> treeItem) {
         return treeView.getTreeItemLevel(treeItem) - (treeView.isShowRoot() ? 0 : 1);
     }
 
-    private Path getLine(double x, String styleClass) {
-        Path line = new Path();
-        line.getElements().addAll(new MoveTo(x, 0), new LineTo(x, 24));
-        line.getStyleClass().add(styleClass);
-        return line;
-    }
-
-    private Path getCurvedLine(double x, boolean isLastSibling, String styleClass) {
-        Path curvedLine = new Path();
-        if (isLastSibling) {
-            curvedLine.getElements().addAll(
-                    new MoveTo(x, 0), new LineTo(x, 7),
-                    new ArcTo(5, 5, 90, x + 5, 12, false, false)
-            );
-        } else {
-            curvedLine.getElements().addAll(
-                    new MoveTo(x, 0), new LineTo(x, 24), new MoveTo(x, 7),
-                    new ArcTo(5, 5, 90, x + 5, 12, false, false)
-            );
-        }
-        curvedLine.getStyleClass().add(styleClass);
-        return curvedLine;
-    }
-
     @Override
     protected Skin<?> createDefaultSkin() {
-        myTreeCellSkin = new KLConceptNavigatorTreeCellSkin(this);
-        return myTreeCellSkin;
+        return new KLConceptNavigatorTreeCellSkin(this);
+    }
+
+    // expandedProperty
+    private final BooleanProperty expandedProperty = new SimpleBooleanProperty(this, "expanded") {
+        @Override
+        protected void invalidated() {
+            pseudoClassStateChanged(EXPAND_CONCEPT_PSEUDO_CLASS, get());
+        }
+    };
+    public final BooleanProperty expandedProperty() {
+       return expandedProperty;
+    }
+    public final boolean isExpanded() {
+       return expandedProperty.get();
+    }
+    public final void setExpanded(boolean value) {
+        expandedProperty.set(value);
     }
 
 }

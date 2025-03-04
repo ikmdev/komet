@@ -21,7 +21,6 @@ public class KLConceptNavigatorControl extends TreeView<ConceptNavigatorModel> {
 
     public KLConceptNavigatorControl() {
         setShowRoot(false);
-        setFixedCellSize(24);
         getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         setCellFactory(p -> new KLConceptNavigatorTreeCell(this));

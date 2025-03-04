@@ -86,6 +86,18 @@ public class ConceptNavigatorModel {
         multiParentProperty.set(value);
     }
 
+    // expandedProperty
+    private final BooleanProperty expandedProperty = new SimpleBooleanProperty(this, "expanded");
+    public final BooleanProperty expandedProperty() {
+       return expandedProperty;
+    }
+    public final boolean isExpanded() {
+       return expandedProperty.get();
+    }
+    public final void setExpanded(boolean value) {
+        expandedProperty.set(value);
+    }
+
     private BitSet bitset;
 
     public BitSet getBitSet() {

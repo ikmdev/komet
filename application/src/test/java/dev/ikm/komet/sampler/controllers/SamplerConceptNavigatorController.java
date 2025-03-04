@@ -150,6 +150,8 @@ public class SamplerConceptNavigatorController {
     private static TreeItem<ConceptNavigatorModel> getConceptNavigatorModelTreeItem(Navigator navigator, int nid) {
         ConceptFacade facade = Entity.getFast(nid);
         ConceptNavigatorModel conceptNavigatorModel = new ConceptNavigatorModel(facade);
+        conceptNavigatorModel.setDefined(navigator.getViewCalculator().hasSufficientSet(facade));
+        conceptNavigatorModel.setMultiParent(navigator.getParentNids(nid).length > 1);
         TreeItem<ConceptNavigatorModel> treeItem = new TreeItem<>(conceptNavigatorModel);
         if (!navigator.getChildEdges(facade.nid()).isEmpty()) {
             treeItem.getChildren().addAll(getChildren(navigator, facade));
