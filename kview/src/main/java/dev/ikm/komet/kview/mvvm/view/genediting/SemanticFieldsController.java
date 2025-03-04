@@ -77,6 +77,9 @@ public class SemanticFieldsController {
     private boolean updateStampVersions;
 
     private ChangeListener fieldPropertyChangeListner  = (obs, oldValue, newValue) -> {
+        // This flag is used to avoid unnecessary calling for
+        // method when value for other listeners is updated.
+        // It is similar to refreshProperty in Observable interface.
         if(updateStampVersions){
            updateStampVersionsNidsForAllFields();
         }
@@ -133,7 +136,11 @@ public class SemanticFieldsController {
         });
     }
 
-    private int counter = 0;
+    /***
+     * This method updates stamps for all the fields to avoid contradictions.
+     * An alternate approach could be to use Semantic contradictions
+     * for each field and pick up the latest value for each contradiction?
+     */
     private void updateStampVersionsNidsForAllFields() {
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
@@ -142,9 +149,7 @@ public class SemanticFieldsController {
         semanticEntityVersionLatest.ifPresent(ver -> {
             int latestStampNid = ver.stamp().nid();
             observableFields.forEach(observableField -> {
-                counter++;
-                System.out.println(" THIS METHOD IS GETTING CALLED " +  counter +" time!");
-                //Update the stampNid with the latest stamp nid value.
+                 //Update the stampNid with the latest stamp nid value.
                 observableField.fieldProperty().set(observableField.field().withSemanticVersionStampNid(latestStampNid));
             });
         });
