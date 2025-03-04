@@ -209,7 +209,7 @@
                                     <Font name="Noto Sans Batak Regular" size="12.0" />
                                  </font>
                                  <content>
-                                    <ScrollPane>
+                                    <ScrollPane styleClass="semantic-details-scroll">
                                        <content>
                                           <VBox fx:id="semanticDetailsVBox" maxWidth="1.7976931348623157E308" prefWidth="610.0" styleClass="titled-content-background">
                                              <styleClass>
