@@ -5082,6 +5082,14 @@ Styling a context menu for kview ui/ux controls
     -fx-border-color: transparent;
 }
 
+.semantic-details-scroll.scroll-pane > .scroll-bar:vertical {
+    -fx-pref-height: 410px;
+    -fx-pref-width: 8px;
+    -fx-border-radius: 6;
+    -fx-border-style: solid;
+    -fx-border-color: -Grey-1;
+}
+
 /*******************************************************************************
  *                                                                             *
  * KL Controls Context Menu                                                    *
