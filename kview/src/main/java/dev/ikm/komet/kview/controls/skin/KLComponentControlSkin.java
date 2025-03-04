@@ -187,6 +187,12 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         });
 
         control.setOnDragDropped(event -> {
+            if (isDuplicateInParentSet(control, event)) {
+                event.setDropCompleted(false);
+                event.consume();
+                return;
+            }
+
             Dragboard dragboard = event.getDragboard();
             if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT) &&
                     event.getGestureSource() instanceof KLComponentControl cc && haveAllowedDND(control, cc)) {
