@@ -62,7 +62,6 @@ import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -71,7 +70,6 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -356,19 +354,4 @@ public class DataModelHelper {
         return entityVersionLatest;
     }
 
-    public static void createMissingFieldTransaction(SemanticRecord semanticRecord, StampRecord stamp, SemanticVersionRecord version){
-        MutableList fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
-        // Create transaction
-        Transaction t = Transaction.make();
-        // newStamp already written to the entity store.
-        StampEntity newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), version.entity());
-
-        // Create new version...
-        SemanticVersionRecord newVersion = version.with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
-
-        SemanticRecord analogue = semanticRecord.with(newVersion).build();
-
-        // Entity provider will broadcast the nid of the changed entity.
-        Entity.provider().putEntity(analogue);
-    }
 }
