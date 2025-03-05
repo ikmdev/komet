@@ -337,6 +337,7 @@ public class DataModelHelper {
     /**
      * This method will return the latest commited version.
      * //TODO this method can be generalized to return latest<EntityVersion> As of now it is just returning SemanticEntityVersion.
+     * // TODO need to implement logic for create Semantic.
      *
      * @return entityVersionLatest
      * */
