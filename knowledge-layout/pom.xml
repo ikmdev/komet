@@ -6,7 +6,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.48.0-SNAPSHOT</version>
+        <version>1.48.0-IIA-1558-Duplicate-Concept-List-SNAPSHOT</version>
     </parent>
 
     <artifactId>knowledge-layout</artifactId>
