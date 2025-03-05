@@ -27,6 +27,7 @@ import one.jpro.platform.auth.core.basic.UsernamePasswordCredentials;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -276,6 +277,7 @@ public class LoginUTestFX {
      * that the username error label is empty.
      */
     @Test
+    // @Disabled("Java 23")
     public void testValidEmail() {
         enterUsername("user@example.com");
 
@@ -297,6 +299,7 @@ public class LoginUTestFX {
      * @param expectedAuthError the expected error message for authentication
      */
     @ParameterizedTest
+    // @Disabled("Java 23")
     @MethodSource("inputValidationProvider")
     public void testInputValidation(String username, String password, String expectedUsernameError, String expectedPasswordError, String expectedAuthError) {
         enterUsername(username);
@@ -339,6 +342,7 @@ public class LoginUTestFX {
      * @param user the valid user credentials to test
      */
     @ParameterizedTest
+    // @Disabled("Java 23")
     @MethodSource("validUsersCredentialsProvider")
     public void testSuccessfulAuthentication(UsernamePasswordCredentials user) {
         enterUsername(user.getUsername());
