@@ -21,12 +21,12 @@ import org.eclipse.collections.api.list.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AlternateView extends VBox {
+public class LineageBox extends VBox {
 
     private final StackPane closePane;
     private final KLConceptNavigatorControl conceptNavigator;
 
-    public AlternateView(KLConceptNavigatorControl conceptNavigator) {
+    public LineageBox(KLConceptNavigatorControl conceptNavigator) {
         this.conceptNavigator = conceptNavigator;
         IconRegion closeIconRegion = new IconRegion("icon", "close");
         closePane = new StackPane(closeIconRegion);
@@ -40,7 +40,7 @@ public class AlternateView extends VBox {
         closePane.setManaged(false);
         getChildren().add(closePane);
 
-        getStyleClass().add("alternate-view");
+        getStyleClass().add("lineage-box");
         setManaged(false);
     }
 
@@ -76,7 +76,7 @@ public class AlternateView extends VBox {
                             chevStackPane.getStyleClass().add("region");
                             Label label = new Label(extraParentItem.getModel().description(), chevStackPane);
                             label.pseudoClassStateChanged(PseudoClass.getPseudoClass("collapsed"), true);
-                            label.getStyleClass().add("alternate-label");
+                            label.getStyleClass().add("lineage-label");
                             getChildren().add(label);
                         }
                     }

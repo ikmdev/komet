@@ -527,7 +527,7 @@
     -fx-shape: "M4.16699 1.66602C2.78628 1.66602 1.66699 2.7853 1.66699 4.16602V15.8327C1.66699 17.2134 2.78628 18.3327 4.16699 18.3327H15.8337C17.2144 18.3327 18.3337 17.2134 18.3337 15.8327V4.16602C18.3337 2.7853 17.2144 1.66602 15.8337 1.66602H4.16699ZM3.33366 4.16602C3.33366 3.70578 3.70675 3.33268 4.16699 3.33268H15.8337C16.2939 3.33268 16.667 3.70578 16.667 4.16602V15.8327C16.667 16.2929 16.2939 16.666 15.8337 16.666H4.16699C3.70675 16.666 3.33366 16.2929 3.33366 15.8327V4.16602ZM9.74512 5.39201C8.40642 5.39201 7.34928 6.4446 7.34928 7.78784C7.34928 8.6043 7.72038 9.32078 8.30343 10.0341S9.70177 11.4851 10.6578 12.352L10.665 12.3585L11.4326 13.0574L12.2008 12.3581L12.2074 12.352C13.1634 11.4851 13.9838 10.7412 14.5618 10.0341S15.5159 8.6043 15.5159 7.78784C15.5159 6.4446 14.4588 5.39201 13.1201 5.39201C12.4917 5.39201 11.8882 5.63488 11.4326 6.03321C10.9771 5.63488 10.3736 5.39201 9.74512 5.39201ZM8.76595 7.78784C8.76595 7.22194 9.17921 6.80868 9.74512 6.80868S10.6272 7.1065 10.7733 7.48138L10.856 7.69368H12.0092L12.0919 7.48138C12.238 7.1065 12.6722 6.80868 13.1201 6.80868S14.0993 7.22194 14.0993 7.78784S13.8713 8.66708 13.3675 9.25579C12.9017 9.80011 12.2439 10.4054 11.4309 11.1423C10.6196 10.4055 9.96279 9.80023 9.49737 9.25591S8.76595 8.20672 8.76595 7.78784Z";
 }
 
-.alternate-view {
+.lineage-box {
     -fx-background-color: #5EA03C, white;
     -fx-background-insets: 0, 2;
     -fx-background-radius: 4 4 0 4, 2 2 0 2;
@@ -538,7 +538,7 @@
     -fx-effect: dropshadow(three-pass-box, #0000001A, 4, 0, 0, 1);
 }
 
-.alternate-view > .region.close {
+.lineage-box > .region.close {
     -fx-background-color: #E1E8F1;
     -fx-background-radius: 4;
     -fx-min-width: 14;
@@ -549,14 +549,14 @@
     -fx-max-height: 14;
 }
 
-.alternate-view > .region.close > .icon.close {
+.lineage-box > .region.close > .icon.close {
     -fx-scale-x: 0.6;
     -fx-scale-y: 0.6;
     -fx-background-color: #545D72;
     -fx-shape: "M11.0837 3.73852L10.2612 2.91602L7.00033 6.17685L3.73949 2.91602L2.91699 3.73852L6.17783 6.99935L2.91699 10.2602L3.73949 11.0827L7.00033 7.82185L10.2612 11.0827L11.0837 10.2602L7.82283 6.99935L11.0837 3.73852Z";
 }
 
-.alternate-view > .alternate-label {
+.lineage-box > .lineage-label {
     -fx-font-family: "Noto Sans";
     -fx-font-weight: 500;
     -fx-font-size: 10;
@@ -564,15 +564,15 @@
     -fx-alignment: center;
 }
 
-.alternate-view > .alternate-label:hover {
+.lineage-box > .lineage-label:hover {
     -fx-underline: true;
 }
 
-.alternate-view > .alternate-label:collapsed {
+.lineage-box > .lineage-label:collapsed {
     -fx-text-fill: #4A7AD2;
 }
 
-.alternate-view > .alternate-label:collapsed > .region {
+.lineage-box > .lineage-label:collapsed > .region {
     -fx-background-color: #6E7989;
     -fx-min-width: 8;
     -fx-pref-width: 8;
@@ -583,13 +583,13 @@
     -fx-background-radius: 8;
 }
 
-.alternate-view > .alternate-label:collapsed > .region > .icon.chevron {
+.lineage-box > .lineage-label:collapsed > .region > .icon.chevron {
     -fx-background-color: white;
     -fx-scale-shape: false;
     -fx-shape: "M4.143 6.15 6.141 8.149 6.495 8.502 6.141 8.856 4.143 10.854 3.435 10.147 5.08 8.502 3.435 6.857Z";
 }
 
-.alternate-view > .alternate-label > .region > .line {
+.lineage-box > .lineage-label > .region > .line {
     -fx-fill: #6E7989;
     -fx-stroke: #6E7989;
 }

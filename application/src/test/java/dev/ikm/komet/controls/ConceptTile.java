@@ -46,7 +46,8 @@ public class ConceptTile extends HBox {
 
     private final IconRegion disclosureIconRegion;
     private final StackPane disclosurePane;
-    private final Label label;
+    private final Label conceptLabel;
+    private final StackPane treePane;
     private final ConceptNavigatorTooltip tooltip;
     private final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.controls.concept-navigator");
 
@@ -80,7 +81,7 @@ public class ConceptTile extends HBox {
         selectPane.getStyleClass().addAll("region", "select");
 
         IconRegion treeIconRegion = new IconRegion("icon", "tree");
-        StackPane treePane = new StackPane(treeIconRegion);
+        treePane = new StackPane(treeIconRegion);
         Tooltip treeTooltip = new Tooltip(resources.getString("alternate.parents")) {
 
             @Override
@@ -97,19 +98,20 @@ public class ConceptTile extends HBox {
             getConcept().setExpanded(!getConcept().isExpanded());
             e.consume();
         });
+        treePane.managedProperty().bind(treePane.visibleProperty());
         treePane.getStyleClass().addAll("region", "tree");
 
         Region ellipse = new Region();
         ellipse.getStyleClass().add("ellipse");
-        label = new Label(null);
-        label.getStyleClass().add("concept-label");
+        conceptLabel = new Label(null);
+        conceptLabel.getStyleClass().add("concept-label");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        getChildren().addAll(disclosurePane, ellipse, label, spacer, selectPane, treePane);
+        getChildren().addAll(disclosurePane, ellipse, conceptLabel, spacer, selectPane, treePane);
         getStyleClass().add("concept-tile");
 
-        tooltip = new ConceptNavigatorTooltip(label);
+        tooltip = new ConceptNavigatorTooltip(conceptLabel);
         tooltip.showDelayProperty().bind(Bindings.createObjectBinding(() ->
                 new Duration(treeView.getActivation()), treeView.activationProperty()));
         tooltip.setHideDelay(Duration.ZERO);
@@ -159,6 +161,7 @@ public class ConceptTile extends HBox {
             }
             cell.expandedProperty().unbind();
             cell.expandedProperty().set(false);
+            treePane.setVisible(false);
             ConceptNavigatorModel model = get();
             if (model != null) {
                 TreeItem<ConceptNavigatorModel> treeItem = cell.getTreeItem();
@@ -179,12 +182,13 @@ public class ConceptTile extends HBox {
                 }));
 
                 String description = model.getModel() != null ? model.getModel().description() : "";
-                label.setText(description);
+                conceptLabel.setText(description);
                 pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, model.isDefined());
                 cell.expandedProperty().bind(model.expandedProperty());
+                treePane.setVisible(model.isMultiParent());
             } else {
                 unselectItem();
-                label.setText(null);
+                conceptLabel.setText(null);
                 pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, false);
             }
         }
@@ -202,7 +206,7 @@ public class ConceptTile extends HBox {
     public void updateTooltip() {
         tooltip.setGraphicText(getConcept().isDefined() ? resources.getString("defined.concept") : resources.getString("primitive.concept"));
         tooltip.getGraphic().pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, getConcept().isDefined());
-        Node lookup = label.lookup(".text");
+        Node lookup = conceptLabel.lookup(".text");
         String description = getConcept().getModel() != null ? getConcept().getModel().description() : "";
         if (lookup instanceof Text labelledText && !labelledText.getText().equals(description)) {
             tooltip.setText(description);

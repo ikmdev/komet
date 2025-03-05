@@ -1,6 +1,6 @@
 package dev.ikm.komet.controls.skin;
 
-import dev.ikm.komet.controls.AlternateView;
+import dev.ikm.komet.controls.LineageBox;
 import dev.ikm.komet.controls.ConceptNavigatorModel;
 import dev.ikm.komet.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.controls.KLConceptNavigatorTreeCell;
@@ -21,14 +21,14 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptNavigato
     private TreeItem<?> treeItem;
     private final KLConceptNavigatorTreeCell treeCell;
     private final TreeView<ConceptNavigatorModel> treeView;
-    private final AlternateView alternateView;
+    private final LineageBox alternateView;
 
     public KLConceptNavigatorTreeCellSkin(KLConceptNavigatorTreeCell treeCell) {
         super(treeCell);
         this.treeCell = treeCell;
         treeItem = treeCell.getTreeItem();
         treeView = treeCell.getTreeView();
-        alternateView = new AlternateView((KLConceptNavigatorControl) treeView);
+        alternateView = new LineageBox((KLConceptNavigatorControl) treeView);
         registerChangeListener(treeCell.treeItemProperty(), e -> {
             if (treeItem != null) {
                 unregisterChangeListeners(treeItem.valueProperty());
