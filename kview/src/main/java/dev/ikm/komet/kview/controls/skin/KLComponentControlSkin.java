@@ -19,10 +19,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.DataFormat;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -135,6 +132,12 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private void setupDragNDrop() {
         KLComponentControl control = getSkinnable();
         control.setOnDragOver(event -> {
+            if (isDuplicateInParentSet(control, event)) {
+                event.acceptTransferModes(TransferMode.NONE);
+                event.consume();
+                return;
+            }
+
             if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT)) {
                 event.acceptTransferModes(TransferMode.MOVE);
             } else if (event.getGestureSource() != control && event.getDragboard().hasString()) {
@@ -150,12 +153,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     if (hasAllowedDND(control)) {
                         aboutToRearrangeHBox.setVisible(true);
                     }
-                } else if (control.getParent() instanceof KLComponentSetControl klComponentSetControl //If the parent if of type KLComponentSetControl then,
-                        && event.getGestureSource() instanceof Node source //Get source
-                        && source.getUserData() instanceof DragAndDropInfo dropInfo // get the dropInfo
-                        && dropInfo.publicId() != null // check for publicID
-                        && klComponentSetControl.getValue().contains(EntityService.get().nidForPublicId(dropInfo.publicId()))) // check if the nid already exists in the set.
-                {
+                } else if (isDuplicateInParentSet(control, event)) {
                     doNotDropBorderPane.setVisible(true);  // show error message.
                 } else {
                     aboutToDropHBox.setVisible(true);
@@ -189,6 +187,12 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         });
 
         control.setOnDragDropped(event -> {
+            if (isDuplicateInParentSet(control, event)) {
+                event.setDropCompleted(false);
+                event.consume();
+                return;
+            }
+
             Dragboard dragboard = event.getDragboard();
             if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT) &&
                     event.getGestureSource() instanceof KLComponentControl cc && haveAllowedDND(control, cc)) {
@@ -227,6 +231,22 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                 }
             }
         });
+    }
+
+    /**
+     * Determines if the dragged concept is already present in the parent {@link KLComponentSetControl}.
+     *
+     * @param control the {@link KLComponentControl} whose parent is checked
+     * @param event   the {@link javafx.scene.input.DragEvent} carrying drag data
+     * @return {@code true} if the concept's {@code publicId} is duplicated in the set;
+     *         {@code false} otherwise
+     */
+    private boolean isDuplicateInParentSet(KLComponentControl control, DragEvent event) {
+        return control.getParent() instanceof KLComponentSetControl klComponentSetControl // If the parent is a KLComponentSetControl
+                && event.getGestureSource() instanceof Node source // and the gesture source is a Node
+                && source.getUserData() instanceof DragAndDropInfo dropInfo // whose user data is DragAndDropInfo
+                && dropInfo.publicId() != null // with a non-null publicId
+                && klComponentSetControl.getValue().contains(EntityService.get().nidForPublicId(dropInfo.publicId())); // that already exists in the set
     }
 
     private boolean hasAllowedDND(KLComponentControl control) {
