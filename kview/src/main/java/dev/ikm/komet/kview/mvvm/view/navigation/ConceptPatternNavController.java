@@ -100,7 +100,12 @@ public class ConceptPatternNavController {
         patternsVBox.getChildren().clear();
 
         // default to classic concept navigation
+        conceptsToggleButton.setSelected(true);
         navContentPane.setCenter(classicConceptNavigator);
+
+        // set up listeners when the toggle button changes
+        conceptsToggleButton.selectedProperty().addListener((observableValue, aBoolean, t1) -> showConcepts());
+        patternsToggleButton.selectedProperty().addListener((observableValue, aBoolean, t1) -> showPatterns());
 
         patternCreationEventSubscriber = (evt) -> {
             LOG.info("A New Pattern has been added/created. Reloading all the Patterns.");
