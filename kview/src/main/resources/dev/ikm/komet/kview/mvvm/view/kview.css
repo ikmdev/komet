@@ -4986,7 +4986,6 @@ Styling a context menu for kview ui/ux controls
 
 /* Semantic Details section - VBox */
 .semantic-field-container {
-    -fx-min-height: 58px;
 
     -fx-spacing: 12px;
 
