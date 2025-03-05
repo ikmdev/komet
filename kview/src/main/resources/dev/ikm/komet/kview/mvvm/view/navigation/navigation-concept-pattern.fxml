@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
       <VBox fx:id="scrollPaneContent" maxHeight="1.7976931348623157E308" prefWidth="372.0" styleClass="grey-vertical-scroll-area">
          <children>
             <HBox alignment="CENTER" minHeight="-Infinity">
@@ -39,7 +39,7 @@
                                     <String fx:value="nav-toggle-left" />
                                  </styleClass>
                               </ToggleButton>
-                              <ToggleButton mnemonicParsing="false" onAction="#showPatterns" prefWidth="103.0" text="PATTERNS" toggleGroup="$conPatToggleGroup">
+                              <ToggleButton fx:id="patternsToggleButton" mnemonicParsing="false" onAction="#showPatterns" prefWidth="103.0" text="PATTERNS" toggleGroup="$conPatToggleGroup">
                                  <styleClass>
                                     <String fx:value="nav-toggle" />
                                     <String fx:value="nav-toggle-right" />
