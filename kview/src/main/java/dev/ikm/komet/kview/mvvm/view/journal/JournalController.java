@@ -471,7 +471,7 @@ public class JournalController {
                     } else if (event.getGestureSource() instanceof MultiParentGraphCell multiParentGraphCell) {
                         conceptFacade = multiParentGraphCell.getItem();
                         dragAndDropType = CONCEPT;
-                    } else if (event.getGestureSource() instanceof Node sourceNode) {
+                    } else if (event.getGestureSource() instanceof Node sourceNode && sourceNode.getUserData() instanceof DragAndDropInfo) {
                         // could be a concept or a pattern
                         DragAndDropInfo dragAndDropInfo = (DragAndDropInfo) sourceNode.getUserData();
                         if (dragAndDropInfo.type().equals(DragAndDropType.CONCEPT)) {
