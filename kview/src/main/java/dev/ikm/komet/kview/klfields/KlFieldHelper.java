@@ -164,11 +164,18 @@ public class KlFieldHelper {
         //check last version uncommited and transaction not created then create missing transaction.
         if(stampRecord.lastVersion().uncommitted() &&  Transaction.forVersion(semanticVersionRecord).isEmpty()){
             SemanticRecord semanticRecord = Entity.getFast(field.semanticNid());
-            createMissingFieldTransaction(semanticRecord, stampRecord, semanticVersionRecord);
+            createFieldTransaction(semanticRecord, stampRecord, semanticVersionRecord);
         }
     }
 
-    public static void createMissingFieldTransaction(SemanticRecord semanticRecord, StampRecord stamp, SemanticVersionRecord version){
+    /***
+     * This method creates a transaction for the given semanticRecord.
+     * // TODO ask Andrew or Keith if a better approach available
+     * @param semanticRecord
+     * @param stamp
+     * @param version
+     */
+    public static void createFieldTransaction(SemanticRecord semanticRecord, StampRecord stamp, SemanticVersionRecord version){
         MutableList fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
         // Create transaction
         Transaction t = Transaction.make();
