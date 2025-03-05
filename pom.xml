@@ -5,7 +5,7 @@
     <parent>
         <groupId>dev.ikm.build</groupId>
         <artifactId>java-parent</artifactId>
-        <version>1.55.0</version>
+        <version>1.58.0</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
@@ -64,13 +64,13 @@
 
         <!-- Utilize for Binding Log4J to SLF4J -->
         <log4j.version>3.0.0-alpha1</log4j.version>
-        <slf4j.version>2.0.13</slf4j.version>
-        <bind-to-slf4j.version>2.0.13</bind-to-slf4j.version>
+        <slf4j.version>2.0.17</slf4j.version>
+        <bind-to-slf4j.version>2.0.17</bind-to-slf4j.version>
 
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
-        <tinkar-composer.version>1.4.0</tinkar-composer.version>
-        <tinkar-core.version>1.84.0</tinkar-core.version>
+        <tinkar-composer.version>1.6.0</tinkar-composer.version>
+        <tinkar-core.version>1.87.0</tinkar-core.version>
 
         <!-- IKM Evrete Variables -->
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
@@ -78,9 +78,9 @@
 
         <!-- JPMS Jar Variables-->
         <tinkar-jpms-deps.groupId>dev.ikm.jpms</tinkar-jpms-deps.groupId>
-        <jpms-roaringbitmap.version>0.9.31-r8</jpms-roaringbitmap.version>
+        <jpms-roaringbitmap.version>0.9.31-r11</jpms-roaringbitmap.version>
         <jpms-record-builder-core.version>36-r7</jpms-record-builder-core.version>
-        <eclipse-collections.version>11.1.0-r12</eclipse-collections.version>
+        <eclipse-collections.version>11.1.0-r13</eclipse-collections.version>
         <eclipse-collections-api.version>11.1.0-r11</eclipse-collections-api.version>
         <jsr305.version>3.0.2-r7</jsr305.version>
 
@@ -95,17 +95,17 @@
 
         <!-- Everything Else -->
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
-        <classgraph.version>4.8.115</classgraph.version>
+        <classgraph.version>4.8.179</classgraph.version>
         <cognitive.version>1.5.1</cognitive.version>
         <fxcomponents.version>1.6.2</fxcomponents.version>
         <axonic.version>1.1.5</axonic.version>
-        <common-java5.version>3.0.0-M9</common-java5.version>
-        <controlsfx.version>11.1.0</controlsfx.version>
+        <common-java5.version>3.5.2</common-java5.version>
+        <controlsfx.version>11.2.1</controlsfx.version>
         <cssfx.version>11.5.1-jpms</cssfx.version>
-        <ikonli.version>12.2.0</ikonli.version>
+        <ikonli.version>12.3.1</ikonli.version>
         <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
-        <jpackage.version>1.6.0</jpackage.version>
-        <mockito.version>5.7.0</mockito.version>
+        <jpackage.version>1.6.6</jpackage.version>
+        <mockito.version>5.15.2</mockito.version>
         <nsmenufx.version>3.1.0</nsmenufx.version>
         <openjfx.version>23.0.1</openjfx.version>
         <scenic-view.version>11.0.2</scenic-view.version>
@@ -121,6 +121,7 @@
             --add-exports=javafx.base/com.sun.javafx.logging=org.testfx.monocle
             --add-opens=javafx.graphics/javafx.scene=org.controlsfx.controls
             --add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
+            --enable-preview
         </commonTestFXArgs>
     </properties>
 
@@ -648,10 +649,11 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <fork>true</fork>
-                    <source>21</source>
-                    <target>21</target>
+                    <source>23</source>
+                    <target>23</target>
                     <compilerArgs>
                         <arg>-parameters</arg>
+                        <arg>--enable-preview</arg>
                     </compilerArgs>
                     <annotationProcessorPaths>
                         <annotationProcessorPath>
