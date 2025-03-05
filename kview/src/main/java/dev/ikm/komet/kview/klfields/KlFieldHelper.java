@@ -5,8 +5,8 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
-import dev.ikm.komet.kview.klfields.componentsetfield.KlComponentSetFieldFactory;
 import dev.ikm.komet.kview.klfields.componentlistfield.KlComponentListFieldFactory;
+import dev.ikm.komet.kview.klfields.componentsetfield.KlComponentSetFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.imagefield.KlImageFieldFactory;
 import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
@@ -17,12 +17,19 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.SemanticRecord;
+import dev.ikm.tinkar.entity.SemanticVersionRecord;
+import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.StampRecord;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.Node;
-import javafx.scene.layout.Pane;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -124,9 +131,14 @@ public class KlFieldHelper {
 
         List<ObservableField<?>> observableFields = new ArrayList<>();
         Consumer<FieldRecord<Object>> generateConsumer = (fieldRecord) -> {
-            ObservableField writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
-            ObservableField observableField = new ObservableField(writeObservableField.field(), false);
+            ObservableField writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, editable);
+            ObservableField observableField = new ObservableField(writeObservableField.field(), editable);
             observableFields.add(observableField);
+
+            // In edit view when we load uncommited data, we need to check if the transactions exists.
+            if(editable){
+                checkUncommitedTransactions(observableField.field());
+            }
 
             // TODO: this method below will be removed once the database has the capability to add and edit Image data types
             // TODO: then all the code will be inside an if clause just like for the other data types.
@@ -139,4 +151,43 @@ public class KlFieldHelper {
         return observableFields;
     }
 
+    /**
+     * This method check for any versions that are uncommited but have missing transactions.
+     *      *
+     * @param field
+     */
+    private static void checkUncommitedTransactions(FieldRecord field) {
+        // Get stamp record for field
+        StampRecord stampRecord = Entity.getStamp(field.semanticVersionStampNid());
+        // Get current version
+        SemanticVersionRecord semanticVersionRecord = Entity.getVersionFast(field.semanticNid(),field.semanticVersionStampNid());
+        //check last version uncommited and transaction not created then create missing transaction.
+        if(stampRecord.lastVersion().uncommitted() &&  Transaction.forVersion(semanticVersionRecord).isEmpty()){
+            SemanticRecord semanticRecord = Entity.getFast(field.semanticNid());
+            createFieldTransaction(semanticRecord, stampRecord, semanticVersionRecord);
+        }
+    }
+
+    /***
+     * This method creates a transaction for the given semanticRecord.
+     * // TODO ask Andrew or Keith if a better approach available
+     * @param semanticRecord
+     * @param stamp
+     * @param version
+     */
+    public static void createFieldTransaction(SemanticRecord semanticRecord, StampRecord stamp, SemanticVersionRecord version){
+        MutableList fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
+        // Create transaction
+        Transaction t = Transaction.make();
+        // newStamp already written to the entity store.
+        StampEntity newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), version.entity());
+
+        // Create new version...
+        SemanticVersionRecord newVersion = version.with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
+
+        SemanticRecord analogue = semanticRecord.with(newVersion).build();
+
+        // Entity provider will broadcast the nid of the changed entity.
+        Entity.provider().putEntity(analogue);
+    }
 }
