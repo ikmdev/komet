@@ -2,6 +2,7 @@ package dev.ikm.komet.controls.skin;
 
 import dev.ikm.komet.controls.AlternateView;
 import dev.ikm.komet.controls.ConceptNavigatorModel;
+import dev.ikm.komet.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.controls.KLConceptNavigatorTreeCell;
 import javafx.scene.Node;
 import javafx.scene.control.TreeItem;
@@ -27,7 +28,7 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptNavigato
         this.treeCell = treeCell;
         treeItem = treeCell.getTreeItem();
         treeView = treeCell.getTreeView();
-        alternateView = new AlternateView();
+        alternateView = new AlternateView((KLConceptNavigatorControl) treeView);
         registerChangeListener(treeCell.treeItemProperty(), e -> {
             if (treeItem != null) {
                 unregisterChangeListeners(treeItem.valueProperty());

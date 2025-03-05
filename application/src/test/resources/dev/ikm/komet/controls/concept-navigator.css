@@ -535,6 +535,7 @@
     -fx-padding: 4;
     -fx-min-height: 26;
     -fx-pref-height: 26;
+    -fx-effect: dropshadow(three-pass-box, #0000001A, 4, 0, 0, 1);
 }
 
 .alternate-view > .region.close {
@@ -553,4 +554,42 @@
     -fx-scale-y: 0.6;
     -fx-background-color: #545D72;
     -fx-shape: "M11.0837 3.73852L10.2612 2.91602L7.00033 6.17685L3.73949 2.91602L2.91699 3.73852L6.17783 6.99935L2.91699 10.2602L3.73949 11.0827L7.00033 7.82185L10.2612 11.0827L11.0837 10.2602L7.82283 6.99935L11.0837 3.73852Z";
+}
+
+.alternate-view > .alternate-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 500;
+    -fx-font-size: 10;
+    -fx-text-fill: #2E3240;
+    -fx-alignment: center;
+}
+
+.alternate-view > .alternate-label:hover {
+    -fx-underline: true;
+}
+
+.alternate-view > .alternate-label:collapsed {
+    -fx-text-fill: #4A7AD2;
+}
+
+.alternate-view > .alternate-label:collapsed > .region {
+    -fx-background-color: #6E7989;
+    -fx-min-width: 8;
+    -fx-pref-width: 8;
+    -fx-max-width: 8;
+    -fx-min-height: 8;
+    -fx-pref-height: 8;
+    -fx-max-height: 8;
+    -fx-background-radius: 8;
+}
+
+.alternate-view > .alternate-label:collapsed > .region > .icon.chevron {
+    -fx-background-color: white;
+    -fx-scale-shape: false;
+    -fx-shape: "M4.143 6.15 6.141 8.149 6.495 8.502 6.141 8.856 4.143 10.854 3.435 10.147 5.08 8.502 3.435 6.857Z";
+}
+
+.alternate-view > .alternate-label > .region > .line {
+    -fx-fill: #6E7989;
+    -fx-stroke: #6E7989;
 }

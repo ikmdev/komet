@@ -29,6 +29,7 @@ import javafx.scene.layout.VBox;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static dev.ikm.komet.app.AppState.RUNNING;
 import static dev.ikm.komet.app.AppState.STARTING;
@@ -36,8 +37,6 @@ import static dev.ikm.komet.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATO
 import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
 
 public class SamplerConceptNavigatorController {
-
-    private static final SimpleObjectProperty<Navigator> navigatorProperty = new SimpleObjectProperty<>();
 
     @FXML
     private Label samplerDescription;
@@ -118,11 +117,11 @@ public class SamplerConceptNavigatorController {
         });
         conceptArea.getStylesheets().add(STYLE);
 
-        navigatorProperty.subscribe((o, n) -> {
+        conceptNavigatorControl.navigatorProperty().subscribe((o, n) -> {
             List<TreeItem<ConceptNavigatorModel>> root = getRoot(n);
             conceptNavigatorControl.setRoot(root.getFirst());
         });
-        LoadDataset.open();
+        LoadDataset.open(conceptNavigatorControl::setNavigator);
     }
 
     private static List<TreeItem<ConceptNavigatorModel>> getRoot(Navigator navigator) {
@@ -176,7 +175,7 @@ public class SamplerConceptNavigatorController {
 
         private LoadDataset() {}
 
-        static void open() {
+        static void open(Consumer<Navigator> consumer) {
             // Load dataset
             PrimitiveData.getControllerOptions().stream()
                     .filter(dsc -> "Open SpinedArrayStore".equals(dsc.controllerName()))
@@ -196,7 +195,7 @@ public class SamplerConceptNavigatorController {
                     ObservableViewNoOverride view = new WindowSettings(windowPreferences).getView();
                     ViewProperties viewProperties = view.makeOverridableViewProperties();
                     Navigator navigator = new ViewNavigator(viewProperties.nodeView());
-                    navigatorProperty.set(navigator);
+                    consumer.accept(navigator);
                 }
             });
             TinkExecutor.threadPool().submit(new LoadDataSourceTask(state));

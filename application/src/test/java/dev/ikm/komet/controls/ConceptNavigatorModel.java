@@ -6,6 +6,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
@@ -84,6 +85,18 @@ public class ConceptNavigatorModel {
     }
     public final void setMultiParent(boolean value) {
         multiParentProperty.set(value);
+    }
+
+    // extraParentsProperty
+    private final ObjectProperty<List<ConceptNavigatorModel>> extraParentsProperty = new SimpleObjectProperty<>(this, "extraParents", new ArrayList<>());
+    public final ObjectProperty<List<ConceptNavigatorModel>> extraParentsProperty() {
+       return extraParentsProperty;
+    }
+    public final List<ConceptNavigatorModel> getExtraParents() {
+       return extraParentsProperty.get();
+    }
+    public final void setExtraParents(List<ConceptNavigatorModel> value) {
+        extraParentsProperty.set(value);
     }
 
     // expandedProperty

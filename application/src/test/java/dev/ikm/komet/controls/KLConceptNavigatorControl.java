@@ -1,6 +1,7 @@
 package dev.ikm.komet.controls;
 
 import dev.ikm.komet.controls.skin.KLConceptNavigatorTreeViewSkin;
+import dev.ikm.komet.navigator.graph.Navigator;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -87,6 +88,18 @@ public class KLConceptNavigatorControl extends TreeView<ConceptNavigatorModel> {
     }
     public final void setActivation(double value) {
         activationProperty.set(value);
+    }
+
+    // navigatorProperty
+    private final ObjectProperty<Navigator> navigatorProperty = new SimpleObjectProperty<>(this, "navigator");
+    public final ObjectProperty<Navigator> navigatorProperty() {
+       return navigatorProperty;
+    }
+    public final Navigator getNavigator() {
+       return navigatorProperty.get();
+    }
+    public final void setNavigator(Navigator value) {
+        navigatorProperty.set(value);
     }
 
     @Override
