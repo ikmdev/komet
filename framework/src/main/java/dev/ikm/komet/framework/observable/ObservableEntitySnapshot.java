@@ -27,9 +27,10 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import java.util.Comparator;
 import java.util.function.Predicate;
 
-public class ObservableEntitySnapshot<OE extends ObservableEntity<OV, EV>,
+public abstract sealed class ObservableEntitySnapshot<OE extends ObservableEntity<OV, EV>,
         OV extends ObservableVersion<EV>,
-        EV extends EntityVersion> {
+        EV extends EntityVersion>
+        permits ObservableConceptSnapshot, ObservablePatternSnapshot, ObservableSemanticSnapshot {
     protected final Latest<OV> latestVersion;
     protected final IntIdCollection latestStampIds;
     protected final IntIdCollection allStampIds;

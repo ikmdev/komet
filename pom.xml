@@ -70,7 +70,7 @@
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.6.0</tinkar-composer.version>
-        <tinkar-core.version>1.87.0</tinkar-core.version>
+        <tinkar-core.version>1.89.0-SNAPSHOT</tinkar-core.version>
 
         <!-- IKM Evrete Variables -->
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
@@ -651,6 +651,7 @@
                     <fork>true</fork>
                     <source>23</source>
                     <target>23</target>
+                    <release>23</release>
                     <compilerArgs>
                         <arg>-parameters</arg>
                         <arg>--enable-preview</arg>

@@ -23,7 +23,7 @@ import dev.ikm.tinkar.entity.ConceptVersionRecord;
 import java.util.Comparator;
 import java.util.function.Predicate;
 
-public class ObservableConceptSnapshot
+public final class ObservableConceptSnapshot
         extends ObservableEntitySnapshot<ObservableConcept, ObservableConceptVersion, ConceptVersionRecord> {
 
     public ObservableConceptSnapshot(ViewCalculator viewCalculator, ObservableConcept entity) {
