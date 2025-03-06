@@ -38,6 +38,7 @@ import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -48,6 +49,7 @@ import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
@@ -74,7 +76,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -299,12 +303,75 @@ public class DataModelHelper {
      * @param viewProperties viewProperties cannot be null. Required to get the calculator.
      * @param semanticEntityVersionLatest
      * @param fieldRecord
-     * @return the observable field
+     * @return observableField
      */
-    public static ObservableField<?> obtainObservableField(ViewProperties viewProperties, Latest<SemanticEntityVersion> semanticEntityVersionLatest, FieldRecord<Object> fieldRecord){
+    public static ObservableField<?> obtainObservableField(ViewProperties viewProperties, Latest<SemanticEntityVersion> semanticEntityVersionLatest, FieldRecord<Object> fieldRecord, boolean uncommitted){
         ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
         ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
-        ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
-        return observableFields.get(fieldRecord.fieldIndex());
+        ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
+        if(uncommitted || observableSemanticVersionImmutableList == null || observableSemanticVersionImmutableList.isEmpty()){
+            //Get the latest version which is uncommited version
+            ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
+            return observableFields.get(fieldRecord.fieldIndex());
+        }else{
+            //Cast to mutable list
+            List<ObservableSemanticVersion> observableSemanticVersionList = new ArrayList<>(observableSemanticVersionImmutableList.castToList());
+            //filter list to have only the latest semantic version passed as argument and remove rest of the entries.
+            observableSemanticVersionList.removeIf(p -> !semanticEntityVersionLatest.stampNids().contains(p.stampNid()));
+            AtomicReference<ImmutableList<ObservableField>> observableFields = new AtomicReference<>();
+            //If no historic data is available then return the last uncommited value, this is true when creating a new Semantic.
+            if(observableSemanticVersionList.isEmpty()){
+              return obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, true);
+            }
+            //Get the 1st version value of the matched stamp
+            ObservableSemanticVersion observableSemanticVersion = observableSemanticVersionList.getFirst();
+            Latest<PatternEntityVersion> latestPatternEntityVersion = viewProperties.calculator().latestPatternEntityVersion(observableSemanticVersion.patternNid());
+            //Get the latest commited fields from patternEntityVersion
+            latestPatternEntityVersion.ifPresent(patternEntityVersion -> {
+                observableFields.set(observableSemanticVersion.fields(patternEntityVersion));
+            });
+
+            return observableFields.get().get(fieldRecord.fieldIndex());
+        }
     }
+
+    /**
+     * This method will return the latest commited version.
+     * //TODO this method can be generalized to return latest<EntityVersion> As of now it is just returning SemanticEntityVersion.
+     * // TODO need to implement logic for create Semantic.
+     *
+     * @return entityVersionLatest
+     * */
+    public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(EntityFacade entityFacade, ViewProperties viewProperties) {
+        AtomicReference<Latest<SemanticEntityVersion>> entityVersionLatest = new AtomicReference<>();
+
+        StampCalculator stampCalculator = viewProperties.calculator().stampCalculator();
+        //retrieve latest semanticVersion
+        Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(entityFacade.nid());
+        ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
+        ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
+        //Get list of previously committed data sorted in latest at the top.
+        ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
+        // Filter out Uncommitted data. Data whose time stamp parameter is Long.MAX_VALUE. and get the 1st available.
+        Optional<ObservableSemanticVersion> observableSemanticVersionOptional = observableSemanticVersionImmutableList.stream().filter(p -> p.stamp().time() != Long.MAX_VALUE).findFirst();
+
+        observableSemanticVersionOptional.ifPresentOrElse( (p) -> {
+            entityVersionLatest.set(new Latest<>(p));
+        }, () -> {entityVersionLatest.set(semanticEntityVersionLatest);});
+
+        return entityVersionLatest.get();
+
+       /* if (entityFacade != null) {
+            Entity entity = Entity.getFast(entityFacade);
+            IntStream intstream =  entity.stampNids().intStream().filter(p -> {
+                StampEntity stampEntity = Entity.getStamp(p);
+                return stampEntity.time() != Long.MAX_VALUE;
+            });
+
+            entityVersionLatest = new Latest(entity.getVersion(intstream.max().getAsInt()).get());
+        }
+        return entityVersionLatest.get(); */
+
+    }
+
 }
