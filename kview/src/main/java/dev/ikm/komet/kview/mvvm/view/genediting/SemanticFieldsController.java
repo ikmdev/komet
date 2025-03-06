@@ -32,6 +32,7 @@ import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampRecord;
@@ -81,7 +82,7 @@ public class SemanticFieldsController {
         // method when value for other listeners is updated.
         // It is similar to refreshProperty in Observable interface.
         if(updateStampVersions){
-           updateStampVersionsNidsForAllFields();
+           updateStampVersionsNidsForAllFields(newValue);
         }
     };
     private EntityFacade semantic;
@@ -141,7 +142,10 @@ public class SemanticFieldsController {
      * An alternate approach could be to use Semantic contradictions
      * for each field and pick up the latest value for each contradiction?
      */
-    private void updateStampVersionsNidsForAllFields() {
+    private void updateStampVersionsNidsForAllFields(Object newValue) {
+        if(newValue instanceof FieldRecord fieldRecord){
+            fieldRecord.versionStampNid();
+        }
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
@@ -150,7 +154,7 @@ public class SemanticFieldsController {
             int latestStampNid = ver.stamp().nid();
             observableFields.forEach(observableField -> {
                  //Update the stampNid with the latest stamp nid value.
-                observableField.fieldProperty().set(observableField.field().withSemanticVersionStampNid(latestStampNid));
+                observableField.fieldProperty().set(observableField.field().withVersionStampNid(latestStampNid));
             });
         });
         updateStampVersions = true;

@@ -158,12 +158,12 @@ public class KlFieldHelper {
      */
     private static void checkUncommitedTransactions(FieldRecord field) {
         // Get stamp record for field
-        StampRecord stampRecord = Entity.getStamp(field.semanticVersionStampNid());
+        StampRecord stampRecord = Entity.getStamp(field.versionStampNid());
         // Get current version
-        SemanticVersionRecord semanticVersionRecord = Entity.getVersionFast(field.semanticNid(),field.semanticVersionStampNid());
+        SemanticVersionRecord semanticVersionRecord = Entity.getVersionFast(field.nid(),field.versionStampNid());
         //check last version uncommited and transaction not created then create missing transaction.
         if(stampRecord.lastVersion().uncommitted() &&  Transaction.forVersion(semanticVersionRecord).isEmpty()){
-            SemanticRecord semanticRecord = Entity.getFast(field.semanticNid());
+            SemanticRecord semanticRecord = Entity.getFast(field.nid());
             createFieldTransaction(semanticRecord, stampRecord, semanticVersionRecord);
         }
     }
