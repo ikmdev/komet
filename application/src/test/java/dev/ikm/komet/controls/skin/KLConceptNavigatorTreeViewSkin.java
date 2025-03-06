@@ -1,10 +1,11 @@
 package dev.ikm.komet.controls.skin;
 
-import dev.ikm.komet.controls.ConceptNavigatorModel;
+import dev.ikm.komet.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.controls.ConceptTile;
 import dev.ikm.komet.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.controls.KLConceptNavigatorTreeCell;
 import dev.ikm.komet.controls.MultipleSelectionContextMenu;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -20,14 +21,12 @@ import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
 import javafx.scene.control.skin.TreeViewSkin;
 import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
@@ -47,12 +46,12 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static dev.ikm.komet.controls.ConceptNavigatorModel.STATE;
-import static dev.ikm.komet.controls.ConceptNavigatorModel.PS_STATE;
+import static dev.ikm.komet.controls.ConceptNavigatorTreeItem.STATE;
+import static dev.ikm.komet.controls.ConceptNavigatorTreeItem.PS_STATE;
 import static dev.ikm.komet.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 import static dev.ikm.komet.controls.KLConceptNavigatorTreeCell.LONG_HOVER_PSEUDO_CLASS;
 
-public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigatorModel> {
+public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> {
 
     private static final PseudoClass MULTIPLE_SELECTION_PSEUDO_CLASS = PseudoClass.getPseudoClass("multiple");
 
@@ -63,16 +62,16 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
     private double x, y;
     private double xMin, yMin, xMax, yMax;
 
-    private final List<ConceptNavigatorModel> draggedItems = new ArrayList<>();
-    private final Map<ConceptNavigatorModel, WritableImage> imageMap = new HashMap<>();
+    private final List<ConceptNavigatorTreeItem> draggedItems = new ArrayList<>();
+    private final Map<ConceptNavigatorTreeItem, WritableImage> imageMap = new HashMap<>();
 
     private MultipleSelectionContextMenu contextMenu;
 
-    public KLConceptNavigatorTreeViewSkin(TreeView<ConceptNavigatorModel> treeView) {
+    public KLConceptNavigatorTreeViewSkin(KLConceptNavigatorControl treeView) {
         super(treeView);
         header = new Label();
         header.getStyleClass().add("concept-header");
-        header.textProperty().bind(((KLConceptNavigatorControl) treeView).headerProperty());
+        header.textProperty().bind(treeView.headerProperty());
         header.visibleProperty().bind(header.textProperty().isNotEmpty());
         header.managedProperty().bind(header.visibleProperty());
 
@@ -88,8 +87,8 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
         draggingBox.setClip(clip);
         getChildren().addAll(header, draggingBox);
 
-        ObservableList<TreeItem<ConceptNavigatorModel>> selectedItems = treeView.getSelectionModel().getSelectedItems();
-        selectedItems.addListener((ListChangeListener<TreeItem<ConceptNavigatorModel>>) c -> {
+        ObservableList<TreeItem<ConceptFacade>> selectedItems = treeView.getSelectionModel().getSelectedItems();
+        selectedItems.addListener((ListChangeListener<TreeItem<ConceptFacade>>) c -> {
             boolean multiple = selectedItems.size() > 1;
             setMultipleSelectionByClicking(multiple);
             if (multiple) {
@@ -100,16 +99,17 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
             while (c.next()) {
                 if (c.wasAdded()) {
                     pseudoClassStateChanged(MULTIPLE_SELECTION_PSEUDO_CLASS, true);
-                    for (TreeItem<ConceptNavigatorModel> item : c.getAddedSubList()) {
-                        getCellForTreeItem(item).ifPresent(cell -> {
+                    for (TreeItem<ConceptFacade> item : c.getAddedSubList()) {
+                        ConceptNavigatorTreeItem model = (ConceptNavigatorTreeItem) item;
+                        getCellForTreeItem(model).ifPresent(cell -> {
                             if (cell.getGraphic() instanceof ConceptTile tile) {
-                                imageMap.put(item.getValue(), tile.getTileSnapshot());
+                                imageMap.put(model, tile.getTileSnapshot());
                             }
                         });
                     }
                 } else if (c.wasRemoved()) {
-                    for (TreeItem<ConceptNavigatorModel> item : c.getRemoved()) {
-                        imageMap.remove(item.getValue());
+                    for (TreeItem<ConceptFacade> item : c.getRemoved()) {
+                        imageMap.remove((ConceptNavigatorTreeItem) item);
                     }
                 }
             }
@@ -149,13 +149,13 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
             if (isMultipleSelectionByClicking()) {
                 draggedItems.clear();
                 draggedItems.addAll(selectedItems.stream()
-                        .map(TreeItem::getValue)
+                        .map(ConceptNavigatorTreeItem.class::cast)
                         .toList());
             }
             if (!draggedItems.isEmpty()) {
                 List<UUID[]> list = draggedItems.stream()
-                        .filter(i -> i.getModel() != null && i.getModel().publicId() != null)
-                        .map(i -> i.getModel().publicId().asUuidArray())
+                        .filter(i -> i.getValue() != null && i.getValue().publicId() != null)
+                        .map(i -> i.getValue().publicId().asUuidArray())
                         .toList();
                 Dragboard dragboard = getSkinnable().startDragAndDrop(TransferMode.COPY_OR_MOVE);
                 ClipboardContent clipboardContent = new ClipboardContent();
@@ -179,7 +179,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
     }
 
     @Override
-    protected VirtualFlow<TreeCell<ConceptNavigatorModel>> createVirtualFlow() {
+    protected VirtualFlow<TreeCell<ConceptFacade>> createVirtualFlow() {
         virtualFlow = new ConceptNavigatorVirtualFlow();
         return virtualFlow;
     }
@@ -263,52 +263,52 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
                 .map(KLConceptNavigatorTreeCell.class::cast)
                 .forEach(KLConceptNavigatorTreeCell::unselectItem);
         List<Integer> statesBits = PS_STATE.getStatesBitRange(state);
-        iterateTree(getSkinnable().getRoot(), item -> {
-            item.getValue().getBitSet().clear(statesBits.getFirst(), statesBits.getLast());
-            markCellDirty(item);
+        iterateTree((ConceptNavigatorTreeItem) getSkinnable().getRoot(), model -> {
+            model.getBitSet().clear(statesBits.getFirst(), statesBits.getLast());
+            markCellDirty(model);
         });
         virtualFlow.requestLayout();
     }
 
-    public void selectAllAncestors(TreeItem<ConceptNavigatorModel> child) {
+    public void selectAllAncestors(ConceptNavigatorTreeItem child) {
         markAllAncestors(child, true);
     }
 
-    public void hoverAllAncestors(TreeItem<ConceptNavigatorModel> child) {
+    public void hoverAllAncestors(ConceptNavigatorTreeItem child) {
         markAllAncestors(child, false);
     }
 
-    private void markAllAncestors(TreeItem<ConceptNavigatorModel> child, boolean select) {
+    private void markAllAncestors(ConceptNavigatorTreeItem child, boolean select) {
         if (isMultipleSelectionByClicking()) {
             return;
         }
-        TreeItem<ConceptNavigatorModel> treeItem = child;
-        while (treeItem != null) {
+        ConceptNavigatorTreeItem model = child;
+        while (model != null) {
             // for each ancestor (including starting one)
-            if (treeItem == child) {
+            if (model == child) {
                 if (!select) {
                     // mark current item as long-hovered
-                    treeItem.getValue().getBitSet().set(PS_STATE.LONG_HOVER.getBit());
+                    model.getBitSet().set(PS_STATE.LONG_HOVER.getBit());
                 }
             } else {
                 // mark ancestor as selected/long-hovered
-                treeItem.getValue().getBitSet().set(select ? PS_STATE.BORDER_SELECTED.getBit() : PS_STATE.BORDER_LONG_HOVER.getBit());
+                model.getBitSet().set(select ? PS_STATE.BORDER_SELECTED.getBit() : PS_STATE.BORDER_LONG_HOVER.getBit());
             }
             // show curved-line
-            treeItem.getValue().getBitSet().set(select ? PS_STATE.CURVED_LINE_SELECTED.getBit() : PS_STATE.CURVED_LINE_LONG_HOVER.getBit());
-            markCellDirty(treeItem);
+            model.getBitSet().set(select ? PS_STATE.CURVED_LINE_SELECTED.getBit() : PS_STATE.CURVED_LINE_LONG_HOVER.getBit());
+            markCellDirty(model);
 
-            int level = getSkinnable().getTreeItemLevel(treeItem) - 2;
+            int level = getSkinnable().getTreeItemLevel(model) - 2;
             if (level >= 0) {
                 // for each previous sibling of this ancestor:
-                TreeItem<ConceptNavigatorModel> previousSibling = treeItem.previousSibling();
+                ConceptNavigatorTreeItem previousSibling = (ConceptNavigatorTreeItem) model.previousSibling();
                 while (previousSibling != null) {
                     // and all expanded descendants if these are expanded
                     applyPseudoClassState(previousSibling, select, level);
-                    previousSibling = previousSibling.previousSibling();
+                    previousSibling = (ConceptNavigatorTreeItem) previousSibling.previousSibling();
                 }
             }
-            treeItem = treeItem.getParent();
+            model = (ConceptNavigatorTreeItem) model.getParent();
         }
         virtualFlow.requestLayout();
 
@@ -317,19 +317,19 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
 
     }
 
-    private void applyPseudoClassState(TreeItem<ConceptNavigatorModel> treeItem, boolean select, int level) {
-        treeItem.getValue().getBitSet().set(select ? PS_STATE.LINE_I_SELECTED.getBit() + level : PS_STATE.LINE_I_LONG_HOVER.getBit() + level);
-        markCellDirty(treeItem);
-        if (treeItem.isExpanded()) {
-            treeItem.getChildren().forEach(i -> applyPseudoClassState(i, select, level));
+    private void applyPseudoClassState(ConceptNavigatorTreeItem model, boolean select, int level) {
+        model.getBitSet().set(select ? PS_STATE.LINE_I_SELECTED.getBit() + level : PS_STATE.LINE_I_LONG_HOVER.getBit() + level);
+        markCellDirty(model);
+        if (model.isExpanded()) {
+            model.getChildren().forEach(i -> applyPseudoClassState((ConceptNavigatorTreeItem) i, select, level));
         }
     }
 
-    private void markCellDirty(TreeItem<ConceptNavigatorModel> treeItem) {
+    private void markCellDirty(ConceptNavigatorTreeItem treeItem) {
         getCellForTreeItem(treeItem).ifPresent(KLConceptNavigatorTreeCell::markCellDirty);
     }
 
-    private Optional<KLConceptNavigatorTreeCell> getCellForTreeItem(TreeItem<ConceptNavigatorModel> treeItem) {
+    private Optional<KLConceptNavigatorTreeCell> getCellForTreeItem(ConceptNavigatorTreeItem treeItem) {
         if (treeItem == null) {
             return Optional.empty();
         }
@@ -340,26 +340,28 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
                 .findFirst();
     }
 
-    private void iterateTree(TreeItem<ConceptNavigatorModel> treeItem, Consumer<TreeItem<ConceptNavigatorModel>> consumer){
-        for (TreeItem<ConceptNavigatorModel> child : treeItem.getChildren()) {
-            consumer.accept(child);
+    private void iterateTree(ConceptNavigatorTreeItem treeItem, Consumer<ConceptNavigatorTreeItem> consumer){
+        for (TreeItem<ConceptFacade> child : treeItem.getChildren()) {
+            ConceptNavigatorTreeItem model = (ConceptNavigatorTreeItem) child;
+            consumer.accept(model);
             if (!child.isLeaf()) {
-                iterateTree(child, consumer);
+                iterateTree(model, consumer);
             }
         }
     }
 
-    private void printTree(TreeItem<ConceptNavigatorModel> treeItem, boolean printAll) {
-        for (TreeItem<ConceptNavigatorModel> child : treeItem.getChildren()) {
-            if (child.isLeaf()) {
-                if (printAll || !child.getValue().getBitSet().isEmpty()) {
-                    System.out.println("-".repeat(getSkinnable().getTreeItemLevel(child)) + " " + child.getValue());
+    private void printTree(ConceptNavigatorTreeItem treeItem, boolean printAll) {
+        for (TreeItem<ConceptFacade> child : treeItem.getChildren()) {
+            ConceptNavigatorTreeItem model = (ConceptNavigatorTreeItem) child;
+            if (model.isLeaf()) {
+                if (printAll || !model.getBitSet().isEmpty()) {
+                    System.out.println("-".repeat(getSkinnable().getTreeItemLevel(model)) + " " + model);
                 }
             } else {
-                if (printAll || !child.getValue().getBitSet().isEmpty()) {
-                    System.out.println("+".repeat(getSkinnable().getTreeItemLevel(child)) + " " + child.getValue());
+                if (printAll || !model.getBitSet().isEmpty()) {
+                    System.out.println("+".repeat(getSkinnable().getTreeItemLevel(model)) + " " + model);
                 }
-                printTree(child, printAll);
+                printTree(model, printAll);
             }
         }
     }
@@ -382,7 +384,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
                             Bounds localBounds = getSkinnable().sceneToLocal(sceneBounds);
                             if (draggingBox.intersects(localBounds)) {
                                 cell.pseudoClassStateChanged(LONG_HOVER_PSEUDO_CLASS, true);
-                                draggedItems.add(cell.getTreeItem().getValue());
+                                draggedItems.add((ConceptNavigatorTreeItem) cell.getTreeItem());
                                 if (sceneBounds.getMinX() < xMin) {
                                     xMin = sceneBounds.getMinX();
                                 }
@@ -398,7 +400,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
                             }
                         }
                     });
-            setupContextMenu(draggedItems.stream().toList());
+            setupContextMenu(draggedItems.stream().map(ConceptNavigatorTreeItem::getValue).toList());
             draggingBox.getElements().clear();
         }
     }
@@ -428,7 +430,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
         } else if (isMultipleSelectionByClicking()) {
             List<ImageView> list = getSkinnable().getSelectionModel().getSelectedItems().stream()
                     .map(item -> {
-                        ImageView imageView = new ImageView(imageMap.get(item.getValue()));
+                        ImageView imageView = new ImageView(imageMap.get((ConceptNavigatorTreeItem) item));
                         imageView.setPreserveRatio(true);
                         return imageView;
                     })
@@ -443,7 +445,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptNavigato
         return null;
     }
 
-    private void setupContextMenu(List<ConceptNavigatorModel> items) {
+    private void setupContextMenu(List<ConceptFacade> items) {
         contextMenu = new MultipleSelectionContextMenu();
         contextMenu.setPopulateMessageAction(e -> {
             if (((KLConceptNavigatorControl) getSkinnable()).getOnAction() != null) {

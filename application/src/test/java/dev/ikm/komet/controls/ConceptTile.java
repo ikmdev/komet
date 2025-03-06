@@ -12,7 +12,6 @@ import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
-import javafx.scene.control.TreeItem;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
@@ -95,7 +94,7 @@ public class ConceptTile extends HBox {
         };
         Tooltip.install(treePane, treeTooltip);
         treePane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            getConcept().setExpanded(!getConcept().isExpanded());
+            getConcept().setViewLineage(!getConcept().isViewLineage());
             e.consume();
         });
         treePane.managedProperty().bind(treePane.visibleProperty());
@@ -125,12 +124,12 @@ public class ConceptTile extends HBox {
             if (!cell.isEmpty()) {
                 Dragboard dragboard = startDragAndDrop(TransferMode.COPY_OR_MOVE);
                 ClipboardContent clipboardContent = new ClipboardContent();
-                ConceptNavigatorModel item = cell.getItem();
-                if (item.getModel() != null && item.getModel().publicId() != null) {
+                ConceptNavigatorTreeItem treeItem = (ConceptNavigatorTreeItem) cell.getTreeItem();
+                if (treeItem.getValue() != null && treeItem.getValue().publicId() != null) {
                     clipboardContent.put(CONCEPT_NAVIGATOR_DRAG_FORMAT,
-                            List.<UUID[]>of(item.getModel().publicId().asUuidArray()));
+                            List.<UUID[]>of(treeItem.getValue().publicId().asUuidArray()));
                 }
-                clipboardContent.putString(item.toString());
+                clipboardContent.putString(treeItem.toString());
                 dragboard.setContent(clipboardContent);
                 dragboard.setDragView(getTileSnapshot());
                 cell.pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, false);
@@ -153,38 +152,37 @@ public class ConceptTile extends HBox {
     }
 
     // conceptProperty
-    private final ObjectProperty<ConceptNavigatorModel> conceptProperty = new SimpleObjectProperty<>(this, "concept") {
+    private final ObjectProperty<ConceptNavigatorTreeItem> conceptProperty = new SimpleObjectProperty<>(this, "concept") {
         @Override
         protected void invalidated() {
             if (subscription != null) {
                 subscription.unsubscribe();
             }
-            cell.expandedProperty().unbind();
-            cell.expandedProperty().set(false);
+            cell.viewLineageProperty().unbind();
+            cell.viewLineageProperty().set(false);
             treePane.setVisible(false);
-            ConceptNavigatorModel model = get();
+            ConceptNavigatorTreeItem model = get();
             if (model != null) {
-                TreeItem<ConceptNavigatorModel> treeItem = cell.getTreeItem();
-                disclosureIconRegion.getStyleClass().setAll("icon", treeItem.isLeaf() ? "leaf" : "disclosure");
-                subscription = treeItem.expandedProperty().subscribe(e -> disclosurePane.pseudoClassStateChanged(EXPANDED_PSEUDO_CLASS, e));
-                subscription = subscription.and(treeItem.leafProperty().subscribe(l -> disclosurePane.pseudoClassStateChanged(LEAF_PSEUDO_CLASS, l)));
+                disclosureIconRegion.getStyleClass().setAll("icon", model.isLeaf() ? "leaf" : "disclosure");
+                subscription = model.expandedProperty().subscribe(e -> disclosurePane.pseudoClassStateChanged(EXPANDED_PSEUDO_CLASS, e));
+                subscription = subscription.and(model.leafProperty().subscribe(l -> disclosurePane.pseudoClassStateChanged(LEAF_PSEUDO_CLASS, l)));
                 subscription = subscription.and(hoverProperty().subscribe(h -> {
                     if (h) {
                         treeViewSkin.unhoverAllItems();
-                        if (treeView.getSelectionModel().getSelectedItem() == treeItem || treeViewSkin.isMultipleSelectionByBoundingBox()) {
+                        if (treeView.getSelectionModel().getSelectedItem() == model || treeViewSkin.isMultipleSelectionByBoundingBox()) {
                             // don't long-hover the selected item or if there's a treeView dragging event
                             return;
                         }
                         hoverTransition = new PauseTransition(new Duration(treeView.getActivation()));
-                        hoverTransition.setOnFinished(e -> treeViewSkin.hoverAllAncestors(treeItem));
+                        hoverTransition.setOnFinished(e -> treeViewSkin.hoverAllAncestors(model));
                         hoverTransition.playFromStart();
                     }
                 }));
 
-                String description = model.getModel() != null ? model.getModel().description() : "";
+                String description = model.getValue() != null ? model.getValue().description() : "";
                 conceptLabel.setText(description);
                 pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, model.isDefined());
-                cell.expandedProperty().bind(model.expandedProperty());
+                cell.viewLineageProperty().bind(model.viewLineageProperty());
                 treePane.setVisible(model.isMultiParent());
             } else {
                 unselectItem();
@@ -193,13 +191,13 @@ public class ConceptTile extends HBox {
             }
         }
     };
-    public final ObjectProperty<ConceptNavigatorModel> conceptProperty() {
+    public final ObjectProperty<ConceptNavigatorTreeItem> conceptProperty() {
        return conceptProperty;
     }
-    public final ConceptNavigatorModel getConcept() {
+    public final ConceptNavigatorTreeItem getConcept() {
        return conceptProperty.get();
     }
-    public final void setConcept(ConceptNavigatorModel value) {
+    public final void setConcept(ConceptNavigatorTreeItem value) {
         conceptProperty.set(value);
     }
 
@@ -207,7 +205,7 @@ public class ConceptTile extends HBox {
         tooltip.setGraphicText(getConcept().isDefined() ? resources.getString("defined.concept") : resources.getString("primitive.concept"));
         tooltip.getGraphic().pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, getConcept().isDefined());
         Node lookup = conceptLabel.lookup(".text");
-        String description = getConcept().getModel() != null ? getConcept().getModel().description() : "";
+        String description = getConcept().getValue() != null ? getConcept().getValue().description() : "";
         if (lookup instanceof Text labelledText && !labelledText.getText().equals(description)) {
             tooltip.setText(description);
         } else {

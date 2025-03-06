@@ -5,12 +5,13 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.control.TreeItem;
 
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-public class ConceptNavigatorModel {
+public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
 
     public static final int MAX_LEVEL = 10;
 
@@ -47,20 +48,8 @@ public class ConceptNavigatorModel {
         }
     }
 
-    public ConceptNavigatorModel(ConceptFacade conceptFacade) {
-        setModel(conceptFacade);
-    }
-
-    // modelProperty
-    private final ObjectProperty<ConceptFacade> modelProperty = new SimpleObjectProperty<>(this, "model");
-    public final ObjectProperty<ConceptFacade> modelProperty() {
-       return modelProperty;
-    }
-    public final ConceptFacade getModel() {
-       return modelProperty.get();
-    }
-    public final void setModel(ConceptFacade value) {
-        modelProperty.set(value);
+    public ConceptNavigatorTreeItem(ConceptFacade conceptFacade) {
+        setValue(conceptFacade);
     }
 
     // definedProperty
@@ -88,27 +77,27 @@ public class ConceptNavigatorModel {
     }
 
     // extraParentsProperty
-    private final ObjectProperty<List<ConceptNavigatorModel>> extraParentsProperty = new SimpleObjectProperty<>(this, "extraParents", new ArrayList<>());
-    public final ObjectProperty<List<ConceptNavigatorModel>> extraParentsProperty() {
+    private final ObjectProperty<List<ConceptNavigatorTreeItem>> extraParentsProperty = new SimpleObjectProperty<>(this, "extraParents", new ArrayList<>());
+    public final ObjectProperty<List<ConceptNavigatorTreeItem>> extraParentsProperty() {
        return extraParentsProperty;
     }
-    public final List<ConceptNavigatorModel> getExtraParents() {
+    public final List<ConceptNavigatorTreeItem> getExtraParents() {
        return extraParentsProperty.get();
     }
-    public final void setExtraParents(List<ConceptNavigatorModel> value) {
+    public final void setExtraParents(List<ConceptNavigatorTreeItem> value) {
         extraParentsProperty.set(value);
     }
 
-    // expandedProperty
-    private final BooleanProperty expandedProperty = new SimpleBooleanProperty(this, "expanded");
-    public final BooleanProperty expandedProperty() {
-       return expandedProperty;
+    // viewLineageProperty
+    private final BooleanProperty viewLineageProperty = new SimpleBooleanProperty(this, "viewLineage");
+    public final BooleanProperty viewLineageProperty() {
+       return viewLineageProperty;
     }
-    public final boolean isExpanded() {
-       return expandedProperty.get();
+    public final boolean isViewLineage() {
+       return viewLineageProperty.get();
     }
-    public final void setExpanded(boolean value) {
-        expandedProperty.set(value);
+    public final void setViewLineage(boolean value) {
+        viewLineageProperty.set(value);
     }
 
     private BitSet bitset;
@@ -122,6 +111,6 @@ public class ConceptNavigatorModel {
 
     @Override
     public String toString() {
-        return "Model[" + modelProperty.get() + (isDefined() ? ", defined" : "") + (isMultiParent() ? ", multiParent" : "") + ", b=" + bitset + "]";
+        return "Model[" + getValue() + (isDefined() ? ", defined" : "") + (isMultiParent() ? ", multiParent" : "") + ", b=" + bitset + "]";
     }
 }

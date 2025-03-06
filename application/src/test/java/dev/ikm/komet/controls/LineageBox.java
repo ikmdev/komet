@@ -6,10 +6,8 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.scene.control.Label;
-import javafx.scene.control.TreeItem;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -33,7 +31,7 @@ public class LineageBox extends VBox {
         closePane.getStyleClass().addAll("region", "close");
         closePane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (getConcept() != null) {
-                getConcept().setExpanded(false);
+                getConcept().setViewLineage(false);
             }
             e.consume();
         });
@@ -45,52 +43,48 @@ public class LineageBox extends VBox {
     }
 
     // conceptProperty
-    private final ObjectProperty<ConceptNavigatorModel> conceptProperty = new SimpleObjectProperty<>(this, "concept") {
+    private final ObjectProperty<ConceptNavigatorTreeItem> conceptProperty = new SimpleObjectProperty<>(this, "concept") {
         @Override
         protected void invalidated() {
-            ConceptNavigatorModel concept = get();
+            ConceptNavigatorTreeItem treeViewItem = get();
             getChildren().removeIf(Label.class::isInstance);
-            if (concept != null) {
-                TreeItem<ConceptNavigatorModel> treeViewItem = getTreeViewItem(conceptNavigator.getRoot(), concept);
-                if (treeViewItem != null) {
-                    TreeItem<ConceptNavigatorModel> parentItem = treeViewItem.getParent();
-                    if (parentItem != null) {
-                        ObservableList<TreeItem<ConceptNavigatorModel>> siblings = parentItem.getChildren();
-                        Navigator navigator = conceptNavigator.getNavigator();
-                        ImmutableList<Edge> allParents = navigator.getParentEdges(concept.getModel().nid());
-                        List<ConceptNavigatorModel> secondaryParents = new ArrayList<>();
+            if (treeViewItem != null) {
+                ConceptNavigatorTreeItem parentItem = (ConceptNavigatorTreeItem) treeViewItem.getParent();
+                if (parentItem != null) {
+                    Navigator navigator = conceptNavigator.getNavigator();
+                    ImmutableList<Edge> allParents = navigator.getParentEdges(treeViewItem.getValue().nid());
+                    List<ConceptNavigatorTreeItem> secondaryParents = new ArrayList<>();
 
-                        for (Edge parentLink : allParents) {
-                            if (allParents.size() == 1 || parentLink.destinationNid() != parentItem.getValue().getModel().nid()) {
-                                ConceptFacade facade = Entity.getFast(parentLink.destinationNid());
-                                ConceptNavigatorModel conceptNavigatorModel = new ConceptNavigatorModel(facade);
-                                conceptNavigatorModel.setDefined(navigator.getViewCalculator().hasSufficientSet(facade));
-                                conceptNavigatorModel.setMultiParent(navigator.getParentNids(facade.nid()).length > 1);
-                                secondaryParents.add(conceptNavigatorModel);
-                            }
+                    for (Edge parentLink : allParents) {
+                        if (allParents.size() == 1 || parentLink.destinationNid() != parentItem.getValue().nid()) {
+                            ConceptFacade facade = Entity.getFast(parentLink.destinationNid());
+                            ConceptNavigatorTreeItem conceptNavigatorTreeItem = new ConceptNavigatorTreeItem(facade);
+                            conceptNavigatorTreeItem.setDefined(navigator.getViewCalculator().hasSufficientSet(facade));
+                            conceptNavigatorTreeItem.setMultiParent(navigator.getParentNids(facade.nid()).length > 1);
+                            secondaryParents.add(conceptNavigatorTreeItem);
                         }
+                    }
 
-                        for (ConceptNavigatorModel extraParentItem : secondaryParents) {
-                            concept.getExtraParents().add(extraParentItem);
-                            StackPane chevStackPane = new StackPane(getLine(0, 0, "line"), new IconRegion("icon", "chevron"));
-                            chevStackPane.getStyleClass().add("region");
-                            Label label = new Label(extraParentItem.getModel().description(), chevStackPane);
-                            label.pseudoClassStateChanged(PseudoClass.getPseudoClass("collapsed"), true);
-                            label.getStyleClass().add("lineage-label");
-                            getChildren().add(label);
-                        }
+                    for (ConceptNavigatorTreeItem extraParentItem : secondaryParents) {
+                        treeViewItem.getExtraParents().add(extraParentItem);
+                        StackPane chevStackPane = new StackPane(getLine(0, 0, "line"), new IconRegion("icon", "chevron"));
+                        chevStackPane.getStyleClass().add("region");
+                        Label label = new Label(extraParentItem.getValue().description(), chevStackPane);
+                        label.pseudoClassStateChanged(PseudoClass.getPseudoClass("collapsed"), true);
+                        label.getStyleClass().add("lineage-label");
+                        getChildren().add(label);
                     }
                 }
             }
         }
     };
-    public final ObjectProperty<ConceptNavigatorModel> conceptProperty() {
+    public final ObjectProperty<ConceptNavigatorTreeItem> conceptProperty() {
        return conceptProperty;
     }
-    public final ConceptNavigatorModel getConcept() {
+    public final ConceptNavigatorTreeItem getConcept() {
        return conceptProperty.get();
     }
-    public final void setConcept(ConceptNavigatorModel value) {
+    public final void setConcept(ConceptNavigatorTreeItem value) {
         conceptProperty.set(value);
     }
 
@@ -100,22 +94,6 @@ public class LineageBox extends VBox {
         double w = closePane.prefWidth(getHeight());
         double h = closePane.prefHeight(getWidth());
         closePane.resizeRelocate(getWidth() - w - getInsets().getRight(), getInsets().getTop(), w, h);
-    }
-
-    private static TreeItem<ConceptNavigatorModel> getTreeViewItem(TreeItem<ConceptNavigatorModel> item, ConceptNavigatorModel value) {
-        if (item == null || item.getChildren() == null) {
-            return null;
-        }
-        if (item.getValue().equals(value)) {
-            return item;
-        }
-        for (TreeItem<ConceptNavigatorModel> child : item.getChildren()) {
-            TreeItem<ConceptNavigatorModel> m = getTreeViewItem(child, value);
-            if (m != null) {
-                return m;
-            }
-        }
-        return null;
     }
 
     private Path getLine(double x, double y, String styleClass) {

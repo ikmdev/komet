@@ -2,6 +2,7 @@ package dev.ikm.komet.controls;
 
 import dev.ikm.komet.controls.skin.KLConceptNavigatorTreeViewSkin;
 import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -10,13 +11,12 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Skin;
-import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-public class KLConceptNavigatorControl extends TreeView<ConceptNavigatorModel> {
+public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
 
     private KLConceptNavigatorTreeViewSkin conceptNavigatorTreeViewSkin;
 
@@ -32,7 +32,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptNavigatorModel> {
             // clean up
             conceptNavigatorTreeViewSkin.unhoverAllItems();
             conceptNavigatorTreeViewSkin.unselectAllItems();
-            TreeItem<ConceptNavigatorModel> selectedItem = getSelectionModel().getSelectedItem();
+            ConceptNavigatorTreeItem selectedItem = (ConceptNavigatorTreeItem) getSelectionModel().getSelectedItem();
             if (selectedItem != null) {
                 conceptNavigatorTreeViewSkin.selectAllAncestors(selectedItem);
             }
@@ -46,7 +46,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptNavigatorModel> {
                 conceptNavigatorTreeViewSkin.unselectAllItems();
             }
             if (n != null) {
-                conceptNavigatorTreeViewSkin.selectAllAncestors(n);
+                conceptNavigatorTreeViewSkin.selectAllAncestors((ConceptNavigatorTreeItem) n);
             }
         });
 
@@ -67,14 +67,14 @@ public class KLConceptNavigatorControl extends TreeView<ConceptNavigatorModel> {
     }
 
     // onActionProperty
-    private final ObjectProperty<Consumer<List<ConceptNavigatorModel>>> onActionProperty = new SimpleObjectProperty<>(this, "onAction");
-    public final ObjectProperty<Consumer<List<ConceptNavigatorModel>>> onActionProperty() {
+    private final ObjectProperty<Consumer<List<ConceptFacade>>> onActionProperty = new SimpleObjectProperty<>(this, "onAction");
+    public final ObjectProperty<Consumer<List<ConceptFacade>>> onActionProperty() {
        return onActionProperty;
     }
-    public final Consumer<List<ConceptNavigatorModel>> getOnAction() {
+    public final Consumer<List<ConceptFacade>> getOnAction() {
        return onActionProperty.get();
     }
-    public final void setOnAction(Consumer<List<ConceptNavigatorModel>> value) {
+    public final void setOnAction(Consumer<List<ConceptFacade>> value) {
         onActionProperty.set(value);
     }
 

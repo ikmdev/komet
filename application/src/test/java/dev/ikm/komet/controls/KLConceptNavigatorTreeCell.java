@@ -1,6 +1,7 @@
 package dev.ikm.komet.controls;
 
 import dev.ikm.komet.controls.skin.KLConceptNavigatorTreeCellSkin;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
@@ -8,7 +9,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.css.PseudoClass;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Path;
@@ -16,15 +16,15 @@ import javafx.scene.shape.Path;
 import java.util.BitSet;
 import java.util.List;
 
-import static dev.ikm.komet.controls.ConceptNavigatorModel.PS_STATE;
-import static dev.ikm.komet.controls.ConceptNavigatorModel.MAX_LEVEL;
+import static dev.ikm.komet.controls.ConceptNavigatorTreeItem.PS_STATE;
+import static dev.ikm.komet.controls.ConceptNavigatorTreeItem.MAX_LEVEL;
 
-public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> {
+public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
 
     public static final PseudoClass LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-long-hover");
     private static final PseudoClass BORDER_LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-border-long-hover");
     private static final PseudoClass BORDER_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-border-selected");
-    private static final PseudoClass EXPAND_CONCEPT_PSEUDO_CLASS = PseudoClass.getPseudoClass("expand-concept");
+    private static final PseudoClass SHOW_LINEAGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("show-lineage");
 
     private static final PseudoClass CURVED_LINE_LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-curved-line-long-hover");
     private static final PseudoClass CURVED_LINE_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-curved-line-selected");
@@ -113,15 +113,16 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
     }
 
     @Override
-    protected void updateItem(ConceptNavigatorModel item, boolean empty) {
+    protected void updateItem(ConceptFacade item, boolean empty) {
         super.updateItem(item, empty);
         getPseudoClassStates().stream()
                 .filter(p -> p.getPseudoClassName().startsWith("cn-"))
                 .forEach(p -> pseudoClassStateChanged(p, false));
         if (item != null && !empty) {
-            conceptTile.setConcept(item);
+            ConceptNavigatorTreeItem model = (ConceptNavigatorTreeItem) getTreeItem();
+            conceptTile.setConcept(model);
             setGraphic(conceptTile);
-            updateState(item.getBitSet());
+            updateState(model.getBitSet());
             conceptTile.updateTooltip();
         } else {
             cleanup();
@@ -135,14 +136,14 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         pseudoClassStateChanged(BORDER_SELECTED_PSEUDO_CLASS, bitSet.get(PS_STATE.BORDER_SELECTED.getBit()));
         pseudoClassStateChanged(CURVED_LINE_LONG_HOVER_PSEUDO_CLASS, bitSet.get(PS_STATE.CURVED_LINE_LONG_HOVER.getBit()));
         pseudoClassStateChanged(CURVED_LINE_SELECTED_PSEUDO_CLASS, bitSet.get(PS_STATE.CURVED_LINE_SELECTED.getBit()));
-        for (int i = 0; i < Math.min(getLevel(getTreeItem()), MAX_LEVEL); i++) {
+        for (int i = 0; i < Math.min(getLevel((ConceptNavigatorTreeItem) getTreeItem()), MAX_LEVEL); i++) {
             pseudoClassStateChanged(LINE_I_LONG_HOVER_PSEUDO_CLASS[i], bitSet.get(PS_STATE.LINE_I_LONG_HOVER.getBit() + i));
             pseudoClassStateChanged(LINE_I_SELECTED_PSEUDO_CLASS[i], bitSet.get(PS_STATE.LINE_I_SELECTED.getBit() + i));
         }
     }
 
-    private int getLevel(TreeItem<ConceptNavigatorModel> treeItem) {
-        return treeView.getTreeItemLevel(treeItem) - (treeView.isShowRoot() ? 0 : 1);
+    private int getLevel(ConceptNavigatorTreeItem model) {
+        return treeView.getTreeItemLevel(model) - (treeView.isShowRoot() ? 0 : 1);
     }
 
     @Override
@@ -150,21 +151,21 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptNavigatorModel> 
         return new KLConceptNavigatorTreeCellSkin(this);
     }
 
-    // expandedProperty
-    private final BooleanProperty expandedProperty = new SimpleBooleanProperty(this, "expanded") {
+    // viewLineageProperty
+    private final BooleanProperty viewLineageProperty = new SimpleBooleanProperty(this, "viewLineage") {
         @Override
         protected void invalidated() {
-            pseudoClassStateChanged(EXPAND_CONCEPT_PSEUDO_CLASS, get());
+            pseudoClassStateChanged(SHOW_LINEAGE_PSEUDO_CLASS, get());
         }
     };
-    public final BooleanProperty expandedProperty() {
-       return expandedProperty;
+    public final BooleanProperty viewLineageProperty() {
+        return viewLineageProperty;
     }
-    public final boolean isExpanded() {
-       return expandedProperty.get();
+    public final boolean isViewLineage() {
+        return viewLineageProperty.get();
     }
-    public final void setExpanded(boolean value) {
-        expandedProperty.set(value);
+    public final void setViewLineage(boolean value) {
+        viewLineageProperty.set(value);
     }
 
 }

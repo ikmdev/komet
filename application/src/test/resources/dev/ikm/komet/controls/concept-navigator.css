@@ -174,8 +174,8 @@
     -fx-background-insets: 0, 2;
 }
 
-.tree-cell:expand-concept > .concept-tile,
-.tree-cell:selected:expand-concept > .concept-tile {
+.tree-cell:show-lineage > .concept-tile,
+.tree-cell:selected:show-lineage > .concept-tile {
     -fx-background-color: #5EA03C, #5EA03C;
     -fx-background-insets: 0, 2;
     -fx-background-radius: 0 0 3 3;
@@ -194,7 +194,7 @@
 .tree-cell:selected:drag-selected > .concept-tile > .concept-label {
     -fx-text-fill: #2E3240;
 }
-.tree-cell:expand-concept > .concept-tile > .concept-label {
+.tree-cell:show-lineage > .concept-tile > .concept-label {
     -fx-text-fill: white;
 }
 
@@ -272,13 +272,13 @@
 .tree-cell > .concept-tile > .region.tree:hover {
     -fx-background-color: transparent, #9DC4FF;
 }
-.tree-cell:expand-concept > .concept-tile > .region.select,
-.tree-cell:expand-concept > .concept-tile > .region.select:hover {
+.tree-cell:show-lineage > .concept-tile > .region.select,
+.tree-cell:show-lineage > .concept-tile > .region.select:hover {
     visibility: hidden;
     -fx-managed: false;
 }
-.tree-cell:expand-concept > .concept-tile > .region.tree,
-.tree-cell:expand-concept > .concept-tile > .region.tree:hover {
+.tree-cell:show-lineage > .concept-tile > .region.tree,
+.tree-cell:show-lineage > .concept-tile > .region.tree:hover {
     -fx-background-color: transparent, #5DCF16;
     -fx-background-radius: 2;
 }
@@ -356,8 +356,8 @@
 .tree-cell:selected:drag-selected > .concept-tile > .region.select:hover > .icon.select {
     -fx-background-color: #9CAABF;
 }
-.tree-cell:expand-concept > .concept-tile > .region.select > .icon.select,
-.tree-cell:expand-concept > .concept-tile > .region.select:hover > .icon.select {
+.tree-cell:show-lineage > .concept-tile > .region.select > .icon.select,
+.tree-cell:show-lineage > .concept-tile > .region.select:hover > .icon.select {
     visibility: hidden;
     -fx-managed: false;
 }
@@ -372,8 +372,8 @@
     -fx-background-color: #304971;
     -fx-shape: "M5.91406 9V7.46875H12.9141V11.4688H5.91406V10H2.96875V5.25H1.46875L3.46875 2.25L5.46875 5.25H3.96875V9H5.91406ZM7.08073 8.63542V10.3021H11.7474V8.63542H7.08073Z"
 }
-.tree-cell:expand-concept > .concept-tile > .region.tree > .icon.tree,
-.tree-cell:expand-concept > .concept-tile > .region.tree:hover > .icon.tree {
+.tree-cell:show-lineage > .concept-tile > .region.tree > .icon.tree,
+.tree-cell:show-lineage > .concept-tile > .region.tree:hover > .icon.tree {
     -fx-scale-shape: false;
     -fx-background-color: black;
     -fx-shape: "M5.91406 9V7.46875H12.9141V11.4688H5.91406V10H2.96875V5.25H1.46875L3.46875 2.25L5.46875 5.25H3.96875V9H5.91406ZM7.08073 8.63542V10.3021H11.7474V8.63542H7.08073Z"
