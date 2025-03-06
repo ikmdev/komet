@@ -49,6 +49,7 @@ import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
@@ -75,10 +76,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * utitity class for accessing and modifying common data operations
@@ -341,9 +342,26 @@ public class DataModelHelper {
      *
      * @return entityVersionLatest
      * */
-    public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(EntityFacade entityFacade) {
-        Latest<SemanticEntityVersion> entityVersionLatest = null;
-        if (entityFacade != null) {
+    public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(EntityFacade entityFacade, ViewProperties viewProperties) {
+        AtomicReference<Latest<SemanticEntityVersion>> entityVersionLatest = new AtomicReference<>();
+
+        StampCalculator stampCalculator = viewProperties.calculator().stampCalculator();
+        //retrieve latest semanticVersion
+        Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(entityFacade.nid());
+        ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
+        ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
+        //Get list of previously committed data sorted in latest at the top.
+        ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
+        // Filter out Uncommitted data. Data whose time stamp parameter is Long.MAX_VALUE. and get the 1st available.
+        Optional<ObservableSemanticVersion> observableSemanticVersionOptional = observableSemanticVersionImmutableList.stream().filter(p -> p.stamp().time() != Long.MAX_VALUE).findFirst();
+
+        observableSemanticVersionOptional.ifPresentOrElse( (p) -> {
+            entityVersionLatest.set(new Latest<>(p));
+        }, () -> {entityVersionLatest.set(semanticEntityVersionLatest);});
+
+        return entityVersionLatest.get();
+
+       /* if (entityFacade != null) {
             Entity entity = Entity.getFast(entityFacade);
             IntStream intstream =  entity.stampNids().intStream().filter(p -> {
                 StampEntity stampEntity = Entity.getStamp(p);
@@ -352,7 +370,8 @@ public class DataModelHelper {
 
             entityVersionLatest = new Latest(entity.getVersion(intstream.max().getAsInt()).get());
         }
-        return entityVersionLatest;
+        return entityVersionLatest.get(); */
+
     }
 
 }
