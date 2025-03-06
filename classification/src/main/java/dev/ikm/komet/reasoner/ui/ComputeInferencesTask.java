@@ -30,14 +30,15 @@ public class ComputeInferencesTask extends TrackingCallable<ReasonerService> {
 	public ComputeInferencesTask(ReasonerService reasonerService) {
 		super(false, true);
 		this.reasonerService = reasonerService;
-		updateTitle("Computing taxonomy");
+		updateTitle("Computing inferences");
 	}
 
 	@Override
 	protected ReasonerService compute() throws Exception {
 		reasonerService.computeInferences();
-		updateMessage("Computed taxonomy in " + durationString());
-		LOG.info("Computed taxonomy in " + durationString());
+		String msg = "Computed inferences in " + durationString();
+		updateMessage(msg);
+		LOG.info(msg);
 		return reasonerService;
 	}
 

@@ -29,6 +29,7 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.ikm.komet.framework.EditedConceptTracker;
 import dev.ikm.komet.framework.ExplorationNodeAbstract;
 import dev.ikm.komet.framework.TopPanelFactory;
 import dev.ikm.komet.framework.activity.ActivityStreams;
@@ -37,7 +38,7 @@ import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.reasoner.ui.RunReasonerIncrementalTask;
-import dev.ikm.komet.reasoner.ui.RunReasonerTask;
+import dev.ikm.komet.reasoner.ui.RunReasonerFullTask;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.TinkExecutor;
@@ -60,8 +61,6 @@ import javafx.scene.layout.HBox;
 public class ReasonerResultsNode extends ExplorationNodeAbstract {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ReasonerResultsNode.class);
-
-	public static boolean reinferAllHierarchy = false;
 
 	protected static final String STYLE_ID = "classification-results-node";
 	protected static final String TITLE = "Reasoner Results";
@@ -87,6 +86,9 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 				List<ReasonerService> rss = PluggableService.load(ReasonerService.class).stream().map(Provider::get)
 						.sorted(Comparator.comparing(ReasonerService::getName)).toList();
 				for (ReasonerService rs : rss) {
+					// TODO Currently broken
+					if (rs.getName().equals("ElkOwlReasonerService"))
+						continue;
 					LOG.info("Reasoner service add: " + rs);
 					CheckMenuItem item = new CheckMenuItem("Use " + rs.getName());
 					item.setOnAction(ae -> {
@@ -113,7 +115,6 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 				{
 					MenuItem item = new MenuItem("Run full reasoner");
 					item.setOnAction(ae -> {
-						reinferAllHierarchy = false;
 						runFullReasoner();
 					});
 					menuItems.add(item);
@@ -121,19 +122,17 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 				{
 					MenuItem item = new MenuItem("Run incremental reasoner");
 					item.setOnAction(ae -> {
-						reinferAllHierarchy = false;
 						runIncrementalReasoner();
 					});
 					menuItems.add(item);
 				}
-				{
-					MenuItem item = new MenuItem("Run redo hierarchy reasoner");
-					item.setOnAction(ae -> {
-						reinferAllHierarchy = true;
-						runFullReasoner();
-					});
-					menuItems.add(item);
-				}
+//				{
+//					MenuItem item = new MenuItem("Run redo hierarchy reasoner");
+//					item.setOnAction(ae -> {
+//						runFullReasoner();
+//					});
+//					menuItems.add(item);
+//				}
 				ObservableList<MenuItem> topMenuItems = topPanelParts.viewPropertiesMenuButton().getItems();
 				topMenuItems.addAll(menuItems);
 			});
@@ -170,7 +169,7 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 			// TODO use a factory for the service and then create here
 			reasonerService.init(getViewProperties().calculator(), TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
 					TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
-			RunReasonerTask task = new RunReasonerTask(reasonerService, resultsController::setResults);
+			RunReasonerFullTask task = new RunReasonerFullTask(reasonerService, resultsController::setResults);
 
 			// publish event of task
 			TaskWrapper<ReasonerService> javafxTask = TaskWrapper.make(task);
@@ -197,6 +196,18 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 	private void runIncrementalReasoner() {
 		if (!confirmRun("incremental"))
 			return;
+		if (!reasonerService.isIncrementalReady()) {
+			Alert dlg = new Alert(Alert.AlertType.CONFIRMATION, "Need to run full reasoner first", ButtonType.OK);
+			dlg.setHeaderText(null);
+			dlg.showAndWait();
+			return;
+		}
+		if (EditedConceptTracker.getEdits().isEmpty()) {
+			Alert dlg = new Alert(Alert.AlertType.CONFIRMATION, "No edits to process", ButtonType.OK);
+			dlg.setHeaderText(null);
+			dlg.showAndWait();
+			return;
+		}
 		TinkExecutor.threadPool().execute(() -> {
 			RunReasonerIncrementalTask task = new RunReasonerIncrementalTask(reasonerService,
 					resultsController::setResults);
