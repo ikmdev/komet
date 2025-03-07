@@ -24,10 +24,10 @@ import java.util.Optional;
  * parameters {@code T} and {@code I}. It also provides utility methods for creating
  * specific types of preference properties, such as String, Integer, Boolean, and Double preferences.
  *
- * @param <T> the type of the value contained in this property
+ * @param <DT> the data type of the value contained in this property
  * @param <I> the type of the property implementation extending {@code Property<T>}
  */
-public abstract class PreferenceProperty<T, I extends Property<T>> implements Property<T>, ClassConceptBinding {
+public abstract class PreferenceProperty<DT, I extends Property<DT>> implements Property<DT>, ClassConceptBinding {
     /**
      * Represents the initial default value for a string property in the context of {@code PreferenceProperty}.
      * This constant is used to signify that a string property has not been explicitly initialized with
@@ -179,7 +179,7 @@ public abstract class PreferenceProperty<T, I extends Property<T>> implements Pr
     }
 
     @Override
-    public void bind(ObservableValue<? extends T> observable) {
+    public void bind(ObservableValue<? extends DT> observable) {
         this.implInstance.bind(observable);
     }
 
@@ -194,32 +194,32 @@ public abstract class PreferenceProperty<T, I extends Property<T>> implements Pr
     }
 
     @Override
-    public void setValue(T value) {
+    public void setValue(DT value) {
         this.implInstance.setValue(value);
     }
 
     @Override
-    public void addListener(ChangeListener<? super T> listener) {
+    public void addListener(ChangeListener<? super DT> listener) {
         this.implInstance.addListener(listener);
     }
 
     @Override
-    public void removeListener(ChangeListener<? super T> listener) {
+    public void removeListener(ChangeListener<? super DT> listener) {
         this.implInstance.removeListener(listener);
     }
 
     @Override
-    public T getValue() {
+    public DT getValue() {
         return this.implInstance.getValue();
     }
 
     @Override
-    public void bindBidirectional(Property<T> other) {
+    public void bindBidirectional(Property<DT> other) {
         this.implInstance.bindBidirectional(other);
     }
 
     @Override
-    public void unbindBidirectional(Property<T> other) {
+    public void unbindBidirectional(Property<DT> other) {
         this.implInstance.unbindBidirectional(other);
     }
 

@@ -13,6 +13,7 @@ import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import javafx.scene.Node;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * The abstract class `ContextBlueprint` serves as a foundational blueprint for implementing specific context
@@ -68,7 +69,7 @@ public abstract class ContextBlueprint implements KlContext, KlStateCommands {
      * It is primarily used for serialization, storage, and referencing purposes
      * where the context's unique UUID is required in string format.
      */
-    private final PreferencePropertyString contextUuidStringProperty;
+    private final PreferencePropertyObject contextUuidProperty;
 
     final ObservableViewNoOverride observableView;
     final PublicIdStringKey publicIdStringKey;
@@ -79,8 +80,8 @@ public abstract class ContextBlueprint implements KlContext, KlStateCommands {
         this.klObject = contextProvider.klObject();
         this.viewCoordinateProperty =
                 PreferencePropertyObject.objectProp(this.klObject, KlContext.PreferenceKeys.VIEW_COORDINATE);
-        this.contextUuidStringProperty =
-                PreferencePropertyObject.stringProp(this.klObject, KlContext.PreferenceKeys.CONTEXT_UUID);
+        this.contextUuidProperty =
+                PreferencePropertyObject.objectProp(this.klObject, KlContext.PreferenceKeys.CONTEXT_UUID);
         this.contextNameProperty =
                 PreferencePropertyObject.stringProp(this.klObject, KlContext.PreferenceKeys.CONTEXT_NAME);
 
@@ -96,11 +97,11 @@ public abstract class ContextBlueprint implements KlContext, KlStateCommands {
         this.viewCoordinateProperty =
                 PreferencePropertyObject.objectProp(this.klObject, KlContext.PreferenceKeys.VIEW_COORDINATE);
         this.contextNameProperty = PreferencePropertyObject.stringProp(this.klObject, KlContext.PreferenceKeys.CONTEXT_NAME);
-        this.contextUuidStringProperty = PreferencePropertyObject.stringProp(this.klObject, KlContext.PreferenceKeys.CONTEXT_UUID);
+        this.contextUuidProperty = PreferencePropertyObject.objectProp(this.klObject, KlContext.PreferenceKeys.CONTEXT_UUID);
 
         String contextName = preferences.get(PreferenceKeys.CONTEXT_NAME, (String) PreferenceKeys.CONTEXT_NAME.defaultValue());
-        String contextUuidStr = preferences.get(PreferenceKeys.CONTEXT_UUID, (String) PreferenceKeys.CONTEXT_UUID.defaultValue());
-        this.publicIdStringKey = new PublicIdStringKey(PublicIds.of(contextUuidStr), contextName);
+        UUID contextUuid = preferences.getUuid(PreferenceKeys.CONTEXT_UUID, (UUID) PreferenceKeys.CONTEXT_UUID.defaultValue());
+        this.publicIdStringKey = new PublicIdStringKey(PublicIds.of(contextUuid), contextName);
         ViewCoordinateRecord viewCoordinateRecord = preferences.getObject(PreferenceKeys.VIEW_COORDINATE, (ViewCoordinateRecord) PreferenceKeys.VIEW_COORDINATE.defaultValue());
         this.observableView = new ObservableViewNoOverride(viewCoordinateRecord,  contextName);
 
@@ -116,8 +117,8 @@ public abstract class ContextBlueprint implements KlContext, KlStateCommands {
         return contextNameProperty;
     }
 
-    public PreferencePropertyString contextUuidStringProperty() {
-        return contextUuidStringProperty;
+    public PreferencePropertyObject contextUuidStringProperty() {
+        return contextUuidProperty;
     }
 
     @Override
@@ -140,7 +141,7 @@ public abstract class ContextBlueprint implements KlContext, KlStateCommands {
         for (KlContext.PreferenceKeys key : KlContext.PreferenceKeys.values()) {
             switch (key) {
                 case CONTEXT_NAME -> klObject.preferences().put(key, this.contextNameProperty.getValue());
-                case CONTEXT_UUID -> klObject.preferences().put(key, this.contextUuidStringProperty.getValue());
+                case CONTEXT_UUID -> klObject.preferences().putUuid(key, (UUID) this.contextUuidProperty.getValue());
                 case VIEW_COORDINATE -> klObject.preferences().putObject(key, viewCoordinateProperty.getValue());
             }
         }
@@ -151,7 +152,7 @@ public abstract class ContextBlueprint implements KlContext, KlStateCommands {
         for (KlContext.PreferenceKeys key : KlContext.PreferenceKeys.values()) {
             switch (key) {
                 case CONTEXT_NAME -> this.contextNameProperty.setValue(klObject.preferences().get(key, (String) key.defaultValue()));
-                case CONTEXT_UUID -> this.contextUuidStringProperty.setValue(klObject.preferences().get(key, (String) key.defaultValue()));
+                case CONTEXT_UUID -> this.contextUuidProperty.setValue(klObject.preferences().getUuid(key, (UUID) key.defaultValue()));
                 case VIEW_COORDINATE -> this.viewCoordinateProperty.setValue(klObject.preferences().getObject(key, (ViewCoordinateRecord) key.defaultValue()));
             }
         }

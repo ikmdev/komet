@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
@@ -23,26 +22,25 @@ import javafx.collections.ObservableList;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import dev.ikm.tinkar.collection.ConcurrentReferenceHashMap;
-import dev.ikm.tinkar.common.alert.AlertObject;
-import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.broadcast.Subscriber;
 import dev.ikm.tinkar.component.FieldDataType;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
+import org.eclipse.collections.api.map.ImmutableMap;
 
-import java.util.Optional;
-import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * TODO: should be a way of listening for changes to the versions of the entity?
+ * TODO: should be a way of listening for changes to the versions of the entity? Yes, use the versionProperty()...
  *
  * @param <O>
  * @param <V>
  */
-public abstract class ObservableEntity<O extends ObservableVersion<V>, V extends EntityVersion> implements Entity<O> {
+public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V extends EntityVersion>
+        implements Entity<O>, ObservableComponent
+        permits ObservableConcept, ObservablePattern, ObservableSemantic, ObservableStamp {
 
     protected static final ConcurrentReferenceHashMap<PublicId, ObservableEntity> SINGLETONS =
             new ConcurrentReferenceHashMap<>(ConcurrentReferenceHashMap.ReferenceType.WEAK,
@@ -78,6 +76,8 @@ public abstract class ObservableEntity<O extends ObservableVersion<V>, V extends
     }
 
     protected abstract O wrap(V version);
+
+    public abstract ImmutableMap<FieldCategory, ObservableField> getObservableFields();
 
     public static <OE extends ObservableEntity<OV, EV>, OV extends ObservableVersion<EV>, EV extends EntityVersion>
     ObservableEntitySnapshot<OE, OV, EV> getSnapshot(int nid, ViewCalculator calculator) {
@@ -126,7 +126,7 @@ public abstract class ObservableEntity<O extends ObservableVersion<V>, V extends
         return entityReference.get();
     }
 
-    ObservableList<O> versionProperty() {
+    public ObservableList<O> versionProperty() {
         return versionProperty;
     }
 

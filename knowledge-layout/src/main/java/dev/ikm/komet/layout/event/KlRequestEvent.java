@@ -1,6 +1,6 @@
 package dev.ikm.komet.layout.event;
 
-import dev.ikm.komet.layout.component.KlComponentPane;
+import dev.ikm.komet.layout.component.KlComponentArea;
 import dev.ikm.komet.layout.selection.Selection;
 
 /**
@@ -14,7 +14,7 @@ public interface KlRequestEvent extends KlEvent {
      *
      * @return the recipient component associated with this event.
      */
-    KlComponentPane<?> recipient();
+    KlComponentArea recipient();
 
     /**
      * Retrieves the selection upon which the event's requested action is targeted.
