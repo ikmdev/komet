@@ -4,8 +4,13 @@ import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.layout.preferences.PreferenceProperty;
 import dev.ikm.komet.layout.preferences.PropertyWithDefault;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import javafx.collections.ObservableMap;
 import org.eclipse.collections.api.list.ImmutableList;
+
+import java.util.UUID;
+
+import static dev.ikm.tinkar.common.util.uuid.UuidUtil.NIL_UUID;
 
 /**
  * A typed object of programmatic interest to the Knowledge Layout system that
@@ -67,7 +72,17 @@ public sealed interface KlObject permits KlGadget, KlKnowledgeBaseContext{
          * and manage restoration of the window's state during application initialization
          * or when reloading user preferences.
          */
-        NAME_FOR_RESTORE("");
+        NAME_FOR_RESTORE(""),
+
+        /**
+         * Represents a preference key used to identify and store the unique identifier (UUID)
+         * of a KL object. This key is primarily utilized for restoring a specific KL object
+         * within the user preferences system, ensuring the correct object is reloaded during
+         * application initialization or when accessing saved preferences.
+         *
+         * Default value: NIL_UUID, indicating an empty or non-assigned UUID.
+         */
+        KL_OBJECT_ID(NIL_UUID);
 
         /**
          * Represents the default value associated with a preference key.
@@ -139,4 +154,17 @@ public sealed interface KlObject permits KlGadget, KlKnowledgeBaseContext{
      *         {@code false} otherwise.
      */
     boolean hasProperty(Object key);
+
+
+    /**
+     * Retrieves the unique identifier for this KlObject. Note that the UUID for the
+     * KlObject is independent of whatever entity it may contain at a particular instant. And the
+     * UUID will not change across the life of this Knowledge Layout Component.
+     *
+     * @return the UUID representing the unique identifier of the KlObject.
+     */
+    default UUID klObjectId() {
+        return UuidT5Generator.get(this.getClass().getName() + this.hashCode());
+    }
+
 }
