@@ -269,8 +269,8 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
 
     public static Comparator<ObservableEntitySnapshot> compareWithList(IntList patternOrderList) {
         return (o1, o2) -> {
-            if (o1 instanceof SemanticEntityVersion os1) {
-                if (o2 instanceof SemanticEntityVersion os2) {
+            if (o1 instanceof ObservableSemanticSnapshot os1) {
+                if (o2 instanceof ObservableSemanticSnapshot os2) {
                     int o1index = patternOrderList.indexOf(os1.patternNid());
                     int o2index = patternOrderList.indexOf(os2.patternNid());
                     if (o1index == o2index) {

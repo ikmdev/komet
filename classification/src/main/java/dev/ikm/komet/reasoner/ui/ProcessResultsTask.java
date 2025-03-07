@@ -15,12 +15,12 @@
  */
 package dev.ikm.komet.reasoner.ui;
 
-import dev.ikm.komet.reasoner.ReasonerResultsNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.reasoner.service.ClassifierResults;
 import dev.ikm.tinkar.reasoner.service.ReasonerService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ProcessResultsTask extends TrackingCallable<ClassifierResults> {
 
@@ -42,4 +42,5 @@ public class ProcessResultsTask extends TrackingCallable<ClassifierResults> {
 		updateMessage("Processed results in " + durationString());
 		return classifierResults;
 	}
+	
 }
