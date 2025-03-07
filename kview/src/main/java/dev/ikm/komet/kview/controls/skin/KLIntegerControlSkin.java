@@ -24,6 +24,7 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
     private static final Pattern NUMERICAL_PATTERN = Pattern.compile("^-?([1-9][0-9]*)?$"); // allow '-', don't start with 0
     private static final PseudoClass ERROR_PSEUDO_CLASS = PseudoClass.getPseudoClass("error");
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.integer-control");
+    private static final Duration ERROR_DURATION = Duration.seconds(5);
 
     private final Label titleLabel;
     private final TextField textField;
@@ -107,7 +108,7 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
             textChangedViaKeyEvent = false;
         }));
 
-        final PauseTransition pauseTransition = new PauseTransition(Duration.seconds(1));
+        final PauseTransition pauseTransition = new PauseTransition(ERROR_DURATION);
         pauseTransition.setOnFinished(f -> {
             textField.pseudoClassStateChanged(ERROR_PSEUDO_CLASS, false);
             errorLabel.setText(null);
