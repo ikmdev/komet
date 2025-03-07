@@ -19,8 +19,9 @@ import org.eclipse.collections.api.factory.primitive.IntLists;
 import org.eclipse.collections.api.list.primitive.MutableIntList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ResourceBundle;
 
 /**
@@ -36,8 +37,12 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
     private final Label titleLabel;
     private final Button addEntryButton;
 
-    private final HashMap<Integer, KLComponentControl> nidToComponentControl = new HashMap<>();
-    private final HashMap<KLComponentControl, Integer> componentControlToNid = new HashMap<>();
+    /**
+     * This is the list of Components being rendered. The components with their nids will always be in the same
+     * order as the nids in the value property (intIdList).
+     * The last component is an aditional empty component with nid 0 that doesn't exist in the value property.
+     */
+    private final List<KLComponentControl> componentControls = new ArrayList<>();
 
     private final HashMap<KLComponentControl, Label> componentControlToNumberGraphic = new HashMap<>();
 
@@ -113,26 +118,19 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
     }
 
     private void updateDropTargetLocation(DragEvent dragEvent) {
-        KLComponentListControl control = getSkinnable();
-
         double y = dragEvent.getY();
 
-        for (KLComponentControl componentControl : componentControlToNid.keySet()) {
+        for (KLComponentControl componentControl : componentControls) {
             double componentExtendedBoundsLowerY = componentControl.getLayoutY() - SPACE_BETWEEN_COMPONENTS;
             double componentExtendedBoundsUpperY = componentControl.getLayoutY() + componentControl.getHeight();
 
             if (y >= componentExtendedBoundsLowerY && y <= componentExtendedBoundsUpperY) {
-                IntIdList intIdList = control.getValue();
-                MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
-
-                int componentIndex = mutableList.indexOf(componentControlToNid.get(componentControl));
+                int componentIndex = componentControls.indexOf(componentControl);
 
                 currentDropIndex = componentIndex;
 
                 if (componentIndex >= 1) {
-                    int previousNid = mutableList.get(componentIndex - 1);
-
-                    KLComponentControl previousComponentControl = nidToComponentControl.get(previousNid);
+                    KLComponentControl previousComponentControl = componentControls.get(componentIndex - 1);
 
                     currentDropLine = componentToDropLine.get(previousComponentControl);
                     currentDropLine.setVisible(true);
@@ -165,9 +163,14 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
         mutableList.remove(componentNid);
         mutableList.addAtIndex(currentDropIndex, componentNid);
 
+        componentControls.remove(componentControl);
+        componentControls.add(currentDropIndex, componentControl);
+
         control.setValue(IntIds.list.of(mutableList.toArray()));
 
-        currentDropLine.setVisible(false);
+        if (currentDropLine != null) {
+            currentDropLine.setVisible(false);
+        }
 
         control.requestLayout();
 
@@ -190,46 +193,29 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
             componentControl.setEntity(entityProxy);
         }
 
-        // update Nid to control hashmaps
-        nidToComponentControl.put(nid, componentControl);
-        componentControlToNid.put(componentControl, nid);
+        componentControls.add(componentControl);
 
         Subscription subscription = componentControl.entityProperty().subscribe(entity -> {
             if (entity != null) {
-                int oldNid = componentControlToNid.get(componentControl);
+                int oldNidIndex = componentControls.indexOf(componentControl);
                 int newNid = entity.nid();
 
-                if (oldNid == newNid) {
-                    return;
-                }
-
-                if (oldNid == 0) { // we're adding a new nid
+                if (oldNidIndex >= getSkinnable().getValue().size()) { // we're adding a new nid
                     IntIdList intIdList = control.getValue();
                     MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
-                    mutableList.add(entity.nid());
+                    mutableList.add(newNid);
                     control.setValue(IntIds.list.of(mutableList.toArray()));
 
                     // Component Control was empty so had no drop line we need to create one now
                     createDropLine(componentControl);
 
+                    // Create new empty component at the bottom
+                    createComponentUI(0);
                 } else { // we're setting the control's valid nid to another nid
                     IntIdList intIdList = control.getValue();
                     MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
-                    int index = mutableList.indexOf(oldNid);
-
-                    mutableList.set(index, newNid);
+                    mutableList.set(oldNidIndex, newNid);
                     control.setValue(IntIds.list.of(mutableList.toArray()));
-
-                }
-
-                // update Nid to control hashmaps
-                nidToComponentControl.put(newNid, componentControl);
-                componentControlToNid.put(componentControl, newNid);
-
-                nidToComponentControl.remove(oldNid);
-
-                if (oldNid == 0) {
-                    createComponentUI(0);
                 }
             }
         });
@@ -270,8 +256,7 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
 
         subscription.unsubscribe();
 
-        componentControlToNid.remove(componentControl);
-        nidToComponentControl.remove(nidToRemove);
+        componentControls.remove(componentControl);
 
         getChildren().remove(componentControl);
         getChildren().remove(componentToDropLine.get(componentControl));
@@ -304,15 +289,16 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
         y += labelPrefHeight;
 
         int labelNumber = 1;
-        for (int nid : getSkinnable().getValue().toArray()) {
-            double componentControlUsedHeight = layoutComponentControl(contentWidth, nid, padding, x, y,
+        int index = 0;
+        for (; index < getSkinnable().getValue().size(); ++index) {
+            double componentControlUsedHeight = layoutComponentControl(contentWidth, index, padding, x, y,
                                                                        labelNumber, contentX);
             // prepare for next iteration
             labelNumber += 1;
             y += componentControlUsedHeight + SPACE_BETWEEN_COMPONENTS;
         }
         // layout final empty component control
-        double componentControlUsedHeight = layoutComponentControl(contentWidth, 0, padding, x, y, labelNumber, contentX);
+        double componentControlUsedHeight = layoutComponentControl(contentWidth, index, padding, x, y, labelNumber, contentX);
         y += componentControlUsedHeight + SPACE_BETWEEN_COMPONENTS;
 
         // layout add Entry button
@@ -325,7 +311,7 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
      * Lays out an individual component control and also the drop line associated with it in case there is any.
      *
      * @param contentWidth the total width available for laying out this component control
-     * @param nid the nid associated with this component control. 0 means it has no nid and so it's empty
+     * @param index the index of the control to layout
      * @param padding the padding
      * @param componentStartX the start x of the layout of the component
      * @param componentStartY the start y of the layout of the component
@@ -334,9 +320,9 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
      *
      * @return the height that the component control occupies after it has been laid out
      */
-    private double layoutComponentControl(double contentWidth, int nid, Insets padding, double componentStartX,
+    private double layoutComponentControl(double contentWidth, int index, Insets padding, double componentStartX,
                                           double componentStartY, int labelNumber, double dropLineX) {
-        KLComponentControl componentControl = nidToComponentControl.get(nid);
+        KLComponentControl componentControl = componentControls.get(index);
 
         Label numberLabel = componentControlToNumberGraphic.get(componentControl);
         double labelWidth = numberLabel.prefWidth(-1);

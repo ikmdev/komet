@@ -3113,8 +3113,8 @@ Timeline Year line segment (will overlay change circles)
 
 .list-cell:selected .pattern-instance-hbox .label {
     -fx-text-fill: blue;
-    -fx-background-color: white, transparent, transparent;
-    -fx-background-insets: 0, 1, 2;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
 }
 
 .pattern-instance-hbox .pattern-instance {
@@ -4990,7 +4990,6 @@ Styling a context menu for kview ui/ux controls
 
 /* Semantic Details section - VBox */
 .semantic-field-container {
-    -fx-min-height: 58px;
 
     -fx-spacing: 12px;
 

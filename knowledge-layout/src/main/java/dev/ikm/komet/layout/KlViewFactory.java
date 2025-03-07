@@ -3,7 +3,13 @@ package dev.ikm.komet.layout;
 
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
+import javafx.scene.layout.BorderPane;
 
+/**
+ * The {@code KlViewFactory} interface extends the {@code KlFactory} interface and is used
+ * to create instances of {@code KlView} specifically configured with contextual information, such as view coordinates
+ * and preferences. It provides methods to construct complex layouts by leveraging contextual and preference data.
+ */
 public interface KlViewFactory extends  KlFactory<KlView> {
 
     /**

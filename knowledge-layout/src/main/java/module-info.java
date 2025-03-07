@@ -1,6 +1,8 @@
 module dev.ikm.komet.layout {
 
     requires dev.ikm.komet.framework;
+    requires dev.ikm.jpms.recordbuilder.core;
+    requires java.compiler;
 
     exports dev.ikm.komet.layout;
     exports dev.ikm.komet.layout.action;
@@ -20,5 +22,6 @@ module dev.ikm.komet.layout {
 
     opens dev.ikm.komet.layout to javafx.fxml;
     opens dev.ikm.layout.app to javafx.fxml;
+    exports dev.ikm.komet.layout.component.field;
 
 }
