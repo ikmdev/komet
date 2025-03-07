@@ -144,9 +144,14 @@ public class SemanticFieldsController {
      */
     private void updateStampVersionsNidsForAllFields(Object newValue) {
         if(newValue instanceof FieldRecord fieldRecord){
-            fieldRecord.versionStampNid();
+            updateStampVersions = false;
+            int latestStampNid = fieldRecord.versionStampNid();
+            observableFields.forEach(observableField -> {
+                //Update the stampNid with the latest stamp nid value.
+                observableField.fieldProperty().set(observableField.field().withVersionStampNid(latestStampNid));
+            });
         }
-        EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
+      /*  EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
         updateStampVersions = false;
@@ -156,7 +161,7 @@ public class SemanticFieldsController {
                  //Update the stampNid with the latest stamp nid value.
                 observableField.fieldProperty().set(observableField.field().withVersionStampNid(latestStampNid));
             });
-        });
+        });*/
         updateStampVersions = true;
     }
 
