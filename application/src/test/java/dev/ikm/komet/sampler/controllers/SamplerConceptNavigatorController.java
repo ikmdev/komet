@@ -2,7 +2,6 @@ package dev.ikm.komet.sampler.controllers;
 
 import dev.ikm.komet.app.AppState;
 import dev.ikm.komet.app.LoadDataSourceTask;
-import dev.ikm.komet.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -14,10 +13,8 @@ import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.common.service.DataUriOption;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -25,7 +22,6 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -116,44 +112,7 @@ public class SamplerConceptNavigatorController {
         });
         conceptArea.getStylesheets().add(STYLE);
 
-        conceptNavigatorControl.navigatorProperty().subscribe((o, n) -> {
-            List<ConceptNavigatorTreeItem> root = getRoot(n);
-            conceptNavigatorControl.setRoot(root.getFirst());
-        });
         LoadDataset.open(conceptNavigatorControl::setNavigator);
-    }
-
-    private static List<ConceptNavigatorTreeItem> getRoot(Navigator navigator) {
-        List<ConceptNavigatorTreeItem> children = new ArrayList<>();
-        if (navigator == null) {
-            return children;
-        }
-        for (int rootNid : navigator.getRootNids()) {
-            ConceptNavigatorTreeItem model = getConceptNavigatorModel(navigator, rootNid);
-            model.setExpanded(true);
-            children.add(model);
-        }
-        return children;
-    }
-
-    private static List<ConceptNavigatorTreeItem> getChildren(Navigator navigator, ConceptFacade facade) {
-        List<ConceptNavigatorTreeItem> children = new ArrayList<>();
-        for (Edge edge : navigator.getChildEdges(facade.nid())) {
-            ConceptNavigatorTreeItem treeItem = getConceptNavigatorModel(navigator, edge.destinationNid());
-            children.add(treeItem);
-        }
-        return children;
-    }
-
-    private static ConceptNavigatorTreeItem getConceptNavigatorModel(Navigator navigator, int nid) {
-        ConceptFacade facade = Entity.getFast(nid);
-        ConceptNavigatorTreeItem conceptNavigatorTreeItem = new ConceptNavigatorTreeItem(facade);
-        conceptNavigatorTreeItem.setDefined(navigator.getViewCalculator().hasSufficientSet(facade));
-        conceptNavigatorTreeItem.setMultiParent(navigator.getParentNids(nid).length > 1);
-        if (!navigator.getChildEdges(facade.nid()).isEmpty()) {
-            conceptNavigatorTreeItem.getChildren().addAll(getChildren(navigator, facade));
-        }
-        return conceptNavigatorTreeItem;
     }
 
     private void populateArea(List<UUID[]> uuids) {

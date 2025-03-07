@@ -77,7 +77,7 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
     }
 
     // extraParentsProperty
-    private final ObjectProperty<List<ConceptNavigatorTreeItem>> extraParentsProperty = new SimpleObjectProperty<>(this, "extraParents", new ArrayList<>());
+    private final ObjectProperty<List<ConceptNavigatorTreeItem>> extraParentsProperty = new SimpleObjectProperty<>(this, "extraParents");
     public final ObjectProperty<List<ConceptNavigatorTreeItem>> extraParentsProperty() {
        return extraParentsProperty;
     }

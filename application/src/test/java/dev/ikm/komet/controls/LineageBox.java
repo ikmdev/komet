@@ -1,9 +1,5 @@
 package dev.ikm.komet.controls;
 
-import dev.ikm.komet.navigator.graph.Navigator;
-import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.PseudoClass;
@@ -14,9 +10,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
-import org.eclipse.collections.api.list.ImmutableList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class LineageBox extends VBox {
@@ -46,27 +40,15 @@ public class LineageBox extends VBox {
     private final ObjectProperty<ConceptNavigatorTreeItem> conceptProperty = new SimpleObjectProperty<>(this, "concept") {
         @Override
         protected void invalidated() {
-            ConceptNavigatorTreeItem treeViewItem = get();
             getChildren().removeIf(Label.class::isInstance);
-            if (treeViewItem != null) {
-                ConceptNavigatorTreeItem parentItem = (ConceptNavigatorTreeItem) treeViewItem.getParent();
+            ConceptNavigatorTreeItem treeItem = get();
+            if (treeItem != null && treeItem.getValue() != null) {
+                ConceptNavigatorTreeItem parentItem = (ConceptNavigatorTreeItem) treeItem.getParent();
                 if (parentItem != null) {
-                    Navigator navigator = conceptNavigator.getNavigator();
-                    ImmutableList<Edge> allParents = navigator.getParentEdges(treeViewItem.getValue().nid());
-                    List<ConceptNavigatorTreeItem> secondaryParents = new ArrayList<>();
-
-                    for (Edge parentLink : allParents) {
-                        if (allParents.size() == 1 || parentLink.destinationNid() != parentItem.getValue().nid()) {
-                            ConceptFacade facade = Entity.getFast(parentLink.destinationNid());
-                            ConceptNavigatorTreeItem conceptNavigatorTreeItem = new ConceptNavigatorTreeItem(facade);
-                            conceptNavigatorTreeItem.setDefined(navigator.getViewCalculator().hasSufficientSet(facade));
-                            conceptNavigatorTreeItem.setMultiParent(navigator.getParentNids(facade.nid()).length > 1);
-                            secondaryParents.add(conceptNavigatorTreeItem);
-                        }
-                    }
-
+                    List<ConceptNavigatorTreeItem> secondaryParents = conceptNavigator.
+                            getSecondaryParents(treeItem.getValue().nid(), parentItem.getValue().nid());
+                    treeItem.setExtraParents(secondaryParents);
                     for (ConceptNavigatorTreeItem extraParentItem : secondaryParents) {
-                        treeViewItem.getExtraParents().add(extraParentItem);
                         StackPane chevStackPane = new StackPane(getLine(0, 0, "line"), new IconRegion("icon", "chevron"));
                         chevStackPane.getStyleClass().add("region");
                         Label label = new Label(extraParentItem.getValue().description(), chevStackPane);

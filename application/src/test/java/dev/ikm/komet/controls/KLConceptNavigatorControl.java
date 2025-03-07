@@ -2,6 +2,7 @@ package dev.ikm.komet.controls;
 
 import dev.ikm.komet.controls.skin.KLConceptNavigatorTreeViewSkin;
 import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -13,6 +14,7 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TreeView;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -91,7 +93,14 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     }
 
     // navigatorProperty
-    private final ObjectProperty<Navigator> navigatorProperty = new SimpleObjectProperty<>(this, "navigator");
+    private final ObjectProperty<Navigator> navigatorProperty = new SimpleObjectProperty<>(this, "navigator") {
+        @Override
+        protected void invalidated() {
+            if (get() != null) {
+                setRoot(getConceptNavigatorRoot().getFirst());
+            }
+        }
+    };
     public final ObjectProperty<Navigator> navigatorProperty() {
        return navigatorProperty;
     }
@@ -106,5 +115,44 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     protected Skin<?> createDefaultSkin() {
         conceptNavigatorTreeViewSkin = new KLConceptNavigatorTreeViewSkin(this);
         return conceptNavigatorTreeViewSkin;
+    }
+
+    private List<ConceptNavigatorTreeItem> getConceptNavigatorRoot() {
+        return Arrays.stream(getNavigator().getRootNids())
+                .mapToObj(rootNid -> {
+                    ConceptNavigatorTreeItem treeItem = getConceptNavigatorTreeItem(rootNid);
+                    treeItem.setExpanded(true);
+                    return treeItem;
+                })
+                .toList();
+    }
+
+    private List<ConceptNavigatorTreeItem> getChildren(int nid) {
+        return getNavigator().getChildEdges(nid).stream()
+                .map(edge -> getConceptNavigatorTreeItem(edge.destinationNid()))
+                .toList();
+    }
+
+    private ConceptNavigatorTreeItem getConceptNavigatorTreeItem(int nid) {
+        ConceptNavigatorTreeItem conceptNavigatorTreeItem = createSingleConceptNavigatorTreeItem(nid);
+        if (!getNavigator().getChildEdges(nid).isEmpty()) {
+            conceptNavigatorTreeItem.getChildren().addAll(getChildren(nid));
+        }
+        return conceptNavigatorTreeItem;
+    }
+
+    public ConceptNavigatorTreeItem createSingleConceptNavigatorTreeItem(int nid) {
+        ConceptFacade facade = Entity.getFast(nid);
+        ConceptNavigatorTreeItem conceptNavigatorTreeItem = new ConceptNavigatorTreeItem(facade);
+        conceptNavigatorTreeItem.setDefined(getNavigator().getViewCalculator().hasSufficientSet(facade));
+        conceptNavigatorTreeItem.setMultiParent(getNavigator().getParentNids(nid).length > 1);
+        return conceptNavigatorTreeItem;
+    }
+
+    public List<ConceptNavigatorTreeItem> getSecondaryParents(int nid, int parentNid) {
+        return getNavigator().getParentEdges(nid).stream()
+                .filter(edge -> edge.destinationNid() != parentNid)
+                .map(edge -> createSingleConceptNavigatorTreeItem(edge.destinationNid()))
+                .toList();
     }
 }
