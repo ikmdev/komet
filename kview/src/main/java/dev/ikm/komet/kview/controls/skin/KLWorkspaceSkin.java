@@ -288,34 +288,49 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     // =========================================================================
 
     /**
-     * Configures drag-and-drop behavior for the specified {@link KLWorkspace}.
+     * Configures drag-and-drop behavior for the specified {@code KLWorkspace}. This method sets up the
+     * necessary event handlers to display or hide a drop region on the desktop pane when a valid drag
+     * action occurs over the workspace.
      * <p>
-     * When a valid item (e.g., a string in the clipboard) is dragged over the workspace,
-     * this method shows a "drop region" preview within the {@code DesktopPane}. If the user
-     * continues and drops the item, the new content (i.e., a new {@link ChapterKlWindow})
-     * can be placed at the preview's location.
-     * <p>
-     * The drop region automatically hides when the drag exits the workspace boundaries
-     * or if the drag is canceled/invalid.
+     * Specifically:
+     * <ul>
+     *   <li>When an item is dragged over the workspace, this method checks if it is a valid draggable
+     *       item and then determines whether the drop region should be shown or hidden based on mouse
+     *       position and collision with existing windows.</li>
+     *   <li>If the mouse is over an existing window within the desktop pane, the drop region is hidden
+     *       and no drop placement is shown.</li>
+     *   <li>If the mouse is over an empty area of the desktop pane, the method calculates and displays
+     *       the appropriate drop region (bounds and type).</li>
+     *   <li>When the drag exits the workspace, the drop region is hidden.</li>
+     * </ul>
      *
-     * @param workspace the {@link KLWorkspace} control for which drag-and-drop
-     *                  behavior should be configured
+     * @param workspace the {@code KLWorkspace} to which drag-and-drop handlers are attached
+     * @see #findDropRegionPlacement(double, double)
      */
     private void configureDragDropHandlers(KLWorkspace workspace) {
         // Show drop-region if a valid item is dragged over
         workspace.setOnDragOver(event -> {
             if (event.getGestureSource() != null && event.getDragboard().hasString()) {
-                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-
                 // Convert screen coordinates to local coordinates of the desktop pane
                 final Point2D localCoords = desktopPane.screenToLocal(event.getScreenX(), event.getScreenY());
-                final double lastMouseX = localCoords.getX();
-                final double lastMouseY = localCoords.getY();
+                final double mouseX = localCoords.getX();
+                final double mouseY = localCoords.getY();
 
-                // Use gap-based logic for showing BOX or LINE,
-                // then fall back on the three-row placement if needed.
-                final DropResult dropResult = findDropRegionPlacement(lastMouseX, lastMouseY);
+                final Node intersectedNode = event.getPickResult().getIntersectedNode();
+                final boolean mouseOverWindow = intersectedNode != null &&
+                        intersectedNode != desktopPane && intersectedNode != desktopPane.getDropRegion();
+
+                if (mouseOverWindow) {
+                    // If the mouse is over an existing window, hide any drop region and skip drop placement
+                    desktopPane.hideDropRegion();
+                    event.consume();
+                    return;
+                }
+
+                // Determine the appropriate drop region placement
+                final DropResult dropResult = findDropRegionPlacement(mouseX, mouseY);
                 if (dropResult != null && dropResult.bounds() != null) {
+                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                     desktopPane.showDropRegion(dropResult.bounds(), dropResult.type());
                 } else {
                     desktopPane.hideDropRegion();
@@ -325,7 +340,10 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         });
 
         // Hide the drop region when the drag exits the workspace
-        workspace.setOnDragExited(event -> desktopPane.hideDropRegion());
+        workspace.setOnDragExited(event -> {
+            desktopPane.hideDropRegion();
+            event.consume();
+        });
     }
 
     /**
