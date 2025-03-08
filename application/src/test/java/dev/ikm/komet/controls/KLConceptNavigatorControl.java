@@ -12,6 +12,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Skin;
+import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
 import java.util.Arrays;
@@ -152,7 +153,23 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     public List<ConceptNavigatorTreeItem> getSecondaryParents(int nid, int parentNid) {
         return getNavigator().getParentEdges(nid).stream()
                 .filter(edge -> edge.destinationNid() != parentNid)
-                .map(edge -> createSingleConceptNavigatorTreeItem(edge.destinationNid()))
+                .map(edge -> getTreeViewItem((ConceptNavigatorTreeItem) getRoot(), edge.destinationNid()))
                 .toList();
+    }
+
+    private static ConceptNavigatorTreeItem getTreeViewItem(ConceptNavigatorTreeItem item, int nid) {
+        if (item == null || item.getValue() == null) {
+            return null;
+        }
+        if (item.getValue().nid() == nid) {
+            return item;
+        }
+        for (TreeItem<ConceptFacade> child : item.getChildren()) {
+            ConceptNavigatorTreeItem treeItem = getTreeViewItem((ConceptNavigatorTreeItem) child, nid);
+            if (treeItem != null) {
+                return treeItem;
+            }
+        }
+        return null;
     }
 }

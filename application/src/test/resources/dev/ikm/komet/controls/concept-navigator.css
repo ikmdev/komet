@@ -533,8 +533,6 @@
     -fx-background-radius: 4 4 0 4, 2 2 0 2;
     -fx-alignment: center;
     -fx-padding: 4;
-    -fx-min-height: 26;
-    -fx-pref-height: 26;
     -fx-effect: dropshadow(three-pass-box, #0000001A, 4, 0, 0, 1);
 }
 
@@ -556,40 +554,63 @@
     -fx-shape: "M11.0837 3.73852L10.2612 2.91602L7.00033 6.17685L3.73949 2.91602L2.91699 3.73852L6.17783 6.99935L2.91699 10.2602L3.73949 11.0827L7.00033 7.82185L10.2612 11.0827L11.0837 10.2602L7.82283 6.99935L11.0837 3.73852Z";
 }
 
-.lineage-box > .lineage-label {
+.lineage-box > .lineage-hbox {
+    -fx-alignment: center-left;
+    -fx-spacing: 0;
+    -fx-padding: 0;
+    -fx-min-height: 18;
+    -fx-pref-height: 18;
+    -fx-max-height: 18;
+}
+
+.lineage-box > .lineage-hbox > .lineage-label {
     -fx-font-family: "Noto Sans";
     -fx-font-weight: 500;
     -fx-font-size: 10;
     -fx-text-fill: #2E3240;
-    -fx-alignment: center;
+    -fx-alignment: center-left;
 }
 
-.lineage-box > .lineage-label:hover {
+.lineage-box > .lineage-hbox > .lineage-label:hover {
     -fx-underline: true;
 }
 
-.lineage-box > .lineage-label:collapsed {
+.lineage-box > .lineage-hbox > .lineage-label:collapsed-lineage {
     -fx-text-fill: #4A7AD2;
 }
 
-.lineage-box > .lineage-label:collapsed > .region {
+.lineage-box > .lineage-hbox:root-lineage > .lineage-label {
+    -fx-text-fill: #6E7989;
+}
+
+.lineage-box > .lineage-hbox > .region {
+    -fx-background-color: transparent;
+    -fx-min-width: 10;
+    -fx-pref-width: 10;
+    -fx-max-width: 10;
+    -fx-min-height: 18;
+    -fx-pref-height: 18;
+    -fx-max-height: 18;
+}
+
+.lineage-box > .lineage-hbox > .region > .icon.angle {
     -fx-background-color: #6E7989;
-    -fx-min-width: 8;
-    -fx-pref-width: 8;
-    -fx-max-width: 8;
-    -fx-min-height: 8;
-    -fx-pref-height: 8;
-    -fx-max-height: 8;
-    -fx-background-radius: 8;
-}
-
-.lineage-box > .lineage-label:collapsed > .region > .icon.chevron {
-    -fx-background-color: white;
     -fx-scale-shape: false;
-    -fx-shape: "M4.143 6.15 6.141 8.149 6.495 8.502 6.141 8.856 4.143 10.854 3.435 10.147 5.08 8.502 3.435 6.857Z";
+    -fx-shape: "M1.10119 0L9.11531 18H8.01412L0 0H1.10119Z";
 }
-
-.lineage-box > .lineage-label > .region > .line {
-    -fx-fill: #6E7989;
-    -fx-stroke: #6E7989;
+.lineage-box > .lineage-hbox > .region > .icon.root-angle {
+    -fx-background-color: #6E7989;
+    -fx-scale-shape: false;
+    -fx-translate-y: 2.25;
+    -fx-shape: "M 9.116 18 L 8.015 18 L 5.458 12.256 C 5.029 12.412 4.572 12.5 4.117 12.5 C 3.056 12.5 1.979 12.019 1.289 11.328 C 0.598 10.638 0.117 9.561 0.117 8.5 C 0.117 7.439 0.598 6.362 1.289 5.672 C 1.979 4.981 3.056 4.5 4.117 4.5 C 5.178 4.5 6.255 4.981 6.945 5.672 C 7.636 6.362 8.117 7.439 8.117 8.5 C 8.117 9.561 7.636 10.638 6.945 11.328 C 6.772 11.502 6.574 11.662 6.358 11.804 Z M 6.097 6.52 C 5.557 5.98 4.933 5.7 4.117 5.7 C 3.301 5.7 2.677 5.98 2.137 6.52 C 1.597 7.06 1.317 7.684 1.317 8.5 C 1.317 9.316 1.597 9.94 2.137 10.48 C 2.677 11.02 3.301 11.3 4.117 11.3 C 4.933 11.3 5.557 11.02 6.097 10.48 C 6.637 9.94 6.917 9.316 6.917 8.5 C 6.917 7.684 6.637 7.06 6.097 6.52 Z M 2.391 7.874 L 5.841 7.874 L 5.841 9.074 L 2.391 9.074 Z";
+}
+.lineage-box > .lineage-hbox > .region > .icon.chev-line {
+    -fx-background-color: #6E7989;
+    -fx-scale-shape: false;
+    -fx-translate-x: -0.708;
+    -fx-shape: "M8.308 8.5C8.308 9.313 7.928 10.164 7.4 10.692 6.984 11.108 6.367 11.432 5.727 11.551L5.724 18 4.716 18 4.716 11.556C4.066 11.441 3.438 11.114 3.016 10.692 2.488 10.164 2.108 9.313 2.108 8.5 2.108 7.687 2.488 6.836 3.016 6.308 3.125 6.199 3.247 6.097 3.38 6.003L.708 0 1.809 0 4.282 5.553C4.583 5.455 4.898 5.4 5.208 5.4 6.021 5.4 6.872 5.78 7.4 6.308 7.928 6.836 8.308 7.687 8.308 8.5ZM6.552 7.157C6.175 6.78 5.776 6.6 5.208 6.6 4.64 6.6 4.241 6.78 3.865 7.157 3.488 7.533 3.308 7.932 3.308 8.5 3.308 9.068 3.488 9.467 3.865 9.844 4.241 10.22 4.64 10.4 5.208 10.4 5.776 10.4 6.175 10.22 6.552 9.844 6.928 9.467 7.108 9.068 7.108 8.5 7.108 7.932 6.928 7.533 6.552 7.157Z";
+}
+.lineage-box > .lineage-hbox:collapsed-lineage > .region > .icon.chev-line {
+    -fx-translate-y: 2.25;
+    -fx-shape: "M 5.016 17.999 L 4.01 17.999 L 4.008 12.468 C 2.039 12.218 0.516 10.537 0.516 8.5 C 0.516 6.291 2.307 4.5 4.516 4.5 C 6.725 4.5 8.516 6.291 8.516 8.5 C 8.516 10.538 6.991 12.221 5.02 12.469 Z M 3.35 6.857 L 4.994 8.502 L 3.35 10.147 L 4.057 10.854 L 6.409 8.502 L 6.055 8.149 L 4.057 6.15 Z";
 }
