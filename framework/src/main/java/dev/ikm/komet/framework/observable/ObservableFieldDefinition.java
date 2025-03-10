@@ -26,7 +26,7 @@ import dev.ikm.tinkar.terms.EntityFacade;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ObservableFieldDefinition
+public final class ObservableFieldDefinition
         implements FieldDefinitionForEntity {
     final AtomicReference<FieldDefinitionRecord> fieldDefinitionReference;
     final SimpleObjectProperty<EntityFacade> dataTypeProperty = new SimpleObjectProperty<>(this, "Field data type");

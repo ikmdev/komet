@@ -6,13 +6,11 @@ import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.layout.context.KlContextProvider;
 import dev.ikm.komet.layout.context.KnowledgeBaseContext;
 import javafx.scene.Node;
-import javafx.scene.Scene;
-import javafx.stage.Window;
 
 /**
  * Placeholder for now.
  */
-public non-sealed interface KlJournalWindow<T extends Node> extends KlStateCommands, KlContextProvider, KlGadget<T> {
+public non-sealed interface KlJournalWindow<FX extends Node> extends KlStateCommands, KlContextProvider, KlGadget<FX> {
     @Override
     default KlContext context() {
         if (this.fxGadget() instanceof Node node) {

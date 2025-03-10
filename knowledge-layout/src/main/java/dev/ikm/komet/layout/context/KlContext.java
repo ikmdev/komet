@@ -11,6 +11,8 @@ import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.Optional;
 
+import static dev.ikm.tinkar.common.util.uuid.UuidUtil.NIL_UUID;
+
 /**
  * Represents a context that can be used for layout orchestration and user interface configuration.
  * A context contains an identifier, an optional graphical representation, a view coordinate,
@@ -19,7 +21,7 @@ import java.util.Optional;
 public interface KlContext {
     enum PreferenceKeys implements PropertyWithDefault {
         CONTEXT_NAME("Unnamed Context"),
-        CONTEXT_UUID("00000000-0000-0000-0000-000000000000"),
+        CONTEXT_UUID(NIL_UUID),
         VIEW_COORDINATE(Coordinates.View.DefaultView())
             ;
 

@@ -25,11 +25,12 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.State;
+import org.eclipse.collections.api.map.ImmutableMap;
 
 import java.util.Objects;
 
 public abstract sealed class ObservableVersion<V extends EntityVersion>
-        implements EntityVersion
+        implements EntityVersion, ObservableComponent
         permits ObservableConceptVersion, ObservablePatternVersion, ObservableSemanticVersion, ObservableStampVersion {
     protected final SimpleObjectProperty<V> versionProperty = new SimpleObjectProperty<>();
 
@@ -49,6 +50,8 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
         pathProperty.set(Entity.provider().getEntityFast(entityVersion.pathNid()));
         addListeners();
     }
+
+    public abstract ImmutableMap<FieldCategory, ObservableField> getObservableFields();
 
     protected void addListeners() {
         stateProperty.addListener((observable, oldValue, newValue) -> {

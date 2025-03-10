@@ -32,8 +32,8 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Predicate;
 
-public class ObservableSemanticSnapshot extends ObservableEntitySnapshot<ObservableSemantic, ObservableSemanticVersion, SemanticVersionRecord> {
-    protected final Latest<PatternEntityVersion> latestPattern;
+public final class ObservableSemanticSnapshot extends ObservableEntitySnapshot<ObservableSemantic, ObservableSemanticVersion, SemanticVersionRecord> {
+    private final Latest<PatternEntityVersion> latestPattern;
 
     public ObservableSemanticSnapshot(ViewCalculator viewCalculator, ObservableSemantic entity) {
         super(viewCalculator, entity);

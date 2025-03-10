@@ -23,7 +23,7 @@ import dev.ikm.tinkar.entity.PatternVersionRecord;
 import java.util.Comparator;
 import java.util.function.Predicate;
 
-public class ObservablePatternSnapshot extends ObservableEntitySnapshot<ObservablePattern, ObservablePatternVersion, PatternVersionRecord> {
+public final class ObservablePatternSnapshot extends ObservableEntitySnapshot<ObservablePattern, ObservablePatternVersion, PatternVersionRecord> {
 
     public ObservablePatternSnapshot(ViewCalculator viewCalculator, ObservablePattern entity) {
         super(viewCalculator, entity);

@@ -81,7 +81,7 @@ public class PatternNavEntryController {
     private Label patternName;
 
     @FXML
-    private Button showContextButton;
+    private StackPane dragHandleAffordance;
 
     @FXML
     private ContextMenu contextMenu;
@@ -99,13 +99,13 @@ public class PatternNavEntryController {
     private void initialize() {
 
         instancesTitledPane.setExpanded(false);
-        showContextButton.setVisible(false);
+        dragHandleAffordance.setVisible(false);
         contextMenu = new ContextMenu();
         contextMenu.setHideOnEscape(true);
-        patternEntryHBox.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(true));
+        patternEntryHBox.setOnMouseEntered(mouseEvent -> dragHandleAffordance.setVisible(true));
         patternEntryHBox.setOnMouseExited(mouseEvent -> {
             if (!contextMenu.isShowing()) {
-                showContextButton.setVisible(false);
+                dragHandleAffordance.setVisible(false);
             }
         });
 
@@ -148,7 +148,6 @@ public class PatternNavEntryController {
                 }
             }
         });
-        showContextButton.setOnAction(event -> contextMenu.show(showContextButton, Side.BOTTOM, 0, 0));
         setupListView();
     }
 
