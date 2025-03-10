@@ -4658,8 +4658,18 @@ Styling a context menu for kview ui/ux controls
 
 .pattern-title-container {
     -fx-alignment: center_left;
-    -fx-padding: 0 0 0 14px;
+    -fx-padding: 0 10px 0 14px;
     -fx-spacing: 8px;
+}
+
+.pattern-title-container .drag-handle-affordance.icon {
+    -fx-min-width: 13px;
+    -fx-max-width: 13px;
+    -fx-max-height: 20px;
+    -fx-min-height: 20px;
+    -fx-background-color: #9A9DA0;
+
+    -fx-scale-shape: false;
 }
 
 /* Pattern Browser ScrollPane */
@@ -5228,4 +5238,8 @@ Styling a context menu for kview ui/ux controls
 
 .icon.cross {
     -fx-shape: "M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z";
+}
+
+.icon.six-dots {
+    -fx-shape: "M0 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0";
 }
