@@ -43,7 +43,6 @@ import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -84,10 +83,10 @@ public class SemanticFieldsController {
 
     private List<Node> nodes = new ArrayList<>();
 
+    // Maintain the list of committed field records
     private final List<FieldRecord<?>> commitedFields = new ArrayList<>();
 
-    private SimpleBooleanProperty submitButtonDisabledProperty;
-
+    //Enable/Disable submit button if field values change.
     private void semanticModified() {
         boolean disableButton = true;
         for(ObservableField<?> observableField : observableFields){
@@ -96,7 +95,7 @@ public class SemanticFieldsController {
                 disableButton = commmitedFieldRecord.value().equals(observableField.value());
             }
         }
-        submitButtonDisabledProperty.setValue(disableButton);
+        submitButton.disableProperty().setValue(disableButton);
     }
 
     @FXML
@@ -105,8 +104,7 @@ public class SemanticFieldsController {
         editFieldsVBox.setSpacing(8.0);
         editFieldsVBox.getChildren().clear();
 
-        submitButtonDisabledProperty = new SimpleBooleanProperty(true);
-        submitButton.disableProperty().bind(submitButtonDisabledProperty);
+        semanticModified();
 
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         if (semantic != null) {
@@ -121,11 +119,8 @@ public class SemanticFieldsController {
                                 semanticEntityVersionLatest, true));
                 editFieldsVBox.getChildren().clear();
                 //Add listener for valueProperty of each field to check when data is modified.
-//                observableFields.forEach(observableField -> observableField.valueProperty().addListener(fieldPropertyChangeListner));
                 observableFields.forEach(observableField ->
                         observableField.valueProperty().addListener((obs, oldVal, newVal) ->{
-                            FieldRecord<?> fieldRecord = observableField.field();
-                            //semanticModified(fieldRecord.fieldIndex(), fieldRecord, newVal);
                             semanticModified();
                         })
                 );
