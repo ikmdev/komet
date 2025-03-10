@@ -5,8 +5,8 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
-import dev.ikm.komet.kview.klfields.componentsetfield.KlComponentSetFieldFactory;
 import dev.ikm.komet.kview.klfields.componentlistfield.KlComponentListFieldFactory;
+import dev.ikm.komet.kview.klfields.componentsetfield.KlComponentSetFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.imagefield.KlImageFieldFactory;
 import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
@@ -17,12 +17,18 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.SemanticRecord;
+import dev.ikm.tinkar.entity.SemanticVersionRecord;
+import dev.ikm.tinkar.entity.StampRecord;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.Node;
-import javafx.scene.layout.Pane;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,8 +120,8 @@ public class KlFieldHelper {
 
         List<ObservableField<?>> observableFields = new ArrayList<>();
         Consumer<FieldRecord<Object>> generateConsumer = (fieldRecord) -> {
-            ObservableField writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
-            ObservableField observableField = new ObservableField(writeObservableField.field(), false);
+            ObservableField writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, editable);
+            ObservableField observableField = new ObservableField(writeObservableField.field(), editable);
             observableFields.add(observableField);
 
             // In edit view when we load uncommited data, we need to check if the transactions exists.
