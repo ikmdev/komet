@@ -150,11 +150,19 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
         return conceptNavigatorTreeItem;
     }
 
+    public List<ConceptNavigatorTreeItem> getAllSecondaryParents(int nid) {
+        return getSecondaryParents(nid, -1);
+    }
+
     public List<ConceptNavigatorTreeItem> getSecondaryParents(int nid, int parentNid) {
         return getNavigator().getParentEdges(nid).stream()
                 .filter(edge -> edge.destinationNid() != parentNid)
                 .map(edge -> getTreeViewItem((ConceptNavigatorTreeItem) getRoot(), edge.destinationNid()))
                 .toList();
+    }
+
+    public int getDepthOfTreeItem(ConceptNavigatorTreeItem parentTreeItem, ConceptNavigatorTreeItem childTreeItem) {
+        return getTreeItemLevel(childTreeItem) - getTreeItemLevel(parentTreeItem);
     }
 
     private static ConceptNavigatorTreeItem getTreeViewItem(ConceptNavigatorTreeItem item, int nid) {

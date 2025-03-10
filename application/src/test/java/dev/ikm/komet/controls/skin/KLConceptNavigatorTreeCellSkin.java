@@ -31,10 +31,12 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
         lineageBox = new LineageBox((KLConceptNavigatorControl) treeView);
         registerChangeListener(treeCell.treeItemProperty(), e -> {
             model = (ConceptNavigatorTreeItem) treeCell.getTreeItem();
-            lineageBox.setConcept(model);
             getSkinnable().requestLayout();
         });
         registerChangeListener(treeCell.viewLineageProperty(), e -> {
+            if (treeCell.isViewLineage()) {
+                lineageBox.setConcept(model);
+            }
             lineageBox.setVisible(treeCell.isViewLineage());
             getSkinnable().requestLayout();
         });
