@@ -1,4 +1,4 @@
-FROM azul/zulu-openjdk:21-latest
+FROM azul/zulu-openjdk:23-latest
 
 # Update the package list
 RUN apt update
