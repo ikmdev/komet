@@ -26,12 +26,15 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
+import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.FieldRecord;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
@@ -40,6 +43,7 @@ import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -80,11 +84,29 @@ public class SemanticFieldsController {
 
     private List<Node> nodes = new ArrayList<>();
 
+    private final List<FieldRecord<?>> commitedFields = new ArrayList<>();
+
+    private SimpleBooleanProperty submitButtonDisabledProperty;
+
+    private void semanticModified() {
+        boolean disableButton = true;
+        for(ObservableField<?> observableField : observableFields){
+            FieldRecord<?> commmitedFieldRecord = commitedFields.get(observableField.fieldIndex());
+            if(disableButton){
+                disableButton = commmitedFieldRecord.value().equals(observableField.value());
+            }
+        }
+        submitButtonDisabledProperty.setValue(disableButton);
+    }
+
     @FXML
     private void initialize() {
         // clear all semantic details.
         editFieldsVBox.setSpacing(8.0);
         editFieldsVBox.getChildren().clear();
+
+        submitButtonDisabledProperty = new SimpleBooleanProperty(true);
+        submitButton.disableProperty().bind(submitButtonDisabledProperty);
 
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         if (semantic != null) {
@@ -98,6 +120,17 @@ public class SemanticFieldsController {
                                 nodes,
                                 semanticEntityVersionLatest, true));
                 editFieldsVBox.getChildren().clear();
+                //Add listener for valueProperty of each field to check when data is modified.
+//                observableFields.forEach(observableField -> observableField.valueProperty().addListener(fieldPropertyChangeListner));
+                observableFields.forEach(observableField ->
+                        observableField.valueProperty().addListener((obs, oldVal, newVal) ->{
+                            FieldRecord<?> fieldRecord = observableField.field();
+                            //semanticModified(fieldRecord.fieldIndex(), fieldRecord, newVal);
+                            semanticModified();
+                        })
+                );
+                //Load CommittedField Data
+                commitedFields.addAll(loadCommittedData(semantic));
             } else {
                 // TODO Add a new semantic based on a pattern (blank fields).
             }
@@ -125,6 +158,22 @@ public class SemanticFieldsController {
             }
         });
     }
+
+    private List<FieldRecord<Object>> loadCommittedData(EntityFacade semantic) {
+        List<FieldRecord<Object>> commitedFieldData = new ArrayList<>();
+        StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
+        Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
+        semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
+            Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
+            patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
+                List<FieldRecord<Object>> fieldRecords = DataModelHelper.fieldRecords(semanticEntityVersion, patternEntityVersion);
+                commitedFieldData.addAll(fieldRecords);
+            });
+        });
+        return commitedFieldData;
+    }
+
+
 
     private static Separator createSeparator() {
         Separator separator = new Separator();
