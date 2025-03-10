@@ -104,8 +104,6 @@ public class SemanticFieldsController {
         editFieldsVBox.setSpacing(8.0);
         editFieldsVBox.getChildren().clear();
 
-        semanticModified();
-
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         if (semantic != null) {
             StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
@@ -126,9 +124,12 @@ public class SemanticFieldsController {
                 );
                 //Load CommittedField Data
                 commitedFields.addAll(loadCommittedData(semantic));
+                semanticModified();
             } else {
                 // TODO Add a new semantic based on a pattern (blank fields).
             }
+
+
         }
 
         // subscribe to changes... if the FIELD_INDEX is -1 or unset, then the user clicked the
