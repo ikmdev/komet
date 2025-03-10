@@ -3045,6 +3045,10 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-color: -Grey-10;
 }
 
+.pattern-titled-pane > .content {
+    -fx-background-color: white;
+}
+
 .pattern-vertical-separator {
     -fx-color-fill: -Grey-5;
 }
@@ -5001,7 +5005,7 @@ Styling a context menu for kview ui/ux controls
 
     -fx-fill-width: true;
     -fx-padding: 20px 12px 40px 12px;
-    -fx-background-color: -Grey-1;
+    -fx-background-color: white;
 }
 .semantic-field-collection-container,
 .semantic-field-ditree-container {
