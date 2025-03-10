@@ -50,5 +50,7 @@ public class KLReadOnlyComponentSetControlSkin extends KLReadOnlyMultiComponentC
 
         componentsContainer.getChildren().add(componentItemNode);
         componentUIItems.put(componentItem, componentItemNode);
+
+        updatePromptTextOrComponentsVisibility();
     }
 }
