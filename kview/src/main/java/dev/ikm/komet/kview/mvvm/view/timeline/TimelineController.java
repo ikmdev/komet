@@ -420,36 +420,35 @@ public class TimelineController implements BasicController {
     }
 
     /**
-     * Bind top and bottom range slider buttons.
+     * Configures the timeline UI range slider controls.
+     * <p>
+     * Initializes the top and bottom range sliders, binds listeners to update the range view rectangle
+     * and selected date points, and sets layout bindings and debugging callbacks.
      */
     private void bindRangeSliderControls() {
-        // bind slider range buttons
+        // Initialize range sliders
         topRangeSlider = new RangeSliderSupport(timelineTopRangeSliderButton, timelineBottomRangeSliderButton);
         bottomRangeSlider = new RangeSliderSupport(timelineBottomRangeSliderButton, timelineTopRangeSliderButton);
 
-        // Update rectangular region where date points are inside. shape.contains(pt)
-        topRangeSlider.currentRangeYValueProperty().addListener(((observableValue, oldY, newY) -> {
-            double bottomY = bottomRangeSlider.currentRangeYValueProperty().get();
-            double width = timelineSurfaceAnchorPane.getWidth();
-            double height = bottomY - newY.doubleValue();
-            if (height <=1) return;
-            if (width <=1) return;
-            // Generate a bounding box
-            rangeViewRectangleProp.set(new Rectangle2D(0, newY.doubleValue(), width, height));
-        }));
+        // Update range view rectangle based on slider Y-values
+        BiConsumer<Number, Number> updateRangeRectangle = (topY, bottomY) -> {
+            final double rectWidth = timelineSurfaceAnchorPane.getWidth();
+            final double rectTopY = topY.doubleValue();
+            final double rectHeight = bottomY.doubleValue() - rectTopY;
 
-        // get all circles (date points) in the current area
-        bottomRangeSlider.currentRangeYValueProperty().addListener(((observableValue, oldY, newY) -> {
-            double topY  = topRangeSlider.currentRangeYValueProperty().get();
-            double width = timelineSurfaceAnchorPane.getWidth();
-            double height = newY.doubleValue() - topY;
-            if (height <=1) return;
-            if (width <=1) return;
-            // Generate a bounding box
-            rangeViewRectangleProp.set(new Rectangle2D(0, topY, width, height));
-        }));
+            if (rectWidth > 1 && rectHeight > 1) {
+                rangeViewRectangleProp.set(new Rectangle2D(0, rectTopY, rectWidth, rectHeight));
+            }
+        };
 
-        // Debug after mouse release
+        // Add range slider listeners
+        topRangeSlider.currentRangeYValueProperty().addListener((observableValue, oldY, newY) ->
+                updateRangeRectangle.accept(newY, bottomRangeSlider.currentRangeYValueProperty().get()));
+
+        bottomRangeSlider.currentRangeYValueProperty().addListener((observableValue, oldY, newY) ->
+                updateRangeRectangle.accept(topRangeSlider.currentRangeYValueProperty().get(), newY));
+
+        // Debugging callbacks on mouse release
         topRangeSlider.onMouseReleased((mouseEvent -> dataDump()));
         bottomRangeSlider.onMouseReleased((mouseEvent -> dataDump()));
 
@@ -458,19 +457,16 @@ public class TimelineController implements BasicController {
             updateRangeSelectedDatePoints(newRect); // updates the slideRangeSelectedDatePointsSet
         });
 
-        // bind slider range body to button
+        // Bind slider range body to buttons
         timelineTopRangeSliderBody.prefHeightProperty().bind(timelineTopRangeSliderButton.layoutYProperty().add(8)); // midpoint of the button
 
         // height = height of parent (anchor pane) - y layout of button
-        timelineBottomRangeSliderButton.layoutYProperty().addListener( (obs, oldValue, newValue) -> {
-            double height = timelineBottomRangeSliderBody.boundsInParentProperty().get().getMaxY() - timelineBottomRangeSliderButton.getLayoutY() - 8; // mid-point of the button
-            timelineBottomRangeSliderBody.setPrefHeight(height);
-        });
+        timelineBottomRangeSliderBody.prefHeightProperty().bind(timelineSurfaceAnchorPane.heightProperty()
+                .subtract(timelineBottomRangeSliderButton.layoutYProperty())
+                .subtract(8)); // mid-point of the button
 
         // Generate an initial bounding box
-        double width = timelineSurfaceAnchorPane.getWidth();
-        double height = bottomRangeSlider.currentRangeYValueProperty().get() - topRangeSlider.currentRangeYValueProperty().get();
-        rangeViewRectangleProp.set(new Rectangle2D(0, topRangeSlider.currentRangeYValueProperty().get(), width, height));
+        updateRangeRectangle.accept(topRangeSlider.currentRangeYValueProperty().get(), bottomRangeSlider.currentRangeYValueProperty().get());
     }
 
     /**

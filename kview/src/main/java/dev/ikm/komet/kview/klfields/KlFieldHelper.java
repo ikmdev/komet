@@ -5,8 +5,8 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
-import dev.ikm.komet.kview.klfields.componentlistfield.KlComponentListFieldFactory;
 import dev.ikm.komet.kview.klfields.componentsetfield.KlComponentSetFieldFactory;
+import dev.ikm.komet.kview.klfields.componentlistfield.KlComponentListFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.imagefield.KlImageFieldFactory;
 import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
@@ -17,18 +17,12 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.SemanticRecord;
-import dev.ikm.tinkar.entity.SemanticVersionRecord;
-import dev.ikm.tinkar.entity.StampRecord;
-import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.Node;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
+import javafx.scene.layout.Pane;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,20 +92,10 @@ public class KlFieldHelper {
         } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
             KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
             node = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
-        } else if (dataTypeNid == TinkarTerm.IMAGE_FIELD.nid() || (editable &&
-                (PublicId.equals(semanticEntityVersionLatest.get().entity().publicId(),
-                        PublicIds.of(UUID.fromString("48633874-f3d2-434a-9f11-2a07e4c4311b")))
-                        && !hasAddedEditableImage))) {
+        } else if (PublicId.equals(semanticEntityVersionLatest.get().entity().publicId(),
+                        PublicIds.of(UUID.fromString("f43030a5-2324-4880-9292-c7d3c16b58d3")))) {
             KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
             node = imageFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
-            hasAddedEditableImage = true;
-        } else if (dataTypeNid == TinkarTerm.IMAGE_FIELD.nid() || (!editable &&
-                (PublicId.equals(semanticEntityVersionLatest.get().entity().publicId(),
-                        PublicIds.of(UUID.fromString("48633874-f3d2-434a-9f11-2a07e4c4311b")))
-                        && !hasAddedReadOnlyImage))) {
-            KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
-            node = imageFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
-            hasAddedReadOnlyImage = true;
         }
 
         return node;
@@ -130,8 +114,8 @@ public class KlFieldHelper {
 
         List<ObservableField<?>> observableFields = new ArrayList<>();
         Consumer<FieldRecord<Object>> generateConsumer = (fieldRecord) -> {
-            ObservableField writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, editable);
-            ObservableField observableField = new ObservableField(writeObservableField.field(), editable);
+            ObservableField writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
+            ObservableField observableField = new ObservableField(writeObservableField.field(), false);
             observableFields.add(observableField);
 
             // In edit view when we load uncommited data, we need to check if the transactions exists.
