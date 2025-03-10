@@ -16,12 +16,14 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
+import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.CHANGED_VALUE_UUID_TOPIC;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
@@ -29,6 +31,8 @@ import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
+import dev.ikm.tinkar.common.id.IntIdCollection;
+import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -43,6 +47,7 @@ import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -57,6 +62,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
@@ -86,6 +92,7 @@ public class SemanticFieldsController {
     // Maintain the list of committed field records
     private final List<FieldRecord<?>> commitedFields = new ArrayList<>();
 
+
     //Enable/Disable submit button if field values change.
     private void semanticModified() {
         boolean disableButton = true;
@@ -94,8 +101,21 @@ public class SemanticFieldsController {
             if(disableButton){
                 disableButton = commmitedFieldRecord.value().equals(observableField.value());
             }
+            if(disableButton && PublicId.equals(observableField.dataType().publicId(), TinkarTerm.COMPONENT_ID_LIST_FIELD.publicId()) ||
+                    PublicId.equals(observableField.dataType().publicId(),TinkarTerm.COMPONENT_ID_SET_FIELD.publicId())){
+                disableButton = fieldOrderChanged(observableField, commmitedFieldRecord);
+            }
+
         }
         submitButton.disableProperty().setValue(disableButton);
+    }
+
+    private boolean fieldOrderChanged(ObservableField<?> observableField, FieldRecord<?> commmitedFieldRecord) {
+            int [] originalIntArray = ((IntIdCollection) commmitedFieldRecord.value()).toArray();
+            int[] changedIntIdArray = ((IntIdCollection) observableField.value()).toArray();
+
+        return originalIntArray.length == changedIntIdArray.length && Arrays.hashCode(originalIntArray) == Arrays.hashCode(changedIntIdArray);
+
     }
 
     @FXML
@@ -106,6 +126,16 @@ public class SemanticFieldsController {
 
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         if (semantic != null) {
+
+            Subscriber<GenEditingEvent> orderChangedSubscriber = evt -> {
+                if (evt.getEventType() == GenEditingEvent.VALUE_CHANGED) {
+                    semanticModified();
+                }
+            };
+            EvtBusFactory.getDefaultEvtBus().subscribe(CHANGED_VALUE_UUID_TOPIC,
+                    GenEditingEvent.class, orderChangedSubscriber);
+
+
             StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
             Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
             if (semanticEntityVersionLatest.isPresent()) {
@@ -116,14 +146,16 @@ public class SemanticFieldsController {
                                 nodes,
                                 semanticEntityVersionLatest, true));
                 editFieldsVBox.getChildren().clear();
-                //Add listener for valueProperty of each field to check when data is modified.
-                observableFields.forEach(observableField ->
-                        observableField.valueProperty().addListener((obs, oldVal, newVal) ->{
-                            semanticModified();
-                        })
-                );
+
                 //Load CommittedField Data
                 commitedFields.addAll(loadCommittedData(semantic));
+                //Add listener for valueProperty of each field to check when data is modified.
+                observableFields.forEach(observableField ->
+                        observableField.valueProperty()
+                                //.addListener((obs, oldVal, newVal) ->{semanticModified();})
+                        .subscribe(newvalue -> semanticModified())
+                );
+
                 semanticModified();
             } else {
                 // TODO Add a new semantic based on a pattern (blank fields).

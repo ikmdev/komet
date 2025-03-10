@@ -1,7 +1,11 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.CHANGED_VALUE_UUID_TOPIC;
+import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.VALUE_CHANGED;
+import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentListControl;
+import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -19,6 +23,7 @@ import org.eclipse.collections.api.factory.primitive.IntLists;
 import org.eclipse.collections.api.list.primitive.MutableIntList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -176,6 +181,7 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
 
         dragEvent.setDropCompleted(true);
         dragEvent.consume();
+        EvtBusFactory.getDefaultEvtBus().publish(CHANGED_VALUE_UUID_TOPIC, new GenEditingEvent(dragEvent.getSource(), VALUE_CHANGED));
     }
 
     /**
