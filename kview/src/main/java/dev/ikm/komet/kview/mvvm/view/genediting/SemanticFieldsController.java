@@ -91,7 +91,9 @@ public class SemanticFieldsController {
     private final List<FieldRecord<?>> commitedFields = new ArrayList<>();
 
 
-    //Enable/Disable submit button if field values change.
+    /**
+     * This method enables and disables the submit button.
+     */
     private void semanticModified() {
         boolean disableButton = true;
         for(ObservableField<?> observableField : observableFields){
@@ -108,6 +110,9 @@ public class SemanticFieldsController {
         submitButton.disableProperty().setValue(disableButton);
     }
 
+    /**
+     * This method checks if the order of the list/set is changed.
+    * */
     private boolean fieldOrderChanged(ObservableField<?> observableField, FieldRecord<?> commmitedFieldRecord) {
             int [] originalIntArray = ((IntIdCollection) commmitedFieldRecord.value()).toArray();
             int[] changedIntIdArray = ((IntIdCollection) observableField.value()).toArray();
@@ -142,7 +147,6 @@ public class SemanticFieldsController {
                         observableField.valueProperty()
                         .subscribe(newvalue -> semanticModified())
                 );
-
                 semanticModified();
             } else {
                 // TODO Add a new semantic based on a pattern (blank fields).
@@ -172,18 +176,23 @@ public class SemanticFieldsController {
         });
     }
 
+    /**
+     *
+     * @param semantic
+     * @return committedFieldData
+     */
     private List<FieldRecord<Object>> loadCommittedData(EntityFacade semantic) {
-        List<FieldRecord<Object>> commitedFieldData = new ArrayList<>();
+        List<FieldRecord<Object>> committedFieldData = new ArrayList<>();
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
         semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
             Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
             patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
                 List<FieldRecord<Object>> fieldRecords = DataModelHelper.fieldRecords(semanticEntityVersion, patternEntityVersion);
-                commitedFieldData.addAll(fieldRecords);
+                committedFieldData.addAll(fieldRecords);
             });
         });
-        return commitedFieldData;
+        return committedFieldData;
     }
 
 
