@@ -27,6 +27,7 @@ import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
+import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -177,7 +178,7 @@ public class KlFieldHelper {
         // Create transaction
         Transaction t = Transaction.make();
         t.addComponent(semanticRecord);
-        /*// newStamp already written to the entity store.
+        // newStamp already written to the entity store.
         StampEntity newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), version.entity());
 
         // Create new version...
@@ -185,8 +186,8 @@ public class KlFieldHelper {
 
         SemanticRecord analogue = semanticRecord.with(newVersion).build();
 
-        // Entity provider will broadcast the nid of the changed entity.*/
-        Entity.provider().putEntity(semanticRecord);
+        // Entity provider will broadcast the nid of the changed entity.
+        Entity.provider().putEntity(analogue);
     }
 
 
@@ -213,6 +214,7 @@ public class KlFieldHelper {
         observableSemanticVersionOptional.ifPresentOrElse( (p) -> {
             entityVersionLatest.set(new Latest<>(p));
         }, () -> {entityVersionLatest.set(semanticEntityVersionLatest);});
+
 
         return entityVersionLatest.get();
     }
