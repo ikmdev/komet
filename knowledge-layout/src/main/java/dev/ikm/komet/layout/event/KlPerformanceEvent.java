@@ -1,6 +1,6 @@
 package dev.ikm.komet.layout.event;
 
-import dev.ikm.komet.layout.component.KlComponentPane;
+import dev.ikm.komet.layout.component.KlComponentArea;
 import dev.ikm.komet.layout.selection.Selection;
 
 /**
@@ -13,7 +13,7 @@ public interface KlPerformanceEvent extends KlEvent {
       *
       * @return a KlComponentPane instance related to the performance event
       */
-     KlComponentPane<?> performer();
+     KlComponentArea performer();
 
      /**
       * Retrieves the selection on which the event's action was performed.

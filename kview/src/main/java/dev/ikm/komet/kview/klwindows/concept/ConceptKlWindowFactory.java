@@ -81,11 +81,6 @@ public class ConceptKlWindowFactory extends AbstractEntityChapterKlWindowFactory
     }
 
     @Override
-    public Class<KlJournalWindow> klInterfaceClass() {
-        return KlJournalWindow.class;
-    }
-
-    @Override
     public Class<? extends KlJournalWindow> klImplementationClass() {
         return ConceptKlWindow.class;
     }

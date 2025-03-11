@@ -4,8 +4,7 @@ import dev.ikm.komet.kview.controls.skin.KLReadOnlyImageControlSkin;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Skin;
-
-import java.io.File;
+import javafx.scene.image.Image;
 
 public class KLReadOnlyImageControl extends KLReadOnlyBaseControl {
     public KLReadOnlyImageControl() {
@@ -13,10 +12,10 @@ public class KLReadOnlyImageControl extends KLReadOnlyBaseControl {
     }
 
     // -- image file
-    private final ObjectProperty<File> imageFile = new SimpleObjectProperty<>();
-    public File getImageFile() { return imageFile.get();}
-    public ObjectProperty<File> imageFileProperty() { return imageFile; }
-    public void setImageFile(File imageFile) { this.imageFile.set(imageFile); }
+    private final ObjectProperty<Image> image = new SimpleObjectProperty<>();
+    public Image getImage() { return image.get();}
+    public ObjectProperty<Image> imageProperty() { return image; }
+    public void setImage(Image image) { this.image.set(image); }
 
     @Override
     protected Skin<?> createDefaultSkin() {

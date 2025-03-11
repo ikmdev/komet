@@ -24,7 +24,6 @@ import javafx.beans.property.Property;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
@@ -35,7 +34,6 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -92,13 +90,22 @@ public class ConceptPatternNavController {
     @FXML
     public void initialize() {
         patternNavigationPane = new ScrollPane();
+        patternNavigationPane.setFitToWidth(true);
+        patternNavigationPane.getStyleClass().add("pattern-navigation-scroll-pane");
+
         patternsVBox = new VBox();
+        patternsVBox.getStyleClass().add("pattern-navigation-container");
 
         patternNavigationPane.setContent(patternsVBox);
         patternsVBox.getChildren().clear();
 
         // default to classic concept navigation
+        conceptsToggleButton.setSelected(true);
         navContentPane.setCenter(classicConceptNavigator);
+
+        // set up listeners when the toggle button changes
+        conceptsToggleButton.selectedProperty().addListener((observableValue, aBoolean, t1) -> showConcepts());
+        patternsToggleButton.selectedProperty().addListener((observableValue, aBoolean, t1) -> showPatterns());
 
         patternCreationEventSubscriber = (evt) -> {
             LOG.info("A New Pattern has been added/created. Reloading all the Patterns.");
@@ -129,7 +136,6 @@ public class ConceptPatternNavController {
                     NumberFormat numberFormat = NumberFormat.getInstance();
                     patternChildren.add(numberFormat.format(childCount.get() - maxChildrenInPatternViewer) + " additional semantics suppressed...");
                 }
-                boolean hasChildren = childCount.get() > 0;
 
                 Platform.runLater(() -> {
                     // load the pattern entry FXML and controller
@@ -143,17 +149,13 @@ public class ConceptPatternNavController {
                             );
 
                     JFXNode<Pane, PatternNavEntryController> patternNavEntryJFXNode = FXMLMvvmLoader.make(patternInstanceConfig);
-                    HBox patternHBox = (HBox) patternNavEntryJFXNode.node();
 
-                    patternsVBox.setSpacing(4); // space between pattern entries
-                    patternHBox.setAlignment(Pos.CENTER);
-                    Region leftPadding = new Region();
-                    leftPadding.setPrefWidth(12); // pad each entry with an empty region
-                    leftPadding.setPrefHeight(1);
+                    HBox patternHBox = (HBox) patternNavEntryJFXNode.node();
+                    patternHBox.getStyleClass().add("pattern-instance-container");
 
                     setUpDraggable(patternHBox, patternItem, PATTERN);
 
-                    patternsVBox.getChildren().addAll(new HBox(leftPadding, patternHBox));
+                    patternsVBox.getChildren().add(patternHBox);
                 });
             });
         });
@@ -209,4 +211,7 @@ public class ConceptPatternNavController {
         });
     }
 
+    public void toggleConcepts() {
+        conceptsToggleButton.setSelected(true);
+    }
 }

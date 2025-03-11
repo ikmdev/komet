@@ -36,6 +36,8 @@ module dev.ikm.komet.application.test {
     exports dev.ikm.komet.controls;
     opens dev.ikm.komet.controls to javafx.fxml;
 
+    exports dev.ikm.komet.debouncepoc;
+
     // TODO Not happy that I have to specify these here... Can't dynamically add modules?
     requires dev.ikm.tinkar.provider.spinedarray;
     requires dev.ikm.tinkar.provider.mvstore;

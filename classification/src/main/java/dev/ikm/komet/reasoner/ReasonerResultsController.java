@@ -15,26 +15,36 @@
  */
 package dev.ikm.komet.reasoner;
 
-import dev.ikm.komet.framework.activity.ActivityStream;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.service.PrimitiveData;
-import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.application.Platform;
-import javafx.collections.ListChangeListener;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.util.Callback;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.primitive.ImmutableIntObjectMap;
-
 import java.net.URL;
 import java.text.NumberFormat;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.function.Function;
+
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.primitive.ImmutableIntObjectMap;
+
+import dev.ikm.komet.framework.activity.ActivityStream;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.reasoner.service.ClassifierResults;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
+import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
+import javafx.fxml.FXML;
+import javafx.scene.control.Accordion;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
+import javafx.util.Callback;
 
 public class ReasonerResultsController {
 

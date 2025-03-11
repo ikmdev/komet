@@ -2290,6 +2290,20 @@ Timeline Year line segment (will overlay change circles)
  *********************************************************************************/
 
 /*********************************************************************************
+ * Concept / Pattern Navigator                                                   *
+ *********************************************************************************/
+
+.concept-pattern-container {
+    -fx-spacing: 10px;
+}
+
+.concept-pattern-header {
+    -fx-border-color: #3f3f3f;
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 12 0 10 0;
+}
+
+/*********************************************************************************
  * Start of Pattern UI elements                                                  *
  *********************************************************************************/
 
@@ -2836,8 +2850,19 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .search-entry-title-pane {
-    -fx-border-radius: 1px;
+    -fx-border-radius: 4px;
+}
+
+.titled-pane.search-entry-title-pane > .title {
+    -fx-background-radius: 4px;
+}
+
+.search-entry-title-pane {
     -fx-border-color: -Secondary-05;
+}
+
+.search-entry-title-pane > .content {
+    -fx-border-width: 0;
 }
 
 .titled-pane.search-entry-title-pane > .title > .text {
@@ -3020,6 +3045,10 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-color: -Grey-10;
 }
 
+.pattern-titled-pane > .content {
+    -fx-background-color: white;
+}
+
 .pattern-vertical-separator {
     -fx-color-fill: -Grey-5;
 }
@@ -3048,57 +3077,73 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-10;
 }
 
+/********************************************************************************
+ * Pattern Browser                                                              *
+ ********************************************************************************/
 
 .pattern-instance-hbox {
-    -fx-border-radius: 2px;
-    -fx-fill: -Grey-11;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 12px;
     -fx-font-style: normal;
     -fx-font-weight: 400;
+
     -fx-background-color: white;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 1, 1, 1, 1);    
-    -fx-min-width: 285px;
-    -fx-pref-width: 285px;
-    -fx-max-width: 285px;
-    -fx-pref-height: 30;
-    -fx-padding: 5;
-    -fx-alignment: center;
+    -fx-background-radius: 3px;
+    -fx-border-radius: 3px;
+
+    -fx-effect: dropshadow(gaussian , rgba(0,0,0,0.2) , 4, 0.0 , 0 , 2 );
+
+    height: 35;
+    -fx-pref-height: height;
+    -fx-max-height: height;
+
+    -fx-padding: 5 6 5 10;
+    -fx-alignment: center_left;
+
+    -fx-fill-height: false;
+}
+
+.pattern-instance-hbox:hover {
+    -fx-background-color: #f6f6f6;
+}
+
+.pattern-instance-hbox > .label {
+    -fx-graphic-text-gap: 9px;
 }
 
 .list-cell:selected .pattern-instance-hbox .label {
     -fx-text-fill: blue;
-    -fx-background-color: white, transparent, transparent;
-    -fx-background-insets: 0, 1, 2;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
 }
 
 .pattern-instance-hbox .pattern-instance {
-    -fx-min-width: 260px;
-    -fx-pref-width: 260px;
-    -fx-max-width: 260px;
+    -fx-min-width: 270px;
+    -fx-pref-width: 270px;
+    -fx-max-width: 270px;
+
+    -fx-padding: 0 10 0 0;
 
 }
 .pattern-instance-hbox .pattern-instance-hover-icon {
-         visibility: hidden;
+     visibility: hidden;
 }
+
 .pattern-instance-hbox:hover .pattern-instance-hover-icon {
-      visibility: visible;
+    visibility: visible;
 }
 
 .pattern-instance-hover-icon {
-     -fx-min-width: 16px;
-     -fx-max-width: 16px;
-     -fx-max-height: 16px;
-     -fx-min-height: 16px;
+     -fx-min-width: 13px;
+     -fx-max-width: 13px;
+     -fx-max-height: 20px;
+     -fx-min-height: 20px;
      -fx-background-color: #9A9DA0;
+
+     -fx-scale-shape: false;
+
      -fx-shape: "M0 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0";
 }
-
-
-
-/********************************************************************************
- * End of Journal > Search Concept UI elements                                  *
- ********************************************************************************/
 
 
 /********************************************************************************
@@ -4042,11 +4087,9 @@ Styling a context menu for kview ui/ux controls
 .popup-container .scroll-bar:vertical .decrement-button,
 .landing-container .scroll-bar:vertical .increment-button ,
 .landing-container .scroll-bar:vertical .decrement-button {
-
     -fx-background-color:transparent;
     -fx-background-radius: 0em;
     -fx-padding:0 10 0 0;
-
 }
 
 .lidr-container  .scroll-bar .increment-arrow,
@@ -4054,8 +4097,7 @@ Styling a context menu for kview ui/ux controls
 .popup-container  .scroll-bar .increment-arrow,
 .popup-container  .scroll-bar .decrement-arrow,
 .landing-container  .scroll-bar .increment-arrow,
-.landing-container  .scroll-bar .decrement-arrow
-{
+.landing-container  .scroll-bar .decrement-arrow {
     -fx-shape: " ";
     -fx-padding:0;
 }
@@ -4576,7 +4618,7 @@ Styling a context menu for kview ui/ux controls
 }
 
 /********************************************************************************
- * Start of Journal > Concept/Pattern Navigator                                 *
+ * Start of Journal > Pattern Navigator                                         *
  ********************************************************************************/
 
 .grey-vertical-scroll-area {
@@ -4612,6 +4654,97 @@ Styling a context menu for kview ui/ux controls
     -fx-border-color: -Grey-7;
     -fx-background-color: -Primary-03;
     -fx-text-fill: -Grey-12;
+}
+
+.pattern-title-container {
+    -fx-alignment: center_left;
+    -fx-padding: 0 10px 0 14px;
+    -fx-spacing: 8px;
+}
+
+.pattern-title-container .drag-handle-affordance.icon {
+    -fx-min-width: 13px;
+    -fx-max-width: 13px;
+    -fx-max-height: 20px;
+    -fx-min-height: 20px;
+    -fx-background-color: #9A9DA0;
+
+    -fx-scale-shape: false;
+}
+
+/* Pattern Browser ScrollPane */
+
+.pattern-navigation-scroll-pane,
+.pattern-navigation-scroll-pane > .viewport {
+    -fx-background-color: #545d72;
+}
+
+.pattern-navigation-scroll-pane > .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.pattern-navigation-scroll-pane > .scroll-bar:vertical .increment-button,
+.pattern-navigation-scroll-pane > .scroll-bar:vertical .decrement-button,
+.pattern-navigation-scroll-pane > .scroll-bar:vertical .increment-arrow,
+.pattern-navigation-scroll-pane > .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0 2 0 2;
+}
+
+.pattern-navigation-scroll-pane > .scroll-bar:vertical .thumb {
+    -fx-background-color: #a9aeb8;
+    -fx-background-insets: 3px 5px 3px 2px;
+    -fx-background-radius: 16px;
+}
+
+.pattern-navigation-container {
+    -fx-spacing: 4px;
+    -fx-padding: 0 2px 0 12px;
+}
+
+/* Pattern Browser ListViews */
+
+.pattern-instances-list-view {
+    -fx-background-color: #f1f3f8;
+    -fx-padding: 3px 0 0 0;
+}
+
+.pattern-instances-list-view.list-view .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 2px 0 0 0;
+}
+
+.pattern-instances-list-view.list-view .scroll-bar:vertical .increment-button,
+.pattern-instances-list-view.list-view .scroll-bar:vertical .decrement-button,
+.pattern-instances-list-view.list-view .scroll-bar:vertical .increment-arrow,
+.pattern-instances-list-view.list-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0 2 0 2;
+}
+
+.pattern-instances-list-view.list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #777;
+    -fx-background-insets: 3 5 3 0;
+    -fx-background-radius: 16px;
+}
+
+/* Horizontal scrollbars */
+.pattern-instances-list-view.list-view .scroll-bar:horizontal .increment-arrow,
+.pattern-instances-list-view.list-view .scroll-bar:horizontal .decrement-arrow,
+.pattern-instances-list-view.list-view .scroll-bar:horizontal .increment-button,
+.pattern-instances-list-view.list-view .scroll-bar:horizontal .decrement-button {
+    -fx-padding:0;
+}
+
+/* Cells and Cells content */
+.pattern-instances-list-view.list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+
+    -fx-padding: 0 6px 0 6px;
 }
 
 .add-new-instance-icon {
@@ -4867,13 +5000,12 @@ Styling a context menu for kview ui/ux controls
 
 /* Semantic Details section - VBox */
 .semantic-field-container {
-    -fx-min-height: 58px;
 
     -fx-spacing: 12px;
 
     -fx-fill-width: true;
-    -fx-padding: 16px 12px 20px 12px;
-    -fx-background-color: -Grey-1;
+    -fx-padding: 20px 12px 40px 12px;
+    -fx-background-color: white;
 }
 .semantic-field-collection-container,
 .semantic-field-ditree-container {
@@ -4961,6 +5093,14 @@ Styling a context menu for kview ui/ux controls
 .sub-container .button-bar .primary.button:armed {
     -fx-background-color: derive(-Secondary-05, -20%);
     -fx-border-color: transparent;
+}
+
+.semantic-details-scroll.scroll-pane > .scroll-bar:vertical {
+    -fx-pref-height: 410px;
+    -fx-pref-width: 8px;
+    -fx-border-radius: 6;
+    -fx-border-style: solid;
+    -fx-border-color: -Grey-1;
 }
 
 /*******************************************************************************
@@ -5098,4 +5238,8 @@ Styling a context menu for kview ui/ux controls
 
 .icon.cross {
     -fx-shape: "M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z";
+}
+
+.icon.six-dots {
+    -fx-shape: "M0 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0";
 }

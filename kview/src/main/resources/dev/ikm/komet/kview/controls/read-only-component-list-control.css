@@ -1,0 +1,52 @@
+.read-only-component-list-control .main-container .component-item,
+.read-only-component-list-control .main-container .title {
+    -fx-border-width: 1px;
+    -fx-border-color: transparent;
+}
+
+.read-only-component-list-control .main-container .title {
+    -fx-text-fill: #5d5d5d;
+}
+
+
+.read-only-component-list-control .main-container .components-container {
+    -fx-spacing: 2px;
+
+    -fx-padding: 3px 0 0 0;
+}
+
+.read-only-component-list-control .main-container .components-container .component-row {
+    -fx-alignment: center-left;
+    -fx-spacing: 6px;
+}
+
+.read-only-component-list-control .main-container .components-container .component-row > .number-label {
+    -fx-text-fill: #111;
+}
+
+.read-only-component-list-control .main-container .components-container .component-item > .container {
+    -fx-spacing: 4px;
+    -fx-alignment: center-left;
+}
+
+.read-only-component-list-control .main-container .components-container .component-item > .container > .label {
+    -fx-text-fill: #111;
+    -fx-font-size: 1.166667em;
+
+    -fx-border-width: 1px;
+    -fx-border-color: transparent;
+
+    -fx-padding: 0 0 0 1px;
+}
+
+.read-only-component-list-control .main-container .components-container .component-item:hover > .container > .label {
+    -fx-background-color: #f4f4f4;
+    -fx-border-color: #dfdfdf;
+}
+
+.read-only-component-list-control .main-container .components-container .component-item:edit-mode > .container > .label {
+    -fx-background-color: #f4f9ff;
+    -fx-border-color: #cfd8e4;
+
+    -fx-text-fill: #395c9a;
+}

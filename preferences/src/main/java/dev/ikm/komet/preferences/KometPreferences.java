@@ -25,7 +25,8 @@ import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.NodeChangeListener;
 import java.util.prefs.PreferenceChangeListener;
-import java.util.prefs.Preferences;
+
+import static java.util.prefs.Preferences.MAX_KEY_LENGTH;
 
 /**
  * 
@@ -75,6 +76,116 @@ public interface KometPreferences {
         }
     }
 
+    /**
+     * Associates the specified value with the specified entity key in this map.
+     *
+     * @param key   an EntityFacade
+     * @param value the value to be associated with the specified key
+     */
+    default void put(EntityFacade key, String value) {
+        put(facadeToGeneralKey(key), value);
+    }
+
+    /**
+     * Retrieves a value associated with the specified key. If the value is not found, returns the provided default value.
+     *
+     * @param key the entity key to look up the value
+     * @param defaultValue the default value to return if the key is not found
+     * @return the value associated with the specified key, or the default value if not found
+     */
+    default String get(EntityFacade key, String defaultValue) {
+        return get(facadeToGeneralKey(key), defaultValue);
+    }
+
+    /**
+     * Retrieves a value as an Optional associated with the given EntityFacade key.
+     *
+     * @param key the EntityFacade key for which the associated value is to be retrieved
+     * @return an Optional containing the value if present, or an empty Optional if no value is associated
+     */
+    default Optional<String> get(EntityFacade key) {
+        return get(facadeToGeneralKey(key));
+    }
+
+    /**
+     * Associates the specified list of strings with the specified key
+     * within the entity facade. The method utilizes a general key derived
+     * from the provided entity facade key.
+     *
+     * @param key the entity facade key to retrieve and associate the list
+     * @param list the list of strings to be associated with the given key
+     */
+    default void putList(EntityFacade key, List<String> list) {
+        putList(facadeToGeneralKey(key), list);
+    }
+
+    /**
+     * Retrieves a list of strings associated with the provided entity facade key.
+     *
+     * @param key The EntityFacade object used to retrieve the associated list.
+     * @return A list of strings corresponding to the provided entity facade key.
+     */
+    default List<String> getList(EntityFacade key) {
+        return getList(facadeToGeneralKey(key));
+    }
+
+    /**
+     * Retrieves an optional list of strings based on the provided entity facade key.
+     *
+     * @param key the entity facade key used to retrieve the optional list
+     * @return an Optional containing a list of strings, or an empty Optional if no list is available
+     */
+    default Optional<List<String>> getOptionalList(EntityFacade key) {
+        return getOptionalList(facadeToGeneralKey(key));
+    }
+
+    /**
+     * Associates the specified value with the specified entity key in this map.
+     *
+     * @param key   an EntityFacade
+     * @param value the value to be associated with the specified key
+     */
+    default void putObject(EntityFacade key, Encodable value) {
+        putObject(facadeToGeneralKey(key), value);
+    }
+
+    /**
+     * Retrieves an object associated with the given entity key. If no object is found,
+     * the specified default value is returned.
+     *
+     * @param <T>           the type of the object to retrieve
+     * @param key           the entity key used to fetch the object
+     * @param defaultValue  the default value to be returned if no object is associated with the key
+     * @return the object associated with the key, or the default value if no such object exists
+     */
+    default <T extends Object> T getObject(EntityFacade key, T defaultValue) {
+        return getObject(facadeToGeneralKey(key), defaultValue);
+    }
+
+    /**
+     * Retrieves an object based on the provided entity key.
+     *
+     * @param key the entity key used to retrieve the object
+     * @return an Optional containing the retrieved object if present; otherwise an empty Optional
+     */
+    default <T extends Object> Optional<T> getObject(EntityFacade key) {
+        return getObject(facadeToGeneralKey(key));
+    }
+
+    /**
+     * Converts an EntityFacade key into a general key representation by generating
+     * an XML fragment and truncating it if it exceeds the maximum key length.
+     *
+     * @param key the EntityFacade key to be converted into a general key representation
+     * @return the general key representation as a string, truncated if necessary
+     */
+    default String facadeToGeneralKey(EntityFacade key) {
+        String proxyKey = ProxyFactory.toXmlFragment(key);
+        if (proxyKey.length() > MAX_KEY_LENGTH) {
+            return proxyKey.substring(0, MAX_KEY_LENGTH -1);
+        }
+        return proxyKey;
+    }
 
     /**
      * Associates the specified value with the specified key in this map.
@@ -127,14 +238,14 @@ public interface KometPreferences {
         sb.append(".").append(key.name());
 
         String prefix = sb.toString();
-        if (prefix.length() > Preferences.MAX_KEY_LENGTH) {
+        if (prefix.length() > MAX_KEY_LENGTH) {
             throw new IllegalStateException("MAX_KEY_LENGTH exceeded by " + prefix);
         }
 
         String stringKey = prefix + "_" + uuidSuffix;
 
-        if (stringKey.length() > Preferences.MAX_KEY_LENGTH) {
-            int sizeToRemove = stringKey.length() - Preferences.MAX_KEY_LENGTH;
+        if (stringKey.length() > MAX_KEY_LENGTH) {
+            int sizeToRemove = stringKey.length() - MAX_KEY_LENGTH;
             stringKey = stringKey.substring(sizeToRemove);
         }
         return stringKey;

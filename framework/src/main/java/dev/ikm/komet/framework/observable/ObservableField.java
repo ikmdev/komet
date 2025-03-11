@@ -31,7 +31,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 
-public class ObservableField<T> implements Field<T> {
+public final class ObservableField<T> implements Field<T> {
 
     SimpleObjectProperty<FieldRecord<T>> fieldProperty = new SimpleObjectProperty<>();
     SimpleObjectProperty<T> valueProperty = new SimpleObjectProperty<>();
@@ -73,10 +73,10 @@ public class ObservableField<T> implements Field<T> {
     }
 
     public void writeToDatabase(Object newValue) {
-        StampRecord stamp = Entity.getStamp(fieldProperty.get().semanticVersionStampNid());
+        StampRecord stamp = Entity.getStamp(fieldProperty.get().versionStampNid());
         // Get current version
-        SemanticVersionRecord version = Entity.getVersionFast(field().semanticNid(), field().semanticVersionStampNid());
-        SemanticRecord semantic = Entity.getFast(field().semanticNid());
+        SemanticVersionRecord version = Entity.getVersionFast(field().nid(), field().versionStampNid());
+        SemanticRecord semantic = Entity.getFast(field().nid());
         MutableList fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
         fieldsForNewVersion.set(fieldIndex(), newValue);
 

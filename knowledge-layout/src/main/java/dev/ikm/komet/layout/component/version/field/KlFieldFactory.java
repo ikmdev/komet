@@ -13,9 +13,11 @@ import dev.ikm.komet.framework.view.ObservableView;
  * observable fields and views to the fields they create, enabling dynamic updates
  * and context-aware behavior in the produced fields.
  *
- * @param <T> The type of value that the field will handle.
+ * @param <DT> The data type of value that the field will handle.
+ * @deprecated use KlFieldPaneFactory
  */
-public interface KlFieldFactory<T> {
+@Deprecated
+public interface KlFieldFactory<DT> {
 
     /**
      * Creates a new instance of {@link KlField} associated with the provided observable data
@@ -28,7 +30,7 @@ public interface KlFieldFactory<T> {
      * @param editable flag to determine if the UI control is editable
      * @return a new {@link KlField} instance parameterized with the same type as the provided {@link ObservableField}.
      */
-    KlField<T> create(ObservableField<T> observableField, ObservableView observableView, boolean editable);
+    KlField<DT> create(ObservableField<DT> observableField, ObservableView observableView, boolean editable);
 
     /**
      * Retrieves the class type of the field interface produced by the factory.
@@ -38,7 +40,7 @@ public interface KlFieldFactory<T> {
      * @return A {@link Class} object representing the class type of the field
      *         interface extending {@link KlField}.
      */
-    Class<? extends KlField<T>> getFieldInterface();
+    Class<? extends KlField<DT>> getFieldInterface();
 
     /**
      * Retrieves the class type of the specific implementation of {@link KlField}
@@ -47,7 +49,7 @@ public interface KlFieldFactory<T> {
      * @return A {@link Class} object representing the class type of the implementation
      *         of {@link KlField} associated with this factory.
      */
-    Class<? extends KlField<T>> getFieldImplementation();
+    Class<? extends KlField<DT>> getFieldImplementation();
 
     /**
      * Retrieves the name of the associated field widget created by this factory.

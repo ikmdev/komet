@@ -24,6 +24,7 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
     private static final Pattern NUMERICAL_PATTERN = Pattern.compile("^-?([1-9][0-9]*)?$"); // allow '-', don't start with 0
     private static final PseudoClass ERROR_PSEUDO_CLASS = PseudoClass.getPseudoClass("error");
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.integer-control");
+    private static final Duration ERROR_DURATION = Duration.seconds(5);
 
     private final Label titleLabel;
     private final TextField textField;
@@ -59,6 +60,7 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
 
         textField.setTextFormatter(new TextFormatter<>(new IntegerStringConverter(), null, change -> {
             errorLabel.setText(null);
+            control.setShowError(false);
             String text = change.getControlNewText();
             if (text.isEmpty() || NUMERICAL_PATTERN.matcher(text).matches()) {
                 if (!text.isEmpty() && !"-".equals(text)) {
@@ -68,6 +70,7 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
                     } catch (Exception e) {
                         // or else discard the change and warn
                         errorLabel.setText(MessageFormat.format(resources.getString("error.integer.text"), text));
+                        control.setShowError(true);
                         return null;
                     }
                 }
@@ -83,7 +86,8 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
                 }
                 return change;
             } else {
-                errorLabel.setText(MessageFormat.format(resources.getString("error.input.text"), change.getText()));
+                errorLabel.setText(MessageFormat.format(resources.getString("error.integer.text"), change.getText()));
+                control.setShowError(true);
             }
             return null;
         }));
@@ -104,7 +108,7 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
             textChangedViaKeyEvent = false;
         }));
 
-        final PauseTransition pauseTransition = new PauseTransition(Duration.seconds(1));
+        final PauseTransition pauseTransition = new PauseTransition(ERROR_DURATION);
         pauseTransition.setOnFinished(f -> {
             textField.pseudoClassStateChanged(ERROR_PSEUDO_CLASS, false);
             errorLabel.setText(null);
@@ -169,7 +173,7 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
             y += textFieldPrefHeight + 2;
             labelPrefWidth = errorLabel.prefWidth(-1);
             labelPrefHeight = errorLabel.prefHeight(labelPrefWidth);
-            errorLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
+            errorLabel.resizeRelocate(x, y, textField.getWidth(), labelPrefHeight);
         }
     }
 

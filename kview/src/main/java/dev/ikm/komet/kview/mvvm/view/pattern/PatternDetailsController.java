@@ -60,6 +60,8 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.SELECTED_PATTERN_FIELD;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STAMP_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
@@ -84,6 +86,7 @@ import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -124,7 +127,6 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.loader.NamedVm;
-import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -383,6 +385,8 @@ public class PatternDetailsController {
 
         // show the public id
         //identifierText.setText(patternViewModel.getPatternIdentifierText());
+        identifierText.textProperty().bind(patternViewModel.getProperty(PATTERN).map(pf ->
+                String.valueOf(((EntityFacade) pf).toProxy().publicId().asUuidList().getLastOptional().get())));
         identifierText.textProperty().bind(patternViewModel.getProperty(PATTERN).map(pf ->
                 String.valueOf(((EntityFacade) pf).toProxy().publicId().asUuidList().getLastOptional().get())));
 
@@ -680,8 +684,6 @@ public class PatternDetailsController {
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
-        Pane parent = (Pane) detailsOuterBorderPane.getParent();
-        parent.getChildren().remove(detailsOuterBorderPane);
     }
 
     @FXML
@@ -771,6 +773,14 @@ public class PatternDetailsController {
     @FXML
     public void popupStampEdit(ActionEvent event) {
         if (stampEdit != null && stampEditController != null) {
+            // refresh modules
+            getStampViewModel().getObservableList(MODULES_PROPERTY).clear();
+            getStampViewModel().getObservableList(MODULES_PROPERTY).addAll(getStampViewModel().findAllModules(getViewProperties()));
+
+            // refresh path
+            getStampViewModel().getObservableList(PATHS_PROPERTY).clear();
+            getStampViewModel().getObservableList(PATHS_PROPERTY).addAll(getStampViewModel().findAllPaths(getViewProperties()));
+
             stampEdit.show((Node) event.getSource());
             stampEditController.selectActiveStatusToggle();
             return;
@@ -808,7 +818,7 @@ public class PatternDetailsController {
         this.stampEditController = stampEditController;
     }
 
-    public ValidationViewModel getStampViewModel() {
+    public StampViewModel getStampViewModel() {
         return patternViewModel.getPropertyValue(STAMP_VIEW_MODEL);
     }
 

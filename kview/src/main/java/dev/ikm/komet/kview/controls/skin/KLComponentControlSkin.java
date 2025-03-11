@@ -19,10 +19,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.DataFormat;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -40,10 +38,11 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
     private static final Logger LOG = LoggerFactory.getLogger(KLComponentControl.class);
     private static final String SEARCH_TEXT_VALUE = "search.text.value";
-    private static final DataFormat CONTROL_DRAG_FORMAT;
+    public static final DataFormat COMPONENT_CONTROL_DRAG_FORMAT;
+
     static {
         DataFormat dataFormat = DataFormat.lookupMimeType("text/concept-control-format");
-        CONTROL_DRAG_FORMAT = dataFormat == null ? new DataFormat("text/concept-control-format") : dataFormat;
+        COMPONENT_CONTROL_DRAG_FORMAT = dataFormat == null ? new DataFormat("text/concept-control-format") : dataFormat;
     }
 
     private final Label titleLabel;
@@ -51,6 +50,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private final StackPane conceptContainer;
     private final HBox aboutToDropHBox;
     private final HBox aboutToRearrangeHBox;
+    private final BorderPane doNotDropBorderPane;
 
     /**
      * Creates a new KLComponentControlSkin instance, installing the necessary child
@@ -73,8 +73,10 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         selectedConceptContainer.managedProperty().bind(selectedConceptContainer.visibleProperty());
 
         aboutToDropHBox = createDragOverAnimation();
+        doNotDropBorderPane = createDoNotDropDragOverAnimation();
         aboutToRearrangeHBox = createDragOverAnimation();
-        conceptContainer = new StackPane(createSearchBox(), aboutToDropHBox);
+
+        conceptContainer = new StackPane(createSearchBox(), aboutToDropHBox , doNotDropBorderPane);
         conceptContainer.getStyleClass().add("concept-container");
         conceptContainer.managedProperty().bind(conceptContainer.visibleProperty());
         selectedConceptContainer.visibleProperty().bind(conceptContainer.visibleProperty().not());
@@ -130,7 +132,13 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private void setupDragNDrop() {
         KLComponentControl control = getSkinnable();
         control.setOnDragOver(event -> {
-            if (event.getDragboard().hasContent(CONTROL_DRAG_FORMAT)) {
+            if (isDuplicateInParentSet(control, event)) {
+                event.acceptTransferModes(TransferMode.NONE);
+                event.consume();
+                return;
+            }
+
+            if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT)) {
                 event.acceptTransferModes(TransferMode.MOVE);
             } else if (event.getGestureSource() != control && event.getDragboard().hasString()) {
                 event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
@@ -141,10 +149,12 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         control.setOnDragEntered(event -> {
             if (event.getGestureSource() != control && event.getDragboard().hasString()) {
                 conceptContainer.setOpacity(.90);
-                if (event.getDragboard().hasContent(CONTROL_DRAG_FORMAT)) {
+                if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT)) {
                     if (hasAllowedDND(control)) {
                         aboutToRearrangeHBox.setVisible(true);
                     }
+                } else if (isDuplicateInParentSet(control, event)) {
+                    doNotDropBorderPane.setVisible(true);  // show error message.
                 } else {
                     aboutToDropHBox.setVisible(true);
                 }
@@ -156,6 +166,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
             conceptContainer.setOpacity(1);
             aboutToRearrangeHBox.setVisible(false);
             aboutToDropHBox.setVisible(false);
+            doNotDropBorderPane.setVisible(false);
             event.consume();
         });
 
@@ -163,7 +174,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
             if (hasAllowedDND(control)) {
                 Dragboard dragboard = control.startDragAndDrop(TransferMode.MOVE);
                 ClipboardContent clipboardContent = new ClipboardContent();
-                clipboardContent.put(CONTROL_DRAG_FORMAT, "concept-control");
+                clipboardContent.put(COMPONENT_CONTROL_DRAG_FORMAT, "concept-control");
                 control.setUserData(control.getEntity().publicId());
                 clipboardContent.putString(control.getEntity().toString());
                 dragboard.setContent(clipboardContent);
@@ -176,9 +187,14 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         });
 
         control.setOnDragDropped(event -> {
-            boolean success = false;
+            if (isDuplicateInParentSet(control, event)) {
+                event.setDropCompleted(false);
+                event.consume();
+                return;
+            }
+
             Dragboard dragboard = event.getDragboard();
-            if (event.getDragboard().hasContent(CONTROL_DRAG_FORMAT) &&
+            if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT) &&
                     event.getGestureSource() instanceof KLComponentControl cc && haveAllowedDND(control, cc)) {
                 // reorder components
                 if (control.getParent() instanceof KLComponentSetControl componentSetControl) {
@@ -187,22 +203,9 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     int targetIndex = skin.getChildren().indexOf(control);
                     final Node node = skin.getChildren().remove(sourceIndex);
                     skin.getChildren().add(targetIndex, node);
-                    success = true;
-                } else if (control.getParent() instanceof KLComponentListControl componentListControl) {
-                    KLComponentListControlSkin skin = (KLComponentListControlSkin) componentListControl.getSkin();
-                    int sourceIndex = skin.getChildren().indexOf(cc);
-                    int targetIndex = skin.getChildren().indexOf(control);
-                    final KLComponentControl node = (KLComponentControl) skin.getChildren().remove(sourceIndex);
-//                    skin.getChildren().remove(sourceIndex);
-//                    if (targetIndex >= skin.getChildren().size()) {
-//                        skin.getChildren().add(node);
-//                    } else {
-                        skin.getChildren().add(targetIndex, node);
-//                    }
-//                    skin.getSkinnable().removeIndexItem(sourceIndex);
-//                    skin.getSkinnable().addValue(targetIndex, node.getEntity().nid());
 
-                    success = true;
+                    event.setDropCompleted(true);
+                    event.consume();
                 }
             } else if (dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
                 // drop concept
@@ -211,42 +214,54 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     if (event.getGestureSource() instanceof Node source &&
                             source.getUserData() instanceof DragAndDropInfo dropInfo &&
                             dropInfo.publicId() != null
-//                            &&
-//                            dropInfo.publicId().toString().equals(dragboard.getString())
                     ) { // TODO: should this be needed? shouldn't we get PublicId from dragboard content?
+                        int nid = EntityService.get().nidForPublicId(dropInfo.publicId());
+                        EntityProxy entity = EntityProxy.make(nid);
+                        if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
+                                !componentSetControl.getValue().contains(nid)) {
+                            control.setEntity(entity);
+                            addConceptNode(entity);
 
-                        //if (control.getEntity() == null) {
-                            int nid = EntityService.get().nidForPublicId(dropInfo.publicId());
-                            EntityProxy entity = EntityProxy.make(nid);
-                            if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
-                                    !componentSetControl.getValue().contains(nid)) {
-                                control.setEntity(entity);
-                                addConceptNode(entity);
-                                success = true;
-                            }
-                        //}
+                            event.setDropCompleted(true);
+                            event.consume();
+                        }
                     }
                 } catch (Exception e) {
                     LOG.error("exception: ", e);
                 }
             }
-
-            event.setDropCompleted(success);
-            event.consume();
         });
+    }
+
+    /**
+     * Determines if the dragged concept is already present in the parent {@link KLComponentSetControl}.
+     *
+     * @param control the {@link KLComponentControl} whose parent is checked
+     * @param event   the {@link javafx.scene.input.DragEvent} carrying drag data
+     * @return {@code true} if the concept's {@code publicId} is duplicated in the set;
+     *         {@code false} otherwise
+     */
+    private boolean isDuplicateInParentSet(KLComponentControl control, DragEvent event) {
+        return control.getParent() instanceof KLComponentSetControl klComponentSetControl // If the parent is a KLComponentSetControl
+                && event.getGestureSource() instanceof Node source // and the gesture source is a Node
+                && source.getUserData() instanceof DragAndDropInfo dropInfo // whose user data is DragAndDropInfo
+                && dropInfo.publicId() != null // with a non-null publicId
+                && klComponentSetControl.getValue().contains(EntityService.get().nidForPublicId(dropInfo.publicId())); // that already exists in the set
     }
 
     private boolean hasAllowedDND(KLComponentControl control) {
         return control != null && control.getEntity() != null &&
-                ((control.getParent() instanceof KLComponentSetControl cs && cs.getValue().size() > 1) ||
-                (control.getParent() instanceof KLComponentListControl cl && cl.getValue().size() > 1));
+                ((control.getParent() instanceof KLComponentSetControl cs && cs.getValue().size() > 1)
+                    ||  (control.getParent() instanceof KLComponentListControl cl && cl.getValue().size() > 1)
+                );
     }
 
     private boolean haveAllowedDND(KLComponentControl source, KLComponentControl target) {
         // only allowed if both source and target have the same parent
         return hasAllowedDND(source) && hasAllowedDND(target) &&
-                ((source.getParent() instanceof KLComponentSetControl cs1 && target.getParent() instanceof KLComponentSetControl cs2 && cs1 == cs2) ||
-                 (source.getParent() instanceof KLComponentListControl cl1 && target.getParent() instanceof KLComponentListControl cl2 && cl1 == cl2));
+                ((source.getParent() instanceof KLComponentSetControl cs1 && target.getParent() instanceof KLComponentSetControl cs2 && cs1 == cs2)
+//                    || (source.getParent() instanceof KLComponentListControl cl1 && target.getParent() instanceof KLComponentListControl cl2 && cl1 == cl2)
+                );
     }
 
     private HBox createSearchBox() {
@@ -291,6 +306,34 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         aboutToDropHBox.setVisible(false);
         return aboutToDropHBox;
     }
+
+    /***
+     * This method show the error message to let user know tht the value is duplicate.
+     * @return hbox
+     */
+    private BorderPane createDoNotDropDragOverAnimation(){
+        // Initialize the borderpane
+        BorderPane borderPane = new BorderPane();
+        StackPane stackPane = new StackPane();
+        //add stackPane to right of borderPane.
+        borderPane.setRight(stackPane);
+
+        Region iconRegion = new Region();
+        iconRegion.getStyleClass().add("concept-donot-drag-and-drop-icon");
+        // add Region/Icon to the stackpane
+        stackPane.getChildren().add(iconRegion);
+
+        Label doNotDragAndDropLabel = new Label(getString("textfield.donot.drag.text"));
+        doNotDragAndDropLabel.getStyleClass().add("error-msg-label");
+        //Add label to the center of borderpane.
+        borderPane.setCenter(doNotDragAndDropLabel);
+
+        borderPane.getStyleClass().add("concept-donot-drop-area");
+        borderPane.managedProperty().bind(borderPane.visibleProperty());
+        borderPane.setVisible(false);
+        return borderPane;
+    }
+
 
     private void addConceptNode(EntityProxy entity) {
         Image identicon = Identicon.generateIdenticonImage(entity.publicId());
