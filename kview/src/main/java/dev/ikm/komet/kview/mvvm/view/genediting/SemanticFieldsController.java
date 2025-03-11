@@ -16,14 +16,12 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
-import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.CHANGED_VALUE_UUID_TOPIC;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
@@ -126,16 +124,6 @@ public class SemanticFieldsController {
 
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         if (semantic != null) {
-
-            Subscriber<GenEditingEvent> orderChangedSubscriber = evt -> {
-                if (evt.getEventType() == GenEditingEvent.VALUE_CHANGED) {
-                    semanticModified();
-                }
-            };
-            EvtBusFactory.getDefaultEvtBus().subscribe(CHANGED_VALUE_UUID_TOPIC,
-                    GenEditingEvent.class, orderChangedSubscriber);
-
-
             StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
             Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
             if (semanticEntityVersionLatest.isPresent()) {
@@ -152,7 +140,6 @@ public class SemanticFieldsController {
                 //Add listener for valueProperty of each field to check when data is modified.
                 observableFields.forEach(observableField ->
                         observableField.valueProperty()
-                                //.addListener((obs, oldVal, newVal) ->{semanticModified();})
                         .subscribe(newvalue -> semanticModified())
                 );
 
@@ -160,8 +147,6 @@ public class SemanticFieldsController {
             } else {
                 // TODO Add a new semantic based on a pattern (blank fields).
             }
-
-
         }
 
         // subscribe to changes... if the FIELD_INDEX is -1 or unset, then the user clicked the
