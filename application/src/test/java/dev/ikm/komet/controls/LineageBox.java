@@ -143,7 +143,6 @@ public class LineageBox extends VBox {
             label.setOnMouseClicked(e -> {
                 label.getParent().pseudoClassStateChanged(COLLAPSED_LINEAGE_PSEUDO_CLASS, false);
                 getConcept().getViewLineageBitSet(extraParentItem).set(level, true);
-                System.out.println(getConcept().getViewLineageBitSet(extraParentItem));
                 conceptNavigator.getAllSecondaryParents(treeItem.getValue().nid()).stream()
                         .filter(item -> lineageBox.getChildren().stream()
                                 .noneMatch(n -> n.getUserData() != null && n.getUserData().equals(item.getValue().nid())))
