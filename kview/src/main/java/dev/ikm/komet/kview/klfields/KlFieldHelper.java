@@ -1,7 +1,11 @@
 package dev.ikm.komet.kview.klfields;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
+import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
@@ -25,14 +29,18 @@ import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.Transaction;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.Node;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class KlFieldHelper {
@@ -179,5 +187,33 @@ public class KlFieldHelper {
 
         // Entity provider will broadcast the nid of the changed entity.*/
         Entity.provider().putEntity(semanticRecord);
+    }
+
+
+    /**
+     * This method will return the latest commited version.
+     * //TODO this method can be generalized to return latest<EntityVersion> As of now it is just returning SemanticEntityVersion.
+     * // TODO need to implement logic for create Semantic.
+     *
+     * @return entityVersionLatest
+     * */
+    public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(EntityFacade entityFacade, ViewProperties viewProperties) {
+        AtomicReference<Latest<SemanticEntityVersion>> entityVersionLatest = new AtomicReference<>();
+
+        StampCalculator stampCalculator = viewProperties.calculator().stampCalculator();
+        //retrieve latest semanticVersion
+        Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(entityFacade.nid());
+        ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
+        ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
+        //Get list of previously committed data sorted in latest at the top.
+        ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
+        // Filter out Uncommitted data. Data whose time stamp parameter is Long.MAX_VALUE. and get the 1st available.
+        Optional<ObservableSemanticVersion> observableSemanticVersionOptional = observableSemanticVersionImmutableList.stream().filter(p -> p.stamp().time() != Long.MAX_VALUE).findFirst();
+
+        observableSemanticVersionOptional.ifPresentOrElse( (p) -> {
+            entityVersionLatest.set(new Latest<>(p));
+        }, () -> {entityVersionLatest.set(semanticEntityVersionLatest);});
+
+        return entityVersionLatest.get();
     }
 }
