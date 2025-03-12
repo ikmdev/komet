@@ -148,7 +148,6 @@ public class SemanticFieldsController {
         });
     }
 
-
     private static Separator createSeparator() {
         Separator separator = new Separator();
         separator.getStyleClass().add("field-separator");
@@ -181,7 +180,8 @@ public class SemanticFieldsController {
         if(transaction != null){
             commitTransactionTask(transaction);
         }
-
+        committedHash = calculteHashValue();
+        validator();
         //Get the semantic need to pass along with event for loading values across Opened Semantics.
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         //EventBus implementation changes to refresh the details area
