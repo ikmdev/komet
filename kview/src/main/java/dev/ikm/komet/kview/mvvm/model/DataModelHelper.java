@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.kview.mvvm.model;
 
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
+import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
 import static dev.ikm.tinkar.terms.TinkarTerm.ARRAY_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
@@ -34,11 +36,14 @@ import static dev.ikm.tinkar.terms.TinkarTerm.SEMANTIC_FIELD_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
 import static dev.ikm.tinkar.terms.TinkarTerm.UUID_DATA_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.VERTEX_FIELD;
+
+import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
@@ -186,6 +191,8 @@ public class DataModelHelper {
             // a member, need to change to inactive.
             updateSemantic(pattern, semanticNidsForComponent[0], editCoordinate.toEditCoordinateRecord(), viewCalculator, true);
         }
+        //Fire an event for PatternCreation
+        EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternCreationEvent(concept, PATTERN_CREATION_EVENT));
     }
 
     /**
@@ -203,6 +210,8 @@ public class DataModelHelper {
         } else {
             updateSemantic(pattern, semanticNidsForComponent[0], editCoordinate.toEditCoordinateRecord(), viewCalculator, false);
         }
+        //Fire an event for PatternCreation
+        EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternCreationEvent(pattern, PATTERN_CREATION_EVENT));
     }
 
     private static SemanticRecord createSemantic(EntityFacade concept, EntityFacade pattern, EditCoordinateRecord editCoordinateRecord, ViewCalculator viewCalculator) {
