@@ -26,17 +26,12 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
-import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
-import dev.ikm.tinkar.common.id.IntIdCollection;
-import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.FieldRecord;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
@@ -45,7 +40,6 @@ import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -60,7 +54,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
@@ -87,39 +80,22 @@ public class SemanticFieldsController {
 
     private List<Node> nodes = new ArrayList<>();
 
-    // Maintain the list of committed field records
-    private final List<FieldRecord<?>> commitedFields = new ArrayList<>();
+    private int committedHash;
+    private int uncommittedHash;
 
-
-    /**
-     * This method enables and disables the submit button.
-     */
-    private void semanticModified() {
-        boolean disableButton = true;
-        for(ObservableField<?> observableField : observableFields){
-            FieldRecord<?> commmitedFieldRecord = commitedFields.get(observableField.fieldIndex());
-            if(disableButton){
-                disableButton = commmitedFieldRecord.value().equals(observableField.value());
-            }
-            if(disableButton && PublicId.equals(observableField.dataType().publicId(), TinkarTerm.COMPONENT_ID_LIST_FIELD.publicId()) ||
-                    PublicId.equals(observableField.dataType().publicId(),TinkarTerm.COMPONENT_ID_SET_FIELD.publicId())){
-                disableButton = fieldOrderChanged(observableField, commmitedFieldRecord);
-            }
-
-        }
-        submitButton.disableProperty().setValue(disableButton);
+    private void validator(){
+        uncommittedHash = calculteHashValue();
+        submitButton.setDisable(committedHash == uncommittedHash);
     }
 
-    /**
-     * This method checks if the order of the list/set is changed.
-    * */
-    private boolean fieldOrderChanged(ObservableField<?> observableField, FieldRecord<?> commmitedFieldRecord) {
-            int [] originalIntArray = ((IntIdCollection) commmitedFieldRecord.value()).toArray();
-            int[] changedIntIdArray = ((IntIdCollection) observableField.value()).toArray();
-
-        return originalIntArray.length == changedIntIdArray.length && Arrays.hashCode(originalIntArray) == Arrays.hashCode(changedIntIdArray);
-
+    private int calculteHashValue() {
+        StringBuilder stringBuilder = new StringBuilder();
+        observableFields.forEach(observableField -> {
+            stringBuilder.append(observableField.field().toString()).append("|");
+        });
+        return stringBuilder.toString().hashCode();
     }
+
 
     @FXML
     private void initialize() {
@@ -139,16 +115,12 @@ public class SemanticFieldsController {
                                 nodes,
                                 semanticEntityVersionLatest, true));
                 editFieldsVBox.getChildren().clear();
-
-                //Load CommittedField Data
-                commitedFields.addAll(loadCommittedData(semantic));
-                //Add listener for valueProperty of each field to check when data is modified.
                 observableFields.forEach(observableField ->
-                        observableField.valueProperty()
-                        .subscribe(newvalue -> semanticModified())
-                );
-                semanticModified();
-            } else {
+                                observableField.valueProperty()
+                                        .subscribe(newvalue -> validator()));
+                committedHash = calculteHashValue();
+                validator();
+             } else {
                 // TODO Add a new semantic based on a pattern (blank fields).
             }
         }
@@ -175,26 +147,6 @@ public class SemanticFieldsController {
             }
         });
     }
-
-    /**
-     *
-     * @param semantic
-     * @return committedFieldData
-     */
-    private List<FieldRecord<Object>> loadCommittedData(EntityFacade semantic) {
-        List<FieldRecord<Object>> committedFieldData = new ArrayList<>();
-        StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
-        Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
-        semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
-            Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
-            patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
-                List<FieldRecord<Object>> fieldRecords = DataModelHelper.fieldRecords(semanticEntityVersion, patternEntityVersion);
-                committedFieldData.addAll(fieldRecords);
-            });
-        });
-        return committedFieldData;
-    }
-
 
 
     private static Separator createSeparator() {
