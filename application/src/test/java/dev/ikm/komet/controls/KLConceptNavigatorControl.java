@@ -150,19 +150,27 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
         return conceptNavigatorTreeItem;
     }
 
-    public List<ConceptNavigatorTreeItem> getAllSecondaryParents(int nid) {
+    /**
+     * Get a list of all parents of a concept given by its nid
+     * @param nid The nid of the concept
+     * @return a list of concept items
+     */
+    public List<ConceptNavigatorTreeItem> getAllParents(int nid) {
         return getSecondaryParents(nid, -1);
     }
 
+    /**
+     * Get a list of all secondary parents of a concept, given by its nid, that are not the
+     * primary parent given by its parentNid
+     * @param nid the nid of the concept
+     * @param parentNid the nid of the primary parent of the concept
+     * @return a list of concept items
+     */
     public List<ConceptNavigatorTreeItem> getSecondaryParents(int nid, int parentNid) {
         return getNavigator().getParentEdges(nid).stream()
                 .filter(edge -> edge.destinationNid() != parentNid)
                 .map(edge -> getTreeViewItem((ConceptNavigatorTreeItem) getRoot(), edge.destinationNid()))
                 .toList();
-    }
-
-    public int getDepthOfTreeItem(ConceptNavigatorTreeItem parentTreeItem, ConceptNavigatorTreeItem childTreeItem) {
-        return getTreeItemLevel(childTreeItem) - getTreeItemLevel(parentTreeItem);
     }
 
     private static ConceptNavigatorTreeItem getTreeViewItem(ConceptNavigatorTreeItem item, int nid) {

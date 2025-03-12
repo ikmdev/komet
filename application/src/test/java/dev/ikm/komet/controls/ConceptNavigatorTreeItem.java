@@ -7,10 +7,9 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.TreeItem;
 
+import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
 
@@ -77,18 +76,6 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
         multiParentProperty.set(value);
     }
 
-    // extraParentsProperty
-    private final ObjectProperty<List<ConceptNavigatorTreeItem>> extraParentsProperty = new SimpleObjectProperty<>(this, "extraParents");
-    public final ObjectProperty<List<ConceptNavigatorTreeItem>> extraParentsProperty() {
-       return extraParentsProperty;
-    }
-    public final List<ConceptNavigatorTreeItem> getExtraParents() {
-       return extraParentsProperty.get();
-    }
-    public final void setExtraParents(List<ConceptNavigatorTreeItem> value) {
-        extraParentsProperty.set(value);
-    }
-
     // viewLineageProperty
     private final BooleanProperty viewLineageProperty = new SimpleBooleanProperty(this, "viewLineage");
     public final BooleanProperty viewLineageProperty() {
@@ -101,12 +88,9 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
         viewLineageProperty.set(value);
     }
 
-    private final Map<ConceptNavigatorTreeItem, BitSet> viewLineageBitSets = new HashMap<>();
-    public final BitSet getViewLineageBitSet(ConceptNavigatorTreeItem treeItem) {
-        return viewLineageBitSets.computeIfAbsent(treeItem, k -> new BitSet());
-    }
-    public final void resetViewLineageBitSet() {
-        viewLineageBitSets.clear();
+    private final InvertedTree invertedTree = new InvertedTree(this);
+    public final InvertedTree getInvertedTree() {
+        return invertedTree;
     }
 
     private BitSet bitset;

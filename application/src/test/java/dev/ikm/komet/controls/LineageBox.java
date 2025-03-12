@@ -11,6 +11,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class LineageBox extends VBox {
@@ -29,7 +30,7 @@ public class LineageBox extends VBox {
             ConceptNavigatorTreeItem concept = getConcept();
             if (concept != null) {
                 concept.setViewLineage(false);
-                concept.resetViewLineageBitSet();
+                concept.getInvertedTree().reset();
                 setConcept(null);
             }
             e.consume();
@@ -77,22 +78,21 @@ public class LineageBox extends VBox {
                 // list of secondary parents for the concept child, different from the primary parent item
                 List<ConceptNavigatorTreeItem> secondaryParents = conceptNavigator.
                         getSecondaryParents(childItem.getValue().nid(), primaryParentItem.getValue().nid());
-                childItem.setExtraParents(secondaryParents);
-                // for the concept child, add all its direct secondary parents, all collapsed
+                // for the concept child, add all its direct secondary parents, all collapsed initially
+                InvertedTree invertedTree = getConcept().getInvertedTree();
                 for (ConceptNavigatorTreeItem extraParentItem : secondaryParents) {
-                    getChildren().addFirst(new ParentHBox(this, extraParentItem, extraParentItem));
-                    // restore expanded items
-                    ConceptNavigatorTreeItem parent = (ConceptNavigatorTreeItem) extraParentItem.getParent();
-                    if (parent != null) {
-                        int index = 1;
-                        while (parent != null && childItem.getViewLineageBitSet(extraParentItem).get(index)) {
-                            getChildren().addFirst(new ParentHBox(this, parent, extraParentItem));
-                            parent = (ConceptNavigatorTreeItem) parent.getParent();
-                            index++;
-                        }
-                    }
+                    getChildren().addFirst(new ParentHBox(this, invertedTree, extraParentItem));
+                    // restore existing inverted tree, needed after scrolling and cell reuse, for instance
+                    invertedTree.iterateTree(invertedTree.getInvertedTree(extraParentItem),
+                            tree -> {
+                                // iteration goes from parent to last child, then back to next parent, so
+                                // it is safe to insert the boxes at position 0
+                                ParentHBox parentHBox = new ParentHBox(this, tree, tree.item);
+                                getChildren().addFirst(parentHBox);
+                            });
                 }
                 requestLayout();
+//                invertedTree.printTree();
             }
         }
     }
@@ -100,15 +100,14 @@ public class LineageBox extends VBox {
     private class ParentHBox extends HBox {
 
         private final LineageBox lineageBox;
-        private final ConceptNavigatorTreeItem extraParentItem;
+        private final InvertedTree invertedTree;
 
-
-        public ParentHBox(LineageBox lineageBox, ConceptNavigatorTreeItem treeItem, ConceptNavigatorTreeItem extraParentItem) {
+        public ParentHBox(LineageBox lineageBox, InvertedTree parentTree, ConceptNavigatorTreeItem treeItem) {
             this.lineageBox = lineageBox;
-            this.extraParentItem = extraParentItem;
+            this.invertedTree = parentTree.contains(treeItem) ? parentTree.getInvertedTree(treeItem) : parentTree.addChild(treeItem);
 
             Region spacer = new Region();
-            int level = conceptNavigator.getDepthOfTreeItem(treeItem, getAlternateChildWithNid(extraParentItem, getConcept().getValue().nid()));
+            int level = invertedTree.getLevel();
             int spacerWidth = 128 - 8 * level;
             spacer.setMinSize(spacerWidth, 1);
             spacer.setPrefSize(spacerWidth, 1);
@@ -118,47 +117,67 @@ public class LineageBox extends VBox {
             StackPane regionPane = new StackPane(iconRegion);
             regionPane.getStyleClass().add("region");
 
-            Label label = getConceptLabel(treeItem, level);
+            Label label = getConceptLabel(treeItem);
             HBox.setHgrow(label, Priority.ALWAYS);
 
             getChildren().addAll(spacer, regionPane, label);
-            setUserData(treeItem.getValue().nid());
-            boolean isRoot = conceptNavigator.getAllSecondaryParents(treeItem.getValue().nid()).isEmpty();
+
+            List<ConceptNavigatorTreeItem> allParents = conceptNavigator.getAllParents(treeItem.getValue().nid());
+            boolean isRoot = allParents.isEmpty();
             pseudoClassStateChanged(ROOT_LINEAGE_PSEUDO_CLASS, isRoot);
             if (isRoot) { // item is root
                 iconRegion.getStyleClass().add("root-angle");
-            } else if (level == 1) { // item is first secondary parent
-                iconRegion.getStyleClass().add("angle-circle-line");
-                pseudoClassStateChanged(COLLAPSED_LINEAGE_PSEUDO_CLASS, !getConcept().getViewLineageBitSet(extraParentItem).get(level));
             } else {
-                boolean hasMultipleParents = conceptNavigator.getAllSecondaryParents(treeItem.getValue().nid()).size() > 1;
-                iconRegion.getStyleClass().add(hasMultipleParents ? "angle-circle-angle" : "angle");
-                pseudoClassStateChanged(COLLAPSED_LINEAGE_PSEUDO_CLASS, !getConcept().getViewLineageBitSet(extraParentItem).get(level));
+                List<ConceptNavigatorTreeItem> allSiblings = new ArrayList<>(invertedTree.parent != null && invertedTree.parent.item != null ?
+                        conceptNavigator.getAllParents(invertedTree.parent.item.getValue().nid()) : List.of());
+                if (level == 1 && !allSiblings.isEmpty()) {
+                    allSiblings.removeFirst(); // remove primary parent
+                }
+                boolean hasMultipleParents = allParents.size() > 1;
+                boolean hasSiblings = allSiblings.size() > 1;
+                int currentIndex = allSiblings.indexOf(treeItem);
+                boolean firstSibling = currentIndex == 0;
+                boolean lastSibling = currentIndex == allSiblings.size() - 1;
+                String style1 = "", style2 = "", style3 = "";
+                if (level == 1) {
+                    style1 = !hasSiblings || lastSibling ? "angle" : "line";
+                    style2 = "circle";
+                    style3 = "line";
+                } else {
+                    style1 = hasSiblings && !lastSibling ? "line" : "angle";
+                    style2 = hasSiblings || hasMultipleParents ? "circle" : "angle";
+                    style3 = hasSiblings && !firstSibling ? "line" : "angle";
+                }
+
+                iconRegion.getStyleClass().add(style1 + "-" + style2 + "-" + style3);
+                pseudoClassStateChanged(COLLAPSED_LINEAGE_PSEUDO_CLASS, invertedTree.isLeaf());
             }
             getStyleClass().add("lineage-hbox");
         }
 
-        private Label getConceptLabel(ConceptNavigatorTreeItem treeItem, int level) {
+        private Label getConceptLabel(ConceptNavigatorTreeItem treeItem) {
             Label label = new Label(treeItem.getValue().description());
             label.setOnMouseClicked(e -> {
-                label.getParent().pseudoClassStateChanged(COLLAPSED_LINEAGE_PSEUDO_CLASS, false);
-                getConcept().getViewLineageBitSet(extraParentItem).set(level, true);
-                conceptNavigator.getAllSecondaryParents(treeItem.getValue().nid()).stream()
-                        .filter(item -> lineageBox.getChildren().stream()
-                                .noneMatch(n -> n.getUserData() != null && n.getUserData().equals(item.getValue().nid())))
-                        .forEach(item -> lineageBox.getChildren().addFirst(new ParentHBox(lineageBox, item, extraParentItem)));
+                ParentHBox currentHBox = (ParentHBox) label.getParent();
+                int currentIndex = lineageBox.getChildren().indexOf(currentHBox);
+                if (currentHBox.invertedTree.isLeaf()) {
+                    // item is collapsed, add all ancestors and expanse
+                    conceptNavigator.getAllParents(treeItem.getValue().nid()).stream()
+                            .filter(item -> !invertedTree.contains(item))
+                            .forEach(item -> {
+                                ParentHBox parentHBox = new ParentHBox(lineageBox, invertedTree, item);
+                                lineageBox.getChildren().add(currentIndex, parentHBox);
+                            });
+                    currentHBox.pseudoClassStateChanged(COLLAPSED_LINEAGE_PSEUDO_CLASS, false);
+                } else {
+                    // item is expanded, remove ancestors and collapse
+                    lineageBox.getChildren().remove(Math.max(0, currentIndex - invertedTree.countTotalDescendants()), currentIndex);
+                    currentHBox.invertedTree.reset();
+                    currentHBox.pseudoClassStateChanged(COLLAPSED_LINEAGE_PSEUDO_CLASS, true);
+                }
             });
             label.getStyleClass().add("lineage-label");
             return label;
-        }
-
-        private ConceptNavigatorTreeItem getAlternateChildWithNid(ConceptNavigatorTreeItem treeItem, int nid) {
-            return treeItem.getChildren().stream()
-                    .filter(ConceptNavigatorTreeItem.class::isInstance)
-                    .map(ConceptNavigatorTreeItem.class::cast)
-                    .filter(c -> c.getValue().nid() == nid)
-                    .findFirst()
-                    .orElseThrow();
         }
     }
 }
