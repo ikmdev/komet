@@ -51,6 +51,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private final HBox aboutToDropHBox;
     private final HBox aboutToRearrangeHBox;
     private final BorderPane doNotDropBorderPane;
+    private final StackPane dragHandleIconContainer;
 
     /**
      * Creates a new KLComponentControlSkin instance, installing the necessary child
@@ -80,7 +81,13 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         conceptContainer.getStyleClass().add("concept-container");
         conceptContainer.managedProperty().bind(conceptContainer.visibleProperty());
         selectedConceptContainer.visibleProperty().bind(conceptContainer.visibleProperty().not());
-        getChildren().addAll(titleLabel, selectedConceptContainer, conceptContainer, aboutToRearrangeHBox);
+
+        dragHandleIconContainer = new StackPane();
+        dragHandleIconContainer.getStyleClass().add("drag-handle-icon-container");
+        dragHandleIconContainer.visibleProperty().bind(control.showDragHandleProperty());
+        dragHandleIconContainer.managedProperty().bind(control.managedProperty());
+
+        getChildren().addAll(titleLabel, selectedConceptContainer, conceptContainer, aboutToRearrangeHBox, dragHandleIconContainer);
 
         setupDragNDrop();
 
@@ -352,6 +359,10 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
+        StackPane dragHandleIcon = new StackPane();
+        dragHandleIcon.getStyleClass().add("drag-handle-icon");
+        dragHandleIconContainer.getChildren().add(dragHandleIcon);
+
         Region buttonRegion = new Region();
         buttonRegion.getStyleClass().add("selected-concept-discard-region");
         Button closeButton = new Button(null, buttonRegion);
@@ -363,7 +374,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         });
         closeButton.setAlignment(Pos.CENTER_RIGHT);
 
-        HBox selectedConcept = new HBox(imageViewWrapper, conceptNameLabel, spacer, closeButton);
+        HBox selectedConcept = new HBox(imageViewWrapper, conceptNameLabel, spacer, dragHandleIconContainer, closeButton);
         selectedConcept.getStyleClass().add("concept-selected-entity-box");
         selectedConcept.setAlignment(Pos.CENTER_LEFT);
         HBox.setMargin(selectedConceptContainer, new Insets(8));

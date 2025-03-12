@@ -80,6 +80,23 @@ public class SemanticFieldsController {
 
     private List<Node> nodes = new ArrayList<>();
 
+    private int committedHash;
+    private int uncommittedHash;
+
+    private void validator(){
+        uncommittedHash = calculteHashValue();
+        submitButton.setDisable(committedHash == uncommittedHash);
+    }
+
+    private int calculteHashValue() {
+        StringBuilder stringBuilder = new StringBuilder();
+        observableFields.forEach(observableField -> {
+            stringBuilder.append(observableField.field().toString()).append("|");
+        });
+        return stringBuilder.toString().hashCode();
+    }
+
+
     @FXML
     private void initialize() {
         // clear all semantic details.
@@ -98,7 +115,12 @@ public class SemanticFieldsController {
                                 nodes,
                                 semanticEntityVersionLatest, true));
                 editFieldsVBox.getChildren().clear();
-            } else {
+                observableFields.forEach(observableField ->
+                                observableField.valueProperty()
+                                        .subscribe(newvalue -> validator()));
+                committedHash = calculteHashValue();
+                validator();
+             } else {
                 // TODO Add a new semantic based on a pattern (blank fields).
             }
         }
@@ -158,7 +180,8 @@ public class SemanticFieldsController {
         if(transaction != null){
             commitTransactionTask(transaction);
         }
-
+        committedHash = calculteHashValue();
+        validator();
         //Get the semantic need to pass along with event for loading values across Opened Semantics.
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         //EventBus implementation changes to refresh the details area

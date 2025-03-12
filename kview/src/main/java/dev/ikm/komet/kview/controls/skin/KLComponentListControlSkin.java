@@ -111,7 +111,7 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
 
     private void onDragOver(DragEvent dragEvent) {
         if (dragEvent.getDragboard().hasContent(KLComponentControlSkin.COMPONENT_CONTROL_DRAG_FORMAT)) {
-            dragEvent.acceptTransferModes(TransferMode.COPY);
+            dragEvent.acceptTransferModes(TransferMode.MOVE);
         }
 
         updateDropTargetLocation(dragEvent);
@@ -221,6 +221,8 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
         });
 
         componentControl.setOnRemoveAction(ev -> removeComponentControl(componentControl, subscription));
+
+        componentControl.showDragHandleProperty().bind(componentControl.hoverProperty());
 
         Label numberLabel = createNumberLabel(componentControl);
 
