@@ -33,7 +33,9 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
+import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
@@ -47,12 +49,15 @@ import javafx.scene.control.Separator;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class SemanticFieldsController {
 
@@ -88,6 +93,23 @@ public class SemanticFieldsController {
 
     private List<Node> nodes = new ArrayList<>();
 
+    private int committedHash;
+    private int uncommittedHash;
+
+    private void validator(){
+        uncommittedHash = calculteHashValue();
+        submitButton.setDisable(committedHash == uncommittedHash);
+    }
+
+    private int calculteHashValue() {
+        StringBuilder stringBuilder = new StringBuilder();
+        observableFields.forEach(observableField -> {
+            stringBuilder.append(observableField.field().toString()).append("|");
+        });
+        return stringBuilder.toString().hashCode();
+    }
+
+
     @FXML
     private void initialize() {
         // clear all semantic details.
@@ -106,9 +128,15 @@ public class SemanticFieldsController {
                                 nodes,
                                 semanticEntityVersionLatest, true));
                 editFieldsVBox.getChildren().clear();
-                //Add listener for fieldProperty of each field to check when data is modified.
-                observableFields.forEach(observableField -> observableField.fieldProperty().addListener(fieldPropertyChangeListner));
-            } else {
+
+                observableFields.forEach(observableField -> {
+                     observableField.valueProperty().subscribe(newvalue -> validator());
+                    //Add listener for fieldProperty of each field to check when data is modified.
+                    observableField.fieldProperty().addListener(fieldPropertyChangeListner);
+                });
+                committedHash = calculteHashValue();
+                validator();
+             } else {
                 // TODO Add a new semantic based on a pattern (blank fields).
             }
         }
@@ -195,7 +223,8 @@ public class SemanticFieldsController {
                 commitTransactionTask(transaction);
             });
         });
-
+        committedHash = calculteHashValue();
+        validator();
         //EventBus implementation changes to refresh the details area
         EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
 
