@@ -222,6 +222,8 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
 
         componentControl.setOnRemoveAction(ev -> removeComponentControl(componentControl, subscription));
 
+        componentControl.showDragHandleProperty().bind(componentControl.hoverProperty());
+
         Label numberLabel = createNumberLabel(componentControl);
 
         if (nid != 0) {

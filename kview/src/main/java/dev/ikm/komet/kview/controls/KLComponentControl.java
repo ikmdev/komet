@@ -127,6 +127,14 @@ public class KLComponentControl extends Control {
     }
 
     /**
+     * A boolean property that when true shows the drag handle
+     */
+    private final BooleanProperty showDragHandle = new SimpleBooleanProperty();
+    public boolean isShowDragHandle() { return showDragHandle.get(); }
+    public BooleanProperty showDragHandleProperty() { return showDragHandle; }
+    public void setShowDragHandle(boolean value) { showDragHandle.set(value); }
+
+    /**
      * A property that defines the action to be executed when the add concept button is pressed.
      */
     private final ObjectProperty<EventHandler<ActionEvent>> onAddConceptActionProperty = new SimpleObjectProperty<>(this, "onAddConceptAction");

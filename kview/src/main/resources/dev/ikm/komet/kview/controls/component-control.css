@@ -116,6 +116,26 @@
     -fx-background-color: white;
 }
 
+.component-control > .selected-concept-container > .concept-selected-entity-box > .drag-handle-icon-container {
+    -fx-padding: 0 10px 0 0;
+}
+
+.component-control > .selected-concept-container > .concept-selected-entity-box > .drag-handle-icon-container > .drag-handle-icon {
+    -fx-shape: "M0 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0";
+
+    width: 13;
+    height: 20px;
+
+    -fx-min-width: width;
+    -fx-max-width: width;
+    -fx-max-height: height;
+    -fx-min-height: height;
+
+    -fx-scale-shape: false;
+
+    -fx-background-color: #9A9DA0;
+}
+
 .component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-description.label {
     -fx-text-fill: -Grey-11;
     -fx-font-family: "Noto Sans";
