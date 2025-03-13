@@ -8,6 +8,10 @@
     -fx-text-fill: #5d5d5d;
 }
 
+.read-only-component-list-control .main-container .prompt-text {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 1.166667em;
+}
 
 .read-only-component-list-control .main-container .components-container {
     -fx-spacing: 2px;
