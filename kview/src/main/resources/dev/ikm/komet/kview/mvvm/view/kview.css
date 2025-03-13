@@ -4800,6 +4800,71 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 8 4 4 6;
 }
 
+.concept-detail-pane .main-center-container > .scroll-pane {
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane:vertical-scrollbar-visible {
+    -fx-padding: 0 -12 0 0;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane > .viewport {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane > .corner {
+    -fx-background-color: transparent;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane > .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0 12 0 0;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-padding: 27 7 0 -9;
+    -fx-opacity: 0.0;
+    transition: -fx-opacity 0.3s;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane:hover > .scroll-bar:vertical {
+    -fx-opacity: 1.0;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane > .scroll-bar:vertical .track {
+    -fx-background-insets: 0 14 0 0;
+    -fx-background-color: transparent;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane > .scroll-bar .thumb {
+    -fx-background-color: -Grey-1, rgba(0, 0, 0, 0.4);
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6px;
+    -fx-padding: 0;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane > .scroll-bar:hover .thumb {
+    -fx-background-color: -Grey-1, rgba(0, 0, 0, 0.5);
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane > .scroll-bar .increment-button,
+.concept-detail-pane .main-center-container > .scroll-pane > .scroll-bar .decrement-button {
+    -fx-background-insets: 0;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-padding: 0;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane > .scroll-bar .increment-arrow,
+.concept-detail-pane .main-center-container > .scroll-pane > .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
 .pattern-window.concept-detail-pane,
 .lidr-window.concept-detail-pane {
     -fx-border-insets: 0;
