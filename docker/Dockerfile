@@ -1,10 +1,10 @@
-FROM azul/zulu-openjdk:23-latest
+FROM azul/zulu-openjdk-alpine:23-latest
 
-# Update the package list
-RUN apt update
+# Update the package list and install bash (for script compatibility)
+RUN apk update && apk add --no-cache --upgrade bash
 
-# Install xorg and libgtk-3-0 needed to run JPro applications
-RUN apt install -y xorg libgtk-3-0
+# Install the glibc compatibility library and GTK+ 3.0 required for JPro applications
+RUN apk add --no-cache libc6-compat gtk+3.0
 
 # Copy the JPro distribution to the image
 ADD . jproserver/
