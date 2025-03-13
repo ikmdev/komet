@@ -133,6 +133,7 @@ public class LineageBox extends VBox {
                 if (level == 1 && !allSiblings.isEmpty()) {
                     allSiblings.removeFirst(); // remove primary parent
                 }
+                boolean hasParents = !allParents.isEmpty();
                 boolean hasMultipleParents = allParents.size() > 1;
                 boolean hasSiblings = allSiblings.size() > 1;
                 int currentIndex = allSiblings.indexOf(treeItem);
@@ -144,7 +145,7 @@ public class LineageBox extends VBox {
                     style2 = "circle";
                     style3 = "line";
                 } else {
-                    style1 = hasSiblings && !lastSibling ? "line" : "angle";
+                    style1 = hasSiblings && !lastSibling && !hasParents? "line" : "angle";
                     style2 = hasSiblings || hasMultipleParents ? "circle" : "angle";
                     style3 = hasSiblings && !firstSibling ? "line" : "angle";
                 }
