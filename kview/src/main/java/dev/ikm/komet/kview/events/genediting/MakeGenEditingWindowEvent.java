@@ -9,6 +9,8 @@ public class MakeGenEditingWindowEvent extends Evt {
 
     public static final EvtType<MakeGenEditingWindowEvent> OPEN_GEN_EDIT = new EvtType<>(Evt.ANY, "OPEN_GEN_EDIT");
 
+    public static final EvtType<MakeGenEditingWindowEvent> OPEN_GEN_AUTHORING = new EvtType<>(Evt.ANY, "OPEN_GEN_AUTHORING");
+
     private EntityFacade component;
 
 
@@ -25,6 +27,17 @@ public class MakeGenEditingWindowEvent extends Evt {
         super(source, eventType);
         this.viewProperties = viewProperties;
         this.component = component;
+    }
+
+    /**
+     * event to create a new general authoring window, one where the EntityFacade has not been defined yet
+     * @param source
+     * @param eventType
+     * @param viewProperties
+     */
+    public MakeGenEditingWindowEvent(Object source, EvtType eventType, ViewProperties viewProperties) {
+        super(source, eventType);
+        this.viewProperties = viewProperties;
     }
 
     public EntityFacade getComponent() {

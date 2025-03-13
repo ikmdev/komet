@@ -41,8 +41,13 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
     public GenEditingKlWindow(UUID journalTopic, EntityFacade entityFacade, ViewProperties viewProperties, KometPreferences preferences) {
         super(journalTopic, entityFacade, viewProperties, preferences);
 
-        SemanticEntity entity = (SemanticEntity) EntityService.get().getEntity(entityFacade.nid()).get();
-        EntityFacade refComponent = EntityService.get().getEntity(entity.referencedComponentNid()).get();
+        EntityFacade refComponent;
+        if (entityFacade != null) {
+            SemanticEntity entity = (SemanticEntity) EntityService.get().getEntity(entityFacade.nid()).get();
+            refComponent = EntityService.get().getEntity(entity.referencedComponentNid()).get();
+        } else {
+            refComponent = null;
+        }
 
         Config config = new Config(GenEditingDetailsController.class.getResource("genediting-details.fxml"))
                 .updateViewModel("genEditingViewModel", genEditingViewModel ->
@@ -65,6 +70,16 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
             getOnClose().ifPresent(Runnable::run);
             // TODO more clean up such as view models and listeners just in case (memory).
         });
+    }
+
+    /**
+     * constructor for General Semantic Authoring; entityFacade has does not exist yet
+     * @param journalTopic
+     * @param viewProperties
+     * @param preferences
+     */
+    public GenEditingKlWindow(UUID journalTopic, ViewProperties viewProperties, KometPreferences preferences) {
+        this(journalTopic, null, viewProperties, preferences);
     }
 
     /**

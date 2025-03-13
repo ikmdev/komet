@@ -216,25 +216,24 @@ public class GenEditingDetailsController {
                     semanticPurposeText.setText(purpose);
                 });
             });
+            // Setup Stamp section
+            setupStampPopup(semanticEntityVersionLatest);
+            updateUIStamp(getStampViewModel());
+
+            // Update reference component section
+            setupReferenceComponentUI(semanticEntityVersionLatest);
+
+            // Populate the Semantic Details
+
+            // populate the observable fields and nodes for this semantic
+            observableFields.addAll(KlFieldHelper
+                    .generateObservableFieldsAndNodes(getViewProperties(),
+                            nodes,
+                            semanticEntityVersionLatest, false));
         } else {
             semanticEntityVersionLatest = null;
             semanticDescriptionLabel.setText("New Semantic no Pattern associated.");
         }
-
-        // Setup Stamp section
-        setupStampPopup(semanticEntityVersionLatest);
-        updateUIStamp(getStampViewModel());
-
-        // Update reference component section
-        setupReferenceComponentUI(semanticEntityVersionLatest);
-
-        // Populate the Semantic Details
-
-        // populate the observable fields and nodes for this semantic
-        observableFields.addAll(KlFieldHelper
-                .generateObservableFieldsAndNodes(getViewProperties(),
-                        nodes,
-                        semanticEntityVersionLatest, false));
 
         // function to apply for the components' edit action (a.k.a. right click > Edit)
         BiFunction<Node, Integer, Runnable> editAction = (node, fieldIndex) ->
