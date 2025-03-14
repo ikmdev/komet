@@ -17,6 +17,9 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateHashValue;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.calculteHashValue;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
@@ -84,26 +87,23 @@ public class SemanticFieldsController {
            updateStampVersionsNidsForAllFields();
         }
     };
+
     private EntityFacade semantic;
 
     private List<Node> nodes = new ArrayList<>();
 
     private int committedHash;
-    private int uncommittedHash;
 
     private void validator(){
-        uncommittedHash = calculteHashValue();
+        int uncommittedHash = calculteHashValue(observableFields);
         submitButton.setDisable(committedHash == uncommittedHash);
     }
 
-    private int calculteHashValue() {
-        StringBuilder stringBuilder = new StringBuilder();
-        observableFields.forEach(observableField -> {
-            stringBuilder.append(observableField.field().toString()).append("|");
-        });
-        return stringBuilder.toString().hashCode();
+    private void processCommittedValues() {
+        EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
+        Latest<SemanticEntityVersion> semanticEntityVersionLatest = retrieveCommittedLatestVersion(semantic,getViewProperties());
+        committedHash = generateHashValue(semanticEntityVersionLatest, getViewProperties());
     }
-
 
     @FXML
     private void initialize() {
@@ -125,11 +125,14 @@ public class SemanticFieldsController {
                 editFieldsVBox.getChildren().clear();
 
                 observableFields.forEach(observableField -> {
-                     observableField.valueProperty().subscribe(newvalue -> validator());
+                    // validator to monitor enable and disable submit button.
+                    observableField.valueProperty().subscribe(newvalue -> validator());
                     //Add listener for fieldProperty of each field to check when data is modified.
                     observableField.fieldProperty().addListener(fieldPropertyChangeListner);
                 });
-                committedHash = calculteHashValue();
+
+                //Set the hascode for the committed values.
+                processCommittedValues();
                 validator();
              } else {
                 // TODO Add a new semantic based on a pattern (blank fields).
@@ -218,7 +221,7 @@ public class SemanticFieldsController {
                 commitTransactionTask(transaction);
             });
         });
-        committedHash = calculteHashValue();
+        processCommittedValues();
         validator();
         //EventBus implementation changes to refresh the details area
         EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));

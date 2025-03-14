@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.klfields;
 
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.calculteHashValue;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
@@ -147,6 +148,31 @@ public class KlFieldHelper {
         generateSemanticUIFields(viewProperties, semanticEntityVersionLatest, generateConsumer);
 
         return observableFields;
+    }
+
+    public static int generateHashValue(Latest<SemanticEntityVersion> semanticEntityVersionLatest, ViewProperties viewProperties ) {
+   //     Latest<SemanticEntityVersion> semanticEntityVersionLatest = retrieveCommittedLatestVersion(entityFacade,viewProperties);
+        List<ObservableField<?>> observableFieldsList = new ArrayList<>();
+        Consumer<FieldRecord<Object>> fieldRecordConsumer = (fieldRecord) -> {
+            ObservableField<?> writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, false);
+            ObservableField<?> observableField = new ObservableField<>(writeObservableField.field(), false);
+            observableFieldsList.add(observableField);
+        };
+        generateSemanticUIFields(viewProperties, semanticEntityVersionLatest, fieldRecordConsumer);
+        return calculteHashValue(observableFieldsList);
+
+        /*semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
+            StampCalculator stampCalculator = viewProperties.calculator().stampCalculator();
+            Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
+            patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
+                List<FieldRecord<Object>> fieldRecords = DataModelHelper.fieldRecords(semanticEntityVersion, patternEntityVersion);
+                fieldRecords.forEach(fieldRecord -> {
+                    observableFieldsList.add(obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, false));
+                });
+            });
+        });
+        // Generate hash value for committed records.
+        committedHash = calculteHashValue(observableFieldsList);*/
     }
 
     /**

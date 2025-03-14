@@ -36,7 +36,6 @@ import static dev.ikm.tinkar.terms.TinkarTerm.SEMANTIC_FIELD_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
 import static dev.ikm.tinkar.terms.TinkarTerm.UUID_DATA_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.VERTEX_FIELD;
-
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
@@ -342,5 +341,12 @@ public class DataModelHelper {
         }
     }
 
+    public static int calculteHashValue(List<ObservableField<?>> observableFieldsList ) {
+        StringBuilder stringBuilder = new StringBuilder();
+        observableFieldsList.forEach(observableField -> {
+            stringBuilder.append(observableField.valueProperty().get().toString()).append("|");
+        });
+        return stringBuilder.toString().hashCode();
+    }
 
 }
