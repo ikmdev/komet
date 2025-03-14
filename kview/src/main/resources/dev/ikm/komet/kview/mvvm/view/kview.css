@@ -4802,10 +4802,6 @@ Styling a context menu for kview ui/ux controls
 
 .concept-detail-pane .main-center-container > .scroll-pane {
     -fx-border-color: transparent;
-    -fx-padding: 0;
-}
-
-.concept-detail-pane .main-center-container > .scroll-pane:vertical-scrollbar-visible {
     -fx-padding: 0 -12 0 0;
 }
 
@@ -4829,7 +4825,7 @@ Styling a context menu for kview ui/ux controls
     transition: -fx-opacity 0.3s;
 }
 
-.concept-detail-pane .main-center-container > .scroll-pane:hover > .scroll-bar:vertical {
+.concept-detail-pane .main-center-container > .scroll-pane:hover:vertical-scroll-needed .scroll-bar:vertical {
     -fx-opacity: 1.0;
 }
 

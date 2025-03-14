@@ -27,8 +27,6 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.css.PseudoClass;
@@ -77,8 +75,8 @@ public class DetailsNode extends ExplorationNodeAbstract {
     private BorderPane timelineViewBorderPane;
     private TimelineController timelineViewController;
 
-    // PseudoClass for styling based on the scrollbar's necessity.
-    private static final PseudoClass V_SCROLLBAR_VISIBLE = PseudoClass.getPseudoClass("vertical-scrollbar-visible");
+    // Pseudo-class for vertical scrollbar visibility.
+    private static final PseudoClass V_SCROLLBAR_NEEDED = PseudoClass.getPseudoClass("vertical-scroll-needed");
 
     public DetailsNode(ViewProperties viewProperties, KometPreferences nodePreferences) {
         this(viewProperties, nodePreferences, false);
@@ -179,15 +177,11 @@ public class DetailsNode extends ExplorationNodeAbstract {
                 }
             });
 
-            // Create a binding that checks if the content's height exceeds the viewport.
-            BooleanBinding needsVScrollbarBinding = Bindings.createBooleanBinding(() ->
-                            isVerticalScrollbarVisible(scrollPane),
-                    scrollPane.viewportBoundsProperty(),
-                    scrollPane.getContent().layoutBoundsProperty());
-
-            // Update the pseudoclass for styling based on the scrollbar's necessity.
-            needsVScrollbarBinding.addListener((obs, oldVal, newVal) ->
-                    scrollPane.pseudoClassStateChanged(V_SCROLLBAR_VISIBLE, newVal));
+            // Update the pseudo-class when the viewport or content size changes.
+            scrollPane.viewportBoundsProperty().addListener((obs) ->
+                    scrollPane.pseudoClassStateChanged(V_SCROLLBAR_NEEDED, isVerticalScrollbarVisible(scrollPane)));
+            scrollPane.getContent().layoutBoundsProperty().addListener((obs) ->
+                    scrollPane.pseudoClassStateChanged(V_SCROLLBAR_NEEDED, isVerticalScrollbarVisible(scrollPane)));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -149,7 +149,7 @@
          <center>
             <BorderPane styleClass="main-center-container" BorderPane.alignment="CENTER">
                <center>
-                  <ScrollPane fx:id="conceptContentScrollPane" fitToWidth="true">
+                  <ScrollPane fx:id="conceptContentScrollPane" fitToWidth="true" vbarPolicy="ALWAYS">
                      <VBox focusTraversable="true" opacity="0.92">
                         <children>
                            <HBox VBox.vgrow="SOMETIMES">
