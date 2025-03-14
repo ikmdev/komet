@@ -91,7 +91,7 @@ public class SemanticFieldsController {
     private int calculteHashValue() {
         StringBuilder stringBuilder = new StringBuilder();
         observableFields.forEach(observableField -> {
-            stringBuilder.append(observableField.field().toString()).append("|");
+            stringBuilder.append(observableField.valueProperty().get().toString()).append("|");
         });
         return stringBuilder.toString().hashCode();
     }
@@ -117,7 +117,7 @@ public class SemanticFieldsController {
                 editFieldsVBox.getChildren().clear();
                 observableFields.forEach(observableField ->
                                 observableField.valueProperty()
-                                        .subscribe(newvalue -> validator()));
+                                        .addListener(observable -> validator()));
                 committedHash = calculteHashValue();
                 validator();
              } else {
@@ -204,7 +204,7 @@ public class SemanticFieldsController {
             SemanticVersionRecord version = Entity.getVersionFast(semantic.nid(), stamp.nid());
             MutableList fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
             observableFields.forEach(of -> {
-                fieldsForNewVersion.set(of.fieldIndex(), of.value());
+                fieldsForNewVersion.set(of.fieldIndex(), of.valueProperty().get());
             });
             SemanticVersionRecord newVersion =null;
             if(stamp.lastVersion().committed()){
