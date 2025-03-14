@@ -5,7 +5,6 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.layout.HBox?>
 
 <?import dev.ikm.komet.controls.KLConceptNavigatorControl?>
 <ScrollPane styleClass="sample-container" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
@@ -17,7 +16,7 @@
                 <Insets  bottom="40.0" />
             </VBox.margin>
         </Label>
-        <BorderPane prefWidth="200.0" styleClass="sample-control-container">
+        <BorderPane fx:id="root" prefWidth="200.0" styleClass="sample-control-container">
             <left>
                 <VBox styleClass="inner-container">
                     <KLConceptNavigatorControl fx:id="conceptNavigatorControl"/>
@@ -29,9 +28,10 @@
                 </VBox>
             </center>
             <right>
-                <VBox prefHeight="100.0" styleClass="control-configuration-container" BorderPane.alignment="CENTER">
-                    <HBox spacing="5">
-                    </HBox>
+                <VBox maxWidth="200" styleClass="control-configuration-container" BorderPane.alignment="CENTER">
+                    <Label text="Pick the dataset" styleClass="title"/>
+                    <VBox fx:id="datasetBox" styleClass="dataset-box">
+                    </VBox>
                 </VBox>
             </right>
             <VBox.margin>

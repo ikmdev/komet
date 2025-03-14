@@ -10,6 +10,7 @@ import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
+import dev.ikm.komet.preferences.Preferences;
 import dev.ikm.tinkar.common.service.DataUriOption;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
@@ -20,6 +21,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
@@ -40,7 +42,13 @@ public class SamplerConceptNavigatorController {
     private KLConceptNavigatorControl conceptNavigatorControl;
 
     @FXML
+    private BorderPane root;
+
+    @FXML
     private VBox conceptArea;
+
+    @FXML
+    private VBox datasetBox;
 
     private static final String STYLE = """
             data:text/css,
@@ -61,6 +69,7 @@ public class SamplerConceptNavigatorController {
                 -fx-border-style: segments(15, 12, 15, 12) line-cap round;
             }
             
+            .sample-control-container > .control-configuration-container > .label,
             .sample-control-container > .center-container > .label {
                 -fx-font-family: "Noto Sans";
                 -fx-font-size: 12;
@@ -68,6 +77,23 @@ public class SamplerConceptNavigatorController {
                 -fx-text-fill: #2E3240;
                 -fx-alignment: center-left;
                 -fx-wrap-text: true;
+            }
+            
+            .sample-control-container > .control-configuration-container > .label.title {
+                -fx-font-size: 13;
+                -fx-font-weight: bold;
+            }
+            
+            .sample-control-container > .control-configuration-container > .dataset-box {
+                -fx-spacing: 20;
+                -fx-alignment: center-left;
+                -fx-border-color: #e6e6e6;
+            }
+            
+            .sample-control-container > .control-configuration-container > .dataset-box > .label {
+                -fx-font-size: 11;
+                -fx-font-weight: 400;
+                -fx-cursor: hand;
             }
             
             """;
@@ -110,9 +136,9 @@ public class SamplerConceptNavigatorController {
             conceptArea.getStyleClass().remove("dashed-border");
             event.consume();
         });
-        conceptArea.getStylesheets().add(STYLE);
+        root.getStylesheets().add(STYLE);
 
-        LoadDataset.open(conceptNavigatorControl::setNavigator);
+        LoadDataset.open(conceptNavigatorControl::setNavigator, datasetBox);
     }
 
     private void populateArea(List<UUID[]> uuids) {
@@ -125,7 +151,7 @@ public class SamplerConceptNavigatorController {
 
     /**
      * Requires ~/Solor/tinkar-starter-test-data-with-navigator-scenarios-reasoned
-     * Requires ~/Solor/snomedct-international
+     * or ~/Solor/snomedct-international
      */
     private static class LoadDataset {
 
@@ -133,18 +159,22 @@ public class SamplerConceptNavigatorController {
 
         private LoadDataset() {}
 
-        static void open(Consumer<Navigator> consumer) {
+        static void open(Consumer<Navigator> consumer, VBox box) {
             // Load dataset
             PrimitiveData.getControllerOptions().stream()
                     .filter(dsc -> "Open SpinedArrayStore".equals(dsc.controllerName()))
                     .findFirst()
                     .ifPresent(controller -> {
                         List<DataUriOption> list = controller.providerOptions();
-                        list.stream()
-                                .filter(p -> p.toString().contains("international"))
-//                                .filter(p -> p.toString().contains("scenarios"))
-                                .findFirst()
-                                .ifPresent(controller::setDataUriOption);
+                        list.forEach(p -> {
+                            Label option = new Label(p.toFile().getName());
+                            option.setOnMouseClicked(_ -> {
+                                box.getParent().setMouseTransparent(true);
+                                controller.setDataUriOption(p);
+                                TinkExecutor.threadPool().submit(new LoadDataSourceTask(state));
+                            });
+                            box.getChildren().add(option);
+                        });
                         PrimitiveData.setController(controller);
                     });
 
@@ -155,9 +185,11 @@ public class SamplerConceptNavigatorController {
                     ViewProperties viewProperties = view.makeOverridableViewProperties();
                     Navigator navigator = new ViewNavigator(viewProperties.nodeView());
                     consumer.accept(navigator);
+                    // hide options panel
+                    box.getParent().setVisible(false);
+                    box.getParent().setManaged(false);
                 }
             });
-            TinkExecutor.threadPool().submit(new LoadDataSourceTask(state));
         }
     }
 }
