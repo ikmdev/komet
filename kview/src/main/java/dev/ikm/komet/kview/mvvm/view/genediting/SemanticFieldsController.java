@@ -17,9 +17,9 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculteHashValue;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateHashValue;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.calculteHashValue;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
@@ -41,7 +41,6 @@ import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
-import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -79,22 +78,11 @@ public class SemanticFieldsController {
 
     private boolean updateStampVersions;
 
-    private ChangeListener fieldPropertyChangeListner  = (obs, oldValue, newValue) -> {
-        // This flag is used to avoid unnecessary calling for
-        // method when value for other listeners is updated.
-        // It is similar to refreshProperty in Observable interface.
-        if(updateStampVersions){
-           updateStampVersionsNidsForAllFields();
-        }
-    };
-
-    private EntityFacade semantic;
-
     private List<Node> nodes = new ArrayList<>();
 
     private int committedHash;
 
-    private void validator(){
+    private void enableDisableSubmitButton(){
         int uncommittedHash = calculteHashValue(observableFields);
         submitButton.setDisable(committedHash == uncommittedHash);
     }
@@ -105,17 +93,30 @@ public class SemanticFieldsController {
         committedHash = generateHashValue(semanticEntityVersionLatest, getViewProperties());
     }
 
+    private void fieldPropertyChangeListner(){
+        // This flag is used to avoid unnecessary calling for
+        // method when value for other listeners is updated.
+        // It is similar to refreshProperty in Observable interface.
+        if(updateStampVersions){
+            updateStampVersionsNidsForAllFields();
+        }
+    };
+
     @FXML
     private void initialize() {
         // clear all semantic details.
         editFieldsVBox.setSpacing(8.0);
         editFieldsVBox.getChildren().clear();
         updateStampVersions = true;
+        submitButton.setDisable(true);
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         if (semantic != null) {
             StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
             Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
             if (semanticEntityVersionLatest.isPresent()) {
+                //Set the hascode for the committed values.
+                processCommittedValues();
+
                 // Populate the Semantic Details
                 // Displaying editable controls and populating the observable fields array list.
                 observableFields.addAll(KlFieldHelper
@@ -123,17 +124,18 @@ public class SemanticFieldsController {
                                 nodes,
                                 semanticEntityVersionLatest, true));
                 editFieldsVBox.getChildren().clear();
-
                 observableFields.forEach(observableField -> {
-                    // validator to monitor enable and disable submit button.
-                    observableField.valueProperty().subscribe(newvalue -> validator());
+                 observableField.valueProperty()
+                                        .addListener(observable -> {
+                                            enableDisableSubmitButton();
+                                            if(!submitButton.isDisabled()){
+                                                observableField.writeToDataBase();
+                                            }
+                                        });
                     //Add listener for fieldProperty of each field to check when data is modified.
-                    observableField.fieldProperty().addListener(fieldPropertyChangeListner);
+                    observableField.fieldProperty().addListener(observable -> fieldPropertyChangeListner());
                 });
 
-                //Set the hascode for the committed values.
-                processCommittedValues();
-                validator();
              } else {
                 // TODO Add a new semantic based on a pattern (blank fields).
             }
@@ -222,7 +224,7 @@ public class SemanticFieldsController {
             });
         });
         processCommittedValues();
-        validator();
+        enableDisableSubmitButton();
         //EventBus implementation changes to refresh the details area
         EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
 

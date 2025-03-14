@@ -341,12 +341,4 @@ public class DataModelHelper {
         }
     }
 
-    public static int calculteHashValue(List<ObservableField<?>> observableFieldsList ) {
-        StringBuilder stringBuilder = new StringBuilder();
-        observableFieldsList.forEach(observableField -> {
-            stringBuilder.append(observableField.valueProperty().get().toString()).append("|");
-        });
-        return stringBuilder.toString().hashCode();
-    }
-
 }

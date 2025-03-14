@@ -1,6 +1,5 @@
 package dev.ikm.komet.kview.klfields;
 
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.calculteHashValue;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
@@ -130,13 +129,13 @@ public class KlFieldHelper {
 
         List<ObservableField<?>> observableFields = new ArrayList<>();
         Consumer<FieldRecord<Object>> generateConsumer = (fieldRecord) -> {
-            ObservableField writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, editable);
-            ObservableField observableField = new ObservableField(writeObservableField.field(), editable);
+            ObservableField<?> writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, editable);
+            ObservableField<?> observableField = new ObservableField<>(writeObservableField.field(), editable);
             observableFields.add(observableField);
 
             // In edit view when we load uncommited data, we need to check if the transactions exists.
             if(editable){
-                checkUncommitedTransactions(observableField.field());
+        //        checkUncommitedTransactions(observableField.field());
             }
 
             // TODO: this method below will be removed once the database has the capability to add and edit Image data types
@@ -151,7 +150,6 @@ public class KlFieldHelper {
     }
 
     public static int generateHashValue(Latest<SemanticEntityVersion> semanticEntityVersionLatest, ViewProperties viewProperties ) {
-   //     Latest<SemanticEntityVersion> semanticEntityVersionLatest = retrieveCommittedLatestVersion(entityFacade,viewProperties);
         List<ObservableField<?>> observableFieldsList = new ArrayList<>();
         Consumer<FieldRecord<Object>> fieldRecordConsumer = (fieldRecord) -> {
             ObservableField<?> writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, false);
@@ -160,19 +158,6 @@ public class KlFieldHelper {
         };
         generateSemanticUIFields(viewProperties, semanticEntityVersionLatest, fieldRecordConsumer);
         return calculteHashValue(observableFieldsList);
-
-        /*semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
-            StampCalculator stampCalculator = viewProperties.calculator().stampCalculator();
-            Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
-            patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
-                List<FieldRecord<Object>> fieldRecords = DataModelHelper.fieldRecords(semanticEntityVersion, patternEntityVersion);
-                fieldRecords.forEach(fieldRecord -> {
-                    observableFieldsList.add(obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, false));
-                });
-            });
-        });
-        // Generate hash value for committed records.
-        committedHash = calculteHashValue(observableFieldsList);*/
     }
 
     /**
@@ -243,5 +228,13 @@ public class KlFieldHelper {
 
 
         return entityVersionLatest.get();
+    }
+
+    public static int calculteHashValue(List<ObservableField<?>> observableFieldsList ) {
+        StringBuilder stringBuilder = new StringBuilder();
+        observableFieldsList.forEach(observableField -> {
+            stringBuilder.append(observableField.valueProperty().get().toString()).append("|");
+        });
+        return stringBuilder.toString().hashCode();
     }
 }
