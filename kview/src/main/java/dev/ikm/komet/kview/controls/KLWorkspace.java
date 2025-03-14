@@ -116,8 +116,14 @@ public class KLWorkspace extends Control {
      */
     public static final double MIN_WINDOW_HEIGHT = 432.0;
 
+    /**
+     * Default width of concept panels placed in the workspace.
+     */
     public static final double DEFAULT_WINDOW_WIDTH = 672.0;
 
+    /**
+     * Default height of concept panels placed in the workspace.
+     */
     public static final double DEFAULT_WINDOW_HEIGHT = 1032.0;
 
     /**

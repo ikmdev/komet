@@ -102,7 +102,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
             Config config = new Config(getClass().getResource(CONCEPT_DETAILS_VIEW_FXML_FILE))
                     .controller(new DetailsController(conceptTopic))
                     .updateViewModel("conceptViewModel", viewModel ->
-                        viewModel.setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalWindowTopic));
+                            viewModel.setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalWindowTopic));
             JFXNode<BorderPane, DetailsController> jfxNode = FXMLMvvmLoader.make(config);
 
             this.detailsViewBorderPane = jfxNode.node();

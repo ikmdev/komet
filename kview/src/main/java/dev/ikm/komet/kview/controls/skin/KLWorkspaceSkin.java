@@ -589,8 +589,11 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         windowPanel.heightProperty().addListener(clampListener);
         windowPanel.getProperties().put(CLAMP_WINDOW_POSITION_LISTENER, clampListener);
 
+        // Apply a minimum width constraint
+        windowPanel.setMinWidth(MIN_WINDOW_WIDTH);
+
         // Apply a maximum height constraint
-        windowPanel.setMaxHeight(KLWorkspace.MAX_WINDOW_HEIGHT);
+        windowPanel.setMaxHeight(MAX_WINDOW_HEIGHT);
 
         final KLDropRegion dropRegion = desktopPane.getDropRegion();
         final KLWorkspace workspace = getSkinnable();

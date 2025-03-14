@@ -32,7 +32,6 @@ import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.text.TextAlignment;
 import org.controlsfx.control.PropertySheet;
@@ -101,12 +100,6 @@ public class KometPropertySheetSkin extends SkinBase<KometPropertySheet> {
         content = new BorderPane();
         content.setTop(toolbar);
 
-        // Wrap the center content in a ScrollPane
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setFitToWidth(true);
-        scrollPane.setFitToHeight(true);
-        content.setCenter(scrollPane);
-
         getChildren().add(content);
 
         // setup listeners
@@ -123,9 +116,6 @@ public class KometPropertySheetSkin extends SkinBase<KometPropertySheet> {
         // initialize properly
         refreshProperties();
         updateToolbar();
-
-        // Add event filter to handle scroll events appropriately
-        addScrollEventFilter(scrollPane);
     }
 
     /**
@@ -134,104 +124,7 @@ public class KometPropertySheetSkin extends SkinBase<KometPropertySheet> {
      */
     private void refreshProperties() {
         Node propertyContent = buildPropertySheetContainer();
-        ScrollPane scrollPane = (ScrollPane) content.getCenter();
-        scrollPane.setContent(propertyContent);
-    }
-
-    /**
-     * Adds a scroll event filter to the specified {@link ScrollPane} to manage both vertical and
-     * horizontal scrolling behavior. This ensures the user cannot scroll beyond the content boundaries.
-     *
-     * <p>For both vertical and horizontal axes, the filter will:
-     * <ul>
-     *   <li>Ignore scrolling if the corresponding scrollbar policy is set to {@code NEVER}.</li>
-     *   <li>Ignore scrolling when there is no content to scroll or if the viewport size is zero.</li>
-     *   <li>Ignore scrolling if the content fits entirely within the viewport (i.e., no scroll is needed).</li>
-     *   <li>Ignore negligible scroll deltas (using a small floating-point threshold, {@code EPSILON}).</li>
-     *   <li>Consume (block) scroll events that attempt to scroll beyond the top/bottom or left/right edges.</li>
-     * </ul>
-     *
-     * @param scrollPane the {@code ScrollPane} to which this scroll event filter will be added
-     */
-    private void addScrollEventFilter(ScrollPane scrollPane) {
-        scrollPane.addEventFilter(ScrollEvent.SCROLL, event -> {
-            Node content = scrollPane.getContent();
-            if (content == null) {
-                // No content, no scrolling needed
-                return;
-            }
-
-            // A small threshold for floating-point comparisons
-            final double EPSILON = 1e-5;
-
-            // -------------------------------------------------------------
-            // VERTICAL SCROLL CHECKS
-            // -------------------------------------------------------------
-
-            // 1) Skip if vertical scrollbar is never visible
-            if (scrollPane.getVbarPolicy() != ScrollPane.ScrollBarPolicy.NEVER) {
-
-                double viewportHeight = scrollPane.getViewportBounds().getHeight();
-                // 2) Skip if viewport is not yet sized or has zero height
-                if (viewportHeight > 0) {
-                    double contentHeight = content.getLayoutBounds().getHeight();
-                    // 3) Skip if content fits entirely within the viewport (no scrolling needed)
-                    if (contentHeight > viewportHeight) {
-                        double deltaY = event.getDeltaY();
-                        // 4) Skip if there's no vertical scroll movement
-                        if (Math.abs(deltaY) > EPSILON) {
-                            // Retrieve current and extreme scroll values
-                            double vValue = scrollPane.getVvalue();
-                            double vMin   = scrollPane.getVmin();
-                            double vMax   = scrollPane.getVmax();
-
-                            // Determine if we're at the top or bottom
-                            boolean atTop    = Math.abs(vValue - vMin) < EPSILON;
-                            boolean atBottom = Math.abs(vValue - vMax) < EPSILON;
-
-                            // 5) Consume scroll events that try to scroll beyond the vertical boundary
-                            if ((atTop && deltaY > 0) || (atBottom && deltaY < 0)) {
-                                event.consume();
-                            }
-                        }
-                    }
-                }
-            }
-
-            // -------------------------------------------------------------
-            // HORIZONTAL SCROLL CHECKS
-            // -------------------------------------------------------------
-
-            // 1) Skip if horizontal scrollbar is never visible
-            if (scrollPane.getHbarPolicy() != ScrollPane.ScrollBarPolicy.NEVER) {
-
-                double viewportWidth = scrollPane.getViewportBounds().getWidth();
-                // 2) Skip if viewport is not yet sized or has zero width
-                if (viewportWidth > 0) {
-                    double contentWidth = content.getLayoutBounds().getWidth();
-                    // 3) Skip if content fits entirely within the viewport (no scrolling needed)
-                    if (contentWidth > viewportWidth) {
-                        double deltaX = event.getDeltaX();
-                        // 4) Skip if there's no horizontal scroll movement
-                        if (Math.abs(deltaX) > EPSILON) {
-                            // Retrieve current and extreme scroll values
-                            double hValue = scrollPane.getHvalue();
-                            double hMin   = scrollPane.getHmin();
-                            double hMax   = scrollPane.getHmax();
-
-                            // Determine if we're at the left or right edge
-                            boolean atLeft  = Math.abs(hValue - hMin) < EPSILON;
-                            boolean atRight = Math.abs(hValue - hMax) < EPSILON;
-
-                            // 5) Consume scroll events that try to scroll beyond the horizontal boundary
-                            if ((atLeft && deltaX < 0) || (atRight && deltaX > 0)) {
-                                event.consume();
-                            }
-                        }
-                    }
-                }
-            }
-        });
+        content.setCenter(propertyContent);
     }
 
     /**************************************************************************

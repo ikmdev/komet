@@ -89,6 +89,7 @@ import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -105,8 +106,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -199,6 +202,9 @@ public class DetailsController  {
      * Applied to lastUpdatedText component.
      */
     private Tooltip authorTooltip = new Tooltip();
+
+    @FXML
+    private ScrollPane conceptContentScrollPane;
 
     ///// Descriptions Section /////////////////////////////////
     @FXML
@@ -306,6 +312,8 @@ public class DetailsController  {
 
     private PublicId fqnPublicId;
 
+    // Pseudo-class for vertical scrollbar visibility.
+    private static final PseudoClass V_SCROLLBAR_NEEDED = PseudoClass.getPseudoClass("vertical-scroll-needed");
 
     /**
      * Stamp Edit
@@ -478,6 +486,78 @@ public class DetailsController  {
         changeSetTypeEventSubscriber = evt -> updateAxioms();
         eventBus.subscribe(RULES_TOPIC, AxiomChangeEvent.class, changeSetTypeEventSubscriber);
 
+        // Filter out scroll events that try to scroll beyond the content's limits.
+        conceptContentScrollPane.addEventFilter(ScrollEvent.SCROLL, event -> {
+            if (shouldConsumeVerticalScroll(conceptContentScrollPane, event)) {
+                event.consume();
+            }
+        });
+
+        // Update the pseudo-class when the viewport or content size changes.
+        conceptContentScrollPane.viewportBoundsProperty().addListener((obs) ->
+                conceptContentScrollPane.pseudoClassStateChanged(V_SCROLLBAR_NEEDED, isVerticalScrollbarVisible(conceptContentScrollPane)));
+        conceptContentScrollPane.getContent().layoutBoundsProperty().addListener((obs) ->
+                conceptContentScrollPane.pseudoClassStateChanged(V_SCROLLBAR_NEEDED, isVerticalScrollbarVisible(conceptContentScrollPane)));
+    }
+
+    /**
+     * Checks whether the vertical scrollbar should be visible.
+     * This considers the scrollbar policy, viewport size, and content size.
+     *
+     * @param scrollPane the ScrollPane to check.
+     * @return true if the content height exceeds the viewport height and the scrollbar is allowed.
+     */
+    private boolean isVerticalScrollbarVisible(ScrollPane scrollPane) {
+        // 1) Only proceed if vertical scrolling is allowed.
+        if (scrollPane.getVbarPolicy() == ScrollPane.ScrollBarPolicy.NEVER) {
+            return false;
+        }
+        Node content = scrollPane.getContent();
+        if (content == null) {
+            return false;
+        }
+        double viewportHeight = scrollPane.getViewportBounds().getHeight();
+        // 2) Skip if the viewport isn't yet sized or has zero height.
+        if (viewportHeight <= 0) {
+            return false;
+        }
+        double contentHeight = content.getLayoutBounds().getHeight();
+        // 3) Return true if the content height exceeds the viewport height.
+        return contentHeight > viewportHeight;
+    }
+
+    /**
+     * Determines whether a vertical scroll event should be consumed because it attempts to scroll
+     * beyond the boundaries (i.e. when at the top or bottom of the scrollable content).
+     *
+     * @param scrollPane the ScrollPane receiving the scroll event.
+     * @param event the ScrollEvent.
+     * @return true if the event should be consumed.
+     */
+    private boolean shouldConsumeVerticalScroll(ScrollPane scrollPane, ScrollEvent event) {
+        final double EPSILON = 1e-5;
+
+        // If the vertical scrollbar is not visible (i.e. not needed), no consumption is required.
+        if (!isVerticalScrollbarVisible(scrollPane)) {
+            return false;
+        }
+
+        double deltaY = event.getDeltaY();
+        // Skip if there's negligible scroll movement.
+        if (Math.abs(deltaY) <= EPSILON) {
+            return false;
+        }
+
+        double vValue = scrollPane.getVvalue();
+        double vMin = scrollPane.getVmin();
+        double vMax = scrollPane.getVmax();
+
+        // Determine if we are at the top or bottom.
+        boolean atTop = Math.abs(vValue - vMin) < EPSILON;
+        boolean atBottom = Math.abs(vValue - vMax) < EPSILON;
+
+        // Consume if scrolling upward at the top or downward at the bottom.
+        return (atTop && deltaY > 0) || (atBottom && deltaY < 0);
     }
 
     public ViewProperties getViewProperties() {
