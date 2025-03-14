@@ -1,6 +1,6 @@
 package dev.ikm.komet.controls;
 
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.komet.navigator.graph.Navigator;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.PseudoClass;
@@ -13,18 +13,18 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+
+import static dev.ikm.komet.controls.ConceptNavigatorUtils.getAllParents;
+import static dev.ikm.komet.controls.ConceptNavigatorUtils.getSecondaryParents;
 
 public class LineageBox extends VBox {
 
     private static final PseudoClass ROOT_LINEAGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("root-lineage");
     private static final PseudoClass COLLAPSED_LINEAGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("collapsed-lineage");
     private final StackPane closePane;
-    private final KLConceptNavigatorControl conceptNavigator;
 
-    public LineageBox(KLConceptNavigatorControl conceptNavigator) {
-        this.conceptNavigator = conceptNavigator;
+    public LineageBox() {
         IconRegion closeIconRegion = new IconRegion("icon", "close");
         closePane = new StackPane(closeIconRegion);
         closePane.getStyleClass().addAll("region", "close");
@@ -62,6 +62,18 @@ public class LineageBox extends VBox {
         conceptProperty.set(value);
     }
 
+    // navigatorProperty
+    private final ObjectProperty<Navigator> navigatorProperty = new SimpleObjectProperty<>(this, "navigator");
+    public final ObjectProperty<Navigator> navigatorProperty() {
+       return navigatorProperty;
+    }
+    public final Navigator getNavigator() {
+       return navigatorProperty.get();
+    }
+    public final void setNavigator(Navigator value) {
+        navigatorProperty.set(value);
+    }
+
     @Override
     protected void layoutChildren() {
         super.layoutChildren();
@@ -79,7 +91,7 @@ public class LineageBox extends VBox {
             if (primaryParentItem != null) {
                 // list of secondary parents for the concept child, different from the primary parent item
                 List<InvertedTree.ConceptItem> secondaryParents =
-                        getSecondaryParents(childItem.getValue().nid(), primaryParentItem.getValue().nid());
+                        getSecondaryParents(childItem.getValue().nid(), primaryParentItem.getValue().nid(), getNavigator());
                 // for the concept child, add all its direct secondary parents, all collapsed initially
                 InvertedTree invertedTree = getConcept().getInvertedTree();
                 for (InvertedTree.ConceptItem extraParentItem : secondaryParents) {
@@ -97,17 +109,6 @@ public class LineageBox extends VBox {
 //                invertedTree.printTree();
             }
         }
-    }
-
-    private List<InvertedTree.ConceptItem> getAllParents(int childNid) {
-        return getSecondaryParents(childNid, -1);
-    }
-
-    private List<InvertedTree.ConceptItem> getSecondaryParents(int childNid, int primaryNid) {
-        return new ArrayList<>(Arrays.stream(conceptNavigator.getNavigator().getParentNids(childNid)).boxed()
-                .filter(nid -> nid != primaryNid)
-                .map(nid -> new InvertedTree.ConceptItem(nid, childNid, Entity.getFast(nid).description()))
-                .toList());
     }
 
     private class ParentHBox extends HBox {
@@ -135,7 +136,7 @@ public class LineageBox extends VBox {
 
             getChildren().addAll(spacer, regionPane, label);
 
-            List<InvertedTree.ConceptItem> allParents = getAllParents(treeItem.nid());
+            List<InvertedTree.ConceptItem> allParents = getAllParents(treeItem.nid(), getNavigator());
             boolean isRoot = allParents.isEmpty();
             pseudoClassStateChanged(ROOT_LINEAGE_PSEUDO_CLASS, isRoot);
             if (isRoot) { // item is root
@@ -143,7 +144,7 @@ public class LineageBox extends VBox {
             } else {
                 List<InvertedTree.ConceptItem> allSiblings =
                         invertedTree.parent != null && invertedTree.parent.item != null ?
-                                getAllParents(invertedTree.parent.item.nid()) : new ArrayList<>();
+                                getAllParents(invertedTree.parent.item.nid(), getNavigator()) : new ArrayList<>();
                 if (level == 1 && !allSiblings.isEmpty()) {
                     allSiblings.removeFirst(); // remove primary parent
                 }
@@ -176,7 +177,7 @@ public class LineageBox extends VBox {
                 int currentIndex = lineageBox.getChildren().indexOf(currentHBox);
                 if (currentHBox.invertedTree.isLeaf()) {
                     // item is collapsed, add all ancestors and expanse
-                    getAllParents(treeItem.nid()).stream()
+                    getAllParents(treeItem.nid(), getNavigator()).stream()
                             .filter(item -> !invertedTree.contains(item))
                             .forEach(item -> {
                                 ParentHBox parentHBox = new ParentHBox(lineageBox, invertedTree, item);

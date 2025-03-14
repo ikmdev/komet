@@ -98,11 +98,11 @@ public class ConceptNavigatorUtils {
         getAllParents(nid, navigator).forEach(i -> addAll(i.nid(), tree.addChild(i), navigator));
     }
 
-    private static List<InvertedTree.ConceptItem> getAllParents(int childNid, Navigator navigator) {
+    static List<InvertedTree.ConceptItem> getAllParents(int childNid, Navigator navigator) {
         return getSecondaryParents(childNid, -1, navigator);
     }
 
-    private static List<InvertedTree.ConceptItem> getSecondaryParents(int childNid, int primaryNid, Navigator navigator) {
+    static List<InvertedTree.ConceptItem> getSecondaryParents(int childNid, int primaryNid, Navigator navigator) {
         return new ArrayList<>(Arrays.stream(navigator.getParentNids(childNid)).boxed()
                 .filter(nid -> nid != primaryNid)
                 .map(nid -> new InvertedTree.ConceptItem(nid, childNid, Entity.getFast(nid).description()))
