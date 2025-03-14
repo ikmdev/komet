@@ -168,7 +168,8 @@ public class DetailsNode extends ExplorationNodeAbstract {
             // setup view and view into details view
             detailsViewController.attachTimelineViewSlideoutTray(this.timelineViewBorderPane);
 
-            final ScrollPane scrollPane = (ScrollPane) detailsViewBorderPane.lookup("#conceptContentScrollPane");
+            // Retrieve the concept content scroll pane from the controller.
+            final ScrollPane scrollPane = detailsViewController.getConceptContentScrollPane();
 
             // Filter out scroll events that try to scroll beyond the content's limits.
             scrollPane.addEventFilter(ScrollEvent.SCROLL, event -> {

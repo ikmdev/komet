@@ -105,6 +105,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -199,6 +200,9 @@ public class DetailsController  {
      * Applied to lastUpdatedText component.
      */
     private Tooltip authorTooltip = new Tooltip();
+
+    @FXML
+    private ScrollPane conceptContentScrollPane;
 
     ///// Descriptions Section /////////////////////////////////
     @FXML
@@ -490,6 +494,10 @@ public class DetailsController  {
 
     public ValidationViewModel getStampViewModel() {
         return conceptViewModel.getPropertyValue(CONCEPT_STAMP_VIEW_MODEL);
+    }
+
+    public ScrollPane getConceptContentScrollPane() {
+        return conceptContentScrollPane;
     }
 
     private void setUpDescriptionContextMenu(Button addDescriptionButton) {
