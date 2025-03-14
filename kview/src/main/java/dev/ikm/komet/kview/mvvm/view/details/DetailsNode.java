@@ -29,11 +29,8 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.css.PseudoClass;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -75,8 +72,6 @@ public class DetailsNode extends ExplorationNodeAbstract {
     private BorderPane timelineViewBorderPane;
     private TimelineController timelineViewController;
 
-    // Pseudo-class for vertical scrollbar visibility.
-    private static final PseudoClass V_SCROLLBAR_NEEDED = PseudoClass.getPseudoClass("vertical-scroll-needed");
 
     public DetailsNode(ViewProperties viewProperties, KometPreferences nodePreferences) {
         this(viewProperties, nodePreferences, false);
@@ -107,7 +102,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
             Config config = new Config(getClass().getResource(CONCEPT_DETAILS_VIEW_FXML_FILE))
                     .controller(new DetailsController(conceptTopic))
                     .updateViewModel("conceptViewModel", viewModel ->
-                        viewModel.setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalWindowTopic));
+                            viewModel.setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalWindowTopic));
             JFXNode<BorderPane, DetailsController> jfxNode = FXMLMvvmLoader.make(config);
 
             this.detailsViewBorderPane = jfxNode.node();
@@ -168,84 +163,9 @@ public class DetailsNode extends ExplorationNodeAbstract {
             // setup view and view into details view
             detailsViewController.attachTimelineViewSlideoutTray(this.timelineViewBorderPane);
 
-            // Retrieve the concept content scroll pane from the controller.
-            final ScrollPane scrollPane = detailsViewController.getConceptContentScrollPane();
-
-            // Filter out scroll events that try to scroll beyond the content's limits.
-            scrollPane.addEventFilter(ScrollEvent.SCROLL, event -> {
-                if (shouldConsumeVerticalScroll(scrollPane, event)) {
-                    event.consume();
-                }
-            });
-
-            // Update the pseudo-class when the viewport or content size changes.
-            scrollPane.viewportBoundsProperty().addListener((obs) ->
-                    scrollPane.pseudoClassStateChanged(V_SCROLLBAR_NEEDED, isVerticalScrollbarVisible(scrollPane)));
-            scrollPane.getContent().layoutBoundsProperty().addListener((obs) ->
-                    scrollPane.pseudoClassStateChanged(V_SCROLLBAR_NEEDED, isVerticalScrollbarVisible(scrollPane)));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Checks whether the vertical scrollbar should be visible.
-     * This considers the scrollbar policy, viewport size, and content size.
-     *
-     * @param scrollPane the ScrollPane to check.
-     * @return true if the content height exceeds the viewport height and the scrollbar is allowed.
-     */
-    private boolean isVerticalScrollbarVisible(ScrollPane scrollPane) {
-        // 1) Only proceed if vertical scrolling is allowed.
-        if (scrollPane.getVbarPolicy() == ScrollPane.ScrollBarPolicy.NEVER) {
-            return false;
-        }
-        Node content = scrollPane.getContent();
-        if (content == null) {
-            return false;
-        }
-        double viewportHeight = scrollPane.getViewportBounds().getHeight();
-        // 2) Skip if the viewport isn't yet sized or has zero height.
-        if (viewportHeight <= 0) {
-            return false;
-        }
-        double contentHeight = content.getLayoutBounds().getHeight();
-        // 3) Return true if the content height exceeds the viewport height.
-        return contentHeight > viewportHeight;
-    }
-
-    /**
-     * Determines whether a vertical scroll event should be consumed because it attempts to scroll
-     * beyond the boundaries (i.e. when at the top or bottom of the scrollable content).
-     *
-     * @param scrollPane the ScrollPane receiving the scroll event.
-     * @param event the ScrollEvent.
-     * @return true if the event should be consumed.
-     */
-    private boolean shouldConsumeVerticalScroll(ScrollPane scrollPane, ScrollEvent event) {
-        final double EPSILON = 1e-5;
-
-        // If the vertical scrollbar is not visible (i.e. not needed), no consumption is required.
-        if (!isVerticalScrollbarVisible(scrollPane)) {
-            return false;
-        }
-
-        double deltaY = event.getDeltaY();
-        // Skip if there's negligible scroll movement.
-        if (Math.abs(deltaY) <= EPSILON) {
-            return false;
-        }
-
-        double vValue = scrollPane.getVvalue();
-        double vMin = scrollPane.getVmin();
-        double vMax = scrollPane.getVmax();
-
-        // Determine if we are at the top or bottom.
-        boolean atTop = Math.abs(vValue - vMin) < EPSILON;
-        boolean atBottom = Math.abs(vValue - vMax) < EPSILON;
-
-        // Consume if scrolling upward at the top or downward at the bottom.
-        return (atTop && deltaY > 0) || (atBottom && deltaY < 0);
     }
 
     /**
