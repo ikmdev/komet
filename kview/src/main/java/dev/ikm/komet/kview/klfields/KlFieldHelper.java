@@ -52,11 +52,6 @@ public class KlFieldHelper {
         });
     }
 
-    // TODO: These methods below are in temporarily so we can add a Image data type that doesn't fetch anything from the database.
-    // TODO: once the database has the capability for Image Data types we can remove these methods
-    private static boolean hasAddedReadOnlyImage = false;
-    private static boolean hasAddedEditableImage = false;
-
 
     /**
      * function to return the correct node given the semantic entity and field information
@@ -125,9 +120,6 @@ public class KlFieldHelper {
             ObservableField<?> observableField = new ObservableField<>(writeObservableField.field(), editable);
             observableFields.add(observableField);
 
-            // TODO: this method below will be removed once the database has the capability to add and edit Image data types
-            // TODO: then all the code will be inside an if clause just like for the other data types.
-            //maybeAddEditableImageControl(viewProperties, container, semanticEntityVersionLatest, observableField);
             Node node = generateNode(fieldRecord, observableField, viewProperties, semanticEntityVersionLatest, editable);
             items.add(node);
         };
