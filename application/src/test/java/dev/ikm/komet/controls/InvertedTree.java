@@ -70,7 +70,7 @@ public class InvertedTree {
     }
 
     public void printTree() {
-        System.out.println("-".repeat(getLevel()) + " " + item.description());
+        System.out.println("-".repeat(getLevel()) + " " + item.description() + "(" + getLevel() + ")");
         children.forEach(InvertedTree::printTree);
     }
 

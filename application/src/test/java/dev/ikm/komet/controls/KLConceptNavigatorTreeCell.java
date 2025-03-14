@@ -17,7 +17,7 @@ import java.util.BitSet;
 import java.util.List;
 
 import static dev.ikm.komet.controls.ConceptNavigatorTreeItem.PS_STATE;
-import static dev.ikm.komet.controls.ConceptNavigatorTreeItem.MAX_LEVEL;
+import static dev.ikm.komet.controls.KLConceptNavigatorControl.MAX_LEVEL;
 
 public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
 

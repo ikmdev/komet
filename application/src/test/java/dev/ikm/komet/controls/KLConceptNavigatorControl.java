@@ -20,6 +20,8 @@ import java.util.function.Consumer;
 
 public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
 
+    public static final int MAX_LEVEL = 32;
+
     private KLConceptNavigatorTreeViewSkin conceptNavigatorTreeViewSkin;
 
     public KLConceptNavigatorControl() {
@@ -54,6 +56,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
 
         getStyleClass().add("concept-navigator-control");
         getStylesheets().add(KLConceptNavigatorControl.class.getResource("concept-navigator.css").toExternalForm());
+        getStylesheets().add(ConceptNavigatorUtils.STYLE);
     }
 
     // headerProperty
@@ -97,7 +100,10 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
         @Override
         protected void invalidated() {
             if (get() != null) {
-                setRoot(getConceptNavigatorRoot().getFirst());
+                ConceptNavigatorTreeItem first = getConceptNavigatorRoot().getFirst();
+                setRoot(first);
+                // debug
+//                new Thread(() -> ConceptNavigatorUtils.getConceptNavigatorDepth(first.getValue().nid(), get())).start();
             }
         }
     };
@@ -150,7 +156,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
         }
     }
 
-    public ConceptNavigatorTreeItem createSingleConceptNavigatorTreeItem(int nid, int parentNid) {
+    private ConceptNavigatorTreeItem createSingleConceptNavigatorTreeItem(int nid, int parentNid) {
         ConceptFacade facade = Entity.getFast(nid);
         ConceptNavigatorTreeItem conceptNavigatorTreeItem = new ConceptNavigatorTreeItem(getNavigator(), facade, parentNid);
         conceptNavigatorTreeItem.setDefined(getNavigator().getViewCalculator().hasSufficientSet(facade));

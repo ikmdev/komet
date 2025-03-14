@@ -3,18 +3,16 @@ package dev.ikm.komet.controls;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.TreeItem;
 
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
+import static dev.ikm.komet.controls.KLConceptNavigatorControl.MAX_LEVEL;
+
 public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
 
-    public static final int MAX_LEVEL = 10;
     private final Navigator navigator;
 
     public enum STATE {
