@@ -125,6 +125,7 @@ public class SamplerConceptNavigatorController {
 
     /**
      * Requires ~/Solor/tinkar-starter-test-data-with-navigator-scenarios-reasoned
+     * Requires ~/Solor/snomedct-international
      */
     private static class LoadDataset {
 
@@ -140,7 +141,8 @@ public class SamplerConceptNavigatorController {
                     .ifPresent(controller -> {
                         List<DataUriOption> list = controller.providerOptions();
                         list.stream()
-                                .filter(p -> p.toString().contains("scenarios"))
+                                .filter(p -> p.toString().contains("international"))
+//                                .filter(p -> p.toString().contains("scenarios"))
                                 .findFirst()
                                 .ifPresent(controller::setDataUriOption);
                         PrimitiveData.setController(controller);

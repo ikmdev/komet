@@ -6,16 +6,18 @@ import java.util.function.Consumer;
 
 public class InvertedTree {
 
-    ConceptNavigatorTreeItem item;
+    public record ConceptItem(int nid, int childNid, String description) {}
+
+    ConceptItem item;
     InvertedTree parent;
     List<InvertedTree> children;
 
-    public InvertedTree(ConceptNavigatorTreeItem item) {
+    public InvertedTree(ConceptItem item) {
         this.item = item;
         this.children = new LinkedList<>();
     }
 
-    public InvertedTree addChild(ConceptNavigatorTreeItem child) {
+    public InvertedTree addChild(ConceptItem child) {
         InvertedTree newChild = new InvertedTree(child);
         newChild.parent = this;
         children.add(newChild);
@@ -41,7 +43,7 @@ public class InvertedTree {
         children.clear();
     }
 
-    public InvertedTree getInvertedTree(ConceptNavigatorTreeItem child) {
+    public InvertedTree getInvertedTree(ConceptItem child) {
         if (item.equals(child)) {
             return this;
         }
@@ -54,7 +56,7 @@ public class InvertedTree {
         return null;
     }
 
-    public boolean contains(ConceptNavigatorTreeItem child) {
+    public boolean contains(ConceptItem child) {
         if (item.equals(child)) {
             return true;
         }
@@ -68,7 +70,7 @@ public class InvertedTree {
     }
 
     public void printTree() {
-        System.out.println("-".repeat(getLevel()) + " " + item.getValue().description());
+        System.out.println("-".repeat(getLevel()) + " " + item.description());
         children.forEach(InvertedTree::printTree);
     }
 

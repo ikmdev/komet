@@ -1,5 +1,6 @@
 package dev.ikm.komet.controls;
 
+import dev.ikm.tinkar.entity.Entity;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.PseudoClass;
@@ -12,6 +13,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class LineageBox extends VBox {
@@ -72,15 +74,15 @@ public class LineageBox extends VBox {
         getChildren().removeIf(HBox.class::isInstance);
         ConceptNavigatorTreeItem childItem = getConcept();
         if (childItem != null && childItem.getValue() != null) {
-            // primary parent under current tree hierarchy
+            // primary parent under current tree lineage
             ConceptNavigatorTreeItem primaryParentItem = (ConceptNavigatorTreeItem) childItem.getParent();
             if (primaryParentItem != null) {
                 // list of secondary parents for the concept child, different from the primary parent item
-                List<ConceptNavigatorTreeItem> secondaryParents = conceptNavigator.
+                List<InvertedTree.ConceptItem> secondaryParents =
                         getSecondaryParents(childItem.getValue().nid(), primaryParentItem.getValue().nid());
                 // for the concept child, add all its direct secondary parents, all collapsed initially
                 InvertedTree invertedTree = getConcept().getInvertedTree();
-                for (ConceptNavigatorTreeItem extraParentItem : secondaryParents) {
+                for (InvertedTree.ConceptItem extraParentItem : secondaryParents) {
                     getChildren().addFirst(new ParentHBox(this, invertedTree, extraParentItem));
                     // restore existing inverted tree, needed after scrolling and cell reuse, for instance
                     invertedTree.iterateTree(invertedTree.getInvertedTree(extraParentItem),
@@ -97,12 +99,23 @@ public class LineageBox extends VBox {
         }
     }
 
+    private List<InvertedTree.ConceptItem> getAllParents(int childNid) {
+        return getSecondaryParents(childNid, -1);
+    }
+
+    private List<InvertedTree.ConceptItem> getSecondaryParents(int childNid, int primaryNid) {
+        return new ArrayList<>(Arrays.stream(conceptNavigator.getNavigator().getParentNids(childNid)).boxed()
+                .filter(nid -> nid != primaryNid)
+                .map(nid -> new InvertedTree.ConceptItem(nid, childNid, Entity.getFast(nid).description()))
+                .toList());
+    }
+
     private class ParentHBox extends HBox {
 
         private final LineageBox lineageBox;
         private final InvertedTree invertedTree;
 
-        public ParentHBox(LineageBox lineageBox, InvertedTree parentTree, ConceptNavigatorTreeItem treeItem) {
+        public ParentHBox(LineageBox lineageBox, InvertedTree parentTree, InvertedTree.ConceptItem treeItem) {
             this.lineageBox = lineageBox;
             this.invertedTree = parentTree.contains(treeItem) ? parentTree.getInvertedTree(treeItem) : parentTree.addChild(treeItem);
 
@@ -122,18 +135,18 @@ public class LineageBox extends VBox {
 
             getChildren().addAll(spacer, regionPane, label);
 
-            List<ConceptNavigatorTreeItem> allParents = conceptNavigator.getAllParents(treeItem.getValue().nid());
+            List<InvertedTree.ConceptItem> allParents = getAllParents(treeItem.nid());
             boolean isRoot = allParents.isEmpty();
             pseudoClassStateChanged(ROOT_LINEAGE_PSEUDO_CLASS, isRoot);
             if (isRoot) { // item is root
                 iconRegion.getStyleClass().add("root-angle");
             } else {
-                List<ConceptNavigatorTreeItem> allSiblings = new ArrayList<>(invertedTree.parent != null && invertedTree.parent.item != null ?
-                        conceptNavigator.getAllParents(invertedTree.parent.item.getValue().nid()) : List.of());
+                List<InvertedTree.ConceptItem> allSiblings =
+                        invertedTree.parent != null && invertedTree.parent.item != null ?
+                                getAllParents(invertedTree.parent.item.nid()) : new ArrayList<>();
                 if (level == 1 && !allSiblings.isEmpty()) {
                     allSiblings.removeFirst(); // remove primary parent
                 }
-                boolean hasParents = !allParents.isEmpty();
                 boolean hasMultipleParents = allParents.size() > 1;
                 boolean hasSiblings = allSiblings.size() > 1;
                 int currentIndex = allSiblings.indexOf(treeItem);
@@ -145,7 +158,7 @@ public class LineageBox extends VBox {
                     style2 = "circle";
                     style3 = "line";
                 } else {
-                    style1 = hasSiblings && !lastSibling && !hasParents? "line" : "angle";
+                    style1 = hasSiblings && !lastSibling ? "line" : "angle";
                     style2 = hasSiblings || hasMultipleParents ? "circle" : "angle";
                     style3 = hasSiblings && !firstSibling ? "line" : "angle";
                 }
@@ -156,14 +169,14 @@ public class LineageBox extends VBox {
             getStyleClass().add("lineage-hbox");
         }
 
-        private Label getConceptLabel(ConceptNavigatorTreeItem treeItem) {
-            Label label = new Label(treeItem.getValue().description());
+        private Label getConceptLabel(InvertedTree.ConceptItem treeItem) {
+            Label label = new Label(treeItem.description());
             label.setOnMouseClicked(e -> {
                 ParentHBox currentHBox = (ParentHBox) label.getParent();
                 int currentIndex = lineageBox.getChildren().indexOf(currentHBox);
                 if (currentHBox.invertedTree.isLeaf()) {
                     // item is collapsed, add all ancestors and expanse
-                    conceptNavigator.getAllParents(treeItem.getValue().nid()).stream()
+                    getAllParents(treeItem.nid()).stream()
                             .filter(item -> !invertedTree.contains(item))
                             .forEach(item -> {
                                 ParentHBox parentHBox = new ParentHBox(lineageBox, invertedTree, item);

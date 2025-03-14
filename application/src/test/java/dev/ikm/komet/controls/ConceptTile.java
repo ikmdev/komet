@@ -161,29 +161,29 @@ public class ConceptTile extends HBox {
             cell.viewLineageProperty().unbind();
             cell.viewLineageProperty().set(false);
             treePane.setVisible(false);
-            ConceptNavigatorTreeItem model = get();
-            if (model != null) {
-                disclosureIconRegion.getStyleClass().setAll("icon", model.isLeaf() ? "leaf" : "disclosure");
-                subscription = model.expandedProperty().subscribe(e -> disclosurePane.pseudoClassStateChanged(EXPANDED_PSEUDO_CLASS, e));
-                subscription = subscription.and(model.leafProperty().subscribe(l -> disclosurePane.pseudoClassStateChanged(LEAF_PSEUDO_CLASS, l)));
+            ConceptNavigatorTreeItem treeItem = get();
+            if (treeItem != null) {
+                disclosurePane.pseudoClassStateChanged(LEAF_PSEUDO_CLASS, treeItem.isLeaf());
+                disclosureIconRegion.getStyleClass().setAll("icon", treeItem.isLeaf() ? "leaf" : "disclosure");
+                subscription = treeItem.expandedProperty().subscribe(e -> disclosurePane.pseudoClassStateChanged(EXPANDED_PSEUDO_CLASS, e));
                 subscription = subscription.and(hoverProperty().subscribe(h -> {
                     if (h) {
                         treeViewSkin.unhoverAllItems();
-                        if (treeView.getSelectionModel().getSelectedItem() == model || treeViewSkin.isMultipleSelectionByBoundingBox()) {
+                        if (treeView.getSelectionModel().getSelectedItem() == treeItem || treeViewSkin.isMultipleSelectionByBoundingBox()) {
                             // don't long-hover the selected item or if there's a treeView dragging event
                             return;
                         }
                         hoverTransition = new PauseTransition(new Duration(treeView.getActivation()));
-                        hoverTransition.setOnFinished(e -> treeViewSkin.hoverAllAncestors(model));
+                        hoverTransition.setOnFinished(e -> treeViewSkin.hoverAllAncestors(treeItem));
                         hoverTransition.playFromStart();
                     }
                 }));
 
-                String description = model.getValue() != null ? model.getValue().description() : "";
+                String description = treeItem.getValue() != null ? treeItem.getValue().description() : "";
                 conceptLabel.setText(description);
-                pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, model.isDefined());
-                cell.viewLineageProperty().bind(model.viewLineageProperty());
-                treePane.setVisible(model.isMultiParent());
+                pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, treeItem.isDefined());
+                cell.viewLineageProperty().bind(treeItem.viewLineageProperty());
+                treePane.setVisible(treeItem.isMultiParent());
             } else {
                 unselectItem();
                 conceptLabel.setText(null);

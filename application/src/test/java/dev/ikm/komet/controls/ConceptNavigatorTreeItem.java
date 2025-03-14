@@ -1,5 +1,6 @@
 package dev.ikm.komet.controls;
 
+import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -14,6 +15,7 @@ import java.util.List;
 public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
 
     public static final int MAX_LEVEL = 10;
+    private final Navigator navigator;
 
     public enum STATE {
         LONG_HOVER,
@@ -47,8 +49,11 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
             return List.of(PS_STATE.BORDER_SELECTED.getBit(), PS_STATE.LINE_I_SELECTED.getBit() + MAX_LEVEL + 1);
         }
     }
+    private final InvertedTree invertedTree;
 
-    public ConceptNavigatorTreeItem(ConceptFacade conceptFacade) {
+    public ConceptNavigatorTreeItem(Navigator navigator, ConceptFacade conceptFacade, int parentNid) {
+        this.navigator = navigator;
+        invertedTree = new InvertedTree(new InvertedTree.ConceptItem(conceptFacade.nid(), parentNid, conceptFacade.description()));
         setValue(conceptFacade);
     }
 
@@ -88,7 +93,6 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
         viewLineageProperty.set(value);
     }
 
-    private final InvertedTree invertedTree = new InvertedTree(this);
     public final InvertedTree getInvertedTree() {
         return invertedTree;
     }
@@ -100,6 +104,18 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
             bitset = new BitSet(4 + 2 * MAX_LEVEL);
         }
         return bitset;
+    }
+
+    @Override
+    public boolean isLeaf() {
+        if (getValue() == null || navigator == null) {
+            return true;
+        }
+        int nid = getValue().nid();
+        if (nid == Integer.MAX_VALUE) {
+            return false;
+        }
+        return navigator.isLeaf(nid);
     }
 
     @Override

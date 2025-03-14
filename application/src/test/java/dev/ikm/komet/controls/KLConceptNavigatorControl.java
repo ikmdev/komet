@@ -12,7 +12,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Skin;
-import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
 import java.util.Arrays;
@@ -121,7 +120,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     private List<ConceptNavigatorTreeItem> getConceptNavigatorRoot() {
         return Arrays.stream(getNavigator().getRootNids())
                 .mapToObj(rootNid -> {
-                    ConceptNavigatorTreeItem treeItem = getConceptNavigatorTreeItem(rootNid);
+                    ConceptNavigatorTreeItem treeItem = getConceptNavigatorTreeItem(rootNid, -1);
                     treeItem.setExpanded(true);
                     return treeItem;
                 })
@@ -130,62 +129,33 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
 
     private List<ConceptNavigatorTreeItem> getChildren(int nid) {
         return getNavigator().getChildEdges(nid).stream()
-                .map(edge -> getConceptNavigatorTreeItem(edge.destinationNid()))
+                .map(edge -> getConceptNavigatorTreeItem(edge.destinationNid(), nid))
                 .toList();
     }
 
-    private ConceptNavigatorTreeItem getConceptNavigatorTreeItem(int nid) {
-        ConceptNavigatorTreeItem conceptNavigatorTreeItem = createSingleConceptNavigatorTreeItem(nid);
-        if (!getNavigator().getChildEdges(nid).isEmpty()) {
-            conceptNavigatorTreeItem.getChildren().addAll(getChildren(nid));
-        }
+    private ConceptNavigatorTreeItem getConceptNavigatorTreeItem(int nid, int parentNid) {
+        ConceptNavigatorTreeItem conceptNavigatorTreeItem = createSingleConceptNavigatorTreeItem(nid, parentNid);
+        conceptNavigatorTreeItem.expandedProperty().subscribe((_, expanded) -> {
+            if (expanded && conceptNavigatorTreeItem.getChildren().isEmpty()) {
+                fetchChildren(conceptNavigatorTreeItem);
+            }
+        });
         return conceptNavigatorTreeItem;
     }
 
-    public ConceptNavigatorTreeItem createSingleConceptNavigatorTreeItem(int nid) {
+    private void fetchChildren(ConceptNavigatorTreeItem conceptNavigatorTreeItem) {
+        int nid = conceptNavigatorTreeItem.getValue().nid();
+        if (!getNavigator().getChildEdges(nid).isEmpty()) {
+            conceptNavigatorTreeItem.getChildren().addAll(getChildren(nid));
+        }
+    }
+
+    public ConceptNavigatorTreeItem createSingleConceptNavigatorTreeItem(int nid, int parentNid) {
         ConceptFacade facade = Entity.getFast(nid);
-        ConceptNavigatorTreeItem conceptNavigatorTreeItem = new ConceptNavigatorTreeItem(facade);
+        ConceptNavigatorTreeItem conceptNavigatorTreeItem = new ConceptNavigatorTreeItem(getNavigator(), facade, parentNid);
         conceptNavigatorTreeItem.setDefined(getNavigator().getViewCalculator().hasSufficientSet(facade));
         conceptNavigatorTreeItem.setMultiParent(getNavigator().getParentNids(nid).length > 1);
         return conceptNavigatorTreeItem;
     }
 
-    /**
-     * Get a list of all parents of a concept given by its nid
-     * @param nid The nid of the concept
-     * @return a list of concept items
-     */
-    public List<ConceptNavigatorTreeItem> getAllParents(int nid) {
-        return getSecondaryParents(nid, -1);
-    }
-
-    /**
-     * Get a list of all secondary parents of a concept, given by its nid, that are not the
-     * primary parent given by its parentNid
-     * @param nid the nid of the concept
-     * @param parentNid the nid of the primary parent of the concept
-     * @return a list of concept items
-     */
-    public List<ConceptNavigatorTreeItem> getSecondaryParents(int nid, int parentNid) {
-        return getNavigator().getParentEdges(nid).stream()
-                .filter(edge -> edge.destinationNid() != parentNid)
-                .map(edge -> getTreeViewItem((ConceptNavigatorTreeItem) getRoot(), edge.destinationNid()))
-                .toList();
-    }
-
-    private static ConceptNavigatorTreeItem getTreeViewItem(ConceptNavigatorTreeItem item, int nid) {
-        if (item == null || item.getValue() == null) {
-            return null;
-        }
-        if (item.getValue().nid() == nid) {
-            return item;
-        }
-        for (TreeItem<ConceptFacade> child : item.getChildren()) {
-            ConceptNavigatorTreeItem treeItem = getTreeViewItem((ConceptNavigatorTreeItem) child, nid);
-            if (treeItem != null) {
-                return treeItem;
-            }
-        }
-        return null;
-    }
 }
