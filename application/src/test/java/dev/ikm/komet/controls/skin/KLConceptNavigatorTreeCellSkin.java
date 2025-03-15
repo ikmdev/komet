@@ -48,7 +48,7 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
         double labelHeight = super.computePrefHeight(width, topInset, rightInset, bottomInset, leftInset);
 
         if (treeCell.isViewLineage()) {
-            labelHeight += lineageBox.prefHeight(treeCell.getWidth());
+            labelHeight += Math.min(lineageBox.prefHeight(treeCell.getWidth()), lineageBox.maxHeight(treeCell.getWidth()));
         }
 
         return labelHeight;
@@ -94,7 +94,7 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
         }
 
         boolean expanded = model != null && model.isViewLineage();
-        double expandedHeight = expanded ? lineageBox.prefHeight(w) : 0;
+        double expandedHeight = expanded ? Math.min(lineageBox.prefHeight(w), lineageBox.maxHeight(w)) : 0;
         if (expanded) {
             y += expandedHeight;
             h -= expandedHeight;

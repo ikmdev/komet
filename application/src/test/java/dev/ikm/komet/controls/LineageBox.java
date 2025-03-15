@@ -1,10 +1,13 @@
 package dev.ikm.komet.controls;
 
+import com.pixelduke.control.skin.ConsciousScrollPaneSkin;
 import dev.ikm.komet.navigator.graph.Navigator;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.PseudoClass;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Skin;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -18,30 +21,58 @@ import java.util.List;
 import static dev.ikm.komet.controls.ConceptNavigatorUtils.getAllParents;
 import static dev.ikm.komet.controls.ConceptNavigatorUtils.getSecondaryParents;
 
-public class LineageBox extends VBox {
+public class LineageBox extends ScrollPane {
 
     private static final PseudoClass ROOT_LINEAGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("root-lineage");
     private static final PseudoClass COLLAPSED_LINEAGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("collapsed-lineage");
-    private final StackPane closePane;
+    private final VBox root;
 
     public LineageBox() {
-        IconRegion closeIconRegion = new IconRegion("icon", "close");
-        closePane = new StackPane(closeIconRegion);
-        closePane.getStyleClass().addAll("region", "close");
-        closePane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            ConceptNavigatorTreeItem concept = getConcept();
-            if (concept != null) {
-                concept.setViewLineage(false);
-                concept.getInvertedTree().reset();
-                setConcept(null);
-            }
-            e.consume();
-        });
-        closePane.setManaged(false);
-        getChildren().add(closePane);
 
-        getStyleClass().add("lineage-box");
-        setManaged(false);
+        root = new VBox();
+        root.getStyleClass().add("lineage-box");
+
+        setFitToWidth(true);
+        setContent(root);
+        getStyleClass().add("lineage-pane");
+    }
+
+    @Override
+    protected Skin<?> createDefaultSkin() {
+        return new LineageBoxSkin(this);
+    }
+
+    private class LineageBoxSkin extends ConsciousScrollPaneSkin {
+        private final StackPane closePane;
+
+        public LineageBoxSkin(LineageBox box) {
+            super(box);
+
+            IconRegion closeIconRegion = new IconRegion("icon", "close");
+            closePane = new StackPane(closeIconRegion);
+            closePane.getStyleClass().addAll("region", "close");
+            closePane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+                ConceptNavigatorTreeItem concept = getConcept();
+                if (concept != null) {
+                    concept.setViewLineage(false);
+                    concept.getInvertedTree().reset();
+                    setConcept(null);
+                }
+                e.consume();
+            });
+            closePane.setManaged(false);
+            getChildren().add(closePane);
+        }
+
+        @Override
+        protected void layoutChildren(double x, double y, double w, double h) {
+            super.layoutChildren(x, y, w, h);
+
+            double w2 = closePane.prefWidth(w);
+            double h2 = closePane.prefHeight(h);
+            closePane.resizeRelocate(w - w2 - 4, 4, w2, h2);
+            closePane.toFront();
+        }
     }
 
     // conceptProperty
@@ -74,16 +105,8 @@ public class LineageBox extends VBox {
         navigatorProperty.set(value);
     }
 
-    @Override
-    protected void layoutChildren() {
-        super.layoutChildren();
-        double w = closePane.prefWidth(getHeight());
-        double h = closePane.prefHeight(getWidth());
-        closePane.resizeRelocate(getWidth() - w - getInsets().getRight(), getInsets().getTop(), w, h);
-    }
-
     private void initialize() {
-        getChildren().removeIf(HBox.class::isInstance);
+        root.getChildren().removeIf(HBox.class::isInstance);
         ConceptNavigatorTreeItem childItem = getConcept();
         if (childItem != null && childItem.getValue() != null) {
             // primary parent under current tree lineage
@@ -95,14 +118,14 @@ public class LineageBox extends VBox {
                 // for the concept child, add all its direct secondary parents, all collapsed initially
                 InvertedTree invertedTree = getConcept().getInvertedTree();
                 for (InvertedTree.ConceptItem extraParentItem : secondaryParents) {
-                    getChildren().addFirst(new ParentHBox(this, invertedTree, extraParentItem));
+                    root.getChildren().addFirst(new ParentHBox(root, invertedTree, extraParentItem));
                     // restore existing inverted tree, needed after scrolling and cell reuse, for instance
                     invertedTree.iterateTree(invertedTree.getInvertedTree(extraParentItem),
                             tree -> {
                                 // iteration goes from parent to last child, then back to next parent, so
                                 // it is safe to insert the boxes at position 0
-                                ParentHBox parentHBox = new ParentHBox(this, tree, tree.item);
-                                getChildren().addFirst(parentHBox);
+                                ParentHBox parentHBox = new ParentHBox(root, tree, tree.item);
+                                root.getChildren().addFirst(parentHBox);
                             });
                 }
                 requestLayout();
@@ -113,11 +136,11 @@ public class LineageBox extends VBox {
 
     private class ParentHBox extends HBox {
 
-        private final LineageBox lineageBox;
+        private final VBox lineageBoxRoot;
         private final InvertedTree invertedTree;
 
-        public ParentHBox(LineageBox lineageBox, InvertedTree parentTree, InvertedTree.ConceptItem treeItem) {
-            this.lineageBox = lineageBox;
+        public ParentHBox(VBox lineageBoxRoot, InvertedTree parentTree, InvertedTree.ConceptItem treeItem) {
+            this.lineageBoxRoot = lineageBoxRoot;
             this.invertedTree = parentTree.contains(treeItem) ? parentTree.getInvertedTree(treeItem) : parentTree.addChild(treeItem);
 
             Region spacer = new Region();
@@ -174,19 +197,19 @@ public class LineageBox extends VBox {
             Label label = new Label(treeItem.description());
             label.setOnMouseClicked(e -> {
                 ParentHBox currentHBox = (ParentHBox) label.getParent();
-                int currentIndex = lineageBox.getChildren().indexOf(currentHBox);
+                int currentIndex = lineageBoxRoot.getChildren().indexOf(currentHBox);
                 if (currentHBox.invertedTree.isLeaf()) {
                     // item is collapsed, add all ancestors and expanse
                     getAllParents(treeItem.nid(), getNavigator()).stream()
                             .filter(item -> !invertedTree.contains(item))
                             .forEach(item -> {
-                                ParentHBox parentHBox = new ParentHBox(lineageBox, invertedTree, item);
-                                lineageBox.getChildren().add(currentIndex, parentHBox);
+                                ParentHBox parentHBox = new ParentHBox(lineageBoxRoot, invertedTree, item);
+                                lineageBoxRoot.getChildren().add(currentIndex, parentHBox);
                             });
                     currentHBox.pseudoClassStateChanged(COLLAPSED_LINEAGE_PSEUDO_CLASS, false);
                 } else {
                     // item is expanded, remove ancestors and collapse
-                    lineageBox.getChildren().remove(Math.max(0, currentIndex - invertedTree.countTotalDescendants()), currentIndex);
+                    lineageBoxRoot.getChildren().remove(Math.max(0, currentIndex - invertedTree.countTotalDescendants()), currentIndex);
                     currentHBox.invertedTree.reset();
                     currentHBox.pseudoClassStateChanged(COLLAPSED_LINEAGE_PSEUDO_CLASS, true);
                 }
