@@ -1,14 +1,11 @@
 package dev.ikm.komet.controls;
 
-import com.pixelduke.control.skin.ConsciousScrollPaneSkin;
 import dev.ikm.komet.navigator.graph.Navigator;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.PseudoClass;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Skin;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -25,6 +22,9 @@ public class LineageBox extends ScrollPane {
 
     private static final PseudoClass ROOT_LINEAGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("root-lineage");
     private static final PseudoClass COLLAPSED_LINEAGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("collapsed-lineage");
+    private static final int INDENTATION_PER_LEVEL = 8;
+    private static final int MAX_INDENTATION = INDENTATION_PER_LEVEL * 16;
+
     private final VBox root;
 
     public LineageBox() {
@@ -35,44 +35,6 @@ public class LineageBox extends ScrollPane {
         setFitToWidth(true);
         setContent(root);
         getStyleClass().add("lineage-pane");
-    }
-
-    @Override
-    protected Skin<?> createDefaultSkin() {
-        return new LineageBoxSkin(this);
-    }
-
-    private class LineageBoxSkin extends ConsciousScrollPaneSkin {
-        private final StackPane closePane;
-
-        public LineageBoxSkin(LineageBox box) {
-            super(box);
-
-            IconRegion closeIconRegion = new IconRegion("icon", "close");
-            closePane = new StackPane(closeIconRegion);
-            closePane.getStyleClass().addAll("region", "close");
-            closePane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-                ConceptNavigatorTreeItem concept = getConcept();
-                if (concept != null) {
-                    concept.setViewLineage(false);
-                    concept.getInvertedTree().reset();
-                    setConcept(null);
-                }
-                e.consume();
-            });
-            closePane.setManaged(false);
-            getChildren().add(closePane);
-        }
-
-        @Override
-        protected void layoutChildren(double x, double y, double w, double h) {
-            super.layoutChildren(x, y, w, h);
-
-            double w2 = closePane.prefWidth(w);
-            double h2 = closePane.prefHeight(h);
-            closePane.resizeRelocate(w - w2 - 4, 4, w2, h2);
-            closePane.toFront();
-        }
     }
 
     // conceptProperty
@@ -145,7 +107,7 @@ public class LineageBox extends ScrollPane {
 
             Region spacer = new Region();
             int level = invertedTree.getLevel();
-            int spacerWidth = 128 - 8 * level;
+            int spacerWidth = MAX_INDENTATION - INDENTATION_PER_LEVEL * level;
             spacer.setMinSize(spacerWidth, 1);
             spacer.setPrefSize(spacerWidth, 1);
             spacer.setMaxSize(spacerWidth, 1);

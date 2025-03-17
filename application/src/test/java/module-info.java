@@ -35,6 +35,7 @@ module dev.ikm.komet.application.test {
     opens dev.ikm.komet.sampler.controllers to javafx.fxml;
     exports dev.ikm.komet.controls;
     opens dev.ikm.komet.controls to javafx.fxml;
+    exports dev.ikm.komet.controls.skin;
 
     exports dev.ikm.komet.debouncepoc;
 

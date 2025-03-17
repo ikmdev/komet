@@ -478,7 +478,7 @@
 }
 
 .lineage-pane {
-    -fx-skin: "dev.ikm.komet.controls.LineageBox$LineageBoxSkin";
+    -fx-skin: "dev.ikm.komet.controls.skin.LineageBoxSkin";
     -fx-max-height: 350;
     -fx-background-color: #5EA03C, white;
     -fx-background-insets: 0, 2;
