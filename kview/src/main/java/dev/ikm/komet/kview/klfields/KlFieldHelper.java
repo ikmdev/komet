@@ -128,6 +128,14 @@ public class KlFieldHelper {
         return observableFields;
     }
 
+    /**
+     * This method calculates the hashValue for the passed semantic version.
+     * It implements its own logic for fieldRecordConsumer and reuses the  generateSemanticUIFields(...)
+     * method to get the field records.
+     * @param semanticEntityVersionLatest
+     * @param viewProperties
+     * @return integer hashCode for field values.
+     */
     public static int generateHashValue(Latest<SemanticEntityVersion> semanticEntityVersionLatest, ViewProperties viewProperties ) {
         List<ObservableField<?>> observableFieldsList = new ArrayList<>();
         Consumer<FieldRecord<Object>> fieldRecordConsumer = (fieldRecord) -> {
@@ -167,6 +175,11 @@ public class KlFieldHelper {
         return entityVersionLatest.get();
     }
 
+    /**
+     * This method just concatenates all observableFiled values and generates a hashCode to return.
+     * @param observableFieldsList
+     * @return hashCode for all the field values.
+     */
     public static int calculteHashValue(List<ObservableField<?>> observableFieldsList ) {
         StringBuilder stringBuilder = new StringBuilder();
         observableFieldsList.forEach(observableField -> {
