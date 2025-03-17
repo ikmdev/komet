@@ -361,7 +361,7 @@ public class JournalController {
 
         // Listening for when a General authoring Window needs to be summoned.
         Subscriber<MakeGenEditingWindowEvent> makeGenEditWindowEventSubscriber = evt ->
-                makeGenEditWindow(evt.getComponent(), evt.getViewProperties());
+            makeGenEditWindow(evt.getComponent(), evt.getViewProperties());
 
         journalEventBus.subscribe(journalTopic, MakeGenEditingWindowEvent.class, makeGenEditWindowEventSubscriber);
 

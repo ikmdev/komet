@@ -13,7 +13,6 @@ public class MakeGenEditingWindowEvent extends Evt {
 
     private EntityFacade component;
 
-
     private ViewProperties viewProperties;
 
     /**
@@ -21,6 +20,7 @@ public class MakeGenEditingWindowEvent extends Evt {
      *
      * @param source    the object on which the Event initially occurred
      * @param eventType
+     * @param component a semantic (edit semantic) or pattern (create new semantic), depending on what is being summoned
      * @throws IllegalArgumentException if source is null
      */
     public MakeGenEditingWindowEvent(Object source, EvtType eventType, EntityFacade component, ViewProperties viewProperties) {
@@ -29,16 +29,6 @@ public class MakeGenEditingWindowEvent extends Evt {
         this.component = component;
     }
 
-    /**
-     * event to create a new general authoring window, one where the EntityFacade has not been defined yet
-     * @param source
-     * @param eventType
-     * @param viewProperties
-     */
-    public MakeGenEditingWindowEvent(Object source, EvtType eventType, ViewProperties viewProperties) {
-        super(source, eventType);
-        this.viewProperties = viewProperties;
-    }
 
     public EntityFacade getComponent() {
         return component;

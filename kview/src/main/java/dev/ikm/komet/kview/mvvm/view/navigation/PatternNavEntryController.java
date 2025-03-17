@@ -127,7 +127,7 @@ public class PatternNavEntryController {
             LOG.info("Summon create new Semantic Element {}", patternFacade.description());
             EvtBusFactory.getDefaultEvtBus().publish(instancesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                     new MakeGenEditingWindowEvent(this,
-                            MakeGenEditingWindowEvent.OPEN_GEN_AUTHORING, instancesViewModel.getPropertyValue(VIEW_PROPERTIES)));
+                            MakeGenEditingWindowEvent.OPEN_GEN_AUTHORING, patternFacade, instancesViewModel.getPropertyValue(VIEW_PROPERTIES)));
         });
         removeSemanticElement.setOnAction(actionEvent -> {
             LOG.info("TODO: Verify if the Pattern needs to be removed. "+patternFacade.description());

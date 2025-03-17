@@ -7,6 +7,7 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.scene.layout.Pane;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -34,7 +35,7 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
      * Constructs a new editing window for a specific semantic entity.
      *
      * @param journalTopic   the UUID representing the journal topic the owning Journal Window uses to communicate events.
-     * @param entityFacade   entity facade when not null usually this will load and display the current details.
+     * @param entityFacade   the semantic when in edit mode, the pattern when in create mode
      * @param viewProperties view properties is access to view calculators to query data.
      * @param preferences    komet preferences assists on reading and writing data to preferences user.home/Solor/database_folder/preferences
      */
@@ -42,11 +43,17 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
         super(journalTopic, entityFacade, viewProperties, preferences);
 
         EntityFacade refComponent;
-        if (entityFacade != null) {
+        EntityFacade semanticComponent;
+        PatternFacade patternFacade;
+        if (entityFacade instanceof PatternFacade) {
+            patternFacade = (PatternFacade) entityFacade;
+            refComponent = null;
+            semanticComponent = null;
+        } else {
+            patternFacade = null;
+            semanticComponent = entityFacade;
             SemanticEntity entity = (SemanticEntity) EntityService.get().getEntity(entityFacade.nid()).get();
             refComponent = EntityService.get().getEntity(entity.referencedComponentNid()).get();
-        } else {
-            refComponent = null;
         }
 
         Config config = new Config(GenEditingDetailsController.class.getResource("genediting-details.fxml"))
@@ -57,7 +64,9 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
 //                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
                                 .setPropertyValue(FIELDS_COLLECTION, new ArrayList<String>()) // Ordered collection of Fields
                                 .setPropertyValue(REF_COMPONENT, refComponent)
-                                .setPropertyValue(SEMANTIC, entityFacade));
+                                .setPropertyValue(SEMANTIC, semanticComponent)
+                                .setPropertyValue(PATTERN, patternFacade)
+                                );
 
         // Create chapter window
         jfxNode = FXMLMvvmLoader.make(config);
@@ -70,16 +79,6 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
             getOnClose().ifPresent(Runnable::run);
             // TODO more clean up such as view models and listeners just in case (memory).
         });
-    }
-
-    /**
-     * constructor for General Semantic Authoring; entityFacade has does not exist yet
-     * @param journalTopic
-     * @param viewProperties
-     * @param preferences
-     */
-    public GenEditingKlWindow(UUID journalTopic, ViewProperties viewProperties, KometPreferences preferences) {
-        this(journalTopic, null, viewProperties, preferences);
     }
 
     /**
