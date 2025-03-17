@@ -128,9 +128,6 @@ public class SemanticFieldsController {
                  observableField.valueProperty()
                                         .addListener(observable -> {
                                             enableDisableSubmitButton();
-                                            if(!submitButton.isDisabled()){
-                                                observableField.writeToDataBase();
-                                            }
                                         });
                     //Add listener for fieldProperty of each field to check when data is modified.
                     observableField.fieldProperty().addListener(observable -> fieldPropertyChangeListner());
