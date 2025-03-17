@@ -326,7 +326,7 @@ public class DataModelHelper {
             observableSemanticVersionList.removeIf(p -> !semanticEntityVersionLatest.stampNids().contains(p.stampNid()));
             AtomicReference<ImmutableList<ObservableField>> observableFields = new AtomicReference<>();
             //If no historic data is available then return the last uncommited value, this is true when creating a new Semantic.
-            if(observableSemanticVersionList.isEmpty()){
+            if (observableSemanticVersionList.isEmpty()) {
               return obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, true);
             }
             //Get the 1st version value of the matched stamp
