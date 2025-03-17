@@ -64,7 +64,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
         setText(null);
 
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            if (e.getClickCount() == 2 && !isEmpty()) {
+            if (e.getClickCount() == 2 && !isEmpty() && !isViewLineage()) {
                 if (treeView.getOnAction() != null) {
                     treeView.getOnAction().accept(List.of(getItem()));
                 }
