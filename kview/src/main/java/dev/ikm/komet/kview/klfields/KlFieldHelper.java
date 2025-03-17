@@ -179,6 +179,10 @@ public class KlFieldHelper {
      * This method just concatenates all observableFiled values and generates a hashCode to return.
      * @param observableFieldsList
      * @return hashCode for all the field values.
+     *
+     * TODO: This method can be moved to DataModelHelper class.
+     *  During create (new Semantic) the user can change the reference component.
+     *  the hash is stating any change. By default a reference component during created would be TinkarTerms.ANONOUMOUS_CONCEPT (I can't remember).
      */
     public static int calculteHashValue(List<ObservableField<?>> observableFieldsList ) {
         StringBuilder stringBuilder = new StringBuilder();
