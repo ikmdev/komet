@@ -187,6 +187,7 @@ public class KlFieldHelper {
     public static int calculteHashValue(List<ObservableField<?>> observableFieldsList ) {
         StringBuilder stringBuilder = new StringBuilder();
         observableFieldsList.forEach(observableField -> {
+            // TODO re-evaluate if toString is the right approach for complex datatypes.
             stringBuilder.append(observableField.valueProperty().get().toString()).append("|");
         });
         return stringBuilder.toString().hashCode();

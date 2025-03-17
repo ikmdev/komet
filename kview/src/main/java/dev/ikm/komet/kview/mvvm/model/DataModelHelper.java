@@ -315,11 +315,11 @@ public class DataModelHelper {
         ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
         ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
         ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
-        if(uncommitted || observableSemanticVersionImmutableList == null || observableSemanticVersionImmutableList.isEmpty()){
+        if (uncommitted || observableSemanticVersionImmutableList == null || observableSemanticVersionImmutableList.isEmpty()) {
             //Get the latest version which is uncommited version
             ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
             return observableFields.get(fieldRecord.fieldIndex());
-        }else{
+        } else {
             //Cast to mutable list
             List<ObservableSemanticVersion> observableSemanticVersionList = new ArrayList<>(observableSemanticVersionImmutableList.castToList());
             //filter list to have only the latest semantic version passed as argument and remove rest of the entries.
@@ -336,9 +336,7 @@ public class DataModelHelper {
             latestPatternEntityVersion.ifPresent(patternEntityVersion -> {
                 observableFields.set(observableSemanticVersion.fields(patternEntityVersion));
             });
-
             return observableFields.get().get(fieldRecord.fieldIndex());
         }
     }
-
 }
