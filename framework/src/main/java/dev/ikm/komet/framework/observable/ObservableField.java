@@ -70,6 +70,7 @@ public final class ObservableField<T> implements Field<T> {
 
     public void writeToDataBase() {
         this.writeToDatabase(value());
+        fieldProperty.set(field().withValue(value()));
     }
 
     public void writeToDatabase(Object newValue) {
@@ -110,7 +111,7 @@ public final class ObservableField<T> implements Field<T> {
 
     @Override
     public T value() {
-        return field().value();
+        return valueProperty.get();
     }
 
     @Override
