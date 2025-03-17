@@ -139,17 +139,16 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private void setupDragNDrop() {
         KLComponentControl control = getSkinnable();
         control.setOnDragOver(event -> {
-            if (isDuplicateInParentSet(control, event)) {
-                event.acceptTransferModes(TransferMode.NONE);
-                event.consume();
-                return;
-            }
-
             if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT)) {
                 event.acceptTransferModes(TransferMode.MOVE);
             } else if (event.getGestureSource() != control && event.getDragboard().hasString()) {
-                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                if (isFilterAllowedWhileDragAndDropping(event)) {
+                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                } else {
+                    event.acceptTransferModes(TransferMode.NONE);
+                }
             }
+
             event.consume();
         });
 
@@ -160,7 +159,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     if (hasAllowedDND(control)) {
                         aboutToRearrangeHBox.setVisible(true);
                     }
-                } else if (isDuplicateInParentSet(control, event)) {
+                } else if (!isFilterAllowedWhileDragAndDropping(event)) {
                     doNotDropBorderPane.setVisible(true);  // show error message.
                 } else {
                     aboutToDropHBox.setVisible(true);
@@ -194,12 +193,6 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         });
 
         control.setOnDragDropped(event -> {
-            if (isDuplicateInParentSet(control, event)) {
-                event.setDropCompleted(false);
-                event.consume();
-                return;
-            }
-
             Dragboard dragboard = event.getDragboard();
             if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT) &&
                     event.getGestureSource() instanceof KLComponentControl cc && haveAllowedDND(control, cc)) {
@@ -216,6 +209,12 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                 }
             } else if (dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
                 // drop concept
+                if (!isFilterAllowedWhileDragAndDropping(event)) {
+                    event.setDropCompleted(false);
+                    event.consume();
+                    return;
+                }
+
                 try {
                     LOG.info("publicId: {}", dragboard.getString());
                     if (event.getGestureSource() instanceof Node source &&
@@ -254,6 +253,13 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                 && source.getUserData() instanceof DragAndDropInfo dropInfo // whose user data is DragAndDropInfo
                 && dropInfo.publicId() != null // with a non-null publicId
                 && klComponentSetControl.getValue().contains(EntityService.get().nidForPublicId(dropInfo.publicId())); // that already exists in the set
+    }
+
+    private boolean isFilterAllowedWhileDragAndDropping(DragEvent event) {
+        return event.getGestureSource() instanceof Node source // and the gesture source is a Node
+               && source.getUserData() instanceof DragAndDropInfo dropInfo // whose user data is DragAndDropInfoEntityProxy
+               && dropInfo.publicId() != null // with a non-null publicId
+               && getSkinnable().getComponentAllowedFilter().test(dropInfo.publicId()); // and the allowed filter returns true
     }
 
     private boolean hasAllowedDND(KLComponentControl control) {
