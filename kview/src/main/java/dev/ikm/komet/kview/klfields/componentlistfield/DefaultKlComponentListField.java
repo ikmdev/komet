@@ -21,7 +21,7 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
         Parent node;
         ObjectProperty<IntIdList> observableProperty = observableComponentListField.valueProperty();
         if (isEditable) {
-            KLComponentListControl klComponentListControl = new KLComponentListControl();
+            KLComponentListControl<IntIdList> klComponentListControl = new KLComponentListControl<>();
             klComponentListControl.setTitle(getTitle());
             klComponentListControl.valueProperty().bindBidirectional(observableProperty);
             node = klComponentListControl;

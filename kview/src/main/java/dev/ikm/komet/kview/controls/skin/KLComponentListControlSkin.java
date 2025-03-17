@@ -2,8 +2,11 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentListControl;
+import dev.ikm.tinkar.common.id.IntIdCollection;
 import dev.ikm.tinkar.common.id.IntIdList;
+import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.binding.Bindings;
 import javafx.event.Event;
@@ -27,7 +30,7 @@ import java.util.ResourceBundle;
 /**
  * Default skin implementation for the {@link KLComponentListControl} control
  */
-public class KLComponentListControlSkin extends SkinBase<KLComponentListControl> {
+public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinBase<KLComponentListControl<T>> {
 
     private static final Logger LOG = LoggerFactory.getLogger(KLComponentListControlSkin.class);
 
@@ -68,14 +71,13 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
         titleLabel.getStyleClass().add("title-label");
         titleLabel.textProperty().bind(control.titleProperty());
 
-        // Create controls based on control's intDList values
-        for(int i = 0; i < control.getValue().size(); i++) {
-            int nid = control.getValue().get(i);
+        // Create component controls based on this control's values
+        control.getValue().forEach(nid -> {
             if (nid != 0) {
                 EntityProxy entityProxy = EntityProxy.make(nid);
                 createComponentUI(entityProxy.nid());
             }
-        }
+        });
 
         // Add entry button
         addEntryButton = new Button(getString("add.entry.button.text"));
@@ -154,10 +156,10 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
         }
 
         KLComponentControl componentControl = (KLComponentControl) dragEvent.getGestureSource();
-        KLComponentListControl control = getSkinnable();
+        KLComponentListControl<T> control = getSkinnable();
         int componentNid = componentControl.getEntity().nid();
 
-        IntIdList intIdList = control.getValue();
+        IntIdCollection intIdList = control.getValue();
         MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
 
         mutableList.remove(componentNid);
@@ -166,7 +168,7 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
         componentControls.remove(componentControl);
         componentControls.add(currentDropIndex, componentControl);
 
-        control.setValue(IntIds.list.of(mutableList.toArray()));
+        setValueFromIntList(mutableList);
 
         if (currentDropLine != null) {
             currentDropLine.setVisible(false);
@@ -178,6 +180,16 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
         dragEvent.consume();
     }
 
+    private void setValueFromIntList(MutableIntList mutableList) {
+        KLComponentListControl<T> control = getSkinnable();
+
+        if (control.getValue() instanceof IntIdList) {
+            ((KLComponentListControl<IntIdList>)control).setValue(IntIds.list.of(mutableList.toArray()));
+        } else if(control.getValue() instanceof IntIdSet) {
+            ((KLComponentListControl<IntIdSet>)control).setValue(IntIds.set.of(mutableList.toArray()));
+        }
+    }
+
     /**
      * Create UI for a component with the given nid.
      * A nid of 0 means create a component that's empty.
@@ -185,7 +197,7 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
      * @param nid the nid that is going to be associated with the component
      */
     private void createComponentUI(int nid) {
-        KLComponentListControl control = getSkinnable();
+        KLComponentListControl<T> control = getSkinnable();
 
         KLComponentControl componentControl = new KLComponentControl();
         if (nid != 0) {
@@ -201,10 +213,10 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
                 int newNid = entity.nid();
 
                 if (oldNidIndex >= getSkinnable().getValue().size()) { // we're adding a new nid
-                    IntIdList intIdList = control.getValue();
-                    MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
+                    IntIdCollection intIdCollection = control.getValue();
+                    MutableIntList mutableList = IntLists.mutable.of(intIdCollection.toArray());
                     mutableList.add(newNid);
-                    control.setValue(IntIds.list.of(mutableList.toArray()));
+                    setValueFromIntList(mutableList);
 
                     // Component Control was empty so had no drop line we need to create one now
                     createDropLine(componentControl);
@@ -212,15 +224,20 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
                     // Create new empty component at the bottom
                     createComponentUI(0);
                 } else { // we're setting the control's valid nid to another nid
-                    IntIdList intIdList = control.getValue();
-                    MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
+                    IntIdCollection intIdCollection = control.getValue();
+                    MutableIntList mutableList = IntLists.mutable.of(intIdCollection.toArray());
                     mutableList.set(oldNidIndex, newNid);
-                    control.setValue(IntIds.list.of(mutableList.toArray()));
+                    setValueFromIntList(mutableList);
                 }
             }
         });
 
         componentControl.setOnRemoveAction(ev -> removeComponentControl(componentControl, subscription));
+
+        if (control.getValue() instanceof IntIdSet) {
+            componentControl.setComponentAllowedFilter(componentPublicId
+                    -> !control.getValue().contains(EntityService.get().nidForPublicId(componentPublicId)));
+        }
 
         componentControl.showDragHandleProperty().bind(componentControl.hoverProperty());
 
@@ -253,7 +270,7 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
     }
 
     private void removeComponentControl(KLComponentControl componentControl, Subscription subscription) {
-        KLComponentListControl control = getSkinnable();
+        KLComponentListControl<T> control = getSkinnable();
         int nidToRemove = componentControl.getEntity().nid();
 
         subscription.unsubscribe();
@@ -267,10 +284,10 @@ public class KLComponentListControlSkin extends SkinBase<KLComponentListControl>
         componentToDropLine.remove(componentControl);
         componentControlToNumberGraphic.remove(componentControl);
 
-        IntIdList intIdList = control.getValue();
+        IntIdCollection intIdList = control.getValue();
         MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
         mutableList.remove(nidToRemove);
-        control.setValue(IntIds.list.of(mutableList.toArray()));
+        setValueFromIntList(mutableList);
     }
 
     /** {@inheritDoc} */
