@@ -145,7 +145,7 @@ public class GenEditingViewModel extends FormViewModel {
                     }).attach((USDialect dialect) -> dialect
                             .acceptability(PREFERRED));
         });
-        composer.commitSession(session);
+        // don't commit the session... we want the STAMP's time to be Long.MAX_LONG
         EntityService.get().endLoadPhase();
         semantic = defaultSemantic.toProxy();
         return semantic;

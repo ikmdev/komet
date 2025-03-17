@@ -355,11 +355,15 @@ public class GenEditingDetailsController {
     }
 
     private void updateTimeText(Long time) {
-        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
-        Instant stampInstance = Instant.ofEpochSecond(time / 1000);
-        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-        String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
-        lastUpdatedText.setText(lastUpdated);
+        if (time == Long.MAX_VALUE) {
+            lastUpdatedText.setText("");
+        } else {
+            DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
+            Instant stampInstance = Instant.ofEpochSecond(time / 1000);
+            ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
+            String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
+            lastUpdatedText.setText(lastUpdated);
+        }
     }
 
     /**
