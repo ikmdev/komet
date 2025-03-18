@@ -7,9 +7,9 @@ import javafx.css.PseudoClass;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
@@ -113,8 +113,8 @@ public class LineageBox extends ScrollPane {
             spacer.setMaxSize(spacerWidth, 1);
 
             IconRegion iconRegion = new IconRegion("icon");
-            StackPane regionPane = new StackPane(iconRegion);
-            regionPane.getStyleClass().add("region");
+            Pane regionPane = new Pane(iconRegion);
+            regionPane.getStyleClass().add("pane");
 
             Label label = getConceptLabel(treeItem);
             HBox.setHgrow(label, Priority.ALWAYS);
