@@ -535,16 +535,6 @@
                                 <releasePlatform>linux</releasePlatform> <!-- includes linux x64 builds -->
                                 <releasePlatform>linux-aarch64</releasePlatform> <!-- includes linux aarch64 builds -->
                             </releasePlatforms>
-                            <jproReleaseFiles>
-                                <JProReleaseFile>
-                                    <inputFile>${project.basedir}/../docker/Dockerfile</inputFile>
-                                    <outputFile>/</outputFile>
-                                </JProReleaseFile>
-                                <JProReleaseFile>
-                                    <inputFile>${project.basedir}/../docker/docker-compose.yml</inputFile>
-                                    <outputFile>/</outputFile>
-                                </JProReleaseFile>
-                            </jproReleaseFiles>
                             <JVMArgs>
                                 <JVMArg>-Xmx16g</JVMArg>
                                 <JVMArg>--add-opens</JVMArg>
@@ -556,6 +546,14 @@
                                 <JVMArg>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</JVMArg>
                             </JVMArgs>
                         </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>release</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
