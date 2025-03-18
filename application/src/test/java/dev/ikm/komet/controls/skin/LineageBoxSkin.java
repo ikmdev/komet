@@ -1,13 +1,13 @@
 package dev.ikm.komet.controls.skin;
 
-import com.pixelduke.control.skin.ConsciousScrollPaneSkin;
 import dev.ikm.komet.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.controls.IconRegion;
 import dev.ikm.komet.controls.LineageBox;
+import javafx.scene.control.skin.ScrollPaneSkin;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 
-public class LineageBoxSkin extends ConsciousScrollPaneSkin {
+public class LineageBoxSkin extends ScrollPaneSkin {
     private final StackPane closePane;
 
     public LineageBoxSkin(LineageBox lineageBox) {
