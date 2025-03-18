@@ -28,13 +28,15 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
         this.treeCell = treeCell;
         model = (ConceptNavigatorTreeItem) treeCell.getTreeItem();
         treeView = treeCell.getTreeView();
-        lineageBox = new LineageBox();
-        registerChangeListener(((KLConceptNavigatorControl) treeView).navigatorProperty(),
-                _ -> lineageBox.setNavigator(((KLConceptNavigatorControl) treeView).getNavigator()));
         registerChangeListener(treeCell.treeItemProperty(), _ -> {
             model = (ConceptNavigatorTreeItem) treeCell.getTreeItem();
             getSkinnable().requestLayout();
         });
+
+        lineageBox = new LineageBox();
+        lineageBox.setNavigator(((KLConceptNavigatorControl) treeView).getNavigator());
+        registerChangeListener(((KLConceptNavigatorControl) treeView).navigatorProperty(),
+                _ -> lineageBox.setNavigator(((KLConceptNavigatorControl) treeView).getNavigator()));
         registerChangeListener(treeCell.viewLineageProperty(), _ -> {
             boolean viewLineage = treeCell.isViewLineage();
             if (viewLineage && !getChildren().contains(lineageBox)) {

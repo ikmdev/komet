@@ -93,4 +93,12 @@ public class InvertedTree {
         iterateTree(this, _ -> counter++);
         return counter;
     }
+
+    private int depth = 0;
+
+    public int getTreeDepth() {
+        depth = 0;
+        iterateTree(this, tree -> depth = Math.max(tree.getLevel(), depth));
+        return depth;
+    }
 }

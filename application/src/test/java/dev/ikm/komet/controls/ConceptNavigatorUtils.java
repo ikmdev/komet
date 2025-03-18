@@ -87,10 +87,7 @@ public class ConceptNavigatorUtils {
     }
 
     private static void printInvertedTree(int nid, Navigator navigator) {
-        ConceptFacade facade = Entity.getFast(nid);
-        InvertedTree.ConceptItem item = new InvertedTree.ConceptItem(facade.nid(), facade.nid(), facade.description());
-        InvertedTree tree = new InvertedTree(item);
-        addAll(facade.nid(), tree, navigator);
+        InvertedTree tree = buildInvertedTree(nid, navigator);
         tree.printTree();
     }
 
@@ -107,6 +104,19 @@ public class ConceptNavigatorUtils {
                 .filter(nid -> nid != primaryNid)
                 .map(nid -> new InvertedTree.ConceptItem(nid, childNid, Entity.getFast(nid).description()))
                 .toList());
+    }
+
+    static int getFartherLevel(int nid, Navigator navigator) {
+        InvertedTree tree = buildInvertedTree(nid, navigator);
+        return tree.getTreeDepth();
+    }
+
+    private static InvertedTree buildInvertedTree(int nid, Navigator navigator) {
+        ConceptFacade facade = Entity.getFast(nid);
+        InvertedTree.ConceptItem item = new InvertedTree.ConceptItem(facade.nid(), facade.nid(), facade.description());
+        InvertedTree tree = new InvertedTree(item);
+        addAll(facade.nid(), tree, navigator);
+        return tree;
     }
 
 }

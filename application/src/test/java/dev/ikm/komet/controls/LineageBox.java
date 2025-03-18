@@ -16,14 +16,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static dev.ikm.komet.controls.ConceptNavigatorUtils.getAllParents;
+import static dev.ikm.komet.controls.ConceptNavigatorUtils.getFartherLevel;
 import static dev.ikm.komet.controls.ConceptNavigatorUtils.getSecondaryParents;
 
 public class LineageBox extends ScrollPane {
 
     private static final PseudoClass ROOT_LINEAGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("root-lineage");
     private static final PseudoClass COLLAPSED_LINEAGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("collapsed-lineage");
-    private static final int INDENTATION_PER_LEVEL = 8;
-    private static final int MAX_INDENTATION = INDENTATION_PER_LEVEL * 16;
+    private static final int INDENTATION_PER_LEVEL = 8; // pixels
+    private static final int MIN_INDENTATION = INDENTATION_PER_LEVEL * 5; // the most top-left item will have 5 * 8 = 40 pixels
+
+    private int invertedTreeMaxDepth;
 
     private final VBox root;
 
@@ -70,13 +73,16 @@ public class LineageBox extends ScrollPane {
     private void initialize() {
         root.getChildren().removeIf(HBox.class::isInstance);
         ConceptNavigatorTreeItem childItem = getConcept();
+        invertedTreeMaxDepth = -1;
         if (childItem != null && childItem.getValue() != null) {
+            Navigator navigator = getNavigator();
+            invertedTreeMaxDepth = getFartherLevel(childItem.getValue().nid(), navigator);
             // primary parent under current tree lineage
             ConceptNavigatorTreeItem primaryParentItem = (ConceptNavigatorTreeItem) childItem.getParent();
             if (primaryParentItem != null) {
                 // list of secondary parents for the concept child, different from the primary parent item
                 List<InvertedTree.ConceptItem> secondaryParents =
-                        getSecondaryParents(childItem.getValue().nid(), primaryParentItem.getValue().nid(), getNavigator());
+                        getSecondaryParents(childItem.getValue().nid(), primaryParentItem.getValue().nid(), navigator);
                 // for the concept child, add all its direct secondary parents, all collapsed initially
                 InvertedTree invertedTree = getConcept().getInvertedTree();
                 for (InvertedTree.ConceptItem extraParentItem : secondaryParents) {
@@ -106,8 +112,8 @@ public class LineageBox extends ScrollPane {
             this.invertedTree = parentTree.contains(treeItem) ? parentTree.getInvertedTree(treeItem) : parentTree.addChild(treeItem);
 
             Region spacer = new Region();
-            int level = invertedTree.getLevel();
-            int spacerWidth = MAX_INDENTATION - INDENTATION_PER_LEVEL * level;
+            int currentLevel = invertedTree.getLevel();
+            int spacerWidth = INDENTATION_PER_LEVEL * (invertedTreeMaxDepth - currentLevel) + MIN_INDENTATION;
             spacer.setMinSize(spacerWidth, 1);
             spacer.setPrefSize(spacerWidth, 1);
             spacer.setMaxSize(spacerWidth, 1);
@@ -130,7 +136,7 @@ public class LineageBox extends ScrollPane {
                 List<InvertedTree.ConceptItem> allSiblings =
                         invertedTree.parent != null && invertedTree.parent.item != null ?
                                 getAllParents(invertedTree.parent.item.nid(), getNavigator()) : new ArrayList<>();
-                if (level == 1 && !allSiblings.isEmpty()) {
+                if (currentLevel == 1 && !allSiblings.isEmpty()) {
                     allSiblings.removeFirst(); // remove primary parent
                 }
                 boolean hasMultipleParents = allParents.size() > 1;
@@ -139,7 +145,7 @@ public class LineageBox extends ScrollPane {
                 boolean firstSibling = currentIndex == 0;
                 boolean lastSibling = currentIndex == allSiblings.size() - 1;
                 String style1 = "", style2 = "", style3 = "";
-                if (level == 1) {
+                if (currentLevel == 1) {
                     style1 = !hasSiblings || lastSibling ? "angle" : "line";
                     style2 = "circle";
                     style3 = "line";
