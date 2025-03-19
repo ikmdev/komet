@@ -82,9 +82,17 @@ public class SemanticFieldsController {
 
     private int committedHash;
 
+    private void enableDisableSubmitButton(Object value){
+        if(value != null && !value.toString().isEmpty()) {
+            enableDisableSubmitButton();
+        }else {
+            submitButton.setDisable(true);
+        }
+    }
+
     private void enableDisableSubmitButton(){
-        int uncommittedHash = calculteHashValue(observableFields);
-        submitButton.setDisable(committedHash == uncommittedHash);
+            int uncommittedHash = calculteHashValue(observableFields);
+            submitButton.setDisable(committedHash == uncommittedHash);
     }
 
     private void processCommittedValues() {
@@ -126,8 +134,8 @@ public class SemanticFieldsController {
                 editFieldsVBox.getChildren().clear();
                 observableFields.forEach(observableField -> {
                  observableField.valueProperty()
-                                        .addListener(observable -> {
-                                            enableDisableSubmitButton();
+                                        .subscribe(value -> {
+                                            enableDisableSubmitButton(value);
                                         });
                     //Add listener for fieldProperty of each field to check when data is modified.
                     observableField.fieldProperty().addListener(observable -> fieldPropertyChangeListner());
