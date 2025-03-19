@@ -91,8 +91,8 @@ public class SemanticFieldsController {
     }
 
     private void enableDisableSubmitButton(){
-            int uncommittedHash = calculteHashValue(observableFields);
-            submitButton.setDisable(committedHash == uncommittedHash);
+        int uncommittedHash = calculteHashValue(observableFields);
+        submitButton.setDisable(committedHash == uncommittedHash);
     }
 
     private void processCommittedValues() {
