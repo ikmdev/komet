@@ -159,6 +159,22 @@ public class LineageBox extends ScrollPane {
                 iconRegion.getStyleClass().add(style1 + "-" + style2 + "-" + style3);
                 pseudoClassStateChanged(COLLAPSED_LINEAGE_PSEUDO_CLASS, invertedTree.isLeaf());
                 pseudoClassStateChanged(HAS_SIBLINGS_PSEUDO_CLASS, hasSiblings);
+
+                if (hasSiblings) {
+                    int counter = 0;
+                    for (InvertedTree.ConceptItem sibling : allSiblings) {
+                        if (sibling.equals(treeItem)) {
+                            if (counter > 0) {
+                                label.setText(label.getText() + " (#" + counter + ")");
+                            }
+                            break;
+                        } else {
+                            if (sibling.description().equals(treeItem.description())) {
+                                counter++;
+                            }
+                        }
+                    }
+                }
             }
             getStyleClass().add("lineage-hbox");
         }
