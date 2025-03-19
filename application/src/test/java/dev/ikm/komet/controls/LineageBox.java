@@ -23,6 +23,7 @@ public class LineageBox extends ScrollPane {
 
     private static final PseudoClass ROOT_LINEAGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("root-lineage");
     private static final PseudoClass COLLAPSED_LINEAGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("collapsed-lineage");
+    private static final PseudoClass HAS_SIBLINGS_PSEUDO_CLASS = PseudoClass.getPseudoClass("siblings-lineage");
     private static final int INDENTATION_PER_LEVEL = 8; // pixels
     private static final int MIN_INDENTATION = INDENTATION_PER_LEVEL * 5; // the most top-left item will have 5 * 8 = 40 pixels
 
@@ -157,6 +158,7 @@ public class LineageBox extends ScrollPane {
 
                 iconRegion.getStyleClass().add(style1 + "-" + style2 + "-" + style3);
                 pseudoClassStateChanged(COLLAPSED_LINEAGE_PSEUDO_CLASS, invertedTree.isLeaf());
+                pseudoClassStateChanged(HAS_SIBLINGS_PSEUDO_CLASS, hasSiblings);
             }
             getStyleClass().add("lineage-hbox");
         }

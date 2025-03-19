@@ -597,6 +597,10 @@
     -fx-text-fill: #6E7989;
 }
 
+.lineage-box > .lineage-hbox:siblings-lineage > .lineage-label {
+    -fx-font-weight: bold;
+}
+
 .lineage-box > .lineage-hbox > .pane {
     -fx-background-color: transparent;
     -fx-min-width: 10;
