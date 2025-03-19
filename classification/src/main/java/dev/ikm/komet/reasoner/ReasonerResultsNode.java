@@ -37,8 +37,8 @@ import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.komet.reasoner.ui.RunReasonerIncrementalTask;
 import dev.ikm.komet.reasoner.ui.RunReasonerFullTask;
+import dev.ikm.komet.reasoner.ui.RunReasonerIncrementalTask;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.TinkExecutor;
@@ -67,6 +67,8 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 	private final BorderPane contentPane = new BorderPane();
 	private final HBox centerBox;
 
+	private static final boolean enable_test_menu_items = false;
+
 	private ReasonerService reasonerService;
 
 	private ReasonerResultsController resultsController;
@@ -91,7 +93,7 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 						continue;
 					LOG.info("Reasoner service add: " + rs);
 					CheckMenuItem item = new CheckMenuItem("Use " + rs.getName());
-					item.setOnAction(ae -> {
+					item.setOnAction(_ -> {
 						this.reasonerService = rs;
 						reasonerServiceMenuItems.forEach(xi -> xi.setSelected(false));
 						item.setSelected(true);
@@ -113,26 +115,29 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 				LOG.info("Default ReasonerService: " + this.reasonerService.getName());
 				menuItems.add(new SeparatorMenuItem());
 				{
-					MenuItem item = new MenuItem("Run full reasoner");
-					item.setOnAction(ae -> {
-						runFullReasoner();
+					MenuItem item = new MenuItem("Run reasoner");
+					item.setOnAction(_ -> {
+						runReasoner();
 					});
 					menuItems.add(item);
 				}
-				{
-					MenuItem item = new MenuItem("Run incremental reasoner");
-					item.setOnAction(ae -> {
-						runIncrementalReasoner();
-					});
-					menuItems.add(item);
+				if (enable_test_menu_items) {
+					menuItems.add(new SeparatorMenuItem());
+					{
+						MenuItem item = new MenuItem("Run full reasoner (test)");
+						item.setOnAction(_ -> {
+							runFullReasoner();
+						});
+						menuItems.add(item);
+					}
+					{
+						MenuItem item = new MenuItem("Run incremental reasoner (test)");
+						item.setOnAction(_ -> {
+							runIncrementalReasoner();
+						});
+						menuItems.add(item);
+					}
 				}
-//				{
-//					MenuItem item = new MenuItem("Run redo hierarchy reasoner");
-//					item.setOnAction(ae -> {
-//						runFullReasoner();
-//					});
-//					menuItems.add(item);
-//				}
 				ObservableList<MenuItem> topMenuItems = topPanelParts.viewPropertiesMenuButton().getItems();
 				topMenuItems.addAll(menuItems);
 			});
@@ -160,6 +165,14 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 		if (res.isPresent() && res.get() == ButtonType.CANCEL)
 			return false;
 		return true;
+	}
+
+	private void runReasoner() {
+		if (reasonerService.isIncrementalReady()) {
+			runIncrementalReasoner();
+		} else {
+			runFullReasoner();
+		}
 	}
 
 	private void runFullReasoner() {
