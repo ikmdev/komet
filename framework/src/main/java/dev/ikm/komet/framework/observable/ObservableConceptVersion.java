@@ -36,6 +36,17 @@ public final class ObservableConceptVersion extends ObservableVersion<ConceptVer
     public ConceptVersionRecord getVersionRecord() {
         return version();
     }
+
+    /**
+     * @param value
+     * @param i
+     * @param <T>
+     */
+    @Override
+    public <T> void writeToDataBase(T value, int i) {
+
+    }
+
     @Override
     public ImmutableMap<FieldCategory, ObservableField> getObservableFields() {
         MutableMap<FieldCategory, ObservableField> fieldMap = Maps.mutable.empty();

@@ -30,6 +30,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.ImmutableMap;
 
 public final class ObservableField<T> implements Field<T> {
 
@@ -103,6 +104,12 @@ public final class ObservableField<T> implements Field<T> {
             // Entity provider will broadcast the nid of the changed entity.
             Entity.provider().putEntity(analogue);
         }
+    }
+
+    public void writeToDatabase(ObservableVersion<?> observableVersion) {
+        ImmutableMap<FieldCategory, ObservableField> observableFields =  observableVersion.getObservableFields();
+        observableVersion.writeToDataBase(value(), fieldIndex());
+
     }
 
     public FieldRecord<T> field() {

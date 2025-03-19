@@ -19,11 +19,13 @@ import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculatorWithCache;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
 import dev.ikm.tinkar.entity.*;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 
@@ -52,6 +54,53 @@ public final class ObservableSemanticVersion
     @Override
     public SemanticVersionRecord getVersionRecord() {
         return version();
+    }
+
+    /**
+     * @param value
+     * @param fieldIndex
+     * @param <T>
+     */
+    @Override
+    public <T> void writeToDataBase(T value, int fieldIndex) {
+        MutableList fieldsForNewVersion = Lists.mutable.of(fieldValues().toArray());
+        fieldsForNewVersion.set(fieldIndex, value);
+        StampRecord stamp = Entity.getStamp(stampNid());
+        int stampNidVersionRecord = getVersionRecord().stampNid();
+        SemanticRecord semantic = Entity.getFast(nid());
+        System.out.println("STAMP NIDS : stampNid() " + stampNid() + "  stampNidVersionRecord  " + stampNidVersionRecord);
+        if (stamp.lastVersion().committed()) {
+            // Create transaction
+            Transaction t = Transaction.make();
+            // newStamp already written to the entity store.
+            StampEntity newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
+
+            // Create new version...
+            SemanticVersionRecord newVersion = version().with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
+
+            SemanticRecord analogue = semantic.with(newVersion).build();
+
+            // Entity provider will broadcast the nid of the changed entity.
+            Entity.provider().putEntity(analogue);
+        }else {
+            SemanticVersionRecord newVersion = null;
+            System.out.println("Entity.getStamp(version().stampNid()).publicId() : " + Entity.getStamp(version().stampNid()).publicId());
+            System.out.println("IS EMPTY : " + Transaction.forStamp(Entity.getStamp(version().stampNid()).publicId()).isEmpty());
+            if(Transaction.forStamp(Entity.getStamp(version().stampNid()).publicId()).isEmpty()){
+                Transaction t = Transaction.make();
+                // newStamp already written to the entity store.
+                StampEntity newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
+                newVersion = version().withFieldValues(fieldsForNewVersion.toImmutable()).withStampNid(newStamp.nid());
+            }else{
+                newVersion = version().withFieldValues(fieldsForNewVersion.toImmutable());
+            }
+            // if a version with the same stamp as newVersion exists, that version will be removed
+            // prior to adding the new version so you don't get duplicate versions with the same stamp.
+            SemanticRecord analogue = semantic.with(newVersion).build();
+            // Entity provider will broadcast the nid of the changed entity.
+            Entity.provider().putEntity(analogue);
+        }
+
     }
 
     @Override

@@ -25,7 +25,12 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
+import dev.ikm.komet.framework.observable.ObservableVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
@@ -102,6 +107,13 @@ public class SemanticFieldsController {
         }
     };
 
+    private ObservableVersion<?> retrieveObservableSemanticVersion(Latest<SemanticEntityVersion> semanticEntityVersionLatest) {
+        ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
+        ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+        Latest<ObservableSemanticVersion> observableSemanticVersionLatest = observableSemanticSnapshot.getLatestVersion();
+        return observableSemanticVersionLatest.get();
+    }
+
     @FXML
     private void initialize() {
         // clear all semantic details.
@@ -128,6 +140,9 @@ public class SemanticFieldsController {
                  observableField.valueProperty()
                                         .addListener(observable -> {
                                             enableDisableSubmitButton();
+                                            if(!submitButton.isDisabled()){
+                                                observableField.writeToDatabase(retrieveObservableSemanticVersion(semanticEntityVersionLatest));
+                                            }
                                         });
                     //Add listener for fieldProperty of each field to check when data is modified.
                     observableField.fieldProperty().addListener(observable -> fieldPropertyChangeListner());

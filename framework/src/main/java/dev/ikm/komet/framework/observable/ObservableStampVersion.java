@@ -90,6 +90,15 @@ public final class ObservableStampVersion
         return version();
     }
 
+    /**
+     * @param value
+     * @param i
+     * @param <T>
+     */
+    @Override
+    public <T> void writeToDataBase(T value, int i) {
+
+    }
 
 
     /**

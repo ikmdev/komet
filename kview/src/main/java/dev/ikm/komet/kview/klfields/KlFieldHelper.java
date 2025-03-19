@@ -117,7 +117,7 @@ public class KlFieldHelper {
         List<ObservableField<?>> observableFields = new ArrayList<>();
         Consumer<FieldRecord<Object>> generateConsumer = (fieldRecord) -> {
             ObservableField<?> writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, editable);
-            ObservableField<?> observableField = new ObservableField<>(writeObservableField.field(), editable);
+            ObservableField<?> observableField = new ObservableField<>(writeObservableField.field(), false); //do not write on every change.
             observableFields.add(observableField);
 
             Node node = generateNode(fieldRecord, observableField, viewProperties, semanticEntityVersionLatest, editable);
