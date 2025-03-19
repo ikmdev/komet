@@ -27,8 +27,12 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
@@ -202,6 +206,18 @@ public class GenEditingDetailsController {
         semanticDetailsVBox.getChildren().clear();
 
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+
+        // if the semantic is null, then we generate a default one
+        if (semantic == null) {
+            genEditingViewModel.setPropertyValue(MODE, CREATE);
+            EntityFacade pattern = genEditingViewModel.getPropertyValue(PATTERN);
+
+            // create empty semantic for the pattern and set it in the view model
+            semantic = genEditingViewModel.createEmptySemantic(pattern);
+            genEditingViewModel.setPropertyValue(SEMANTIC, semantic);
+        } else {
+            genEditingViewModel.setPropertyValue(MODE, EDIT);
+        }
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
         if (semantic != null) {
@@ -216,9 +232,6 @@ public class GenEditingDetailsController {
                     semanticPurposeText.setText(purpose);
                 });
             });
-        } else {
-            semanticEntityVersionLatest = null;
-            semanticDescriptionLabel.setText("New Semantic no Pattern associated.");
         }
 
         // Setup Stamp section
@@ -263,8 +276,9 @@ public class GenEditingDetailsController {
         setupProperties();
 
         //Set up the Listener to refresh the details area (After user hits submit button on the right side)
+        EntityFacade finalSemantic = semantic;
         Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
-            if (evt.getEventType() == GenEditingEvent.PUBLISH && evt.getNid() == semantic.nid()) {
+            if (evt.getEventType() == GenEditingEvent.PUBLISH && evt.getNid() == finalSemantic.nid()) {
 //                Platform.runLater(() -> {
                     for (int i = 0; i < evt.getList().size(); i++) {
                         ObservableField field = observableFields.get(i);
@@ -324,11 +338,13 @@ public class GenEditingDetailsController {
             LOG.warn("Must select a valid module for Stamp.");
             return;
         }
-        moduleText.setText(moduleEntity.description());
-        ConceptEntity pathEntity = stampViewModel.getValue(PATH);
-        pathText.setText(pathEntity.description());
-        State status = stampViewModel.getValue(STATUS);
-        statusText.setText(status.name());
+        if (genEditingViewModel.getPropertyValue(MODE) == EDIT) {
+            moduleText.setText(moduleEntity.description());
+            ConceptEntity pathEntity = stampViewModel.getValue(PATH);
+            pathText.setText(pathEntity.description());
+            State status = stampViewModel.getValue(STATUS);
+            statusText.setText(status.name());
+        }
     }
 
     public ValidationViewModel getStampViewModel() {
@@ -412,7 +428,8 @@ public class GenEditingDetailsController {
                 if (isOpen(propertiesSlideoutTrayPane)) {
                     slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
-            } else if (evt.getEventType() == PropertyPanelEvent.OPEN_PANEL) {
+            } else if (evt.getEventType() == PropertyPanelEvent.OPEN_PANEL
+                    || evt.getEventType() == PropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
                 LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
                 propertiesToggleButton.setSelected(true);
                 if (isClosed(propertiesSlideoutTrayPane)) {
