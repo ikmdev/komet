@@ -31,6 +31,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_T
 import static dev.ikm.tinkar.terms.TinkarTerm.INSTANT_LITERAL;
 import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.LONG;
+import static dev.ikm.tinkar.terms.TinkarTerm.PREFERRED;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.SEMANTIC_FIELD_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
@@ -45,10 +46,15 @@ import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.composer.Composer;
+import dev.ikm.tinkar.composer.Session;
+import dev.ikm.tinkar.composer.assembler.SemanticAssembler;
+import dev.ikm.tinkar.composer.template.USDialect;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
@@ -61,6 +67,7 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.RecordListBuilder;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticRecord;
@@ -339,4 +346,59 @@ public class DataModelHelper {
             return observableFields.get().get(fieldRecord.fieldIndex());
         }
     }
+
+    /**
+     * given a pattern create a default, empty semantic
+     * @param pattern existing pattern
+     * @return a default, empty semantic
+     */
+    public static EntityFacade createEmptySemantic(ViewProperties viewProperties, EntityFacade pattern) {
+        EntityFacade semantic;
+        // set up defaults for the initial STAMP on a new Semantic
+        State status = State.ACTIVE;
+        EntityProxy.Concept author = TinkarTerm.USER;
+        EntityProxy.Concept module = TinkarTerm.DEVELOPMENT_MODULE;
+        EntityProxy.Concept path = TinkarTerm.DEVELOPMENT_PATH;
+        EntityProxy patternProxy = pattern.toProxy();
+
+        ViewCalculator viewCalculator = viewProperties.calculator();
+        PatternVersionRecord patternVersionRecord = (PatternVersionRecord) viewCalculator.latest(pattern).get();
+
+        // create empty semantic using the Composer API
+        EntityService.get().beginLoadPhase();
+        Composer composer = new Composer("Semantic for %s".formatted(pattern.description()));
+        Session session = composer.open(status, author, module, path);
+
+        EntityProxy.Semantic defaultSemantic = EntityProxy.Semantic.make(PublicIds.newRandom());
+        session.compose((SemanticAssembler semanticAssembler) -> {
+            semanticAssembler
+                    .semantic(defaultSemantic)
+                    .reference(patternProxy)
+                    .pattern((EntityProxy.Pattern) patternProxy)
+                    .fieldValues(fieldValues -> {
+                        patternVersionRecord.fieldDefinitions().forEach(f -> {
+                            if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
+                                fieldValues.with(TinkarTerm.ANONYMOUS_CONCEPT);
+                            } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
+                                    || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
+                                fieldValues.with("[Placeholder]");
+                            } else if (f.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
+                                fieldValues.with(0.0);
+                            } else if (f.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
+                                fieldValues.with(false);
+                            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
+                                fieldValues.with(IntIds.list.empty());
+                            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
+                                fieldValues.with(IntIds.set.empty());
+                            }
+                        });
+                    }).attach((USDialect dialect) -> dialect
+                            .acceptability(PREFERRED));
+        });
+        composer.commitSession(session);
+        EntityService.get().endLoadPhase();
+        semantic = defaultSemantic.toProxy();
+        return semantic;
+    }
+
 }
