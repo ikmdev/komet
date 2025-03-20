@@ -223,7 +223,6 @@ public class GenEditingDetailsController {
         if (semantic != null) {
             //retrieve latest semanticVersion
             semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
-//            semanticEntityVersionLatest = //retrieveCommittedLatestVersion(semantic, getViewProperties());
             semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
                 Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
                 patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
