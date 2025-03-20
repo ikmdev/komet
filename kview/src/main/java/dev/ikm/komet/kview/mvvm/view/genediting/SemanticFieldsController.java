@@ -49,7 +49,9 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -239,18 +241,23 @@ public class SemanticFieldsController {
         semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
             StampRecord stamp = Entity.getStamp(semanticEntityVersion.stampNid());
             SemanticVersionRecord version = Entity.getVersionFast(semantic.nid(), stamp.nid());
-            Transaction.forVersion(version).ifPresent(transaction -> {
+            Transaction.forVersion(version).ifPresentOrElse(transaction -> {
                 commitTransactionTask(transaction);
+                //EventBus implementation changes to refresh the details area if commit successful
+                EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
+            }, () -> {
+                //TODO this is a temp alert / workaround till we figure how to reload transactions across multiple restarts of app.
+                LOG.info("Unable to commit: Transaction for the given version does not exist.");
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Transaction for current changes does not exist.", ButtonType.OK);
+                alert.setHeaderText("Unable to Commit transaction.");
+                alert.showAndWait();
             });
         });
         processCommittedValues();
         enableDisableSubmitButton();
-        //EventBus implementation changes to refresh the details area
-        EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
-
     }
 
-    private static void commitTransactionTask(Transaction transaction) {
+    private void commitTransactionTask(Transaction transaction) {
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
         Future<Void> future = TinkExecutor.threadPool().submit(commitTransactionTask);
         TinkExecutor.threadPool().execute(() -> {
