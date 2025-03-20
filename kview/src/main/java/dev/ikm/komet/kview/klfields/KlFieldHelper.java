@@ -162,6 +162,9 @@ public class KlFieldHelper {
         StampCalculator stampCalculator = viewProperties.calculator().stampCalculator();
         //retrieve latest semanticVersion
         Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(entityFacade.nid());
+        if(semanticEntityVersionLatest.get().stamp().time() != Long.MAX_VALUE){
+            return semanticEntityVersionLatest;
+        }
         ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
         ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
         //Get list of previously committed data sorted in latest at the top.
