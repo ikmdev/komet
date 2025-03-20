@@ -25,10 +25,13 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
@@ -51,6 +54,7 @@ import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
+import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -202,10 +206,23 @@ public class GenEditingDetailsController {
         semanticDetailsVBox.getChildren().clear();
 
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+
+        // if the semantic is null, then we generate a default one
+        if (semantic == null) {
+            genEditingViewModel.setPropertyValue(MODE, CREATE);
+            EntityFacade pattern = genEditingViewModel.getPropertyValue(PATTERN);
+
+            // create empty semantic for the pattern and set it in the view model
+            semantic = DataModelHelper.createEmptySemantic(getViewProperties(), pattern);
+            genEditingViewModel.setPropertyValue(SEMANTIC, semantic);
+        } else {
+            genEditingViewModel.setPropertyValue(MODE, EDIT);
+        }
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
         if (semantic != null) {
-            semanticEntityVersionLatest = retrieveCommittedLatestVersion(semantic, getViewProperties());
+            //retrieve latest semanticVersion
+            semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
             semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
                 Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
                 patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
@@ -216,9 +233,6 @@ public class GenEditingDetailsController {
                     semanticPurposeText.setText(purpose);
                 });
             });
-        } else {
-            semanticEntityVersionLatest = null;
-            semanticDescriptionLabel.setText("New Semantic no Pattern associated.");
         }
 
         // Setup Stamp section
@@ -263,23 +277,22 @@ public class GenEditingDetailsController {
         setupProperties();
 
         //Set up the Listener to refresh the details area (After user hits submit button on the right side)
+        EntityFacade finalSemantic = semantic;
         Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
-            if (evt.getEventType() == GenEditingEvent.PUBLISH && evt.getNid() == semantic.nid()) {
-//                Platform.runLater(() -> {
-                    for (int i = 0; i < evt.getList().size(); i++) {
-                        ObservableField field = observableFields.get(i);
-                        ObservableField updatedField = evt.getList().get(i);
-                        if (updatedField != null && field != null) {
-                            // readonly integer value 1, editable integer value 1 don't update
-                            // readonly integer value 1, editable integer value 5 do update
-                            // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
-                            // Should we check if the value is different before updating? (blindly updating now).
-                            //if (!field.value().equals(updatedField.valueProperty())) {
-                                field.valueProperty().setValue(updatedField.valueProperty().getValue());
-                            //}
-                        }
+            if (evt.getEventType() == GenEditingEvent.PUBLISH && evt.getNid() == finalSemantic.nid()) {
+                for (int i = 0; i < evt.getList().size(); i++) {
+                    ObservableField field = observableFields.get(i);
+                    ObservableField updatedField = evt.getList().get(i);
+                    if (updatedField != null && field != null) {
+                        // readonly integer value 1, editable integer value 1 don't update
+                        // readonly integer value 1, editable integer value 5 do update
+                        // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
+                        // Should we check if the value is different before updating? (blindly updating now).
+                        //if (!field.value().equals(updatedField.valueProperty())) {
+                            field.valueProperty().setValue(updatedField.valueProperty().getValue());
+                        //}
                     }
-//                });
+                }
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
@@ -324,11 +337,13 @@ public class GenEditingDetailsController {
             LOG.warn("Must select a valid module for Stamp.");
             return;
         }
-        moduleText.setText(moduleEntity.description());
-        ConceptEntity pathEntity = stampViewModel.getValue(PATH);
-        pathText.setText(pathEntity.description());
-        State status = stampViewModel.getValue(STATUS);
-        statusText.setText(status.name());
+        if (genEditingViewModel.getPropertyValue(MODE) == EDIT) {
+            moduleText.setText(moduleEntity.description());
+            ConceptEntity pathEntity = stampViewModel.getValue(PATH);
+            pathText.setText(pathEntity.description());
+            State status = stampViewModel.getValue(STATUS);
+            statusText.setText(status.name());
+        }
     }
 
     public ValidationViewModel getStampViewModel() {
@@ -336,11 +351,15 @@ public class GenEditingDetailsController {
     }
 
     private void updateTimeText(Long time) {
-        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
-        Instant stampInstance = Instant.ofEpochSecond(time / 1000);
-        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-        String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
-        lastUpdatedText.setText(lastUpdated);
+        if (genEditingViewModel.getPropertyValue(MODE) == CREATE) {
+            lastUpdatedText.setText("");
+        } else {
+            DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
+            Instant stampInstance = Instant.ofEpochSecond(time / 1000);
+            ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
+            String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
+            lastUpdatedText.setText(lastUpdated);
+        }
     }
 
     /**
@@ -412,7 +431,8 @@ public class GenEditingDetailsController {
                 if (isOpen(propertiesSlideoutTrayPane)) {
                     slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
-            } else if (evt.getEventType() == PropertyPanelEvent.OPEN_PANEL) {
+            } else if (evt.getEventType() == PropertyPanelEvent.OPEN_PANEL
+                    || evt.getEventType() == PropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
                 LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
                 propertiesToggleButton.setSelected(true);
                 if (isClosed(propertiesSlideoutTrayPane)) {
