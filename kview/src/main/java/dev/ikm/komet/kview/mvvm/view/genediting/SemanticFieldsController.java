@@ -25,12 +25,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
-import dev.ikm.komet.framework.observable.ObservableSemantic;
-import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
-import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
-import dev.ikm.komet.framework.observable.ObservableVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
@@ -87,6 +82,14 @@ public class SemanticFieldsController {
 
     private int committedHash;
 
+    private void enableDisableSubmitButton(Object value){
+        if(value != null && !value.toString().isEmpty()) {
+            enableDisableSubmitButton();
+        }else {
+            submitButton.setDisable(true);
+        }
+    }
+
     private void enableDisableSubmitButton(){
         int uncommittedHash = calculteHashValue(observableFields);
         submitButton.setDisable(committedHash == uncommittedHash);
@@ -138,8 +141,8 @@ public class SemanticFieldsController {
                 editFieldsVBox.getChildren().clear();
                 observableFields.forEach(observableField -> {
                  observableField.valueProperty()
-                                        .addListener(observable -> {
-                                            enableDisableSubmitButton();
+                                        .subscribe(value -> {
+                                            enableDisableSubmitButton(value);
                                             if(!submitButton.isDisabled()){
                                                 observableField.writeToDatabase(retrieveObservableSemanticVersion(semanticEntityVersionLatest));
                                             }
