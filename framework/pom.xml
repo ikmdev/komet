@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.49.0-SNAPSHOT</version>
+        <version>1.49.0-IIA-1484-add-reference-component-1-SNAPSHOT</version>
     </parent>
     <artifactId>framework</artifactId>
     <dependencies>
