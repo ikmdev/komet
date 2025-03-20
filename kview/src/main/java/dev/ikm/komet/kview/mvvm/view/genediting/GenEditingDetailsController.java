@@ -55,6 +55,7 @@ import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
+import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -213,7 +214,7 @@ public class GenEditingDetailsController {
             EntityFacade pattern = genEditingViewModel.getPropertyValue(PATTERN);
 
             // create empty semantic for the pattern and set it in the view model
-            semantic = genEditingViewModel.createEmptySemantic(pattern);
+            semantic = DataModelHelper.createEmptySemantic(getViewProperties(), pattern);
             genEditingViewModel.setPropertyValue(SEMANTIC, semantic);
         } else {
             genEditingViewModel.setPropertyValue(MODE, EDIT);
@@ -279,21 +280,19 @@ public class GenEditingDetailsController {
         EntityFacade finalSemantic = semantic;
         Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
             if (evt.getEventType() == GenEditingEvent.PUBLISH && evt.getNid() == finalSemantic.nid()) {
-//                Platform.runLater(() -> {
-                    for (int i = 0; i < evt.getList().size(); i++) {
-                        ObservableField field = observableFields.get(i);
-                        ObservableField updatedField = evt.getList().get(i);
-                        if (updatedField != null && field != null) {
-                            // readonly integer value 1, editable integer value 1 don't update
-                            // readonly integer value 1, editable integer value 5 do update
-                            // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
-                            // Should we check if the value is different before updating? (blindly updating now).
-                            //if (!field.value().equals(updatedField.valueProperty())) {
-                                field.valueProperty().setValue(updatedField.valueProperty().getValue());
-                            //}
-                        }
+                for (int i = 0; i < evt.getList().size(); i++) {
+                    ObservableField field = observableFields.get(i);
+                    ObservableField updatedField = evt.getList().get(i);
+                    if (updatedField != null && field != null) {
+                        // readonly integer value 1, editable integer value 1 don't update
+                        // readonly integer value 1, editable integer value 5 do update
+                        // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
+                        // Should we check if the value is different before updating? (blindly updating now).
+                        //if (!field.value().equals(updatedField.valueProperty())) {
+                            field.valueProperty().setValue(updatedField.valueProperty().getValue());
+                        //}
                     }
-//                });
+                }
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
@@ -352,11 +351,15 @@ public class GenEditingDetailsController {
     }
 
     private void updateTimeText(Long time) {
-        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
-        Instant stampInstance = Instant.ofEpochSecond(time / 1000);
-        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-        String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
-        lastUpdatedText.setText(lastUpdated);
+        if (genEditingViewModel.getPropertyValue(MODE) == CREATE) {
+            lastUpdatedText.setText("");
+        } else {
+            DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
+            Instant stampInstance = Instant.ofEpochSecond(time / 1000);
+            ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
+            String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
+            lastUpdatedText.setText(lastUpdated);
+        }
     }
 
     /**
