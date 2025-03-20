@@ -25,7 +25,6 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
@@ -222,7 +221,9 @@ public class GenEditingDetailsController {
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
         if (semantic != null) {
-            semanticEntityVersionLatest = retrieveCommittedLatestVersion(semantic, getViewProperties());
+            //retrieve latest semanticVersion
+            semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
+//            semanticEntityVersionLatest = //retrieveCommittedLatestVersion(semantic, getViewProperties());
             semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
                 Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
                 patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
