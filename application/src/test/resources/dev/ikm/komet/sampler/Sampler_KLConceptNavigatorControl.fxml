@@ -3,10 +3,12 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
 
 <?import dev.ikm.komet.controls.KLConceptNavigatorControl?>
+
 <ScrollPane styleClass="sample-container" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.sampler.controllers.SamplerConceptNavigatorController">
     <VBox>
@@ -16,28 +18,17 @@
                 <Insets  bottom="40.0" />
             </VBox.margin>
         </Label>
-        <BorderPane fx:id="root" prefWidth="200.0" styleClass="sample-control-container">
-            <left>
-                <VBox styleClass="inner-container">
-                    <KLConceptNavigatorControl fx:id="conceptNavigatorControl"/>
+        <SplitPane fx:id="root" prefWidth="200.0" styleClass="sample-control-container">
+            <VBox styleClass="inner-container">
+                <KLConceptNavigatorControl fx:id="conceptNavigatorControl"/>
+            </VBox>
+            <VBox fx:id="conceptArea" styleClass="center-container"/>
+            <VBox maxWidth="200" styleClass="control-configuration-container" BorderPane.alignment="CENTER">
+                <Label text="Pick the dataset" styleClass="title"/>
+                <VBox fx:id="datasetBox" styleClass="dataset-box">
                 </VBox>
-            </left>
-            <center>
-                <VBox fx:id="conceptArea" styleClass="center-container">
-
-                </VBox>
-            </center>
-            <right>
-                <VBox maxWidth="200" styleClass="control-configuration-container" BorderPane.alignment="CENTER">
-                    <Label text="Pick the dataset" styleClass="title"/>
-                    <VBox fx:id="datasetBox" styleClass="dataset-box">
-                    </VBox>
-                </VBox>
-            </right>
-            <VBox.margin>
-                <Insets bottom="40.0" />
-            </VBox.margin>
-        </BorderPane>
+            </VBox>
+        </SplitPane>
 
         <padding>
             <Insets bottom="60.0" right="60.0" />

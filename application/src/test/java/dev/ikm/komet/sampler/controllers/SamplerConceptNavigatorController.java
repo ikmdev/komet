@@ -10,7 +10,6 @@ import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
-import dev.ikm.komet.preferences.Preferences;
 import dev.ikm.tinkar.common.service.DataUriOption;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
@@ -19,9 +18,9 @@ import dev.ikm.tinkar.entity.EntityService;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.SplitPane;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
@@ -42,7 +41,7 @@ public class SamplerConceptNavigatorController {
     private KLConceptNavigatorControl conceptNavigatorControl;
 
     @FXML
-    private BorderPane root;
+    private SplitPane root;
 
     @FXML
     private VBox conceptArea;
@@ -53,7 +52,18 @@ public class SamplerConceptNavigatorController {
     private static final String STYLE = """
             data:text/css,
             
-            .sample-control-container > .center-container {
+            .sample-control-container,
+            .sample-control-container:focused {
+                -fx-background-color: transparent;
+                -fx-background-insets: 0;
+                -fx-padding: 0;
+            }
+            
+            .sample-control-container > .split-pane-divider {
+                -fx-padding: 0;
+            }
+            
+            .sample-control-container > * > .center-container {
                 -fx-background-color: #fbfbfb;
                 -fx-border-color: #e6e6e6;
                 -fx-background-radius: 5px;
@@ -61,16 +71,17 @@ public class SamplerConceptNavigatorController {
                 -fx-alignment: center;
                 -fx-padding: 1.5em;
                 -fx-spacing: 20;
+                -fx-min-width: 200;
             }
             
-            .sample-control-container > .center-container.dashed-border {
+            .sample-control-container > * > .center-container.dashed-border {
                 -fx-border-color: #5DCF16;
                 -fx-border-width: 3;
                 -fx-border-style: segments(15, 12, 15, 12) line-cap round;
             }
             
-            .sample-control-container > .control-configuration-container > .label,
-            .sample-control-container > .center-container > .label {
+            .sample-control-container > * > .control-configuration-container > .label,
+            .sample-control-container > * > .center-container > .label {
                 -fx-font-family: "Noto Sans";
                 -fx-font-size: 12;
                 -fx-font-weight: 600;
@@ -79,18 +90,18 @@ public class SamplerConceptNavigatorController {
                 -fx-wrap-text: true;
             }
             
-            .sample-control-container > .control-configuration-container > .label.title {
+            .sample-control-container > * > .control-configuration-container > .label.title {
                 -fx-font-size: 13;
                 -fx-font-weight: bold;
             }
             
-            .sample-control-container > .control-configuration-container > .dataset-box {
+            .sample-control-container > * > .control-configuration-container > .dataset-box {
                 -fx-spacing: 20;
                 -fx-alignment: center-left;
                 -fx-border-color: #e6e6e6;
             }
             
-            .sample-control-container > .control-configuration-container > .dataset-box > .label {
+            .sample-control-container > * > .control-configuration-container > .dataset-box > .label {
                 -fx-font-size: 11;
                 -fx-font-weight: 400;
                 -fx-cursor: hand;
@@ -185,9 +196,8 @@ public class SamplerConceptNavigatorController {
                     ViewProperties viewProperties = view.makeOverridableViewProperties();
                     Navigator navigator = new ViewNavigator(viewProperties.nodeView());
                     consumer.accept(navigator);
-                    // hide options panel
-                    box.getParent().setVisible(false);
-                    box.getParent().setManaged(false);
+                    // remove options panel
+                    ((SplitPane) box.getParent().getParent().getParent()).getItems().remove(2);
                 }
             });
         }

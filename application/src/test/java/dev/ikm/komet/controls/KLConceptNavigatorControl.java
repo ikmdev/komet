@@ -55,7 +55,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
         });
 
         getStyleClass().add("concept-navigator-control");
-        getStylesheets().add(KLConceptNavigatorControl.class.getResource("concept-navigator.css").toExternalForm());
+        getStylesheets().add(getUserAgentStylesheet());
         getStylesheets().add(ConceptNavigatorUtils.STYLE);
     }
 
@@ -121,6 +121,11 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     protected Skin<?> createDefaultSkin() {
         conceptNavigatorTreeViewSkin = new KLConceptNavigatorTreeViewSkin(this);
         return conceptNavigatorTreeViewSkin;
+    }
+
+    @Override
+    public String getUserAgentStylesheet() {
+        return KLConceptNavigatorControl.class.getResource("concept-navigator.css").toExternalForm();
     }
 
     private List<ConceptNavigatorTreeItem> getConceptNavigatorRoot() {

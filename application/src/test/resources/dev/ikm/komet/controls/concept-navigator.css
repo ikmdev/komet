@@ -21,8 +21,6 @@
     -fx-background-radius: 5;
     -fx-padding: 4 3 3 3;
     -fx-min-width: 448;
-    -fx-pref-width: 448;
-    -fx-max-width: 448;
 }
 
 .concept-navigator-control.tree-view > .concept-header.label {
@@ -511,6 +509,7 @@
     -fx-padding: 2;
 }
 
+.lineage-pane.scroll-pane > .viewport,
 .lineage-pane.scroll-pane > .scroll-bar:horizontal,
 .lineage-pane.scroll-pane > .scroll-bar:horizontal:focused,
 .lineage-pane.scroll-pane > .scroll-bar:vertical,
