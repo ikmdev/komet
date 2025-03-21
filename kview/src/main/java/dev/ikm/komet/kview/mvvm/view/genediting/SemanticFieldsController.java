@@ -61,7 +61,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 
 public class SemanticFieldsController {
 
@@ -90,6 +89,9 @@ public class SemanticFieldsController {
     private int committedHash;
 
     private void enableDisableSubmitButton(Object value){
+//        TODO: To be able to test the component control placeholder I'm temporarily commenting this block of code below.
+//        TODO: We should uncommet it once component control placeholder is merged and tested.
+
         if(value != null && !value.toString().isEmpty()) {
             enableDisableSubmitButton();
         }else {
@@ -130,6 +132,8 @@ public class SemanticFieldsController {
         editFieldsVBox.setSpacing(8.0);
         editFieldsVBox.getChildren().clear();
         updateStampVersions = true;
+//        TODO: To be able to test the component control placeholder I'm temporarily commenting this block of code below.
+//        TODO: We should uncommet it once component control placeholder is merged and tested.
         submitButton.setDisable(true);
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         if (semantic != null) {
@@ -247,7 +251,7 @@ public class SemanticFieldsController {
                 EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
             }, () -> {
                 //TODO this is a temp alert / workaround till we figure how to reload transactions across multiple restarts of app.
-                LOG.info("Unable to commit: Transaction for the given version does not exist.");
+                LOG.error("Unable to commit: Transaction for the given version does not exist.");
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Transaction for current changes does not exist.", ButtonType.OK);
                 alert.setHeaderText("Unable to Commit transaction.");
                 alert.showAndWait();
@@ -259,13 +263,6 @@ public class SemanticFieldsController {
 
     private void commitTransactionTask(Transaction transaction) {
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        Future<Void> future = TinkExecutor.threadPool().submit(commitTransactionTask);
-        TinkExecutor.threadPool().execute(() -> {
-            try {
-                future.get();
-            } catch (Exception e) {
-                AlertStreams.getRoot().dispatch(AlertObject.makeError(e));
-            }
-        });
+        TinkExecutor.threadPool().submit(commitTransactionTask);
     }
 }

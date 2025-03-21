@@ -31,8 +31,8 @@ public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KL
         textLabel.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(textLabel, Priority.ALWAYS);
 
-        iconImageView.setFitWidth(20);
-        iconImageView.setFitHeight(20);
+        iconImageView.setFitWidth(16);
+        iconImageView.setFitHeight(16);
 
         initTexts(control);
 
@@ -53,6 +53,7 @@ public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KL
 
         NodeUtils.setShowing(promptTextLabel, showPromptText);
         NodeUtils.setShowing(textLabel, !showPromptText);
+        NodeUtils.setShowing(iconImageView, !showPromptText);
     }
 
     private void setupContextMenu(KLReadOnlyComponentControl control) {

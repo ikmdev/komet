@@ -7,6 +7,7 @@ import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
 import dev.ikm.komet.kview.klfields.componentlistfield.KlComponentListFieldFactory;
@@ -25,6 +26,7 @@ import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.Node;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -191,7 +193,12 @@ public class KlFieldHelper {
         StringBuilder stringBuilder = new StringBuilder();
         observableFieldsList.forEach(observableField -> {
             // TODO re-evaluate if toString is the right approach for complex datatypes.
-            stringBuilder.append(observableField.valueProperty().get().toString()).append("|");
+            var observableFieldValue = observableField.valueProperty().get();
+            if (observableFieldValue == null || (observableFieldValue instanceof EntityProxy entityProxy && entityProxy.nid() == KLComponentControl.EMPTY_NID)) {
+                stringBuilder.append("|");
+            } else {
+                stringBuilder.append(observableField.valueProperty().get().toString()).append("|");
+            }
         });
         return stringBuilder.toString().hashCode();
     }
