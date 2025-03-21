@@ -83,11 +83,14 @@ public class SemanticFieldsController {
     private int committedHash;
 
     private void enableDisableSubmitButton(Object value){
-        if(value != null && !value.toString().isEmpty()) {
-            enableDisableSubmitButton();
-        }else {
-            submitButton.setDisable(true);
-        }
+//        TODO: To be able to test the component control placeholder I'm temporarily commenting this block of code below.
+//        TODO: We should uncommet it once component control placeholder is merged and tested.
+
+//        if(value != null && !value.toString().isEmpty()) {
+//            enableDisableSubmitButton();
+//        }else {
+//            submitButton.setDisable(true);
+//        }
     }
 
     private void enableDisableSubmitButton(){
@@ -116,7 +119,9 @@ public class SemanticFieldsController {
         editFieldsVBox.setSpacing(8.0);
         editFieldsVBox.getChildren().clear();
         updateStampVersions = true;
-        submitButton.setDisable(true);
+        // TODO: To be able to test the component control placeholder I'm temporarily setting submit button to being enabled
+        // TODO: We should set it to disabled here again once component control placeholder is merged and tested.
+        submitButton.setDisable(false);
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         if (semantic != null) {
             StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
