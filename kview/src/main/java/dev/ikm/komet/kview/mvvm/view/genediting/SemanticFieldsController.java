@@ -29,8 +29,6 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
-import dev.ikm.tinkar.common.alert.AlertObject;
-import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -44,7 +42,9 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -54,7 +54,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 
 public class SemanticFieldsController {
 
@@ -83,11 +82,14 @@ public class SemanticFieldsController {
     private int committedHash;
 
     private void enableDisableSubmitButton(Object value){
-        if(value != null && !value.toString().isEmpty()) {
-            enableDisableSubmitButton();
-        }else {
-            submitButton.setDisable(true);
-        }
+//        TODO: To be able to test the component control placeholder I'm temporarily commenting this block of code below.
+//        TODO: We should uncommet it once component control placeholder is merged and tested.
+
+//        if(value != null && !value.toString().isEmpty()) {
+//            enableDisableSubmitButton();
+//        }else {
+//            submitButton.setDisable(true);
+//        }
     }
 
     private void enableDisableSubmitButton(){
@@ -116,7 +118,9 @@ public class SemanticFieldsController {
         editFieldsVBox.setSpacing(8.0);
         editFieldsVBox.getChildren().clear();
         updateStampVersions = true;
-        submitButton.setDisable(true);
+        // TODO: To be able to test the component control placeholder I'm temporarily setting submit button to being enabled
+        // TODO: We should set it to disabled here again once component control placeholder is merged and tested.
+        submitButton.setDisable(false);
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         if (semantic != null) {
             StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
@@ -224,26 +228,24 @@ public class SemanticFieldsController {
         semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
             StampRecord stamp = Entity.getStamp(semanticEntityVersion.stampNid());
             SemanticVersionRecord version = Entity.getVersionFast(semantic.nid(), stamp.nid());
-            Transaction.forVersion(version).ifPresent(transaction -> {
+            Transaction.forVersion(version).ifPresentOrElse(transaction -> {
                 commitTransactionTask(transaction);
+                //EventBus implementation changes to refresh the details area if commit successful
+                EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
+            }, () -> {
+                //TODO this is a temp alert / workaround till we figure how to reload transactions across multiple restarts of app.
+                LOG.error("Unable to commit: Transaction for the given version does not exist.");
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Transaction for current changes does not exist.", ButtonType.OK);
+                alert.setHeaderText("Unable to Commit transaction.");
+                alert.showAndWait();
             });
         });
         processCommittedValues();
         enableDisableSubmitButton();
-        //EventBus implementation changes to refresh the details area
-        EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
-
     }
 
-    private static void commitTransactionTask(Transaction transaction) {
+    private void commitTransactionTask(Transaction transaction) {
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        Future<Void> future = TinkExecutor.threadPool().submit(commitTransactionTask);
-        TinkExecutor.threadPool().execute(() -> {
-            try {
-                future.get();
-            } catch (Exception e) {
-                AlertStreams.getRoot().dispatch(AlertObject.makeError(e));
-            }
-        });
+        TinkExecutor.threadPool().submit(commitTransactionTask);
     }
 }
