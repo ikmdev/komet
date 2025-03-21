@@ -158,8 +158,10 @@ public class ConceptTile extends HBox {
             if (subscription != null) {
                 subscription.unsubscribe();
             }
+            cell.tagProperty().unbind();
+            cell.setTag(ConceptNavigatorTreeItem.TAG.NONE);
             cell.viewLineageProperty().unbind();
-            cell.viewLineageProperty().set(false);
+            cell.setViewLineage(false);
             treePane.setVisible(false);
             ConceptNavigatorTreeItem treeItem = get();
             if (treeItem != null) {
@@ -183,6 +185,7 @@ public class ConceptTile extends HBox {
                 conceptLabel.setText(description);
                 pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, treeItem.isDefined());
                 cell.viewLineageProperty().bind(treeItem.viewLineageProperty());
+                cell.tagProperty().bind(treeItem.tagProperty());
                 treePane.setVisible(treeItem.isMultiParent());
             } else {
                 unselectItem();

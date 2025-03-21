@@ -17,6 +17,7 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
 import javafx.scene.input.Dragboard;
@@ -45,6 +46,9 @@ public class SamplerConceptNavigatorController {
 
     @FXML
     private VBox conceptArea;
+
+    @FXML
+    private CheckBox showTagsCheckBox;
 
     @FXML
     private VBox datasetBox;
@@ -90,21 +94,31 @@ public class SamplerConceptNavigatorController {
                 -fx-wrap-text: true;
             }
             
+            .sample-control-container > * > .control-configuration-container {
+                -fx-spacing: 10;
+                -fx-padding: 2;
+            }
+            
             .sample-control-container > * > .control-configuration-container > .label.title {
                 -fx-font-size: 13;
                 -fx-font-weight: bold;
             }
             
             .sample-control-container > * > .control-configuration-container > .dataset-box {
-                -fx-spacing: 20;
+                -fx-spacing: 10;
                 -fx-alignment: center-left;
                 -fx-border-color: #e6e6e6;
+                -fx-background-color: #fbfbfb;
             }
             
             .sample-control-container > * > .control-configuration-container > .dataset-box > .label {
                 -fx-font-size: 11;
                 -fx-font-weight: 400;
                 -fx-cursor: hand;
+            }
+            
+            .sample-control-container > * > .control-configuration-container > .dataset-box > .label.selected {
+                -fx-font-weight: bold;
             }
             
             """;
@@ -116,6 +130,7 @@ public class SamplerConceptNavigatorController {
                 populateArea(items.stream()
                         .map(item -> item.publicId().asUuidArray())
                         .toList()));
+        showTagsCheckBox.selectedProperty().subscribe(s -> conceptNavigatorControl.setShowTags(s));
 
         conceptArea.setOnDragDropped(event -> {
             boolean success = false;
@@ -180,7 +195,8 @@ public class SamplerConceptNavigatorController {
                         list.forEach(p -> {
                             Label option = new Label(p.toFile().getName());
                             option.setOnMouseClicked(_ -> {
-                                box.getParent().setMouseTransparent(true);
+                                option.getStyleClass().add("selected");
+                                box.setMouseTransparent(true);
                                 controller.setDataUriOption(p);
                                 TinkExecutor.threadPool().submit(new LoadDataSourceTask(state));
                             });
@@ -196,8 +212,6 @@ public class SamplerConceptNavigatorController {
                     ViewProperties viewProperties = view.makeOverridableViewProperties();
                     Navigator navigator = new ViewNavigator(viewProperties.nodeView());
                     consumer.accept(navigator);
-                    // remove options panel
-                    ((SplitPane) box.getParent().getParent().getParent()).getItems().remove(2);
                 }
             });
         }

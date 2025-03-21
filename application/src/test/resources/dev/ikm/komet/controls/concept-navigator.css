@@ -113,6 +113,7 @@
     -fx-background: #E1E8F1;
     -fx-background-insets: 0;
     -fx-background-color: -fx-background;
+    -fx-background-radius: 0;
     -fx-text-fill: -fx-text-background-color;
     -fx-padding: 1;
     -fx-indent: 15;
@@ -121,10 +122,50 @@
     -fx-max-width: 438;
 }
 
+.tree-cell:show-tags {
+    -fx-padding: 1 1 1 47;
+}
+
 .tree-cell:filled:selected {
     -fx-background: #E1E8F1;
     -fx-table-cell-border-color: #E1E8F1;
     -fx-background-insets: 0;
+}
+
+.tree-cell > .tag-box {
+    -fx-background-radius: 3;
+    -fx-alignment: center-left;
+    -fx-padding: 2;
+}
+
+.tree-cell:added-tag > .tag-box {
+    -fx-background-color: #60BCB54D;
+}
+
+.tree-cell:retired-tag > .tag-box {
+    -fx-background-color: #DD71704D;
+}
+
+.tree-cell > .tag-box > .tag-label {
+    -fx-min-width: 44;
+    -fx-pref-width: 44;
+    -fx-max-width: 44;
+    -fx-min-height: 16;
+    -fx-pref-height: 16;
+    -fx-max-height: 16;
+    -fx-background-radius: 2;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 9;
+    -fx-text-fill: white;
+    -fx-alignment: center;
+}
+
+.tree-cell:added-tag > .tag-box > .tag-label {
+    -fx-background-color: #60BCB5;
+}
+
+.tree-cell:retired-tag > .tag-box > .tag-label {
+    -fx-background-color: #DD7170;
 }
 
 .tree-cell .label {

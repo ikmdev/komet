@@ -3,7 +3,9 @@ package dev.ikm.komet.controls;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.TreeItem;
 
 import java.util.BitSet;
@@ -14,6 +16,12 @@ import static dev.ikm.komet.controls.KLConceptNavigatorControl.MAX_LEVEL;
 public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
 
     private final Navigator navigator;
+
+    public enum TAG {
+        NONE,
+        ADDED,
+        RETIRED
+    }
 
     public enum STATE {
         LONG_HOVER,
@@ -47,6 +55,7 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
             return List.of(PS_STATE.BORDER_SELECTED.getBit(), PS_STATE.LINE_I_SELECTED.getBit() + MAX_LEVEL + 1);
         }
     }
+
     private final InvertedTree invertedTree;
 
     public ConceptNavigatorTreeItem(Navigator navigator, ConceptFacade conceptFacade, int parentNid) {
@@ -89,6 +98,18 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
     }
     public final void setViewLineage(boolean value) {
         viewLineageProperty.set(value);
+    }
+
+    // tagProperty
+    private final ObjectProperty<TAG> tagProperty = new SimpleObjectProperty<>(this, "tag", TAG.NONE);
+    public final ObjectProperty<TAG> tagProperty() {
+       return tagProperty;
+    }
+    public final TAG getTag() {
+       return tagProperty.get();
+    }
+    public final void setTag(TAG value) {
+        tagProperty.set(value);
     }
 
     public final InvertedTree getInvertedTree() {

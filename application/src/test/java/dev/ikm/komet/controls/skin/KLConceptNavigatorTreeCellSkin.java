@@ -5,9 +5,12 @@ import dev.ikm.komet.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.controls.KLConceptNavigatorTreeCell;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import javafx.css.PseudoClass;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.skin.TreeCellSkin;
+import javafx.scene.layout.HBox;
 import javafx.scene.shape.ArcTo;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
@@ -15,28 +18,33 @@ import javafx.scene.shape.Path;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> {
 
+    private static final PseudoClass SHOW_TAGS_PSEUDO_CLASS = PseudoClass.getPseudoClass("show-tags");
+    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.controls.concept-navigator");
+
     private ConceptNavigatorTreeItem model;
     private final KLConceptNavigatorTreeCell treeCell;
-    private final TreeView<ConceptFacade> treeView;
+    private final KLConceptNavigatorControl treeView;
     private final LineageBox lineageBox;
+    private final HBox tagBox;
 
     public KLConceptNavigatorTreeCellSkin(KLConceptNavigatorTreeCell treeCell) {
         super(treeCell);
         this.treeCell = treeCell;
         model = (ConceptNavigatorTreeItem) treeCell.getTreeItem();
-        treeView = treeCell.getTreeView();
+        treeView = (KLConceptNavigatorControl) treeCell.getTreeView();
         registerChangeListener(treeCell.treeItemProperty(), _ -> {
             model = (ConceptNavigatorTreeItem) treeCell.getTreeItem();
             getSkinnable().requestLayout();
         });
 
         lineageBox = new LineageBox();
-        lineageBox.setNavigator(((KLConceptNavigatorControl) treeView).getNavigator());
-        registerChangeListener(((KLConceptNavigatorControl) treeView).navigatorProperty(),
-                _ -> lineageBox.setNavigator(((KLConceptNavigatorControl) treeView).getNavigator()));
+        lineageBox.setNavigator(treeView.getNavigator());
+        registerChangeListener(treeView.navigatorProperty(), _ -> lineageBox.setNavigator(treeView.getNavigator()));
         registerChangeListener(treeCell.viewLineageProperty(), _ -> {
             boolean viewLineage = treeCell.isViewLineage();
             if (viewLineage && !getChildren().contains(lineageBox)) {
@@ -46,6 +54,27 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
             lineageBox.setConcept(viewLineage ? model : null);
             getSkinnable().requestLayout();
         });
+
+        Label tagLabel = new Label();
+        tagLabel.getStyleClass().add("tag-label");
+        tagBox = new HBox(tagLabel);
+        tagBox.getStyleClass().add("tag-box");
+        tagBox.managedProperty().bind(tagBox.visibleProperty());
+        registerChangeListener(treeView.showTagsProperty(), _ -> {
+            tagBox.setVisible(treeView.isShowTags());
+            getSkinnable().requestLayout();
+        });
+        registerChangeListener(treeCell.tagProperty(), _ -> {
+            if (!getChildren().contains(tagBox)) {
+                getChildren().add(tagBox);
+            }
+            tagLabel.setText(resources.getString("tag." + treeCell.getTag().toString().toLowerCase(Locale.ROOT)));
+            getSkinnable().requestLayout();
+        });
+
+        registerChangeListener(treeView.showTagsProperty(), _ ->
+                treeCell.pseudoClassStateChanged(SHOW_TAGS_PSEUDO_CLASS, treeView.isShowTags()));
+
     }
 
     @Override
@@ -113,8 +142,16 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
             if (!getChildren().contains(lineageBox)) {
                 getChildren().add(lineageBox);
             }
-            lineageBox.resizeRelocate(0, y - expandedHeight, getSkinnable().getWidth() - 1, expandedHeight);
+            double cellPadding = treeCell.getInsets().getLeft();
+            lineageBox.resizeRelocate(cellPadding, y - expandedHeight, getSkinnable().getWidth() - cellPadding, expandedHeight);
         }
+
+        if (!getChildren().contains(tagBox)) {
+            getChildren().add(tagBox);
+        }
+        tagBox.toBack();
+        tagBox.resizeRelocate(0, y, w, h);
+
     }
 
     private void updateConnections() {
@@ -127,11 +164,12 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
                 .map(Path.class::cast)
                 .toList();
         int level = getLevel(model);
+        double padding = treeCell.getInsets().getLeft() - 1;
         double indent = getIndent();
         List<Path> paths = new ArrayList<>();
         int start = treeView.isShowRoot() ? 1 : 0;
         for (int i = start; i < level; i++) {
-            double x = 10 + indent * i;
+            double x = 10 + indent * i + padding;
             if (i < level - 1) {
                 ConceptNavigatorTreeItem ancestor = getAncestor(model, i + 1);
                 if (ancestor.nextSibling() != null) {

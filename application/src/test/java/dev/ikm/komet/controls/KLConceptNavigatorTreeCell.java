@@ -5,7 +5,9 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.PseudoClass;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TreeCell;
@@ -38,6 +40,8 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
             LINE_I_SELECTED_PSEUDO_CLASS[i] = PseudoClass.getPseudoClass("cn-line-selected-" + i);
         }
     }
+    private static final PseudoClass ADDED_TAG_PSEUDO_CLASS = PseudoClass.getPseudoClass("added-tag");
+    private static final PseudoClass RETIRED_TAG_PSEUDO_CLASS = PseudoClass.getPseudoClass("retired-tag");
 
     public static final DataFormat CONCEPT_NAVIGATOR_DRAG_FORMAT;
     static {
@@ -168,4 +172,23 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
         viewLineageProperty.set(value);
     }
 
+
+    // tagProperty
+    private final ObjectProperty<ConceptNavigatorTreeItem.TAG> tagProperty = new SimpleObjectProperty<>(this, "tag", ConceptNavigatorTreeItem.TAG.NONE) {
+        @Override
+        protected void invalidated() {
+            ConceptNavigatorTreeItem.TAG tag = get();
+            pseudoClassStateChanged(ADDED_TAG_PSEUDO_CLASS, tag == ConceptNavigatorTreeItem.TAG.ADDED);
+            pseudoClassStateChanged(RETIRED_TAG_PSEUDO_CLASS, tag == ConceptNavigatorTreeItem.TAG.RETIRED);
+        }
+    };
+    public final ObjectProperty<ConceptNavigatorTreeItem.TAG> tagProperty() {
+        return tagProperty;
+    }
+    public final ConceptNavigatorTreeItem.TAG getTag() {
+        return tagProperty.get();
+    }
+    public final void setTag(ConceptNavigatorTreeItem.TAG value) {
+        tagProperty.set(value);
+    }
 }

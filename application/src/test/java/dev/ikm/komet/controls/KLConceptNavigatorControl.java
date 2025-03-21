@@ -4,8 +4,10 @@ import dev.ikm.komet.controls.skin.KLConceptNavigatorTreeViewSkin;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -16,6 +18,7 @@ import javafx.scene.control.TreeView;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.function.Consumer;
 
 public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
@@ -117,6 +120,18 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
         navigatorProperty.set(value);
     }
 
+    // showTagsProperty
+    private final BooleanProperty showTagsProperty = new SimpleBooleanProperty(this, "showTags");
+    public final BooleanProperty showTagsProperty() {
+       return showTagsProperty;
+    }
+    public final boolean isShowTags() {
+       return showTagsProperty.get();
+    }
+    public final void setShowTags(boolean value) {
+        showTagsProperty.set(value);
+    }
+
     @Override
     protected Skin<?> createDefaultSkin() {
         conceptNavigatorTreeViewSkin = new KLConceptNavigatorTreeViewSkin(this);
@@ -166,6 +181,9 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
         ConceptNavigatorTreeItem conceptNavigatorTreeItem = new ConceptNavigatorTreeItem(getNavigator(), facade, parentNid);
         conceptNavigatorTreeItem.setDefined(getNavigator().getViewCalculator().hasSufficientSet(facade));
         conceptNavigatorTreeItem.setMultiParent(getNavigator().getParentNids(nid).length > 1);
+        // DUMMY!
+        int nextTag = new Random().nextInt(100);
+        conceptNavigatorTreeItem.setTag(ConceptNavigatorTreeItem.TAG.values()[nextTag < 90 ? 0 : nextTag < 95 ? 1 : 2]);
         return conceptNavigatorTreeItem;
     }
 
