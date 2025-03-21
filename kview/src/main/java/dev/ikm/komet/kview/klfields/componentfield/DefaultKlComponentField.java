@@ -60,11 +60,20 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
     }
 
     private void updateControlText(EntityProxy entityProxy, KLReadOnlyComponentControl klReadOnlyComponentControl) {
+        if (entityProxy.nid() == KLComponentControl.EMPTY_NID) {
+            klReadOnlyComponentControl.setText("");
+            return;
+        }
+
         String description = entityProxy.description();
         klReadOnlyComponentControl.setText(description);
     }
 
     private void updateControlIcon(ObservableField<EntityProxy> observableField, KLReadOnlyComponentControl klReadOnlyComponentControl) {
-        klReadOnlyComponentControl.setIcon(Identicon.generateIdenticonImage(observableField.valueProperty().get().publicId()));
+        EntityProxy entityProxy = observableField.valueProperty().get();
+
+        if (entityProxy.nid() != KLComponentControl.EMPTY_NID) {
+            klReadOnlyComponentControl.setIcon(Identicon.generateIdenticonImage(entityProxy.publicId()));
+        }
     }
 }
