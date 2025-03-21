@@ -29,8 +29,6 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
-import dev.ikm.tinkar.common.alert.AlertObject;
-import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -44,7 +42,9 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -54,7 +54,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 
 public class SemanticFieldsController {
 
@@ -229,26 +228,24 @@ public class SemanticFieldsController {
         semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
             StampRecord stamp = Entity.getStamp(semanticEntityVersion.stampNid());
             SemanticVersionRecord version = Entity.getVersionFast(semantic.nid(), stamp.nid());
-            Transaction.forVersion(version).ifPresent(transaction -> {
+            Transaction.forVersion(version).ifPresentOrElse(transaction -> {
                 commitTransactionTask(transaction);
+                //EventBus implementation changes to refresh the details area if commit successful
+                EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
+            }, () -> {
+                //TODO this is a temp alert / workaround till we figure how to reload transactions across multiple restarts of app.
+                LOG.error("Unable to commit: Transaction for the given version does not exist.");
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Transaction for current changes does not exist.", ButtonType.OK);
+                alert.setHeaderText("Unable to Commit transaction.");
+                alert.showAndWait();
             });
         });
         processCommittedValues();
         enableDisableSubmitButton();
-        //EventBus implementation changes to refresh the details area
-        EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
-
     }
 
-    private static void commitTransactionTask(Transaction transaction) {
+    private void commitTransactionTask(Transaction transaction) {
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        Future<Void> future = TinkExecutor.threadPool().submit(commitTransactionTask);
-        TinkExecutor.threadPool().execute(() -> {
-            try {
-                future.get();
-            } catch (Exception e) {
-                AlertStreams.getRoot().dispatch(AlertObject.makeError(e));
-            }
-        });
+        TinkExecutor.threadPool().submit(commitTransactionTask);
     }
 }
