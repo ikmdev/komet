@@ -25,8 +25,8 @@ class ComponentItemNode extends Region {
     public ComponentItemNode(ComponentItem componentItem) {
         // Image View
         iconImageView.imageProperty().bind(componentItem.iconProperty());
-        iconImageView.setFitHeight(20);
-        iconImageView.setFitWidth(20);
+        iconImageView.setFitHeight(16);
+        iconImageView.setFitWidth(16);
 
         // Label (Text)
         textLabel.textProperty().bind(componentItem.textProperty());
