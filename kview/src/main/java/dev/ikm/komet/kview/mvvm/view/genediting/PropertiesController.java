@@ -105,32 +105,6 @@ public class PropertiesController {
                     .addProperty(FIELD_INDEX, -1);
         });
         referenceComponentJfxNode = FXMLMvvmLoader.make(addReferenceConfig);
-//        Config closePropertiesConfig = new Config(this.getClass().getResource("close-properties.fxml"))
-//                .addNamedViewModel(new NamedVm("propertiesViewModel", propertiesViewModel));
-//
-//        JFXNode<Pane, ClosePropertiesController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
-
-//        closePropsPane = closePropsJfxNode.node();
-//        ClosePropertiesController = closePropsJfxNode.controller();
-//        genEditingEventSubscriber = evt -> {
-//            LOG.info("Publish event type: " + evt.getEventType());
-//            contentBorderPane.setCenter(closePropsJfxNode.node());
-//        };
-//        EvtBusFactory.getDefaultEvtBus().subscribe(propertiesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
-//                GenEditingEvent.class, genEditingEventSubscriber);
-//
-//        showPanelSubscriber = evt -> {
-//            LOG.info("Show Panel by event type: " + evt.getEventType());
-//            propertyToggleButtonGroup.selectToggle(addEditButton);
-//            contentBorderPane.setCenter(addReferenceFieldsJfxNode.node());
-//            ValidationViewModel referenceComponentViewModel = (ValidationViewModel) addReferenceFieldsJfxNode
-//                    .getViewModel("referenceComponentViewModel").get();
-//            if (evt.getEventType() == PropertyPanelEvent.SHOW_ADD_REFERENCE_SEMANTIC_FIELD) {
-//                referenceComponentViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
-//            }
-//        };
-//        EvtBusFactory.getDefaultEvtBus().subscribe(propertiesViewModel.getPropertyValue(WINDOW_TOPIC), PropertyPanelEvent.class, showPanelSubscriber);
-
     }
 
     private void setupShowingPanelHandlers() {
