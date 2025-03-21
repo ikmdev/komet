@@ -5,6 +5,7 @@ import dev.ikm.komet.controls.ConceptTile;
 import dev.ikm.komet.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.controls.KLConceptNavigatorTreeCell;
 import dev.ikm.komet.controls.MultipleSelectionContextMenu;
+import dev.ikm.komet.controls.SingleSelectionContextMenu;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -19,6 +20,7 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.skin.TreeViewSkin;
@@ -65,7 +67,8 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
     private final List<ConceptNavigatorTreeItem> draggedItems = new ArrayList<>();
     private final Map<ConceptNavigatorTreeItem, WritableImage> imageMap = new HashMap<>();
 
-    private MultipleSelectionContextMenu contextMenu;
+    private MultipleSelectionContextMenu multipleSelectionContextMenu;
+    private final SingleSelectionContextMenu singleSelectionContextMenu;
 
     public KLConceptNavigatorTreeViewSkin(KLConceptNavigatorControl treeView) {
         super(treeView);
@@ -171,9 +174,32 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             setMultipleSelectionByClicking(false);
         });
 
+        singleSelectionContextMenu = new SingleSelectionContextMenu();
         treeView.setOnContextMenuRequested(e -> {
-            if (contextMenu != null) {
-                contextMenu.show(treeView.getScene().getWindow(), e.getScreenX(), e.getScreenY());
+            if (selectedItems.isEmpty() && draggedItems.isEmpty()) {
+                return;
+            }
+            if (selectedItems.size() < 2 && draggedItems.size() < 2) {
+                List<ConceptFacade> relatedConcepts;
+                if (!selectedItems.isEmpty()) {
+                    // DUMMY! Just the children of the concept, if any
+                    relatedConcepts = selectedItems.getFirst().getChildren().stream()
+                            .limit(5)
+                            .map(TreeItem::getValue)
+                            .toList();
+                } else {
+                    // DUMMY! Just the children of the concept, if any
+                    relatedConcepts = draggedItems.getFirst().getChildren().stream()
+                            .limit(5)
+                            .map(TreeItem::getValue)
+                            .toList();
+                }
+                singleSelectionContextMenu.setRelatedByMessageItems(relatedConcepts,
+                        // DUMMY action
+                        ev -> System.out.println(((MenuItem) ev.getSource()).getText()));
+                singleSelectionContextMenu.show(treeView.getScene().getWindow(), e.getScreenX(), e.getScreenY());
+            } else if (multipleSelectionContextMenu != null) {
+                multipleSelectionContextMenu.show(treeView.getScene().getWindow(), e.getScreenX(), e.getScreenY());
             }
         });
     }
@@ -446,17 +472,17 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
     }
 
     private void setupContextMenu(List<ConceptFacade> items) {
-        contextMenu = new MultipleSelectionContextMenu();
-        contextMenu.setPopulateMessageAction(e -> {
+        multipleSelectionContextMenu = new MultipleSelectionContextMenu();
+        multipleSelectionContextMenu.setPopulateMessageAction(_ -> {
             if (((KLConceptNavigatorControl) getSkinnable()).getOnAction() != null) {
                 ((KLConceptNavigatorControl) getSkinnable()).getOnAction().accept(items);
             }
             setMultipleSelectionByClicking(false);
             setMultipleSelectionByBoundingBox(false);
         });
-        contextMenu.setJournalMessageAction(e -> System.out.println("Journal action"));
-        contextMenu.setChapterMessageAction(e -> System.out.println("Chapter action"));
-        contextMenu.setCopyMessageAction(e -> System.out.println("Copy action"));
-        contextMenu.setSaveMessageAction(e -> System.out.println("Save action"));
+        multipleSelectionContextMenu.setJournalMessageAction(e -> System.out.println("Journal action"));
+        multipleSelectionContextMenu.setChapterMessageAction(e -> System.out.println("Chapter action"));
+        multipleSelectionContextMenu.setCopyMessageAction(e -> System.out.println("Copy action"));
+        multipleSelectionContextMenu.setSaveMessageAction(e -> System.out.println("Save action"));
     }
 }

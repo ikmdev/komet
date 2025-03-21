@@ -434,7 +434,15 @@
 .context-menu {
     -fx-background-color: #2E3240;
     -fx-background-radius: 4;
-    -fx-pref-width: 251;
+    -fx-min-width: 250; /* don't set pref-width, so ContextMenuContent::computeVisualMetrics gets called */
+    -fx-max-width: 250;
+}
+
+.context-menu .menu:focused > .right-container > .arrow,
+.context-menu .menu > .right-container > .arrow {
+    -fx-background-color: white;
+    -fx-shape: "M8.0876 5L6.9126 6.175L10.7293 10L6.9126 13.825L8.0876 15L13.0876 10L8.0876 5Z";
+    -fx-scale-shape: false;
 }
 
 .context-menu .menu-item {
@@ -444,13 +452,12 @@
 }
 
 .context-menu .menu-item:focused {
-    -fx-background-color: #2E3240;
+    -fx-background-color: #545D72;
     -fx-text-fill: white;
 }
 
 .context-menu .menu-item:focused > .label,
 .context-menu .menu-item > .label {
-    -fx-padding: 0 0 0 20;
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14;

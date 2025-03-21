@@ -28,7 +28,6 @@ public class MultipleSelectionContextMenu extends ContextMenu {
 
         getItems().addAll(populateMessage, journalMessage, chapterMessage, copyMessage, saveMessage);
         setAnchorLocation(AnchorLocation.CONTENT_TOP_LEFT);
-        getStyleClass().add("context-menu");
     }
 
     public void setPopulateMessageAction(EventHandler<ActionEvent> eventHandler) {
