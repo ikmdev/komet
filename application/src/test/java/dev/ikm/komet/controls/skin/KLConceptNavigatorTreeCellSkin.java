@@ -60,6 +60,7 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
         tagBox = new HBox(tagLabel);
         tagBox.getStyleClass().add("tag-box");
         tagBox.managedProperty().bind(tagBox.visibleProperty());
+        tagBox.setVisible(treeView.isShowTags());
         registerChangeListener(treeView.showTagsProperty(), _ -> {
             tagBox.setVisible(treeView.isShowTags());
             getSkinnable().requestLayout();
