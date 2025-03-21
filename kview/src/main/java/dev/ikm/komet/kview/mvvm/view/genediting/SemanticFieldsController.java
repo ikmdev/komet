@@ -29,8 +29,6 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
-import dev.ikm.tinkar.common.alert.AlertObject;
-import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -56,7 +54,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 
 public class SemanticFieldsController {
 
@@ -232,7 +229,7 @@ public class SemanticFieldsController {
                 EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
             }, () -> {
                 //TODO this is a temp alert / workaround till we figure how to reload transactions across multiple restarts of app.
-                LOG.info("Unable to commit: Transaction for the given version does not exist.");
+                LOG.error("Unable to commit: Transaction for the given version does not exist.");
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Transaction for current changes does not exist.", ButtonType.OK);
                 alert.setHeaderText("Unable to Commit transaction.");
                 alert.showAndWait();
@@ -244,13 +241,6 @@ public class SemanticFieldsController {
 
     private void commitTransactionTask(Transaction transaction) {
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        Future<Void> future = TinkExecutor.threadPool().submit(commitTransactionTask);
-        TinkExecutor.threadPool().execute(() -> {
-            try {
-                future.get();
-            } catch (Exception e) {
-                AlertStreams.getRoot().dispatch(AlertObject.makeError(e));
-            }
-        });
+        TinkExecutor.threadPool().submit(commitTransactionTask);
     }
 }
