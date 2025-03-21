@@ -62,9 +62,14 @@ import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -227,11 +232,11 @@ public class GenEditingDetailsController {
             semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
                 Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
                 patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
-                    semanticDescriptionLabel.setText("Semantic for %s".formatted(patternEntityVersion.entity().description()));
                     String meaning = languageCalculator.getDescriptionText(patternEntityVersion.semanticMeaningNid()).orElse("No Description");
                     String purpose = languageCalculator.getDescriptionText(patternEntityVersion.semanticPurposeNid()).orElse("No Description");
                     semanticMeaningText.setText(meaning);
                     semanticPurposeText.setText(purpose);
+                    semanticDescriptionLabel.setText("%s of component for %s in %s".formatted(meaning, purpose, patternEntityVersion.entity().description()));
                 });
             });
         }
