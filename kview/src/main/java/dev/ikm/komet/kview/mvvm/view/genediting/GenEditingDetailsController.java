@@ -236,7 +236,10 @@ public class GenEditingDetailsController {
                     String purpose = languageCalculator.getDescriptionText(patternEntityVersion.semanticPurposeNid()).orElse("No Description");
                     semanticMeaningText.setText(meaning);
                     semanticPurposeText.setText(purpose);
-                    semanticDescriptionLabel.setText("%s of component for %s in %s".formatted(meaning, purpose, patternEntityVersion.entity().description()));
+
+                    String patternFQN = getViewProperties().calculator().languageCalculator()
+                            .getFullyQualifiedDescriptionTextWithFallbackOrNid(patternEntityVersion.nid());
+                    semanticDescriptionLabel.setText("%s of component for %s in %s".formatted(meaning, purpose, patternFQN));
                 });
             });
         }
