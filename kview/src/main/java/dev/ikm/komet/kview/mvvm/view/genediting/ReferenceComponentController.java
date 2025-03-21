@@ -1,9 +1,12 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
+import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -43,18 +46,10 @@ public class ReferenceComponentController {
         EntityFacade refComponent = referenceComponentViewModel.getPropertyValue(REF_COMPONENT);
         KLComponentControl componentControl = new KLComponentControl();
         componentControl.setTitle("Reference component");
-//        // entity
-//        EntityProxy entity = field().value();
-//        componentControl.setEntity(entity);
-//
-//        componentControl.entityProperty().subscribe(newEntity -> {
-//            field().valueProperty().set(newEntity);
-//            componentControl.setTitle(field().field().meaning().description());
-//            updateTooltipText();
-//        });
+        ObjectProperty<EntityProxy> refComponentProperty = referenceComponentViewModel.getProperty(REF_COMPONENT);
+        refComponentProperty.bind(componentControl.entityProperty());
+        componentControl.setEntity(refComponentProperty.getValue());
         referenceComponentVBox.getChildren().add(componentControl);
-
-
     }
 
     public ViewProperties getViewProperties() {
