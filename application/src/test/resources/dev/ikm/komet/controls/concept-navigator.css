@@ -529,7 +529,7 @@
     -fx-background-color: #5EA03C, white;
     -fx-background-insets: 0, 2;
     -fx-background-radius: 4 4 0 4, 2 2 0 2;
-    -fx-padding: 4 0 4 4;
+    -fx-padding: 4;
     -fx-effect: dropshadow(three-pass-box, #0000001A, 4, 0, 0, 1);
 }
 

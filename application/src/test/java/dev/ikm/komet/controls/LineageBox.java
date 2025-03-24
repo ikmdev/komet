@@ -1,16 +1,20 @@
 package dev.ikm.komet.controls;
 
 import dev.ikm.komet.navigator.graph.Navigator;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.PseudoClass;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -124,6 +128,18 @@ public class LineageBox extends ScrollPane {
             regionPane.getStyleClass().add("pane");
 
             Label label = getConceptLabel(treeItem);
+            label.skinProperty().addListener(new InvalidationListener() {
+                @Override
+                public void invalidated(Observable observable) {
+                    if (label.getSkin() != null) {
+                        String description = label.getText();
+                        Text textNode = (Text) label.lookup(".text");
+                        textNode.textProperty().subscribe((_, t) ->
+                                label.setTooltip(t != null && !description.equals(t) ? new Tooltip(description) : null));
+                        label.skinProperty().removeListener(this);
+                    }
+                }
+            });
             HBox.setHgrow(label, Priority.ALWAYS);
 
             getChildren().addAll(spacer, regionPane, label);
