@@ -52,7 +52,7 @@ public class SamplerApp extends Application {
         stage.setTitle("Komet Sampler");
 
         StackPane root = new StackPane(navigationPane);
-        Scene scene = new Scene(root, 1250, 630);
+        Scene scene = new Scene(root, 1250, 660);
 
         scene.getStylesheets().add(SAMPLER_APP_BASE_STYLESHEET);
         scene.getStylesheets().add(AbstractBasicController.class.getResource("kview.css").toExternalForm());

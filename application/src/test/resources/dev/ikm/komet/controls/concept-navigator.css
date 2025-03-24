@@ -20,7 +20,7 @@
     -fx-background-insets: 0;
     -fx-background-radius: 5;
     -fx-padding: 4 3 3 3;
-    -fx-min-width: 448;
+    -fx-min-width: 432;
 }
 
 .concept-navigator-control.tree-view > .concept-header.label {
@@ -32,9 +32,9 @@
     -fx-alignment: center;
     -fx-background: #E1E8F1;
     -fx-background-color: -fx-background;
-    -fx-min-width: 448;
-    -fx-pref-width: 448;
-    -fx-max-width: 448;
+    -fx-min-width: 432;
+    -fx-pref-width: 432;
+    -fx-max-width: 432;
 }
 
 .concept-navigator-control.tree-view > .virtual-flow > .clipped-container > .sheet {
@@ -117,9 +117,9 @@
     -fx-text-fill: -fx-text-background-color;
     -fx-padding: 1;
     -fx-indent: 15;
-    -fx-min-width: 438;
-    -fx-pref-width: 438;
-    -fx-max-width: 438;
+    -fx-min-width: 422;
+    -fx-pref-width: 422;
+    -fx-max-width: 422;
 }
 
 .tree-cell:show-tags {

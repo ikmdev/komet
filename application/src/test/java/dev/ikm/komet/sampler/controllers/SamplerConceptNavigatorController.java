@@ -3,6 +3,7 @@ package dev.ikm.komet.sampler.controllers;
 import dev.ikm.komet.app.AppState;
 import dev.ikm.komet.app.LoadDataSourceTask;
 import dev.ikm.komet.controls.KLConceptNavigatorControl;
+import dev.ikm.komet.controls.SearchControl;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
@@ -39,6 +40,9 @@ public class SamplerConceptNavigatorController {
     private Label samplerDescription;
 
     @FXML
+    private SearchControl searchControl;
+
+    @FXML
     private KLConceptNavigatorControl conceptNavigatorControl;
 
     @FXML
@@ -67,6 +71,11 @@ public class SamplerConceptNavigatorController {
                 -fx-padding: 0;
             }
             
+            .sample-control-container > * > .inner-container {
+                -fx-background-color: #6E7989;
+                -fx-spacing: 8;
+                -fx-padding: 8;
+            }
             .sample-control-container > * > .center-container {
                 -fx-background-color: #fbfbfb;
                 -fx-border-color: #e6e6e6;
@@ -125,6 +134,10 @@ public class SamplerConceptNavigatorController {
 
     public void initialize() {
         samplerDescription.setText("The Concept Navigator control is a tree view to display a hierarchy of concepts");
+
+        searchControl.setOnAction(_ -> System.out.println("Search for: " + searchControl.getText()));
+        searchControl.setOnFilterAction(_ -> System.out.println("Filter!"));
+
         conceptNavigatorControl.setHeader("Concept Header");
         conceptNavigatorControl.setOnAction(items ->
                 populateArea(items.stream()
