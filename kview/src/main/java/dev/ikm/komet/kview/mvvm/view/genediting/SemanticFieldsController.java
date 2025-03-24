@@ -34,8 +34,6 @@ import dev.ikm.komet.framework.observable.ObservableVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
-import dev.ikm.tinkar.common.alert.AlertObject;
-import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -89,9 +87,6 @@ public class SemanticFieldsController {
     private int committedHash;
 
     private void enableDisableSubmitButton(Object value){
-//        TODO: To be able to test the component control placeholder I'm temporarily commenting this block of code below.
-//        TODO: We should uncommet it once component control placeholder is merged and tested.
-
         if(value != null && !value.toString().isEmpty()) {
             enableDisableSubmitButton();
         }else {
@@ -132,8 +127,6 @@ public class SemanticFieldsController {
         editFieldsVBox.setSpacing(8.0);
         editFieldsVBox.getChildren().clear();
         updateStampVersions = true;
-//        TODO: To be able to test the component control placeholder I'm temporarily commenting this block of code below.
-//        TODO: We should uncommet it once component control placeholder is merged and tested.
         submitButton.setDisable(true);
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         if (semantic != null) {
