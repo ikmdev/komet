@@ -454,6 +454,10 @@ public class NextGenSearchController extends AbstractBasicController {
 
     }
 
+    public void clearSearchTextField(){
+        searchField.clear();
+    }
+
     @Override
     public <T extends ViewModel> T getViewModel() {
         return null;
