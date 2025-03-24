@@ -36,6 +36,13 @@ public class ClosePropertiesController {
     private Label headingText;
 
 
+    @FXML
+    private Label subtextLine1;
+
+    @FXML
+    private Label subtextLine2;
+
+
     /**
      * action fired by closing the properties bump out
      * @param event property panel event -> close panel
@@ -51,5 +58,21 @@ public class ClosePropertiesController {
      */
     public void setHeadingText(String text) {
         headingText.setText(text);
+    }
+
+    /**
+     * set the first line of the subtext
+     * @param text
+     */
+    public void setSubtextLine1(String text) {
+        subtextLine1.setText(text);
+    }
+
+    /**
+     * set the second line of the subtext
+     * @param text
+     */
+    public void setSubtextLine2(String text) {
+        subtextLine2.setText(text);
     }
 }
