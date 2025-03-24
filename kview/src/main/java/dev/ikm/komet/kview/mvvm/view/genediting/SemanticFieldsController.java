@@ -155,7 +155,7 @@ public class SemanticFieldsController {
                     observableField.fieldProperty().addListener(observable -> fieldPropertyChangeListner());
                 });
 
-             } else {
+            } else {
                 // TODO Add a new semantic based on a pattern (blank fields).
             }
         }
