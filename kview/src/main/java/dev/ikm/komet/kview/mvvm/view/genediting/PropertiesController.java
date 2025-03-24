@@ -73,7 +73,7 @@ public class PropertiesController {
 
     private Pane closePropsPane;
 
-    private ClosePropertiesController ClosePropertiesController;
+    private ClosePropertiesController closePropertiesController;
 
     @InjectViewModel
     private SimpleViewModel propertiesViewModel;
@@ -110,7 +110,7 @@ public class PropertiesController {
         JFXNode<Pane, ClosePropertiesController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
 
         closePropsPane = closePropsJfxNode.node();
-        ClosePropertiesController = closePropsJfxNode.controller();
+        closePropertiesController = closePropsJfxNode.controller();
         genEditingEventSubscriber = evt -> {
             LOG.info("Publish event type: " + evt.getEventType());
             contentBorderPane.setCenter(closePropsJfxNode.node());
@@ -130,7 +130,8 @@ public class PropertiesController {
                 semanticFieldsViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
             } else if (evt.getEventType() == PropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
                 // change the heading on the top of the panel
-                ClosePropertiesController.setHeadingText("No Selection Made");
+                closePropertiesController.setHeadingText("No Selection Made");
+                closePropertiesController.setSubtextLine2("to edit the Semantic Element");
                 contentBorderPane.setCenter(closePropsPane);
             }
         };
