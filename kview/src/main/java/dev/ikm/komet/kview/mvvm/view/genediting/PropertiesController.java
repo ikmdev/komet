@@ -152,6 +152,7 @@ public class PropertiesController {
             } else if (evt.getEventType() == PropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
                 // change the heading on the top of the panel
                 closePropertiesController.setHeadingText("No Selection Made");
+                closePropertiesController.setSubtextLine2("to edit the Semantic Element");
                 contentBorderPane.setCenter(closePropsPane);
             }
         };
