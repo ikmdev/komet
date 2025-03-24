@@ -100,7 +100,7 @@
         <fxcomponents.version>1.6.2</fxcomponents.version>
         <axonic.version>1.1.5</axonic.version>
         <common-java5.version>3.5.2</common-java5.version>
-        <controlsfx.version>11.2.1</controlsfx.version>
+        <controlsfx.version>11.2.2</controlsfx.version>
         <cssfx.version>11.5.1-jpms</cssfx.version>
         <ikonli.version>12.3.1</ikonli.version>
         <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
