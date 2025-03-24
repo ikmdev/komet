@@ -124,7 +124,7 @@ public class PatternNavEntryController {
 
         EntityFacade patternFacade = instancesViewModel.getPropertyValue(PATTERN_FACADE);
         addNewSemanticElement.setOnAction(actionEvent -> {
-            LOG.info("TODO: Summon create new Semantic Element. "+patternFacade.description());
+            LOG.info("Summon create new Semantic Element. " + patternFacade.description());
             EvtBusFactory.getDefaultEvtBus().publish(instancesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                     new MakeGenEditingWindowEvent(this,
                         MakeGenEditingWindowEvent.OPEN_GEN_AUTHORING, patternFacade, instancesViewModel.getPropertyValue(VIEW_PROPERTIES)));
