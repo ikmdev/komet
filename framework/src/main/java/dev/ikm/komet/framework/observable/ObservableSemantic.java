@@ -20,6 +20,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.collections.ListChangeListener;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
@@ -31,6 +32,34 @@ public final class ObservableSemantic
         implements SemanticEntity<ObservableSemanticVersion> {
     ObservableSemantic(SemanticEntity<SemanticVersionRecord> semanticEntity) {
         super(semanticEntity);
+    }
+
+    ListChangeListener<? super ObservableSemanticVersion> listChangeListener = (ListChangeListener<ObservableSemanticVersion>) c -> {
+        while (c.next()) {
+            if (c.wasPermutated()) {
+                for (int i = c.getFrom(); i < c.getTo(); ++i) {
+                    // permutate
+                    System.out.println(" WAS PREMUTATED" + i);
+                }
+            } else if (c.wasUpdated()) {
+                System.out.println(" WAS UPDATED");
+            } else if (c.wasRemoved()){
+                System.out.println(" WAS REMOVED");
+            }else if (c.wasAdded()){
+                System.out.println(" WAS ADDED");
+            } else if (c.wasReplaced()) {
+                System.out.println(" WAS REPLACED");
+            }
+        }
+
+    };
+
+    /**
+     *
+     */
+    @Override
+    public void addListeners() {
+        versionProperty().addListener(listChangeListener);
     }
 
     @Override

@@ -100,6 +100,17 @@ public final class ObservableStampVersion
 
     }
 
+    /**
+     * @param value
+     * @param i
+     * @param <T>
+     * @return
+     */
+    @Override
+    public <T> ObservableVersion<StampVersionRecord> addVersion(T value, int i) {
+        return null;
+    }
+
 
     /**
      * Constructs an immutable list containing the field values of the object.

@@ -188,4 +188,6 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
             }
         }
     }
+
+    abstract public void addListeners();
 }

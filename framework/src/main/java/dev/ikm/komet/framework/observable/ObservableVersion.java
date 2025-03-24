@@ -183,4 +183,6 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
     public abstract V getVersionRecord();
 
     public abstract <T> void writeToDataBase(T value, int i);
+
+    public abstract <T> ObservableVersion<V> addVersion(T value, int i);
 }

@@ -44,6 +44,7 @@ import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -129,6 +130,13 @@ public class SemanticFieldsController {
         updateStampVersions = true;
         submitButton.setDisable(true);
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
+       ObservableSemantic observableSemantic = ObservableEntity.get(semantic.nid());
+        observableSemantic.versionProperty().addListener((ListChangeListener<? super ObservableSemanticVersion>) listChangeListener -> {
+            System.out.println("PAUSE");
+            System.out.println(listChangeListener.toString());
+        });
+
+
         if (semantic != null) {
             StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
             Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
@@ -148,6 +156,7 @@ public class SemanticFieldsController {
                                         .subscribe(value -> {
                                             enableDisableSubmitButton(value);
                                             if(!submitButton.isDisabled()){
+                 //                               retrieveObservableSemanticVersion(semanticEntityVersionLatest).addVersion(observableField.value(), observableField.fieldIndex());
                                                 observableField.writeToDatabase(retrieveObservableSemanticVersion(semanticEntityVersionLatest));
                                             }
                                         });

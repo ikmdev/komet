@@ -40,6 +40,14 @@ public final class ObservableStamp
     }
 
     /**
+     *
+     */
+    @Override
+    public void addListeners() {
+
+    }
+
+    /**
      * Retrieves the most recent version of the observable stamp based on the timestamp.
      * If there is only one version, it returns that version.
      * In the case of multiple versions, it evaluates each version to determine the latest one.

@@ -40,6 +40,14 @@ public final class ObservablePattern
         return new ObservablePatternSnapshot(calculator, this);
     }
 
+    /**
+     *
+     */
+    @Override
+    public void addListeners() {
+
+    }
+
     @Override
     public ImmutableMap<FieldCategory, ObservableField> getObservableFields() {
         MutableMap<FieldCategory, ObservableField> fieldMap = Maps.mutable.empty();
