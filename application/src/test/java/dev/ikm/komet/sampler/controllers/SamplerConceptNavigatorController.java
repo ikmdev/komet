@@ -136,7 +136,10 @@ public class SamplerConceptNavigatorController {
         samplerDescription.setText("The Concept Navigator control is a tree view to display a hierarchy of concepts");
 
         searchControl.setOnAction(_ -> System.out.println("Search for: " + searchControl.getText()));
-        searchControl.setOnFilterAction(_ -> System.out.println("Filter!"));
+        searchControl.setOnFilterAction(_ -> {
+            // DUMMY
+            searchControl.setFilterSet(!searchControl.isFilterSet());
+        });
 
         conceptNavigatorControl.setHeader("Concept Header");
         conceptNavigatorControl.setOnAction(items ->

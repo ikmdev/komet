@@ -1,7 +1,9 @@
 package dev.ikm.komet.controls;
 
 import dev.ikm.komet.controls.skin.SearchControlSkin;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -65,6 +67,19 @@ public class SearchControl extends Control {
     public final void setOnFilterAction(EventHandler<ActionEvent> value) {
         onFilterActionProperty.set(value);
     }
+
+    // filterSetProperty
+    private final BooleanProperty filterSetProperty = new SimpleBooleanProperty(this, "filterSet");
+    public final BooleanProperty filterSetProperty() {
+       return filterSetProperty;
+    }
+    public final boolean isFilterSet() {
+       return filterSetProperty.get();
+    }
+    public final void setFilterSet(boolean value) {
+        filterSetProperty.set(value);
+    }
+
 
     @Override
     protected Skin<?> createDefaultSkin() {

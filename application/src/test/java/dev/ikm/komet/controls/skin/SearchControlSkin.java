@@ -6,6 +6,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.SkinBase;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
+import javafx.util.Subscription;
 
 public class SearchControlSkin extends SkinBase<SearchControl> {
 
@@ -13,6 +14,7 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
     private final StackPane searchPane;
     private final StackPane closePane;
     private final StackPane filterPane;
+    private final Subscription subscription;
 
     public SearchControlSkin(SearchControl control) {
         super(control);
@@ -25,11 +27,18 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
         closePane.getStyleClass().add("region");
         closePane.setOnMouseClicked(_ -> textField.clear());
 
-        filterPane = new StackPane(new IconRegion("icon", "filter"), new IconRegion("icon", "dot"));
+        filterPane = new StackPane(new IconRegion("icon", "filter"));
         filterPane.getStyleClass().add("filter-region");
         filterPane.setOnMouseClicked(_ -> {
             if (control.getOnFilterAction() != null) {
                 control.getOnFilterAction().handle(new ActionEvent());
+            }
+        });
+        subscription = control.filterSetProperty().subscribe(isSet -> {
+            if (isSet) {
+                filterPane.getChildren().setAll(new IconRegion("icon", "filter-dot"), new IconRegion("icon", "dot"));
+            } else {
+                filterPane.getChildren().setAll(new IconRegion("icon", "filter"));
             }
         });
 
@@ -44,6 +53,9 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
 
     @Override
     public void dispose() {
+        if (subscription != null) {
+            subscription.unsubscribe();
+        }
         textField.textProperty().unbind();
         textField.promptTextProperty().unbind();
         textField.onActionProperty().unbind();
