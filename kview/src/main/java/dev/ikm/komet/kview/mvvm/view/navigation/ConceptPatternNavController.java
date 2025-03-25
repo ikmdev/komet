@@ -168,21 +168,13 @@ public class ConceptPatternNavController {
     @FXML
     private void showConcepts() {
         navContentPane.setCenter(classicConceptNavigator);
-    }
-
-    @FXML
-    private void showPatterns() {
-        navContentPane.setCenter(patternNavigationPane);
-    }
-
-    @FXML
-    private void selectConcepts() {
         conceptsToggleButton.setSelected(true);
         patternsToggleButton.setSelected(false);
     }
 
     @FXML
-    private void selectPatterns() {
+    private void showPatterns() {
+        navContentPane.setCenter(patternNavigationPane);
         patternsToggleButton.setSelected(true);
         conceptsToggleButton.setSelected(false);
     }
