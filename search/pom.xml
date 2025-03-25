@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.49.0-IIA-1467-IIA-1468-IIA-1469-IIA-1670-Placeholder-SNAPSHOT</version>
+        <version>1.49.0-SNAPSHOT</version>
     </parent>
     <artifactId>search</artifactId>
     <dependencies>
