@@ -9,12 +9,6 @@ public class KLReadOnlyImageControl extends KLReadOnlyBaseControl<Image> {
         getStyleClass().add("read-only-image-control");
     }
 
-//    // -- image file
-//    private final ObjectProperty<Image> image = new SimpleObjectProperty<>();
-//    public Image getImage() { return image.get();}
-//    public ObjectProperty<Image> imageProperty() { return image; }
-//    public void setImage(Image image) { this.image.set(image); }
-
     @Override
     protected Skin<?> createDefaultSkin() {
         return new KLReadOnlyImageControlSkin(this);
