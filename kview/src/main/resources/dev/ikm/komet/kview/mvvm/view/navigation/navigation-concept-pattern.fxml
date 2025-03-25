@@ -30,7 +30,7 @@
                      <children>
                         <HBox alignment="CENTER" GridPane.columnIndex="1">
                            <children>
-                              <ToggleButton fx:id="conceptsToggleButton" mnemonicParsing="false" onAction="#showConcepts" prefWidth="103.0" selected="true" text="CONCEPTS">
+                              <ToggleButton fx:id="conceptsToggleButton" mnemonicParsing="false" onAction="#showConcepts" onMouseClicked="#selectConcepts" prefWidth="103.0" selected="true" text="CONCEPTS">
                                  <toggleGroup>
                                     <ToggleGroup fx:id="conPatToggleGroup" />
                                  </toggleGroup>
@@ -39,7 +39,7 @@
                                     <String fx:value="nav-toggle-left" />
                                  </styleClass>
                               </ToggleButton>
-                              <ToggleButton fx:id="patternsToggleButton" mnemonicParsing="false" onAction="#showPatterns" prefWidth="103.0" text="PATTERNS" toggleGroup="$conPatToggleGroup">
+                              <ToggleButton fx:id="patternsToggleButton" mnemonicParsing="false" onAction="#showPatterns" onMouseClicked="#selectPatterns" prefWidth="103.0" text="PATTERNS" toggleGroup="$conPatToggleGroup">
                                  <styleClass>
                                     <String fx:value="nav-toggle" />
                                     <String fx:value="nav-toggle-right" />
