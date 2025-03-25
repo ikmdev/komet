@@ -2,12 +2,12 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.NodeUtils;
 import dev.ikm.komet.kview.controls.*;
+import javafx.beans.binding.Bindings;
 import javafx.scene.control.Label;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 
 public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KLReadOnlyComponentControl> {
 
@@ -25,8 +25,8 @@ public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KL
 
         textContainer.getChildren().addAll(iconImageView, promptTextLabel, textLabel);
 
-        textLabel.textProperty().bind(control.textProperty());
-        iconImageView.imageProperty().bind(control.iconProperty());
+        textLabel.textProperty().bind(Bindings.select(control, "value", "text"));
+        iconImageView.imageProperty().bind(Bindings.select(control, "value", "icon"));
 
         textLabel.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(textLabel, Priority.ALWAYS);
@@ -45,11 +45,11 @@ public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KL
 
     private void initTexts(KLReadOnlyComponentControl control) {
         updatePromptTextAndTextLabelVisibility(control);
-        control.textProperty().addListener(observable -> updatePromptTextAndTextLabelVisibility(control));
+        control.valueProperty().addListener(observable -> updatePromptTextAndTextLabelVisibility(control));
     }
 
     private void updatePromptTextAndTextLabelVisibility(KLReadOnlyComponentControl control) {
-        boolean showPromptText = control.getText() == null || control.getText().isEmpty();
+        boolean showPromptText = control.getValue() == null;
 
         NodeUtils.setShowing(promptTextLabel, showPromptText);
         NodeUtils.setShowing(textLabel, !showPromptText);
