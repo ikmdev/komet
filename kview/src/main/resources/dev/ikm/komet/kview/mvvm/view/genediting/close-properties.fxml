@@ -23,8 +23,8 @@
          <content>
             <VBox fx:id="editFieldsVBox" alignment="TOP_CENTER">
                <children>
-                  <Label alignment="TOP_CENTER" maxWidth="200.0" text="Make a selection in the view" textAlignment="CENTER" VBox.vgrow="ALWAYS" />
-                  <Label alignment="TOP_CENTER" layoutX="147.0" layoutY="10.0" maxWidth="200.0" text="to edit the Semantic" textAlignment="CENTER" />
+                  <Label fx:id="subtextLine1" alignment="TOP_CENTER" maxWidth="200.0" text="Make a selection in the view" textAlignment="CENTER" VBox.vgrow="ALWAYS" />
+                  <Label fx:id="subtextLine2" alignment="TOP_CENTER" layoutX="147.0" layoutY="10.0" maxWidth="200.0" text="to edit the Semantic" textAlignment="CENTER" />
                </children></VBox>
          </content>
       </ScrollPane>
