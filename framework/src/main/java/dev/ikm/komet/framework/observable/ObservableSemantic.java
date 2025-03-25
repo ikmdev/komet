@@ -16,14 +16,27 @@
 package dev.ikm.komet.framework.observable;
 
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.FieldDefinitionRecord;
+import dev.ikm.tinkar.entity.FieldRecord;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticRecord;
+import dev.ikm.tinkar.entity.SemanticVersionRecord;
+import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.StampRecord;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.collections.ListChangeListener;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.factory.Lists;
 
 import java.util.Optional;
 
@@ -51,15 +64,19 @@ public final class ObservableSemantic
                 System.out.println(" WAS REPLACED");
             }
         }
-
     };
+
+    public void listChanged(){
+        System.out.println("LIST CHANGED...");
+    }
 
     /**
      *
      */
     @Override
     public void addListeners() {
-        versionProperty().addListener(listChangeListener);
+        versionProperty().subscribe(this::listChanged);
+        versionProperty.addListener(listChangeListener);
     }
 
     @Override
@@ -71,6 +88,69 @@ public final class ObservableSemantic
     public ObservableSemanticSnapshot getSnapshot(ViewCalculator calculator) {
         return new ObservableSemanticSnapshot(calculator, this);
     }
+
+    /**
+     * @param value
+     * @param fieldIndex
+     * @param viewCalculator
+     * @param <T>
+     */
+    @Override
+    public <T> void createNewVersionAndTransaction(T value, int fieldIndex, ViewCalculator viewCalculator) {
+        ObservableSemanticSnapshot observableSemanticSnapshot = getSnapshot(viewCalculator);
+        Latest<ObservableSemanticVersion> observableSemanticVersionLatest = observableSemanticSnapshot.getLatestVersion();
+        ObservableSemanticVersion version = observableSemanticVersionLatest.get();
+        MutableList<Object> fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
+        fieldsForNewVersion.set(fieldIndex, value);
+        SemanticRecord semantic = (SemanticRecord) version.entity();
+        StampRecord stamp = Entity.getStamp(version.stampNid());
+        SemanticVersionRecord newVersion = null;
+        if (!version.uncommitted()) {
+            // Create transaction
+            Transaction t = Transaction.make();
+            // newStamp already written to the entity store.
+            StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
+            // Create new version...
+            newVersion = version.getVersionRecord().with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
+        }else {
+            newVersion = version.getVersionRecord().withFieldValues(fieldsForNewVersion.toImmutable());
+        }
+        // Create new version...
+        //this.versionProperty.add(this.wrap(newVersion));
+        SemanticRecord analogue = semantic.with(newVersion).build();
+        // Entity provider will broadcast the nid of the changed entity.
+        Entity.provider().putEntity(analogue);
+        versionProperty.add(wrap(newVersion));
+    }
+
+//    /**
+//     * @param value
+//     * @param fieldIndex
+//     * @param version
+//     * @param <T>
+//     * @return
+//     */
+/*    @Override
+    public <T> void addVersion(T value, int fieldIndex, SemanticVersionRecord version) {
+        {
+            MutableList fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
+            fieldsForNewVersion.set(fieldIndex, value);
+            StampRecord stamp = Entity.getStamp(version.stampNid());
+            SemanticVersionRecord newVersion = null;
+            if (stamp.lastVersion().committed()) {
+                // Create transaction
+                Transaction t = Transaction.make();
+                // newStamp already written to the entity store.
+                StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
+                // Create new version...
+                newVersion = version.with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
+            }else {
+                newVersion = version.withFieldValues(fieldsForNewVersion.toImmutable());
+            }
+            // Create new version...
+            this.versionProperty.add(this.wrap(newVersion));
+        }
+    }*/
 
     @Override
     public int referencedComponentNid() {

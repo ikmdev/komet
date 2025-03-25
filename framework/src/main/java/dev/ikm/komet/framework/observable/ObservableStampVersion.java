@@ -101,18 +101,6 @@ public final class ObservableStampVersion
     }
 
     /**
-     * @param value
-     * @param i
-     * @param <T>
-     * @return
-     */
-    @Override
-    public <T> ObservableVersion<StampVersionRecord> addVersion(T value, int i) {
-        return null;
-    }
-
-
-    /**
      * Constructs an immutable list containing the field values of the object.
      * The field values include state, time, author, module, and path as represented
      * by their respective concept facade objects or corresponding properties.

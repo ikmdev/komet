@@ -15,19 +15,28 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import javafx.application.Platform;
-import javafx.beans.property.SimpleListProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
 import dev.ikm.tinkar.collection.ConcurrentReferenceHashMap;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.broadcast.Subscriber;
 import dev.ikm.tinkar.component.FieldDataType;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.ConceptRecord;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.PatternEntity;
+import dev.ikm.tinkar.entity.PatternRecord;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticRecord;
+import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.StampRecord;
+import javafx.application.Platform;
+import javafx.beans.property.SimpleListProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -117,6 +126,8 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
             }
         }
     }
+
+    public abstract <T>  void createNewVersionAndTransaction(T value, int fieldIndex, ViewCalculator viewCalculator);
 
     public static <OE extends ObservableEntity> OE get(int nid) {
         return get(Entity.getFast(nid));

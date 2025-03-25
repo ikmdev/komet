@@ -46,7 +46,10 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
@@ -62,14 +65,9 @@ import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -212,6 +210,8 @@ public class GenEditingDetailsController {
         semanticDetailsVBox.getChildren().clear();
 
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+        ObservableSemantic observableSemantic = ObservableEntity.get(semantic.nid());
+        ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
 
         // if the semantic is null, then we generate a default one
         if (semantic == null) {
@@ -227,8 +227,11 @@ public class GenEditingDetailsController {
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
         if (semantic != null) {
-            //retrieve latest semanticVersion
-            semanticEntityVersionLatest = retrieveCommittedLatestVersion(semantic, getViewProperties());
+            //retrieve latest committed semanticVersion
+            semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
+            if(semanticEntityVersionLatest.get().stamp().time() == Long.MAX_VALUE){
+                semanticEntityVersionLatest = retrieveCommittedLatestVersion(stampCalculator.latest(semantic.nid()), observableSemanticSnapshot);
+            }
             semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
                 Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
                 patternEntityVersionLatest.ifPresent(patternEntityVersion -> {

@@ -40,6 +40,17 @@ public final class ObservableStamp
     }
 
     /**
+     * @param value
+     * @param fieldIndex
+     * @param version
+     * @param <T>
+     */
+    @Override
+    public <T> void createNewVersionAndTransaction(T value, int fieldIndex, ViewCalculator viewCalculator) {
+        //TODO update the the version in versionProperty.
+    }
+
+    /**
      *
      */
     @Override

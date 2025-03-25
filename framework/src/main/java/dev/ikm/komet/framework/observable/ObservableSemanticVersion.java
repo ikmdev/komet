@@ -62,30 +62,6 @@ public final class ObservableSemanticVersion
      * @param <T>
      */
     @Override
-    public <T>  ObservableSemanticVersion addVersion(T value, int fieldIndex) {
-        MutableList fieldsForNewVersion = Lists.mutable.of(fieldValues().toArray());
-        fieldsForNewVersion.set(fieldIndex, value);
-        StampRecord stamp = Entity.getStamp(stampNid());
-        SemanticVersionRecord newVersion = null;
-        if (stamp.lastVersion().committed()) {
-            // Create transaction
-            Transaction t = Transaction.make();
-            // newStamp already written to the entity store.
-            StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
-            // Create new version...
-            newVersion = version().with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
-        }else {
-            newVersion = version().withFieldValues(fieldsForNewVersion.toImmutable());
-        }
-        return new ObservableSemanticVersion(newVersion);
-    }
-
-    /**
-     * @param value
-     * @param fieldIndex
-     * @param <T>
-     */
-    @Override
     public <T> void writeToDataBase(T value, int fieldIndex) {
         MutableList fieldsForNewVersion = Lists.mutable.of(fieldValues().toArray());
         fieldsForNewVersion.set(fieldIndex, value);

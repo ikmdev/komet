@@ -122,17 +122,6 @@ public final class ObservablePatternVersion
 
     }
 
-    /**
-     * @param value
-     * @param i
-     * @param <T>
-     * @return
-     */
-    @Override
-    public <T> ObservableVersion<PatternVersionRecord> addVersion(T value, int i) {
-        return null;
-    }
-
     @Override
     public ImmutableList<ObservableFieldDefinition> fieldDefinitions() {
         return this.observableFieldDefinitions;
