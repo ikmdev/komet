@@ -394,7 +394,6 @@ public class DataModelHelper {
                     .fieldValues(fieldValues -> {
                         patternVersionRecord.fieldDefinitions().forEach(f -> {
                             if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
-                                //fieldValues.with(EMPTY_NID);
                                 fieldValues.with(ANONYMOUS_CONCEPT);
                             } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
                                     || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
