@@ -96,8 +96,10 @@ public class KlFieldHelper {
         } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
             KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
             node = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
-        } else if (PublicId.equals(semanticEntityVersionLatest.get().entity().publicId(),
-                        PublicIds.of(UUID.fromString("f43030a5-2324-4880-9292-c7d3c16b58d3")))) {
+        } else if (dataTypeNid == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
+            //TODO: We're using BYTE_ARRAY for the moment for Image data type
+            //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
+            //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
             KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
             node = imageFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
         }
