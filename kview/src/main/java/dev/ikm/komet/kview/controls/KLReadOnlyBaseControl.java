@@ -8,7 +8,13 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Control;
 
-public abstract class KLReadOnlyBaseControl extends Control {
+public abstract class KLReadOnlyBaseControl<T> extends Control {
+    // -- value
+    private ObjectProperty<T> value = new SimpleObjectProperty<>();
+    public T getValue() { return value.get(); }
+    public ObjectProperty<T> valueProperty() { return value; }
+    public void setValue(T value) { this.value.set(value); }
+
     // -- title
     private StringProperty title = new SimpleStringProperty();
     public String getTitle() { return title.get(); }
