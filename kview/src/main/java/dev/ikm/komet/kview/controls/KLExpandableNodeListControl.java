@@ -79,9 +79,7 @@ public class KLExpandableNodeListControl extends Control {
      * {@link #DEFAULT_VISIBLE_COUNT} items initially.
      */
     public KLExpandableNodeListControl() {
-        // Attach a default style class that can be targeted by CSS
         getStyleClass().add(DEFAULT_STYLE_CLASS);
-        // initialize pseudo-class state
         pseudoClassStateChanged(PSEUDO_CLASS_COLLAPSED, true);
     }
 

@@ -102,6 +102,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
     public KLExpandableNodeListControlSkin(KLExpandableNodeListControl control) {
         super(control);
 
+        // Create the visible and hidden content containers
         visibleContentContainer = new VBox();
         hiddenContentContainer = new VBox();
 
@@ -137,10 +138,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
         });
         arrowRegion.getChildren().setAll(arrow);
 
-        // Create and configure the toggle button with the arrow indicator
         toggleButton = new ToggleButton(getString("show.more.button.text"), arrowRegion);
-
-        // Bind button selected state to control's expanded property (two-way)
         toggleButton.selectedProperty().bindBidirectional(control.expandedProperty());
 
         // Update button text based on expanded state
@@ -156,7 +154,6 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
             setTransition(0.0); // Fully collapsed
         }
 
-        // Add components to the skin
         getChildren().setAll(contentContainer, toggleButton);
 
         // Initialize content based on current items
@@ -166,8 +163,6 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
         registerListChangeListener(control.getItems(), o -> updateNodes());
         registerChangeListener(control.expandedProperty(), o -> setExpanded(control.isExpanded()));
         registerChangeListener(control.visibleCountProperty(), o -> updateNodes());
-
-        // Enhanced width listener that forces layout on ALL components
         registerChangeListener(control.widthProperty(), o -> {
             // Update clip width
             clipRect.setWidth(control.getWidth());
@@ -179,8 +174,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
                 }
             }
 
-            // After we've completed layout, use Platform.runLater to ensure
-            // that layout gets recalculated after text wrapping has had a chance to complete
+            // Ensure that layout gets recalculated after text wrapping has had a chance to complete
             Platform.runLater(control::requestLayout);
         });
     }
@@ -207,22 +201,19 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
             visibleContentContainer.getChildren().clear();
             hiddenContentContainer.getChildren().clear();
 
-            // Process items if there are any
             if (!items.isEmpty()) {
-                // Calculate how many items should be in the always-visible section
                 int visibleCount = Math.min(items.size(), control.getVisibleCount());
-
                 if (visibleCount > 0) {
                     // Add visible items to the visible content container
                     visibleContentContainer.getChildren().setAll(items.subList(0, visibleCount));
                 }
 
-                // Only show the toggle button if there are expandable items
                 boolean hasExpandableItems = items.size() > control.getVisibleCount();
                 if (hasExpandableItems) {
                     // Add expandable items to the hidden content container
                     hiddenContentContainer.getChildren().setAll(items.subList(visibleCount, items.size()));
                 }
+                // Only show the toggle button if there are expandable items
                 toggleButton.setVisible(hasExpandableItems);
                 toggleButton.setManaged(hasExpandableItems);
             } else {
@@ -231,7 +222,6 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
                 toggleButton.setManaged(false);
             }
 
-            // Request layout
             getSkinnable().requestLayout();
         } finally {
             layoutInProgress = false;
@@ -259,11 +249,9 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
         transitionStartValue = getTransition();
 
         if (expanded) {
-            // Add hidden content container to content container when expanding
             contentContainer.getChildren().add(hiddenContentContainer);
         }
 
-        // Start the appropriate animation
         animateTransition(expanded);
     }
 
@@ -283,7 +271,6 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
             timeline = null;
         }
 
-        // Create a new animation timeline
         timeline = new Timeline();
         timeline.setCycleCount(1);
 
@@ -301,15 +288,11 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
                     new KeyFrame(Duration.ZERO,
                             new KeyValue(transitionProperty(), transitionStartValue)),
                     new KeyFrame(ANIMATION_DURATION,
-                            e -> {
-                                // When collapsing, hide expandable items after the animation completes
-                                contentContainer.getChildren().remove(hiddenContentContainer);
-                            },
+                            e -> contentContainer.getChildren().remove(hiddenContentContainer),
                             new KeyValue(transitionProperty(), 0.0, Interpolator.EASE_IN)
                     ));
         }
 
-        // Start the animation
         timeline.play();
     }
 
@@ -352,7 +335,6 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
             transition = new SimpleDoubleProperty(this, "transition", 0.0) {
                 @Override
                 protected void invalidated() {
-                    // Request layout when transition value changes to update the height
                     getSkinnable().requestLayout();
                 }
             };
@@ -377,11 +359,9 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
     protected double computeMinWidth(double height,
                                      double topInset, double rightInset,
                                      double bottomInset, double leftInset) {
-        // Consider both content container and toggle button
         double contentWidth = snapSizeX(contentContainer.minWidth(height));
         double toggleWidth = toggleButton.isVisible() ? snapSizeX(toggleButton.minWidth(height)) : 0;
 
-        // Return the larger of the two, plus insets
         return leftInset + Math.max(contentWidth, toggleWidth) + rightInset;
     }
 
@@ -415,18 +395,14 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
         // Include expanded items height based on transition value (0.0-1.0)
         final double expandedContentHeight = hiddenContentContainer.minHeight(width) * getTransition();
 
-        // Calculate spacing between sections
-        final double spacing = contentContainer.getSpacing();
-
         // Calculate total height with all components
         double totalHeight = topInset + visibleContentHeight + bottomInset;
+        final double spacing = contentContainer.getSpacing();
 
-        // Add expanded section if visible
         if (expandedContentHeight > 0) {
             totalHeight += spacing + expandedContentHeight;
         }
 
-        // Add toggle button if visible
         if (toggleButton.isVisible()) {
             totalHeight += spacing + toggleButtonHeight;
         }
@@ -451,11 +427,9 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
     protected double computePrefWidth(double height,
                                       double topInset, double rightInset,
                                       double bottomInset, double leftInset) {
-        // Consider both content container and toggle button
         double contentWidth = snapSizeX(contentContainer.prefWidth(height));
         double toggleWidth = toggleButton.isVisible() ? snapSizeX(toggleButton.prefWidth(height)) : 0;
 
-        // Return the larger of the two, plus insets
         return leftInset + Math.max(contentWidth, toggleWidth) + rightInset;
     }
 
@@ -489,18 +463,14 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
         // Include expanded items height based on transition value (0.0-1.0)
         final double expandedContentHeight = hiddenContentContainer.prefHeight(width) * getTransition();
 
-        // Calculate spacing between sections
-        final double spacing = contentContainer.getSpacing();
-
         // Calculate total height with all components
         double totalHeight = topInset + visibleContentHeight + bottomInset;
+        final double spacing = contentContainer.getSpacing();
 
-        // Add expanded section if visible
         if (expandedContentHeight > 0) {
             totalHeight += spacing + expandedContentHeight;
         }
 
-        // Add toggle button if visible
         if (toggleButton.isVisible()) {
             totalHeight += spacing + toggleButtonHeight;
         }
@@ -536,17 +506,15 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
                 return;
             }
 
-            final double spacing = contentContainer.getSpacing();
-
-            // Calculate heights for all components using the correct width constraint
             final double visibleContentHeight = visibleContentContainer.prefHeight(contentWidth);
             final double expandedContentHeight = hiddenContentContainer.prefHeight(contentWidth) * getTransition();
 
-            // Fix: Pass correct dimension parameters to toggle button methods
             final double toggleButtonWidth = toggleButton.isVisible() ?
                     snapSizeX(Math.min(toggleButton.prefWidth(-1), contentWidth)) : 0;
             final double toggleButtonHeight = toggleButton.isVisible() ?
                     snapSizeY(toggleButton.prefHeight(-1)) : 0;
+
+            final double spacing = contentContainer.getSpacing();
 
             // Calculate content container height based on visible + expanded sections
             double contentContainerHeight = visibleContentHeight;
@@ -561,15 +529,11 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
                     0, HPos.CENTER, VPos.CENTER);
 
             // Update the clip rectangle to match the actual content size exactly
-            clipRect.setWidth(contentWidth);
             clipRect.setHeight(contentContainerHeight);
 
             // Position and resize the toggle button if visible
             if (toggleButton.isVisible()) {
-                // Calculate Y position for toggle button (below content container)
                 double toggleButtonY = contentY + contentContainerHeight + spacing;
-
-                // Position and resize toggle button - ensure it gets the full width
                 toggleButton.resize(toggleButtonWidth, toggleButtonHeight);
                 positionInArea(toggleButton, contentX, toggleButtonY, toggleButtonWidth, toggleButtonHeight,
                         0, HPos.LEFT, VPos.BOTTOM);
@@ -587,7 +551,6 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
      */
     @Override
     public void dispose() {
-        // Stop any running animation to prevent memory leaks
         if (timeline != null && timeline.getStatus() != Animation.Status.STOPPED) {
             timeline.stop();
         }
