@@ -82,9 +82,9 @@ public class SemanticFieldsController {
     private int committedHash;
 
     private void enableDisableSubmitButton(Object value){
-        if(value != null && !value.toString().isEmpty()) {
+        if (value != null && !value.toString().isEmpty()) {
             enableDisableSubmitButton();
-        }else {
+        } else {
             submitButton.setDisable(true);
         }
     }
@@ -140,7 +140,7 @@ public class SemanticFieldsController {
                     observableField.fieldProperty().addListener(observable -> fieldPropertyChangeListner());
                 });
 
-             } else {
+            } else {
                 // TODO Add a new semantic based on a pattern (blank fields).
             }
         }
