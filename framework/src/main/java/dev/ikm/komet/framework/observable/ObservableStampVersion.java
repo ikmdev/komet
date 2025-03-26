@@ -91,16 +91,6 @@ public final class ObservableStampVersion
     }
 
     /**
-     * @param value
-     * @param i
-     * @param <T>
-     */
-    @Override
-    public <T> void writeToDataBase(T value, int i) {
-
-    }
-
-    /**
      * Constructs an immutable list containing the field values of the object.
      * The field values include state, time, author, module, and path as represented
      * by their respective concept facade objects or corresponding properties.

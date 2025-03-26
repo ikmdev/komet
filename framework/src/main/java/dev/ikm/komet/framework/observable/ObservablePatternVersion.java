@@ -112,16 +112,6 @@ public final class ObservablePatternVersion
         return version();
     }
 
-    /**
-     * @param value
-     * @param i
-     * @param <T>
-     */
-    @Override
-    public <T> void writeToDataBase(T value, int i) {
-
-    }
-
     @Override
     public ImmutableList<ObservableFieldDefinition> fieldDefinitions() {
         return this.observableFieldDefinitions;
