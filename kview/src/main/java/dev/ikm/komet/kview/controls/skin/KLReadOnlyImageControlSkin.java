@@ -37,7 +37,7 @@ public class KLReadOnlyImageControlSkin extends KLReadOnlyBaseControlSkin<KLRead
     }
 
     private void initImage(KLReadOnlyImageControl control) {
-        control.imageProperty().addListener(observable -> {
+        control.valueProperty().addListener(observable -> {
             updateImage(control);
         });
         updateImage(control);
@@ -49,16 +49,16 @@ public class KLReadOnlyImageControlSkin extends KLReadOnlyBaseControlSkin<KLRead
     }
 
     private void updatePromptTextVisibility(KLReadOnlyImageControl control) {
-        NodeUtils.setShowing(promptTextLabel, control.getImage() == null);
+        NodeUtils.setShowing(promptTextLabel, control.getValue() == null);
     }
 
     private void updateImageToShow(KLReadOnlyImageControl control) {
-        if (control.getImage() == null) {
+        if (control.getValue()== null) {
             imageView.setImage(promptImage);
 
             pseudoClassStateChanged(IMAGE_SELECTED_PSEUDO_CLASS, false);
         } else {
-            imageView.setImage(control.getImage());
+            imageView.setImage(control.getValue());
 
             pseudoClassStateChanged(IMAGE_SELECTED_PSEUDO_CLASS, true);
         }
