@@ -16,10 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SINGLE_SEMANTIC_FIELD;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.*;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
@@ -208,7 +205,6 @@ public class GenEditingDetailsController {
     private void initialize() {
         // clear all semantic details.
         semanticDetailsVBox.getChildren().clear();
-
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         ObservableSemantic observableSemantic = ObservableEntity.get(semantic.nid());
         ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
@@ -427,6 +423,8 @@ public class GenEditingDetailsController {
                         .setPropertyValue(WINDOW_TOPIC, genEditingViewModel.getPropertyValue(WINDOW_TOPIC))
                         .setPropertyValue(VIEW_PROPERTIES, genEditingViewModel.getPropertyValue(VIEW_PROPERTIES))
                         .setPropertyValue(SEMANTIC, genEditingViewModel.getPropertyValue(SEMANTIC))
+                        .setPropertyValue(REF_COMPONENT, genEditingViewModel.getPropertyValue(REF_COMPONENT))
+
                 );
 
         JFXNode<BorderPane, PropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(config);
@@ -509,8 +507,16 @@ public class GenEditingDetailsController {
     }
 
     @FXML
-    private void showAddEditRefComponentPanel(ActionEvent actionEvent) {
+    private void showAddRefComponentPanel(ActionEvent actionEvent) {
+        EntityFacade refComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
 
+        // notify bump out to display edit fields in bump out area.
+        EvtBusFactory.getDefaultEvtBus()
+                .publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                        new PropertyPanelEvent(actionEvent.getSource(),
+                                SHOW_ADD_REFERENCE_SEMANTIC_FIELD, refComponent));
+        // open properties bump out.
+        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 
     @FXML
@@ -595,6 +601,7 @@ public class GenEditingDetailsController {
         LOG.info("Todo show bump out and display Edit Fields panel \n" + actionEvent);
         actionEvent.consume();
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), SHOW_EDIT_SEMANTIC_FIELDS));
+        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), SHOW_ADD_REFERENCE_SEMANTIC_FIELD));
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 
