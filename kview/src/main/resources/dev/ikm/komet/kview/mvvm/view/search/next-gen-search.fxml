@@ -31,7 +31,7 @@
                                                         <Insets />
                                                     </opaqueInsets>
                                        <cursor>
-                                          <Cursor fx:constant="DEFAULT" />
+                                          <Cursor fx:constant="TEXT" />
                                        </cursor>
                                                 </TextField>
                                                 <Button mnemonicParsing="false" styleClass="search-button">
