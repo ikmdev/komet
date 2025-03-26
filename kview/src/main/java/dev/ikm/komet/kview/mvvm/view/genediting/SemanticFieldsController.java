@@ -146,6 +146,7 @@ public class SemanticFieldsController {
                                             enableDisableSubmitButton(value);
                                             if(!submitButton.isDisabled()){
                                                 observableSemantic.createNewVersionAndTransaction(observableField.value(), observableField.fieldIndex(), getViewProperties().calculator());
+                                                ObservableEntity.updateVersions(Entity.getFast(semantic), observableSemantic);
                                             }else {
                                                 //TODO write method to remove any transactions and revert back to the committed values.
                                              //   observableSemantic.removeVersion(observableField.value(), observableField.fieldIndex(), retrieveObservableSemanticVersion(semanticEntityVersionLatest));

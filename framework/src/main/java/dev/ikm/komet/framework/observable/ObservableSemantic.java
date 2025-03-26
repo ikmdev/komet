@@ -120,7 +120,7 @@ public final class ObservableSemantic
         SemanticRecord analogue = semantic.with(newVersion).build();
         // Entity provider will broadcast the nid of the changed entity.
         Entity.provider().putEntity(analogue);
-        versionProperty.add(wrap(newVersion));
+  //      versionProperty.add(wrap(newVersion));
     }
 
 //    /**
