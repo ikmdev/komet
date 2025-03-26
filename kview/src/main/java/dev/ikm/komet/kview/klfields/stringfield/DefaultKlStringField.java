@@ -22,7 +22,7 @@ public class DefaultKlStringField extends BaseDefaultKlField<String> implements 
 
             node = stringControl;
         } else {
-            KLReadOnlyDataTypeControl<String> readOnlyStringControl = new KLReadOnlyDataTypeControl<>();
+            KLReadOnlyDataTypeControl<String> readOnlyStringControl = new KLReadOnlyDataTypeControl<>(String.class);
 
             readOnlyStringControl.valueProperty().bindBidirectional(observableStringField.valueProperty());
             readOnlyStringControl.setTitle(getTitle());

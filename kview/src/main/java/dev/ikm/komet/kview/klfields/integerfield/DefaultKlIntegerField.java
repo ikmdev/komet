@@ -20,7 +20,7 @@ public class DefaultKlIntegerField extends BaseDefaultKlField<Integer> implement
             integerControl.setTitle(getTitle());
             node = integerControl;
         } else {
-            KLReadOnlyDataTypeControl<Integer> readOnlyIntegerControl = new KLReadOnlyDataTypeControl<Integer>();
+            KLReadOnlyDataTypeControl<Integer> readOnlyIntegerControl = new KLReadOnlyDataTypeControl<>(Integer.class);
             readOnlyIntegerControl.valueProperty().bindBidirectional(observableIntegerField.valueProperty());
             readOnlyIntegerControl.setTitle(getTitle());
             node = readOnlyIntegerControl;
