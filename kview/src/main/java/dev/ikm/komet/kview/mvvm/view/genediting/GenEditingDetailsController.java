@@ -45,6 +45,7 @@ import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
@@ -386,9 +387,10 @@ public class GenEditingDetailsController {
                 default -> "Unknown";
             };
 
-            referenceComponent.setIcon(Identicon.generateIdenticonImage(refComponent2.publicId()));
+            ComponentItem componentItem = new ComponentItem(refComponent2.description(), Identicon.generateIdenticonImage(refComponent2.publicId()));
+
             referenceComponent.setTitle(refType);
-            referenceComponent.setText(refComponent2.description());
+            referenceComponent.setValue(componentItem);
         };
 
         // when ever the property REF_COMPONENT changes update the UI.
