@@ -31,7 +31,7 @@ public class KLReadOnlyDataTypeControlSkin<T> extends KLReadOnlyBaseControlSkin<
             }
             @Override
             protected String computeValue() {
-                if (control.getValue() == null) {
+                if (control.getValue() == null || (control.getValue() instanceof String string && string.isEmpty())) {
                     return "";
                 } else {
                     String valueString = String.valueOf(control.getValue());
@@ -67,7 +67,7 @@ public class KLReadOnlyDataTypeControlSkin<T> extends KLReadOnlyBaseControlSkin<
     }
 
     private void addMenuItemsToContextMenu(KLReadOnlyDataTypeControl<T> control) {
-        Class<?> dataClassType = control.valueProperty().get().getClass();
+        Class<T> dataClassType = control.getClassDataType();
 
         if (dataClassType.equals(String.class)) {
             addMenuItemsForStringType(control);
