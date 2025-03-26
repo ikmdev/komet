@@ -168,13 +168,16 @@ public class ConceptPatternNavController {
     @FXML
     private void showConcepts() {
         navContentPane.setCenter(classicConceptNavigator);
+        conceptsToggleButton.setSelected(true);
+        patternsToggleButton.setSelected(false);
     }
 
     @FXML
     private void showPatterns() {
         navContentPane.setCenter(patternNavigationPane);
+        patternsToggleButton.setSelected(true);
+        conceptsToggleButton.setSelected(false);
     }
-
 
     private void setUpDraggable(Node node, EntityFacade entity, DragAndDropType dropType) {
         Objects.requireNonNull(node, "The node must not be null.");
