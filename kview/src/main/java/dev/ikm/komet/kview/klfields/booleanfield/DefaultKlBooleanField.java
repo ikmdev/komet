@@ -22,7 +22,7 @@ public class DefaultKlBooleanField extends BaseDefaultKlField<Boolean> implement
 
             klWidget = klBooleanControl;
         } else {
-            KLReadOnlyDataTypeControl<Boolean> klReadOnlyBooleanControl = new KLReadOnlyDataTypeControl<>();
+            KLReadOnlyDataTypeControl<Boolean> klReadOnlyBooleanControl = new KLReadOnlyDataTypeControl<>(Boolean.class);
             klReadOnlyBooleanControl.setTitle(getTitle());
 
             ObjectProperty<Boolean> booleanProperty = observableBooleanField.valueProperty();
