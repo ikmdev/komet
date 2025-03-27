@@ -582,12 +582,6 @@
                            </children>
                         </AnchorPane>
                      </children>
-                     <opaqueInsets>
-                        <Insets />
-                     </opaqueInsets>
-                     <styleClass>
-                        <String fx:value="lidr-detail-pane" />
-                     </styleClass>
                   </VBox>
                </center>
                <top>
