@@ -87,9 +87,9 @@ public class SemanticFieldsController {
     private ObservableSemantic observableSemantic;
 
     private void enableDisableSubmitButton(Object value){
-        if(value != null && !value.toString().isEmpty()) {
+        if (value != null && !value.toString().isEmpty()) {
             enableDisableSubmitButton();
-        }else {
+        } else {
             submitButton.setDisable(true);
         }
     }
