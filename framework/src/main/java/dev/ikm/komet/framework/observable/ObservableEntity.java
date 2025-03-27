@@ -112,7 +112,6 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         } else {
             updateVersions(entity, observableEntity);
         }
-
         return (OE) observableEntity;
     }
 

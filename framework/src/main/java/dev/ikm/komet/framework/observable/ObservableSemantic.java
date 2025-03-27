@@ -88,6 +88,7 @@ public final class ObservableSemantic
         Entity.provider().putEntity(analogue);
         ObservableEntity.updateVersions(Entity.getFast(version.nid()), this);
     }
+
     @Override
     public int referencedComponentNid() {
         return ((SemanticEntity) entity()).referencedComponentNid();
