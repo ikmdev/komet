@@ -133,8 +133,8 @@ public class SemanticFieldsController {
                 editFieldsVBox.getChildren().clear();
                 observableFields.forEach(observableField -> {
                  observableField.valueProperty()
-                                        .subscribe(value -> {
-                                            enableDisableSubmitButton(value);
+                                        .addListener(observable -> {
+                                            enableDisableSubmitButton(observableField.valueProperty().get());
                                         });
                     //Add listener for fieldProperty of each field to check when data is modified.
                     observableField.fieldProperty().addListener(observable -> fieldPropertyChangeListner());
