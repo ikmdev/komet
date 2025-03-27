@@ -51,7 +51,6 @@ public final class ObservableSemantic
         while (c.next()) {
             if (c.wasPermutated()) {
                 for (int i = c.getFrom(); i < c.getTo(); ++i) {
-                    // permutate
                     System.out.println(" WAS PREMUTATED" + i);
                 }
             } else if (c.wasUpdated()) {
@@ -73,7 +72,6 @@ public final class ObservableSemantic
     /**
      *
      */
-    @Override
     public void addListeners() {
         versionProperty().subscribe(this::listChanged);
         versionProperty.addListener(listChangeListener);
@@ -95,7 +93,6 @@ public final class ObservableSemantic
      * @param viewCalculator
      * @param <T>
      */
-    @Override
     public <T> void createNewVersionAndTransaction(T value, int fieldIndex, ViewCalculator viewCalculator) {
         ObservableSemanticSnapshot observableSemanticSnapshot = getSnapshot(viewCalculator);
         Latest<ObservableSemanticVersion> observableSemanticVersionLatest = observableSemanticSnapshot.getLatestVersion();
