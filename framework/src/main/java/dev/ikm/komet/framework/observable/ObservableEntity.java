@@ -127,8 +127,6 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         }
     }
 
-    public abstract <T>  void createNewVersionAndTransaction(T value, int fieldIndex, ViewCalculator viewCalculator);
-
     public static <OE extends ObservableEntity> OE get(int nid) {
         return get(Entity.getFast(nid));
     }
@@ -199,6 +197,4 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
             }
         }
     }
-
-    abstract public void addListeners();
 }

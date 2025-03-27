@@ -90,6 +90,8 @@ public final class ObservableStampVersion
         return version();
     }
 
+
+
     /**
      * Constructs an immutable list containing the field values of the object.
      * The field values include state, time, author, module, and path as represented

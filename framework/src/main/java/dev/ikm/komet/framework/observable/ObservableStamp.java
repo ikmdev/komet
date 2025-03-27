@@ -40,25 +40,6 @@ public final class ObservableStamp
     }
 
     /**
-     * @param value
-     * @param fieldIndex
-     * @param version
-     * @param <T>
-     */
-    @Override
-    public <T> void createNewVersionAndTransaction(T value, int fieldIndex, ViewCalculator viewCalculator) {
-        //TODO update the the version in versionProperty.
-    }
-
-    /**
-     *
-     */
-    @Override
-    public void addListeners() {
-
-    }
-
-    /**
      * Retrieves the most recent version of the observable stamp based on the timestamp.
      * If there is only one version, it returns that version.
      * In the case of multiple versions, it evaluates each version to determine the latest one.

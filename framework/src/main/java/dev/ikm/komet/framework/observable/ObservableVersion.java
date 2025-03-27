@@ -181,5 +181,4 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
     }
 
     public abstract V getVersionRecord();
-
 }

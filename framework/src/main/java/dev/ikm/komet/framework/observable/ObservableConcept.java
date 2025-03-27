@@ -40,25 +40,6 @@ public final class ObservableConcept
         return new ObservableConceptSnapshot(calculator, this);
     }
 
-    /**
-     * @param value
-     * @param fieldIndex
-     * @param version
-     * @param <T>
-     */
-    @Override
-    public <T> void createNewVersionAndTransaction(T value, int fieldIndex, ViewCalculator viewCalculator) {
-        //TODO update the the version in versionProperty.
-    }
-
-    /**
-     *
-     */
-    @Override
-    public void addListeners() {
-
-    }
-
     @Override
     public ImmutableMap<FieldCategory, ObservableField> getObservableFields() {
         MutableMap<FieldCategory, ObservableField> fieldMap = Maps.mutable.empty();
