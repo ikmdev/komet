@@ -15,8 +15,10 @@
  */
 package dev.ikm.komet.kview.mvvm.model;
 
+import static dev.ikm.komet.kview.controls.KLComponentControl.EMPTY_NID;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
+import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
 import static dev.ikm.tinkar.terms.TinkarTerm.ARRAY_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
@@ -24,8 +26,10 @@ import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.CONCEPT_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DIGRAPH_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.DITREE_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.ENGLISH_LANGUAGE;
 import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.INSTANT_LITERAL;
@@ -53,7 +57,10 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.composer.Composer;
 import dev.ikm.tinkar.composer.Session;
+import dev.ikm.tinkar.composer.assembler.ConceptAssembler;
+import dev.ikm.tinkar.composer.assembler.ConceptAssemblerConsumer;
 import dev.ikm.tinkar.composer.assembler.SemanticAssembler;
+import dev.ikm.tinkar.composer.template.FullyQualifiedName;
 import dev.ikm.tinkar.composer.template.USDialect;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
@@ -361,6 +368,7 @@ public class DataModelHelper {
         EntityProxy.Concept path = TinkarTerm.DEVELOPMENT_PATH;
         EntityProxy patternProxy = pattern.toProxy();
 
+
         ViewCalculator viewCalculator = viewProperties.calculator();
         PatternVersionRecord patternVersionRecord = (PatternVersionRecord) viewCalculator.latest(pattern).get();
 
@@ -369,19 +377,29 @@ public class DataModelHelper {
         Composer composer = new Composer("Semantic for %s".formatted(pattern.description()));
         Session session = composer.open(status, author, module, path);
 
+        //FIXME we need to define a default reference component
+        session.compose((ConceptAssembler conceptAssembler) -> conceptAssembler
+                .attach((FullyQualifiedName fqn) -> fqn
+                        .language(ENGLISH_LANGUAGE)
+                        .text("Reference Component")
+                        .caseSignificance(DESCRIPTION_NOT_CASE_SENSITIVE)));
+
         EntityProxy.Semantic defaultSemantic = EntityProxy.Semantic.make(PublicIds.newRandom());
         session.compose((SemanticAssembler semanticAssembler) -> {
             semanticAssembler
                     .semantic(defaultSemantic)
-                    .reference(patternProxy)
+                    //FIXME we don't want this circular reference to its own pattern.  We want a default reference component
+                    .reference(patternProxy) // can we overwrite the reference component so long as we don't commit?
                     .pattern((EntityProxy.Pattern) patternProxy)
                     .fieldValues(fieldValues -> {
                         patternVersionRecord.fieldDefinitions().forEach(f -> {
                             if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
-                                fieldValues.with(TinkarTerm.ANONYMOUS_CONCEPT);
+                                fieldValues.with(ANONYMOUS_CONCEPT);
                             } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
                                     || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
-                                fieldValues.with("[Placeholder]");
+                                fieldValues.with("Default String Value");
+                            } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
+                                fieldValues.with(0);
                             } else if (f.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
                                 fieldValues.with(0.0);
                             } else if (f.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
@@ -395,7 +413,7 @@ public class DataModelHelper {
                     }).attach((USDialect dialect) -> dialect
                             .acceptability(PREFERRED));
         });
-        composer.commitSession(session);
+        // don't commit yet; only commit once the user is ready to submit and not change the reference component
         EntityService.get().endLoadPhase();
         semantic = defaultSemantic.toProxy();
         return semantic;
