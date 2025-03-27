@@ -1,0 +1,27 @@
+@import "../mvvm/view/kview.css";
+
+.expandable-node-list-control > .content-container {
+    -fx-spacing: 4;
+}
+
+.expandable-node-list-control > .toggle-button {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 10px;
+    -fx-background-color: -Grey-2;
+    -fx-text-fill: -Secondary-05;
+    -fx-graphic-text-gap: 0;
+    -fx-pref-height: 20px;
+}
+
+.expandable-node-list-control > .toggle-button > .arrow-button {
+    -fx-background-color: null;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0.0em 0.583em 0.0em 0.0em; /* 0 7 0 0 */
+}
+
+.expandable-node-list-control > .toggle-button > .arrow-button > .arrow {
+    -fx-background-color: -Secondary-05;
+    -fx-padding: 0.25em 0.3125em 0.25em 0.3125em; /* 3 3.75 3 3.75 */
+    -fx-shape: "M1.40988 0.295017L-0.000122333 1.70502L5.99988 7.70502L11.9999 1.70502L10.5899 0.295017L5.99988 4.87502L1.40988 0.295017Z";
+}
