@@ -165,7 +165,7 @@
          <center>
             <BorderPane prefWidth="762.0" styleClass="main-center-container" BorderPane.alignment="CENTER">
                <center>
-                  <VBox focusTraversable="true" maxHeight="1.7976931348623157E308" opacity="0.92" prefWidth="762.0">
+                  <VBox focusTraversable="true" maxHeight="1.7976931348623157E308" prefWidth="762.0">
                      <children>
                         <HBox prefWidth="711.0">
                            <children>
@@ -245,12 +245,6 @@
                            </children>
                         </HBox>
                      </children>
-                     <opaqueInsets>
-                        <Insets />
-                     </opaqueInsets>
-                     <styleClass>
-                        <String fx:value="lidr-detail-pane" />
-                     </styleClass>
                   </VBox>
                </center>
                <top>
