@@ -103,7 +103,7 @@
 }
 
 .concept-window .main-center-container {
-    -fx-background-color: -Grey-White;
+    -fx-background-color: white;
     -fx-background-radius: 4px;
 
     -fx-background-insets: 0 5px 5px 5px;
@@ -126,7 +126,7 @@
 }
 
 .concept-detail-banner-background {
-    -fx-background-color: -Grey-White;
+    -fx-background-color: white;
     -fx-background-radius: 4px 4px 0 0;
 }
 
@@ -371,7 +371,7 @@
 }
 
 .axiom-container > .property-sheet .property-pane {
-    -fx-background-color: -Grey-White;
+    -fx-background-color: white;
 }
 
 /* common container pane used on bump outs needing scroll pane */
@@ -4822,7 +4822,7 @@ Styling a context menu for kview ui/ux controls
 }
 
 .concept-detail-pane .main-center-container > .scroll-pane {
-    -fx-background-color: -Grey-White;
+    -fx-background-color: white;
     -fx-border-color: transparent;
     -fx-padding: 0 -12 0 0;
 }
