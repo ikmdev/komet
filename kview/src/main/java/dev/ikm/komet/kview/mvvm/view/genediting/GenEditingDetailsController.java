@@ -226,7 +226,8 @@ public class GenEditingDetailsController {
         if (semantic != null) {
             //retrieve latest committed semanticVersion
             semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
-            if(semanticEntityVersionLatest.get().stamp().time() == Long.MAX_VALUE){
+            if(semanticEntityVersionLatest.get().stamp().lastVersion().uncommitted()){
+                //If the latest version in stamp is uncommited then retrive the committed version to display in this view.
                 semanticEntityVersionLatest = retrieveCommittedLatestVersion(stampCalculator.latest(semantic.nid()), observableSemanticSnapshot);
             }
             semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {

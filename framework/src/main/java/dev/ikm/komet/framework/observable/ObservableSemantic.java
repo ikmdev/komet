@@ -31,7 +31,6 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.collections.ListChangeListener;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
@@ -45,36 +44,6 @@ public final class ObservableSemantic
         implements SemanticEntity<ObservableSemanticVersion> {
     ObservableSemantic(SemanticEntity<SemanticVersionRecord> semanticEntity) {
         super(semanticEntity);
-    }
-
-    ListChangeListener<? super ObservableSemanticVersion> listChangeListener = (ListChangeListener<ObservableSemanticVersion>) c -> {
-        while (c.next()) {
-            if (c.wasPermutated()) {
-                for (int i = c.getFrom(); i < c.getTo(); ++i) {
-                    System.out.println(" WAS PREMUTATED" + i);
-                }
-            } else if (c.wasUpdated()) {
-                System.out.println(" WAS UPDATED");
-            } else if (c.wasRemoved()){
-                System.out.println(" WAS REMOVED");
-            }else if (c.wasAdded()){
-                System.out.println(" WAS ADDED");
-            } else if (c.wasReplaced()) {
-                System.out.println(" WAS REPLACED");
-            }
-        }
-    };
-
-    public void listChanged(){
-        System.out.println("LIST CHANGED...");
-    }
-
-    /**
-     *
-     */
-    public void addListeners() {
-        versionProperty().subscribe(this::listChanged);
-        versionProperty.addListener(listChangeListener);
     }
 
     @Override
@@ -119,36 +88,6 @@ public final class ObservableSemantic
         Entity.provider().putEntity(analogue);
         ObservableEntity.updateVersions(Entity.getFast(version.nid()), this);
     }
-
-//    /**
-//     * @param value
-//     * @param fieldIndex
-//     * @param version
-//     * @param <T>
-//     * @return
-//     */
-/*    @Override
-    public <T> void addVersion(T value, int fieldIndex, SemanticVersionRecord version) {
-        {
-            MutableList fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
-            fieldsForNewVersion.set(fieldIndex, value);
-            StampRecord stamp = Entity.getStamp(version.stampNid());
-            SemanticVersionRecord newVersion = null;
-            if (stamp.lastVersion().committed()) {
-                // Create transaction
-                Transaction t = Transaction.make();
-                // newStamp already written to the entity store.
-                StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
-                // Create new version...
-                newVersion = version.with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
-            }else {
-                newVersion = version.withFieldValues(fieldsForNewVersion.toImmutable());
-            }
-            // Create new version...
-            this.versionProperty.add(this.wrap(newVersion));
-        }
-    }*/
-
     @Override
     public int referencedComponentNid() {
         return ((SemanticEntity) entity()).referencedComponentNid();
