@@ -36,6 +36,7 @@ import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampRecord;
@@ -56,6 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class SemanticFieldsController {
@@ -84,7 +86,9 @@ public class SemanticFieldsController {
 
     private int committedHash;
 
-    private ObservableSemantic observableSemantic;
+    ObservableSemantic observableSemantic;
+
+    ObservableSemanticSnapshot observableSemanticSnapshot;
 
     private void enableDisableSubmitButton(Object value){
         if (value != null && !value.toString().isEmpty()) {
@@ -102,7 +106,6 @@ public class SemanticFieldsController {
     private void processCommittedValues() {
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
-        ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
         Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
         if(semanticEntityVersionLatest.get().stamp().time() == Long.MAX_VALUE){
             semanticEntityVersionLatest = retrieveCommittedLatestVersion(semanticEntityVersionLatest, observableSemanticSnapshot);
@@ -118,47 +121,28 @@ public class SemanticFieldsController {
 
     @FXML
     private void initialize() {
-       // clear all semantic details.
-       editFieldsVBox.setSpacing(8.0);
-       editFieldsVBox.getChildren().clear();
-       updateStampVersions = true;
-       submitButton.setDisable(true);
-       EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
-       observableSemantic = ObservableEntity.get(semantic.nid());
-
-       if (semantic != null) {
-            StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
-            Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
-            if (semanticEntityVersionLatest.isPresent()) {
+        // clear all semantic details.
+        editFieldsVBox.setSpacing(8.0);
+        editFieldsVBox.getChildren().clear();
+        updateStampVersions = true;
+        submitButton.setDisable(true);
+        EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
+        observableSemantic = ObservableEntity.get(semantic.nid());
+        observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+        if (semantic != null) {
                 //Set the hascode for the committed values.
                 processCommittedValues();
-
-                // Populate the Semantic Details
-                // Displaying editable controls and populating the observable fields array list.
-                observableFields.addAll(KlFieldHelper
-                        .generateObservableFieldsAndNodes(getViewProperties(),
-                                nodes,
-                                semanticEntityVersionLatest, true));
-                editFieldsVBox.getChildren().clear();
-                observableFields.forEach(observableField -> {
-                 observableField.valueProperty()
-                                        .subscribe(value -> {
-                                            enableDisableSubmitButton(value);
-                                            if(!submitButton.isDisabled()){
-                                                observableSemantic.createNewVersionAndTransaction(observableField.value(), observableField.fieldIndex(), getViewProperties().calculator());
-                                                //TODO alternate approach is to call the below mentioned updateVersions method from the observableEntity Class after the version is updated.
-                                                //   ObservableEntity.updateVersions(Entity.getFast(semantic), observableSemantic);
-                                            }else {
-                                                //TODO write method to remove any transactions and revert back to the committed values.
-                                             //   observableSemantic.removeVersion(observableField.value(), observableField.fieldIndex(), retrieveObservableSemanticVersion(semanticEntityVersionLatest));
-                                            }
-                                        });
-
-                });
-
-            } else {
-                // TODO Add a new semantic based on a pattern (blank fields).
-            }
+                loadUIData();
+//                observableSemantic.versionProperty().addListener((ListChangeListener<? super ObservableSemanticVersion>) listChangeListener -> {
+//                while(listChangeListener.next()){
+//                    if(listChangeListener.wasPermutated()){
+//                        System.out.println(" THE VALUE CHANGED... listChangeListener.wasPermutated()");
+//                    }
+//                    if(listChangeListener.wasAdded()){
+//                        System.out.println(" THE VALUE ADDED..." + listChangeListener.getAddedSubList().getFirst().fieldValues());
+//                    }
+//                }
+//            });
         }
 
         // subscribe to changes... if the FIELD_INDEX is -1 or unset, then the user clicked the
@@ -182,6 +166,54 @@ public class SemanticFieldsController {
                 }
             }
         });
+    }
+
+    private void loadUIData() {
+        StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
+        Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(observableSemantic.nid());
+        if (semanticEntityVersionLatest.isPresent()) {
+            // Populate the Semantic Details
+            // Displaying editable controls and populating the observable fields array list.
+            observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
+            observableFields.forEach(observableField -> {
+                // disable calling writeToData method of observable field by setting refresh flag to true.
+                observableField.refreshProperties.setValue(true);
+                FieldRecord<?> fieldRecord = observableField.field();
+                nodes.add(KlFieldHelper.generateNode(fieldRecord, observableField, getViewProperties(), semanticEntityVersionLatest, true));
+
+                //enable disable submit button.
+                observableField.valueProperty()
+                        .subscribe(value -> {
+                            enableDisableSubmitButton(value);
+                            if(!submitButton.isDisabled()){
+                                observableSemantic.createNewVersionAndTransaction(observableField.value(), observableField.fieldIndex(), getViewProperties().calculator());
+                            }else {
+                                //TODO write method to remove any transactions and revert back to the committed values.
+                                //   observableSemantic.removeVersion(observableField.value(), observableField.fieldIndex(), retrieveObservableSemanticVersion(semanticEntityVersionLatest));
+                            }
+                        });
+            });
+        }
+    }
+
+    /***
+     * This method updates stamps for all the fields to avoid contradictions.
+     * An alternate approach could be to use Semantic contradictions
+     * for each field and pick up the latest value for each contradiction?
+     */
+    private void updateStampVersionsNidsForAllFields() {
+        EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
+        StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
+        Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
+        updateStampVersions = false;
+        semanticEntityVersionLatest.ifPresent(ver -> {
+            int latestStampNid = ver.stamp().nid();
+            observableFields.forEach(observableField -> {
+                 //Update the stampNid with the latest stamp nid value.
+                observableField.fieldProperty().set(observableField.field().withVersionStampNid(latestStampNid));
+            });
+        });
+        updateStampVersions = true;
     }
 
     private static Separator createSeparator() {
