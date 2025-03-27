@@ -105,7 +105,7 @@ public class SemanticFieldsController {
         ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
         Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
         if(semanticEntityVersionLatest.get().stamp().time() == Long.MAX_VALUE){
-            semanticEntityVersionLatest = retrieveCommittedLatestVersion(stampCalculator.latest(semantic.nid()), observableSemanticSnapshot);
+            semanticEntityVersionLatest = retrieveCommittedLatestVersion(semanticEntityVersionLatest, observableSemanticSnapshot);
         }
         committedHash = generateHashValue(semanticEntityVersionLatest, getViewProperties());
     }
