@@ -16,6 +16,8 @@
 package dev.ikm.komet.kview.mvvm.view.details;
 
 import static dev.ikm.komet.framework.events.FrameworkTopics.RULES_TOPIC;
+import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
+import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
 import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
@@ -52,6 +54,7 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
 import dev.ikm.komet.kview.events.AddFullyQualifiedNameEvent;
 import dev.ikm.komet.kview.events.AddOtherNameToConceptEvent;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
@@ -60,6 +63,7 @@ import dev.ikm.komet.kview.events.EditConceptEvent;
 import dev.ikm.komet.kview.events.EditConceptFullyQualifiedNameEvent;
 import dev.ikm.komet.kview.events.EditOtherNameConceptEvent;
 import dev.ikm.komet.kview.events.OpenPropertiesPanelEvent;
+import dev.ikm.komet.kview.fxutils.IconsHelper;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
@@ -89,6 +93,7 @@ import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -105,13 +110,16 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import org.carlfx.cognitive.loader.Config;
@@ -200,11 +208,18 @@ public class DetailsController  {
      */
     private Tooltip authorTooltip = new Tooltip();
 
+    @FXML
+    private ScrollPane conceptContentScrollPane;
+
     ///// Descriptions Section /////////////////////////////////
     @FXML
     private TitledPane descriptionsTitledPane;
+
     @FXML
     private Button editConceptButton;
+
+    @FXML
+    private TextFlow fqnContainer;
 
     @FXML
     private Text latestFqnText;
@@ -213,13 +228,19 @@ public class DetailsController  {
     private Text fqnDescriptionSemanticText;
 
     @FXML
+    private TextFlow fqnDateAddedTextFlow;
+
+    @FXML
     private Label fqnAddDateLabel;
+
+    @FXML
+    private Text otherNamesHeaderText;
 
     /**
      * Responsible for holding rows of other names (regular) description semantics.
      */
     @FXML
-    private VBox otherNamesVBox;
+    private KLExpandableNodeListControl otherNamesNodeListControl;
 
     ///// Axioms Section    ///////////////////
     @FXML
@@ -306,6 +327,8 @@ public class DetailsController  {
 
     private PublicId fqnPublicId;
 
+    // Pseudo-class for vertical scrollbar visibility.
+    private static final PseudoClass V_SCROLLBAR_NEEDED = PseudoClass.getPseudoClass("vertical-scroll-needed");
 
     /**
      * Stamp Edit
@@ -478,6 +501,78 @@ public class DetailsController  {
         changeSetTypeEventSubscriber = evt -> updateAxioms();
         eventBus.subscribe(RULES_TOPIC, AxiomChangeEvent.class, changeSetTypeEventSubscriber);
 
+        // Filter out scroll events that try to scroll beyond the content's limits.
+        conceptContentScrollPane.addEventFilter(ScrollEvent.SCROLL, event -> {
+            if (shouldConsumeVerticalScroll(conceptContentScrollPane, event)) {
+                event.consume();
+            }
+        });
+
+        // Update the pseudo-class when the viewport or content size changes.
+        conceptContentScrollPane.viewportBoundsProperty().addListener((obs) ->
+                conceptContentScrollPane.pseudoClassStateChanged(V_SCROLLBAR_NEEDED, isVerticalScrollbarVisible(conceptContentScrollPane)));
+        conceptContentScrollPane.getContent().layoutBoundsProperty().addListener((obs) ->
+                conceptContentScrollPane.pseudoClassStateChanged(V_SCROLLBAR_NEEDED, isVerticalScrollbarVisible(conceptContentScrollPane)));
+    }
+
+    /**
+     * Checks whether the vertical scrollbar should be visible.
+     * This considers the scrollbar policy, viewport size, and content size.
+     *
+     * @param scrollPane the ScrollPane to check.
+     * @return true if the content height exceeds the viewport height and the scrollbar is allowed.
+     */
+    private boolean isVerticalScrollbarVisible(ScrollPane scrollPane) {
+        // 1) Only proceed if vertical scrolling is allowed.
+        if (scrollPane.getVbarPolicy() == ScrollPane.ScrollBarPolicy.NEVER) {
+            return false;
+        }
+        Node content = scrollPane.getContent();
+        if (content == null) {
+            return false;
+        }
+        double viewportHeight = scrollPane.getViewportBounds().getHeight();
+        // 2) Skip if the viewport isn't yet sized or has zero height.
+        if (viewportHeight <= 0) {
+            return false;
+        }
+        double contentHeight = content.getLayoutBounds().getHeight();
+        // 3) Return true if the content height exceeds the viewport height.
+        return contentHeight > viewportHeight;
+    }
+
+    /**
+     * Determines whether a vertical scroll event should be consumed because it attempts to scroll
+     * beyond the boundaries (i.e. when at the top or bottom of the scrollable content).
+     *
+     * @param scrollPane the ScrollPane receiving the scroll event.
+     * @param event the ScrollEvent.
+     * @return true if the event should be consumed.
+     */
+    private boolean shouldConsumeVerticalScroll(ScrollPane scrollPane, ScrollEvent event) {
+        final double EPSILON = 1e-5;
+
+        // If the vertical scrollbar is not visible (i.e. not needed), no consumption is required.
+        if (!isVerticalScrollbarVisible(scrollPane)) {
+            return false;
+        }
+
+        double deltaY = event.getDeltaY();
+        // Skip if there's negligible scroll movement.
+        if (Math.abs(deltaY) <= EPSILON) {
+            return false;
+        }
+
+        double vValue = scrollPane.getVvalue();
+        double vMin = scrollPane.getVmin();
+        double vMax = scrollPane.getVmax();
+
+        // Determine if we are at the top or bottom.
+        boolean atTop = Math.abs(vValue - vMin) < EPSILON;
+        boolean atBottom = Math.abs(vValue - vMax) < EPSILON;
+
+        // Consume if scrolling upward at the top or downward at the bottom.
+        return (atTop && deltaY > 0) || (atBottom && deltaY < 0);
     }
 
     public ViewProperties getViewProperties() {
@@ -809,16 +904,14 @@ public class DetailsController  {
         String fullyQualifiedName = fqnDescrName.getNameText();
         latestFqnText.setText(fullyQualifiedName);
 
-        latestFqnText.setOnMouseClicked(event -> {
-            eventBus.publish(conceptTopic,
-                    new EditConceptFullyQualifiedNameEvent(latestFqnText,
-                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnDescrName));
-        });
+        fqnContainer.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
+                new EditConceptFullyQualifiedNameEvent(latestFqnText,
+                        EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnDescrName)));
         // these should never be null, if the drop-downs are populated then the
         // submit button will not be enabled on the Add FQN form
         if (fqnDescrName.getCaseSignificance() != null && fqnDescrName.getLanguage() != null) {
             fqnDescriptionSemanticText.setText(" (" + fqnDescrName.getCaseSignificance().description()
-                    + " | " + fqnDescrName.getLanguage().description() + ")");
+                    + ", " + fqnDescrName.getLanguage().description() + ")");
         } else {
             LOG.error("missing case sensitivity and language when adding a fully qualified name");
             fqnDescriptionSemanticText.setText("");
@@ -826,18 +919,15 @@ public class DetailsController  {
     }
 
     public void updateOtherNamesDescription(List<DescrName> descrNameViewModels) {
-        otherNamesVBox.getChildren().clear();
-        descrNameViewModels.stream().forEach( otherName -> {
-            // start adding a row
-            List<TextFlow> rows = generateOtherNameRow(otherName);
-            rows.forEach(textFlowPane -> {
-                textFlowPane.setOnMouseClicked(event -> {
-                    eventBus.publish(conceptTopic,
-                            new EditOtherNameConceptEvent(textFlowPane,
-                                    EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherName));
-                });
-            });
-            otherNamesVBox.getChildren().addAll(rows);
+        otherNamesNodeListControl.getItems().clear();
+        descrNameViewModels.forEach(otherName -> {
+                    // start adding a row
+                    VBox otherNameBox = generateOtherNameRow(otherName);
+                    TextFlow firstRow = (TextFlow) otherNameBox.getChildren().getFirst();
+                    firstRow.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
+                            new EditOtherNameConceptEvent(otherNameBox,
+                                    EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherName)));
+                    otherNamesNodeListControl.getItems().add(otherNameBox);
         });
     }
     /**
@@ -854,7 +944,7 @@ public class DetailsController  {
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
         // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
         Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(viewCalculator, entityFacade);
-        otherNamesVBox.getChildren().clear();
+        otherNamesNodeListControl.getItems().clear();
         descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
 
             PatternEntity<PatternEntityVersion> patternEntity = semanticEntityVersion.pattern();
@@ -866,28 +956,27 @@ public class DetailsController  {
                     .anyMatch( fieldValue ->
                             (fieldValue instanceof ConceptFacade facade) &&
                                     facade.nid() == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid());
-
-
             if (isFQN) {
                 // Latest FQN
                 updateFQNSemantics(semanticEntityVersion, fieldDescriptions);
                 LOG.debug("FQN Name = " + semanticEntityVersion + " " + fieldDescriptions);
             } else {
                 // start adding a row
-                List<TextFlow> rows = generateOtherNameRow(semanticEntityVersion, fieldDescriptions);
-                PublicId otherNamePublicId = (PublicId) rows.get(0).getUserData();
-                rows.forEach(textFlowPane -> {
-                    textFlowPane.setOnMouseClicked(event -> {
-                        eventBus.publish(conceptTopic,
-                                new EditOtherNameConceptEvent(textFlowPane,
-                                        EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId));
-                    });
-                });
-                otherNamesVBox.getChildren().addAll(rows);
+                VBox otherNameBox = generateOtherNameRow(semanticEntityVersion, fieldDescriptions);
+                PublicId otherNamePublicId = (PublicId) otherNameBox.getChildren().getFirst().getUserData();
+                TextFlow firstRow = (TextFlow) otherNameBox.getChildren().getFirst();
+                firstRow.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
+                        new EditOtherNameConceptEvent(otherNameBox,
+                                EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId)));
+                otherNamesNodeListControl.getItems().add(otherNameBox);
 
                 LOG.debug("Other Names = " + semanticEntityVersion + " " + fieldDescriptions);
             }
         });
+
+        final int otherNamesCount = otherNamesNodeListControl.getItems().size();
+        otherNamesHeaderText.setText(otherNamesCount > 0 ?
+                String.format("OTHER NAMES (%d):", otherNamesCount) : "OTHER NAMES:");
     }
 
     /**
@@ -897,12 +986,11 @@ public class DetailsController  {
      * @param fieldDescriptions
      * @return
      */
-    private List<TextFlow> generateOtherNameRow(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
-
-        List<TextFlow> textFlows = new ArrayList<>();
+    private VBox generateOtherNameRow(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
+        VBox textFlowsBox = new VBox();
         DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
-        String descrSemanticStr = String.join(" | ", fieldDescriptions);
+        String descrSemanticStr = String.join(", ", fieldDescriptions);
 
         // update date
         Instant stampInstance = Instant.ofEpochSecond(semanticEntityVersion.stamp().time()/1000);
@@ -914,11 +1002,10 @@ public class DetailsController  {
         Text otherNameLabel = new Text(String.valueOf(semanticEntityVersion.fieldValues().get(1)));
         otherNameLabel.getStyleClass().add("descr-concept-name");
 
-
         Text semanticDescrText = new Text();
-        if (fieldDescriptions.size() > 0) {
+        if (!fieldDescriptions.isEmpty()) {
             semanticDescrText.setText(" (%s)".formatted(descrSemanticStr));
-            semanticDescrText.getStyleClass().add("descr-semantic");
+            semanticDescrText.getStyleClass().add("descr-concept-name");
         } else {
             semanticDescrText.setText("");
         }
@@ -928,31 +1015,29 @@ public class DetailsController  {
         // so that when clicked the event bus can pass it to the form
         // and the form can populate the data from the publicId
         row1.setUserData(semanticEntityVersion.publicId());
-        row1.getChildren().addAll(otherNameLabel);
+        row1.getChildren().addAll(otherNameLabel, semanticDescrText);
 
         TextFlow row2 = new TextFlow();
-        row2.getChildren().addAll(semanticDescrText);
-
-        TextFlow row3 = new TextFlow();
-        Text dateAddedLabel = new Text("Date Added:");
+        Text dateAddedLabel = new Text("Date Added: ");
         dateAddedLabel.getStyleClass().add("descr-semantic");
         Text dateLabel = new Text(time);
         dateLabel.getStyleClass().add("descr-semantic");
 
-        Hyperlink attachmentHyperlink = new Hyperlink("Attachment");
-        Hyperlink commentHyperlink = new Hyperlink("Comment");
+        Region spacer = new Region();
+        spacer.setMinWidth(10);
+
+        Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
+        Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
 
         // Add the date info and additional hyperlinks
-        row3.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentHyperlink);
+        row2.getChildren().addAll(dateAddedLabel, dateLabel, spacer, attachmentHyperlink, commentsHyperlink);
 
-        textFlows.add(row1);
-        textFlows.add(row2);
-        textFlows.add(row3);
-        return textFlows;
+        textFlowsBox.getChildren().addAll(row1, row2);
+        return textFlowsBox;
     }
-    private List<TextFlow> generateOtherNameRow(DescrName otherName) {
 
-        List<TextFlow> textFlows = new ArrayList<>();
+    private VBox generateOtherNameRow(DescrName otherName) {
+        VBox textFlowsBox = new VBox();
         DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
         ViewCalculator viewCalculator = getViewProperties().calculator();
         ConceptEntity caseSigConcept = otherName.getCaseSignificance();
@@ -963,7 +1048,7 @@ public class DetailsController  {
         String langText = viewCalculator.getRegularDescriptionText(langConcept.nid())
                 .orElse(String.valueOf(langConcept.nid()));
 
-        String descrSemanticStr = "%s | %s".formatted(casSigText, langText);
+        String descrSemanticStr = "%s, %s".formatted(casSigText, langText);
 
         // update date
         long epochmillis = getStampViewModel() == null ? System.currentTimeMillis() : getStampViewModel().getValue(TIME);
@@ -980,7 +1065,7 @@ public class DetailsController  {
 
         Text semanticDescrText = new Text();
         semanticDescrText.setText(" (%s)".formatted(descrSemanticStr));
-        semanticDescrText.getStyleClass().add("descr-semantic");
+        semanticDescrText.getStyleClass().add("descr-concept-name");
 
         // add the other name label and description semantic label
         row1.getStyleClass().add("descr-semantic-container");
@@ -989,27 +1074,25 @@ public class DetailsController  {
         // and the form can populate the data from the publicId
 //        this.otherNamePublicId = semanticEntityVersion.publicId();
 
-        row1.getChildren().addAll(otherNameLabel);
+        row1.getChildren().addAll(otherNameLabel, semanticDescrText);
 
         TextFlow row2 = new TextFlow();
-        row2.getChildren().addAll(semanticDescrText);
-
-        TextFlow row3 = new TextFlow();
-        Text dateAddedLabel = new Text("Date Added:");
+        Text dateAddedLabel = new Text("Date Added: ");
         dateAddedLabel.getStyleClass().add("descr-semantic");
         Text dateLabel = new Text(time);
         dateLabel.getStyleClass().add("descr-semantic");
 
-        Hyperlink attachmentHyperlink = new Hyperlink("Attachment");
-        Hyperlink commentHyperlink = new Hyperlink("Comment");
+        Region spacer = new Region();
+        spacer.setMinWidth(10);
+
+        Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
+        Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
 
         // Add the date info and additional hyperlinks
-        row3.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentHyperlink);
+        row2.getChildren().addAll(dateAddedLabel, dateLabel, spacer, attachmentHyperlink, commentsHyperlink);
 
-        textFlows.add(row1);
-        textFlows.add(row2);
-        textFlows.add(row3);
-        return textFlows;
+        textFlowsBox.getChildren().addAll(row1, row2);
+        return textFlowsBox;
     }
 
     private void updateFQNSemantics(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
@@ -1019,14 +1102,12 @@ public class DetailsController  {
         latestFqnText.setText(fullyQualifiedName);
 
         this.fqnPublicId = semanticEntityVersion.publicId();
-        latestFqnText.setOnMouseClicked(event -> {
-            eventBus.publish(conceptTopic,
-                    new EditConceptFullyQualifiedNameEvent(latestFqnText,
-                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId));
-        });
+        fqnContainer.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
+                new EditConceptFullyQualifiedNameEvent(latestFqnText,
+                        EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId)));
 
-        String descrSemanticStr = String.join(" | ", fieldDescriptions);
-        if (fieldDescriptions.size() > 0) {
+        String descrSemanticStr = String.join(", ", fieldDescriptions);
+        if (!fieldDescriptions.isEmpty()) {
             fqnDescriptionSemanticText.setText(" (%s)".formatted(descrSemanticStr));
         } else {
             fqnDescriptionSemanticText.setText("");
@@ -1035,7 +1116,29 @@ public class DetailsController  {
         Instant stampInstance = Instant.ofEpochSecond(semanticEntityVersion.stamp().time()/1000);
         ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
         String time = DATE_TIME_FORMATTER.format(stampTime);
-        fqnAddDateLabel.setText(time);
+        fqnAddDateLabel.setText("Date Added: " + time);
+
+        Region spacer = new Region();
+        spacer.setMinWidth(10);
+
+        Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
+        Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
+
+        fqnDateAddedTextFlow.getChildren().setAll(fqnAddDateLabel, spacer, attachmentHyperlink, commentsHyperlink);
+    }
+
+    /**
+     * Creates a hyperlink with the provided SVG icon.
+     * Applies consistent styling to the icon for use in action links.
+     *
+     * @param icon The SVG icon to use in the hyperlink
+     * @return A configured Hyperlink with the icon as its graphic
+     */
+    private Hyperlink createActionLink(SVGPath icon) {
+        Hyperlink hyperlink = new Hyperlink();
+        icon.getStyleClass().add("descr-concept-icon");
+        hyperlink.setGraphic(icon);
+        return hyperlink;
     }
 
     /**
@@ -1182,7 +1285,7 @@ public class DetailsController  {
         authorTooltip.setText("");
         notAvailInferredAxiomLabel.setVisible(true);
         notAvailStatedAxiomLabel.setVisible(true);
-        otherNamesVBox.getChildren().clear();
+        otherNamesNodeListControl.getItems().clear();
     }
     @FXML
     private void displayEditConceptView(ActionEvent event) {
@@ -1345,8 +1448,6 @@ public class DetailsController  {
     public void compactSizeWindow() {
         descriptionsTitledPane.setExpanded(false);
         axiomsTitledPane.setExpanded(false);
-        //581 x 242
-        detailsOuterBorderPane.setPrefSize(581, 242);
     }
 
     public void setConceptTopic(UUID conceptTopic) {

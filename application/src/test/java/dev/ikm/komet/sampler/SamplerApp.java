@@ -28,7 +28,7 @@ public class SamplerApp extends Application {
     private static final String FLOAT_SAMPLER = "Sampler_KLFloatControl.fxml";
     private static final String IMAGE_SAMPLER = "Sampler_KLImageControl.fxml";
 
-    private static final String READ_ONLY_STRING_SAMPLER = "Sampler_KLReadOnlyString.fxml";
+    private static final String READ_ONLY_DATA_TYPE_SAMPLER = "Sampler_KLReadOnlyDataTypeControl.fxml";
     private static final String READ_ONLY_COMPONENT_SAMPLER = "Sampler_KLReadOnlyComponent.fxml";
     private static final String READ_ONLY_IMAGE_SAMPLER = "Sampler_KLReadOnlyImage.fxml";
 
@@ -69,7 +69,7 @@ public class SamplerApp extends Application {
 
         // Read-Only Data Controls
         Menu readOnlyControls = createMenu("Read-Only Data Controls", "eye-20.png");
-        readOnlyControls.getItems().add(createMenuItemWithContent("String Control", READ_ONLY_STRING_SAMPLER));
+        readOnlyControls.getItems().add(createMenuItemWithContent("Data Control", READ_ONLY_DATA_TYPE_SAMPLER));
         readOnlyControls.getItems().add(createMenuItemWithContent("Component Control", READ_ONLY_COMPONENT_SAMPLER));
         readOnlyControls.getItems().add(createMenuItemWithContent("Image Control", READ_ONLY_IMAGE_SAMPLER));
 

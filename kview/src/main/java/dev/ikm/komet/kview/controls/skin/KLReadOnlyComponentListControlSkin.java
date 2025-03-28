@@ -48,6 +48,8 @@ public class KLReadOnlyComponentListControlSkin extends KLReadOnlyMultiComponent
 
         // Component (Icon + Text)
         ComponentItemNode componentUIItem = new ComponentItemNode(componentItem);
+
+        // Context Menu
         ContextMenu contextMenu = new ContextMenu();
         contextMenu.getItems().addAll(
                 createMenuItem("Edit List", KometIcon.IconValue.PENCIL, this::fireOnEditAction),
@@ -67,5 +69,7 @@ public class KLReadOnlyComponentListControlSkin extends KLReadOnlyMultiComponent
         numberLabel.setText((componentsContainer.getChildren().indexOf(componentRow) + 1) + ".");
 
         componentUIItems.put(componentItem, componentRow);
+
+        updatePromptTextOrComponentsVisibility();
     }
 }

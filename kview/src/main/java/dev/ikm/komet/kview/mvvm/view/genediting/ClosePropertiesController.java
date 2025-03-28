@@ -7,6 +7,7 @@ import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 
@@ -28,6 +29,19 @@ public class ClosePropertiesController {
     @FXML
     private Button closePropsButton;
 
+    /**
+     * text heading at the top of this pane
+     */
+    @FXML
+    private Label headingText;
+
+
+    @FXML
+    private Label subtextLine1;
+
+    @FXML
+    private Label subtextLine2;
+
 
     /**
      * action fired by closing the properties bump out
@@ -36,5 +50,29 @@ public class ClosePropertiesController {
     @FXML
     private void closeProperties(ActionEvent event) {
         EvtBusFactory.getDefaultEvtBus().publish(propertiesViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(event.getSource(), CLOSE_PANEL));
+    }
+
+    /**
+     * set the heading text
+     * @param text the text to set
+     */
+    public void setHeadingText(String text) {
+        headingText.setText(text);
+    }
+
+    /**
+     * set the first line of the subtext
+     * @param text
+     */
+    public void setSubtextLine1(String text) {
+        subtextLine1.setText(text);
+    }
+
+    /**
+     * set the second line of the subtext
+     * @param text
+     */
+    public void setSubtextLine2(String text) {
+        subtextLine2.setText(text);
     }
 }

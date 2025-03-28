@@ -1,12 +1,17 @@
 package dev.ikm.komet.kview.klfields;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
+import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
-import dev.ikm.komet.kview.klfields.componentsetfield.KlComponentSetFieldFactory;
 import dev.ikm.komet.kview.klfields.componentlistfield.KlComponentListFieldFactory;
+import dev.ikm.komet.kview.klfields.componentsetfield.KlComponentSetFieldFactory;
 import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
 import dev.ikm.komet.kview.klfields.imagefield.KlImageFieldFactory;
 import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
@@ -20,13 +25,17 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.Node;
-import javafx.scene.layout.Pane;
+import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class KlFieldHelper {
@@ -44,6 +53,7 @@ public class KlFieldHelper {
             });
         });
     }
+
 
     /**
      * function to return the correct node given the semantic entity and field information
@@ -86,8 +96,10 @@ public class KlFieldHelper {
         } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
             KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
             node = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
-        } else if (PublicId.equals(semanticEntityVersionLatest.get().entity().publicId(),
-                        PublicIds.of(UUID.fromString("f43030a5-2324-4880-9292-c7d3c16b58d3")))) {
+        } else if (dataTypeNid == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
+            //TODO: We're using BYTE_ARRAY for the moment for Image data type
+            //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
+            //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
             KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
             node = imageFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
         }
@@ -108,12 +120,11 @@ public class KlFieldHelper {
 
         List<ObservableField<?>> observableFields = new ArrayList<>();
         Consumer<FieldRecord<Object>> generateConsumer = (fieldRecord) -> {
-            ObservableField writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord);
-            ObservableField observableField = new ObservableField(writeObservableField.field(), false);
+            ObservableField<?> writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, editable);
+            ObservableField<?> observableField = new ObservableField<>(writeObservableField.field(), editable);
             observableFields.add(observableField);
 
             Node node = generateNode(fieldRecord, observableField, viewProperties, semanticEntityVersionLatest, editable);
-
             items.add(node);
         };
         generateSemanticUIFields(viewProperties, semanticEntityVersionLatest, generateConsumer);
@@ -121,4 +132,76 @@ public class KlFieldHelper {
         return observableFields;
     }
 
+    /**
+     * This method calculates the hashValue for the passed semantic version.
+     * It implements its own logic for fieldRecordConsumer and reuses the  generateSemanticUIFields(...)
+     * method to get the field records.
+     * @param semanticEntityVersionLatest
+     * @param viewProperties
+     * @return integer hashCode for field values.
+     */
+    public static int generateHashValue(Latest<SemanticEntityVersion> semanticEntityVersionLatest, ViewProperties viewProperties ) {
+        List<ObservableField<?>> observableFieldsList = new ArrayList<>();
+        Consumer<FieldRecord<Object>> fieldRecordConsumer = (fieldRecord) -> {
+            ObservableField<?> writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, false);
+            ObservableField<?> observableField = new ObservableField<>(writeObservableField.field(), false);
+            observableFieldsList.add(observableField);
+        };
+        generateSemanticUIFields(viewProperties, semanticEntityVersionLatest, fieldRecordConsumer);
+        return calculteHashValue(observableFieldsList);
+    }
+
+    /**
+     * This method will return the latest commited version.
+     * //TODO this method can be generalized to return latest<EntityVersion> As of now it is just returning SemanticEntityVersion.
+     * // TODO need to implement logic for create Semantic.
+     *
+     * @return entityVersionLatest
+     * */
+    public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(EntityFacade entityFacade, ViewProperties viewProperties) {
+        AtomicReference<Latest<SemanticEntityVersion>> entityVersionLatest = new AtomicReference<>();
+
+        StampCalculator stampCalculator = viewProperties.calculator().stampCalculator();
+        //retrieve latest semanticVersion
+        Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(entityFacade.nid());
+        if(semanticEntityVersionLatest.get().stamp().time() != Long.MAX_VALUE){
+            return semanticEntityVersionLatest;
+        }
+        ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
+        ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
+        //Get list of previously committed data sorted in latest at the top.
+        ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
+        // Filter out Uncommitted data. Data whose time stamp parameter is Long.MAX_VALUE. and get the 1st available.
+        Optional<ObservableSemanticVersion> observableSemanticVersionOptional = observableSemanticVersionImmutableList.stream().filter(p -> p.stamp().time() != Long.MAX_VALUE).findFirst();
+
+        observableSemanticVersionOptional.ifPresentOrElse( (p) -> {
+            entityVersionLatest.set(new Latest<>(p));
+        }, () -> {entityVersionLatest.set(semanticEntityVersionLatest);});
+
+
+        return entityVersionLatest.get();
+    }
+
+    /**
+     * This method just concatenates all observableFiled values and generates a hashCode to return.
+     * @param observableFieldsList
+     * @return hashCode for all the field values.
+     *
+     * TODO: This method can be moved to DataModelHelper class.
+     *  During create (new Semantic) the user can change the reference component.
+     *  the hash is stating any change. By default a reference component during created would be TinkarTerms.ANONOUMOUS_CONCEPT (I can't remember).
+     */
+    public static int calculteHashValue(List<ObservableField<?>> observableFieldsList ) {
+        StringBuilder stringBuilder = new StringBuilder();
+        observableFieldsList.forEach(observableField -> {
+            // TODO re-evaluate if toString is the right approach for complex datatypes.
+            var observableFieldValue = observableField.valueProperty().get();
+            if (observableFieldValue == null || (observableFieldValue instanceof EntityProxy entityProxy && entityProxy.nid() == KLComponentControl.EMPTY_NID)) {
+                stringBuilder.append("|");
+            } else {
+                stringBuilder.append(observableField.valueProperty().get().toString()).append("|");
+            }
+        });
+        return stringBuilder.toString().hashCode();
+    }
 }

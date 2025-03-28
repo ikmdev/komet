@@ -18,8 +18,9 @@ public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMu
     private final VBox mainContainer = new VBox();
 
     private final Label titleLabel = new Label();
-    private final Label promptTextLabel = new Label();
+    protected final Label promptTextLabel = new Label();
 
+    protected final VBox componentsAndPlaceholderContainer = new VBox();
     protected final VBox componentsContainer = new VBox();
 
     protected final HashMap<ComponentItem, Node> componentUIItems = new HashMap<>();
@@ -32,6 +33,11 @@ public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMu
 
         mainContainer.getChildren().addAll(
                 titleLabel,
+                componentsAndPlaceholderContainer
+        );
+
+        componentsAndPlaceholderContainer.getChildren().addAll(
+                promptTextLabel,
                 componentsContainer
         );
 
@@ -53,6 +59,8 @@ public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMu
             }
         });
 
+        promptTextLabel.textProperty().bind(control.promptTextProperty());
+
         // CSS
         mainContainer.getStyleClass().add("main-container");
         componentsContainer.getStyleClass().add("components-container");
@@ -64,6 +72,17 @@ public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMu
         Node componentRow = componentUIItems.get(componentItem);
         componentsContainer.getChildren().remove(componentRow);
         componentUIItems.remove(componentItem);
+
+        updatePromptTextOrComponentsVisibility();
+    }
+
+    protected void updatePromptTextOrComponentsVisibility() {
+        boolean promptTextVisible = componentsContainer.getChildren().isEmpty();
+
+        promptTextLabel.setVisible(promptTextVisible);
+        promptTextLabel.setManaged(promptTextVisible);
+        componentsContainer.setVisible(!promptTextVisible);
+        componentsContainer.setManaged(!promptTextVisible);
     }
 
     protected MenuItem createMenuItem(String text, KometIcon.IconValue icon, EventHandler<ActionEvent> actionHandler) {

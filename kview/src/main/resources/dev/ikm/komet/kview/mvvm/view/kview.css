@@ -103,7 +103,7 @@
 }
 
 .concept-window .main-center-container {
-    -fx-background-color: -Grey-White;
+    -fx-background-color: white;
     -fx-background-radius: 4px;
 
     -fx-background-insets: 0 5px 5px 5px;
@@ -126,7 +126,7 @@
 }
 
 .concept-detail-banner-background {
-    -fx-background-color: -Grey-1;
+    -fx-background-color: white;
     -fx-background-radius: 4px 4px 0 0;
 }
 
@@ -200,6 +200,12 @@
     -fx-background-color: transparent;
 }
 
+.concept-window .main-center-container .titled-pane .title {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 12;
+    -fx-padding: 6 12 6 12;
+}
+
 /* a add pencil button for add/edit */
 .button.add-pencil-button {
     -fx-padding: 4;
@@ -219,6 +225,10 @@
 }
 
 .button.add-pencil-button:hover {
+    -fx-background-color: #93BEFF4D;
+}
+
+.button.add-pencil-button:pressed {
     -fx-background-color: -Primary-04;
 }
 
@@ -278,10 +288,10 @@
 
 /* other names (aka description semantics) in the concept window */
 .descr-semantic {
-    /*-fx-wrap-text: true;*/
-    -fx-text-fill: #585757ff;
-    -fx-fill: #585757ff;
-    -fx-alignment: top-left;
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 11;
+    -fx-text-fill: -Grey-8;
+    -fx-fill: -Grey-8;
 }
 
 .descr-semantic-container {
@@ -298,8 +308,19 @@
 }
 
 .descr-concept-name {
-    /*-fx-wrap-text: true;*/
-    -fx-alignment: top-left;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 12;
+}
+
+.descr-concept-icon {
+    -fx-icon-size: 14;
+    -fx-min-width: -fx-icon-size;
+    -fx-min-height: -fx-icon-size;
+    -fx-pref-width: -fx-icon-size;
+    -fx-pref-height: -fx-icon-size;
+    -fx-max-width: -fx-icon-size;
+    -fx-max-height: -fx-icon-size;
+    -fx-fill: -Grey-8;
 }
 
 .pencil-button.button {
@@ -350,7 +371,7 @@
 }
 
 .axiom-container > .property-sheet .property-pane {
-    -fx-background-color: transparent;
+    -fx-background-color: white;
 }
 
 /* common container pane used on bump outs needing scroll pane */
@@ -4798,6 +4819,68 @@ Styling a context menu for kview ui/ux controls
 .pattern-window.concept-detail-pane .main-center-container .titled-pane >  .title,
 .lidr-window.concept-detail-pane .main-center-container .titled-pane > .title {
     -fx-padding: 8 4 4 6;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane {
+    -fx-background-color: white;
+    -fx-border-color: transparent;
+    -fx-padding: 0 -12 0 0;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane > .viewport {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane > .corner {
+    -fx-background-color: transparent;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane > .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0 12 0 0;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-padding: 4 7 4 -9;
+    -fx-opacity: 0.0;
+    transition: -fx-opacity 0.3s;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane:hover:vertical-scroll-needed .scroll-bar:vertical {
+    -fx-opacity: 1.0;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane > .scroll-bar:vertical .track {
+    -fx-background-insets: 0 14 0 0;
+    -fx-background-color: transparent;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane > .scroll-bar .thumb {
+    -fx-background-color: -Grey-1, rgba(0, 0, 0, 0.4);
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6px;
+    -fx-padding: 0;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane > .scroll-bar:hover .thumb {
+    -fx-background-color: -Grey-1, rgba(0, 0, 0, 0.5);
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane > .scroll-bar .increment-button,
+.concept-detail-pane .main-center-container > .scroll-pane > .scroll-bar .decrement-button {
+    -fx-background-insets: 0;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-padding: 0;
+}
+
+.concept-detail-pane .main-center-container > .scroll-pane > .scroll-bar .increment-arrow,
+.concept-detail-pane .main-center-container > .scroll-pane > .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
 }
 
 .pattern-window.concept-detail-pane,

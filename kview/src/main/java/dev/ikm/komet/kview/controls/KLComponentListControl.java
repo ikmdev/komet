@@ -1,8 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLComponentListControlSkin;
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.IntIdCollection;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -30,7 +29,7 @@ import javafx.scene.control.Skin;
  * @see KLComponentControl
  * @see KLComponentSetControl
  */
-public class KLComponentListControl extends Control {
+public class KLComponentListControl<T extends IntIdCollection> extends Control {
 
     /**
      * Creates a KLComponentListControl
@@ -54,18 +53,12 @@ public class KLComponentListControl extends Control {
     }
 
     /**
-     * This property holds an {@link IntIdList} that have been added to the control
+     * This property holds a generic type T that extends from {@link IntIdCollection}.
      */
-    private final ObjectProperty<IntIdList> valueProperty = new SimpleObjectProperty<>(IntIds.list.empty());
-    public final ObjectProperty<IntIdList> valueProperty() {
-        return valueProperty;
-    }
-    public final IntIdList getValue() {
-        return valueProperty.get();
-    }
-    public void setValue(IntIdList intIdList) {
-        valueProperty.set(intIdList);
-    }
+    private final ObjectProperty<T> valueProperty = new SimpleObjectProperty<>();
+    public final ObjectProperty<T> valueProperty() { return valueProperty; }
+    public final T getValue() { return valueProperty.get(); }
+    public void setValue(T intIdList) { valueProperty.set(intIdList); }
 
     /** {@inheritDoc} */
     @Override
