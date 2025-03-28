@@ -1,5 +1,6 @@
 package dev.ikm.komet.sampler.controllers;
 
+import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -29,7 +30,7 @@ public class SamplerReadOnlyComponentController {
         samplerDescription.setText("Read only String Control that's used to display KLStringField");
 
         titleTextField.setText(readOnlyComponentControl.getTitle());
-        textTextField.setText(readOnlyComponentControl.getText());
+        textTextField.setText(readOnlyComponentControl.getValue().getText());
         editModeCheckBox.setSelected(readOnlyComponentControl.isEditMode());
     }
 
@@ -40,7 +41,8 @@ public class SamplerReadOnlyComponentController {
 
     @FXML
     private void onTextChanged(ActionEvent actionEvent) {
-        readOnlyComponentControl.setText(textTextField.getText());
+        ComponentItem componentItem = new ComponentItem(textTextField.getText(), null);
+        readOnlyComponentControl.setValue(componentItem);
     }
 
     @FXML

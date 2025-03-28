@@ -81,7 +81,7 @@ public class PatternNavEntryController {
     private Label patternName;
 
     @FXML
-    private Button showContextButton;
+    private StackPane dragHandleAffordance;
 
     @FXML
     private ContextMenu contextMenu;
@@ -99,13 +99,13 @@ public class PatternNavEntryController {
     private void initialize() {
 
         instancesTitledPane.setExpanded(false);
-        showContextButton.setVisible(false);
+        dragHandleAffordance.setVisible(false);
         contextMenu = new ContextMenu();
         contextMenu.setHideOnEscape(true);
-        patternEntryHBox.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(true));
+        patternEntryHBox.setOnMouseEntered(mouseEvent -> dragHandleAffordance.setVisible(true));
         patternEntryHBox.setOnMouseExited(mouseEvent -> {
             if (!contextMenu.isShowing()) {
-                showContextButton.setVisible(false);
+                dragHandleAffordance.setVisible(false);
             }
         });
 
@@ -124,7 +124,10 @@ public class PatternNavEntryController {
 
         EntityFacade patternFacade = instancesViewModel.getPropertyValue(PATTERN_FACADE);
         addNewSemanticElement.setOnAction(actionEvent -> {
-            LOG.info("TODO: Summon create new Semantic Element. "+patternFacade.description());
+            LOG.info("Summon create new Semantic Element. " + patternFacade.description());
+            EvtBusFactory.getDefaultEvtBus().publish(instancesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                    new MakeGenEditingWindowEvent(this,
+                        MakeGenEditingWindowEvent.OPEN_GEN_AUTHORING, patternFacade, instancesViewModel.getPropertyValue(VIEW_PROPERTIES)));
         });
         removeSemanticElement.setOnAction(actionEvent -> {
             LOG.info("TODO: Verify if the Pattern needs to be removed. "+patternFacade.description());
@@ -148,7 +151,6 @@ public class PatternNavEntryController {
                 }
             }
         });
-        showContextButton.setOnAction(event -> contextMenu.show(showContextButton, Side.BOTTOM, 0, 0));
         setupListView();
     }
 

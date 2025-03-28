@@ -15,6 +15,10 @@
  */
 package dev.ikm.komet.kview.mvvm.model;
 
+import static dev.ikm.komet.kview.controls.KLComponentControl.EMPTY_NID;
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
+import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
+import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
 import static dev.ikm.tinkar.terms.TinkarTerm.ARRAY_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
@@ -22,28 +26,42 @@ import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.CONCEPT_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DIGRAPH_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.DITREE_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.ENGLISH_LANGUAGE;
 import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.INSTANT_LITERAL;
 import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.LONG;
+import static dev.ikm.tinkar.terms.TinkarTerm.PREFERRED;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.SEMANTIC_FIELD_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
 import static dev.ikm.tinkar.terms.TinkarTerm.UUID_DATA_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.VERTEX_FIELD;
+import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.composer.Composer;
+import dev.ikm.tinkar.composer.Session;
+import dev.ikm.tinkar.composer.assembler.ConceptAssembler;
+import dev.ikm.tinkar.composer.assembler.ConceptAssemblerConsumer;
+import dev.ikm.tinkar.composer.assembler.SemanticAssembler;
+import dev.ikm.tinkar.composer.template.FullyQualifiedName;
+import dev.ikm.tinkar.composer.template.USDialect;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
@@ -56,6 +74,7 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.RecordListBuilder;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticRecord;
@@ -75,6 +94,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -186,6 +206,8 @@ public class DataModelHelper {
             // a member, need to change to inactive.
             updateSemantic(pattern, semanticNidsForComponent[0], editCoordinate.toEditCoordinateRecord(), viewCalculator, true);
         }
+        //Fire an event for PatternCreation
+        EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternCreationEvent(concept, PATTERN_CREATION_EVENT));
     }
 
     /**
@@ -203,6 +225,8 @@ public class DataModelHelper {
         } else {
             updateSemantic(pattern, semanticNidsForComponent[0], editCoordinate.toEditCoordinateRecord(), viewCalculator, false);
         }
+        //Fire an event for PatternCreation
+        EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternCreationEvent(pattern, PATTERN_CREATION_EVENT));
     }
 
     private static SemanticRecord createSemantic(EntityFacade concept, EntityFacade pattern, EditCoordinateRecord editCoordinateRecord, ViewCalculator viewCalculator) {
@@ -299,12 +323,100 @@ public class DataModelHelper {
      * @param viewProperties viewProperties cannot be null. Required to get the calculator.
      * @param semanticEntityVersionLatest
      * @param fieldRecord
-     * @return the observable field
+     * @return observableField
      */
-    public static ObservableField<?> obtainObservableField(ViewProperties viewProperties, Latest<SemanticEntityVersion> semanticEntityVersionLatest, FieldRecord<Object> fieldRecord){
+    public static ObservableField<?> obtainObservableField(ViewProperties viewProperties, Latest<SemanticEntityVersion> semanticEntityVersionLatest, FieldRecord<Object> fieldRecord, boolean uncommitted){
         ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
         ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
-        ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
-        return observableFields.get(fieldRecord.fieldIndex());
+        ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
+        if (uncommitted || observableSemanticVersionImmutableList == null || observableSemanticVersionImmutableList.isEmpty()) {
+            //Get the latest version which is uncommited version
+            ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
+            return observableFields.get(fieldRecord.fieldIndex());
+        } else {
+            //Cast to mutable list
+            List<ObservableSemanticVersion> observableSemanticVersionList = new ArrayList<>(observableSemanticVersionImmutableList.castToList());
+            //filter list to have only the latest semantic version passed as argument and remove rest of the entries.
+            observableSemanticVersionList.removeIf(p -> !semanticEntityVersionLatest.stampNids().contains(p.stampNid()));
+            AtomicReference<ImmutableList<ObservableField>> observableFields = new AtomicReference<>();
+            //If no historic data is available then return the last uncommited value, this is true when creating a new Semantic.
+            if (observableSemanticVersionList.isEmpty()) {
+              return obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, true);
+            }
+            //Get the 1st version value of the matched stamp
+            ObservableSemanticVersion observableSemanticVersion = observableSemanticVersionList.getFirst();
+            Latest<PatternEntityVersion> latestPatternEntityVersion = viewProperties.calculator().latestPatternEntityVersion(observableSemanticVersion.patternNid());
+            //Get the latest commited fields from patternEntityVersion
+            latestPatternEntityVersion.ifPresent(patternEntityVersion -> {
+                observableFields.set(observableSemanticVersion.fields(patternEntityVersion));
+            });
+            return observableFields.get().get(fieldRecord.fieldIndex());
+        }
     }
+
+    /**
+     * given a pattern create a default, empty semantic
+     * @param pattern existing pattern
+     * @return a default, empty semantic
+     */
+    public static EntityFacade createEmptySemantic(ViewProperties viewProperties, EntityFacade pattern) {
+        EntityFacade semantic;
+        // set up defaults for the initial STAMP on a new Semantic
+        State status = State.ACTIVE;
+        EntityProxy.Concept author = TinkarTerm.USER;
+        EntityProxy.Concept module = TinkarTerm.DEVELOPMENT_MODULE;
+        EntityProxy.Concept path = TinkarTerm.DEVELOPMENT_PATH;
+        EntityProxy patternProxy = pattern.toProxy();
+
+
+        ViewCalculator viewCalculator = viewProperties.calculator();
+        PatternVersionRecord patternVersionRecord = (PatternVersionRecord) viewCalculator.latest(pattern).get();
+
+        // create empty semantic using the Composer API
+        EntityService.get().beginLoadPhase();
+        Composer composer = new Composer("Semantic for %s".formatted(pattern.description()));
+        Session session = composer.open(status, author, module, path);
+
+        //FIXME we need to define a default reference component
+        session.compose((ConceptAssembler conceptAssembler) -> conceptAssembler
+                .attach((FullyQualifiedName fqn) -> fqn
+                        .language(ENGLISH_LANGUAGE)
+                        .text("Reference Component")
+                        .caseSignificance(DESCRIPTION_NOT_CASE_SENSITIVE)));
+
+        EntityProxy.Semantic defaultSemantic = EntityProxy.Semantic.make(PublicIds.newRandom());
+        session.compose((SemanticAssembler semanticAssembler) -> {
+            semanticAssembler
+                    .semantic(defaultSemantic)
+                    //FIXME we don't want this circular reference to its own pattern.  We want a default reference component
+                    .reference(patternProxy) // can we overwrite the reference component so long as we don't commit?
+                    .pattern((EntityProxy.Pattern) patternProxy)
+                    .fieldValues(fieldValues -> {
+                        patternVersionRecord.fieldDefinitions().forEach(f -> {
+                            if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
+                                fieldValues.with(ANONYMOUS_CONCEPT);
+                            } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
+                                    || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
+                                fieldValues.with("Default String Value");
+                            } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
+                                fieldValues.with(0);
+                            } else if (f.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
+                                fieldValues.with(0.0);
+                            } else if (f.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
+                                fieldValues.with(false);
+                            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
+                                fieldValues.with(IntIds.list.empty());
+                            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
+                                fieldValues.with(IntIds.set.empty());
+                            }
+                        });
+                    }).attach((USDialect dialect) -> dialect
+                            .acceptability(PREFERRED));
+        });
+        // don't commit yet; only commit once the user is ready to submit and not change the reference component
+        EntityService.get().endLoadPhase();
+        semantic = defaultSemantic.toProxy();
+        return semantic;
+    }
+
 }

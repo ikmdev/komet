@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLComponentControlSkin;
+import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.BooleanProperty;
@@ -16,6 +17,8 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
+
+import java.util.function.Predicate;
 
 /**
  * <p>KLComponentControl is a custom control that acts as a template capable of populating a single,
@@ -41,6 +44,7 @@ import javafx.scene.control.Skin;
  * @see KLComponentListControl
  */
 public class KLComponentControl extends Control {
+    public static int EMPTY_NID = Integer.MIN_VALUE;
 
     private static final String SEARCH_TEXT_VALUE = "search.text.value";
 
@@ -57,6 +61,10 @@ public class KLComponentControl extends Control {
                 getProperties().remove(SEARCH_TEXT_VALUE);
             }
         });
+    }
+
+    public boolean isEmpty() {
+        return getEntity() == null || getEntity().nid() == KLComponentControl.EMPTY_NID;
     }
 
     /**
@@ -76,7 +84,7 @@ public class KLComponentControl extends Control {
     /**
      * This property holds the {@link Entity} that has been added to the control
      */
-    private final ObjectProperty<EntityProxy> entityProperty = new SimpleObjectProperty<>(this, "entity");
+    private final ObjectProperty<EntityProxy> entityProperty = new SimpleObjectProperty<>(this, "entity", EntityProxy.make(EMPTY_NID));
     public final ObjectProperty<EntityProxy> entityProperty() {
        return entityProperty;
     }
@@ -127,6 +135,24 @@ public class KLComponentControl extends Control {
     }
 
     /**
+     * A boolean property that when true shows the drag handle
+     */
+    private final BooleanProperty showDragHandle = new SimpleBooleanProperty();
+    public boolean isShowDragHandle() { return showDragHandle.get(); }
+    public BooleanProperty showDragHandleProperty() { return showDragHandle; }
+    public void setShowDragHandle(boolean value) { showDragHandle.set(value); }
+
+    /**
+     * A Predicate used to filter Components with PublicIds that are allowed to be set in this control.
+     * If the Predicate returns true then the Component with PublicId is allowed.
+     * The filter that is set by default will allow any PublicId.
+     */
+    private final ObjectProperty<Predicate<PublicId>> componentAllowedFilter = new SimpleObjectProperty<>(_ -> true);
+    public Predicate<PublicId> getComponentAllowedFilter() { return componentAllowedFilter.get(); }
+    public ObjectProperty<Predicate<PublicId>> componentAllowedFilterProperty() { return componentAllowedFilter; }
+    public void setComponentAllowedFilter(Predicate<PublicId> value) { componentAllowedFilter.set(value); }
+
+    /**
      * A property that defines the action to be executed when the add concept button is pressed.
      */
     private final ObjectProperty<EventHandler<ActionEvent>> onAddConceptActionProperty = new SimpleObjectProperty<>(this, "onAddConceptAction");
@@ -144,7 +170,7 @@ public class KLComponentControl extends Control {
      * A property with an action to be executed when the user clicks on the remove button. By default, it will
      * remove the entity that was added.
      */
-    private final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty = new SimpleObjectProperty<>(this, "onRemoveAction", e -> setEntity(null));
+    private final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty = new SimpleObjectProperty<>(this, "onRemoveAction", e -> setEntity(EntityProxy.make(EMPTY_NID)));
     public final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty() {
        return onRemoveActionProperty;
     }

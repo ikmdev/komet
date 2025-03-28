@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<BorderPane prefHeight="146.0" prefWidth="500.0" styleClass="sub-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.genediting.ClosePropertiesController">
+<BorderPane prefHeight="146.0" prefWidth="500.0" styleClass="sub-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.genediting.ClosePropertiesController">
    <center>
       <ScrollPane fitToWidth="true" hbarPolicy="NEVER" BorderPane.alignment="CENTER">
          <BorderPane.margin>
@@ -23,8 +23,8 @@
          <content>
             <VBox fx:id="editFieldsVBox" alignment="TOP_CENTER">
                <children>
-                  <Label alignment="TOP_CENTER" maxWidth="200.0" text="Make a selection in the view" textAlignment="CENTER" VBox.vgrow="ALWAYS" />
-                  <Label alignment="TOP_CENTER" layoutX="147.0" layoutY="10.0" maxWidth="200.0" text="to edit the Semantic" textAlignment="CENTER" />
+                  <Label fx:id="subtextLine1" alignment="TOP_CENTER" maxWidth="200.0" text="Make a selection in the view" textAlignment="CENTER" VBox.vgrow="ALWAYS" />
+                  <Label fx:id="subtextLine2" alignment="TOP_CENTER" layoutX="147.0" layoutY="10.0" maxWidth="200.0" text="to edit the Semantic" textAlignment="CENTER" />
                </children></VBox>
          </content>
       </ScrollPane>
@@ -41,7 +41,7 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
-            <Label alignment="TOP_CENTER" styleClass="lidr-device-title-label" text="Semantic Details Added" textAlignment="CENTER" GridPane.columnIndex="1">
+            <Label fx:id="headingText" alignment="TOP_CENTER" styleClass="lidr-device-title-label" text="Semantic Details Added" textAlignment="CENTER" GridPane.columnIndex="1">
                <GridPane.margin>
                   <Insets left="28.0" />
                </GridPane.margin>

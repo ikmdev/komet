@@ -5,7 +5,7 @@ import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.layout.context.KnowledgeBaseContext;
 import dev.ikm.komet.layout.window.KlFxWindow;
 import dev.ikm.komet.layout.window.KlJournalWindow;
-import dev.ikm.komet.layout.window.KlWindowPane;
+import dev.ikm.komet.layout.window.KlFrame;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.service.PluggableService;
 import javafx.collections.ObservableMap;
@@ -32,17 +32,17 @@ import static dev.ikm.komet.layout.KlObject.PropertyKeys.*;
  * This interface provides methods and enumerations to define property keys, user preferences,
  * and mechanisms for retrieving contextual instances of {@code ViewCalculator}.
  *
- * @param <T> the type of the JavaFX component associated with this gadget
+ * @param <FX> the type of the JavaFX component associated with this gadget
  */
-public sealed interface KlGadget<T> extends KlContextSensitiveComponent, KlObject
-        permits KlView, KlWidget, KlFxWindow, KlJournalWindow, KlWindowPane {
+public sealed interface KlGadget<FX> extends KlContextSensitiveComponent, KlObject
+        permits KlView, KlWidget, KlFxWindow, KlJournalWindow, KlFrame {
 
     /**
      * Provides an instance of the generic type T JavaFx gadget associated with the knowledge layout component.
      *
      * @return an instance of type T, representing a specific knowledge layout gadget.
      */
-    T fxGadget();
+    FX fxGadget();
 
     @Override
     default ObservableMap<Object, Object> properties() {
@@ -51,7 +51,7 @@ public sealed interface KlGadget<T> extends KlContextSensitiveComponent, KlObjec
             case KlWidget widget -> widget.fxGadget().getProperties();
             case KlFxWindow window -> window.fxGadget().getProperties();
             case KlJournalWindow journalWindow -> throw new UnsupportedOperationException();
-            case KlWindowPane windowPane -> windowPane.fxGadget().getProperties();
+            case KlFrame windowPane -> windowPane.fxGadget().getProperties();
         };
     }
 
@@ -62,7 +62,7 @@ public sealed interface KlGadget<T> extends KlContextSensitiveComponent, KlObjec
             case KlWidget widget -> widget.fxGadget().hasProperties();
             case KlFxWindow window -> window.fxGadget().hasProperties();
             case KlJournalWindow journalWindow -> throw new UnsupportedOperationException();
-            case KlWindowPane windowPane -> windowPane.fxGadget().hasProperties();
+            case KlFrame windowPane -> windowPane.fxGadget().hasProperties();
         };
     }
 
@@ -74,7 +74,7 @@ public sealed interface KlGadget<T> extends KlContextSensitiveComponent, KlObjec
                 case KlWidget widget -> widget.fxGadget().getProperties().containsKey(key);
                 case KlFxWindow window -> window.fxGadget().getProperties().containsKey(key);
                 case KlJournalWindow journalWindow -> throw new UnsupportedOperationException();
-                case KlWindowPane windowPane -> windowPane.fxGadget().getProperties().containsKey(key);
+                case KlFrame windowPane -> windowPane.fxGadget().getProperties().containsKey(key);
             };
         }
         return false;
@@ -121,7 +121,7 @@ public sealed interface KlGadget<T> extends KlContextSensitiveComponent, KlObjec
                     case KlWidget widget -> recursiveAddContexts(widget.fxGadget().getParent(), contexts);
                     case KlFxWindow ignored -> contexts.add(KnowledgeBaseContext.INSTANCE.context());
                     case KlJournalWindow ignored ->contexts.add(KnowledgeBaseContext.INSTANCE.context());
-                    case KlWindowPane windowPane -> {
+                    case KlFrame windowPane -> {
                         if ((windowPane.fxGadget().getParent() != null)) {
                             recursiveAddContexts(windowPane.fxGadget().getParent(), contexts);
                         } else {
@@ -312,7 +312,7 @@ public sealed interface KlGadget<T> extends KlContextSensitiveComponent, KlObjec
                 action.accept(view);
                 dfsProcessNodesWithKlPeer(view.fxGadget(), action);
             }
-            case KlWindowPane windowPane -> {
+            case KlFrame windowPane -> {
                 action.accept(windowPane);
                 dfsProcessNodesWithKlPeer(windowPane.fxGadget(), action);
             }

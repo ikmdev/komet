@@ -42,6 +42,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -66,6 +67,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -192,22 +194,24 @@ public class NextGenSearchController extends AbstractBasicController {
             } else {
                 List<LatestVersionSearchResult> results = getViewProperties().calculator().search(queryText, MAX_RESULT_SIZE).toList();
                 LOG.info(String.valueOf(results.size()));
-                Map<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> topItems = null;
                 switch (sortByButton.getText()) {
                     case BUTTON_TEXT_TOP_COMPONENT -> {
-                        // sort by top component score order
-                        topItems = new HashMap<>();
-                        results.sort((o1, o2) -> Float.compare(o2.score(), o1.score()));
+                        // used linked hash map to maintain insertion order
+                        LinkedHashMap<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> topItems = new LinkedHashMap<>();
 
+                        // sort by top component score order
+                        results.sort((o1, o2) -> Float.compare(o2.score(), o1.score()));
 
                         createMapOfEntries(topItems, results);
 
-                        // sort topItems by the sort o
-                        topItems.forEach((k, v) -> Collections.sort(v, (o1, o2) -> Float.compare(o1.score(), o2.score())));
+                        // sort children inside each by score
+                        topItems.forEach((k, v) -> Collections.sort(v, (o1, o2) ->
+                                Float.compare(o1.score(), o2.score())));
 
                         List<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>> myList = new ArrayList<>(topItems.entrySet());
 
-                        Collections.sort(myList, (m1, m2) -> Float.compare(m2.getValue().get(0).score(), m1.getValue().get(0).score()));
+                        Collections.sort(myList, (m1, m2) ->
+                                Float.compare(m2.getValue().get(0).score(), m1.getValue().get(0).score()));
 
                         renderResultsFromMap(myList);
                     }
@@ -216,6 +220,7 @@ public class NextGenSearchController extends AbstractBasicController {
                         results.sort((o1, o2) -> NaturalOrder.compareStrings(o1.latestVersion().get().fieldValues().get(o1.fieldIndex()).toString(),
                                 o2.latestVersion().get().fieldValues().get(o2.fieldIndex()).toString()));
 
+                        Map<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> topItems = new HashMap<>();
                         // create the sort order for the topItems map collection
                         topItems = new TreeMap<>((o1, o2) -> NaturalOrder.compareStrings(o1.text(), o2.text()));
 
@@ -448,6 +453,11 @@ public class NextGenSearchController extends AbstractBasicController {
     @Override
     public void cleanup() {
 
+    }
+
+    public void clearSearchTextField(){
+        searchField.clear();
+        searchField.setCursor(Cursor.DEFAULT);
     }
 
     @Override

@@ -31,7 +31,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 
-public class ObservableField<T> implements Field<T> {
+public final class ObservableField<T> implements Field<T> {
 
     SimpleObjectProperty<FieldRecord<T>> fieldProperty = new SimpleObjectProperty<>();
     SimpleObjectProperty<T> valueProperty = new SimpleObjectProperty<>();
@@ -70,6 +70,7 @@ public class ObservableField<T> implements Field<T> {
 
     public void writeToDataBase() {
         this.writeToDatabase(value());
+        fieldProperty.set(field().withValue(value()));
     }
 
     public void writeToDatabase(Object newValue) {
@@ -110,7 +111,7 @@ public class ObservableField<T> implements Field<T> {
 
     @Override
     public T value() {
-        return field().value();
+        return valueProperty.get();
     }
 
     @Override

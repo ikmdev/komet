@@ -18,8 +18,8 @@ package dev.ikm.komet.reasoner.ui;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.ikm.tinkar.reasoner.service.ReasonerService;
 import dev.ikm.tinkar.common.service.TrackingCallable;
+import dev.ikm.tinkar.reasoner.service.ReasonerService;
 
 public class LoadDataTask extends TrackingCallable<ReasonerService> {
 
@@ -35,9 +35,11 @@ public class LoadDataTask extends TrackingCallable<ReasonerService> {
 
 	@Override
 	protected ReasonerService compute() throws Exception {
+		reasonerService.extractData();
 		reasonerService.loadData();
-		updateMessage("Load in " + durationString());
-		LOG.info("Load in " + durationString());
+		String msg = "Load in " + durationString();
+		updateMessage(msg);
+		LOG.info(msg);
 		return reasonerService;
 	}
 

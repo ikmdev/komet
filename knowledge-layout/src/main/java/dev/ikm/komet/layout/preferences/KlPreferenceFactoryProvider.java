@@ -6,7 +6,7 @@ import dev.ikm.komet.preferences.KometPreferences;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.prefs.BackingStoreException;
 
-class KlPreferenceFactoryProvider {
+public class KlPreferenceFactoryProvider {
 
     /**
      * The {@code PreferenceFactoryWithParentFactory} class is an implementation of {@code KlPreferencesFactory}.
@@ -15,12 +15,12 @@ class KlPreferenceFactoryProvider {
      * This implementation ensures that preferences are lazily initialized and associated
      * with a parent factory to enable hierarchical preference management.
      */
-    static class PreferenceFactoryWithParentFactory implements KlPreferencesFactory {
+    public static class PreferenceFactoryWithParentFactory implements KlPreferencesFactory {
         private final KlPreferencesFactory preferencesFactory;
         private final AtomicReference<KometPreferences> parentPreferencesReference = new AtomicReference<>();
         private final Class implementationClass;
 
-        PreferenceFactoryWithParentFactory(KlPreferencesFactory preferencesFactory, Class implementationClass) {
+        public PreferenceFactoryWithParentFactory(KlPreferencesFactory preferencesFactory, Class implementationClass) {
             this.preferencesFactory = preferencesFactory;
             this.implementationClass = implementationClass;
         }
@@ -43,11 +43,11 @@ class KlPreferenceFactoryProvider {
      * This implementation supports hierarchical preferences management through the parent-child
      * relationship of preference nodes.
      */
-    static class PreferenceFactoryWithParentPreferences implements KlPreferencesFactory {
+    public static class PreferenceFactoryWithParentPreferences implements KlPreferencesFactory {
         private final KometPreferences parentPreferences;
         private final Class implementationClass;
 
-        PreferenceFactoryWithParentPreferences(KometPreferences parentPreferences, Class implementationClass) {
+        public PreferenceFactoryWithParentPreferences(KometPreferences parentPreferences, Class implementationClass) {
             this.parentPreferences = parentPreferences;
             this.implementationClass = implementationClass;
         }
