@@ -57,8 +57,12 @@ public final class ObservableSemantic
     }
 
     /**
+     * This method creates a new transaction and semantic version for committed records and updates the STAMP.
+     * If the version is uncommitted then it assumes that there is an existing transaction and does not create one,
+     * it will only update the version with new values and does NOT update the STAMP.
      * @param value
      * @param fieldIndex
+     * @param observableSemanticSnapshot
      * @param <T>
      */
     public <T> void createNewVersionAndTransaction(T value, int fieldIndex, ObservableSemanticSnapshot observableSemanticSnapshot) {
