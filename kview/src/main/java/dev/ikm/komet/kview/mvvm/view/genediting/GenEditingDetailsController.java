@@ -236,7 +236,8 @@ public class GenEditingDetailsController {
 
                     String patternFQN = getViewProperties().calculator().languageCalculator()
                             .getFullyQualifiedDescriptionTextWithFallbackOrNid(patternEntityVersion.nid());
-                    semanticDescriptionLabel.setText("%s of component for %s in %s".formatted(meaning, purpose, patternFQN));
+                    semanticDescriptionLabel.setText("Semantic for %s".formatted(patternFQN));
+                    semanticTitleText.setText("%s of component for %s in %s".formatted(meaning, purpose, patternFQN));
                 });
             });
         }
