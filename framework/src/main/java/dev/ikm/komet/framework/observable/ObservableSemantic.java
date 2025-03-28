@@ -84,7 +84,6 @@ public final class ObservableSemantic
             newVersion = version.getVersionRecord().withFieldValues(fieldsForNewVersion.toImmutable());
         }
         // Create new version...
-        //this.versionProperty.add(this.wrap(newVersion));
         SemanticRecord analogue = semantic.with(newVersion).build();
         // Entity provider will broadcast the nid of the changed entity.
         Entity.provider().putEntity(analogue);

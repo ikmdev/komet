@@ -130,6 +130,8 @@ public final class ObservableSemanticSnapshot extends ObservableEntitySnapshot<O
                                     observableFields.forEach(observableField -> {
                                         observableField.valueProperty().addListener(listener ->{
                                             ObservableSemanticSnapshot observableSemanticSnapshot = (ObservableSemanticSnapshot) ObservableEntity.get(this.observableEntity()).getSnapshot(this.viewCalculator);
+                                            // Alternate approach to call updateVersion directly.
+                                            // ObservableEntity.updateVersions(Entity.getFast(observableEntity.nid()), this.observableEntity);
                                             this.observableEntity.createNewVersionAndTransaction(observableField.value(), observableField.fieldIndex(),observableSemanticSnapshot);
                                         });
                                     });
