@@ -97,6 +97,8 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
 
     public static <OE extends ObservableEntity> OE get(Entity<? extends EntityVersion> entity) {
         if (entity instanceof ObservableEntity) {
+            ObservableEntity observableEntity = (ObservableEntity) entity;
+            updateVersions(observableEntity.entity(), observableEntity);
             return (OE) entity;
         }
         ObservableEntity observableEntity = SINGLETONS.computeIfAbsent(entity.publicId(), publicId ->

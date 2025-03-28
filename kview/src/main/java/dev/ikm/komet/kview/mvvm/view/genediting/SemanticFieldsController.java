@@ -175,11 +175,9 @@ public class SemanticFieldsController {
                 observableField.valueProperty()
                         .subscribe(value -> {
                             enableDisableSubmitButton(value);
-                            if(!submitButton.isDisabled()){
-                                observableSemantic.createNewVersionAndTransaction(observableField.value(), observableField.fieldIndex(), getViewProperties().calculator());
-                            }else {
+                            if(submitButton.isDisabled()){
                                 //TODO write method to remove any transactions and revert back to the committed values.
-                                //   observableSemantic.removeVersion(observableField.value(), observableField.fieldIndex(), retrieveObservableSemanticVersion(semanticEntityVersionLatest));
+                                // observableSemantic.removeVersion(observableField.value(), observableField.fieldIndex(), retrieveObservableSemanticVersion(semanticEntityVersionLatest));
                             }
                         });
             });

@@ -19,11 +19,19 @@ import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculatorWithCache;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
+import dev.ikm.tinkar.entity.FieldDefinitionRecord;
+import dev.ikm.tinkar.entity.FieldRecord;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
-import dev.ikm.tinkar.entity.*;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 
@@ -211,4 +219,31 @@ public final class ObservableSemanticVersion
         return fieldMap.toImmutable();
     }
 
+//    *
+//     * @param value
+//     * @param fieldIndex
+//     * @param <T>
+//
+//    public <T> void createNewVersionAndTransaction(T value, int fieldIndex) {
+//        MutableList<Object> fieldsForNewVersion = org.eclipse.collections.impl.factory.Lists.mutable.of(fieldValues().toArray());
+//        fieldsForNewVersion.set(fieldIndex, value);
+//        SemanticRecord semantic = Entity.getFast(nid());
+//        StampRecord stamp = Entity.getStamp(stampNid());
+//        SemanticVersionRecord newVersion = null;
+//        if (stamp.lastVersion().committed()) {
+//            // Create transaction
+//            Transaction t = Transaction.make();
+//            // newStamp already written to the entity store.
+//            StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
+//            // Create new version...
+//            newVersion = getVersionRecord().with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
+//        }else {
+//            newVersion = getVersionRecord().withFieldValues(fieldsForNewVersion.toImmutable());
+//        }
+//        // Create new version...
+//        //this.versionProperty.add(this.wrap(newVersion));
+//        SemanticRecord analogue = semantic.with(newVersion).build();
+//        // Entity provider will broadcast the nid of the changed entity.
+//        Entity.provider().putEntity(analogue);
+//    }
 }

@@ -59,11 +59,9 @@ public final class ObservableSemantic
     /**
      * @param value
      * @param fieldIndex
-     * @param viewCalculator
      * @param <T>
      */
-    public <T> void createNewVersionAndTransaction(T value, int fieldIndex, ViewCalculator viewCalculator) {
-        ObservableSemanticSnapshot observableSemanticSnapshot = getSnapshot(viewCalculator);
+    public <T> void createNewVersionAndTransaction(T value, int fieldIndex, ObservableSemanticSnapshot observableSemanticSnapshot) {
         Latest<ObservableSemanticVersion> observableSemanticVersionLatest = observableSemanticSnapshot.getLatestVersion();
         ObservableSemanticVersion version = observableSemanticVersionLatest.get();
         MutableList<Object> fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
