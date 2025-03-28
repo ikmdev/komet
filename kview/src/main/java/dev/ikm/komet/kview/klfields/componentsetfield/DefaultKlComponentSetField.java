@@ -28,20 +28,24 @@ public class DefaultKlComponentSetField extends BaseDefaultKlField<IntIdSet> imp
 
             klReadOnlyComponentSetControl.setTitle(getTitle());
 
-            observableComponentSetField.valueProperty().subscribe(intIdSet -> {
-                klReadOnlyComponentSetControl.getItems().clear();
-                intIdSet.forEach(nid -> {
-                    EntityProxy entityProxy = EntityProxy.make(nid);
-                    Image icon = Identicon.generateIdenticonImage(entityProxy.publicId());
-
-                    ComponentItem componentItem = new ComponentItem(entityProxy.description(), icon);
-                    klReadOnlyComponentSetControl.getItems().add(componentItem);
-                });
-            });
+            observableComponentSetField.valueProperty().addListener(observable ->
+                    updateReadOnlyIntIdSet(klReadOnlyComponentSetControl, observableComponentSetField.valueProperty().get()));
+            updateReadOnlyIntIdSet(klReadOnlyComponentSetControl, observableComponentSetField.valueProperty().get());
 
             node = klReadOnlyComponentSetControl;
         }
 
         setKlWidget(node);
+    }
+
+    private void updateReadOnlyIntIdSet(KLReadOnlyComponentSetControl klReadOnlyComponentSetControl, IntIdSet newIntIdSet) {
+        klReadOnlyComponentSetControl.getItems().clear();
+        newIntIdSet.forEach(nid -> {
+            EntityProxy entityProxy = EntityProxy.make(nid);
+            Image icon = Identicon.generateIdenticonImage(entityProxy.publicId());
+
+            ComponentItem componentItem = new ComponentItem(entityProxy.description(), icon);
+            klReadOnlyComponentSetControl.getItems().add(componentItem);
+        });
     }
 }
