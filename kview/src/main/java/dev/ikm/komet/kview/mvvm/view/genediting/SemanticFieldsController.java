@@ -133,16 +133,6 @@ public class SemanticFieldsController {
                 //Set the hascode for the committed values.
                 processCommittedValues();
                 loadUIData();
-//                observableSemantic.versionProperty().addListener((ListChangeListener<? super ObservableSemanticVersion>) listChangeListener -> {
-//                while(listChangeListener.next()){
-//                    if(listChangeListener.wasPermutated()){
-//                        System.out.println(" THE VALUE CHANGED... listChangeListener.wasPermutated()");
-//                    }
-//                    if(listChangeListener.wasAdded()){
-//                        System.out.println(" THE VALUE ADDED..." + listChangeListener.getAddedSubList().getFirst().fieldValues());
-//                    }
-//                }
-//            });
         }
 
         // subscribe to changes... if the FIELD_INDEX is -1 or unset, then the user clicked the
