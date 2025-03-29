@@ -20,7 +20,7 @@ services:
     restart: unless-stopped
 
   nginx:
-    image: nginx:latest
+    image: nginx:1.26.3
     container_name: nginx
     ports:
       - "80:80"
