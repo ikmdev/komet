@@ -5,7 +5,8 @@ COPY . /komet/
 WORKDIR /komet/
 
 RUN ls /komet/
-RUN ./mvnw clean install -Pjpro
+RUN ./mvnw clean install -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
+RUN ./mvnw clean -f application -Pjpro jpro:release
 
 FROM azul/zulu-openjdk-alpine:23-latest
 
@@ -17,7 +18,8 @@ RUN apk add --no-cache libc6-compat gtk+3.0
 
 # Copy the JPro application to the image
 COPY --from=builder /komet/application/target/komet-jpro.zip /komet-jpro.zip
-COPY docker/jpro/html/ /jproserver/komet-jpro/html/
+
+# Unzip the JPro application
 RUN unzip /komet-jpro.zip -d /jproserver/
 
 WORKDIR /jproserver/komet-jpro/
