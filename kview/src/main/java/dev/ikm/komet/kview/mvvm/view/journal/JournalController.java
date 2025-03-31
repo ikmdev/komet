@@ -17,6 +17,7 @@ package dev.ikm.komet.kview.mvvm.view.journal;
 
 import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
+import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
@@ -70,6 +71,7 @@ import dev.ikm.komet.framework.tabs.TabGroup;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.NotificationPopup;
 import dev.ikm.komet.kview.events.JournalTileEvent;
@@ -101,6 +103,7 @@ import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
 import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
+import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.komet.preferences.ConceptWindowSettings;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
@@ -152,6 +155,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -223,6 +227,8 @@ public class JournalController {
 
     private Pane reasonerSlideoutTrayPane;
 
+    private Pane conceptNavigatorSlideoutTrayPane;
+
     private Pane nexGenSearchSlideoutTrayPane;
 
     private Pane nextGenReasonerSlideoutTrayPane;
@@ -231,6 +237,9 @@ public class JournalController {
 
     @FXML
     private ToggleButton reasonerToggleButton;
+
+    @FXML
+    private ToggleButton conceptNavigatorToggleButton;
 
     @FXML
     private ToggleButton navigatorToggleButton;
@@ -417,6 +426,7 @@ public class JournalController {
         navSlideoutTrayPane = newTrayPane();
         searchSlideoutTrayPane = newTrayPane();
         reasonerSlideoutTrayPane = newTrayPane();
+        conceptNavigatorSlideoutTrayPane = newTrayPane();
 
         // nexGenSearchSlideoutTrayPane
         nexGenSearchSlideoutTrayPane = new VerticallyFilledPane();
@@ -434,6 +444,7 @@ public class JournalController {
                 navSlideoutTrayPane,
                 searchSlideoutTrayPane,
                 reasonerSlideoutTrayPane,
+                conceptNavigatorSlideoutTrayPane,
                 nexGenSearchSlideoutTrayPane,
                 nextGenReasonerSlideoutTrayPane
         );
@@ -451,7 +462,11 @@ public class JournalController {
             /* if there is a string data on dragboard, read it and use it */
             Dragboard dragboard = event.getDragboard();
             boolean success = false;
-            if (dragboard.hasString()) {
+            if (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)) {
+                List<UUID[]> uuids = (List<UUID[]>) dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
+                populateWorkspaceWithSelection(uuids);
+                success = true;
+            } else if (dragboard.hasString()) {
                 try {
                     LOG.info("publicId: {}", dragboard.getString());
 
@@ -679,6 +694,8 @@ public class JournalController {
             return searchSlideoutTrayPane;
         } else if (reasonerToggleButton.equals(selectedToggleButton)) {
             return reasonerSlideoutTrayPane;
+        } else if (conceptNavigatorToggleButton.equals(selectedToggleButton)) {
+            return conceptNavigatorSlideoutTrayPane;
         } else if (nextGenSearchToggleButton.equals(selectedToggleButton)) {
             return nexGenSearchSlideoutTrayPane;
         } else if (nextGenReasonerToggleButton.equals(selectedToggleButton)) {
@@ -851,6 +868,32 @@ public class JournalController {
 
             return contextMenu;
         }));
+    }
+
+    /**
+     * Add a ConceptNavigator tree view, currently tied to the "heart" left lav button
+     */
+    public void loadConceptNavigatorPanel(ViewProperties viewProperties) {
+        KLConceptNavigatorControl conceptNavigatorControl = new KLConceptNavigatorControl();
+        conceptNavigatorControl.setNavigator(new ViewNavigator(viewProperties.nodeView()));
+        conceptNavigatorControl.setHeader("Concept Header");
+        conceptNavigatorControl.setShowTags(false);
+        conceptNavigatorControl.setOnAction(items ->
+                populateWorkspaceWithSelection(items.stream()
+                        .map(item -> item.publicId().asUuidArray())
+                        .toList()));
+
+        VBox nodePanel = new VBox(conceptNavigatorControl);
+        nodePanel.getStyleClass().add("concept-navigator-container");
+        VBox.setVgrow(conceptNavigatorControl, Priority.ALWAYS);
+        setupSlideOutTrayPane(nodePanel, conceptNavigatorSlideoutTrayPane);
+    }
+
+    private void populateWorkspaceWithSelection(List<UUID[]> uuids) {
+        for (UUID[] uuid : uuids) {
+            Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForUuids(uuid));
+            makeConceptWindow(windowView, ConceptFacade.make(entity.nid()));
+        }
     }
 
     /**
