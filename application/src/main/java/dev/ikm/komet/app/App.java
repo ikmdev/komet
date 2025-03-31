@@ -40,6 +40,7 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
+
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
 import dev.ikm.komet.details.DetailsNodeFactory;
@@ -85,6 +86,8 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -109,8 +112,10 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
@@ -122,6 +127,10 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.management.ManagementFactory;
+
+import com.sun.management.OperatingSystemMXBean;
+
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.ZoneId;
@@ -129,6 +138,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
+
 
 /**
  * JavaFX App
@@ -144,6 +154,10 @@ public class App extends Application {
     private static Stage classicKometStage;
     private static long windowCount = 1;
     private static KometPreferencesStage kometPreferencesStage;
+
+    // variables specific to resource overlay
+    private Stage overlayStage;
+    private Timeline resourceUsageTimeline;
 
     /**
      * An entry point to launch the newer UI panels.
@@ -283,7 +297,7 @@ public class App extends Application {
                     .filter(journalController -> journalController.getTitle().equals(journalName))
                     .findFirst()
                     .ifPresentOrElse(
-                            journalController -> journalController.windowToFront(), /* Window already launched now make window to the front (so user sees window) */
+                            JournalController::windowToFront, /* Window already launched now make window to the front (so user sees window) */
                             () -> launchJournalViewWindow(evt.getWindowSettingsObjectMap()) /* launch new Journal view window */
                     );
         };
@@ -332,19 +346,9 @@ public class App extends Application {
 
             // View
             Menu viewMenu = new Menu("View");
-            MenuItem classicKometPage = new MenuItem("Classic Komet");
-            KeyCombination classicKometPageKeyCombo = new KeyCodeCombination(KeyCode.K, KeyCombination.SHORTCUT_DOWN);
-            classicKometPage.setOnAction(actionEvent -> {
-                try {
-                    launchClassicKomet();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (BackingStoreException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-            classicKometPage.setAccelerator(classicKometPageKeyCombo);
-            viewMenu.getItems().add(classicKometPage);
+            MenuItem classicKometMenuItem = createClassicKometMenuItem();
+            MenuItem resourceUsageMenuItem = createResourceUsageItem();
+            viewMenu.getItems().addAll(classicKometMenuItem, resourceUsageMenuItem);
 
             // Window Menu
             Menu windowMenu = new Menu("Window");
@@ -362,7 +366,7 @@ public class App extends Application {
             tk.autoAddWindowMenuItems(windowMenu);
 
 
-            if(System.getProperty("os.name")!=null && System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
+            if (System.getProperty("os.name") != null && System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
                 tk.setGlobalMenuBar(bar);
             }
 
@@ -423,7 +427,7 @@ public class App extends Application {
             FXMLLoader landingPageLoader = LandingPageViewFactory.createFXMLLoader();
             BorderPane landingPageBorderPane = landingPageLoader.load();
             // if NOT on Mac OS
-            if(System.getProperty("os.name")!=null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
+            if (System.getProperty("os.name") != null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
                 createMenuOptions(landingPageBorderPane);
             }
             LandingPageController landingPageController = landingPageLoader.getController();
@@ -457,6 +461,7 @@ public class App extends Application {
     /**
      * When a user selects the menu option View/New Journal a new Stage Window is launched.
      * This method will load a navigation panel to be a publisher and windows will be connected (subscribed) to the activity stream.
+     *
      * @param journalWindowSettings if present will give the size and positioning of the journal window
      */
     private void launchJournalViewWindow(PrefX journalWindowSettings) {
@@ -477,7 +482,7 @@ public class App extends Application {
 
             journalStageWindow.setScene(sourceScene);
             // if NOT on Mac OS
-            if(System.getProperty("os.name")!=null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
+            if (System.getProperty("os.name") != null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
                 generateMsWindowsMenu(journalBorderPane, journalStageWindow);
             }
 
@@ -492,7 +497,7 @@ public class App extends Application {
                     journalStageWindow.setX(journalWindowSettings.getValue(JOURNAL_XPOS));
                     journalStageWindow.setY(journalWindowSettings.getValue(JOURNAL_YPOS));
                     journalController.recreateConceptWindows(journalWindowSettings);
-                }else{
+                } else {
                     journalStageWindow.setMaximized(true);
                 }
             }
@@ -543,7 +548,7 @@ public class App extends Application {
 
         // launched (journal Controllers List) will overwrite existing window preferences.
         List<String> journalSubWindowFolders = new ArrayList<>(journalControllersList.size());
-        for(JournalController controller : journalControllersList) {
+        for (JournalController controller : journalControllersList) {
             String journalSubWindowPrefFolder = controller.generateJournalDirNameBasedOnTitle();
             journalSubWindowFolders.add(journalSubWindowPrefFolder);
 
@@ -567,7 +572,7 @@ public class App extends Application {
         }
 
         // Make sure windows that are not summoned will not be deleted (not added to JOURNAL_NAMES)
-        for (String x : journalSubWindowFolders){
+        for (String x : journalSubWindowFolders) {
             if (!journalSubWindowFoldersFromPref.contains(x)) {
                 journalSubWindowFoldersFromPref.add(x);
             }
@@ -679,7 +684,7 @@ public class App extends Application {
         addStylesheets(kometScene, KOMET_CSS);
 
         // if NOT on Mac OS
-        if(System.getProperty("os.name")!=null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
+        if (System.getProperty("os.name") != null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
             generateMsWindowsMenu(kometRoot, classicKometStage);
         }
 
@@ -699,13 +704,16 @@ public class App extends Application {
         } else {
             // Restore nodes from preferences.
             windowPreferences.get(LEFT_TAB_PREFERENCES).ifPresent(leftTabPreferencesName -> {
-                restoreTab(windowPreferences, leftTabPreferencesName, controller.windowView(), node -> controller.leftBorderPaneSetCenter(node));
+                restoreTab(windowPreferences, leftTabPreferencesName, controller.windowView(),
+                        controller::leftBorderPaneSetCenter);
             });
             windowPreferences.get(CENTER_TAB_PREFERENCES).ifPresent(centerTabPreferencesName -> {
-                restoreTab(windowPreferences, centerTabPreferencesName, controller.windowView(), node -> controller.centerBorderPaneSetCenter(node));
+                restoreTab(windowPreferences, centerTabPreferencesName, controller.windowView(),
+                        controller::centerBorderPaneSetCenter);
             });
             windowPreferences.get(RIGHT_TAB_PREFERENCES).ifPresent(rightTabPreferencesName -> {
-                restoreTab(windowPreferences, rightTabPreferencesName, controller.windowView(), node -> controller.rightBorderPaneSetCenter(node));
+                restoreTab(windowPreferences, rightTabPreferencesName, controller.windowView(),
+                        controller::rightBorderPaneSetCenter);
             });
         }
         //Setting X and Y coordinates for location of the Komet stage
@@ -852,7 +860,12 @@ public class App extends Application {
         });
     }
 
-    public void createMenuOptions(BorderPane landingPageRoot) {
+    /**
+     * Create the menu options for the landing page.
+     *
+     * @param landingPageRoot The root pane of the landing page.
+     */
+    public void createMenuOptions(final BorderPane landingPageRoot) {
         MenuBar menuBar = new MenuBar();
 
         Menu fileMenu = new Menu("File");
@@ -868,7 +881,9 @@ public class App extends Application {
 
         Menu viewMenu = new Menu("View");
         MenuItem classicKometMenuItem = createClassicKometMenuItem();
-        viewMenu.getItems().add(classicKometMenuItem);
+        MenuItem resourceUsageMenuItem = createResourceUsageItem();
+        viewMenu.getItems().addAll(classicKometMenuItem, resourceUsageMenuItem);
+
 
         Menu windowMenu = new Menu("Window");
         MenuItem minimizeWindow = new MenuItem("Minimize");
@@ -886,6 +901,11 @@ public class App extends Application {
         Platform.runLater(() -> landingPageRoot.setTop(menuBar));
     }
 
+    /**
+     * Create the menu item for launching the classic Komet.
+     *
+     * @return The menu item for launching the classic Komet.
+     */
     private MenuItem createClassicKometMenuItem() {
         MenuItem classicKometMenuItem = new MenuItem("Classic Komet");
         KeyCombination classicKometKeyCombo = new KeyCodeCombination(KeyCode.K, KeyCombination.CONTROL_DOWN);
@@ -900,6 +920,78 @@ public class App extends Application {
         });
         classicKometMenuItem.setAccelerator(classicKometKeyCombo);
         return classicKometMenuItem;
+    }
+
+    /**
+     * Create a Resource Usage overlay to display metrics
+     *
+     * @return The menu item for launching the resource usage overlay.
+     */
+    private MenuItem createResourceUsageItem() {
+        MenuItem resourceUsageItem = new MenuItem("Resource Usage");
+        KeyCombination classicKometKeyCombo = new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN);
+        resourceUsageItem.setOnAction(actionEvent -> {
+            if (overlayStage != null && overlayStage.isShowing()) {
+                overlayStage.hide();
+            } else {
+                showResourceUsageOverlay();
+            }
+        });
+        resourceUsageItem.setAccelerator(classicKometKeyCombo);
+        return resourceUsageItem;
+    }
+
+    /**
+     * Show the resource usage overlay.
+     */
+    private void showResourceUsageOverlay() {
+        overlayStage = new Stage();
+        overlayStage.initOwner(getFocusedWindow());
+        overlayStage.initModality(Modality.APPLICATION_MODAL);
+        overlayStage.initStyle(StageStyle.TRANSPARENT);
+
+        VBox overlayContent = new VBox();
+        overlayContent.setAlignment(Pos.CENTER);
+        overlayContent.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5); -fx-padding: 20;");
+
+        Label cpuUsageLabel = new Label();
+        Label memoryUsageLabel = new Label();
+        cpuUsageLabel.setTextFill(Color.WHITE);
+        memoryUsageLabel.setTextFill(Color.WHITE);
+        overlayContent.getChildren().addAll(cpuUsageLabel, memoryUsageLabel);
+
+        Scene overlayScene = new Scene(overlayContent, 300, 200, Color.TRANSPARENT);
+        overlayStage.setScene(overlayScene);
+        overlayStage.show();
+
+        // Create and start the timeline to update resource usage
+        resourceUsageTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            updateResourceUsage(cpuUsageLabel, memoryUsageLabel);
+        }));
+        resourceUsageTimeline.setCycleCount(Timeline.INDEFINITE);
+        resourceUsageTimeline.play();
+    }
+
+    /**
+     * Update the resource usage labels with CPU and memory usage.
+     *
+     * @param cpuUsageLabel the label to be used for the CPU usage
+     * @param memoryUsageLabel the label to be used for the memory usage
+     */
+    private void updateResourceUsage(final Label cpuUsageLabel, final Label memoryUsageLabel) {
+        java.lang.management.OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+        double cpuLoad = -1;
+        if (osBean instanceof OperatingSystemMXBean) {
+            cpuLoad = ((OperatingSystemMXBean) osBean).getCpuLoad() * 100;
+
+            long totalMemory = Runtime.getRuntime().totalMemory();
+            long freeMemory = Runtime.getRuntime().freeMemory();
+            long usedMemory = totalMemory - freeMemory;
+
+            cpuUsageLabel.setText(String.format("CPU Usage: %.2f%%", cpuLoad));
+            memoryUsageLabel.setText(String.format("Memory Usage: %d MB / %d MB",
+                    usedMemory / (1024 * 1024), totalMemory / (1024 * 1024)));
+        }
     }
 
     public enum AppKeys {
