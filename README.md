@@ -49,12 +49,12 @@ viewed historically.
 3. Change the local directory location to `komet`
 4. Enter the following command to build the application:
    ```bash
-   mvn clean install
+   ./mvnw clean install
    ```
 
 5. Run the Komet application with the following command:
    ```bash
-   mvn -f application javafx:run
+   ./mvnw -f application javafx:run
    ```
 6. You can open Komet code using your favorite IDE like _Eclipse_ or _IntelliJ Idea_ and try running it from there.
    While running Komet UI from your IDE, you many have to add the following VM arguments:
@@ -66,7 +66,7 @@ viewed historically.
 After building Komet, you can run it with JPro on your local machine by following these steps:
 1. Execute the following command to run the Komet application in your web browser:
    ```bash
-   mvn -f application -Pjpro jpro:run
+   ./mvnw -f application -Pjpro jpro:run
    ```
    The default web browser should open automatically, displaying the Komet application. If it doesn't, navigate
    to `http://localhost:8080` in your browser.
@@ -81,7 +81,7 @@ to run Komet with JPro in a Docker container and publish your data to nexus, fol
 1. Create the application release zip for deployment using the following command:
    
     ```bash
-    mvn clean -f application -Pjpro jpro:release
+    ./mvnw clean -f application -Pjpro jpro:release
     ```
    
     The release zip will be created in the `application/target` directory, named `komet-jpro.zip`.
