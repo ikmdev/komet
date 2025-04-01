@@ -22,10 +22,6 @@ COPY --from=builder /komet/application/target/komet-jpro.zip /komet-jpro.zip
 # Unzip the JPro application
 RUN unzip /komet-jpro.zip -d /jproserver/
 
-# Copy the different default page in, which allows for proxy paths
-COPY docker/defaultpage /
-RUN cp /defaultpage /jproserver/komet-jpro/html/defaultpage
-
 WORKDIR /jproserver/komet-jpro/
 
 # Start the JPro server
