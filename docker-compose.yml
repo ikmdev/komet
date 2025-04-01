@@ -25,6 +25,7 @@ services:
     container_name: komet
     volumes:
       - ~/Solor:/root/Solor
+      - ./docker/komet-data/users.ini:/root/Solor/users.ini:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/status/alive"]
       interval: 30s
