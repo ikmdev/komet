@@ -1,6 +1,6 @@
 FROM csanchez/maven:3-azulzulu-23-alpine AS builder
 
-COPY . /komet/
+COPY .. /komet/
 
 WORKDIR /komet/
 
@@ -22,6 +22,7 @@ COPY --from=builder /komet/application/target/komet-jpro.zip /komet-jpro.zip
 # Unzip the JPro application
 RUN unzip /komet-jpro.zip -d /jproserver/
 
+# Copy the different default page in, which allows for proxy paths
 WORKDIR /jproserver/komet-jpro/
 
 # Start the JPro server
