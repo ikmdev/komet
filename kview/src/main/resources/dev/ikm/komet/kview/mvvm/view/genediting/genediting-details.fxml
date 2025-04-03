@@ -253,7 +253,7 @@
                         <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="66.0" prefWidth="507.0" styleClass="concept-detail-banner-background">
                            <columnConstraints>
                               <ColumnConstraints halignment="LEFT" maxWidth="586.0" minWidth="-Infinity" prefWidth="42.0" />
-                              <ColumnConstraints halignment="LEFT" maxWidth="586.0" minWidth="234.0" prefWidth="416.0" />
+                              <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="234.0" prefWidth="416.0" />
                            </columnConstraints>
                            <rowConstraints>
                               <RowConstraints minHeight="10.0" />
@@ -262,7 +262,7 @@
                               <RowConstraints minHeight="9.0" prefHeight="22.0" vgrow="NEVER" />
                            </rowConstraints>
                            <children>
-                              <Label fx:id="semanticTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" prefWidth="416.0" text="SEMANTIC TITLE" textFill="#212430" wrapText="true" GridPane.columnSpan="2">
+                              <Label fx:id="semanticTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="40.0" prefWidth="495.0" text="SEMANTIC TITLE" textFill="#212430" wrapText="true" GridPane.columnSpan="2">
                                  <font>
                                     <Font name="Open Sans Regular" size="17.0" />
                                  </font>
