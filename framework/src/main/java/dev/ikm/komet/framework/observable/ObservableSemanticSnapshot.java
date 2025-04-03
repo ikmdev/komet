@@ -126,8 +126,8 @@ public final class ObservableSemanticSnapshot extends ObservableEntitySnapshot<O
                                         latest.addLatest(contradiction.fields(patternEntityVersion));
                                     }
                                 }
-                                latest.ifPresent(observableFields -> {
-                                    observableFields.forEach(observableField -> {
+                                latest.get().forEach(observableField -> {
+//                                        observableField.refreshProperties.set(true);
                                         observableField.valueProperty().addListener((observable, ov, nv) ->{
                                             if(nv != null){
                                                 ObservableSemanticSnapshot observableSemanticSnapshot = (ObservableSemanticSnapshot) ObservableEntity.get(this.observableEntity()).getSnapshot(this.viewCalculator);
@@ -137,7 +137,7 @@ public final class ObservableSemanticSnapshot extends ObservableEntitySnapshot<O
                                             }
                                         });
                                     });
-                                });
+
                                 return latest;
                             });
                 });
