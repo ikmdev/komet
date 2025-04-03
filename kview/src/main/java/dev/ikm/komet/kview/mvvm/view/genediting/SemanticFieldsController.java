@@ -82,9 +82,15 @@ public class SemanticFieldsController {
     private int committedHash;
 
     private void enableDisableSubmitButton(Object value){
-        if (value != null && !value.toString().isEmpty()) {
-            enableDisableSubmitButton();
-        } else {
+        try {
+            // interrogating the value itself and/or the value's toString() will make a PrimitiveData call and
+            // can invoke an ArrayIndexOutOfBoundsException
+            if (value != null && !value.toString().isEmpty()) {
+                enableDisableSubmitButton();
+            } else {
+                submitButton.setDisable(true);
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
             submitButton.setDisable(true);
         }
     }
