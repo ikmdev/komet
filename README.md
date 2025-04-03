@@ -1,6 +1,7 @@
 # Komet-java
 
 [![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-white.svg)](https://sonarcloud.io/summary/new_code?id=ikmdev_tinkar-core)
+
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=ikmdev_tinkar-core&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=ikmdev_tinkar-core)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ikmdev_tinkar-core&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ikmdev_tinkar-core)
 
@@ -11,17 +12,21 @@ data. This file will explain best practices for getting started, building, runni
 Install App Team
 
 ## Project Overview
-This intention of this (Komet) project is to provide a user-friendly interface that lets the user view, analyze, change, create,
-import and export the various medical terminologies. All the terminology changes and their relationships are saved and can be
-viewed historically.
+This intention of this (Komet) project is to provide a user-friendly interface that lets the user view, analyze, 
+change, create, import and export the various medical terminologies. All the terminology changes and their 
+relationships are saved and can be viewed historically.
 
 # Getting Started
+
 ## Installation Instructions
+
 ### Pre-requisites:
+
 1. You should have copy of a local DB available and configured. If not then please request for one.
 2. Uninstall any previously installed versions of Komet.
 
 ### Installing Komet on your local machine:
+
 1. To get started with installing and using Komet, [browse to the available releases in GitHub](https://github.com/ikmdev/komet/releases). See the
    documentation about the new features included in each release.![img_1.png](doc/images/releases.png)
 2. Download the appropriate installation file for your machine (_example, for Windows OS download **Komet-X.X.X-Installer-Windows-Unsigned.msi**_).
@@ -30,7 +35,9 @@ viewed historically.
 5. Komet is now installed on your local machine. You can now run Komet from programs or installed directory.
 
 ## Follow the instructions below to set up the local environment for Komet
+
 ### Pre-requisites:
+
 1. Local Git repo and GitBash or similar shell-prompt installed/configured on your local machine.
 2. Set up GitHub by following the [instructions provided here](https://ikmdev.atlassian.net/wiki/spaces/IKM/pages/390201368/GitHub+Account+Creation+IKM+FDA+Shield)
 3. Download and install Open JDK Java 23 or greater [latest version](https://openjdk.org/projects/jdk/)
@@ -40,22 +47,28 @@ viewed historically.
    project and its prerequisites before building `komet`.
 
 ### Building and Running Komet locally:
-1. Once you have access to [komet repository](https://github.com/ikmdev/komet) on GitHub, fork the repository using instructions
-   provided in "_**Fork the Repository**_" section in [GitHub document](https://ikmdev.atlassian.net/wiki/spaces/IKM/pages/390201368/GitHub+Account+Creation+IKM+FDA+Shield).
+
+1. Once you have access to [komet repository](https://github.com/ikmdev/komet) on GitHub, fork the repository using 
+instructions provided in "_**Fork the Repository**_" section in [GitHub document](https://ikmdev.atlassian.net/wiki/spaces/IKM/pages/390201368/GitHub+Account+Creation+IKM+FDA+Shield).
 2. Clone the forked Komet repository on your local machine by running the git bash command.
+
    ```bash
    git clone git@github.com:your-github-username/komet.git
    ```
+   
 3. Change the local directory location to `komet`
 4. Enter the following command to build the application:
+
    ```bash
    ./mvnw clean install
    ```
 
 5. Run the Komet application with the following command:
+
    ```bash
    ./mvnw -f application javafx:run
    ```
+   
 6. You can open Komet code using your favorite IDE like _Eclipse_ or _IntelliJ Idea_ and try running it from there.
    While running Komet UI from your IDE, you many have to add the following VM arguments:
    ```
@@ -63,6 +76,7 @@ viewed historically.
    ```
 
 ## Running Komet with JPro locally
+
 After building Komet, you can run it with JPro on your local machine by following these steps:
 1. Execute the following command to run the Komet application in your web browser:
    ```bash
@@ -73,35 +87,22 @@ After building Komet, you can run it with JPro on your local machine by followin
 2. To stop the application, press `Ctrl + C` in the terminal where the application is running.
 3. To rerun the application, repeat step 1.
 
-## Running Nexus and Komet with JPro Locally
+## Running Komet with JPro in a Docker Container
 
-For the best development experience, we have created a simple solution to standing up everything you need
-to run Komet with JPro in a Docker container and publish your data to nexus, follow these steps:
+To run Komet and all of the other tools you might need in a Docker container, follow these steps:
+- Within the extracted directory, find the `docker-compose.yml` file.
+- Start the Docker container with Docker Compose by running:
 
-1. Create the application release zip for deployment using the following command:
-   
-    ```bash
-    ./mvnw clean -f application -Pjpro jpro:release
-    ```
-   
-    The release zip will be created in the `application/target` directory, named `komet-jpro.zip`.
-
-2. Transfer the `komet-jpro.zip` file to the directory where you want to run the Docker container.
-
-3. Extract the contents of `komet-jpro.zip` file and navigate to the extracted folder.
-
-4. To run the application in a Docker container, you can easily use the Docker Compose provided by executing the 
-following command:
-   
    ```bash
    docker compose up -d
    ```
-   
-    This command will start the Docker container in detached mode, allowing you to run the application in the 
-    background. The application should now be running in the Docker container. Access it by navigating to 
-    `http://localhost:8080` in your web browser. If running on a remote server, replace localhost with the server’s IP address.
+
+The application should now be running in the Docker container. Access it by navigating to 
+[http://localhost](http://localhost) in your web browser. If running on a remote server, replace localhost with 
+the server’s IP address.
 
 ## TestFX Framework for GUI Testing in Komet JavaFX Application
+
 ### Running Komet GUI Unit Tests Using the TestFX Framework
 
 The Komet application includes GUI tests built with the TestFX framework. By default, these tests run in headless mode,
@@ -109,20 +110,20 @@ which is ideal for continuous integration (CI) environments or situations where 
 
 1. **Running TestFX Tests in Headless Mode (Default)**
 To execute all TestFX unit tests, in headless mode (without launching a GUI window), run:
-   
-    ```bash
-    mvn test -DrunUTestFX
-    ```
+
+   ```bash
+   mvn test -DrunUTestFX
+   ```
    
 2. **Running TestFX Tests in Graphical Mode (Non-Headless)**
-If you need to observe the GUI during testing—for instance, when debugging UI components—you can disable headless mode 
-by setting the headless property to false.
-To run all tests in non-headless mode:
-
-    ```bash
-    mvn test -DrunUTestFX -Dtestfx.headless=false
-    ```
-
+    
+    If you need to observe the GUI during testing—for instance, when debugging UI components—you can disable headless 
+    mode by setting the headless property to false. To run all tests in non-headless mode:
+   
+   ```bash
+   mvn test -DrunUTestFX -Dtestfx.headless=false
+   ```
+   
 3. **Running Specific Tests**
 - To run a specific test class in a specific module, for example the `LoginUTestFX` class in the `kview` module:
    ```bash
@@ -135,10 +136,12 @@ To run all tests in non-headless mode:
    ```
 
 ### Running Integration Tests Using the TestFX Framework
+
 In addition to unit tests, Komet includes integration tests to ensure that different components work seamlessly together.
 
 1. Running all Integration Tests in Headless Mode (Default)
 To execute all TestFX integration tests use the following command:
+
    ```bash
    mvn verify -DrunITestFX
    ```
@@ -165,17 +168,16 @@ For example, to run the `PatternWindowITestFX` integration test class:
 **Important Note on Test Execution**
 - The tests will only run once after they pass successfully. To trigger the tests again, changes must be made
 to any part of the project.
-- Adding the `-Dmaven.build.cache.enabled=false` parameter will disable the Maven build cache, preventing tests 
-from being cached and reused, thus forcing fresh test execution. For example:
+- Adding the `-Dmaven.build.cache.enabled=false` parameter will disable the Maven build cache, preventing tests from 
+being cached  and reused, thus forcing fresh test execution. For example:
 
-    ```bash
-    mvn test -DrunUTestFX -Dmaven.build.cache.enabled=false
-    ```
-   or
+   ```bash
+   mvn test -DrunUTestFX -Dmaven.build.cache.enabled=false
+   ```
 
-    ```bash
-    mvn verify -DrunITestFX -Dmaven.build.cache.enabled=false
-    ```
+  ```bash
+   mvn verify -DrunITestFX -Dmaven.build.cache.enabled=false
+   ```
 
 ## Usage Examples:
 
@@ -243,8 +245,9 @@ and when it is triggered, desired logic can be executed in the listener code.
        }
     }
    ```
-3. Komet's design also includes the cognitive framework to implement MVVM architecture framework.
-You can find more information along with the examples [here](https://github.com/carldea/cognitive/wiki)
+   
+4. Komet's design also includes the cognitive framework to implement MVVM architecture framework.
+You can find more information along with the examples [here](https://github.com/carldea/cognitive/wiki).
    1. Gradle:
       ```
       implementation 'org.carlfx:cognitive:1.3.0'
