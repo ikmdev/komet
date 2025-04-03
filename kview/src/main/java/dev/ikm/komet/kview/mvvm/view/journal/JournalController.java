@@ -1583,7 +1583,6 @@ public class JournalController {
 
         // add to the list of concept windows
         final String finalConceptFolderName = conceptFolderName.get();
-        conceptWindows.add(new ConceptPreference(conceptFolderName.get(), null, -1, chapterWindow));
 
         patternKlWindow.setOnClose(() -> {
             removeLidrSetting(finalConceptFolderName);
