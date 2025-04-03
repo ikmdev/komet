@@ -16,10 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SINGLE_SEMANTIC_FIELD;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.*;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
@@ -27,8 +24,12 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
@@ -44,6 +45,7 @@ import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
@@ -51,15 +53,21 @@ import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
+import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -200,25 +208,38 @@ public class GenEditingDetailsController {
     private void initialize() {
         // clear all semantic details.
         semanticDetailsVBox.getChildren().clear();
-
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+
+        // if the semantic is null, then we generate a default one
+        if (semantic == null) {
+            genEditingViewModel.setPropertyValue(MODE, CREATE);
+            EntityFacade pattern = genEditingViewModel.getPropertyValue(PATTERN);
+
+            // create empty semantic for the pattern and set it in the view model
+            semantic = DataModelHelper.createEmptySemantic(getViewProperties(), pattern);
+            genEditingViewModel.setPropertyValue(SEMANTIC, semantic);
+        } else {
+            genEditingViewModel.setPropertyValue(MODE, EDIT);
+        }
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
         if (semantic != null) {
+            //retrieve latest semanticVersion
             semanticEntityVersionLatest = retrieveCommittedLatestVersion(semantic, getViewProperties());
             semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
                 Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
                 patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
-                    semanticDescriptionLabel.setText("Semantic for %s".formatted(patternEntityVersion.entity().description()));
                     String meaning = languageCalculator.getDescriptionText(patternEntityVersion.semanticMeaningNid()).orElse("No Description");
                     String purpose = languageCalculator.getDescriptionText(patternEntityVersion.semanticPurposeNid()).orElse("No Description");
                     semanticMeaningText.setText(meaning);
                     semanticPurposeText.setText(purpose);
+
+                    String patternFQN = getViewProperties().calculator().languageCalculator()
+                            .getFullyQualifiedDescriptionTextWithFallbackOrNid(patternEntityVersion.nid());
+                    semanticDescriptionLabel.setText("Semantic for %s".formatted(patternFQN));
+                    semanticTitleText.setText("%s of component for %s in %s".formatted(meaning, purpose, patternFQN));
                 });
             });
-        } else {
-            semanticEntityVersionLatest = null;
-            semanticDescriptionLabel.setText("New Semantic no Pattern associated.");
         }
 
         // Setup Stamp section
@@ -263,23 +284,22 @@ public class GenEditingDetailsController {
         setupProperties();
 
         //Set up the Listener to refresh the details area (After user hits submit button on the right side)
+        EntityFacade finalSemantic = semantic;
         Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
-            if (evt.getEventType() == GenEditingEvent.PUBLISH && evt.getNid() == semantic.nid()) {
-//                Platform.runLater(() -> {
-                    for (int i = 0; i < evt.getList().size(); i++) {
-                        ObservableField field = observableFields.get(i);
-                        ObservableField updatedField = evt.getList().get(i);
-                        if (updatedField != null && field != null) {
-                            // readonly integer value 1, editable integer value 1 don't update
-                            // readonly integer value 1, editable integer value 5 do update
-                            // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
-                            // Should we check if the value is different before updating? (blindly updating now).
-                            //if (!field.value().equals(updatedField.valueProperty())) {
-                                field.valueProperty().setValue(updatedField.valueProperty().getValue());
-                            //}
-                        }
+            if (evt.getEventType() == GenEditingEvent.PUBLISH && evt.getNid() == finalSemantic.nid()) {
+                for (int i = 0; i < evt.getList().size(); i++) {
+                    ObservableField field = observableFields.get(i);
+                    ObservableField updatedField = evt.getList().get(i);
+                    if (updatedField != null && field != null) {
+                        // readonly integer value 1, editable integer value 1 don't update
+                        // readonly integer value 1, editable integer value 5 do update
+                        // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
+                        // Should we check if the value is different before updating? (blindly updating now).
+                        //if (!field.value().equals(updatedField.valueProperty())) {
+                            field.valueProperty().setValue(updatedField.valueProperty().getValue());
+                        //}
                     }
-//                });
+                }
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
@@ -324,11 +344,13 @@ public class GenEditingDetailsController {
             LOG.warn("Must select a valid module for Stamp.");
             return;
         }
-        moduleText.setText(moduleEntity.description());
-        ConceptEntity pathEntity = stampViewModel.getValue(PATH);
-        pathText.setText(pathEntity.description());
-        State status = stampViewModel.getValue(STATUS);
-        statusText.setText(status.name());
+        if (genEditingViewModel.getPropertyValue(MODE) == EDIT) {
+            moduleText.setText(moduleEntity.description());
+            ConceptEntity pathEntity = stampViewModel.getValue(PATH);
+            pathText.setText(pathEntity.description());
+            State status = stampViewModel.getValue(STATUS);
+            statusText.setText(status.name());
+        }
     }
 
     public ValidationViewModel getStampViewModel() {
@@ -336,11 +358,15 @@ public class GenEditingDetailsController {
     }
 
     private void updateTimeText(Long time) {
-        DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
-        Instant stampInstance = Instant.ofEpochSecond(time / 1000);
-        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-        String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
-        lastUpdatedText.setText(lastUpdated);
+        if (genEditingViewModel.getPropertyValue(MODE) == CREATE) {
+            lastUpdatedText.setText("");
+        } else {
+            DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
+            Instant stampInstance = Instant.ofEpochSecond(time / 1000);
+            ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
+            String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
+            lastUpdatedText.setText(lastUpdated);
+        }
     }
 
     /**
@@ -362,9 +388,10 @@ public class GenEditingDetailsController {
                 default -> "Unknown";
             };
 
-            referenceComponent.setIcon(Identicon.generateIdenticonImage(refComponent2.publicId()));
+            ComponentItem componentItem = new ComponentItem(refComponent2.description(), Identicon.generateIdenticonImage(refComponent2.publicId()));
+
             referenceComponent.setTitle(refType);
-            referenceComponent.setText(refComponent2.description());
+            referenceComponent.setValue(componentItem);
         };
 
         // when ever the property REF_COMPONENT changes update the UI.
@@ -396,6 +423,8 @@ public class GenEditingDetailsController {
                         .setPropertyValue(WINDOW_TOPIC, genEditingViewModel.getPropertyValue(WINDOW_TOPIC))
                         .setPropertyValue(VIEW_PROPERTIES, genEditingViewModel.getPropertyValue(VIEW_PROPERTIES))
                         .setPropertyValue(SEMANTIC, genEditingViewModel.getPropertyValue(SEMANTIC))
+                        .setPropertyValue(REF_COMPONENT, genEditingViewModel.getPropertyValue(REF_COMPONENT))
+
                 );
 
         JFXNode<BorderPane, PropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(config);
@@ -412,7 +441,8 @@ public class GenEditingDetailsController {
                 if (isOpen(propertiesSlideoutTrayPane)) {
                     slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
-            } else if (evt.getEventType() == PropertyPanelEvent.OPEN_PANEL) {
+            } else if (evt.getEventType() == PropertyPanelEvent.OPEN_PANEL
+                    || evt.getEventType() == PropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
                 LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
                 propertiesToggleButton.setSelected(true);
                 if (isClosed(propertiesSlideoutTrayPane)) {
@@ -477,8 +507,16 @@ public class GenEditingDetailsController {
     }
 
     @FXML
-    private void showAddEditRefComponentPanel(ActionEvent actionEvent) {
+    private void showAddRefComponentPanel(ActionEvent actionEvent) {
+        EntityFacade refComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
 
+        // notify bump out to display edit fields in bump out area.
+        EvtBusFactory.getDefaultEvtBus()
+                .publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                        new PropertyPanelEvent(actionEvent.getSource(),
+                                SHOW_ADD_REFERENCE_SEMANTIC_FIELD, refComponent));
+        // open properties bump out.
+        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 
     @FXML
@@ -563,6 +601,7 @@ public class GenEditingDetailsController {
         LOG.info("Todo show bump out and display Edit Fields panel \n" + actionEvent);
         actionEvent.consume();
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), SHOW_EDIT_SEMANTIC_FIELDS));
+        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), SHOW_ADD_REFERENCE_SEMANTIC_FIELD));
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 

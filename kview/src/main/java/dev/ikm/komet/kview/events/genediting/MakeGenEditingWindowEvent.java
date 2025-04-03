@@ -9,6 +9,8 @@ public class MakeGenEditingWindowEvent extends Evt {
 
     public static final EvtType<MakeGenEditingWindowEvent> OPEN_GEN_EDIT = new EvtType<>(Evt.ANY, "OPEN_GEN_EDIT");
 
+    public static final EvtType<MakeGenEditingWindowEvent> OPEN_GEN_AUTHORING = new EvtType<>(Evt.ANY, "OPEN_GEN_AUTHORING");
+
     private EntityFacade component;
 
 

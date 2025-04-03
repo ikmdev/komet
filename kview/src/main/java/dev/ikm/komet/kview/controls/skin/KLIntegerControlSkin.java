@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  */
 public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
 
-    private static final Pattern NUMERICAL_PATTERN = Pattern.compile("^-?([1-9][0-9]*)?$"); // allow '-', don't start with 0
+    private static final Pattern NUMERICAL_PATTERN = Pattern.compile("^(0|[1-9][0-9]*)$"); // allow '-', don't start with 0, but allow a zero by itself
     private static final PseudoClass ERROR_PSEUDO_CLASS = PseudoClass.getPseudoClass("error");
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.integer-control");
     private static final Duration ERROR_DURATION = Duration.seconds(5);

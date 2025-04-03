@@ -46,10 +46,10 @@ public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
 
             // Sync ObservableField and ReadOnlyImageControl
             byte[] imageBytes = observableImageField.value();
-            readOnlyImageControl.setImage(newImageFromByteArray(imageBytes));
+            readOnlyImageControl.setValue(newImageFromByteArray(imageBytes));
 
             observableImageField.valueProperty().subscribe(newByteArray -> {
-                readOnlyImageControl.setImage(newImageFromByteArray(newByteArray));
+                readOnlyImageControl.setValue(newImageFromByteArray(newByteArray));
             });
 
             // Title

@@ -92,18 +92,18 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         setupDragNDrop();
 
         registerChangeListener(getSkinnable().entityProperty(), entity -> {
-            if (entity == null || entity.getValue() == null) {
+            if (control.isEmpty()) {
                selectedConceptContainer.getChildren().clear();
                conceptContainer.setVisible(true);
             }
         });
 
         control.entityProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
+            if (!control.isEmpty()) {
                 addConceptNode(getSkinnable().getEntity());
             }
         });
-        if (control.getEntity() != null) {
+        if (!control.isEmpty()) {
             addConceptNode(control.getEntity());
         }
     }
@@ -237,22 +237,6 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                 }
             }
         });
-    }
-
-    /**
-     * Determines if the dragged concept is already present in the parent {@link KLComponentSetControl}.
-     *
-     * @param control the {@link KLComponentControl} whose parent is checked
-     * @param event   the {@link javafx.scene.input.DragEvent} carrying drag data
-     * @return {@code true} if the concept's {@code publicId} is duplicated in the set;
-     *         {@code false} otherwise
-     */
-    private boolean isDuplicateInParentSet(KLComponentControl control, DragEvent event) {
-        return control.getParent() instanceof KLComponentSetControl klComponentSetControl // If the parent is a KLComponentSetControl
-                && event.getGestureSource() instanceof Node source // and the gesture source is a Node
-                && source.getUserData() instanceof DragAndDropInfo dropInfo // whose user data is DragAndDropInfo
-                && dropInfo.publicId() != null // with a non-null publicId
-                && klComponentSetControl.getValue().contains(EntityService.get().nidForPublicId(dropInfo.publicId())); // that already exists in the set
     }
 
     private boolean isFilterAllowedWhileDragAndDropping(DragEvent event) {

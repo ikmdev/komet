@@ -76,6 +76,7 @@ import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
+import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
@@ -361,7 +362,11 @@ public class JournalController {
 
         // Listening for when a General authoring Window needs to be summoned.
         Subscriber<MakeGenEditingWindowEvent> makeGenEditWindowEventSubscriber = evt ->
-                makeGenEditWindow(evt.getComponent(), evt.getViewProperties());
+            // If the pattern is passed as a component, then it is a right click > new semantic and therefore
+            // the flag for opening the properties panel should be set to true.
+            // If the semantic is passed as a component, then we are in general editing mode and therefore
+            // the flag for opening the properties panel should be set to false.
+            makeGenEditWindow(evt.getComponent(), evt.getViewProperties(), evt.getComponent() instanceof PatternFacade);
 
         journalEventBus.subscribe(journalTopic, MakeGenEditingWindowEvent.class, makeGenEditWindowEventSubscriber);
 
@@ -500,10 +505,9 @@ public class JournalController {
                         publicId = patternFacade.publicId();
                         makePatternWindow(patternFacade, windowView.makeOverridableViewProperties());
                     } else if (dragAndDropType.equals(DragAndDropType.SEMANTIC)) {
-
                         publicId = semanticFacade.publicId();
                         // TODO save preferences of window's (position and size) such as the general editing chapter window.
-                        makeGenEditWindow(semanticFacade, windowView.makeOverridableViewProperties());
+                        makeGenEditWindow(semanticFacade, windowView.makeOverridableViewProperties(), false);
                     }
                     consumer.accept(publicId);
                     success = true;
@@ -1545,7 +1549,7 @@ public class JournalController {
         patternKlWindow.onShown();
     }
 
-    private void makeGenEditWindow(EntityFacade entityFacade, ViewProperties viewProperties) {
+    private void makeGenEditWindow(EntityFacade entityFacade, ViewProperties viewProperties, boolean openProperties) {
         // TODO: Use pluggable service loader to load KlWindowFactories. and locate GenEditingKlWindow.
         GenEditingKlWindowFactory entityKlWindowFactory = new GenEditingKlWindowFactory();
         GenEditingKlWindow genEditingKlWindow = entityKlWindowFactory.create(journalTopic, entityFacade, viewProperties, null);
@@ -1554,5 +1558,11 @@ public class JournalController {
         genEditingKlWindow.onShown(); // TODO: Revisit. JavaFX post render issue. Must be called after Node is rendered (realized). When not realized the implied style classes don't exist and returns null.
 
         genEditingKlWindow.setOnClose(() -> workspace.getWindows().remove(genEditingKlWindow));
+
+        // flag set by caller to open the properties bump-out on window creation
+        if (openProperties) {
+            EvtBusFactory.getDefaultEvtBus().publish(genEditingKlWindow.getWindowTopic(),
+                    new dev.ikm.komet.kview.events.genediting.PropertyPanelEvent(entityFacade, PropertyPanelEvent.NO_SELECTION_MADE_PANEL));
+        }
     }
 }

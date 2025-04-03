@@ -15,9 +15,22 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import static dev.ikm.tinkar.terms.TinkarTerm.PREFERRED;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.composer.Composer;
+import dev.ikm.tinkar.composer.Session;
+import dev.ikm.tinkar.composer.assembler.SemanticAssembler;
+import dev.ikm.tinkar.composer.template.USDialect;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.FieldRecord;
+import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +52,7 @@ public class GenEditingViewModel extends FormViewModel {
     public static String SEMANTIC = "semantic";
     public static String REF_COMPONENT = "referenceComponent";
     public static String FIELD_INDEX = "fieldIndex";
+    public static String PATTERN = "pattern";
 
     // for single semantic editing
     public static String FIELD = "field";
@@ -51,7 +65,8 @@ public class GenEditingViewModel extends FormViewModel {
                 .addProperty(STAMP_VIEW_MODEL, (ViewModel) null)
                 .addProperty(FIELDS_COLLECTION, new ArrayList<FieldRecord<Object>>()) // Ordered collection of Fields
                 .addProperty(REF_COMPONENT, (EntityFacade) null)
-                .addProperty(SEMANTIC, (EntityFacade) null);
+                .addProperty(SEMANTIC, (EntityFacade) null)
+                .addProperty(PATTERN, (EntityFacade) null);
     }
 
     public void loadPatternValues(){
@@ -78,7 +93,5 @@ public class GenEditingViewModel extends FormViewModel {
 //        stampViewModel.setValue(MODULE, stamp.module());
 //        stampViewModel.setValue(PATH, stamp.path());
 //    }
-
-
 
 }

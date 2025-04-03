@@ -165,7 +165,7 @@
          <center>
             <BorderPane prefWidth="762.0" styleClass="main-center-container" BorderPane.alignment="CENTER">
                <center>
-                  <VBox focusTraversable="true" maxHeight="1.7976931348623157E308" opacity="0.92" prefWidth="762.0">
+                  <VBox focusTraversable="true" maxHeight="1.7976931348623157E308" prefWidth="762.0">
                      <children>
                         <HBox prefWidth="711.0">
                            <children>
@@ -188,7 +188,7 @@
                                                 <Insets top="4.0" />
                                              </HBox.margin>
                                           </Separator>
-                                          <Button fx:id="addDefinitionButton" mnemonicParsing="false" onAction="#showAddEditRefComponentPanel" styleClass="add-pencil-button" text="Button">
+                                          <Button fx:id="addReferenceButton" mnemonicParsing="false" onAction="#showAddRefComponentPanel" styleClass="add-pencil-button" text="Button">
                                              <graphic>
                                                 <Region prefHeight="200.0" prefWidth="200.0" styleClass="add-pencil" stylesheets="@../kview.css" />
                                              </graphic>
@@ -245,12 +245,6 @@
                            </children>
                         </HBox>
                      </children>
-                     <opaqueInsets>
-                        <Insets />
-                     </opaqueInsets>
-                     <styleClass>
-                        <String fx:value="lidr-detail-pane" />
-                     </styleClass>
                   </VBox>
                </center>
                <top>
@@ -268,7 +262,7 @@
                               <RowConstraints minHeight="9.0" prefHeight="22.0" vgrow="NEVER" />
                            </rowConstraints>
                            <children>
-                              <Label fx:id="semanticTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" prefWidth="416.0" text="Semantic Title" textFill="#212430" wrapText="true" GridPane.columnSpan="2">
+                              <Label fx:id="semanticTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" prefWidth="416.0" text="SEMANTIC TITLE" textFill="#212430" wrapText="true" GridPane.columnSpan="2">
                                  <font>
                                     <Font name="Open Sans Regular" size="17.0" />
                                  </font>
@@ -281,6 +275,7 @@
                                  <children>
                                     <Text fx:id="semanticMeaningLabelText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-label" text="Meaning:  " />
                                     <Text fx:id="semanticMeaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-value" text="[]" />
+                                    <Region prefHeight="10.0" prefWidth="10.0" />
                                     <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-label" text="Purpose:  " />
                                     <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-value" text="[]" />
                                  </children>

@@ -22,7 +22,7 @@ public class DefaultKlFloatField extends BaseDefaultKlField<Float> implements Kl
 
             node = floatControl;
         } else {
-            KLReadOnlyDataTypeControl<Float> readOnlyStringControl = new KLReadOnlyDataTypeControl<>();
+            KLReadOnlyDataTypeControl<Float> readOnlyStringControl = new KLReadOnlyDataTypeControl<>(Float.class);
 
             readOnlyStringControl.valueProperty().bindBidirectional(observableFloatField.valueProperty());
             readOnlyStringControl.setTitle(getTitle());

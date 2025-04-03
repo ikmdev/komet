@@ -29,6 +29,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.shape.Ellipse?>
@@ -38,6 +39,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 <?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
+<?import dev.ikm.komet.kview.controls.KLExpandableNodeListControl?>
 
 <BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="650.0" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1">
    <center>
@@ -149,124 +151,103 @@
          <center>
             <BorderPane styleClass="main-center-container" BorderPane.alignment="CENTER">
                <center>
-                  <ScrollPane fx:id="conceptContentScrollPane" fitToWidth="true" vbarPolicy="ALWAYS">
-                     <VBox focusTraversable="true" opacity="0.92">
+                  <ScrollPane fx:id="conceptContentScrollPane" fitToWidth="true" vbarPolicy="ALWAYS" hbarPolicy="NEVER">
+                     <VBox focusTraversable="true">
                         <children>
-                           <HBox VBox.vgrow="SOMETIMES">
-                              <children>
-                                 <TitledPane fx:id="descriptionsTitledPane" contentDisplay="BOTTOM"
-                                             maxWidth="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT"
-                                             prefWidth="4000.0" text="DESCRIPTIONS">
-                                    <content>
-                                       <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
-                                             prefHeight="268.0" styleClass="content-description-insets">
-                                          <children>
-                                             <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
-                                                   prefHeight="212.0" prefWidth="408.0" HBox.hgrow="ALWAYS">
-                                                <children>
-                                                   <Text strokeType="OUTSIDE" strokeWidth="0.0"
-                                                         text="Fully Qualified Name">
-                                                      <font>
-                                                         <Font name="Open Sans Bold" size="14.0"/>
-                                                      </font>
-                                                   </Text>
-                                                   <TextFlow styleClass="fqn-container" VBox.vgrow="SOMETIMES">
-                                                      <VBox.margin>
-                                                         <Insets/>
-                                                      </VBox.margin>
-                                                      <children>
-                                                         <Text fx:id="latestFqnText" strokeType="OUTSIDE"
-                                                               strokeWidth="0.0" styleClass="descr-concept-name"/>
-                                                         <Text fx:id="fqnDescriptionSemanticText" strokeType="OUTSIDE"
-                                                               strokeWidth="0.0" styleClass="descr-semantic"/>
-                                                      </children>
-                                                   </TextFlow>
-                                                   <TextFlow prefHeight="200.0" prefWidth="200.0">
-                                                      <children>
-                                                         <Label minWidth="-Infinity" prefHeight="17.0" prefWidth="81.0"
-                                                                styleClass="descr-semantic" text="Date Added:"/>
-                                                         <Label fx:id="fqnAddDateLabel" prefHeight="17.0"
-                                                                prefWidth="96.0" styleClass="descr-semantic"
-                                                                text="May 10, 2023"/>
-                                                         <Hyperlink styleClass="descr-semantic" text="Attachment"/>
-                                                         <Hyperlink styleClass="descr-semantic" text="Comment"/>
-                                                      </children>
-                                                   </TextFlow>
-                                                   <ImageView fitHeight="153.0" fitWidth="554.0" pickOnBounds="true"
-                                                              preserveRatio="true">
-                                                      <image>
-                                                         <Image url="@placeholder-concept-image.png"/>
-                                                      </image>
-                                                   </ImageView>
-                                                </children>
-                                             </VBox>
-                                             <VBox>
-                                                <HBox.margin>
-                                                   <Insets left="12.0"/>
-                                                </HBox.margin>
-                                             </VBox>
-                                             <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
-                                                   prefHeight="211.0" prefWidth="357.0" HBox.hgrow="SOMETIMES">
-                                                <children>
-                                                   <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Other Names">
-                                                      <font>
-                                                         <Font name="Open Sans Bold" size="14.0"/>
-                                                      </font>
-                                                   </Text>
-                                                   <VBox fx:id="otherNamesVBox">
-                                                      <children>
-                                                         <TextFlow prefWidth="200.0">
-                                                            <children>
-                                                               <Text strokeType="OUTSIDE" strokeWidth="0.0"/>
-                                                               <Label wrapText="true"/>
-                                                               <Label/>
-                                                            </children>
-                                                         </TextFlow>
-                                                         <TextFlow prefWidth="200.0">
-                                                            <children>
-                                                               <Label text="Date Added:"/>
-                                                               <Label text="May 10, 2023"/>
-                                                               <Hyperlink text="Attachment"/>
-                                                               <Hyperlink text="Comment"/>
-                                                            </children>
-                                                         </TextFlow>
-                                                         <TextFlow prefWidth="200.0">
-                                                            <children>
-                                                               <Label/>
-                                                               <Label/>
-                                                            </children>
-                                                         </TextFlow>
-                                                         <TextFlow prefWidth="200.0">
-                                                            <children>
-                                                               <Label text="Date Added:"/>
-                                                               <Label text="May 10, 2023"/>
-                                                               <Hyperlink text="Attachment"/>
-                                                               <Hyperlink text="Comment"/>
-                                                            </children>
-                                                         </TextFlow>
-                                                      </children>
-                                                   </VBox>
-                                                </children>
-                                             </VBox>
-                                          </children>
-                                       </HBox>
-                                    </content>
-                                    <font>
-                                       <Font name="Open Sans Bold" size="13.0"/>
-                                    </font>
-                                 </TitledPane>
-                                 <Pane>
-                                    <children>
-                                       <Button fx:id="addDescriptionButton" layoutX="-32.0" mnemonicParsing="false"
-                                               styleClass="add-pencil-button" text="Button">
-                                          <graphic>
-                                             <Region prefHeight="200.0" prefWidth="200.0" styleClass="add-pencil"/>
-                                          </graphic>
-                                       </Button>
-                                    </children>
-                                 </Pane>
-                              </children>
-                           </HBox>
+                           <AnchorPane>
+                              <TitledPane fx:id="descriptionsTitledPane" text="DESCRIPTIONS"
+                                          nodeOrientation="LEFT_TO_RIGHT" AnchorPane.topAnchor="0.0"
+                                          AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                                          AnchorPane.leftAnchor="0.0">
+
+                                 <!-- Use a GridPane to enforce a 50/50 column split -->
+                                 <GridPane hgap="12.0" styleClass="content-description-insets">
+
+                                    <rowConstraints>
+                                       <RowConstraints percentHeight="100.0" vgrow="ALWAYS"/>
+                                    </rowConstraints>
+
+                                    <!-- Two columns, each 50% of the total width -->
+                                    <columnConstraints>
+                                       <ColumnConstraints percentWidth="50.0" hgrow="ALWAYS"/>
+                                       <ColumnConstraints percentWidth="50.0" hgrow="ALWAYS"/>
+                                    </columnConstraints>
+
+                                    <!-- LEFT COLUMN: Fully Qualified Name area -->
+                                    <VBox GridPane.columnIndex="0" GridPane.fillWidth="true"
+                                          GridPane.fillHeight="true" minHeight="218.0"
+                                          maxWidth="Infinity" maxHeight="Infinity">
+                                       <Text text="FULLY QUALIFIED NAME:" style="-fx-fill: -Grey-8;">
+                                          <font>
+                                             <Font name="Noto Sans SemiBold" size="12.0"/>
+                                          </font>
+                                       </Text>
+
+                                       <TextFlow fx:id="fqnContainer" styleClass="fqn-container">
+                                          <Text fx:id="latestFqnText"
+                                                styleClass="descr-concept-name"/>
+                                          <Text fx:id="fqnDescriptionSemanticText"
+                                                styleClass="descr-concept-name"/>
+                                       </TextFlow>
+
+                                       <TextFlow fx:id="fqnDateAddedTextFlow">
+                                          <Label styleClass="descr-semantic"/>
+                                          <Label fx:id="fqnAddDateLabel"
+                                                 styleClass="descr-semantic"
+                                                 text="May 10, 2023"/>
+                                          <Hyperlink text="Attachment"/>
+                                          <Hyperlink text="Comment"/>
+                                       </TextFlow>
+
+                                       <StackPane fx:id="imageContainer" minWidth="206.0" maxWidth="248.0"
+                                                  HBox.hgrow="ALWAYS">
+                                          <ImageView fitWidth="${imageContainer.width}"
+                                                     pickOnBounds="true" preserveRatio="true">
+                                             <Image url="@placeholder-concept-image.png"/>
+                                          </ImageView>
+                                          <padding>
+                                             <Insets top="6.0"/>
+                                          </padding>
+                                       </StackPane>
+                                    </VBox>
+
+                                    <!-- RIGHT COLUMN: Other Names area -->
+                                    <VBox GridPane.columnIndex="1" GridPane.fillWidth="true"
+                                          GridPane.fillHeight="true"
+                                          maxWidth="Infinity" maxHeight="Infinity">
+                                       <Text fx:id="otherNamesHeaderText" text="OTHER NAMES:" style="-fx-fill: -Grey-8;">
+                                          <font>
+                                             <Font name="Noto Sans SemiBold" size="12.0"/>
+                                          </font>
+                                       </Text>
+                                       <KLExpandableNodeListControl fx:id="otherNamesNodeListControl"
+                                                                    maxHeight="Infinity"
+                                                                    GridPane.vgrow="ALWAYS">
+                                          <!-- Example placeholder items -->
+                                          <TextFlow>
+                                             <Label text="Date Added:"/>
+                                             <Label text="May 10, 2023"/>
+                                             <Hyperlink text="Attachment"/>
+                                             <Hyperlink text="Comment"/>
+                                          </TextFlow>
+                                          <TextFlow>
+                                             <Label text="Date Added:"/>
+                                             <Label text="May 10, 2023"/>
+                                             <Hyperlink text="Attachment"/>
+                                             <Hyperlink text="Comment"/>
+                                          </TextFlow>
+                                       </KLExpandableNodeListControl>
+                                    </VBox>
+                                 </GridPane>
+                              </TitledPane>
+                              <Button fx:id="addDescriptionButton" mnemonicParsing="false"
+                                      styleClass="add-pencil-button" text="Button" AnchorPane.topAnchor="0.0"
+                                      AnchorPane.rightAnchor="12.0">
+                                 <graphic>
+                                    <Region styleClass="add-pencil"/>
+                                 </graphic>
+                              </Button>
+                           </AnchorPane>
                            <HBox VBox.vgrow="ALWAYS">
                               <children>
                                  <TitledPane fx:id="axiomsTitledPane" maxHeight="1.7976931348623157E308"
@@ -453,9 +434,6 @@
                                           </items>
                                        </SplitPane>
                                     </content>
-                                    <font>
-                                       <Font name="Open Sans Bold" size="13.0"/>
-                                    </font>
                                     <styleClass>
                                        <String fx:value="kview-titled-pane"/>
                                     </styleClass>

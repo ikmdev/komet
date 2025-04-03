@@ -58,6 +58,6 @@ public class SampleReadOnlyImageController {
         }
         Image image = new Image(selectedFile.toURI().toString());
 
-        readOnlyImageControl.setImage(image);
+        readOnlyImageControl.setValue(image);
     }
 }

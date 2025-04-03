@@ -208,7 +208,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         componentControls.add(componentControl);
 
         Subscription subscription = componentControl.entityProperty().subscribe(entity -> {
-            if (entity != null) {
+            if (!componentControl.isEmpty()) {
                 int oldNidIndex = componentControls.indexOf(componentControl);
                 int newNid = entity.nid();
 

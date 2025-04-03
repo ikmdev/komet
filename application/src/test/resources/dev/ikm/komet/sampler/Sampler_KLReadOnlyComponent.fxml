@@ -12,6 +12,8 @@
 <?import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl?>
 
 <?import javafx.scene.image.Image?>
+<?import dev.ikm.komet.kview.controls.ComponentItem?>
+<?import java.lang.String?>
 <ScrollPane styleClass="sample-container" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.sampler.controllers.SamplerReadOnlyComponentController">
     <VBox>
@@ -25,9 +27,16 @@
             <left>
                 <VBox prefWidth="500" styleClass="inner-container" fillWidth="true">
                     <KLReadOnlyComponentControl fx:id="readOnlyComponentControl" title="A TITLE:" promptText="[Placeholder]">
-                        <icon>
-                            <Image url="@icon-example.png" />
-                        </icon>
+                        <value>
+                            <ComponentItem>
+                                <icon>
+                                    <Image url="@icon-example.png" />
+                                </icon>
+                                <text>
+                                    <String fx:value="text component" />
+                                </text>
+                            </ComponentItem>
+                        </value>
                     </KLReadOnlyComponentControl>
                 </VBox>
             </left>

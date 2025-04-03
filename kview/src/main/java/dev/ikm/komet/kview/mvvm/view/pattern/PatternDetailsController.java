@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
+import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
 import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_EDIT_OTHER_NAME;
@@ -37,6 +38,7 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
@@ -72,6 +74,8 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KometIcon;
+import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
@@ -114,6 +118,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -254,6 +259,9 @@ public class PatternDetailsController {
     @FXML
     private TilePane fieldsTilePane;
 
+    @FXML
+    private ContextMenu contextMenu;
+
     /**
      * Stamp Edit
      */
@@ -282,6 +290,8 @@ public class PatternDetailsController {
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
         otherNamesVBox.getChildren().clear();
+
+        setUpAddSemanticMenu();
 
         // listen for open and close events
         patternPropertiesEventSubscriber = (evt) -> {
@@ -471,6 +481,25 @@ public class PatternDetailsController {
 
         // Setup Properties
         setupProperties();
+    }
+
+    private void setUpAddSemanticMenu() {
+        contextMenu = new ContextMenu();
+        contextMenu.setHideOnEscape(true);
+        KometIcon kometPlusIcon = KometIcon.create(PLUS,"icon-klcontext-menu");
+        MenuItem addNewSemanticElement = new MenuItem("Add New Semantic Element",kometPlusIcon);
+        contextMenu.getItems().addAll(addNewSemanticElement);
+        this.contextMenu.getStyleClass().add("klcontext-menu");
+        detailsOuterBorderPane.setOnContextMenuRequested(contextMenuEvent ->
+                contextMenu.show(detailsOuterBorderPane, contextMenuEvent.getScreenX(),contextMenuEvent.getScreenY())
+        );
+        addNewSemanticElement.setOnAction(actionEvent -> {
+            EntityFacade patternFacade = patternViewModel.getPropertyValue(PATTERN);
+            LOG.info("Summon create new Semantic Element. " + patternFacade.description());
+            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                    new MakeGenEditingWindowEvent(this,
+                            MakeGenEditingWindowEvent.OPEN_GEN_AUTHORING, patternFacade, patternViewModel.getPropertyValue(VIEW_PROPERTIES)));
+        });
     }
 
     private List<TextFlow> generateOtherNameRows() {

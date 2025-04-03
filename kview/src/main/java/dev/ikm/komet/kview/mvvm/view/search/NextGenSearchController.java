@@ -42,6 +42,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -452,6 +453,11 @@ public class NextGenSearchController extends AbstractBasicController {
     @Override
     public void cleanup() {
 
+    }
+
+    public void clearSearchTextField(){
+        searchField.clear();
+        searchField.setCursor(Cursor.DEFAULT);
     }
 
     @Override

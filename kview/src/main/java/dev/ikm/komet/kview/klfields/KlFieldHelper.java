@@ -7,6 +7,7 @@ import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
 import dev.ikm.komet.kview.klfields.componentlistfield.KlComponentListFieldFactory;
@@ -25,6 +26,7 @@ import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.Node;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -94,8 +96,10 @@ public class KlFieldHelper {
         } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
             KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
             node = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
-        } else if (PublicId.equals(semanticEntityVersionLatest.get().entity().publicId(),
-                        PublicIds.of(UUID.fromString("f43030a5-2324-4880-9292-c7d3c16b58d3")))) {
+        } else if (dataTypeNid == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
+            //TODO: We're using BYTE_ARRAY for the moment for Image data type
+            //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
+            //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
             KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
             node = imageFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
         }
@@ -160,6 +164,9 @@ public class KlFieldHelper {
         StampCalculator stampCalculator = viewProperties.calculator().stampCalculator();
         //retrieve latest semanticVersion
         Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(entityFacade.nid());
+        if(semanticEntityVersionLatest.get().stamp().time() != Long.MAX_VALUE){
+            return semanticEntityVersionLatest;
+        }
         ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
         ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
         //Get list of previously committed data sorted in latest at the top.
@@ -188,7 +195,12 @@ public class KlFieldHelper {
         StringBuilder stringBuilder = new StringBuilder();
         observableFieldsList.forEach(observableField -> {
             // TODO re-evaluate if toString is the right approach for complex datatypes.
-            stringBuilder.append(observableField.valueProperty().get().toString()).append("|");
+            var observableFieldValue = observableField.valueProperty().get();
+            if (observableFieldValue == null || (observableFieldValue instanceof EntityProxy entityProxy && entityProxy.nid() == KLComponentControl.EMPTY_NID)) {
+                stringBuilder.append("|");
+            } else {
+                stringBuilder.append(observableField.valueProperty().get().toString()).append("|");
+            }
         });
         return stringBuilder.toString().hashCode();
     }

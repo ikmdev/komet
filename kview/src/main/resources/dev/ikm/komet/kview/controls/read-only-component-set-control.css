@@ -5,9 +5,14 @@
 }
 
 .read-only-component-set-control .main-container .title {
+    -fx-font-family: "Noto Sans SemiBold";
     -fx-text-fill: #5d5d5d;
 }
 
+.read-only-component-set-control .main-container .prompt-text {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 13px;
+}
 
 .read-only-component-set-control .main-container .components-container {
     -fx-spacing: 2px;
