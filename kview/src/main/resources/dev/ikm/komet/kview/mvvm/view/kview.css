@@ -5299,12 +5299,13 @@ Styling a context menu for kview ui/ux controls
 
 /*******************************************************************************
  *                                                                             *
- * KL ConceptNavigatorControl                                                  *
+ * KLConceptNavigatorControl                                                   *
  *                                                                             *
  ******************************************************************************/
 .concept-navigator-container {
     -fx-background-color: -Grey-8;
     -fx-padding: 8;
+    -fx-spacing: 8;
 }
 
 /*******************************************************************************

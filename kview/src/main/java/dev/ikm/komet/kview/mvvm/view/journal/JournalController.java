@@ -74,6 +74,7 @@ import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.NotificationPopup;
+import dev.ikm.komet.kview.controls.SearchControl;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
@@ -874,6 +875,14 @@ public class JournalController {
      * Add a ConceptNavigator tree view, currently tied to the "heart" left lav button
      */
     public void loadConceptNavigatorPanel(ViewProperties viewProperties) {
+        SearchControl searchControl = new SearchControl();
+        searchControl.setPromptText("Search"); // DUMMY, resources?
+        searchControl.setOnAction(_ -> System.out.println("Search for: " + searchControl.getText()));
+        searchControl.setOnFilterAction(_ -> {
+            // DUMMY
+            searchControl.setFilterSet(!searchControl.isFilterSet());
+        });
+
         KLConceptNavigatorControl conceptNavigatorControl = new KLConceptNavigatorControl();
         conceptNavigatorControl.setNavigator(new ViewNavigator(viewProperties.nodeView()));
         conceptNavigatorControl.setHeader("Concept Header");
@@ -883,7 +892,7 @@ public class JournalController {
                         .map(item -> item.publicId().asUuidArray())
                         .toList()));
 
-        VBox nodePanel = new VBox(conceptNavigatorControl);
+        VBox nodePanel = new VBox(searchControl, conceptNavigatorControl);
         nodePanel.getStyleClass().add("concept-navigator-container");
         VBox.setVgrow(conceptNavigatorControl, Priority.ALWAYS);
         setupSlideOutTrayPane(nodePanel, conceptNavigatorSlideoutTrayPane);
