@@ -170,7 +170,7 @@ public class KLComponentControl extends Control {
      * A property with an action to be executed when the user clicks on the remove button. By default, it will
      * remove the entity that was added.
      */
-    private final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty = new SimpleObjectProperty<>(this, "onRemoveAction", e -> setEntity(EntityProxy.make(EMPTY_NID)));
+    private final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty = new SimpleObjectProperty<>(this, "onRemoveAction", e -> setEntity(null));
     public final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty() {
        return onRemoveActionProperty;
     }
