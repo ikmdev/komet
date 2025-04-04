@@ -190,15 +190,13 @@ public class ConceptPatternNavController {
     @FXML
     private void showConcepts() {
         navContentPane.setCenter(classicConceptNavigator);
-        //conceptsToggleButton.setSelected(true);
-        //patternsToggleButton.setSelected(false);
+        conceptsToggleButton.setSelected(true);
     }
 
     @FXML
     private void showPatterns() {
         navContentPane.setCenter(patternNavigationPane);
-        //patternsToggleButton.setSelected(true);
-        //conceptsToggleButton.setSelected(false);
+        patternsToggleButton.setSelected(true);
     }
 
     private void setUpDraggable(Node node, EntityFacade entity, DragAndDropType dropType) {
