@@ -54,6 +54,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SemanticFieldsController {
 
@@ -82,16 +83,35 @@ public class SemanticFieldsController {
     private int committedHash;
 
     private void enableDisableSubmitButton(Object value){
-        if (value != null && !value.toString().isEmpty()) {
-            enableDisableSubmitButton();
-        } else {
+        if (value == null || value.toString().isEmpty()){
             submitButton.setDisable(true);
+        } else {
+            enableDisableSubmitButton();
         }
     }
 
     private void enableDisableSubmitButton(){
-        int uncommittedHash = calculteHashValue(observableFields);
-        submitButton.setDisable(committedHash == uncommittedHash);
+        //Disable submit button if any of the fields are blank.
+        boolean disabled = checkForEmptyFields();
+        if(!disabled){
+            int uncommittedHash = calculteHashValue(observableFields);
+            disabled = (committedHash == uncommittedHash);
+        }
+        submitButton.setDisable(disabled);
+    }
+
+    /**
+     * This method checks for empty/blank/null fields
+     * @return invalid
+     */
+    private boolean checkForEmptyFields() {
+        AtomicBoolean invalid = new AtomicBoolean(false);
+        observableFields.forEach(observableField -> {
+            if (!invalid.get()) {
+                invalid.set((observableField.value() == null || observableField.value().toString().isEmpty()));
+            }
+        });
+        return invalid.get();
     }
 
     private void processCommittedValues() {
@@ -104,7 +124,7 @@ public class SemanticFieldsController {
         // This flag is used to avoid unnecessary calling for
         // method when value for other listeners is updated.
         // It is similar to refreshProperty in Observable interface.
-        if(updateStampVersions){
+        if (updateStampVersions) {
             updateStampVersionsNidsForAllFields();
         }
     };
