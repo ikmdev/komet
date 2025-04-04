@@ -147,7 +147,9 @@ public class ClauseView {
             case INCLUSION_SET -> setupForInclusionSet();
             case DEFINITION_ROOT -> setupForDefinitionRoot();
             case PROPERTY_SET -> setupForPropertySet();
+            // TODO: Retire property pattern implication when starter set stable.
             case PROPERTY_PATTERN_IMPLICATION -> setupForPropertyPatternImplication();
+            case PROPERTY_SEQUENCE_IMPLICATION -> setupForPropertyPatternImplication();
         }
 
         rootBorderPane.setPadding(new Insets(2, 0, 0, 0));
@@ -194,7 +196,7 @@ public class ClauseView {
         this.axiomView.addToGridPaneNoGrowTopAlign(rootGridPane, openConceptButton, column++);
         openConceptButton.setOnMouseClicked(this::handleShowFeatureNodeClick);
         StringBuilder builder = new StringBuilder();
-        builder.append("π: ");
+        builder.append("πσ: ");
         Optional<IntIdList> optionalPropertyPattern = this.axiomVertex.property(TinkarTerm.PROPERTY_SEQUENCE);
         optionalPropertyPattern.ifPresent(propertyPattern -> {
             for (int propertyPatternNid : propertyPattern.intStream().toArray()) {
@@ -202,7 +204,13 @@ public class ClauseView {
             }
         });
         builder.append("⇒ ");
-        Optional<ConceptFacade> optionalImplication = this.axiomVertex.propertyAsConcept(TinkarTerm.PROPERTY_PATTERN_IMPLICATION);
+
+        Optional<ConceptFacade> optionalImplication = this.axiomVertex.propertyAsConcept(TinkarTerm.PROPERTY_SEQUENCE_IMPLICATION);
+        if (!optionalImplication.isPresent()) {
+            // TODO: Retire property pattern implication when starter set stable.
+            optionalImplication = this.axiomVertex.propertyAsConcept(TinkarTerm.PROPERTY_PATTERN_IMPLICATION);
+        }
+
         optionalImplication.ifPresent(implication -> {
             builder.append("[" + calculator().getPreferredDescriptionTextWithFallbackOrNid(implication.nid()) + "] ");
         });
