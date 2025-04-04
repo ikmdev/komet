@@ -198,4 +198,38 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
             }
         }
     }
+
+//    /**
+//     * This method creates a new transaction and semantic version for committed records and updates the STAMP.
+//     * If the version is uncommitted then it assumes that there is an existing transaction and does not create one,
+//     * it will only update the version with new values and does NOT update the STAMP.
+//     * @param value
+//     * @param fieldIndex
+//     * @param observableEntitySnapshot
+//     * @param <T>
+//     */
+//    public <T> void createNewVersionAndTransaction(T value, int fieldIndex, ObservableEntitySnapshot observableEntitySnapshot) {
+//        Latest<ObservableEntitySnapshot> observableEntityVersionLatest = observableEntitySnapshot.getLatestVersion();
+//        ObservableEntitySnapshot version = observableEntityVersionLatest.get();
+//        MutableList<Object> fieldsForNewVersion = org.eclipse.collections.impl.factory.Lists.mutable.of(version.fieldValues().toArray());
+//        fieldsForNewVersion.set(fieldIndex, value);
+//        SemanticRecord semantic = (SemanticRecord) version.entity();
+//        StampRecord stamp = Entity.getStamp(version.stampNid());
+//        SemanticVersionRecord newVersion = null;
+//        if (!version.uncommitted()) {
+//            // Create transaction
+//            Transaction t = Transaction.make();
+//            // newStamp already written to the entity store.
+//            StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
+//            // Create new version...
+//            newVersion = version.getVersionRecord().with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
+//        }else {
+//            newVersion = version.getVersionRecord().withFieldValues(fieldsForNewVersion.toImmutable());
+//        }
+//        // Create new version...
+//        SemanticRecord analogue = semantic.with(newVersion).build();
+//        // Entity provider will broadcast the nid of the changed entity.
+//        Entity.provider().putEntity(analogue);
+//        ObservableEntity.updateVersions(Entity.getFast(version.nid()), this);
+//    }
 }
