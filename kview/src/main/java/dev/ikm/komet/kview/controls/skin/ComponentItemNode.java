@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.ComponentItem;
+import dev.ikm.komet.kview.controls.KLReadOnlyMultiComponentControl;
 import javafx.css.PseudoClass;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -14,8 +15,6 @@ import javafx.scene.layout.Region;
  * A Node used to render a Component (icon + text)
  */
 class ComponentItemNode extends Region {
-    private static final PseudoClass EDIT_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("edit-mode");
-
     private final HBox container = new HBox();
     private final ImageView iconImageView = new ImageView();
     private final Label textLabel = new Label();
@@ -46,13 +45,13 @@ class ComponentItemNode extends Region {
 
     void setContextMenu(ContextMenu contextMenu) {
         this.contextMenu = contextMenu;
-        this.contextMenu.getStyleClass().add("klcontext-menu");
+
     }
 
     private void onContextMenuRequested(ContextMenuEvent contextMenuEvent) {
-        pseudoClassStateChanged(EDIT_MODE_PSEUDO_CLASS, true);
+        pseudoClassStateChanged(KLReadOnlyMultiComponentControl.EDIT_MODE_PSEUDO_CLASS, true);
 
-        contextMenu.setOnHidden(event -> pseudoClassStateChanged(EDIT_MODE_PSEUDO_CLASS, false));
+        contextMenu.setOnHidden(event -> pseudoClassStateChanged(KLReadOnlyMultiComponentControl.EDIT_MODE_PSEUDO_CLASS, false));
         contextMenu.show(this, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
     }
 

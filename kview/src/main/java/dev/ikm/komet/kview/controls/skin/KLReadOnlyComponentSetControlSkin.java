@@ -2,13 +2,11 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
-import dev.ikm.komet.kview.controls.KometIcon;
 import javafx.collections.ListChangeListener;
-import javafx.collections.SetChangeListener;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.SeparatorMenuItem;
 
 public class KLReadOnlyComponentSetControlSkin extends KLReadOnlyMultiComponentControlSkin<KLReadOnlyComponentSetControl> {
+
+    private static final String EDIT_MENU_ITEM_LABEL = "Edit Set";
 
     /**
      * @param control The control for which this Skin should attach to.
@@ -37,20 +35,20 @@ public class KLReadOnlyComponentSetControlSkin extends KLReadOnlyMultiComponentC
             }
         }
     }
+
     private void addNewUIItem(ComponentItem componentItem) {
         ComponentItemNode componentItemNode = new ComponentItemNode(componentItem);
 
-        ContextMenu contextMenu = new ContextMenu();
-        contextMenu.getItems().addAll(
-                createMenuItem("Edit Set", KometIcon.IconValue.PENCIL, this::fireOnEditAction),
-                new SeparatorMenuItem(),
-                createMenuItem("Remove", KometIcon.IconValue.TRASH, actionEvent -> this.fireOnRemoveAction(actionEvent, componentItem))
-        );
-        componentItemNode.setContextMenu(contextMenu);
+        componentItemNode.setContextMenu(createContextMenu(componentItem));
 
         componentsContainer.getChildren().add(componentItemNode);
         componentUIItems.put(componentItem, componentItemNode);
 
         updatePromptTextOrComponentsVisibility();
+    }
+
+    @Override
+    protected String getEditMenuItemLabel() {
+        return EDIT_MENU_ITEM_LABEL;
     }
 }
