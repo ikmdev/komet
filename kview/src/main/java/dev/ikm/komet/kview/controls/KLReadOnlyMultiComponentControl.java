@@ -6,11 +6,13 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.css.PseudoClass;
 import javafx.scene.control.Control;
 
 import java.util.function.Consumer;
 
 public abstract class KLReadOnlyMultiComponentControl extends Control {
+    public static final PseudoClass EDIT_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("edit-mode");
 
     // -- title
     private StringProperty title = new SimpleStringProperty();

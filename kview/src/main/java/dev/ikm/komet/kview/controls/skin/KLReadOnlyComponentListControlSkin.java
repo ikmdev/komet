@@ -2,15 +2,14 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
-import dev.ikm.komet.kview.controls.KometIcon;
 import javafx.collections.ListChangeListener;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 
 public class KLReadOnlyComponentListControlSkin extends KLReadOnlyMultiComponentControlSkin<KLReadOnlyComponentListControl> {
+
+    private static final String EDIT_MENU_ITEM_LABEL = "Edit List";
 
     /**
      * @param control The control for which this Skin should attach to.
@@ -50,13 +49,7 @@ public class KLReadOnlyComponentListControlSkin extends KLReadOnlyMultiComponent
         ComponentItemNode componentUIItem = new ComponentItemNode(componentItem);
 
         // Context Menu
-        ContextMenu contextMenu = new ContextMenu();
-        contextMenu.getItems().addAll(
-                createMenuItem("Edit List", KometIcon.IconValue.PENCIL, this::fireOnEditAction),
-                new SeparatorMenuItem(),
-                createMenuItem("Remove", KometIcon.IconValue.TRASH, actionEvent -> this.fireOnRemoveAction(actionEvent, componentItem))
-        );
-        componentUIItem.setContextMenu(contextMenu);
+        componentUIItem.setContextMenu(createContextMenu(componentItem));
 
         componentRow.getChildren().addAll(
             numberLabel,
@@ -71,5 +64,10 @@ public class KLReadOnlyComponentListControlSkin extends KLReadOnlyMultiComponent
         componentUIItems.put(componentItem, componentRow);
 
         updatePromptTextOrComponentsVisibility();
+    }
+
+    @Override
+    protected String getEditMenuItemLabel() {
+        return EDIT_MENU_ITEM_LABEL;
     }
 }
