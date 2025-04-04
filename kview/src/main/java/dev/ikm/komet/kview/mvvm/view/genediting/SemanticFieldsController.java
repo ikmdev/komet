@@ -133,12 +133,6 @@ public class SemanticFieldsController {
         committedHash = generateHashValue(semanticEntityVersionLatest, getViewProperties());
     }
 
-  /*  private ObservableVersion<?> retrieveObservableSemanticVersion(Latest<SemanticEntityVersion> semanticEntityVersionLatest, ObservableSemantic observableSemantic) {
-        ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-        Latest<ObservableSemanticVersion> observableSemanticVersionLatest = observableSemanticSnapshot.getLatestVersion();
-        return observableSemanticVersionLatest.get();
-    }*/
-
     @FXML
     private void initialize() {
         // clear all semantic details.
@@ -202,26 +196,6 @@ public class SemanticFieldsController {
                         });
             });
         }
-    }
-
-    /***
-     * This method updates stamps for all the fields to avoid contradictions.
-     * An alternate approach could be to use Semantic contradictions
-     * for each field and pick up the latest value for each contradiction?
-     */
-    private void updateStampVersionsNidsForAllFields() {
-        EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
-        StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
-        Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
-        updateStampVersions = false;
-        semanticEntityVersionLatest.ifPresent(ver -> {
-            int latestStampNid = ver.stamp().nid();
-            observableFields.forEach(observableField -> {
-                 //Update the stampNid with the latest stamp nid value.
-                observableField.fieldProperty().set(observableField.field().withVersionStampNid(latestStampNid));
-            });
-        });
-        updateStampVersions = true;
     }
 
     private static Separator createSeparator() {
