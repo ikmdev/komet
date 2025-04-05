@@ -56,7 +56,6 @@ public final class ObservableField<T> implements Field<T> {
                 writeToDataBase();
             }
         });
-
     }
     public ObservableField(FieldRecord<T> fieldRecord) {
         this(fieldRecord, true);

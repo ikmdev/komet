@@ -54,9 +54,9 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
     protected static final ConcurrentReferenceHashMap<PublicId, ObservableEntity> SINGLETONS =
             new ConcurrentReferenceHashMap<>(ConcurrentReferenceHashMap.ReferenceType.WEAK,
                     ConcurrentReferenceHashMap.ReferenceType.WEAK);
-    private static final EntityChangeSubscriber ENTITY_CHANGE_SUBSCRIBER = new EntityChangeSubscriber();
+    private final EntityChangeSubscriber ENTITY_CHANGE_SUBSCRIBER = new EntityChangeSubscriber();
 
-    static {
+    {
         Entity.provider().addSubscriberWithWeakReference(ENTITY_CHANGE_SUBSCRIBER);
     }
 
@@ -64,6 +64,9 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
 
     final private AtomicReference<Entity<V>> entityReference;
 
+    public void saveToDB(SemanticRecord analogue) {
+        Entity.provider().putEntity(analogue);
+    }
 
     ObservableEntity(Entity<V> entity) {
         Entity<V> entityClone = switch (entity) {
@@ -79,6 +82,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         };
 
         this.entityReference = new AtomicReference<>(entityClone);
+        //versionProperty.removeListener();
         for (V version : entity.versions()) {
             versionProperty.add(wrap(version));
         }
@@ -184,12 +188,11 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         throw new UnsupportedOperationException();
     }
 
-    public static class EntityChangeSubscriber implements Subscriber<Integer> {
+    private class EntityChangeSubscriber implements Subscriber<Integer> {
 
         @Override
         public void onNext(Integer nid) {
             // Do nothing with item, but request another...
-
             if (SINGLETONS.containsKey(PrimitiveData.publicId(nid))) {
                 Platform.runLater(() -> {
                     get(Entity.getFast(nid));

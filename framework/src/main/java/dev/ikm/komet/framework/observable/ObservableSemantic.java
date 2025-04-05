@@ -48,8 +48,23 @@ public final class ObservableSemantic
 
     @Override
     protected ObservableSemanticVersion wrap(SemanticVersionRecord version) {
-        return new ObservableSemanticVersion(version);
+        ObservableSemanticVersion observableSemanticVersion = new ObservableSemanticVersion(version);
+        observableSemanticVersion.versionProperty().addListener((observable, oldValue, newValue) -> {
+            updateEntity(observableSemanticVersion);
+            /*versionProperty.remove(this);
+            versionProperty.add(wrap(newValue));*/
+        });
+        return observableSemanticVersion;
     }
+
+    protected void updateEntity(ObservableSemanticVersion observableSemanticVersion) {
+        SemanticRecord semantic = Entity.getFast(observableSemanticVersion.nid());
+        SemanticVersionRecord semanticVersionRecord = observableSemanticVersion.versionProperty().get();
+        SemanticRecord analogue = semantic.with(semanticVersionRecord).build();
+        saveToDB(analogue);
+    }
+
+
 
     @Override
     public ObservableSemanticSnapshot getSnapshot(ViewCalculator calculator) {
@@ -65,7 +80,7 @@ public final class ObservableSemantic
      * @param observableSemanticSnapshot
      * @param <T>
      */
-    public <T> void createNewVersionAndTransaction(T value, int fieldIndex, ObservableSemanticSnapshot observableSemanticSnapshot) {
+    public <T> void manageEntityVersion(T value, int fieldIndex, ObservableSemanticSnapshot observableSemanticSnapshot) {
         Latest<ObservableSemanticVersion> observableSemanticVersionLatest = observableSemanticSnapshot.getLatestVersion();
         ObservableSemanticVersion version = observableSemanticVersionLatest.get();
         MutableList<Object> fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
@@ -83,6 +98,7 @@ public final class ObservableSemantic
         }else {
             newVersion = version.getVersionRecord().withFieldValues(fieldsForNewVersion.toImmutable());
         }
+    //    versionProperty.add(wrap(newVersion));
         // Create new version...
         SemanticRecord analogue = semantic.with(newVersion).build();
         // Entity provider will broadcast the nid of the changed entity.

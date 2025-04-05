@@ -28,10 +28,14 @@ import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
+import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.StampRecord;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 
@@ -75,11 +79,33 @@ public final class ObservableSemanticVersion
             FieldDefinitionForEntity fieldDef = patternVersion.fieldDefinitions().get(indexInPattern);
             FieldDefinitionRecord fieldDefinitionRecord = new FieldDefinitionRecord(fieldDef.dataTypeNid(),
                     fieldDef.purposeNid(), fieldDef.meaningNid(), patternVersion.stampNid(), patternVersion.nid(), indexInPattern);
-            fieldArray[indexInPattern] = new ObservableField(new FieldRecord(value, this.nid(), this.stampNid(), fieldDefinitionRecord));
+            ObservableField<?> observableField = new ObservableField<>(new FieldRecord<>(value, this.nid(), this.stampNid(), fieldDefinitionRecord));
+            fieldArray[indexInPattern] = observableField;
+            observableField.refreshProperties.set(true);
+            fieldArray[indexInPattern].valueProperty.addListener((observable -> {
+               manageEntityVersion(observableField.value(), observableField.fieldIndex());
+            }));
+
         }
         return Lists.immutable.of(fieldArray);
     }
 
+    private void manageEntityVersion(Object value, int i) {
+        SemanticVersionRecord newVersion = null;
+        SemanticVersionRecord version = version();
+        MutableList<Object> fieldsForNewVersion = org.eclipse.collections.impl.factory.Lists.mutable.of(version.fieldValues().toArray());
+        StampRecord stamp = Entity.getStamp(version.stampNid());
+        if(!version().uncommitted()){
+            Transaction t = Transaction.make();
+            // newStamp already written to the entity store.
+            StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
+            // Create new version...
+            newVersion = version.with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
+        }else {
+            newVersion = version.withFieldValues(fieldsForNewVersion.toImmutable());
+        }
+        versionProperty.set(newVersion);
+    }
 
     @Override
     public ImmutableMap<FieldCategory, ObservableField> getObservableFields() {

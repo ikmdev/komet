@@ -126,18 +126,20 @@ public final class ObservableSemanticSnapshot extends ObservableEntitySnapshot<O
                                         latest.addLatest(contradiction.fields(patternEntityVersion));
                                     }
                                 }
-                                latest.get().forEach(observableField -> {
+                               /* latest.get().forEach(observableField -> {
                                         observableField.refreshProperties.set(true);
-                                        observableField.valueProperty().addListener((observable, ov, nv) ->{
+                                        observableField.valueProperty().addListener((observable) ->{
+                                            Object nv = observableField.valueProperty().get();
                                             if(nv != null){
-                                                //TODO instead of calling this method to update version listen to the version changes in OE and call updateVersions.
-                                                ObservableSemanticSnapshot observableSemanticSnapshot = (ObservableSemanticSnapshot) ObservableEntity.get(this.observableEntity()).getSnapshot(this.viewCalculator);
+                                                ObservableSemanticSnapshot observableSemanticSnapshot = new ObservableSemanticSnapshot(viewCalculator, observableEntity);
+                                                //(ObservableSemanticSnapshot) ObservableEntity.get(this.observableEntity()).getSnapshot(this.viewCalculator);
                                                 // Alternate approach to call updateVersion directly.
                                                 // ObservableEntity.updateVersions(Entity.getFast(observableEntity.nid()), this.observableEntity);
-                                                this.observableEntity.createNewVersionAndTransaction(observableField.value(), observableField.fieldIndex(),observableSemanticSnapshot);
+                                                this.observableEntity.manageEntityVersion(observableField.value(), observableField.fieldIndex(),observableSemanticSnapshot);
+                                                observableField.fieldProperty.set(observableField.field().withValue(nv));
                                             }
                                         });
-                                    });
+                                    });*/
 
                                 return latest;
                             });
