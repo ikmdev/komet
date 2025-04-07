@@ -43,15 +43,15 @@ public final class ObservableSemantic
     @Override
     protected ObservableSemanticVersion wrap(SemanticVersionRecord version) {
         ObservableSemanticVersion observableSemanticVersion = new ObservableSemanticVersion(version);
-        observableSemanticVersion.versionProperty.addListener((observable, ov,nv) -> {
-            updateEntity(observableSemanticVersion);
+        observableSemanticVersion.versionProperty.addListener((observable) -> {
+            updateEntity(observableSemanticVersion.versionProperty.get());
         });
         return observableSemanticVersion;
     }
 
-    private void updateEntity(ObservableSemanticVersion observableSemanticVersion) {
-        SemanticRecord semantic = Entity.getFast(observableSemanticVersion.nid());
-        SemanticVersionRecord semanticVersionRecord = observableSemanticVersion.versionProperty().get();
+
+    private void updateEntity(SemanticVersionRecord semanticVersionRecord) {
+        SemanticRecord semantic = Entity.getFast(semanticVersionRecord.nid());
         SemanticRecord analogue = semantic.with(semanticVersionRecord).build();
         saveToDB(analogue);
     }

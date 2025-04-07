@@ -81,7 +81,7 @@ public final class ObservableSemanticVersion
                     fieldDef.purposeNid(), fieldDef.meaningNid(), patternVersion.stampNid(), patternVersion.nid(), indexInPattern);
 
             ObservableField<?> observableField = new ObservableField<>(new FieldRecord<>(value, this.nid(), this.stampNid(), fieldDefinitionRecord));
-            observableField.refreshProperties.setValue(false);
+            observableField.refreshProperties.setValue(true);
             observableField.valueProperty.addListener(observable -> {
                 if(observableField.value() != null && observableField.value() != observableField.fieldProperty.get().value()){
                     manageEntityVersion(observableField.value(), observableField.fieldIndex());

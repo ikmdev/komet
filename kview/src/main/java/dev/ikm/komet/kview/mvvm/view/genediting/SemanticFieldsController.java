@@ -29,6 +29,7 @@ import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
@@ -43,6 +44,7 @@ import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -148,12 +150,12 @@ public class SemanticFieldsController {
                 processCommittedValues();
                 loadUIData();
         }
-//        observableSemantic.versionProperty().addListener((ListChangeListener<? super ObservableSemanticVersion>) listener -> {
-//            editFieldsVBox.getChildren().clear();
+
+        observableSemantic.versionProperty().addListener((ListChangeListener<? super ObservableSemanticVersion>) listener -> {
+
 //            observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-//            enableDisableSubmitButton();
-//            loadUIData();
-//        });
+            enableDisableSubmitButton();
+        });
 
         // subscribe to changes... if the FIELD_INDEX is -1 or unset, then the user clicked the
         //  pencil icon and wants to edit all the fields

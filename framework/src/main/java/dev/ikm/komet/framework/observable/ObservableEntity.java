@@ -64,7 +64,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
 
     final private AtomicReference<Entity<V>> entityReference;
 
-    public void saveToDB(SemanticRecord analogue) {
+    public void saveToDB(Entity<?> analogue) {
         Entity.provider().putEntity(analogue);
         updateVersions(entity(), this);
     }
