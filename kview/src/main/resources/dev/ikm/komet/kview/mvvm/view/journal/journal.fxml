@@ -204,7 +204,7 @@
                </graphic>
             </ToggleButton>
             <Rectangle fill="DODGERBLUE" height="1.0" stroke="BLACK" strokeType="INSIDE" styleClass="divider" width="36.0" />
-            <ToggleButton mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+            <ToggleButton fx:id="conceptNavigatorToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
                   <Region prefHeight="200.0" prefWidth="200.0">
                      <styleClass>

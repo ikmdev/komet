@@ -83,19 +83,11 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         addEntryButton = new Button(getString("add.entry.button.text"));
         addEntryButton.getStyleClass().add("add-entry-button");
         addEntryButton.setOnAction(event -> createComponentUI(0));
+        addEntryButton.setDisable(true);
 
         getChildren().addAll(titleLabel, addEntryButton);
 
         createComponentUI(0);
-        // Only allow one empty KLComponentControl
-        addEntryButton
-                .disableProperty()
-                .bind(Bindings.createBooleanBinding(() ->
-                        getChildren()
-                                .stream()
-                                .anyMatch(n -> n instanceof KLComponentControl cc && cc.getEntity() == null),
-                        getChildren(),
-                        control.valueProperty()));
 
         getSkinnable().setOnMouseDragReleased(Event::consume);
 

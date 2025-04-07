@@ -377,24 +377,17 @@ public class DataModelHelper {
         Composer composer = new Composer("Semantic for %s".formatted(pattern.description()));
         Session session = composer.open(status, author, module, path);
 
-        //FIXME we need to define a default reference component
-        session.compose((ConceptAssembler conceptAssembler) -> conceptAssembler
-                .attach((FullyQualifiedName fqn) -> fqn
-                        .language(ENGLISH_LANGUAGE)
-                        .text("Reference Component")
-                        .caseSignificance(DESCRIPTION_NOT_CASE_SENSITIVE)));
-
         EntityProxy.Semantic defaultSemantic = EntityProxy.Semantic.make(PublicIds.newRandom());
         session.compose((SemanticAssembler semanticAssembler) -> {
             semanticAssembler
                     .semantic(defaultSemantic)
-                    //FIXME we don't want this circular reference to its own pattern.  We want a default reference component
-                    .reference(patternProxy) // can we overwrite the reference component so long as we don't commit?
+                    // using anonymous concept for both reference component and for fields that are concepts for consistency
+                    .reference(ANONYMOUS_CONCEPT)
                     .pattern((EntityProxy.Pattern) patternProxy)
                     .fieldValues(fieldValues -> {
                         patternVersionRecord.fieldDefinitions().forEach(f -> {
                             if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
-                                fieldValues.with(EntityProxy.make(EMPTY_NID));
+                                fieldValues.with(ANONYMOUS_CONCEPT);
                             } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
                                     || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
                                 fieldValues.with("Default String Value");
