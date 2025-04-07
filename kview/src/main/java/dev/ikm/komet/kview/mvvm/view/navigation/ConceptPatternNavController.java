@@ -126,8 +126,6 @@ public class ConceptPatternNavController {
                 }
             }
         });
-        //conceptsToggleButton.selectedProperty().addListener((observableValue, aBoolean, t1) -> showConcepts());
-        //patternsToggleButton.selectedProperty().addListener((observableValue, aBoolean, t1) -> showPatterns());
 
         patternCreationEventSubscriber = (evt) -> {
             LOG.info("A New Pattern has been added/created. Reloading all the Patterns.");
