@@ -111,7 +111,7 @@ public class ConceptPatternNavController {
             @Override
             public void changed(ObservableValue<? extends Toggle> observableValue, Toggle oldVal, Toggle newVal) {
                 // if they click the same toggle twice, we can just ignore it
-                if (newVal == null) {
+                if (observableValue.getValue() == null) {
                     if (oldVal.equals(conceptsToggleButton)) {
                         showConcepts();
                     } else if (oldVal.equals(patternsToggleButton)) {
@@ -119,7 +119,7 @@ public class ConceptPatternNavController {
                     }
                     return;
                 }
-                if (newVal.equals(conceptsToggleButton)) {
+                if (observableValue.getValue().equals(conceptsToggleButton)) {
                     showConcepts();
                 } else {
                     showPatterns();
