@@ -39,6 +39,8 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
+import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
+import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
@@ -50,6 +52,7 @@ import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
@@ -57,6 +60,7 @@ import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
+import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -75,6 +79,7 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.SemanticFacade;
 import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -83,6 +88,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
@@ -251,33 +257,80 @@ public class GenEditingDetailsController {
 
         // Populate the Semantic Details
 
-        // populate the observable fields and nodes for this semantic
-        observableFields.addAll(KlFieldHelper
-                .generateObservableFieldsAndNodes(getViewProperties(),
-                        nodes,
-                        semanticEntityVersionLatest, false));
+        if (genEditingViewModel.getPropertyValue(MODE).equals(EDIT)) {
+            // populate the observable fields and nodes for this semantic
+            observableFields.addAll(KlFieldHelper
+                    .generateObservableFieldsAndNodes(getViewProperties(),
+                            nodes,
+                            semanticEntityVersionLatest, false));
 
-        // function to apply for the components' edit action (a.k.a. right click > Edit)
-        BiFunction<Node, Integer, Runnable> editAction = (node, fieldIndex) ->
-                () -> {
-                    final EntityVersion finalEntityVersion = getSemanticVersion().get();
-                    EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                            new PropertyPanelEvent(node, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
-                    EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                            new PropertyPanelEvent(node, OPEN_PANEL));
-                };
+            // function to apply for the components' edit action (a.k.a. right click > Edit)
+            BiFunction<Node, Integer, Runnable> editAction = (node, fieldIndex) ->
+                    () -> {
+                        final EntityVersion finalEntityVersion = getSemanticVersion().get();
+                        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                                new PropertyPanelEvent(node, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
+                        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                                new PropertyPanelEvent(node, OPEN_PANEL));
+                    };
 
-        // add setEditOnAction
-        for (int index = 0; index < nodes.size(); index++) {
-            Node node = nodes.get(index);
-            if (node instanceof KLReadOnlyBaseControl klReadOnlyBaseControl) {
-                klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index));
-            } else if (node instanceof KLReadOnlyComponentSetControl klReadOnlyComponentSetControl) {
-                klReadOnlyComponentSetControl.setOnEditAction(editAction.apply(klReadOnlyComponentSetControl, index));
-            } else if (node instanceof KLReadOnlyComponentListControl klReadOnlyComponentListControl) {
-                klReadOnlyComponentListControl.setOnEditAction(editAction.apply(klReadOnlyComponentListControl, index));
+            // add setEditOnAction
+
+            for (int index = 0; index < nodes.size(); index++) {
+                Node node = nodes.get(index);
+                if (node instanceof KLReadOnlyBaseControl klReadOnlyBaseControl) {
+                    klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index));
+                } else if (node instanceof KLReadOnlyComponentSetControl klReadOnlyComponentSetControl) {
+                    klReadOnlyComponentSetControl.setOnEditAction(editAction.apply(klReadOnlyComponentSetControl, index));
+                } else if (node instanceof KLReadOnlyComponentListControl klReadOnlyComponentListControl) {
+                    klReadOnlyComponentListControl.setOnEditAction(editAction.apply(klReadOnlyComponentListControl, index));
+                }
+                semanticDetailsVBox.getChildren().add(node);
             }
-            semanticDetailsVBox.getChildren().add(node);
+        } else {
+            EntityFacade pattern = genEditingViewModel.getPropertyValue(PATTERN);
+            PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(pattern).get();
+            patternVersionRecord.fieldDefinitions().forEach(fieldDefinitionRecord -> {
+
+                Tooltip tooltip = new Tooltip(getViewProperties().calculator().getDescriptionTextOrNid(fieldDefinitionRecord.purposeNid()));
+                if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
+                    KLReadOnlyComponentControl readOnlyComponentControl = new KLReadOnlyComponentControl();
+                    readOnlyComponentControl.setTitle(fieldDefinitionRecord.meaning().description());
+                    readOnlyComponentControl.setTooltip(tooltip);
+                    semanticDetailsVBox.getChildren().add(readOnlyComponentControl);
+                } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
+                        || fieldDefinitionRecord.dataTypeNid() == TinkarTerm.STRING.nid()) {
+                    KLReadOnlyDataTypeControl<String> readOnlyStringControl = new KLReadOnlyDataTypeControl<>(String.class);
+                    readOnlyStringControl.setTitle(fieldDefinitionRecord.meaning().description());
+                    readOnlyStringControl.setTooltip(tooltip);
+                    semanticDetailsVBox.getChildren().add(readOnlyStringControl);
+                } else if (fieldDefinitionRecord.dataTypeNid() == INTEGER_FIELD.nid()) {
+                    KLReadOnlyDataTypeControl<Integer> readOnlyIntegerControl = new KLReadOnlyDataTypeControl<>(Integer.class);
+                    readOnlyIntegerControl.setTitle(fieldDefinitionRecord.meaning().description());
+                    readOnlyIntegerControl.setTooltip(tooltip);
+                    semanticDetailsVBox.getChildren().add(readOnlyIntegerControl);
+                } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
+                    KLReadOnlyDataTypeControl<Float> readOnlyFloatControl = new KLReadOnlyDataTypeControl<>(Float.class);
+                    readOnlyFloatControl.setTitle(fieldDefinitionRecord.meaning().description());
+                    readOnlyFloatControl.setTooltip(tooltip);
+                    semanticDetailsVBox.getChildren().add(readOnlyFloatControl);
+                } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
+                    KLReadOnlyDataTypeControl<Boolean> readOnlyBooleanControl = new KLReadOnlyDataTypeControl<>(Boolean.class);
+                    readOnlyBooleanControl.setTitle(fieldDefinitionRecord.meaning().description());
+                    readOnlyBooleanControl.setTooltip(tooltip);
+                    semanticDetailsVBox.getChildren().add(readOnlyBooleanControl);
+                } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
+                    KLReadOnlyComponentListControl readOnlyComponentListControl = new KLReadOnlyComponentListControl();
+                    readOnlyComponentListControl.setTitle(fieldDefinitionRecord.meaning().description());
+                    readOnlyComponentListControl.setTooltip(tooltip);
+                    semanticDetailsVBox.getChildren().add(readOnlyComponentListControl);
+                } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
+                    KLReadOnlyComponentSetControl readOnlyComponentSetControl = new KLReadOnlyComponentSetControl();
+                    readOnlyComponentSetControl.setTitle(fieldDefinitionRecord.meaning().description()); //TODO set the titles
+                    readOnlyComponentSetControl.setTooltip(tooltip);
+                    semanticDetailsVBox.getChildren().add(readOnlyComponentSetControl);
+                }
+            });
         }
 
         // Setup Properties Bump out view.
