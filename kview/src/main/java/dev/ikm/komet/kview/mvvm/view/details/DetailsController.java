@@ -22,6 +22,8 @@ import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.DeviceViewModel.DEVICE_ENTITY;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.addToMembershipPattern;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.isInMembershipPattern;
@@ -34,6 +36,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.FULLY_QUALIFIED_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.OTHER_NAMES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
@@ -74,6 +77,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityService;
@@ -139,12 +143,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -1058,9 +1057,14 @@ public class DetailsController  {
 
         // create textflow to hold regular name label
         TextFlow row1 = new TextFlow();
-        Object obj = otherName.getNameText();
-        String nameLabel = String.valueOf(obj);
-        Text otherNameLabel = new Text(nameLabel);
+
+        // TODO: need to retrieve the description Semantic's Text field (latest version text).
+        PublicId semanticPid = otherName.getSemanticPublicId();
+        int nid = EntityService.get().nidForPublicId(semanticPid);
+        Latest<SemanticEntityVersion> regularDescriptionTextversion = getViewProperties().calculator().latest(nid);
+        Text otherNameLabel = new Text(regularDescriptionTextversion.get().fieldValues().get(1).toString());
+        LOG.info("otherNameLabel : "+otherNameLabel);
+
         otherNameLabel.getStyleClass().add("descr-concept-name");
 
         Text semanticDescrText = new Text();
@@ -1098,8 +1102,15 @@ public class DetailsController  {
     private void updateFQNSemantics(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
         DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
         // Latest FQN
-        String fullyQualifiedName = (String) semanticEntityVersion.fieldValues().get(1);
-        latestFqnText.setText(fullyQualifiedName);
+        ViewCalculator viewCalculator = getViewProperties().calculator();
+        EntityFacade entityFacade = getConceptViewModel().getPropertyValue(DEVICE_ENTITY);
+        Latest<EntityVersion> latestEntityVersion = viewCalculator.latest(entityFacade);
+        if (latestEntityVersion.isPresent()) {
+            // obtain the latest entity's version (concept version)
+            EntityVersion entityVersion = latestEntityVersion.get();
+            String fullyQualifiedName = viewCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(entityVersion.nid());
+            latestFqnText.setText(fullyQualifiedName);
+        }
 
         this.fqnPublicId = semanticEntityVersion.publicId();
         fqnContainer.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
@@ -1162,7 +1173,9 @@ public class DetailsController  {
         viewCalculator.getDescriptionsForComponent(conceptFacade).stream()
                 .filter(semanticEntity -> {
                     // semantic -> semantic version -> pattern version(index meaning field from DESCR_Type)
-                    Latest<SemanticEntityVersion> semanticVersion = viewCalculator.latest(semanticEntity);
+                    // ((SemanticEntityVersion)viewCalculator.latest(semanticEntity.nid()).get()).fieldValues().get(1) // Hello Status
+                    // viewCalculator.latest(semanticEntity).get() semanticVersion.get().fieldValues().get(1)    // Status
+                    Latest<SemanticEntityVersion> semanticVersion = viewCalculator.latest(semanticEntity.nid());
 
                     PatternEntity<PatternEntityVersion> patternEntity = semanticEntity.pattern();
                     PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
@@ -1178,9 +1191,10 @@ public class DetailsController  {
                                 typeId == DEFINITION_DESCRIPTION_TYPE.nid());
                     }
                     return false;
+
                 }).forEach(semanticEntity -> {
                     // Each description obtain the latest semantic version, pattern version and their field values based on index
-                    Latest<SemanticEntityVersion> semanticVersion = viewCalculator.latest(semanticEntity);
+                    Latest<SemanticEntityVersion> semanticVersion = viewCalculator.latest(semanticEntity.nid());
                     PatternEntity<PatternEntityVersion> patternEntity = semanticEntity.pattern();
                     PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
 

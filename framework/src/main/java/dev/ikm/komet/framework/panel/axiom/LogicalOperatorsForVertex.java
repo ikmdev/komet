@@ -72,7 +72,10 @@ public enum LogicalOperatorsForVertex {
 
     PROPERTY_SET(TinkarTerm.PROPERTY_SET),
 
+    // TODO: Retire property pattern implication when starter set stable.
     PROPERTY_PATTERN_IMPLICATION(TinkarTerm.PROPERTY_PATTERN_IMPLICATION),
+
+    PROPERTY_SEQUENCE_IMPLICATION(TinkarTerm.PROPERTY_SEQUENCE_IMPLICATION),
 
     INCLUSION_SET(TinkarTerm.INCLUSION_SET);
 
