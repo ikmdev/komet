@@ -107,9 +107,9 @@ public class ConceptPatternNavController {
         navContentPane.setCenter(classicConceptNavigator);
 
         // set up listeners when the toggle button changes
-        conPatToggleGroup.selectedToggleProperty().addListener((observableValue, oldVal, newVal) -> {
+        conPatToggleGroup.selectedToggleProperty().subscribe((oldVal, newVal) -> {
             // if they click the same toggle twice, we can just ignore it
-            if (observableValue.getValue() == null) {
+            if (newVal == null) {
                 if (oldVal.equals(conceptsToggleButton)) {
                     showConcepts();
                 } else if (oldVal.equals(patternsToggleButton)) {
@@ -117,7 +117,7 @@ public class ConceptPatternNavController {
                 }
                 return;
             }
-            if (observableValue.getValue().equals(conceptsToggleButton)) {
+            if (newVal.equals(conceptsToggleButton)) {
                 showConcepts();
             } else {
                 showPatterns();
