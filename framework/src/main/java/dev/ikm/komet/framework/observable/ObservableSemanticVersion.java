@@ -79,22 +79,25 @@ public final class ObservableSemanticVersion
             FieldDefinitionForEntity fieldDef = patternVersion.fieldDefinitions().get(indexInPattern);
             FieldDefinitionRecord fieldDefinitionRecord = new FieldDefinitionRecord(fieldDef.dataTypeNid(),
                     fieldDef.purposeNid(), fieldDef.meaningNid(), patternVersion.stampNid(), patternVersion.nid(), indexInPattern);
-            ObservableField<?> observableField = new ObservableField<>(new FieldRecord<>(value, this.nid(), this.stampNid(), fieldDefinitionRecord));
-            fieldArray[indexInPattern] = observableField;
-            observableField.refreshProperties.set(true);
-            fieldArray[indexInPattern].valueProperty.addListener((observable -> {
-               manageEntityVersion(observableField.value(), observableField.fieldIndex());
-            }));
 
+            ObservableField<?> observableField = new ObservableField<>(new FieldRecord<>(value, this.nid(), this.stampNid(), fieldDefinitionRecord));
+            observableField.refreshProperties.setValue(false);
+            observableField.valueProperty.addListener(observable -> {
+                if(observableField.value() != null && observableField.value() != observableField.fieldProperty.get().value()){
+                    manageEntityVersion(observableField.value(), observableField.fieldIndex());
+                }
+            });
+            fieldArray[indexInPattern] = observableField;
         }
         return Lists.immutable.of(fieldArray);
     }
 
-    private void manageEntityVersion(Object value, int i) {
+    private void manageEntityVersion(Object value, int index) {
         SemanticVersionRecord newVersion = null;
         SemanticVersionRecord version = version();
         MutableList<Object> fieldsForNewVersion = org.eclipse.collections.impl.factory.Lists.mutable.of(version.fieldValues().toArray());
         StampRecord stamp = Entity.getStamp(version.stampNid());
+        fieldsForNewVersion.set(index, value);
         if(!version().uncommitted()){
             Transaction t = Transaction.make();
             // newStamp already written to the entity store.

@@ -148,6 +148,12 @@ public class SemanticFieldsController {
                 processCommittedValues();
                 loadUIData();
         }
+//        observableSemantic.versionProperty().addListener((ListChangeListener<? super ObservableSemanticVersion>) listener -> {
+//            editFieldsVBox.getChildren().clear();
+//            observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+//            enableDisableSubmitButton();
+//            loadUIData();
+//        });
 
         // subscribe to changes... if the FIELD_INDEX is -1 or unset, then the user clicked the
         //  pencil icon and wants to edit all the fields
@@ -181,19 +187,19 @@ public class SemanticFieldsController {
             observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
             observableFields.forEach(observableField -> {
                 // disable calling writeToData method of observable field by setting refresh flag to true.
-                observableField.refreshProperties.setValue(true);
+//                observableField.refreshProperties.setValue(true);
                 FieldRecord<?> fieldRecord = observableField.field();
                 nodes.add(KlFieldHelper.generateNode(fieldRecord, observableField, getViewProperties(), semanticEntityVersionLatest, true));
 
                 //enable disable submit button.
-                observableField.valueProperty()
-                        .subscribe(value -> {
-                            enableDisableSubmitButton(value);
-                            if(submitButton.isDisabled()){
-                                //TODO write method to remove any transactions and revert back to the committed values.
-                                // observableSemantic.removeVersion(observableField.value(), observableField.fieldIndex(), retrieveObservableSemanticVersion(semanticEntityVersionLatest));
-                            }
-                        });
+//                observableField.valueProperty()
+//                        .subscribe(value -> {
+//                            enableDisableSubmitButton(value);
+//                            if(submitButton.isDisabled()){
+//                                //TODO write method to remove any transactions and revert back to the committed values.
+//                                // observableSemantic.removeVersion(observableField.value(), observableField.fieldIndex(), retrieveObservableSemanticVersion(semanticEntityVersionLatest));
+//                            }
+//                        });
             });
         }
     }

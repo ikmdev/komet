@@ -16,7 +16,6 @@
 package dev.ikm.komet.framework.observable;
 
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
@@ -27,15 +26,10 @@ import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
-import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.entity.StampRecord;
-import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.impl.factory.Lists;
 
 import java.util.Optional;
 
@@ -49,61 +43,22 @@ public final class ObservableSemantic
     @Override
     protected ObservableSemanticVersion wrap(SemanticVersionRecord version) {
         ObservableSemanticVersion observableSemanticVersion = new ObservableSemanticVersion(version);
-        observableSemanticVersion.versionProperty().addListener((observable, oldValue, newValue) -> {
+        observableSemanticVersion.versionProperty.addListener((observable, ov,nv) -> {
             updateEntity(observableSemanticVersion);
-            /*versionProperty.remove(this);
-            versionProperty.add(wrap(newValue));*/
         });
         return observableSemanticVersion;
     }
 
-    protected void updateEntity(ObservableSemanticVersion observableSemanticVersion) {
+    private void updateEntity(ObservableSemanticVersion observableSemanticVersion) {
         SemanticRecord semantic = Entity.getFast(observableSemanticVersion.nid());
         SemanticVersionRecord semanticVersionRecord = observableSemanticVersion.versionProperty().get();
         SemanticRecord analogue = semantic.with(semanticVersionRecord).build();
         saveToDB(analogue);
     }
 
-
-
     @Override
     public ObservableSemanticSnapshot getSnapshot(ViewCalculator calculator) {
         return new ObservableSemanticSnapshot(calculator, this);
-    }
-
-    /**
-     * This method creates a new transaction and semantic version for committed records and updates the STAMP.
-     * If the version is uncommitted then it assumes that there is an existing transaction and does not create one,
-     * it will only update the version with new values and does NOT update the STAMP.
-     * @param value
-     * @param fieldIndex
-     * @param observableSemanticSnapshot
-     * @param <T>
-     */
-    public <T> void manageEntityVersion(T value, int fieldIndex, ObservableSemanticSnapshot observableSemanticSnapshot) {
-        Latest<ObservableSemanticVersion> observableSemanticVersionLatest = observableSemanticSnapshot.getLatestVersion();
-        ObservableSemanticVersion version = observableSemanticVersionLatest.get();
-        MutableList<Object> fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
-        fieldsForNewVersion.set(fieldIndex, value);
-        SemanticRecord semantic = (SemanticRecord) version.entity();
-        StampRecord stamp = Entity.getStamp(version.stampNid());
-        SemanticVersionRecord newVersion = null;
-        if (!version.uncommitted()) {
-            // Create transaction
-            Transaction t = Transaction.make();
-            // newStamp already written to the entity store.
-            StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
-            // Create new version...
-            newVersion = version.getVersionRecord().with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
-        }else {
-            newVersion = version.getVersionRecord().withFieldValues(fieldsForNewVersion.toImmutable());
-        }
-    //    versionProperty.add(wrap(newVersion));
-        // Create new version...
-        SemanticRecord analogue = semantic.with(newVersion).build();
-        // Entity provider will broadcast the nid of the changed entity.
-        Entity.provider().putEntity(analogue);
-        ObservableEntity.updateVersions(Entity.getFast(version.nid()), this);
     }
 
     @Override
