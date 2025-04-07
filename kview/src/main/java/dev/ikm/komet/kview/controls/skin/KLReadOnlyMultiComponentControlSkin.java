@@ -7,8 +7,10 @@ import javafx.beans.binding.StringBinding;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SkinBase;
 import javafx.scene.layout.VBox;
 
@@ -60,6 +62,10 @@ public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMu
         });
 
         promptTextLabel.textProperty().bind(control.promptTextProperty());
+        promptTextLabel.setMaxWidth(Double.MAX_VALUE);
+        ContextMenu promptTextContextMenu = createContextMenu(null);
+        promptTextLabel.setContextMenu(promptTextContextMenu);
+        promptTextContextMenu.setOnShown(value -> onContextMenuForPromptShown(promptTextContextMenu));
 
         // CSS
         mainContainer.getStyleClass().add("main-container");
@@ -83,6 +89,38 @@ public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMu
         promptTextLabel.setManaged(promptTextVisible);
         componentsContainer.setVisible(!promptTextVisible);
         componentsContainer.setManaged(!promptTextVisible);
+    }
+
+    protected ContextMenu createContextMenu(ComponentItem componentItem) {
+        ContextMenu contextMenu = new ContextMenu();
+
+        contextMenu.getStyleClass().add("klcontext-menu");
+
+        // Edit
+        contextMenu.getItems().add(
+                createMenuItem(getEditMenuItemLabel(), KometIcon.IconValue.PENCIL, this::fireOnEditAction)
+        );
+
+        // Remove
+        MenuItem removeMenuItem = createMenuItem("Remove", KometIcon.IconValue.TRASH, actionEvent -> this.fireOnRemoveAction(actionEvent, componentItem));
+        contextMenu.getItems().addAll(
+                new SeparatorMenuItem(),
+                removeMenuItem
+        );
+        if (componentItem == null) {
+            removeMenuItem.setDisable(true);
+        }
+
+        return contextMenu;
+    }
+
+    protected abstract String getEditMenuItemLabel();
+
+    private void onContextMenuForPromptShown(ContextMenu contextMenu) {
+        KLReadOnlyMultiComponentControl control = getSkinnable();
+        control.pseudoClassStateChanged(KLReadOnlyMultiComponentControl.EDIT_MODE_PSEUDO_CLASS, true);
+
+        contextMenu.setOnHidden(event -> control.pseudoClassStateChanged(KLReadOnlyMultiComponentControl.EDIT_MODE_PSEUDO_CLASS, false));
     }
 
     protected MenuItem createMenuItem(String text, KometIcon.IconValue icon, EventHandler<ActionEvent> actionHandler) {
