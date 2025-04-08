@@ -95,7 +95,25 @@ public final class ObservableSemanticVersion
             });
             fieldArray[indexInPattern] = observableField;
         }
+
+       //TODO POC this is a temp workaround remove call to handleUncommittedVersionTransactionStatus()?
+        handleUncommittedVersionTransactionStatus();
         return Lists.immutable.of(fieldArray);
+    }
+
+    /**
+     * TODO POC this is a temp workaround Should be removed later?
+     * This method will create a transaction if a version is uncommitted and transaction for that version does not exist.
+     */
+    private void handleUncommittedVersionTransactionStatus() {
+        if(version().uncommitted() && Transaction.forVersion(version()).isEmpty()){
+            SemanticVersionRecord version = version();
+            StampRecord stamp = Entity.getStamp(version.stampNid());
+            Transaction t = Transaction.make();
+            StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
+            versionProperty.set(version.with().stampNid(newStamp.nid()).build());
+        }
+
     }
 
     private void manageEntityVersion(Object value, int index) {
@@ -104,13 +122,13 @@ public final class ObservableSemanticVersion
         MutableList<Object> fieldsForNewVersion = org.eclipse.collections.impl.factory.Lists.mutable.of(version.fieldValues().toArray());
         StampRecord stamp = Entity.getStamp(version.stampNid());
         fieldsForNewVersion.set(index, value);
-        if(!version().uncommitted()){
+        if (!version().uncommitted()) {
             Transaction t = Transaction.make();
             // newStamp already written to the entity store.
             StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
             // Create new version...
             newVersion = version.with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
-        }else {
+        } else {
             newVersion = version.withFieldValues(fieldsForNewVersion.toImmutable());
         }
         versionProperty.set(newVersion);
