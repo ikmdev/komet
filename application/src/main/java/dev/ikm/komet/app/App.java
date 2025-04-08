@@ -962,6 +962,14 @@ public class App extends Application {
 
         Scene overlayScene = new Scene(overlayContent, 300, 200, Color.TRANSPARENT);
         overlayStage.setScene(overlayScene);
+
+        // Set custom close request handler
+        overlayStage.setOnCloseRequest(event -> {
+            if (resourceUsageTimeline != null) {
+                resourceUsageTimeline.stop(); // Stop the timeline
+            }
+            overlayStage.hide(); // Hide the stage
+        });
         overlayStage.show();
 
         // Create and start the timeline to update resource usage
@@ -981,15 +989,15 @@ public class App extends Application {
     private void updateResourceUsage(final Label cpuUsageLabel, final Label memoryUsageLabel) {
         java.lang.management.OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
         double cpuLoad = -1;
-        if (osBean instanceof OperatingSystemMXBean) {
-            cpuLoad = ((OperatingSystemMXBean) osBean).getCpuLoad() * 100;
+        if (osBean instanceof OperatingSystemMXBean sunOsBean) {
+            cpuLoad = sunOsBean.getCpuLoad() * 100;
 
             long totalMemory = Runtime.getRuntime().totalMemory();
             long freeMemory = Runtime.getRuntime().freeMemory();
             long usedMemory = totalMemory - freeMemory;
 
-            cpuUsageLabel.setText(String.format("CPU Usage: %.2f%%", cpuLoad));
-            memoryUsageLabel.setText(String.format("Memory Usage: %d MB / %d MB",
+            cpuUsageLabel.setText("CPU Usage: %.2f%%".formatted(cpuLoad));
+            memoryUsageLabel.setText("Memory Usage: %d MB / %d MB".formatted(
                     usedMemory / (1024 * 1024), totalMemory / (1024 * 1024)));
         }
     }
