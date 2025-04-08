@@ -39,6 +39,8 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 
+import java.util.Objects;
+
 public final class ObservableSemanticVersion
         extends ObservableVersion<SemanticVersionRecord>
         implements SemanticEntityVersion {
@@ -80,10 +82,14 @@ public final class ObservableSemanticVersion
             FieldDefinitionRecord fieldDefinitionRecord = new FieldDefinitionRecord(fieldDef.dataTypeNid(),
                     fieldDef.purposeNid(), fieldDef.meaningNid(), patternVersion.stampNid(), patternVersion.nid(), indexInPattern);
 
-            ObservableField<?> observableField = new ObservableField<>(new FieldRecord<>(value, this.nid(), this.stampNid(), fieldDefinitionRecord));
+            ObservableField<?> observableField = new ObservableField<>(new FieldRecord<>(value, this.nid(), this.stampNid(), fieldDefinitionRecord),false);
             observableField.refreshProperties.setValue(true);
             observableField.valueProperty.addListener(observable -> {
-                if(observableField.value() != null && observableField.value() != observableField.fieldProperty.get().value()){
+
+                if(observableField.value() != null &&
+                        (observableField.fieldProperty.getValue().value() != null &&
+                                // Check if the previous value is different from changed.This check is required for C-List C-Set
+                        !Objects.equals(observableField.value().toString(), observableField.fieldProperty.getValue().value().toString()))) {
                     manageEntityVersion(observableField.value(), observableField.fieldIndex());
                 }
             });
