@@ -4,7 +4,7 @@ import dev.ikm.komet.kview.controls.skin.KLReadOnlyImageControlSkin;
 import javafx.scene.control.Skin;
 import javafx.scene.image.Image;
 
-public class KLReadOnlyImageControl extends KLReadOnlyBaseControl<Image> {
+public class KLReadOnlyImageControl extends KLReadOnlyBaseSingleValueControl<Image> {
     public KLReadOnlyImageControl() {
         getStyleClass().add("read-only-image-control");
     }

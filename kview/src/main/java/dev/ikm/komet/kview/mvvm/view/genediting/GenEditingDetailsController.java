@@ -39,8 +39,7 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
-import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
-import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
+
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
@@ -50,9 +49,6 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
-import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
-import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
-import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
@@ -60,16 +56,11 @@ import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
-import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -79,7 +70,6 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.SemanticFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -88,7 +78,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
@@ -275,24 +264,17 @@ public class GenEditingDetailsController {
                     };
 
             // add setEditOnAction
-
             for (int index = 0; index < nodes.size(); index++) {
-                Node node = nodes.get(index);
-                if (node instanceof KLReadOnlyBaseControl klReadOnlyBaseControl) {
-                    klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index));
-                } else if (node instanceof KLReadOnlyComponentSetControl klReadOnlyComponentSetControl) {
-                    klReadOnlyComponentSetControl.setOnEditAction(editAction.apply(klReadOnlyComponentSetControl, index));
-                } else if (node instanceof KLReadOnlyComponentListControl klReadOnlyComponentListControl) {
-                    klReadOnlyComponentListControl.setOnEditAction(editAction.apply(klReadOnlyComponentListControl, index));
-                }
-                semanticDetailsVBox.getChildren().add(node);
+                KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) nodes.get(index);
+                klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index));
+                semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
             }
         } else {
             EntityFacade pattern = genEditingViewModel.getPropertyValue(PATTERN);
             PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(pattern).get();
 
             // generate read only UI controls in create mode
-            DataModelHelper.readOnlyUIControls(patternVersionRecord, semanticDetailsVBox, getViewProperties());
+            DataModelHelper.addReadOnlyBlankControlsToContainer(semanticDetailsVBox, patternVersionRecord, getViewProperties());
         }
 
         // Setup Properties Bump out view.
