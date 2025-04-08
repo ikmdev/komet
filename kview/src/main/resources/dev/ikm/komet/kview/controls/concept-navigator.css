@@ -1,0 +1,762 @@
+@import "../mvvm/view/kview.css";
+
+/** CONCEPT NAVIGATOR **/
+.concept-navigator-control {
+    -fx-outer-cell-color: -Natural-Grey-Main;
+    -fx-inner-cell-color: -Natural-Grey-Main;
+    -fx-text-cell-color: white;
+    -fx-dots-cell-color: white;
+}
+
+.concept-navigator-control:multiple {
+    -fx-outer-cell-color: -Secondary-04;
+    -fx-inner-cell-color: -Secondary-01;
+    -fx-text-cell-color: -Grey-11;
+    -fx-dots-cell-color: -Secondary-05;
+}
+
+.concept-navigator-control.tree-view,
+.concept-navigator-control.tree-view:focused {
+    -fx-background: -Grey-3;
+    -fx-background-color: -fx-background;
+    -fx-background-insets: 0;
+    -fx-background-radius: 5;
+    -fx-padding: 4 3 3 3;
+    -fx-min-width: 432;
+}
+
+.concept-navigator-control.tree-view > .concept-header.label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 500;
+    -fx-font-size: 14;
+    -fx-text-fill: -Grey-11;
+    -fx-padding: 0 0 4 0;
+    -fx-alignment: center;
+    -fx-background: -Grey-3;
+    -fx-background-color: -fx-background;
+    -fx-min-width: 432;
+    -fx-pref-width: 432;
+    -fx-max-width: 432;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .clipped-container > .sheet {
+    -fx-padding: 0 0 0 0;
+}
+.concept-navigator-control.tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-cell:filled:selected,
+.concept-navigator-control.tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-cell:focused {
+    -fx-background: -Grey-3;
+    -fx-table-cell-border-color: -Grey-3;
+    -fx-background-insets: 0;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal {
+    -fx-padding: 0;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal:focused,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical:focused {
+    -fx-background-color: -Grey-3;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical > .track,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal > .track {
+    fx-background-insets: 0;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .corner {
+    -fx-background-insets: 0;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal .track,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical .track {
+    -fx-background-color: -Grey-3;
+    -fx-border-width: 0;
+    -fx-background-radius: 0em;
+    -fx-border-radius: 0;
+    -fx-background-insets: 0;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal .increment-button,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0 0 4 0;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical .increment-button,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0 4 0 0;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar .increment-arrow,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal .thumb,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical .thumb {
+    -fx-background-color: transparent, -Grey-9;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 2, 2;
+}
+
+.concept-navigator-control.tree-view > .dragging-box {
+    -fx-fill: #5587D933;
+    -fx-stroke: null;
+}
+
+.tree-cell {
+    -fx-background: -Grey-3;
+    -fx-background-insets: 0;
+    -fx-background-color: -fx-background;
+    -fx-background-radius: 0;
+    -fx-text-fill: -fx-text-background-color;
+    -fx-padding: 1;
+    -fx-indent: 15;
+    -fx-min-width: 422;
+    -fx-pref-width: 422;
+    -fx-max-width: 422;
+}
+
+.tree-cell:show-tags {
+    -fx-padding: 1 1 1 47;
+}
+
+.tree-cell:filled:selected {
+    -fx-background: -Grey-3;
+    -fx-table-cell-border-color: -Grey-3;
+    -fx-background-insets: 0;
+}
+
+.tree-cell > .tag-box {
+    -fx-background-radius: 3;
+    -fx-alignment: center-left;
+    -fx-padding: 2;
+}
+
+.tree-cell:added-tag > .tag-box {
+    -fx-background-color: #60BCB54D;
+}
+
+.tree-cell:retired-tag > .tag-box {
+    -fx-background-color: #DD71704D;
+}
+
+.tree-cell > .tag-box > .tag-label {
+    -fx-min-width: 44;
+    -fx-pref-width: 44;
+    -fx-max-width: 44;
+    -fx-min-height: 16;
+    -fx-pref-height: 16;
+    -fx-max-height: 16;
+    -fx-background-radius: 2;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 9;
+    -fx-text-fill: white;
+    -fx-alignment: center;
+}
+
+.tree-cell:added-tag > .tag-box > .tag-label {
+    -fx-background-color: #60BCB5;
+}
+
+.tree-cell:retired-tag > .tag-box > .tag-label {
+    -fx-background-color: #DD7170;
+}
+
+.tree-cell .label {
+    -fx-padding: 0 0 0 2;
+}
+
+.tree-cell > .concept-tile {
+    -fx-background-color: -Grey-4, white;
+    -fx-background-radius: 3, 2;
+    -fx-background-insets: 0, 1;
+    -fx-alignment: center-left;
+    -fx-spacing: 0;
+    -fx-padding: 2 4 2 2;
+}
+
+.tree-cell:hover > .concept-tile {
+    -fx-background-color: -Secondary-04, #F4F9FF;
+    -fx-background-insets: 0, 1;
+}
+
+.tree-cell:cn-border-long-hover > .concept-tile { /* ancestors of long-hovered cell */
+    -fx-background-color: -Secondary-04, #F4F9FF;
+    -fx-background-insets: 0, 2;
+}
+
+.tree-cell:cn-long-hover > .concept-tile { /* actual cell with long hover */
+    -fx-background-color: -Secondary-04, -Secondary-01;
+    -fx-background-insets: 0, 2;
+}
+
+.tree-cell:selected > .concept-tile,
+.tree-cell:hover:selected > .concept-tile { /* actual selected cell */
+    -fx-background-color: -fx-outer-cell-color, -fx-inner-cell-color;
+    -fx-background-insets: 0, 2;
+}
+
+.tree-cell:cn-border-selected > .concept-tile { /* ancestors of selected cell */
+    -fx-background-color: -Natural-Grey-Main, white;
+    -fx-background-insets: 0, 1;
+}
+
+.tree-cell:drag-selected > .concept-tile,
+.tree-cell:selected:drag-selected > .concept-tile {
+    -fx-background-color: -Primary-04, white;
+    -fx-background-insets: 0, 2;
+}
+
+.tree-cell:show-lineage > .concept-tile,
+.tree-cell:selected:show-lineage > .concept-tile {
+    -fx-background-color: -Primary-06, -Primary-06;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 0 0 3 3;
+    -fx-padding: 4 4 2 2;
+}
+
+.tree-cell > .concept-tile > .concept-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: normal;
+    -fx-font-size: 12;
+    -fx-text-fill: -Grey-11;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.tree-cell:selected > .concept-tile > .concept-label {
+    -fx-text-fill: -fx-text-cell-color;
+}
+.tree-cell:selected:drag-selected > .concept-tile > .concept-label {
+    -fx-text-fill: -Grey-11;
+}
+.tree-cell:show-lineage > .concept-tile > .concept-label {
+    -fx-text-fill: white;
+}
+
+.tree-cell > .concept-tile > .ellipse {
+    -fx-min-width: 4;
+    -fx-pref-width: 4;
+    -fx-max-width: 4;
+    -fx-pref-height: 4;
+    -fx-max-height: 4;
+    -fx-background-color: #00BD63;
+    -fx-background-radius: 4;
+    -fx-translate-y: -6.5;
+    visibility: hidden;
+    -fx-managed: false;
+}
+
+.tree-cell > .concept-tile:defined > .ellipse {
+    visibility: visible;
+    -fx-managed: true;
+}
+
+.tree-cell > .concept-tile > .region {
+    -fx-background-color: transparent, -Grey-8;
+    -fx-background-insets: 0, 1;
+    -fx-padding: 1;
+    -width-size: 14;
+    -height-size: 14;
+    -fx-background-radius: 14;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-pref-height: -height-size;
+    -fx-pref-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+}
+
+.tree-cell > .concept-tile > .region:expanded {
+    -fx-background-color: -Grey-3;
+}
+.tree-cell > .concept-tile > .region:leaf {
+    -fx-background-color: -Grey-6;
+}
+.tree-cell:drag-selected > .concept-tile > .region,
+.tree-cell:drag-selected > .concept-tile > .region:expanded,
+.tree-cell:drag-selected > .concept-tile > .region:leaf,
+.tree-cell:selected:drag-selected > .concept-tile > .region,
+.tree-cell:selected:drag-selected > .concept-tile > .region:expanded,
+.tree-cell:selected:drag-selected > .concept-tile > .region:leaf {
+    -fx-background-color: transparent;
+}
+
+.tree-cell > .concept-tile > .region.select {
+    -fx-background-color: transparent, transparent;
+    -fx-background-radius: 2;
+    visibility: hidden;
+    -fx-managed: false;
+}
+
+.tree-cell:cn-long-hover > .concept-tile > .region.select,
+.tree-cell:hover > .concept-tile > .region.select,
+.tree-cell:selected > .concept-tile > .region.select,
+.tree-cell:selected:drag-selected > .concept-tile > .region.select,
+.tree-cell:selected:hover > .concept-tile > .region.select {
+    -fx-background-color: transparent, transparent;
+    visibility: visible;
+    -fx-managed: true;
+}
+
+.tree-cell > .concept-tile > .region.tree {
+    -fx-background-color: transparent, -Secondary-01;
+    -fx-background-radius: 2;
+}
+
+.tree-cell > .concept-tile > .region.select:hover,
+.tree-cell > .concept-tile > .region.tree:hover {
+    -fx-background-color: transparent, -Secondary-03;
+}
+.tree-cell:show-lineage > .concept-tile > .region.select,
+.tree-cell:show-lineage > .concept-tile > .region.select:hover {
+    visibility: hidden;
+    -fx-managed: false;
+}
+.tree-cell:show-lineage > .concept-tile > .region.tree,
+.tree-cell:show-lineage > .concept-tile > .region.tree:hover {
+    -fx-background-color: transparent, -Primary-04;
+    -fx-background-radius: 2;
+}
+
+.tree-cell:drag-selected > .concept-tile > .region.select,
+.tree-cell:drag-selected > .concept-tile > .region.select:hover,
+.tree-cell:selected:drag-selected > .concept-tile > .region.select,
+.tree-cell:selected:drag-selected > .concept-tile > .region.select:hover {
+    -fx-background-color: transparent, transparent;
+}
+
+.tree-cell > .concept-tile > .region > .icon {
+    -width-size: 14;
+    -height-size: 14;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-pref-height: -height-size;
+    -fx-pref-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-scale-shape: false;
+}
+
+.tree-cell > .concept-tile > .region > .icon.disclosure {
+    -fx-background-color: white;
+    -fx-shape: "M 17.291 38.416 L 16.233 37.358 L 18.523 35.063 L 16.233 32.767 L 17.291 31.709 L 20.644 35.063 Z";
+    -fx-rotate: 0;
+    transition-property: -fx-rotate;
+    transition-duration: 0.5s;
+}
+
+.tree-cell > .concept-tile > .region:hover > .icon.disclosure {
+    -fx-rotate: 90;
+}
+
+.tree-cell > .concept-tile > .region:expanded:hover > .icon.disclosure {
+    -fx-rotate: -90;
+}
+
+.tree-cell > .concept-tile > .region:expanded > .icon.disclosure {
+    -fx-background-color: -Grey-11;
+    -fx-shape: "M 15.085 33.915 L 16.143 32.857 L 18.438 35.147 L 20.734 32.857 L 21.792 33.915 L 18.438 37.268 L 15.085 33.915 Z"
+}
+
+.tree-cell > .concept-tile > .region > .icon.leaf {
+    -fx-background-color: black;
+    -fx-shape: "M 11 7 L 11 8.5 L 5 8.5 L 5 7 Z";
+    -fx-rotate: 0;
+}
+
+.tree-cell:drag-selected > .concept-tile > .region > .icon.disclosure,
+.tree-cell:drag-selected > .concept-tile > .region > .icon.leaf,
+.tree-cell:selected:drag-selected > .concept-tile > .region > .icon.disclosure,
+.tree-cell:selected:drag-selected > .concept-tile > .region > .icon.leaf {
+    -fx-background-color: -Grey-9;
+    -fx-shape: "M3.91 9.66667L3.91 7.91667H6.08333L6.08333 10.09L4.33333 10.09L3.91 10.09V9.66667ZM3.81954 10.1806L3.91 10.2713V10.2708L4.15678 10.517L6.82345 13.177L7 13.3531L7.17656 13.177L9.84322 10.517L10.09 10.2708V10.2713L10.1807 10.1804L10.2713 10.09H10.2708L10.517 9.84322L13.177 7.17656L13.3531 7L13.177 6.82344L10.517 4.15678L10.2708 3.91H10.2713L10.1805 3.81945L10.09 3.72871V3.72916L9.84322 3.483L7.17656 0.823002L7 0.646888L6.82344 0.823002L4.15678 3.483L3.91 3.72916V3.72871L3.8193 3.81964L3.72871 3.91H3.72916L3.483 4.15678L0.823002 6.82345L0.646888 7L0.823002 7.17656L3.483 9.84322L3.72916 10.09H3.72871L3.81954 10.1806ZM3.91 4.33333V3.91H4.33333H6.08333V6.08333L3.91 6.08333V4.33333ZM9.66667 3.91H10.09V4.33333V6.08333H7.91667V3.91L9.66667 3.91ZM10.09 9.66667V10.09H9.66667H7.91667L7.91667 7.91667H10.09V9.66667Z"
+}
+
+.tree-cell > .concept-tile > .region.select > .icon.select {
+    -fx-background-color: -Secondary-05;
+    -fx-shape: "M 5.998 2.898 C 5.998 3.616 5.416 4.198 4.698 4.198 C 3.98 4.198 3.398 3.616 3.398 2.898 C 3.398 2.18 3.98 1.598 4.698 1.598 C 5.416 1.598 5.998 2.18 5.998 2.898 Z M 10.6 2.898 C 10.6 3.616 10.018 4.198 9.3 4.198 C 8.582 4.198 8 3.616 8 2.898 C 8 2.18 8.582 1.598 9.3 1.598 C 10.018 1.598 10.6 2.18 10.6 2.898 Z M 5.998 7.499 C 5.998 8.217 5.416 8.799 4.698 8.799 C 3.98 8.799 3.398 8.217 3.398 7.499 C 3.398 6.781 3.98 6.199 4.698 6.199 C 5.416 6.199 5.998 6.781 5.998 7.499 Z M 10.6 7.499 C 10.6 8.217 10.018 8.799 9.3 8.799 C 8.582 8.799 8 8.217 8 7.499 C 8 6.781 8.582 6.199 9.3 6.199 C 10.018 6.199 10.6 6.781 10.6 7.499 Z M 5.998 12.101 C 5.998 12.819 5.416 13.401 4.698 13.401 C 3.98 13.401 3.398 12.819 3.398 12.101 C 3.398 11.383 3.98 10.801 4.698 10.801 C 5.416 10.801 5.998 11.383 5.998 12.101 Z M 10.6 12.101 C 10.6 12.819 10.018 13.401 9.3 13.401 C 8.582 13.401 8 12.819 8 12.101 C 8 11.383 8.582 10.801 9.3 10.801 C 10.018 10.801 10.6 11.383 10.6 12.101 Z"
+}
+
+.tree-cell:cn-long-hover > .concept-tile > .region.select > .icon.select,
+.tree-cell > .concept-tile > .region.select:hover > .icon.select {
+    -fx-background-color: #304971;
+}
+
+.tree-cell:selected > .concept-tile > .region.select > .icon.select,
+.tree-cell:selected > .concept-tile > .region.select:hover > .icon.select {
+    -fx-background-color: -fx-dots-cell-color;
+}
+.tree-cell:drag-selected > .concept-tile > .region.select > .icon.select,
+.tree-cell:selected:drag-selected > .concept-tile > .region.select > .icon.select,
+.tree-cell:selected:drag-selected > .concept-tile > .region.select:hover > .icon.select {
+    -fx-background-color: #9CAABF;
+}
+.tree-cell:show-lineage > .concept-tile > .region.select > .icon.select,
+.tree-cell:show-lineage > .concept-tile > .region.select:hover > .icon.select {
+    visibility: hidden;
+    -fx-managed: false;
+}
+
+.tree-cell > .concept-tile > .region.tree > .icon.tree {
+    -fx-scale-shape: false;
+    -fx-background-color: -Secondary-05;
+    -fx-shape: "M19.651 24.278L19.651 22.746L26.651 22.746L26.651 26.746L19.651 26.746L19.651 25.278L16.706 25.278L16.706 21.111L14.839 21.111L14.839 17.028L21.839 17.028L21.839 21.111L17.706 21.111L17.706 24.278L19.651 24.278ZM20.672 18.194L16.005 18.194L16.005 19.944L20.672 19.944L20.672 18.194ZM20.818 23.913L20.818 25.58L25.484 25.58L25.484 23.913L20.818 23.913z"
+}
+
+.tree-cell > .concept-tile > .region.tree:hover > .icon.tree {
+    -fx-background-color: #304971;
+    -fx-shape: "M5.91406 9V7.46875H12.9141V11.4688H5.91406V10H2.96875V5.25H1.46875L3.46875 2.25L5.46875 5.25H3.96875V9H5.91406ZM7.08073 8.63542V10.3021H11.7474V8.63542H7.08073Z"
+}
+.tree-cell:show-lineage > .concept-tile > .region.tree > .icon.tree,
+.tree-cell:show-lineage > .concept-tile > .region.tree:hover > .icon.tree {
+    -fx-scale-shape: false;
+    -fx-background-color: black;
+    -fx-shape: "M5.91406 9V7.46875H12.9141V11.4688H5.91406V10H2.96875V5.25H1.46875L3.46875 2.25L5.46875 5.25H3.96875V9H5.91406ZM7.08073 8.63542V10.3021H11.7474V8.63542H7.08073Z"
+}
+
+.tree-cell > .dashed-line,
+.tree-cell > .dashed-curved-line {
+    -fx-stroke: #C3CDDC;
+    -fx-stroke-width: 1;
+    -fx-stroke-dash-array: 1.5 1.5;
+}
+
+.tooltip {
+    -fx-background-color: -Grey-10;
+    -fx-background-radius: 4;
+    -fx-border-color: -Grey-11;
+    -fx-border-radius: 4;
+    -fx-border-width: 0.5;
+    -fx-effect: dropshadow(three-pass-box, #00000040, 4, 0, 0, 4);
+    -fx-min-width: 120;
+    -fx-max-width: 480;
+    -fx-min-height: 24;
+    -fx-padding: 4 8 4 8;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 13;
+    -fx-font-weight: 400;
+    -fx-text-fill: white;
+    -fx-wrap-text: true;
+    -fx-alignment: center-left;
+}
+
+.tooltip > .tooltip-box {
+    -fx-spacing: 2;
+    -fx-alignment: center-left;
+}
+
+.tooltip > .tooltip-box > .tooltip-ellipse {
+    -fx-min-width: 12;
+    -fx-pref-width: 12;
+    -fx-max-width: 12;
+    -fx-min-height: 12;
+    -fx-pref-height: 12;
+    -fx-max-height: 12;
+    -fx-background-color: -Accent-color-orange, -Grey-10;
+    -fx-background-insets: 0, 3;
+    -fx-background-radius: 12;
+}
+
+.tooltip > .tooltip-box:defined > .tooltip-ellipse {
+    -fx-background-color: #00BD63, #00BD63;
+}
+
+.tooltip > .tooltip-box > .type-tooltip-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 10;
+    -fx-font-weight: 600;
+    -fx-text-fill: white;
+    -fx-alignment: center-left;
+}
+
+.context-menu {
+    -fx-background-color: -Grey-11;
+    -fx-background-radius: 4;
+    -fx-min-width: 250; /* don't set pref-width, so ContextMenuContent::computeVisualMetrics gets called */
+    -fx-max-width: 250;
+}
+
+.context-menu .menu:focused > .right-container > .arrow,
+.context-menu .menu > .right-container > .arrow {
+    -fx-background-color: white;
+    -fx-shape: "M8.0876 5L6.9126 6.175L10.7293 10L6.9126 13.825L8.0876 15L13.0876 10L8.0876 5Z";
+    -fx-scale-shape: false;
+}
+
+.context-menu .menu-item {
+    -fx-padding: 2 4 2 8;
+    -fx-pref-height: 32;
+    -fx-text-fill: white;
+}
+
+.context-menu .menu-item:focused {
+    -fx-background-color: -Grey-9;
+    -fx-text-fill: white;
+}
+
+.context-menu .menu-item:focused > .label,
+.context-menu .menu-item > .label {
+    -fx-text-fill: white;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14;
+}
+.context-menu .menu-item > .graphic-container > .icon {
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+    -fx-scale-shape: false;
+    -fx-background-color: white;
+    -fx-padding: 0;
+}
+.context-menu .menu-item > .graphic-container > .icon.populate {
+    -fx-shape: "M2.12467 13.8333H13.7913V9.66667H15.458V13.8333C15.458 14.2754 15.2824 14.6993 14.9699 15.0118S14.2334 15.5 13.7913 15.5H2.12467C1.68265 15.5 1.25872 15.3244 0.946163 15.0118S0.458008 14.2754 0.458008 13.8333V2.16667C0.458008 1.72464 0.633603 1.30072 0.946163 0.988155S1.68265 0.5 2.12467 0.5H6.29134V2.16667H2.12467V13.8333ZM11.5414 3.25L6.79138 8L7.95805 9.16667L12.708 4.41667L15.458 7.16667V0.5H8.79138L11.5414 3.25Z";
+}
+.context-menu .menu-item > .graphic-container > .icon.send {
+    -fx-shape: "M9.99967 3.33398L8.82467 4.50898L13.4747 9.16732H3.33301V10.834H13.4747L8.82467 15.4923L9.99967 16.6673L16.6663 10.0007L9.99967 3.33398Z";
+}
+.context-menu .menu-item > .graphic-container > .icon.duplicate {
+    -fx-shape: "M1.66699 15.1652L1.66699 9.36598C1.66698 8.96911 1.66697 8.62501 1.69017 8.34112C1.7147 8.04084 1.76903 7.73981 1.91697 7.44946C2.13685 7.01792 2.48771 6.66706 2.91926 6.44717C3.20961 6.29924 3.51064 6.2449 3.81092 6.22037C4.0948 6.19718 4.43889 6.19719 4.83575 6.1972L6.19688 6.1972L6.19687 4.83607C6.19686 4.43919 6.19685 4.09513 6.22005 3.81124C6.24458 3.51096 6.29891 3.20993 6.44685 2.91958C6.66674 2.48803 7.0176 2.13718 7.44914 1.91729C7.73949 1.76935 8.04052 1.71503 8.3408 1.69049C8.62472 1.6673 8.96883 1.6673 9.36576 1.66732L15.1648 1.66732C15.5617 1.6673 15.9058 1.66729 16.1897 1.69049C16.49 1.71503 16.791 1.76935 17.0814 1.91729C17.5129 2.13718 17.8638 2.48803 18.0837 2.91958C18.2316 3.20993 18.2859 3.51096 18.3105 3.81124C18.3337 4.09516 18.3337 4.43928 18.3337 4.8362L18.3337 10.6352C18.3337 11.0321 18.3337 11.3763 18.3105 11.6602C18.2859 11.9605 18.2316 12.2615 18.0837 12.5518C17.8638 12.9834 17.5129 13.3342 17.0814 13.5541C16.791 13.7021 16.49 13.7564 16.1897 13.7809C15.9058 13.8041 15.5617 13.8041 15.1649 13.8041L13.8038 13.8041L13.8038 15.1653C13.8038 15.5621 13.8038 15.9062 13.7806 16.1901C13.7561 16.4903 13.7017 16.7914 13.5538 17.0817C13.3339 17.5133 12.9831 17.8641 12.5515 18.084C12.2612 18.2319 11.9601 18.2863 11.6599 18.3108C11.376 18.334 11.0319 18.334 10.635 18.334L4.83576 18.334C4.43889 18.334 4.09481 18.334 3.81092 18.3108C3.51064 18.2863 3.20961 18.2319 2.91926 18.084C2.48771 17.8641 2.13685 17.5133 1.91697 17.0817C1.76903 16.7914 1.7147 16.4903 1.69017 16.1901C1.66697 15.9062 1.66698 15.5621 1.66699 15.1652ZM3.25202 16.0625C3.26864 16.2659 3.29663 16.3377 3.31323 16.3703C3.38287 16.507 3.494 16.6181 3.63069 16.6877C3.66328 16.7043 3.7351 16.7323 3.93853 16.749C4.15099 16.7663 4.43063 16.7669 4.86646 16.7669L10.6043 16.7669C11.0401 16.7669 11.3198 16.7663 11.5322 16.749C11.7357 16.7323 11.8075 16.7043 11.8401 16.6877C11.9768 16.6181 12.0879 16.507 12.1575 16.3703C12.1741 16.3377 12.2021 16.2659 12.2187 16.0625C12.2361 15.85 12.2367 15.5703 12.2367 15.1345L12.2367 13.8041L9.36566 13.8041C8.9688 13.8041 8.62469 13.8041 8.3408 13.7809C8.04052 13.7564 7.73949 13.7021 7.44914 13.5541C7.0176 13.3342 6.66674 12.9834 6.44685 12.5518C6.29891 12.2615 6.24458 11.9605 6.22005 11.6602C6.19686 11.3763 6.19686 11.0322 6.19687 10.6353L6.19688 7.76426L4.86646 7.76426C4.43063 7.76426 4.15099 7.76487 3.93853 7.78223C3.7351 7.79885 3.66328 7.82683 3.63069 7.84343C3.49401 7.91308 3.38288 8.02421 3.31323 8.1609C3.29663 8.19348 3.26864 8.26531 3.25202 8.46873C3.23466 8.68119 3.23405 8.96084 3.23405 9.39666L3.23405 15.1345C3.23405 15.5703 3.23466 15.85 3.25202 16.0625zM7.78191 11.5326C7.79853 11.736 7.82651 11.8078 7.84311 11.8404C7.91276 11.9771 8.02389 12.0882 8.16057 12.1579C8.19316 12.1745 8.26499 12.2024 8.46841 12.2191C8.68087 12.2364 8.96052 12.237 9.39634 12.237L15.1342 12.237C15.57 12.237 15.8497 12.2364 16.0621 12.2191C16.2656 12.2025 16.3374 12.1745 16.37 12.1579C16.5066 12.0882 16.6178 11.9771 16.6874 11.8404C16.704 11.8078 16.732 11.736 16.7486 11.5326C16.766 11.3201 16.7666 11.0405 16.7666 10.6046L16.7666 4.86678C16.7666 4.43096 16.766 4.15131 16.7486 3.93885C16.732 3.73542 16.704 3.6636 16.6874 3.63101C16.6178 3.49433 16.5066 3.3832 16.37 3.31355C16.3374 3.29695 16.2656 3.26897 16.0621 3.25235C15.8497 3.23499 15.57 3.23438 15.1342 3.23438L9.39634 3.23438C8.96052 3.23438 8.68087 3.23499 8.46841 3.25235C8.26499 3.26897 8.19316 3.29695 8.16057 3.31355C8.02389 3.3832 7.91276 3.49433 7.84311 3.63101C7.82651 3.6636 7.79853 3.73542 7.78191 3.93885C7.76455 4.15131 7.76394 4.43096 7.76394 4.86678L7.76394 10.6046C7.76394 11.0405 7.76455 11.3201 7.78191 11.5326z M9.43886 6.99659L9.43886 8.56365L11.4097 8.56365L11.4097 10.5622L12.9768 10.5622L12.9767 8.56365L15.0029 8.56365L15.0029 6.99659L12.9767 6.99659L12.9767 4.99814L11.4097 4.99814L11.4097 6.99659L9.43886 6.99659Z";
+}
+.context-menu .menu-item > .graphic-container > .icon.save {
+    -fx-shape: "M4.16699 1.66602C2.78628 1.66602 1.66699 2.7853 1.66699 4.16602V15.8327C1.66699 17.2134 2.78628 18.3327 4.16699 18.3327H15.8337C17.2144 18.3327 18.3337 17.2134 18.3337 15.8327V4.16602C18.3337 2.7853 17.2144 1.66602 15.8337 1.66602H4.16699ZM3.33366 4.16602C3.33366 3.70578 3.70675 3.33268 4.16699 3.33268H15.8337C16.2939 3.33268 16.667 3.70578 16.667 4.16602V15.8327C16.667 16.2929 16.2939 16.666 15.8337 16.666H4.16699C3.70675 16.666 3.33366 16.2929 3.33366 15.8327V4.16602ZM9.74512 5.39201C8.40642 5.39201 7.34928 6.4446 7.34928 7.78784C7.34928 8.6043 7.72038 9.32078 8.30343 10.0341S9.70177 11.4851 10.6578 12.352L10.665 12.3585L11.4326 13.0574L12.2008 12.3581L12.2074 12.352C13.1634 11.4851 13.9838 10.7412 14.5618 10.0341S15.5159 8.6043 15.5159 7.78784C15.5159 6.4446 14.4588 5.39201 13.1201 5.39201C12.4917 5.39201 11.8882 5.63488 11.4326 6.03321C10.9771 5.63488 10.3736 5.39201 9.74512 5.39201ZM8.76595 7.78784C8.76595 7.22194 9.17921 6.80868 9.74512 6.80868S10.6272 7.1065 10.7733 7.48138L10.856 7.69368H12.0092L12.0919 7.48138C12.238 7.1065 12.6722 6.80868 13.1201 6.80868S14.0993 7.22194 14.0993 7.78784S13.8713 8.66708 13.3675 9.25579C12.9017 9.80011 12.2439 10.4054 11.4309 11.1423C10.6196 10.4055 9.96279 9.80023 9.49737 9.25591S8.76595 8.20672 8.76595 7.78784Z";
+}
+
+.lineage-pane.scroll-pane {
+    -fx-skin: "dev.ikm.komet.kview.controls.skin.LineageBoxSkin";
+    -fx-max-height: 350;
+    -fx-background-color: -Primary-06, white;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 4 4 0 4, 2 2 0 2;
+    -fx-padding: 4;
+    -fx-effect: dropshadow(three-pass-box, #0000001A, 4, 0, 0, 1);
+}
+
+.lineage-pane.scroll-pane > .region.close {
+    -fx-background-color: -Grey-3;
+    -fx-background-radius: 4;
+    -fx-min-width: 14;
+    -fx-min-height: 14;
+    -fx-pref-width: 14;
+    -fx-pref-height: 14;
+    -fx-max-width: 14;
+    -fx-max-height: 14;
+    -fx-cursor: hand;
+}
+
+.lineage-pane.scroll-pane > .region.close > .icon.close {
+    -fx-scale-x: 0.6;
+    -fx-scale-y: 0.6;
+    -fx-background-color: -Grey-9;
+    -fx-shape: "M11.0837 3.73852L10.2612 2.91602L7.00033 6.17685L3.73949 2.91602L2.91699 3.73852L6.17783 6.99935L2.91699 10.2602L3.73949 11.0827L7.00033 7.82185L10.2612 11.0827L11.0837 10.2602L7.82283 6.99935L11.0837 3.73852Z";
+}
+
+.lineage-pane.scroll-pane > .scroll-bar:vertical,
+.lineage-pane.scroll-pane > .scroll-bar:horizontal {
+    -fx-padding: 2;
+}
+
+.lineage-pane.scroll-pane > .viewport,
+.lineage-pane.scroll-pane > .scroll-bar:horizontal,
+.lineage-pane.scroll-pane > .scroll-bar:horizontal:focused,
+.lineage-pane.scroll-pane > .scroll-bar:vertical,
+.lineage-pane.scroll-pane > .scroll-bar:vertical:focused {
+    -fx-background-color: transparent;
+}
+
+.lineage-pane.scroll-pane > .scroll-bar:vertical > .track,
+.lineage-pane.scroll-pane > .scroll-bar:horizontal > .track {
+    fx-background-insets: 0;
+}
+
+.lineage-pane.scroll-pane > .corner {
+    -fx-background-insets: 0;
+}
+
+.lineage-pane.scroll-pane > .scroll-bar:horizontal .track,
+.lineage-pane.scroll-pane > .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 0em;
+    -fx-border-radius: 0;
+    -fx-background-insets: 0;
+}
+
+.lineage-pane.scroll-pane > .scroll-bar:horizontal .increment-button,
+.lineage-pane.scroll-pane > .scroll-bar:horizontal .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0;
+}
+
+.lineage-pane.scroll-pane > .scroll-bar:vertical .increment-button,
+.lineage-pane.scroll-pane > .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0 4 0 0;
+}
+
+.lineage-pane.scroll-pane > .scroll-bar .increment-arrow,
+.lineage-pane.scroll-pane > .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
+.lineage-pane.scroll-pane > .scroll-bar:horizontal .thumb,
+.lineage-pane.scroll-pane > .scroll-bar:vertical .thumb {
+    -fx-background-color: transparent, -Grey-9;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 2, 2;
+}
+
+.lineage-box {
+    -fx-spacing: 0;
+}
+
+.lineage-box > .lineage-hbox {
+    -fx-alignment: center-left;
+    -fx-spacing: 0;
+    -fx-padding: 0;
+    -fx-min-height: 18;
+    -fx-pref-height: 18;
+    -fx-max-height: 18;
+}
+
+.lineage-box > .lineage-hbox > .lineage-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 500;
+    -fx-font-size: 10;
+    -fx-text-fill: -Grey-11;
+    -fx-alignment: center-left;
+}
+
+.lineage-box > .lineage-hbox > .lineage-label:hover {
+    -fx-underline: true;
+    -fx-cursor: hand;
+}
+
+.lineage-box > .lineage-hbox:collapsed-lineage > .lineage-label {
+    -fx-text-fill: -Secondary-05;
+}
+
+.lineage-box > .lineage-hbox:root-lineage > .lineage-label {
+    -fx-text-fill: -Grey-8;
+}
+
+.lineage-box > .lineage-hbox:siblings-lineage > .lineage-label {
+    -fx-font-weight: bold;
+}
+
+.lineage-box > .lineage-hbox > .pane {
+    -fx-background-color: transparent;
+    -fx-min-width: 10;
+    -fx-pref-width: 10;
+    -fx-max-width: 10;
+    -fx-min-height: 18;
+    -fx-pref-height: 18;
+    -fx-max-height: 18;
+}
+
+.lineage-box > .lineage-hbox > .pane > .icon {
+    -fx-background-color: -Grey-8;
+    -fx-scale-shape: false;
+    -fx-position-shape: false;
+}
+
+/** full diagonal line, no other symbols
+ \
+  \
+   \
+ **/
+.lineage-box > .lineage-hbox > .pane > .icon.angle-angle-angle {
+    /** 0.0, 0.0, 9.1088 x 18 **/
+    -fx-shape: "M0 0 8.0141 18 9.1088 18 1.095 0Z";
+}
+
+/** empty circle with minus + bottom half diagonal line
+
+  0
+   \
+**/
+.lineage-box > .lineage-hbox > .pane > .icon.root-angle {
+    /** 0.5, 4.878, 8.609 x 13.121 **/
+    -fx-shape: "M 9.109 18 L 8.014 18 L 5.653 12.697 C 5.28 12.813 4.889 12.878 4.5 12.878 C 3.439 12.878 2.362 12.397 1.672 11.706 C 0.981 11.016 0.5 9.939 0.5 8.878 C 0.5 7.817 0.981 6.74 1.672 6.05 C 2.362 5.359 3.439 4.878 4.5 4.878 C 5.561 4.878 6.638 5.359 7.328 6.05 C 8.019 6.74 8.5 7.817 8.5 8.878 C 8.5 9.939 8.019 11.016 7.328 11.706 C 7.109 11.925 6.851 12.123 6.567 12.292 Z M 2.775 8.278 L 6.225 8.278 L 6.225 9.478 L 2.775 9.478 Z M 6.48 6.898 C 5.94 6.358 5.316 6.078 4.5 6.078 C 3.684 6.078 3.06 6.358 2.52 6.898 C 1.98 7.438 1.7 8.062 1.7 8.878 C 1.7 9.694 1.98 10.318 2.52 10.858 C 3.06 11.398 3.684 11.678 4.5 11.678 C 5.316 11.678 5.94 11.398 6.48 10.858 C 7.02 10.318 7.3 9.694 7.3 8.878 C 7.3 8.062 7.02 7.438 6.48 6.898 Z";
+}
+
+/** top half diagonal line + empty circle + bottom half vertical line
+ \
+  O
+  |
+**/
+.lineage-box > .lineage-hbox > .pane > .icon.line-circle-line,
+.lineage-box > .lineage-hbox > .pane > .icon.angle-circle-line {
+    /** 0.0, 0.0, 7.6 x 18 **/
+    -fx-shape: "M 7.6 8.878 C 7.6 9.691 7.22 10.542 6.692 11.07 C 6.272 11.49 5.647 11.817 5 11.932 L 5 18 L 4 18 L 4 11.932 C 3.353 11.817 2.728 11.49 2.308 11.07 C 1.78 10.542 1.4 9.691 1.4 8.878 C 1.4 8.065 1.78 7.214 2.308 6.686 C 2.451 6.543 2.618 6.41 2.802 6.293 L 0 0 L 1.095 0 L 3.716 5.888 C 3.973 5.817 4.239 5.778 4.5 5.778 C 5.313 5.778 6.164 6.158 6.692 6.686 C 7.22 7.214 7.6 8.065 7.6 8.878 Z M 5.844 7.534 C 5.467 7.158 5.068 6.978 4.5 6.978 C 3.932 6.978 3.533 7.158 3.157 7.534 C 2.78 7.911 2.6 8.31 2.6 8.878 C 2.6 9.446 2.78 9.845 3.157 10.222 C 3.533 10.598 3.932 10.778 4.5 10.778 C 5.068 10.778 5.467 10.598 5.844 10.222 C 6.22 9.845 6.4 9.446 6.4 8.878 C 6.4 8.31 6.22 7.911 5.844 7.535 Z";
+}
+
+/** full diagonal line + empty circle
+ \
+  O
+   \
+**/
+.lineage-box > .lineage-hbox > .pane > .icon.angle-circle-angle {
+    /** 0.0, 0.0, 9.109 x 18 **/
+    -fx-shape: "M 1.095 0 L 3.716 5.888 C 3.973 5.817 4.239 5.778 4.5 5.778 C 5.313 5.778 6.164 6.158 6.692 6.686 C 7.22 7.214 7.6 8.065 7.6 8.878 C 7.6 9.691 7.22 10.542 6.692 11.07 C 6.549 11.213 6.382 11.346 6.198 11.463 L 9.109 18 L 8.014 18 L 5.284 11.868 C 5.027 11.939 4.761 11.978 4.5 11.978 C 3.687 11.978 2.836 11.598 2.308 11.07 C 1.78 10.542 1.4 9.691 1.4 8.878 C 1.4 8.065 1.78 7.214 2.308 6.686 C 2.451 6.543 2.618 6.41 2.802 6.293 L 0 0 Z M 5.844 7.534 C 5.467 7.158 5.068 6.978 4.5 6.978 C 3.932 6.978 3.533 7.158 3.157 7.534 C 2.78 7.911 2.6 8.31 2.6 8.878 C 2.6 9.446 2.78 9.845 3.157 10.222 C 3.533 10.598 3.932 10.778 4.5 10.778 C 5.068 10.778 5.467 10.598 5.844 10.222 C 6.22 9.845 6.4 9.446 6.4 8.878 C 6.4 8.31 6.22 7.911 5.844 7.535 Z";
+}
+
+/** top half vertical line + empty circle + bottom half diagonal line
+  |
+  O
+   \
+**/
+.lineage-box > .lineage-hbox > .pane > .icon.line-circle-angle {
+    /** This is actually angle-circle-angle, 0.0, 0.0, 9.109 x 18 **/
+    -fx-shape: "M 1.095 0 L 3.716 5.888 C 3.973 5.817 4.239 5.778 4.5 5.778 C 5.313 5.778 6.164 6.158 6.692 6.686 C 7.22 7.214 7.6 8.065 7.6 8.878 C 7.6 9.691 7.22 10.542 6.692 11.07 C 6.549 11.213 6.382 11.346 6.198 11.463 L 9.109 18 L 8.014 18 L 5.284 11.868 C 5.027 11.939 4.761 11.978 4.5 11.978 C 3.687 11.978 2.836 11.598 2.308 11.07 C 1.78 10.542 1.4 9.691 1.4 8.878 C 1.4 8.065 1.78 7.214 2.308 6.686 C 2.451 6.543 2.618 6.41 2.802 6.293 L 0 0 Z M 5.844 7.534 C 5.467 7.158 5.068 6.978 4.5 6.978 C 3.932 6.978 3.533 7.158 3.157 7.534 C 2.78 7.911 2.6 8.31 2.6 8.878 C 2.6 9.446 2.78 9.845 3.157 10.222 C 3.533 10.598 3.932 10.778 4.5 10.778 C 5.068 10.778 5.467 10.598 5.844 10.222 C 6.22 9.845 6.4 9.446 6.4 8.878 C 6.4 8.31 6.22 7.911 5.844 7.535 Z";
+}
+
+/** filled circle with chev + bottom half vertical line
+
+  ©
+  |
+**/
+.lineage-box > .lineage-hbox:collapsed-lineage > .pane > .icon.angle-circle-line {
+    /** 0.5, 4.878, 8 x 13.122 **/
+    -fx-shape: "M 8.5 8.878 C 8.5 10.918 6.973 12.601 5 12.847 L 5 18 L 4 18 L 4 12.847 C 2.027 12.601 0.5 10.918 0.5 8.878 C 0.5 6.669 2.291 4.878 4.5 4.878 C 6.709 4.878 8.5 6.669 8.5 8.878 Z M 6.175 8.879 L 3.821 6.526 L 3.115 7.231 L 4.762 8.878 L 3.115 10.524 L 3.822 11.231 Z";
+}
+/** filled circle with chev + bottom half diagonal line
+
+   ©
+    \
+**/
+.lineage-box > .lineage-hbox:collapsed-lineage > .pane > .icon.angle-angle-angle,
+.lineage-box > .lineage-hbox:collapsed-lineage > .pane > .icon.angle-circle-angle {
+    /** 0.5, 4.878, 8.609 x 13.122 **/
+    -fx-shape: "M 8.5 8.878 C 8.5 10.329 7.727 11.599 6.571 12.301 L 9.109 18 L 8.014 18 L 5.658 12.708 C 5.291 12.819 4.903 12.878 4.5 12.878 C 2.291 12.878 0.5 11.087 0.5 8.878 C 0.5 6.669 2.291 4.878 4.5 4.878 C 6.709 4.878 8.5 6.669 8.5 8.878 Z M 6.175 8.879 L 3.821 6.526 L 3.115 7.231 L 4.762 8.878 L 3.115 10.524 L 3.822 11.231 Z";
+}
+
+/** top half vertical line + filled circle with chev + bottom half diagonal line
+  |
+  ©
+   \
+**/
+.lineage-box > .lineage-hbox:collapsed-lineage > .pane > .icon.line-circle-angle {
+    /** 0.5, 0.0, 8.609 x 18 **/
+    -fx-shape: "M 8.5 8.878 C 8.5 10.329 7.727 11.599 6.571 12.301 L 9.109 18 L 8.014 18 L 5.658 12.708 C 5.291 12.819 4.903 12.878 4.5 12.878 C 2.291 12.878 0.5 11.087 0.5 8.878 C 0.5 6.838 2.027 5.155 4 4.909 L 4 0 L 5 0 L 5 4.909 C 6.973 5.155 8.5 6.838 8.5 8.878 Z M 6.175 8.879 L 3.821 6.526 L 3.115 7.231 L 4.762 8.878 L 3.115 10.524 L 3.822 11.231 Z";
+}
+
+/** top half vertical line + filled circle with chev + bottom half vertical line
+  |
+  ©
+  |
+**/
+.lineage-box > .lineage-hbox:collapsed-lineage > .pane > .icon.line-circle-line {
+    /** 0.5, 0.0, 8 x 18 **/
+    -fx-shape: "M 8.5 8.878 C 8.5 10.918 6.973 12.601 5 12.847 L 5 18 L 4 18 L 4 12.847 C 2.027 12.601 0.5 10.918 0.5 8.878 C 0.5 6.838 2.027 5.155 4 4.909 L 4 0 L 5 0 L 5 4.909 C 6.973 5.155 8.5 6.838 8.5 8.878 Z M 6.175 8.879 L 3.821 6.526 L 3.115 7.231 L 4.762 8.878 L 3.115 10.524 L 3.822 11.231 Z";
+}

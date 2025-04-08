@@ -21,11 +21,14 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
 import javafx.beans.property.Property;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
@@ -104,8 +107,22 @@ public class ConceptPatternNavController {
         navContentPane.setCenter(classicConceptNavigator);
 
         // set up listeners when the toggle button changes
-        conceptsToggleButton.selectedProperty().addListener((observableValue, aBoolean, t1) -> showConcepts());
-        patternsToggleButton.selectedProperty().addListener((observableValue, aBoolean, t1) -> showPatterns());
+        conPatToggleGroup.selectedToggleProperty().subscribe((oldVal, newVal) -> {
+            // if they click the same toggle twice, we can just ignore it
+            if (newVal == null) {
+                if (oldVal.equals(conceptsToggleButton)) {
+                    showConcepts();
+                } else if (oldVal.equals(patternsToggleButton)) {
+                    showPatterns();
+                }
+                return;
+            }
+            if (newVal.equals(conceptsToggleButton)) {
+                showConcepts();
+            } else {
+                showPatterns();
+            }
+        });
 
         patternCreationEventSubscriber = (evt) -> {
             LOG.info("A New Pattern has been added/created. Reloading all the Patterns.");
@@ -169,14 +186,12 @@ public class ConceptPatternNavController {
     private void showConcepts() {
         navContentPane.setCenter(classicConceptNavigator);
         conceptsToggleButton.setSelected(true);
-        patternsToggleButton.setSelected(false);
     }
 
     @FXML
     private void showPatterns() {
         navContentPane.setCenter(patternNavigationPane);
         patternsToggleButton.setSelected(true);
-        conceptsToggleButton.setSelected(false);
     }
 
     private void setUpDraggable(Node node, EntityFacade entity, DragAndDropType dropType) {
