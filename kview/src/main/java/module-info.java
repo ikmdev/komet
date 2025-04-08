@@ -124,6 +124,7 @@ module dev.ikm.komet.kview {
 
     exports dev.ikm.komet.kview.controls;
     opens dev.ikm.komet.kview.controls;
+    opens dev.ikm.komet.kview.controls.skin to javafx.controls;
     opens dev.ikm.komet.kview.klfields.readonly to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.klfields.readonly;
 

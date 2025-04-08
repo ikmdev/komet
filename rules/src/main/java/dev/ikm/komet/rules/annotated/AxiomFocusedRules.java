@@ -199,8 +199,8 @@ public class AxiomFocusedRules extends RulesBase {
                             o -> {
                                 ChangeFeatureOperator changeFeatureOperator = new ChangeFeatureOperator("Change comparison", o, axiomSubjectRecord, calculator(), editCoordinate());
                                 changeFeatureOperator.doAction();
-                            })
-
+                            }),
+                    new SetValueMenu("Set value", calculator(), editCoordinate(), axiomSubjectRecord)
             );
         }
     }

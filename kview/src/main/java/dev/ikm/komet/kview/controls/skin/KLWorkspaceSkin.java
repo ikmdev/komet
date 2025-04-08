@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 import static dev.ikm.komet.kview.controls.KLDropRegion.Type.BOX;
 import static dev.ikm.komet.kview.controls.KLDropRegion.Type.LINE;
 import static dev.ikm.komet.kview.controls.KLWorkspace.*;
@@ -310,7 +311,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     private void configureDragDropHandlers(KLWorkspace workspace) {
         // Show drop-region if a valid item is dragged over
         workspace.setOnDragOver(event -> {
-            if (event.getGestureSource() != null && event.getDragboard().hasString()) {
+            if (event.getGestureSource() != null && (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT) || event.getDragboard().hasString())) {
                 // Convert screen coordinates to local coordinates of the desktop pane
                 final Point2D localCoords = desktopPane.screenToLocal(event.getScreenX(), event.getScreenY());
                 final double mouseX = localCoords.getX();
