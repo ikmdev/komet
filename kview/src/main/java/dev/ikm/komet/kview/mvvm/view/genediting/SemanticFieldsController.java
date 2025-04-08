@@ -29,6 +29,9 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
+import dev.ikm.tinkar.common.id.IntIdCollection;
+import dev.ikm.tinkar.common.id.IntIdList;
+import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -82,8 +85,8 @@ public class SemanticFieldsController {
 
     private int committedHash;
 
-    private void enableDisableSubmitButton(Object value){
-        if (value == null || value.toString().isEmpty()){
+    private void enableDisableSubmitButton(Object value) {
+        if (value == null || value.toString().isEmpty()) {
             submitButton.setDisable(true);
         } else {
             enableDisableSubmitButton();
@@ -93,7 +96,7 @@ public class SemanticFieldsController {
     private void enableDisableSubmitButton(){
         //Disable submit button if any of the fields are blank.
         boolean disabled = checkForEmptyFields();
-        if(!disabled){
+        if (!disabled) {
             int uncommittedHash = calculteHashValue(observableFields);
             disabled = (committedHash == uncommittedHash);
         }
@@ -108,7 +111,11 @@ public class SemanticFieldsController {
         AtomicBoolean invalid = new AtomicBoolean(false);
         observableFields.forEach(observableField -> {
             if (!invalid.get()) {
-                invalid.set((observableField.value() == null || observableField.value().toString().isEmpty()));
+                if (observableField.value() instanceof IntIdSet || observableField.value() instanceof IntIdList) {
+                    invalid.set(((IntIdCollection)observableField.value()).isEmpty());
+                } else {
+                    invalid.set((observableField.value() == null || observableField.value().toString().isEmpty()));
+                }
             }
         });
         return invalid.get();
