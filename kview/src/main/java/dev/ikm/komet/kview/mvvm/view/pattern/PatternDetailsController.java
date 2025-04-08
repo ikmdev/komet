@@ -663,12 +663,6 @@ public class PatternDetailsController {
         fieldVBoxContainer.getChildren().addAll(fieldLabel, fieldText, outerHBox);
 
         fieldVBoxContainer.setOnContextMenuRequested(contextMenuEvent -> {
-            // if the Add New Semantic Element context menu is showing, hide it
-            // because multiple context menus should not be shown at the same time
-//            if (this.contextMenu != null && this.contextMenu.isShowing()) {
-//                this.contextMenu.hide();
-//            }
-
             ContextMenu contextMenu = createContextMenuForPatternField(patternField);
             contextMenu.show(fieldVBoxContainer, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
             contextMenuEvent.consume();
