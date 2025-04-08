@@ -48,6 +48,10 @@ import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
@@ -86,6 +90,9 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.scene.Node;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.VBox;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
@@ -412,4 +419,53 @@ public class DataModelHelper {
         return semantic;
     }
 
+    /**
+     * generate the UI controls in create mode
+     *
+     * @param patternVersionRecord pattern to inspect fields
+     * @param vBox container for fields
+     * @param viewProperties view properties
+     */
+    public static void readOnlyUIControls(PatternVersionRecord patternVersionRecord, VBox vBox, ViewProperties viewProperties) {
+        patternVersionRecord.fieldDefinitions().forEach(fieldDefinitionRecord -> {
+            Tooltip tooltip = new Tooltip(viewProperties.calculator().getDescriptionTextOrNid(fieldDefinitionRecord.purposeNid()));
+            if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
+                KLReadOnlyComponentControl readOnlyComponentControl = new KLReadOnlyComponentControl();
+                readOnlyComponentControl.setTitle(fieldDefinitionRecord.meaning().description());
+                readOnlyComponentControl.setTooltip(tooltip);
+                vBox.getChildren().add(readOnlyComponentControl);
+            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
+                    || fieldDefinitionRecord.dataTypeNid() == TinkarTerm.STRING.nid()) {
+                KLReadOnlyDataTypeControl<String> readOnlyStringControl = new KLReadOnlyDataTypeControl<>(String.class);
+                readOnlyStringControl.setTitle(fieldDefinitionRecord.meaning().description());
+                readOnlyStringControl.setTooltip(tooltip);
+                vBox.getChildren().add(readOnlyStringControl);
+            } else if (fieldDefinitionRecord.dataTypeNid() == INTEGER_FIELD.nid()) {
+                KLReadOnlyDataTypeControl<Integer> readOnlyIntegerControl = new KLReadOnlyDataTypeControl<>(Integer.class);
+                readOnlyIntegerControl.setTitle(fieldDefinitionRecord.meaning().description());
+                readOnlyIntegerControl.setTooltip(tooltip);
+                vBox.getChildren().add(readOnlyIntegerControl);
+            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
+                KLReadOnlyDataTypeControl<Float> readOnlyFloatControl = new KLReadOnlyDataTypeControl<>(Float.class);
+                readOnlyFloatControl.setTitle(fieldDefinitionRecord.meaning().description());
+                readOnlyFloatControl.setTooltip(tooltip);
+                vBox.getChildren().add(readOnlyFloatControl);
+            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
+                KLReadOnlyDataTypeControl<Boolean> readOnlyBooleanControl = new KLReadOnlyDataTypeControl<>(Boolean.class);
+                readOnlyBooleanControl.setTitle(fieldDefinitionRecord.meaning().description());
+                readOnlyBooleanControl.setTooltip(tooltip);
+                vBox.getChildren().add(readOnlyBooleanControl);
+            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
+                KLReadOnlyComponentListControl readOnlyComponentListControl = new KLReadOnlyComponentListControl();
+                readOnlyComponentListControl.setTitle(fieldDefinitionRecord.meaning().description());
+                readOnlyComponentListControl.setTooltip(tooltip);
+                vBox.getChildren().add(readOnlyComponentListControl);
+            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
+                KLReadOnlyComponentSetControl readOnlyComponentSetControl = new KLReadOnlyComponentSetControl();
+                readOnlyComponentSetControl.setTitle(fieldDefinitionRecord.meaning().description()); //TODO set the titles
+                readOnlyComponentSetControl.setTooltip(tooltip);
+                vBox.getChildren().add(readOnlyComponentSetControl);
+            }
+        });
+    }
 }

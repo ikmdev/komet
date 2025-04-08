@@ -290,47 +290,9 @@ public class GenEditingDetailsController {
         } else {
             EntityFacade pattern = genEditingViewModel.getPropertyValue(PATTERN);
             PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(pattern).get();
-            patternVersionRecord.fieldDefinitions().forEach(fieldDefinitionRecord -> {
 
-                Tooltip tooltip = new Tooltip(getViewProperties().calculator().getDescriptionTextOrNid(fieldDefinitionRecord.purposeNid()));
-                if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
-                    KLReadOnlyComponentControl readOnlyComponentControl = new KLReadOnlyComponentControl();
-                    readOnlyComponentControl.setTitle(fieldDefinitionRecord.meaning().description());
-                    readOnlyComponentControl.setTooltip(tooltip);
-                    semanticDetailsVBox.getChildren().add(readOnlyComponentControl);
-                } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
-                        || fieldDefinitionRecord.dataTypeNid() == TinkarTerm.STRING.nid()) {
-                    KLReadOnlyDataTypeControl<String> readOnlyStringControl = new KLReadOnlyDataTypeControl<>(String.class);
-                    readOnlyStringControl.setTitle(fieldDefinitionRecord.meaning().description());
-                    readOnlyStringControl.setTooltip(tooltip);
-                    semanticDetailsVBox.getChildren().add(readOnlyStringControl);
-                } else if (fieldDefinitionRecord.dataTypeNid() == INTEGER_FIELD.nid()) {
-                    KLReadOnlyDataTypeControl<Integer> readOnlyIntegerControl = new KLReadOnlyDataTypeControl<>(Integer.class);
-                    readOnlyIntegerControl.setTitle(fieldDefinitionRecord.meaning().description());
-                    readOnlyIntegerControl.setTooltip(tooltip);
-                    semanticDetailsVBox.getChildren().add(readOnlyIntegerControl);
-                } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
-                    KLReadOnlyDataTypeControl<Float> readOnlyFloatControl = new KLReadOnlyDataTypeControl<>(Float.class);
-                    readOnlyFloatControl.setTitle(fieldDefinitionRecord.meaning().description());
-                    readOnlyFloatControl.setTooltip(tooltip);
-                    semanticDetailsVBox.getChildren().add(readOnlyFloatControl);
-                } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
-                    KLReadOnlyDataTypeControl<Boolean> readOnlyBooleanControl = new KLReadOnlyDataTypeControl<>(Boolean.class);
-                    readOnlyBooleanControl.setTitle(fieldDefinitionRecord.meaning().description());
-                    readOnlyBooleanControl.setTooltip(tooltip);
-                    semanticDetailsVBox.getChildren().add(readOnlyBooleanControl);
-                } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
-                    KLReadOnlyComponentListControl readOnlyComponentListControl = new KLReadOnlyComponentListControl();
-                    readOnlyComponentListControl.setTitle(fieldDefinitionRecord.meaning().description());
-                    readOnlyComponentListControl.setTooltip(tooltip);
-                    semanticDetailsVBox.getChildren().add(readOnlyComponentListControl);
-                } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
-                    KLReadOnlyComponentSetControl readOnlyComponentSetControl = new KLReadOnlyComponentSetControl();
-                    readOnlyComponentSetControl.setTitle(fieldDefinitionRecord.meaning().description()); //TODO set the titles
-                    readOnlyComponentSetControl.setTooltip(tooltip);
-                    semanticDetailsVBox.getChildren().add(readOnlyComponentSetControl);
-                }
-            });
+            // generate read only UI controls in create mode
+            DataModelHelper.readOnlyUIControls(patternVersionRecord, semanticDetailsVBox, getViewProperties());
         }
 
         // Setup Properties Bump out view.
@@ -358,7 +320,6 @@ public class GenEditingDetailsController {
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, refreshSubscriber);
     }
-
 
 
     private void setSemanticVersion(Latest<SemanticEntityVersion> semanticEntityVersionLatest) {
