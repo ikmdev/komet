@@ -93,7 +93,14 @@ public class SemanticFieldsController {
 
     ObservableSemanticSnapshot observableSemanticSnapshot;
 
-    ListChangeListener<? super ObservableSemanticVersion> versionChangeListener = (ListChangeListener<ObservableSemanticVersion>) c -> loadUIData();
+    ListChangeListener<? super ObservableSemanticVersion> versionChangeListener = (ListChangeListener<ObservableSemanticVersion>) c -> refreshData();
+
+    private void refreshData() {
+        if(observableSemantic !=null){
+            observableSemantic.versionProperty().removeListener(versionChangeListener);
+        }
+        loadUIData();
+    }
 
 //    private void enableDisableSubmitButton(Object value){
 //        if (value == null || value.toString().isEmpty()){
@@ -145,8 +152,8 @@ public class SemanticFieldsController {
         editFieldsVBox.getChildren().clear();
         updateStampVersions = true;
         submitButton.setDisable(true);
-
-
+        EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
+        observableSemantic = ObservableEntity.get(semantic.nid());
         loadUIData();
 
         // subscribe to changes... if the FIELD_INDEX is -1 or unset, then the user clicked the
@@ -173,11 +180,6 @@ public class SemanticFieldsController {
     }
 
     private void loadUIData() {
-        if(observableSemantic !=null){
-            observableSemantic.versionProperty().removeListener(versionChangeListener);
-        }
-        EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
-        observableSemantic = ObservableEntity.get(semantic.nid());
         observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
         nodes.clear();
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
@@ -188,19 +190,8 @@ public class SemanticFieldsController {
             observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
             observableFields.forEach(observableField -> {
                 // disable calling writeToData method of observable field by setting refresh flag to true.
-//                observableField.refreshProperties.setValue(true);
                 FieldRecord<?> fieldRecord = observableField.field();
                 nodes.add(KlFieldHelper.generateNode(fieldRecord, observableField, getViewProperties(), semanticEntityVersionLatest, true));
-
-                //enable disable submit button.
-//                observableField.valueProperty()
-//                        .subscribe(value -> {
-//                            enableDisableSubmitButton(value);
-//                            if(submitButton.isDisabled()){
-//                                //TODO write method to remove any transactions and revert back to the committed values.
-//                                // observableSemantic.removeVersion(observableField.value(), observableField.fieldIndex(), retrieveObservableSemanticVersion(semanticEntityVersionLatest));
-//                            }
-//                        });
             });
         }
         //Set the hascode for the committed values.
