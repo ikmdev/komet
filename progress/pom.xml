@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.50.0-jpro-122-new-concept-navigator-panel-not-loaded-when-launching-komet-on-the-web-SNAPSHOT</version>
+        <version>1.50.0-SNAPSHOT</version>
     </parent>
     <artifactId>progress</artifactId>
     <dependencies>
