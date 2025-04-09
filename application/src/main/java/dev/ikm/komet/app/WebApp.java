@@ -107,18 +107,35 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 
-import static dev.ikm.komet.app.AppState.*;
+import static dev.ikm.komet.app.AppState.SELECT_DATA_SOURCE;
+import static dev.ikm.komet.app.AppState.LOADING_DATA_SOURCE;
+import static dev.ikm.komet.app.AppState.STARTING;
+import static dev.ikm.komet.app.AppState.LOGIN;
+import static dev.ikm.komet.app.AppState.RUNNING;
+import static dev.ikm.komet.app.AppState.SHUTDOWN;
 import static dev.ikm.komet.app.LoginFeatureFlag.ENABLED_WEB_ONLY;
-import static dev.ikm.komet.app.util.CssFile.*;
-import static dev.ikm.komet.app.util.CssUtils.*;
+import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
+import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
+import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.CENTER_TAB_PREFERENCES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.LEFT_TAB_PREFERENCES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.RIGHT_TAB_PREFERENCES;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
-import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_NAMES;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CAN_DELETE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
 
 /**
  * Main application class for the Komet application, extending JavaFX {@link Application}.
@@ -745,6 +762,7 @@ public class WebApp extends Application {
                 // load additional panels
                 journalController.loadNextGenReasonerPanel();
                 journalController.loadNextGenSearchPanel();
+                journalController.loadConceptNavigatorPanel(windowSettings.getView().makeOverridableViewProperties());
             });
             // disable the delete menu option for a Journal Card.
             journalWindowSettings.setValue(CAN_DELETE, false);
