@@ -94,9 +94,8 @@ public class SemanticFieldsController {
 
     Subscriber<EntityVersionChangeEvent> entityVersionChangeEventSubscriber;
 
-    //ListChangeListener<? super ObservableSemanticVersion> versionChangeListener = (ListChangeListener<ObservableSemanticVersion>) c -> Platform.runLater(() -> refreshData(c));
+//    ListChangeListener<? super ObservableSemanticVersion> versionChangeListener = (ListChangeListener<ObservableSemanticVersion>) c -> Platform.runLater(() -> refreshData(c));
 
-    //Subscriber<GenEditingEvent> genEditingEventSubscriber;
 
 //    private void refreshData(ListChangeListener.Change<? extends ObservableSemanticVersion> change) {
 //        System.out.println(" IN REFRESH DATA section");
@@ -104,7 +103,9 @@ public class SemanticFieldsController {
 //            if(change.wasAdded()){
 //                System.out.println(" IN REFRESH DATA section : ADDED" );
 //                observableSemantic.versionProperty().removeListener(versionChangeListener);
-//                EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(this, VERSION_UPDATED, observableFields, observableSemantic.nid()));
+//                observableSemantic = ObservableSemantic.get(observableSemantic.nid());
+//                observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+//                loadUIData();
 //            }
 //            if(change.wasRemoved()) {
 //                System.out.println(" IN REFRESH DATA section : REMOVED" );
@@ -226,8 +227,8 @@ public class SemanticFieldsController {
         }
         //Set the hascode for the committed values.
         enableDisableSubmitButton();
-     //   observableSemantic.versionProperty().addListener(versionChangeListener);
         loadVBox();
+//        observableSemantic.versionProperty().addListener(versionChangeListener);
     }
 
     private static Separator createSeparator() {

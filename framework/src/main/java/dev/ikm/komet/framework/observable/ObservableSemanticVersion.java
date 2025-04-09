@@ -85,7 +85,6 @@ public final class ObservableSemanticVersion
             ObservableField<?> observableField = new ObservableField<>(new FieldRecord<>(value, this.nid(), this.stampNid(), fieldDefinitionRecord),false);
             observableField.refreshProperties.setValue(true);
             observableField.valueProperty.addListener(observable -> {
-
                 if(observableField.value() != null &&
                         (observableField.fieldProperty.getValue().value() != null &&
                                 // Check if the previous value is different from changed.This check is required for C-List C-Set
@@ -97,7 +96,7 @@ public final class ObservableSemanticVersion
         }
 
        //TODO POC this is a temp workaround remove call to handleUncommittedVersionTransactionStatus()?
-        handleUncommittedVersionTransactionStatus();
+       // handleUncommittedVersionTransactionStatus();
         return Lists.immutable.of(fieldArray);
     }
 
