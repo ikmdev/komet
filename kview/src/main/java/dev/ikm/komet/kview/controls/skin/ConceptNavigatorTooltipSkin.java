@@ -5,11 +5,21 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Skin;
 
+/**
+ * <p>CSS based skin for {@link ConceptNavigatorTooltip}, which has the same implementation
+ * as the default {@link javafx.scene.control.Tooltip}, except that it relocates the graphic node of the {@link Label}
+ * node to the bottom-left, instead of the default bottom-center.
+ * </p>
+ */
 public class ConceptNavigatorTooltipSkin implements Skin<ConceptNavigatorTooltip> {
 
     private Label tipLabel;
     private ConceptNavigatorTooltip tooltip;
 
+    /**
+     * Creates a new ConceptNavigatorTooltipSkin instance for the given {@link ConceptNavigatorTooltip}.
+     * @param t the tooltip
+     */
     public ConceptNavigatorTooltipSkin(ConceptNavigatorTooltip t) {
         this.tooltip = t;
         tipLabel = new Label() {
@@ -40,16 +50,25 @@ public class ConceptNavigatorTooltipSkin implements Skin<ConceptNavigatorTooltip
         tipLabel.setId(t.getId());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ConceptNavigatorTooltip getSkinnable() {
         return tooltip;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Node getNode() {
         return tipLabel;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void dispose() {
         tooltip = null;

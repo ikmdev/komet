@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
+import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.ConceptTile;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell;
@@ -8,11 +9,13 @@ import dev.ikm.komet.kview.controls.MultipleSelectionContextMenu;
 import dev.ikm.komet.kview.controls.SingleSelectionContextMenu;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
@@ -25,6 +28,7 @@ import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.skin.TreeViewSkin;
 import javafx.scene.control.skin.VirtualFlow;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
@@ -47,10 +51,32 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem.STATE;
 import static dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem.PS_STATE;
 
+/**
+ * <p>Custom skin implementation for the {@link KLConceptNavigatorControl} control.
+ * Uses a {@link ConceptFacade} as the type of the value contained within all the
+ * {@link ConceptNavigatorTreeItem} in this treeView.
+ * </p>
+ * <p>Besides rendering of the {@link KLConceptNavigatorTreeCell} cells,
+ * this implementation also takes care of adding a floating header on top of the treeView,
+ * a dragging box that allows dragging multiple cells, which are added to the cell as extra nodes
+ * and rendered accordingly during the {@link #layoutChildren(double, double, double, double)} pass.
+ * </p>
+ * <p>The treeView allows for multiple selection of treeItems, which can be done by Ctrl/Cmd+mouse clicking
+ * or by mouse dragging. The boolean properties {@link #multipleSelectionByClickingProperty} and
+ * {@link #multipleSelectionByBoundingBoxProperty} are set accordingly, to differentiate the origin of
+ * the selection. For the former, the treeView selectionModel contains the actual selection of items, but for
+ * the latter, there is no real selection, and the selected items have to be found directly in the treeView from
+ * the intersection of the dragging box with the treeCells of the treeView.</p>
+ * <p>During the drag gesture, an image of the {@link ConceptTile} of each selected item is combined
+ * to create the {@link Dragboard#setDragView(Image) dragView}.
+ * </p>
+ * <p>Two context menus are created, based on single or multiple selection.</p>
+ */
 public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> {
 
     private static final PseudoClass MULTIPLE_SELECTION_PSEUDO_CLASS = PseudoClass.getPseudoClass("multiple");
@@ -68,6 +94,15 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
     private MultipleSelectionContextMenu multipleSelectionContextMenu;
     private final SingleSelectionContextMenu singleSelectionContextMenu;
 
+    /**
+     * <p>Creates a {@link KLConceptNavigatorTreeViewSkin} instance.
+     * </p>
+     * <p>Creates the floating header and the dragging box instances.</p>
+     * <p>Installs the listener for item selection by clicking.</p>
+     * <p>Installs the event filters for rendering the dragging box and for item selection by dragging.</p>
+     * <p>Installs the context menus.</p>
+     * @param treeView The control that this skin should be installed onto
+     */
     public KLConceptNavigatorTreeViewSkin(KLConceptNavigatorControl treeView) {
         super(treeView);
         header = new Label();
@@ -104,7 +139,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                         ConceptNavigatorTreeItem model = (ConceptNavigatorTreeItem) item;
                         getCellForTreeItem(model).ifPresent(cell -> {
                             if (cell.getGraphic() instanceof ConceptTile tile) {
-                                imageMap.put(model, tile.getTileSnapshot());
+                                imageMap.put(model, ConceptNavigatorUtils.getTileSnapshot(tile));
                             }
                         });
                     }
@@ -167,10 +202,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                 e.consume();
             }
         });
-        treeView.setOnDragDone(e -> {
-            setMultipleSelectionByBoundingBox(false);
-            setMultipleSelectionByClicking(false);
-        });
+        treeView.setOnDragDone(_ -> resetSelection());
 
         singleSelectionContextMenu = new SingleSelectionContextMenu();
         treeView.setOnContextMenuRequested(e -> {
@@ -202,14 +234,11 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         });
     }
 
-    @Override
-    protected VirtualFlow<TreeCell<ConceptFacade>> createVirtualFlow() {
-        virtualFlow = new ConceptNavigatorVirtualFlow();
-        return virtualFlow;
-    }
-
-    // multipleSelectionByBoundingBoxProperty
-    private final BooleanProperty multipleSelectionByBoundingBoxProperty = new SimpleBooleanProperty(this, "multipleSelectionByBoundingBox") {
+    /**
+     * Boolean read-only property that is set to true if the user selects multiple items of the treeView
+     * by mouse dragging
+     */
+    private final ReadOnlyBooleanWrapper multipleSelectionByBoundingBoxProperty = new ReadOnlyBooleanWrapper(this, "multipleSelectionByBoundingBox") {
         @Override
         protected void invalidated() {
             if (get()) {
@@ -219,42 +248,104 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             }
         }
     };
+    public final ReadOnlyBooleanProperty multipleSelectionByBoundingBoxProperty() {
+        return multipleSelectionByBoundingBoxProperty.getReadOnlyProperty();
+    }
     public final boolean isMultipleSelectionByBoundingBox() {
        return multipleSelectionByBoundingBoxProperty.get();
     }
-    public final void setMultipleSelectionByBoundingBox(boolean value) {
-        multipleSelectionByBoundingBoxProperty.set(value);
+    private void setMultipleSelectionByBoundingBox(boolean b) {
+        multipleSelectionByBoundingBoxProperty.set(b);
     }
 
-    // multipleSelectionByClickingProperty
-    private final BooleanProperty multipleSelectionByClickingProperty = new SimpleBooleanProperty(this, "multipleSelectionByClicking") {
+    /**
+     * Boolean read-only property that is set to true if the user selects multiple items of the treeView
+     * by mouse clicking
+     */
+    private final ReadOnlyBooleanWrapper multipleSelectionByClickingProperty = new ReadOnlyBooleanWrapper(this, "multipleSelectionByClicking") {
         @Override
         protected void invalidated() {
             if (!get()) {
                 draggedItems.clear();
-                getSkinnable().getSelectionModel().clearSelection();
             }
         }
     };
+    public final ReadOnlyBooleanProperty multipleSelectionByClickingProperty() {
+        return multipleSelectionByClickingProperty.getReadOnlyProperty();
+    }
     public final boolean isMultipleSelectionByClicking() {
        return multipleSelectionByClickingProperty.get();
     }
-    public final void setMultipleSelectionByClicking(boolean value) {
+    private void setMultipleSelectionByClicking(boolean value) {
         multipleSelectionByClickingProperty.set(value);
     }
 
-    // draggingAllowedProperty
-    private final BooleanProperty draggingAllowedProperty = new SimpleBooleanProperty(this, "draggingAllowed", true);
-    public final BooleanProperty draggingAllowedProperty() {
-       return draggingAllowedProperty;
-    }
+    /**
+     * Boolean field that is set from the {@link ConceptTile}, to allow or deny a drag event with
+     * the dragging box, in case the drag event will be taken care directly by the tile itself.
+     */
+    private boolean draggingAllowed = true;
     public final boolean isDraggingAllowed() {
-       return draggingAllowedProperty.get();
+       return draggingAllowed;
     }
     public final void setDraggingAllowed(boolean value) {
-        draggingAllowedProperty.set(value);
+        draggingAllowed = value;
     }
 
+    /**
+     * <p>Whenever the selected item in the tree view changes, this method allows for updating
+     * the selected state of this item and all its ancestors.
+     * </p>
+     * @param child the selected {@link ConceptNavigatorTreeItem} for which its ancestors
+     *              have to be selected too.
+     * @see STATE#SELECTED
+     */
+    public void selectAllAncestors(ConceptNavigatorTreeItem child) {
+        markAllAncestors(child, STATE.SELECTED);
+    }
+
+    /**
+     * <p>Whenever the long-hovered item in the tree view changes, this method allows for updating
+     * the long-hovered state of this item and all its ancestors.
+     * </p>
+     * @param child the long-hovered {@link ConceptNavigatorTreeItem} for which its ancestors
+     *              have to be long-hovered too.
+     * @see STATE#LONG_HOVER
+     */
+    public void hoverAllAncestors(ConceptNavigatorTreeItem child) {
+        markAllAncestors(child, STATE.LONG_HOVER);
+    }
+
+    /**
+     * <p>Whenever the selected item in the tree view changes, or there is no selection, this method
+     * removes the selected state of this item and all its siblings and ancestors.
+     * </p>
+     * @see STATE#SELECTED
+     */
+    public void unselectAllItems() {
+        unmarkAllItems(STATE.SELECTED);
+    }
+
+    /**
+     * <p>Whenever the long-hovered item in the tree view changes, or there is no long-hovered item, this method
+     * removes the long-hovered state of this item and all its siblings and ancestors.
+     * </p>
+     * @see STATE#LONG_HOVER
+     */
+    public void unhoverAllItems() {
+        unmarkAllItems(STATE.LONG_HOVER);
+    }
+
+    /** {@inheritDoc} **/
+     @Override
+    protected VirtualFlow<TreeCell<ConceptFacade>> createVirtualFlow() {
+        virtualFlow = new ConceptNavigatorVirtualFlow();
+        return virtualFlow;
+    }
+
+    /** {@inheritDoc}
+     * Overridden to take care of the floating header, if visible.
+     */
     @Override
     protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
         if (header.isVisible()) {
@@ -266,6 +357,10 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         }
     }
 
+    /**
+     * Gets the group node of the virtual flow, which contains the actual {@link KLConceptNavigatorTreeCell cells}.
+     * @return the {@link Group} node with cells.
+     */
     private Group getSheet() {
         if (sheet == null) {
             sheet = (Group) virtualFlow.lookup(".sheet");
@@ -273,39 +368,45 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         return sheet;
     }
 
-    public void unselectAllItems() {
-        unmarkAllItems(STATE.SELECTED);
-    }
-
-    public void unhoverAllItems() {
-        unmarkAllItems(STATE.LONG_HOVER);
-    }
-
-    private void unmarkAllItems(STATE state) {
-        getSheet().getChildren().stream()
+    /**
+     * <p>Gets a {@link Stream<KLConceptNavigatorTreeCell>} of the cells found in the virtual flow.
+     * </p>
+     * @return a {@link Stream<KLConceptNavigatorTreeCell>}
+     */
+    private Stream<KLConceptNavigatorTreeCell> getConceptNavigatorTreeCellStream() {
+        return getSheet().getChildren().stream()
                 .filter(KLConceptNavigatorTreeCell.class::isInstance)
-                .map(KLConceptNavigatorTreeCell.class::cast)
-                .forEach(KLConceptNavigatorTreeCell::unselectItem);
-        List<Integer> statesBits = PS_STATE.getStatesBitRange(state);
+                .map(KLConceptNavigatorTreeCell.class::cast);
+    }
+
+    /**
+     * <p>Traverse all the {@link KLConceptNavigatorTreeCell cells} and stop any hovering animation,
+     * and iterate over the whole tree, from root to bottom, to reset the range of bits related
+     * to the passed {@link STATE}.
+     * </p>
+     * @param state the selected or long-hovered {@link STATE}
+     */
+    private void unmarkAllItems(STATE state) {
+        getConceptNavigatorTreeCellStream().forEach(ConceptNavigatorHelper::unselectItem);
         iterateTree((ConceptNavigatorTreeItem) getSkinnable().getRoot(), model -> {
-            model.getBitSet().clear(statesBits.getFirst(), statesBits.getLast());
+            PS_STATE.clearBitsRange(model.getBitSet(), state);
             markCellDirty(model);
         });
         virtualFlow.requestLayout();
     }
 
-    public void selectAllAncestors(ConceptNavigatorTreeItem child) {
-        markAllAncestors(child, true);
-    }
-
-    public void hoverAllAncestors(ConceptNavigatorTreeItem child) {
-        markAllAncestors(child, false);
-    }
-
-    private void markAllAncestors(ConceptNavigatorTreeItem child, boolean select) {
+    /**
+     * <p>Traverse the tree view, starting from the given {@link ConceptNavigatorTreeItem}, up to its siblings
+     * and ancestors, and for each item, set the bits of bitSet that relate to the passed {@link STATE}.
+     * </p>
+     * @param child the starting {@link ConceptNavigatorTreeItem}
+     * @param state the selected or long-hovered {@link STATE}
+     */
+    private void markAllAncestors(ConceptNavigatorTreeItem child, STATE state) {
         if (isMultipleSelectionByClicking()) {
             return;
         }
+        boolean select = state == STATE.SELECTED;
         ConceptNavigatorTreeItem model = child;
         while (model != null) {
             // for each ancestor (including starting one)
@@ -328,7 +429,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                 ConceptNavigatorTreeItem previousSibling = (ConceptNavigatorTreeItem) model.previousSibling();
                 while (previousSibling != null) {
                     // and all expanded descendants if these are expanded
-                    applyPseudoClassState(previousSibling, select, level);
+                    applyPseudoClassState(previousSibling, state, level);
                     previousSibling = (ConceptNavigatorTreeItem) previousSibling.previousSibling();
                 }
             }
@@ -337,34 +438,61 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         virtualFlow.requestLayout();
 
         // debug:
-//        printTree(getSkinnable().getRoot(), false);
-
+//        ConceptNavigatorUtils.printTree((KLConceptNavigatorControl) getSkinnable(), (ConceptNavigatorTreeItem) getSkinnable().getRoot(), false);
     }
 
-    private void applyPseudoClassState(ConceptNavigatorTreeItem model, boolean select, int level) {
-        model.getBitSet().set(select ? PS_STATE.LINE_I_SELECTED.getBit() + level : PS_STATE.LINE_I_LONG_HOVER.getBit() + level);
-        markCellDirty(model);
-        if (model.isExpanded()) {
-            model.getChildren().forEach(i -> applyPseudoClassState((ConceptNavigatorTreeItem) i, select, level));
+    /**
+     * <p>Recursive method that traverses a {@link ConceptNavigatorTreeItem} and, if is expanded, its children,
+     * from top to bottom, setting the bits of bitSet that relate to the passed {@link STATE} at a
+     * given indentation level.
+     * </p>
+     * @param item a {@link ConceptNavigatorTreeItem}
+     * @param state the selected or long-hovered {@link STATE}
+     * @param level the indentation level
+     */
+    private void applyPseudoClassState(ConceptNavigatorTreeItem item, STATE state, int level) {
+        item.getBitSet().set(state == STATE.SELECTED ? PS_STATE.LINE_I_SELECTED.getBit() + level : PS_STATE.LINE_I_LONG_HOVER.getBit() + level);
+        markCellDirty(item);
+        if (item.isExpanded()) {
+            item.getChildren().forEach(i -> applyPseudoClassState((ConceptNavigatorTreeItem) i, state, level));
         }
     }
 
+    /**
+     * <p>Convenience method to mark dirty the {@link KLConceptNavigatorTreeCell} that contains the passed
+     * {@link ConceptNavigatorTreeItem}, if found, to force a call to {@link KLConceptNavigatorTreeCell updateItem}
+     * in the next layout pass.
+     * </p>
+     * @param treeItem a {@link ConceptNavigatorTreeItem}
+     */
     private void markCellDirty(ConceptNavigatorTreeItem treeItem) {
-        getCellForTreeItem(treeItem).ifPresent(KLConceptNavigatorTreeCell::markCellDirty);
+        getCellForTreeItem(treeItem).ifPresent(ConceptNavigatorHelper::markCellDirty);
     }
 
+    /**
+     * <p>Finds the {@link KLConceptNavigatorTreeCell} for the passed {@link ConceptNavigatorTreeItem},
+     * within the list of current cells in the virtual flow, if any.
+     * </p>
+     * @param treeItem a {@link ConceptNavigatorTreeItem}
+     * @return an optional of {@link KLConceptNavigatorTreeCell}
+     */
     private Optional<KLConceptNavigatorTreeCell> getCellForTreeItem(ConceptNavigatorTreeItem treeItem) {
         if (treeItem == null) {
             return Optional.empty();
         }
-        return getSheet().getChildren().stream()
-                .filter(KLConceptNavigatorTreeCell.class::isInstance)
-                .map(KLConceptNavigatorTreeCell.class::cast)
+        return getConceptNavigatorTreeCellStream()
                 .filter(cell -> treeItem.equals(cell.getTreeItem()))
                 .findFirst();
     }
 
-    private void iterateTree(ConceptNavigatorTreeItem treeItem, Consumer<ConceptNavigatorTreeItem> consumer){
+    /**
+     * <p>Recursive method that traverses the children of a {@link ConceptNavigatorTreeItem}, applying a certain
+     * function to each of them.
+     * </p>
+     * @param treeItem a {@link ConceptNavigatorTreeItem}
+     * @param consumer a {@link Consumer<ConceptNavigatorTreeItem>} to apply to each tree item
+     */
+    private void iterateTree(ConceptNavigatorTreeItem treeItem, Consumer<ConceptNavigatorTreeItem> consumer) {
         for (TreeItem<ConceptFacade> child : treeItem.getChildren()) {
             ConceptNavigatorTreeItem model = (ConceptNavigatorTreeItem) child;
             consumer.accept(model);
@@ -374,22 +502,15 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         }
     }
 
-    private void printTree(ConceptNavigatorTreeItem treeItem, boolean printAll) {
-        for (TreeItem<ConceptFacade> child : treeItem.getChildren()) {
-            ConceptNavigatorTreeItem model = (ConceptNavigatorTreeItem) child;
-            if (model.isLeaf()) {
-                if (printAll || !model.getBitSet().isEmpty()) {
-                    System.out.println("-".repeat(getSkinnable().getTreeItemLevel(model)) + " " + model);
-                }
-            } else {
-                if (printAll || !model.getBitSet().isEmpty()) {
-                    System.out.println("+".repeat(getSkinnable().getTreeItemLevel(model)) + " " + model);
-                }
-                printTree(model, printAll);
-            }
-        }
-    }
-
+    /**
+     * <p>When the user drags over the {@link KLConceptNavigatorControl}, after drawing the dragging box,
+     * iterate over all the cells in the virtual flow, to find out if the dragging box intersects them.
+     * </p>
+     * <p>For the intersected cells, sets the long-hovered pseudoClass and adds the item of the cell to the list
+     * of dragged items.</p>
+     * <p>And finds the bounding box of the graphic node (that is, the {@link ConceptTile}) of the affected cells,
+     * in order to create a snapshot</p>
+     */
     private void prepareDrag() {
         if (draggingBox.getLayoutBounds().getWidth() < 10 || draggingBox.getLayoutBounds().getHeight() < 10) {
             draggingBox.getElements().clear();
@@ -398,29 +519,26 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         if (!draggingBox.getElements().isEmpty()) {
             xMin = Double.MAX_VALUE; yMin = Double.MAX_VALUE;
             xMax = Double.MIN_VALUE; yMax = Double.MIN_VALUE;
-            getSheet().getChildren().stream()
-                    .filter(KLConceptNavigatorTreeCell.class::isInstance)
-                    .map(KLConceptNavigatorTreeCell.class::cast)
+            getConceptNavigatorTreeCellStream()
+                    .filter(cell -> cell.getGraphic() != null)
                     .forEach(cell -> {
                         Node graphic = cell.getGraphic();
-                        if (graphic != null) {
-                            Bounds sceneBounds = graphic.localToScene(graphic.getLayoutBounds());
-                            Bounds localBounds = getSkinnable().sceneToLocal(sceneBounds);
-                            if (draggingBox.intersects(localBounds)) {
-                                cell.pseudoClassStateChanged(KLConceptNavigatorTreeCell.LONG_HOVER_PSEUDO_CLASS, true);
-                                draggedItems.add((ConceptNavigatorTreeItem) cell.getTreeItem());
-                                if (sceneBounds.getMinX() < xMin) {
-                                    xMin = sceneBounds.getMinX();
-                                }
-                                if (sceneBounds.getMaxX() > xMax) {
-                                    xMax = sceneBounds.getMaxX();
-                                }
-                                if (sceneBounds.getMinY() < yMin) {
-                                    yMin = sceneBounds.getMinY();
-                                }
-                                if (sceneBounds.getMaxY() > yMax) {
-                                    yMax = sceneBounds.getMaxY();
-                                }
+                        Bounds sceneBounds = graphic.localToScene(graphic.getLayoutBounds());
+                        Bounds localBounds = getSkinnable().sceneToLocal(sceneBounds);
+                        if (draggingBox.intersects(localBounds)) {
+                            cell.pseudoClassStateChanged(KLConceptNavigatorTreeCell.LONG_HOVER_PSEUDO_CLASS, true);
+                            draggedItems.add((ConceptNavigatorTreeItem) cell.getTreeItem());
+                            if (sceneBounds.getMinX() < xMin) {
+                                xMin = sceneBounds.getMinX();
+                            }
+                            if (sceneBounds.getMaxX() > xMax) {
+                                xMax = sceneBounds.getMaxX();
+                            }
+                            if (sceneBounds.getMinY() < yMin) {
+                                yMin = sceneBounds.getMinY();
+                            }
+                            if (sceneBounds.getMaxY() > yMax) {
+                                yMax = sceneBounds.getMaxY();
                             }
                         }
                     });
@@ -429,28 +547,36 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         }
     }
 
+    /**
+     * <p>Resets the list of dragged items, clears the dragging box, and resets the pseudoClass long-hovered state of the
+     * cells in the virtual flow.
+     * </p>
+     */
     private void cancelDrag() {
         draggedItems.clear();
         draggingBox.getElements().clear();
-        getSheet().getChildren().stream()
-                .filter(KLConceptNavigatorTreeCell.class::isInstance)
-                .map(KLConceptNavigatorTreeCell.class::cast)
-                .forEach(cell -> {
-                    if (cell.getGraphic() != null) {
-                        cell.pseudoClassStateChanged(KLConceptNavigatorTreeCell.LONG_HOVER_PSEUDO_CLASS, false);
-                    }
-                });
-        setMultipleSelectionByBoundingBox(false);
+        getConceptNavigatorTreeCellStream()
+                .filter(cell -> cell.getGraphic() != null)
+                .forEach(cell -> cell.pseudoClassStateChanged(KLConceptNavigatorTreeCell.LONG_HOVER_PSEUDO_CLASS, false));
         virtualFlow.setMouseTransparent(false);
     }
 
+    /**
+     * <p>Creates a snapshot of the selected items that can be passed to {@link Dragboard#setDragView(Image)}.
+     * </p>
+     * <p>When selection is done via dragging box, it returns snapshot of the bounding rectangle of the continuous
+     * selection of {@link ConceptTile}. But when the selection is done via clicking, since this can be discontinuous,
+     * the cached snapshot of each item is added to an {@link ImageView}, and those are grouped into a {@link VBox},
+     * from which the snapshot is finally taken.</p>
+     * @return a {@link WritableImage} of the selected items
+     */
     private WritableImage createSnapshot() {
         SnapshotParameters p = new SnapshotParameters();
         if (isMultipleSelectionByBoundingBox()) {
             Point2D point2D = new Point2D(xMin, yMin);
-            point2D = sheet.sceneToLocal(point2D);
+            point2D = getSheet().sceneToLocal(point2D);
             p.setViewport(new Rectangle2D(point2D.getX(), point2D.getY(), xMax - xMin, yMax - yMin));
-            return sheet.snapshot(p, null);
+            return getSheet().snapshot(p, null);
         } else if (isMultipleSelectionByClicking()) {
             List<ImageView> list = getSkinnable().getSelectionModel().getSelectedItems().stream()
                     .map(item -> {
@@ -469,18 +595,36 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         return null;
     }
 
+    /**
+     * <p>Sets up the multiple selection context menu, and uses the list of the selected concepts
+     * to set an {@link EventHandler<ActionEvent>} for
+     * {@link MultipleSelectionContextMenu#setPopulateMessageAction(EventHandler)}, based on the
+     * {@link KLConceptNavigatorControl#onActionProperty()}, if defined.
+     * </p>
+     * @param items a {@link List<ConceptFacade>}
+     */
     private void setupContextMenu(List<ConceptFacade> items) {
         multipleSelectionContextMenu = new MultipleSelectionContextMenu();
         multipleSelectionContextMenu.setPopulateMessageAction(_ -> {
             if (((KLConceptNavigatorControl) getSkinnable()).getOnAction() != null) {
                 ((KLConceptNavigatorControl) getSkinnable()).getOnAction().accept(items);
             }
-            setMultipleSelectionByClicking(false);
-            setMultipleSelectionByBoundingBox(false);
+            resetSelection();
         });
+        // DUMMY!
         multipleSelectionContextMenu.setJournalMessageAction(e -> System.out.println("Journal action"));
         multipleSelectionContextMenu.setChapterMessageAction(e -> System.out.println("Chapter action"));
         multipleSelectionContextMenu.setCopyMessageAction(e -> System.out.println("Copy action"));
         multipleSelectionContextMenu.setSaveMessageAction(e -> System.out.println("Save action"));
+    }
+
+    /**
+     * Clears {@link #multipleSelectionByBoundingBoxProperty()} and {@link #multipleSelectionByClickingProperty()},
+     * and clears the selection of the treeView.
+     */
+    private void resetSelection() {
+        setMultipleSelectionByBoundingBox(false);
+        setMultipleSelectionByClicking(false);
+        getSkinnable().getSelectionModel().clearSelection();
     }
 }

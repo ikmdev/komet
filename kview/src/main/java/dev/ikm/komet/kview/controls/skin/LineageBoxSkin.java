@@ -7,9 +7,19 @@ import javafx.scene.control.skin.ScrollPaneSkin;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 
+/**
+ * <p>Custom skin implementation for the {@link LineageBox} control.
+ * It just extends the {@link ScrollPaneSkin} by adding a close icon
+ * to the top right side of the lineage box, that allows closing it.
+ * </p>
+ */
 public class LineageBoxSkin extends ScrollPaneSkin {
     private final StackPane closePane;
 
+    /**
+     * <p>Create a {@link LineageBoxSkin} instance</p>
+     * @param lineageBox The control that this skin should be installed onto.
+     */
     public LineageBoxSkin(LineageBox lineageBox) {
         super(lineageBox);
 
@@ -29,6 +39,7 @@ public class LineageBoxSkin extends ScrollPaneSkin {
         getChildren().add(closePane);
     }
 
+    /** {@inheritDoc} **/
     @Override
     protected void layoutChildren(double x, double y, double w, double h) {
         super.layoutChildren(x, y, w, h);
