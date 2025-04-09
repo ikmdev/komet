@@ -16,7 +16,11 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.*;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_ADD_REFERENCE_SEMANTIC_FIELD;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SINGLE_SEMANTIC_FIELD;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
@@ -39,7 +43,6 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
-
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
