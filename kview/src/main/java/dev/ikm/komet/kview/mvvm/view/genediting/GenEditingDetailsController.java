@@ -16,7 +16,11 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.*;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_ADD_REFERENCE_SEMANTIC_FIELD;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SINGLE_SEMANTIC_FIELD;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
@@ -48,8 +52,6 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
-import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
-import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
@@ -60,12 +62,8 @@ import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -251,33 +249,36 @@ public class GenEditingDetailsController {
 
         // Populate the Semantic Details
 
-        // populate the observable fields and nodes for this semantic
-        observableFields.addAll(KlFieldHelper
-                .generateObservableFieldsAndNodes(getViewProperties(),
-                        nodes,
-                        semanticEntityVersionLatest, false));
+        if (genEditingViewModel.getPropertyValue(MODE).equals(EDIT)) {
+            // populate the observable fields and nodes for this semantic
+            observableFields.addAll(KlFieldHelper
+                    .generateObservableFieldsAndNodes(getViewProperties(),
+                            nodes,
+                            semanticEntityVersionLatest, false));
 
-        // function to apply for the components' edit action (a.k.a. right click > Edit)
-        BiFunction<Node, Integer, Runnable> editAction = (node, fieldIndex) ->
-                () -> {
-                    final EntityVersion finalEntityVersion = getSemanticVersion().get();
-                    EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                            new PropertyPanelEvent(node, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
-                    EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                            new PropertyPanelEvent(node, OPEN_PANEL));
-                };
+            // function to apply for the components' edit action (a.k.a. right click > Edit)
+            BiFunction<Node, Integer, Runnable> editAction = (node, fieldIndex) ->
+                    () -> {
+                        final EntityVersion finalEntityVersion = getSemanticVersion().get();
+                        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                                new PropertyPanelEvent(node, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
+                        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                                new PropertyPanelEvent(node, OPEN_PANEL));
+                    };
 
-        // add setEditOnAction
-        for (int index = 0; index < nodes.size(); index++) {
-            Node node = nodes.get(index);
-            if (node instanceof KLReadOnlyBaseControl klReadOnlyBaseControl) {
+            // add setEditOnAction
+            for (int index = 0; index < nodes.size(); index++) {
+                KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) nodes.get(index);
                 klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index));
-            } else if (node instanceof KLReadOnlyComponentSetControl klReadOnlyComponentSetControl) {
-                klReadOnlyComponentSetControl.setOnEditAction(editAction.apply(klReadOnlyComponentSetControl, index));
-            } else if (node instanceof KLReadOnlyComponentListControl klReadOnlyComponentListControl) {
-                klReadOnlyComponentListControl.setOnEditAction(editAction.apply(klReadOnlyComponentListControl, index));
+                semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
             }
-            semanticDetailsVBox.getChildren().add(node);
+        } else {
+            EntityFacade pattern = genEditingViewModel.getPropertyValue(PATTERN);
+            PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(pattern).get();
+
+            // generate read only UI controls in create mode
+            List<Node> defaultNodes = KlFieldHelper.addReadOnlyBlankControlsToContainer(patternVersionRecord, getViewProperties());
+            semanticDetailsVBox.getChildren().addAll(defaultNodes);
         }
 
         // Setup Properties Bump out view.
@@ -305,7 +306,6 @@ public class GenEditingDetailsController {
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, refreshSubscriber);
     }
-
 
 
     private void setSemanticVersion(Latest<SemanticEntityVersion> semanticEntityVersionLatest) {
