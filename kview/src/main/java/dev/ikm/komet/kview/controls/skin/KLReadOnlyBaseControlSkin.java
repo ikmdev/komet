@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyBaseSingleValueControl;
 import dev.ikm.komet.kview.controls.KometIcon;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -15,7 +15,7 @@ import javafx.scene.control.SkinBase;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseControl> extends SkinBase<T> {
+public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseSingleValueControl> extends SkinBase<T> {
     protected static final PseudoClass EDIT_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("edit-mode");
 
     protected final VBox mainContainer = new VBox();
