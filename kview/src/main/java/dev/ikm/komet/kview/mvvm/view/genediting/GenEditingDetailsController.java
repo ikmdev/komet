@@ -274,7 +274,8 @@ public class GenEditingDetailsController {
             PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(pattern).get();
 
             // generate read only UI controls in create mode
-            DataModelHelper.addReadOnlyBlankControlsToContainer(semanticDetailsVBox, patternVersionRecord, getViewProperties());
+            List<Node> defaultNodes = KlFieldHelper.addReadOnlyBlankControlsToContainer(patternVersionRecord, getViewProperties());
+            semanticDetailsVBox.getChildren().addAll(defaultNodes);
         }
 
         // Setup Properties Bump out view.

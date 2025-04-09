@@ -413,38 +413,4 @@ public class DataModelHelper {
         return semantic;
     }
 
-    /**
-     * generate the UI controls in create mode
-     *
-     * @param patternVersionRecord pattern to inspect fields
-     * @param vBox container for fields
-     * @param viewProperties view properties
-     */
-    public static void addReadOnlyBlankControlsToContainer(VBox vBox, PatternVersionRecord patternVersionRecord, ViewProperties viewProperties) {
-        patternVersionRecord.fieldDefinitions().forEach(fieldDefinitionRecord -> {
-            Tooltip tooltip = new Tooltip(viewProperties.calculator().getDescriptionTextOrNid(fieldDefinitionRecord.purposeNid()));
-
-            KLReadOnlyBaseControl control = null;
-            if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
-                control = new KLReadOnlyComponentControl();
-            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
-                    || fieldDefinitionRecord.dataTypeNid() == TinkarTerm.STRING.nid()) {
-                control = new KLReadOnlyDataTypeControl<>(String.class);
-            } else if (fieldDefinitionRecord.dataTypeNid() == INTEGER_FIELD.nid()) {
-                control = new KLReadOnlyDataTypeControl<>(Integer.class);
-            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
-                control = new KLReadOnlyDataTypeControl<>(Float.class);
-            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
-                control = new KLReadOnlyDataTypeControl<>(Boolean.class);
-            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
-                control = new KLReadOnlyComponentListControl();
-            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
-                control = new KLReadOnlyComponentSetControl();
-            }
-
-            control.setTitle(fieldDefinitionRecord.meaning().description());
-            control.setTooltip(tooltip);
-            vBox.getChildren().add(control);
-        });
-    }
 }
