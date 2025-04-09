@@ -266,7 +266,9 @@ public class PatternDetailsController {
      * Stamp Edit
      */
     private PopOver stampEdit;
+
     private StampEditController stampEditController;
+
     @InjectViewModel
     private PatternViewModel patternViewModel;
 
@@ -445,8 +447,8 @@ public class PatternDetailsController {
         //Listen to the changes in the fieldsTilePane and update the field numbers.
         ObservableList<Node> fieldsTilePaneList = fieldsTilePane.getChildren();
         fieldsTilePaneList.addListener((ListChangeListener<Node>) (listener) -> {
-            while(listener.next()){
-                if(listener.wasAdded() || listener.wasRemoved()){
+            while (listener.next()) {
+                if (listener.wasAdded() || listener.wasRemoved()) {
                     updateFieldValues();
                 }
             }
@@ -455,12 +457,12 @@ public class PatternDetailsController {
         patternFieldsPanelEventSubscriber = evt -> {
             PatternField patternField = evt.getPatternField();
             PatternField previousPatternField = evt.getPreviousPatternField();
-            int fieldPosition = evt.getCurrentFieldOrder()-1;
-            if(evt.getEventType() == EDIT_FIELD && previousPatternField != null){
+            int fieldPosition = evt.getCurrentFieldOrder() - 1;
+            if (evt.getEventType() == EDIT_FIELD && previousPatternField != null) {
                 // 1st remove it from list before adding the new entry
                 patternFieldList.remove(previousPatternField);
             }
-            //Update the fields collection data.
+            // Update the fields collection data.
             patternFieldList.add(fieldPosition, patternField);
             // save and therefore validate
             patternViewModel.save();
@@ -468,13 +470,21 @@ public class PatternDetailsController {
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
 
         patternFieldList.addListener((ListChangeListener<? super PatternField>) changeListner -> {
-            while(changeListner.next()){
-                if(changeListner.wasAdded()){
-                    int fieldPosition = changeListner.getTo()-1;
-                    //update the display.
-                    fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(changeListner.getAddedSubList().getFirst(), changeListner.getTo()));
-                }else if(changeListner.wasRemoved()){
-                    fieldsTilePaneList.remove(changeListner.getTo());
+            while (changeListner.next()) {
+                // when the collection is cleared, the removed size will equal the tile pane size, so clear the tile pane
+                // since the changeListner.wasRemoved() will not account for clearing all of them if the collection is cleared
+                if (changeListner.getRemovedSize() > 0 && changeListner.getRemovedSize() == fieldsTilePaneList.size()) {
+                    fieldsTilePaneList.clear();
+                } else {
+                    if (changeListner.wasAdded()) {
+                        int fieldPosition = changeListner.getTo() - 1;
+                        // update the display.
+                        fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(changeListner.getAddedSubList().getFirst(), changeListner.getTo()));
+                    } else if (changeListner.wasRemoved()) {
+                        fieldsTilePaneList.remove(changeListner.getTo());
+
+                    }
+                    patternViewModel.save();
                 }
             }
         });
@@ -620,10 +630,10 @@ public class PatternDetailsController {
      */
     private void updateFieldValues() {
         ObservableList<Node> fieldVBoxes = fieldsTilePane.getChildren();
-        for(int i=0 ; i < fieldVBoxes.size(); i++){
+        for (int i=0 ; i < fieldVBoxes.size(); i++) {
             Node node = fieldVBoxes.get(i);
             Node labelNode = node.lookup(".pattern-field");
-            if(labelNode instanceof Label label){
+            if (labelNode instanceof Label label) {
                 label.setText("FIELD " + (i+1));
             }
         }
