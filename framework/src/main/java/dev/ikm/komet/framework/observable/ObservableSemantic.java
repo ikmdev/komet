@@ -53,7 +53,7 @@ public final class ObservableSemantic
     private void updateEntity(SemanticVersionRecord semanticVersionRecord) {
         SemanticRecord semantic = Entity.getFast(semanticVersionRecord.nid());
         SemanticRecord analogue = semantic.with(semanticVersionRecord).build();
-        saveToDB(analogue);
+        saveToDB(analogue, semanticVersionRecord.stampNid());
     }
 
     @Override

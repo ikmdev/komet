@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculteHashValue;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateHashValue;
@@ -24,12 +25,13 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_W
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
+import dev.ikm.komet.framework.events.EntityVersionChangeEvent;
 import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
-import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
@@ -44,7 +46,6 @@ import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
-import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -83,8 +84,6 @@ public class SemanticFieldsController {
 
     private List<ObservableField<?>> observableFields = new ArrayList<>();
 
-    private boolean updateStampVersions;
-
     private List<Node> nodes = new ArrayList<>();
 
     private int committedHash;
@@ -93,19 +92,28 @@ public class SemanticFieldsController {
 
     ObservableSemanticSnapshot observableSemanticSnapshot;
 
-    ListChangeListener<? super ObservableSemanticVersion> versionChangeListener = (ListChangeListener<ObservableSemanticVersion>) c -> refreshData();
+    Subscriber<EntityVersionChangeEvent> entityVersionChangeEventSubscriber;
 
-    private void refreshData() {
-        if(observableSemantic !=null){
-            observableSemantic.versionProperty().removeListener(versionChangeListener);
-        }
+    //ListChangeListener<? super ObservableSemanticVersion> versionChangeListener = (ListChangeListener<ObservableSemanticVersion>) c -> Platform.runLater(() -> refreshData(c));
 
-    }
+    //Subscriber<GenEditingEvent> genEditingEventSubscriber;
 
+//    private void refreshData(ListChangeListener.Change<? extends ObservableSemanticVersion> change) {
+//        System.out.println(" IN REFRESH DATA section");
+//        while(change.next()){
+//            if(change.wasAdded()){
+//                System.out.println(" IN REFRESH DATA section : ADDED" );
+//                observableSemantic.versionProperty().removeListener(versionChangeListener);
+//                EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(this, VERSION_UPDATED, observableFields, observableSemantic.nid()));
+//            }
+//            if(change.wasRemoved()) {
+//                System.out.println(" IN REFRESH DATA section : REMOVED" );
+//            }
+//        }
+//    }
 
     private void enableDisableSubmitButton(){
         //Disable submit button if any of the fields are blank.
-        System.out.println(" ENABLE DISABLE LOGIC CALLED....");
         boolean disabled = checkForEmptyFields();
         if(!disabled){
             int uncommittedHash = calculteHashValue(observableFields);
@@ -143,14 +151,39 @@ public class SemanticFieldsController {
         // clear all semantic details.
         editFieldsVBox.setSpacing(8.0);
         editFieldsVBox.getChildren().clear();
-        updateStampVersions = true;
         submitButton.setDisable(true);
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         observableSemantic = ObservableEntity.get(semantic.nid());
         observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
         processCommittedValues();
+
         loadUIData();
 
+        entityVersionChangeEventSubscriber = evt ->{
+                LOG.info("Version has been updated: " + evt.getEventType());
+                if(evt.getNid() == semantic.nid()){
+                    observableSemantic = ObservableSemantic.get(semantic.nid());
+                    observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+                    loadUIData();
+                }
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
+                EntityVersionChangeEvent.class, entityVersionChangeEventSubscriber);
+/*        genEditingEventSubscriber = evt -> {
+            LOG.info("Version has been updated: " + evt.getEventType());
+            if (evt.getEventType() == VERSION_UPDATED && evt.getNid() == semantic.nid()) {
+                *//*nodes.removeAll(observableFields);
+                observableFields.clear();
+                observableFields.addAll(evt.getList());*//*
+            }
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                GenEditingEvent.class, genEditingEventSubscriber);*/
+
+
+    }
+
+    private void loadVBox() {
         // subscribe to changes... if the FIELD_INDEX is -1 or unset, then the user clicked the
         //  pencil icon and wants to edit all the fields
         // if the FIELD_INDEX is >= 0 then the user chose the context menu of a single field
@@ -181,16 +214,20 @@ public class SemanticFieldsController {
         if (semanticEntityVersionLatest.isPresent()) {
             // Populate the Semantic Details
             // Displaying editable controls and populating the observable fields array list.
+            observableFields.clear();
             observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
             observableFields.forEach(observableField -> {
                 // disable calling writeToData method of observable field by setting refresh flag to true.
                 FieldRecord<?> fieldRecord = observableField.field();
                 nodes.add(KlFieldHelper.generateNode(fieldRecord, observableField, getViewProperties(), semanticEntityVersionLatest, true));
+                System.out.println(" THE CLASS INSTANCE : " + this.toString()  + "  VALUE " + observableField.value());
             });
+
         }
         //Set the hascode for the committed values.
         enableDisableSubmitButton();
-        observableSemantic.versionProperty().addListener(versionChangeListener);
+     //   observableSemantic.versionProperty().addListener(versionChangeListener);
+        loadVBox();
     }
 
     private static Separator createSeparator() {

@@ -15,6 +15,9 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
+import dev.ikm.komet.framework.events.EntityVersionChangeEvent;
+import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.tinkar.collection.ConcurrentReferenceHashMap;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -64,9 +67,12 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
 
     final private AtomicReference<Entity<V>> entityReference;
 
-    public void saveToDB(Entity<?> analogue) {
+    public void saveToDB(Entity<?> analogue, int versionStampNid) {
         Entity.provider().putEntity(analogue);
-
+//        versionProperty.add(wrap((V) analogue.getVersion(versionStampNid).get()));
+        updateVersions(entity(), this);
+        EvtBusFactory.getDefaultEvtBus()
+                .publish(VERSION_CHANGED_TOPIC, new EntityVersionChangeEvent(this, EntityVersionChangeEvent.VERSION_UPDATED, nid()));
     }
 
     ObservableEntity(Entity<V> entity) {
