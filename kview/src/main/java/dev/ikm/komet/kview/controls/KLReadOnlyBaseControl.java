@@ -8,13 +8,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Control;
 
-public abstract class KLReadOnlyBaseControl<T> extends Control {
-    // -- value
-    private ObjectProperty<T> value = new SimpleObjectProperty<>();
-    public T getValue() { return value.get(); }
-    public ObjectProperty<T> valueProperty() { return value; }
-    public void setValue(T value) { this.value.set(value); }
-
+public abstract class KLReadOnlyBaseControl extends Control {
     // -- title
     private StringProperty title = new SimpleStringProperty();
     public String getTitle() { return title.get(); }
@@ -22,7 +16,7 @@ public abstract class KLReadOnlyBaseControl<T> extends Control {
     public void setTitle(String title) { this.title.set(title); }
 
     // -- prompt text
-    private StringProperty promptText = new SimpleStringProperty("[Placeholder]");
+    private StringProperty promptText = new SimpleStringProperty("");
     public String getPromptText() { return promptText.get(); }
     public StringProperty promptTextProperty() { return promptText; }
     public void setPromptText(String text) { this.promptText.set(text); }
@@ -38,10 +32,4 @@ public abstract class KLReadOnlyBaseControl<T> extends Control {
     public Runnable getOnEditAction() { return onEditAction.get(); }
     public ObjectProperty<Runnable> onEditActionProperty() { return onEditAction; }
     public void setOnEditAction(Runnable onEditAction) { this.onEditAction.set(onEditAction); }
-
-    // -- on remove action
-    private ObjectProperty<Runnable> onRemoveAction = new SimpleObjectProperty<>();
-    public Runnable getOnRemoveAction() { return onRemoveAction.get(); }
-    public ObjectProperty<Runnable> onRemoveActionProperty() { return onRemoveAction; }
-    public void setOnRemoveAction(Runnable onEditAction) { this.onRemoveAction.set(onEditAction); }
 }

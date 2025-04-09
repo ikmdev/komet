@@ -6,7 +6,8 @@
     -fx-padding: 0 0.25em 0 0.25em;
 }
 
-.read-only-data-control.main-container .title {
+.read-only-data-control .main-container .title {
+    -fx-font-family: "Noto Sans SemiBold";
     -fx-text-fill: #5d5d5d;
 }
 
@@ -22,12 +23,11 @@
     -fx-text-fill: #395c9a;
 }
 
-.read-only-data-control .main-container .text-container .text {
+.read-only-data-control .main-container .text-container > .text {
     -fx-text-fill: #111;
-    -fx-font-size: 1.166667em;
 }
 
-.read-only-data-control:edit-mode .main-container .text-container .prompt-text {
+.read-only-data-control .main-container .text-container .prompt-text {
     -fx-font-family: "Noto Sans SemiBold";
-    -fx-font-size: 1.166667em;
+    -fx-font-size: 13px;
 }

@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.klfields;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
+import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
@@ -8,6 +9,11 @@ import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLComponentControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
 import dev.ikm.komet.kview.klfields.componentlistfield.KlComponentListFieldFactory;
@@ -18,23 +24,22 @@ import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
-import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.Node;
+import javafx.scene.control.Tooltip;
 import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -203,5 +208,43 @@ public class KlFieldHelper {
             }
         });
         return stringBuilder.toString().hashCode();
+    }
+
+    /**
+     * generate the UI controls in create mode
+     *
+     * @param patternVersionRecord pattern to inspect fields
+
+     * @param viewProperties       view properties
+     * @return
+     */
+    public static List<Node> addReadOnlyBlankControlsToContainer(PatternVersionRecord patternVersionRecord, ViewProperties viewProperties) {
+        List<Node> defaultNodes = new ArrayList<>();
+        patternVersionRecord.fieldDefinitions().forEach(fieldDefinitionRecord -> {
+            Tooltip tooltip = new Tooltip(viewProperties.calculator().getDescriptionTextOrNid(fieldDefinitionRecord.purposeNid()));
+
+            KLReadOnlyBaseControl control = null;
+            if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
+                control = new KLReadOnlyComponentControl();
+            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
+                    || fieldDefinitionRecord.dataTypeNid() == TinkarTerm.STRING.nid()) {
+                control = new KLReadOnlyDataTypeControl<>(String.class);
+            } else if (fieldDefinitionRecord.dataTypeNid() == INTEGER_FIELD.nid()) {
+                control = new KLReadOnlyDataTypeControl<>(Integer.class);
+            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
+                control = new KLReadOnlyDataTypeControl<>(Float.class);
+            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
+                control = new KLReadOnlyDataTypeControl<>(Boolean.class);
+            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
+                control = new KLReadOnlyComponentListControl();
+            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
+                control = new KLReadOnlyComponentSetControl();
+            }
+
+            control.setTitle(fieldDefinitionRecord.meaning().description());
+            control.setTooltip(tooltip);
+            defaultNodes.add(control);
+        });
+        return defaultNodes;
     }
 }
