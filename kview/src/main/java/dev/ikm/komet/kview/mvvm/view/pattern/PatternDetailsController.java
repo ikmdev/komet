@@ -266,7 +266,9 @@ public class PatternDetailsController {
      * Stamp Edit
      */
     private PopOver stampEdit;
+
     private StampEditController stampEditController;
+
     @InjectViewModel
     private PatternViewModel patternViewModel;
 
@@ -461,7 +463,6 @@ public class PatternDetailsController {
                 patternFieldList.remove(previousPatternField);
             }
             // Update the fields collection data.
-            LOG.info("******ADD inside the patternFieldsPanelEventSubscriber******");
             patternFieldList.add(fieldPosition, patternField);
             // save and therefore validate
             patternViewModel.save();
@@ -470,18 +471,20 @@ public class PatternDetailsController {
 
         patternFieldList.addListener((ListChangeListener<? super PatternField>) changeListner -> {
             while (changeListner.next()) {
-                LOG.info("removed size: {}", changeListner.getRemovedSize());
+                // when the collection is cleared, the removed size will equal the tile pane size, so clear the tile pane
+                // since the changeListner.wasRemoved() will not account for clearing all of them if the collection is cleared
                 if (changeListner.getRemovedSize() > 0 && changeListner.getRemovedSize() == fieldsTilePaneList.size()) {
                     fieldsTilePaneList.clear();
                 } else {
                     if (changeListner.wasAdded()) {
                         int fieldPosition = changeListner.getTo() - 1;
-                        //update the display.
-                        LOG.info("~~~~~~Update inside the patternFieldList listener~~~~~~");
+                        // update the display.
                         fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(changeListner.getAddedSubList().getFirst(), changeListner.getTo()));
                     } else if (changeListner.wasRemoved()) {
                         fieldsTilePaneList.remove(changeListner.getTo());
+
                     }
+                    patternViewModel.save();
                 }
             }
         });
