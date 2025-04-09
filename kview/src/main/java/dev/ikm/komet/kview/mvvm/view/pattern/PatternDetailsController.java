@@ -490,9 +490,10 @@ public class PatternDetailsController {
         MenuItem addNewSemanticElement = new MenuItem("Add New Semantic Element",kometPlusIcon);
         contextMenu.getItems().addAll(addNewSemanticElement);
         this.contextMenu.getStyleClass().add("klcontext-menu");
-        detailsOuterBorderPane.setOnContextMenuRequested(contextMenuEvent ->
-                contextMenu.show(detailsOuterBorderPane, contextMenuEvent.getScreenX(),contextMenuEvent.getScreenY())
-        );
+        detailsOuterBorderPane.setOnContextMenuRequested(contextMenuEvent -> {
+            contextMenu.show(detailsOuterBorderPane, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
+            contextMenuEvent.consume();
+        });
         addNewSemanticElement.setOnAction(actionEvent -> {
             EntityFacade patternFacade = patternViewModel.getPropertyValue(PATTERN);
             LOG.info("Summon create new Semantic Element. " + patternFacade.description());
@@ -660,10 +661,13 @@ public class PatternDetailsController {
         commentIconRegion.getStyleClass().add("grey-comment-icon");
         outerHBox.getChildren().addAll(innerHBox, commentIconRegion);
         fieldVBoxContainer.getChildren().addAll(fieldLabel, fieldText, outerHBox);
-        fieldVBoxContainer.setOnMouseClicked(mouseEvent -> {
-            ContextMenu contextMenu = createContextMenuForPatternField (patternField);
-            contextMenu.show(fieldVBoxContainer, mouseEvent.getScreenX(),  mouseEvent.getScreenY());
+
+        fieldVBoxContainer.setOnContextMenuRequested(contextMenuEvent -> {
+            ContextMenu contextMenu = createContextMenuForPatternField(patternField);
+            contextMenu.show(fieldVBoxContainer, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
+            contextMenuEvent.consume();
         });
+
         return fieldVBoxContainer;
     }
 
