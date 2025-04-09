@@ -745,6 +745,7 @@ public class WebApp extends Application {
                 // load additional panels
                 journalController.loadNextGenReasonerPanel();
                 journalController.loadNextGenSearchPanel();
+                journalController.loadConceptNavigatorPanel(windowSettings.getView().makeOverridableViewProperties());
             });
             // disable the delete menu option for a Journal Card.
             journalWindowSettings.setValue(CAN_DELETE, false);
