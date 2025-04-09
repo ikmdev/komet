@@ -99,16 +99,9 @@ public class SemanticFieldsController {
         if(observableSemantic !=null){
             observableSemantic.versionProperty().removeListener(versionChangeListener);
         }
-        loadUIData();
+
     }
 
-//    private void enableDisableSubmitButton(Object value){
-//        if (value == null || value.toString().isEmpty()){
-//            submitButton.setDisable(true);
-//        } else {
-//            enableDisableSubmitButton();
-//        }
-//    }
 
     private void enableDisableSubmitButton(){
         //Disable submit button if any of the fields are blank.
@@ -154,6 +147,8 @@ public class SemanticFieldsController {
         submitButton.setDisable(true);
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         observableSemantic = ObservableEntity.get(semantic.nid());
+        observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+        processCommittedValues();
         loadUIData();
 
         // subscribe to changes... if the FIELD_INDEX is -1 or unset, then the user clicked the
@@ -180,7 +175,6 @@ public class SemanticFieldsController {
     }
 
     private void loadUIData() {
-        observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
         nodes.clear();
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(observableSemantic.nid());
@@ -195,7 +189,6 @@ public class SemanticFieldsController {
             });
         }
         //Set the hascode for the committed values.
-        processCommittedValues();
         enableDisableSubmitButton();
         observableSemantic.versionProperty().addListener(versionChangeListener);
     }

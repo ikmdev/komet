@@ -16,7 +16,11 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.*;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_ADD_REFERENCE_SEMANTIC_FIELD;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SINGLE_SEMANTIC_FIELD;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
@@ -47,6 +51,7 @@ import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
@@ -65,6 +70,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
@@ -94,6 +100,7 @@ import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,6 +110,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -199,6 +207,10 @@ public class GenEditingDetailsController {
 
     private Latest<SemanticEntityVersion> semanticEntityVersionLatest;
 
+    ObservableSemantic observableSemantic;
+
+    ObservableSemanticSnapshot observableSemanticSnapshot;
+
     public GenEditingDetailsController() {
     }
 
@@ -207,9 +219,6 @@ public class GenEditingDetailsController {
         // clear all semantic details.
         semanticDetailsVBox.getChildren().clear();
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
-        ObservableSemantic observableSemantic = ObservableEntity.get(semantic.nid());
-        ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-
         // if the semantic is null, then we generate a default one
         if (semantic == null) {
             genEditingViewModel.setPropertyValue(MODE, CREATE);
@@ -223,27 +232,27 @@ public class GenEditingDetailsController {
         }
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
-        if (semantic != null) {
-            //retrieve latest committed semanticVersion
-            semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
-            if(semanticEntityVersionLatest.get().stamp().lastVersion().uncommitted()){
-                semanticEntityVersionLatest = retrieveCommittedLatestVersion(semanticEntityVersionLatest, observableSemanticSnapshot);
-            }
-            semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
-                Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
-                patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
-                    String meaning = languageCalculator.getDescriptionText(patternEntityVersion.semanticMeaningNid()).orElse("No Description");
-                    String purpose = languageCalculator.getDescriptionText(patternEntityVersion.semanticPurposeNid()).orElse("No Description");
-                    semanticMeaningText.setText(meaning);
-                    semanticPurposeText.setText(purpose);
-
-                    String patternFQN = getViewProperties().calculator().languageCalculator()
-                            .getFullyQualifiedDescriptionTextWithFallbackOrNid(patternEntityVersion.nid());
-                    semanticDescriptionLabel.setText("Semantic for %s".formatted(patternFQN));
-                    semanticTitleText.setText("%s of component for %s in %s".formatted(meaning, purpose, patternFQN));
-                });
-            });
+        observableSemantic = ObservableEntity.get(semantic.nid());
+        observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+        //retrieve latest committed semanticVersion
+        semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
+        if(semanticEntityVersionLatest.get().stamp().lastVersion().uncommitted()){
+            semanticEntityVersionLatest = retrieveCommittedLatestVersion(semanticEntityVersionLatest, observableSemanticSnapshot);
         }
+        semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
+            Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
+            patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
+                String meaning = languageCalculator.getDescriptionText(patternEntityVersion.semanticMeaningNid()).orElse("No Description");
+                String purpose = languageCalculator.getDescriptionText(patternEntityVersion.semanticPurposeNid()).orElse("No Description");
+                semanticMeaningText.setText(meaning);
+                semanticPurposeText.setText(purpose);
+
+                String patternFQN = getViewProperties().calculator().languageCalculator()
+                        .getFullyQualifiedDescriptionTextWithFallbackOrNid(patternEntityVersion.nid());
+                semanticDescriptionLabel.setText("Semantic for %s".formatted(patternFQN));
+                semanticTitleText.setText("%s of component for %s in %s".formatted(meaning, purpose, patternFQN));
+            });
+        });
 
         // Setup Stamp section
         setupStampPopup(semanticEntityVersionLatest);
@@ -255,10 +264,7 @@ public class GenEditingDetailsController {
         // Populate the Semantic Details
 
         // populate the observable fields and nodes for this semantic
-        observableFields.addAll(KlFieldHelper
-                .generateObservableFieldsAndNodes(getViewProperties(),
-                        nodes,
-                        semanticEntityVersionLatest, false));
+        loadUIData();
 
         // function to apply for the components' edit action (a.k.a. right click > Edit)
         BiFunction<Node, Integer, Runnable> editAction = (node, fieldIndex) ->
@@ -309,6 +315,35 @@ public class GenEditingDetailsController {
                 GenEditingEvent.class, refreshSubscriber);
     }
 
+    private void loadUIData() {
+        nodes.clear();
+        if (semanticEntityVersionLatest.isPresent()) {
+            observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+            ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
+            if(observableSemanticVersionImmutableList.isEmpty()){
+                observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
+            }else{
+                //Cast to mutable list
+                List<ObservableSemanticVersion> observableSemanticVersionList = new ArrayList<>(observableSemanticVersionImmutableList.castToList());
+                //filter list to have only the latest semantic version passed as argument and remove rest of the entries.
+                observableSemanticVersionList.removeIf(p -> !semanticEntityVersionLatest.stampNids().contains(p.stampNid()));
+                if (observableSemanticVersionList.isEmpty()) {
+                    observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
+                }else {
+                    ObservableSemanticVersion observableSemanticVersion = observableSemanticVersionList.getFirst();
+                    Latest<PatternEntityVersion> latestPatternEntityVersion = getViewProperties().calculator().latestPatternEntityVersion(observableSemanticVersion.patternNid());
+                    // Populate the Semantic Details
+                    // Displaying editable controls and populating the observable fields array list.
+                    observableFields.addAll((Collection) observableSemanticVersion.fields(latestPatternEntityVersion.get()));
+                }
+            }
+            observableFields.forEach(observableField -> {
+                // disable calling writeToData method of observable field by setting refresh flag to true.
+                FieldRecord<?> fieldRecord = observableField.field();
+                nodes.add(KlFieldHelper.generateNode(fieldRecord, observableField, getViewProperties(), semanticEntityVersionLatest, false));
+            });
+        }
+    }
 
 
     private void setSemanticVersion(Latest<SemanticEntityVersion> semanticEntityVersionLatest) {
