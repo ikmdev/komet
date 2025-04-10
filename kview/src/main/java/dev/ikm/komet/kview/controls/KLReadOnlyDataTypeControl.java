@@ -5,7 +5,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Skin;
 
-public class KLReadOnlyDataTypeControl<T> extends KLReadOnlyBaseControl<T> {
+public class KLReadOnlyDataTypeControl<T> extends KLReadOnlyBaseSingleValueControl<T> {
 
     public KLReadOnlyDataTypeControl() {
         getStyleClass().add("read-only-data-control");
