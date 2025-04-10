@@ -222,6 +222,7 @@ public class SemanticFieldsController {
                 FieldRecord<?> fieldRecord = observableField.field();
                 nodes.add(KlFieldHelper.generateNode(fieldRecord, observableField, getViewProperties(), semanticEntityVersionLatest, true));
                 System.out.println(" THE CLASS INSTANCE : " + this.toString()  + "  VALUE " + observableField.value());
+                observableField.autoSaveOn();
             });
 
         }
