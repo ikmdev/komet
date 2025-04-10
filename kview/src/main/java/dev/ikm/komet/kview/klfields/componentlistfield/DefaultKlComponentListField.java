@@ -37,7 +37,7 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
                         EntityProxy entityProxy = EntityProxy.make(nid);
                         Image icon = Identicon.generateIdenticonImage(entityProxy.publicId());
 
-                        ComponentItem componentItem = new ComponentItem(entityProxy.description(), icon);
+                        ComponentItem componentItem = new ComponentItem(entityProxy.description(), icon, nid);
                         klReadOnlyComponentListControl.getItems().add(componentItem);
                     }
                 });

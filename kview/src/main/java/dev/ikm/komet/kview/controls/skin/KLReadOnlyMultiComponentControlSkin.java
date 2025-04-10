@@ -1,8 +1,14 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyMultiComponentControl;
 import dev.ikm.komet.kview.controls.KometIcon;
+import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.binding.StringBinding;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -17,6 +23,9 @@ import javafx.scene.layout.VBox;
 import java.util.HashMap;
 
 public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMultiComponentControl> extends SkinBase<C> {
+
+    private static final String POPULATE_CONCEPT_MENU_ITEM_LABEL = "Populate Concept";
+
     private final VBox mainContainer = new VBox();
 
     private final Label titleLabel = new Label();
@@ -96,13 +105,20 @@ public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMu
 
         contextMenu.getStyleClass().add("klcontext-menu");
 
-        // Edit
-        contextMenu.getItems().add(
+        // Populate Concept
+        MenuItem populateMenuItem = createMenuItem(POPULATE_CONCEPT_MENU_ITEM_LABEL, KometIcon.IconValue.POPULATE,
+                actionEvent -> this.fireOnPopulateAction(actionEvent, componentItem));
+
+        // Populate and Edit
+        contextMenu.getItems().addAll(
+                populateMenuItem,
                 createMenuItem(getEditMenuItemLabel(), KometIcon.IconValue.PENCIL, this::fireOnEditAction)
         );
 
         // Remove
-        MenuItem removeMenuItem = createMenuItem("Remove", KometIcon.IconValue.TRASH, actionEvent -> this.fireOnRemoveAction(actionEvent, componentItem));
+        MenuItem removeMenuItem = createMenuItem("Remove", KometIcon.IconValue.TRASH,
+                actionEvent -> this.fireOnRemoveAction(actionEvent, componentItem));
+
         contextMenu.getItems().addAll(
                 new SeparatorMenuItem(),
                 removeMenuItem
@@ -138,6 +154,15 @@ public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMu
     protected void fireOnRemoveAction(ActionEvent actionEvent, ComponentItem componentItem) {
         if (getSkinnable().getOnRemoveAction() != null) {
             getSkinnable().getOnRemoveAction().accept(componentItem);
+        }
+    }
+
+    protected void fireOnPopulateAction(ActionEvent actionEvent, ComponentItem componentItem) {
+        actionEvent.consume();
+        EntityFacade entityFacade = EntityService.get().getEntityFast(componentItem.getNid());
+        if (entityFacade instanceof ConceptEntity conceptEntity) {
+            EvtBusFactory.getDefaultEvtBus().publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
+                    MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
         }
     }
 }

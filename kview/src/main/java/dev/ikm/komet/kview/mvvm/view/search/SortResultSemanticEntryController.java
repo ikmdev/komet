@@ -90,7 +90,8 @@ public class SortResultSemanticEntryController  {
             // double left click creates the concept window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)){
                 if (mouseEvent.getClickCount() == 2) {
-                    eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC, conceptEntity, windowView));
+                    eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
+                            MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC, conceptEntity));
                 }
             }
             // right click shows the context menu
@@ -103,7 +104,8 @@ public class SortResultSemanticEntryController  {
     @FXML
     private void populateConcept(ActionEvent actionEvent) {
         actionEvent.consume();
-        eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity, windowView));
+        eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
+                MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
     }
 
     @FXML
