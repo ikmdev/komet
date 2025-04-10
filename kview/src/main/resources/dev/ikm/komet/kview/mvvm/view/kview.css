@@ -230,6 +230,11 @@
     -fx-padding: 6 12 6 12;
 }
 
+.concept-window .main-center-container .concept-section > .titled-pane .split-pane {
+    -fx-background-color: transaparent;
+    -fx-background-insets: 0;
+}
+
 .concept-section > .separator:vertical {
     -fx-height: 20;
     -fx-min-height: -fx-height;
@@ -424,7 +429,7 @@
 }
 
 .axiom-section {
-    -fx-background-color: white;
+    -fx-background-color: transparent;
     -fx-padding: 12 0 10 12;
 }
 
@@ -4874,7 +4879,7 @@ Styling a context menu for kview ui/ux controls
 }
 
 .concept-detail-pane .main-center-container > .scroll-pane {
-    -fx-background-color: white;
+    -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-padding: 0 -13 0 -1;
 }
