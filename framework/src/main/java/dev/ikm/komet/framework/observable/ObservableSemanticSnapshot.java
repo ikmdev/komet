@@ -114,6 +114,9 @@ public final class ObservableSemanticSnapshot extends ObservableEntitySnapshot<O
     }
 
     public Latest<ImmutableList<ObservableField>> getLatestFields() {
+        return getLatestFields(false);
+    }
+    public Latest<ImmutableList<ObservableField>> getLatestFields(boolean autoSaveOn) {
         return latestVersion.ifAbsentOrFunction(
                 Latest::empty,
                 version -> {
@@ -125,6 +128,10 @@ public final class ObservableSemanticSnapshot extends ObservableEntitySnapshot<O
                                     for (ObservableSemanticVersion contradiction : latestVersion.contradictions()) {
                                         latest.addLatest(contradiction.fields(patternEntityVersion));
                                     }
+                                }
+                                // Caller wants observable fields to have auto save feature.
+                                if (autoSaveOn && latest.isPresent()) {
+                                    latest.get().forEach( observableField -> observableField.autoSaveOn());
                                 }
                                 return latest;
                             });

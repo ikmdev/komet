@@ -95,9 +95,6 @@ public class SemanticFieldsController {
 
     Subscriber<EntityVersionChangeEvent> entityVersionChangeEventSubscriber;
 
-//    ListChangeListener<? super ObservableSemanticVersion> versionChangeListener = (ListChangeListener<ObservableSemanticVersion>) c -> Platform.runLater(() -> refreshData(c));
-
-
 //    private void refreshData(ListChangeListener.Change<? extends ObservableSemanticVersion> change) {
 //        System.out.println(" IN REFRESH DATA section");
 //        while(change.next()){
@@ -159,15 +156,23 @@ public class SemanticFieldsController {
         observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
         processCommittedValues();
 
-        loadUIData();
+        loadUIData(); // And populates Nodes and Observable fields.
 
-        entityVersionChangeEventSubscriber = evt ->{
-                LOG.info("Version has been updated: " + evt.getEventType());
-                if(evt.getNid() == semantic.nid()){
-                    observableSemantic = ObservableSemantic.get(semantic.nid());
-                    observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-                    loadUIData();
+        entityVersionChangeEventSubscriber = evt -> {
+            LOG.info("Version has been updated: " + evt.getEventType());
+
+                // get payload
+            if (evt.getEntityVersion().nid() == observableSemantic.nid()
+            && evt.getEntityVersion() instanceof SemanticVersionRecord semanticVersionRecord) {
+                ImmutableList<Object> values = semanticVersionRecord.fieldValues();
+                for (int i = 0; i< values.size(); i++) {
+                    ObservableField observableField = observableFields.get(i);
+                    observableField.autoSaveOff();
+                    observableField.valueProperty().set(values.get(i));
+                    observableField.autoSaveOn();
                 }
+            }
+            enableDisableSubmitButton();
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
                 EntityVersionChangeEvent.class, entityVersionChangeEventSubscriber);
