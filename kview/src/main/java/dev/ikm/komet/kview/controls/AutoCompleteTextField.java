@@ -9,6 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
+import javafx.util.Duration;
 
 import java.util.List;
 import java.util.function.Function;
@@ -34,6 +35,7 @@ public class AutoCompleteTextField<T> extends TextField {
      *                                                                         *
      **************************************************************************/
 
+    // -- completer
     /**
      * The auto-complete function. It will receive the string the user has input and should return the list of
      * auto-complete suggestions. This function runs on a background thread.
@@ -43,18 +45,27 @@ public class AutoCompleteTextField<T> extends TextField {
     public final Function<String, List<T>> getCompleter() { return completer.get(); }
     public final ObjectProperty<Function<String, List<T>>> completerProperty() { return completer; }
 
+    // -- completer wait time
+    /**
+     * The time to wait after the user has changed the textfield text to call the completer.
+     */
+    private final ObjectProperty<Duration> completerWaitTime = new SimpleObjectProperty<>(Duration.millis(300));
+    public Duration getCompleterWaitTime() { return completerWaitTime.get(); }
+    public ObjectProperty<Duration> completerWaitTimeProperty() { return completerWaitTime; }
+    public void setCompleterWaitTime(Duration duration) { completerWaitTime.set(duration); }
+
     /**
      * This will return a node to be shown in the auto-complete popup for each result returned
      * by the 'completer'. AutoCompleteTextField already supplies a default implementation
      * for this property: it returns a Label inside a simple container, it's text is the result of
      * calling toString on the object returned by the completer.
      */
-    private final ObjectProperty<Function<T, Node>> resultNodeFactory = new SimpleObjectProperty<>(this::createDefaultNodeForPopup);
-    public final void setResultNodeFactory(Function<T, Node> factory) {
-        resultNodeFactory.set(factory);
-    }
-    public final Function<T, Node> getResultNodeFactory() { return resultNodeFactory.get(); }
-    public final ObjectProperty<Function<T, Node>> resultNodeFactoryProperty() { return resultNodeFactory; }
+    private final ObjectProperty<Function<T, Node>> suggestionsNodeFactory = new SimpleObjectProperty<>(this::createDefaultNodeForPopup);
+    public final void setSuggestionsNodeFactory(Function<T, Node> factory) { suggestionsNodeFactory.set(factory); }
+    public final Function<T, Node> getSuggestionsNodeFactory() { return suggestionsNodeFactory.get(); }
+    public final ObjectProperty<Function<T, Node>> suggestionsNodeFactoryProperty() { return suggestionsNodeFactory; }
+
+
 
     /***************************************************************************
      *                                                                         *

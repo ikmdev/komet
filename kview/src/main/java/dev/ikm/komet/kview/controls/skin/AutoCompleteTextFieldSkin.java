@@ -26,10 +26,9 @@ import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
-    public static final Duration COMPLETER_WAIT_DURATION = Duration.ZERO;
-
     private final AutoCompletePopup autoCompletePopup;
 
     private Timeline timeline;
@@ -44,21 +43,25 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
      *                                                                         *
      ************************************************************************=*/
 
-    public AutoCompleteTextFieldSkin(AutoCompleteTextField control) {
+    public AutoCompleteTextFieldSkin(AutoCompleteTextField<T> control) {
         super(control);
 
         timeline = new Timeline();
-        timeline.getKeyFrames().add(new KeyFrame(COMPLETER_WAIT_DURATION));
-        timeline.setOnFinished(event -> onSearch());
+
+        control.completerWaitTimeProperty().subscribe(this::onCompleterWaitTimeChanged);
+
+        timeline.setOnFinished(_ -> onSearch());
 
         control.textProperty().addListener(this::onTextChanged);
 
         control.addEventHandler(ActionEvent.ACTION, this::onAction);
 
-        autoCompletePopup = new AutoCompletePopup(control);
+        autoCompletePopup = new AutoCompletePopup<>(control);
         autoCompletePopup.getStyleClass().add("auto-complete-popup");
         autoCompletePopup.setAutoFix(true);
     }
+
+
 
     /***************************************************************************
      *                                                                         *
@@ -70,6 +73,12 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
         if (autoCompletePopup != null) {
             autoCompletePopup.hide();
         }
+    }
+
+    private void onCompleterWaitTimeChanged(Duration newValue) {
+        timeline.getKeyFrames().setAll(
+                new KeyFrame(newValue)
+        );
     }
 
     private void onTextChanged(Observable observable, String oldValue, String newValue) {
@@ -254,7 +263,7 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
             autoCompleteListView.getItems().clear();
 
             for (T result: control.getItems()) {
-                Node node = autoCompleteTextField.getResultNodeFactory().apply(result);
+                Node node = autoCompleteTextField.getSuggestionsNodeFactory().apply(result);
                 node.getStyleClass().add("auto-suggest-node");
                 nodes.add(node);
 
