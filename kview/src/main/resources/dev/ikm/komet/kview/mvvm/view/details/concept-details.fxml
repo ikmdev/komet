@@ -7,12 +7,10 @@
 <?import javafx.scene.control.ContextMenu?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.ToggleButton?>
@@ -23,29 +21,27 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
-<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.paint.Color?>
 <?import javafx.scene.shape.Ellipse?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.control.Separator?>
 <?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
 <?import dev.ikm.komet.kview.controls.KLExpandableNodeListControl?>
+<?import dev.ikm.komet.kview.controls.ResponsiveTextFlow?>
 
-<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="650.0" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane fx:id="detailsOuterBorderPane" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1">
    <center>
-      <BorderPane fx:id="detailsCenterBorderPane" prefHeight="600.0" prefWidth="762.0">
+      <BorderPane fx:id="detailsCenterBorderPane">
          <top>
-            <HBox fx:id="conceptHeaderControlToolBarHbox" prefHeight="100.0" prefWidth="762.0" BorderPane.alignment="CENTER">
+            <HBox fx:id="conceptHeaderControlToolBarHbox" BorderPane.alignment="CENTER">
                <children>
                   <Button mnemonicParsing="false" text="Button">
                      <graphic>
@@ -77,7 +73,7 @@
                         </Button>
                         <Button fx:id="reasonerToggleButton" layoutX="96.0" layoutY="16.0" mnemonicParsing="false" onAction="#popupAddContextMenu" styleClass="reasoner" text="Button">
                            <contextMenu>
-                              <ContextMenu fx:id="reasonerContextMenu" opacity="0.99" styleClass="kview-context-menu">
+                              <ContextMenu fx:id="reasonerContextMenu" styleClass="kview-context-menu">
                                  <items>
                                     <MenuItem mnemonicParsing="false" text="Run full reasoner" onAction="#runFullReasoner" />
                                     <MenuItem mnemonicParsing="false" text="Run incremental reasoner" onAction="#runIncrementalReasoner" disable="true"/>
@@ -150,24 +146,114 @@
          </right>
          <center>
             <BorderPane styleClass="main-center-container" BorderPane.alignment="CENTER">
+               <top>
+                  <AnchorPane styleClass="concept-details-definitions">
+                     <GridPane AnchorPane.topAnchor="4.0" AnchorPane.rightAnchor="12.0"
+                               AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="12.0"
+                               hgap="8.0">
+                        <columnConstraints>
+                           <ColumnConstraints halignment="LEFT" hgrow="NEVER"/>
+                           <ColumnConstraints halignment="LEFT" hgrow="ALWAYS"/>
+                           <ColumnConstraints halignment="LEFT" hgrow="NEVER"/>
+                        </columnConstraints>
+                        <rowConstraints>
+                           <RowConstraints valignment="TOP" minHeight="48.0" prefHeight="56.0"/>
+                           <RowConstraints valignment="CENTER"/>
+                           <RowConstraints valignment="CENTER"/>
+                        </rowConstraints>
+                        <ImageView fx:id="identiconImageView" fitWidth="44.0" pickOnBounds="true"
+                                   GridPane.rowIndex="0" GridPane.columnIndex="0" preserveRatio="true">
+                           <Image url="@../images/identicon-placeholder.png"/>
+                        </ImageView>
+                        <Label fx:id="fqnTitleText" styleClass="concept-title"
+                               text="Concept Name " wrapText="true"
+                               GridPane.rowIndex="0" GridPane.columnIndex="1">
+                           <tooltip>
+                              <Tooltip fx:id="conceptNameTooltip" text="Empty Tooltip"/>
+                           </tooltip>
+                        </Label>
+                        <HBox GridPane.rowIndex="1" GridPane.columnSpan="2" alignment="CENTER_LEFT">
+                           <Text text="Definition: " style="-fx-text-fill: -Grey-11;">
+                              <font>
+                                 <Font name="Noto Sans" size="12.0"/>
+                              </font>
+                           </Text>
+                           <TextField fx:id="definitionTextField" editable="false" styleClass="copyable-label"
+                                      HBox.hgrow="ALWAYS" style="-fx-text-fill: -Grey-11;"
+                                      minHeight="20.0" prefHeight="24.0">
+                              <font>
+                                 <Font name="Noto Sans Medium" size="12.0"/>
+                              </font>
+                           </TextField>
+                        </HBox>
+                        <HBox GridPane.rowIndex="2" GridPane.columnSpan="2" alignment="CENTER_LEFT">
+                           <Text text="IDENTIFIER: " style="-fx-text-fill: -Grey-10;">
+                              <font>
+                                 <Font name="Noto Sans" size="10.0"/>
+                              </font>
+                           </Text>
+                           <TextField fx:id="identifierText" editable="false" styleClass="copyable-label"
+                                      HBox.hgrow="ALWAYS" style="-fx-text-fill: -Grey-10;"
+                                      minHeight="16.0" prefHeight="16.0">
+                              <font>
+                                 <Font name="Noto Sans" size="10.0"/>
+                              </font>
+                              <tooltip>
+                                 <Tooltip fx:id="identifierTooltip"/>
+                              </tooltip>
+                           </TextField>
+                        </HBox>
+                        <AnchorPane GridPane.columnIndex="2" GridPane.rowSpan="3" prefWidth="208.0">
+                           <VBox prefWidth="208.0" spacing="2.0">
+                              <HBox>
+                                 <Text text="Status: " styleClass="stamp-text"/>
+                                 <Label fx:id="statusLabel" styleClass="stamp-label"/>
+                              </HBox>
+                              <HBox>
+                                 <Text text="Last Updated: " styleClass="stamp-text"/>
+                                 <Label fx:id="lastUpdatedLabel" styleClass="stamp-label"/>
+                              </HBox>
+                              <HBox>
+                                 <Text text="Module: " styleClass="stamp-text"/>
+                                 <Label fx:id="moduleLabel" styleClass="stamp-label"/>
+                              </HBox>
+                              <HBox>
+                                 <Text text="Path: " styleClass="stamp-text"/>
+                                 <Label fx:id="pathLabel" styleClass="stamp-label"/>
+                              </HBox>
+                              <HBox>
+                                 <Text text="Origination: " styleClass="stamp-text"/>
+                                 <Label fx:id="originationLabel" styleClass="stamp-label"/>
+                              </HBox>
+                           </VBox>
+                           <Button onAction="#popupStampEdit" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false"
+                                   prefWidth="30.0" prefHeight="11.0" styleClass="mini-options-button"
+                                   AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0">
+                              <graphic>
+                                 <Region styleClass="hamburger"/>
+                              </graphic>
+                           </Button>
+                        </AnchorPane>
+                     </GridPane>
+                  </AnchorPane>
+               </top>
                <center>
-                  <ScrollPane fx:id="conceptContentScrollPane" fitToWidth="true" vbarPolicy="ALWAYS" hbarPolicy="NEVER">
+                  <ScrollPane fx:id="conceptContentScrollPane" fitToWidth="true"
+                              vbarPolicy="ALWAYS" hbarPolicy="NEVER">
                      <VBox focusTraversable="true">
-                        <children>
-                           <AnchorPane>
-                              <TitledPane fx:id="descriptionsTitledPane" text="DESCRIPTIONS"
-                                          nodeOrientation="LEFT_TO_RIGHT" AnchorPane.topAnchor="0.0"
-                                          AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
-                                          AnchorPane.leftAnchor="0.0">
-
-                                 <!-- Use a GridPane to enforce a 50/50 column split -->
-                                 <GridPane hgap="12.0" styleClass="content-description-insets">
-
+                        <AnchorPane styleClass="concept-section">
+                           <TitledPane fx:id="descriptionsTitledPane" text="DESCRIPTIONS"
+                                       maxWidth="Infinity" maxHeight="Infinity"
+                                       contentDisplay="BOTTOM" nodeOrientation="LEFT_TO_RIGHT"
+                                       AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                       AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0">
+                              <AnchorPane>
+                                 <GridPane AnchorPane.topAnchor="8.0" AnchorPane.rightAnchor="12.0"
+                                           AnchorPane.bottomAnchor="12.0" AnchorPane.leftAnchor="12.0"
+                                           hgap="12.0">
                                     <rowConstraints>
                                        <RowConstraints percentHeight="100.0" vgrow="ALWAYS"/>
                                     </rowConstraints>
-
-                                    <!-- Two columns, each 50% of the total width -->
                                     <columnConstraints>
                                        <ColumnConstraints percentWidth="50.0" hgrow="ALWAYS"/>
                                        <ColumnConstraints percentWidth="50.0" hgrow="ALWAYS"/>
@@ -175,7 +261,6 @@
 
                                     <!-- LEFT COLUMN: Fully Qualified Name area -->
                                     <VBox GridPane.columnIndex="0" GridPane.fillWidth="true"
-                                          GridPane.fillHeight="true" minHeight="218.0"
                                           maxWidth="Infinity" maxHeight="Infinity">
                                        <Text text="FULLY QUALIFIED NAME:" style="-fx-fill: -Grey-8;">
                                           <font>
@@ -183,37 +268,34 @@
                                           </font>
                                        </Text>
 
-                                       <TextFlow fx:id="fqnContainer" styleClass="fqn-container">
+                                       <ResponsiveTextFlow fx:id="fqnContainer" styleClass="fqn-container">
                                           <Text fx:id="latestFqnText"
                                                 styleClass="descr-concept-name"/>
                                           <Text fx:id="fqnDescriptionSemanticText"
                                                 styleClass="descr-concept-name"/>
-                                       </TextFlow>
+                                       </ResponsiveTextFlow>
 
-                                       <TextFlow fx:id="fqnDateAddedTextFlow">
+                                       <ResponsiveTextFlow fx:id="fqnDateAddedTextFlow">
                                           <Label styleClass="descr-semantic"/>
                                           <Label fx:id="fqnAddDateLabel"
                                                  styleClass="descr-semantic"
                                                  text="May 10, 2023"/>
                                           <Hyperlink text="Attachment"/>
                                           <Hyperlink text="Comment"/>
-                                       </TextFlow>
+                                       </ResponsiveTextFlow>
 
-                                       <StackPane fx:id="imageContainer" minWidth="206.0" maxWidth="248.0"
-                                                  HBox.hgrow="ALWAYS">
+                                       <AnchorPane fx:id="imageContainer" minWidth="206.0" maxWidth="248.0">
                                           <ImageView fitWidth="${imageContainer.width}"
+                                                     AnchorPane.topAnchor="6.0" AnchorPane.rightAnchor="0.0"
+                                                     AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                                                      pickOnBounds="true" preserveRatio="true">
                                              <Image url="@placeholder-concept-image.png"/>
                                           </ImageView>
-                                          <padding>
-                                             <Insets top="6.0"/>
-                                          </padding>
-                                       </StackPane>
+                                       </AnchorPane>
                                     </VBox>
 
                                     <!-- RIGHT COLUMN: Other Names area -->
                                     <VBox GridPane.columnIndex="1" GridPane.fillWidth="true"
-                                          GridPane.fillHeight="true"
                                           maxWidth="Infinity" maxHeight="Infinity">
                                        <Text fx:id="otherNamesHeaderText" text="OTHER NAMES:" style="-fx-fill: -Grey-8;">
                                           <font>
@@ -239,418 +321,169 @@
                                        </KLExpandableNodeListControl>
                                     </VBox>
                                  </GridPane>
-                              </TitledPane>
-                              <Button fx:id="addDescriptionButton" mnemonicParsing="false"
-                                      styleClass="add-pencil-button" text="Button" AnchorPane.topAnchor="0.0"
-                                      AnchorPane.rightAnchor="12.0">
-                                 <graphic>
-                                    <Region styleClass="add-pencil"/>
-                                 </graphic>
-                              </Button>
-                           </AnchorPane>
-                           <HBox VBox.vgrow="ALWAYS">
-                              <children>
-                                 <TitledPane fx:id="axiomsTitledPane" maxHeight="1.7976931348623157E308"
-                                             maxWidth="1.7976931348623157E308" prefWidth="4000.0" text="AXIOMS">
-                                    <content>
-                                       <SplitPane dividerPositions="0.5" maxHeight="1.7976931348623157E308"
-                                                  orientation="VERTICAL" prefWidth="752.0">
-                                          <items>
-                                             <HBox prefHeight="100.0" prefWidth="200.0">
-                                                <children>
-                                                   <VBox prefHeight="142.0" prefWidth="46.0">
-                                                      <children>
-                                                         <HBox prefWidth="200.0">
-                                                            <children>
-                                                               <SVGPath
-                                                                       content="M0.999675 0.958313L0.999674 11.0416L7.33301 5.99998"
-                                                                       fill="#676767" visible="false">
-                                                                  <HBox.margin>
-                                                                     <Insets left="5.0" right="4.0" top="5.0"/>
-                                                                  </HBox.margin>
-                                                               </SVGPath>
-                                                               <Text fill="#0d9cf4" strokeType="OUTSIDE"
-                                                                     strokeWidth="0.0" text="EL++" textAlignment="RIGHT"
-                                                                     wrappingWidth="47.265625">
-                                                                  <HBox.margin>
-                                                                     <Insets/>
-                                                                  </HBox.margin>
-                                                                  <font>
-                                                                     <Font name="Open Sans Bold" size="16.0"/>
-                                                                  </font>
-                                                               </Text>
-                                                            </children>
-                                                         </HBox>
-                                                         <HBox alignment="CENTER" prefHeight="29.0" prefWidth="58.0"
-                                                               spacing="10.0">
-                                                            <children>
-                                                               <Button fx:id="elppSemanticCountButton1"
-                                                                       alignment="CENTER" contentDisplay="CENTER"
-                                                                       maxHeight="10.0" mnemonicParsing="false"
-                                                                       prefHeight="10.0" styleClass="axiom-count-btn"
-                                                                       text="0" visible="false">
-                                                                  <font>
-                                                                     <Font name="Open Sans Regular" size="10.0"/>
-                                                                  </font>
-                                                               </Button>
-                                                               <Button fx:id="elppSemanticCountButton"
-                                                                       alignment="CENTER" contentDisplay="CENTER"
-                                                                       maxHeight="10.0" mnemonicParsing="false"
-                                                                       prefHeight="10.0"
-                                                                       styleClass="axiom-inferred-gear-btn">
-                                                                  <font>
-                                                                     <Font name="Open Sans Regular" size="10.0"/>
-                                                                  </font>
-                                                                  <graphic>
-                                                                     <Group cache="true">
-                                                                        <children>
-                                                                           <SVGPath
-                                                                                   content="m 11.4667,6.99602 c 0,-0.5618 -0.2084,-1.04145 -0.625,-1.43895 C 10.425,5.15957 9.92222,4.96082 9.33333,4.96082 8.74444,4.96082 8.24167,5.15957 7.825,5.55707 7.40833,5.95457 7.2,6.43422 7.2,6.99602 c 0,0.56181 0.20833,1.04146 0.625,1.43896 0.41667,0.3975 0.91944,0.59625 1.50833,0.59625 0.58889,0 1.09167,-0.19875 1.50837,-0.59625 0.4166,-0.3975 0.625,-0.87715 0.625,-1.43896 z m 6.4,4.07038 c 0,-0.2756 -0.1056,-0.5141 -0.3167,-0.7155 -0.2111,-0.2014 -0.4611,-0.3021 -0.75,-0.3021 -0.2889,0 -0.5389,0.1007 -0.75,0.3021 -0.2111,0.2014 -0.3167,0.4399 -0.3167,0.7155 0,0.2809 0.1042,0.5208 0.3125,0.7195 0.2084,0.1988 0.4598,0.2981 0.7542,0.2981 0.2944,0 0.5458,-0.0993 0.7542,-0.2981 0.2083,-0.1987 0.3125,-0.4386 0.3125,-0.7195 z m 0,-8.14079 c 0,-0.2756 -0.1056,-0.5141 -0.3167,-0.7155 -0.2111,-0.2014 -0.4611,-0.3021 -0.75,-0.3021 -0.2889,0 -0.5389,0.1007 -0.75,0.3021 -0.2111,0.2014 -0.3167,0.4399 -0.3167,0.7155 0,0.2809 0.1042,0.52073 0.3125,0.71948 0.2084,0.19875 0.4598,0.29812 0.7542,0.29812 0.2944,0 0.5458,-0.09937 0.7542,-0.29812 0.2083,-0.19875 0.3125,-0.43858 0.3125,-0.71948 z m -3.2,3.34696 v 1.47076 c 0,0.053 -0.0195,0.10467 -0.0584,0.15502 C 14.5694,7.9487 14.525,7.97653 14.475,7.98183 l -1.2917,0.1908 c -0.0611,0.1855 -0.15,0.3869 -0.2666,0.6042 0.1889,0.2544 0.4389,0.55915 0.75,0.91425 0.0389,0.0583 0.0583,0.11131 0.0583,0.15901 0,0.0636 -0.0194,0.11395 -0.0583,0.15101 -0.1278,0.159 -0.357,0.3962 -0.6875,0.7116 -0.3306,0.3153 -0.5486,0.473 -0.6542,0.473 -0.0611,0 -0.1194,-0.0186 -0.175,-0.0557 l -0.9583,-0.7155 c -0.2056,0.1007 -0.4195,0.1829 -0.6417,0.2465 -0.0611,0.5724 -0.125,0.9831 -0.1917,1.2322 -0.0389,0.1272 -0.1222,0.1908 -0.25,0.1908 H 8.55833 c -0.06111,0 -0.11666,-0.0198 -0.16666,-0.0596 -0.05,-0.0397 -0.07778,-0.0861 -0.08334,-0.1391 L 8.11667,10.6689 C 7.92778,10.6159 7.71944,10.5338 7.49167,10.4225 L 6.50833,11.13 c -0.03889,0.0371 -0.09444,0.0557 -0.16666,0.0557 -0.06111,0 -0.11945,-0.0212 -0.175,-0.0636 -0.8,-0.7049 -1.2,-1.12891 -1.2,-1.27201 0,-0.0477 0.01944,-0.09806 0.05833,-0.15106 C 5.08056,9.62483 5.19444,9.48438 5.36667,9.27768 5.53889,9.07098 5.66944,8.90933 5.75833,8.79273 5.63056,8.55953 5.53333,8.34223 5.46667,8.14083 L 4.2,7.95003 C 4.14444,7.94473 4.09722,7.91955 4.05833,7.8745 4.01944,7.82945 4,7.77778 4,7.71948 V 6.24872 C 4,6.19572 4.01944,6.14405 4.05833,6.0937 4.09722,6.04335 4.14167,6.01552 4.19167,6.01022 L 5.48333,5.81942 C 5.54444,5.63392 5.63333,5.43252 5.75,5.21522 5.56111,4.96082 5.31111,4.65607 5,4.30097 4.96111,4.24267 4.94167,4.18966 4.94167,4.14196 4.94167,4.07836 4.96111,4.02536 5,3.98296 5.12222,3.82396 5.35,3.58811 5.68333,3.27541 6.01667,2.96271 6.23611,2.80636 6.34167,2.80636 c 0.06111,0 0.11944,0.01855 0.175,0.05565 L 7.475,3.57751 c 0.18889,-0.0954 0.40278,-0.1802 0.64167,-0.2544 0.06111,-0.5724 0.125,-0.9805 0.19166,-1.2243 0.03889,-0.1272 0.12223,-0.1908 0.25,-0.1908 h 1.54997 c 0.0611,0 0.1167,0.01987 0.1667,0.05962 0.05,0.03975 0.0778,0.08613 0.0833,0.13913 L 10.55,3.32311 c 0.1889,0.053 0.3972,0.13515 0.625,0.24645 l 0.9833,-0.70755 c 0.0445,-0.0371 0.1,-0.05565 0.1667,-0.05565 0.0611,0 0.1194,0.0212 0.175,0.0636 0.8,0.7049 1.2,1.1289 1.2,1.272 0,0.0424 -0.0194,0.09276 -0.0583,0.15106 -0.0667,0.0848 -0.1834,0.2279 -0.35,0.4293 -0.1667,0.2014 -0.2917,0.3604 -0.375,0.477 0.1277,0.2544 0.2222,0.4717 0.2833,0.6519 l 1.2667,0.18285 c 0.0555,0.0106 0.1027,0.03843 0.1416,0.08348 0.0389,0.04505 0.0584,0.09672 0.0584,0.15502 z M 20,10.5099 v 1.113 c 0,0.0848 -0.4139,0.167 -1.2417,0.2465 -0.0666,0.1431 -0.15,0.2809 -0.25,0.4134 0.2834,0.5989 0.425,0.9646 0.425,1.0971 0,0.0212 -0.0111,0.0397 -0.0333,0.0556 C 18.2222,13.8118 17.8778,14 17.8667,14 17.8222,14 17.6944,13.8754 17.4833,13.6263 17.2722,13.3772 17.1278,13.197 17.05,13.0857 c -0.1111,0.0106 -0.1944,0.0159 -0.25,0.0159 -0.0556,0 -0.1389,-0.0053 -0.25,-0.0159 -0.0778,0.1113 -0.2222,0.2915 -0.4333,0.5406 C 15.9056,13.8754 15.7778,14 15.7333,14 15.7222,14 15.3778,13.8118 14.7,13.4355 c -0.0222,-0.0159 -0.0333,-0.0344 -0.0333,-0.0556 0,-0.1325 0.1416,-0.4982 0.425,-1.0971 -0.1,-0.1325 -0.1834,-0.2703 -0.25,-0.4134 C 14.0139,11.7899 13.6,11.7077 13.6,11.6229 v -1.113 c 0,-0.0848 0.4139,-0.1669 1.2417,-0.2464 0.0722,-0.1537 0.1555,-0.29151 0.25,-0.41341 -0.2834,-0.59891 -0.425,-0.96461 -0.425,-1.09711 0,-0.0212 0.0111,-0.03975 0.0333,-0.05565 0.0222,-0.0106 0.1194,-0.0636 0.2917,-0.159 0.1722,-0.0954 0.3361,-0.1855 0.4916,-0.2703 0.1556,-0.0848 0.2389,-0.1272 0.25,-0.1272 0.0445,0 0.1723,0.12322 0.3834,0.36968 0.2111,0.24645 0.3555,0.42532 0.4333,0.53662 0.1111,-0.0106 0.1944,-0.0159 0.25,-0.0159 0.0556,0 0.1389,0.0053 0.25,0.0159 0.2833,-0.3763 0.5389,-0.6731 0.7667,-0.8904 l 0.05,-0.0159 c 0.0222,0 0.3666,0.1855 1.0333,0.5565 0.0222,0.0159 0.0333,0.03445 0.0333,0.05565 0,0.1325 -0.1416,0.4982 -0.425,1.09711 0.0945,0.1219 0.1778,0.25971 0.25,0.41341 C 19.5861,10.343 20,10.4251 20,10.5099 Z m 0,-8.14079 v 1.113 c 0,0.0848 -0.4139,0.16695 -1.2417,0.24645 -0.0666,0.1431 -0.15,0.2809 -0.25,0.4134 0.2834,0.59891 0.425,0.96461 0.425,1.09711 0,0.0212 -0.0111,0.03975 -0.0333,0.05565 -0.6778,0.3763 -1.0222,0.56445 -1.0333,0.56445 -0.0445,0 -0.1723,-0.12455 -0.3834,-0.37365 -0.2111,-0.2491 -0.3555,-0.4293 -0.4333,-0.5406 -0.1111,0.0106 -0.1944,0.0159 -0.25,0.0159 -0.0556,0 -0.1389,-0.0053 -0.25,-0.0159 -0.0778,0.1113 -0.2222,0.2915 -0.4333,0.5406 -0.2111,0.2491 -0.3389,0.37365 -0.3834,0.37365 -0.0111,0 -0.3555,-0.18815 -1.0333,-0.56445 -0.0222,-0.0159 -0.0333,-0.03445 -0.0333,-0.05565 0,-0.1325 0.1416,-0.4982 0.425,-1.09711 -0.1,-0.1325 -0.1834,-0.2703 -0.25,-0.4134 C 14.0139,3.64906 13.6,3.56691 13.6,3.48211 v -1.113 c 0,-0.0848 0.4139,-0.16695 1.2417,-0.24645 0.0722,-0.1537 0.1555,-0.2915 0.25,-0.4134 -0.2834,-0.59891 -0.425,-0.964607 -0.425,-1.097108 0,-0.0212 0.0111,-0.03975 0.0333,-0.05565 0.0222,-0.0106 0.1194,-0.0636 0.2917,-0.159001 0.1722,-0.0954 0.3361,-0.1855 0.4916,-0.270301 C 15.6389,0.0424001 15.7222,0 15.7333,0 c 0.0445,0 0.1723,0.123225 0.3834,0.369676 0.2111,0.246451 0.3555,0.425327 0.4333,0.536627 0.1111,-0.0106 0.1944,-0.0159 0.25,-0.0159 0.0556,0 0.1389,0.0053 0.25,0.0159 0.2833,-0.376301 0.5389,-0.673102 0.7667,-0.8904029 L 17.8667,0 c 0.0222,0 0.3666,0.185501 1.0333,0.556502 0.0222,0.0159 0.0333,0.03445 0.0333,0.05565 0,0.132501 -0.1416,0.498198 -0.425,1.097108 0.0945,0.1219 0.1778,0.2597 0.25,0.4134 C 19.5861,2.20216 20,2.28431 20,2.36911 Z"
-                                                                                   fill="#585757"/>
-                                                                           <SVGPath
-                                                                                   content="m 11.4667,6.99602 c 0,-0.5618 -0.2084,-1.04145 -0.625,-1.43895 C 10.425,5.15957 9.92222,4.96082 9.33333,4.96082 8.74444,4.96082 8.24167,5.15957 7.825,5.55707 7.40833,5.95457 7.2,6.43422 7.2,6.99602 c 0,0.56181 0.20833,1.04146 0.625,1.43896 0.41667,0.3975 0.91944,0.59625 1.50833,0.59625 0.58889,0 1.09167,-0.19875 1.50837,-0.59625 0.4166,-0.3975 0.625,-0.87715 0.625,-1.43896 z m 6.4,4.07038 c 0,-0.2756 -0.1056,-0.5141 -0.3167,-0.7155 -0.2111,-0.2014 -0.4611,-0.3021 -0.75,-0.3021 -0.2889,0 -0.5389,0.1007 -0.75,0.3021 -0.2111,0.2014 -0.3167,0.4399 -0.3167,0.7155 0,0.2809 0.1042,0.5208 0.3125,0.7195 0.2084,0.1988 0.4598,0.2981 0.7542,0.2981 0.2944,0 0.5458,-0.0993 0.7542,-0.2981 0.2083,-0.1987 0.3125,-0.4386 0.3125,-0.7195 z m 0,-8.14079 c 0,-0.2756 -0.1056,-0.5141 -0.3167,-0.7155 -0.2111,-0.2014 -0.4611,-0.3021 -0.75,-0.3021 -0.2889,0 -0.5389,0.1007 -0.75,0.3021 -0.2111,0.2014 -0.3167,0.4399 -0.3167,0.7155 0,0.2809 0.1042,0.52073 0.3125,0.71948 0.2084,0.19875 0.4598,0.29812 0.7542,0.29812 0.2944,0 0.5458,-0.09937 0.7542,-0.29812 0.2083,-0.19875 0.3125,-0.43858 0.3125,-0.71948 z m -3.2,3.34696 v 1.47076 c 0,0.053 -0.0195,0.10467 -0.0584,0.15502 C 14.5694,7.9487 14.525,7.97653 14.475,7.98183 l -1.2917,0.1908 c -0.0611,0.1855 -0.15,0.3869 -0.2666,0.6042 0.1889,0.2544 0.4389,0.55915 0.75,0.91425 0.0389,0.0583 0.0583,0.11131 0.0583,0.15901 0,0.0636 -0.0194,0.11395 -0.0583,0.15101 -0.1278,0.159 -0.357,0.3962 -0.6875,0.7116 -0.3306,0.3153 -0.5486,0.473 -0.6542,0.473 -0.0611,0 -0.1194,-0.0186 -0.175,-0.0557 l -0.9583,-0.7155 c -0.2056,0.1007 -0.4195,0.1829 -0.6417,0.2465 -0.0611,0.5724 -0.125,0.9831 -0.1917,1.2322 -0.0389,0.1272 -0.1222,0.1908 -0.25,0.1908 H 8.55833 c -0.06111,0 -0.11666,-0.0198 -0.16666,-0.0596 -0.05,-0.0397 -0.07778,-0.0861 -0.08334,-0.1391 L 8.11667,10.6689 C 7.92778,10.6159 7.71944,10.5338 7.49167,10.4225 L 6.50833,11.13 c -0.03889,0.0371 -0.09444,0.0557 -0.16666,0.0557 -0.06111,0 -0.11945,-0.0212 -0.175,-0.0636 -0.8,-0.7049 -1.2,-1.12891 -1.2,-1.27201 0,-0.0477 0.01944,-0.09806 0.05833,-0.15106 C 5.08056,9.62483 5.19444,9.48438 5.36667,9.27768 5.53889,9.07098 5.66944,8.90933 5.75833,8.79273 5.63056,8.55953 5.53333,8.34223 5.46667,8.14083 L 4.2,7.95003 C 4.14444,7.94473 4.09722,7.91955 4.05833,7.8745 4.01944,7.82945 4,7.77778 4,7.71948 V 6.24872 C 4,6.19572 4.01944,6.14405 4.05833,6.0937 4.09722,6.04335 4.14167,6.01552 4.19167,6.01022 L 5.48333,5.81942 C 5.54444,5.63392 5.63333,5.43252 5.75,5.21522 5.56111,4.96082 5.31111,4.65607 5,4.30097 4.96111,4.24267 4.94167,4.18966 4.94167,4.14196 4.94167,4.07836 4.96111,4.02536 5,3.98296 5.12222,3.82396 5.35,3.58811 5.68333,3.27541 6.01667,2.96271 6.23611,2.80636 6.34167,2.80636 c 0.06111,0 0.11944,0.01855 0.175,0.05565 L 7.475,3.57751 c 0.18889,-0.0954 0.40278,-0.1802 0.64167,-0.2544 0.06111,-0.5724 0.125,-0.9805 0.19166,-1.2243 0.03889,-0.1272 0.12223,-0.1908 0.25,-0.1908 h 1.54997 c 0.0611,0 0.1167,0.01987 0.1667,0.05962 0.05,0.03975 0.0778,0.08613 0.0833,0.13913 L 10.55,3.32311 c 0.1889,0.053 0.3972,0.13515 0.625,0.24645 l 0.9833,-0.70755 c 0.0445,-0.0371 0.1,-0.05565 0.1667,-0.05565 0.0611,0 0.1194,0.0212 0.175,0.0636 0.8,0.7049 1.2,1.1289 1.2,1.272 0,0.0424 -0.0194,0.09276 -0.0583,0.15106 -0.0667,0.0848 -0.1834,0.2279 -0.35,0.4293 -0.1667,0.2014 -0.2917,0.3604 -0.375,0.477 0.1277,0.2544 0.2222,0.4717 0.2833,0.6519 l 1.2667,0.18285 c 0.0555,0.0106 0.1027,0.03843 0.1416,0.08348 0.0389,0.04505 0.0584,0.09672 0.0584,0.15502 z M 20,10.5099 v 1.113 c 0,0.0848 -0.4139,0.167 -1.2417,0.2465 -0.0666,0.1431 -0.15,0.2809 -0.25,0.4134 0.2834,0.5989 0.425,0.9646 0.425,1.0971 0,0.0212 -0.0111,0.0397 -0.0333,0.0556 C 18.2222,13.8118 17.8778,14 17.8667,14 17.8222,14 17.6944,13.8754 17.4833,13.6263 17.2722,13.3772 17.1278,13.197 17.05,13.0857 c -0.1111,0.0106 -0.1944,0.0159 -0.25,0.0159 -0.0556,0 -0.1389,-0.0053 -0.25,-0.0159 -0.0778,0.1113 -0.2222,0.2915 -0.4333,0.5406 C 15.9056,13.8754 15.7778,14 15.7333,14 15.7222,14 15.3778,13.8118 14.7,13.4355 c -0.0222,-0.0159 -0.0333,-0.0344 -0.0333,-0.0556 0,-0.1325 0.1416,-0.4982 0.425,-1.0971 -0.1,-0.1325 -0.1834,-0.2703 -0.25,-0.4134 C 14.0139,11.7899 13.6,11.7077 13.6,11.6229 v -1.113 c 0,-0.0848 0.4139,-0.1669 1.2417,-0.2464 0.0722,-0.1537 0.1555,-0.29151 0.25,-0.41341 -0.2834,-0.59891 -0.425,-0.96461 -0.425,-1.09711 0,-0.0212 0.0111,-0.03975 0.0333,-0.05565 0.0222,-0.0106 0.1194,-0.0636 0.2917,-0.159 0.1722,-0.0954 0.3361,-0.1855 0.4916,-0.2703 0.1556,-0.0848 0.2389,-0.1272 0.25,-0.1272 0.0445,0 0.1723,0.12322 0.3834,0.36968 0.2111,0.24645 0.3555,0.42532 0.4333,0.53662 0.1111,-0.0106 0.1944,-0.0159 0.25,-0.0159 0.0556,0 0.1389,0.0053 0.25,0.0159 0.2833,-0.3763 0.5389,-0.6731 0.7667,-0.8904 l 0.05,-0.0159 c 0.0222,0 0.3666,0.1855 1.0333,0.5565 0.0222,0.0159 0.0333,0.03445 0.0333,0.05565 0,0.1325 -0.1416,0.4982 -0.425,1.09711 0.0945,0.1219 0.1778,0.25971 0.25,0.41341 C 19.5861,10.343 20,10.4251 20,10.5099 Z m 0,-8.14079 v 1.113 c 0,0.0848 -0.4139,0.16695 -1.2417,0.24645 -0.0666,0.1431 -0.15,0.2809 -0.25,0.4134 0.2834,0.59891 0.425,0.96461 0.425,1.09711 0,0.0212 -0.0111,0.03975 -0.0333,0.05565 -0.6778,0.3763 -1.0222,0.56445 -1.0333,0.56445 -0.0445,0 -0.1723,-0.12455 -0.3834,-0.37365 -0.2111,-0.2491 -0.3555,-0.4293 -0.4333,-0.5406 -0.1111,0.0106 -0.1944,0.0159 -0.25,0.0159 -0.0556,0 -0.1389,-0.0053 -0.25,-0.0159 -0.0778,0.1113 -0.2222,0.2915 -0.4333,0.5406 -0.2111,0.2491 -0.3389,0.37365 -0.3834,0.37365 -0.0111,0 -0.3555,-0.18815 -1.0333,-0.56445 -0.0222,-0.0159 -0.0333,-0.03445 -0.0333,-0.05565 0,-0.1325 0.1416,-0.4982 0.425,-1.09711 -0.1,-0.1325 -0.1834,-0.2703 -0.25,-0.4134 C 14.0139,3.64906 13.6,3.56691 13.6,3.48211 v -1.113 c 0,-0.0848 0.4139,-0.16695 1.2417,-0.24645 0.0722,-0.1537 0.1555,-0.2915 0.25,-0.4134 -0.2834,-0.59891 -0.425,-0.964607 -0.425,-1.097108 0,-0.0212 0.0111,-0.03975 0.0333,-0.05565 0.0222,-0.0106 0.1194,-0.0636 0.2917,-0.159001 0.1722,-0.0954 0.3361,-0.1855 0.4916,-0.270301 C 15.6389,0.0424001 15.7222,0 15.7333,0 c 0.0445,0 0.1723,0.123225 0.3834,0.369676 0.2111,0.246451 0.3555,0.425327 0.4333,0.536627 0.1111,-0.0106 0.1944,-0.0159 0.25,-0.0159 0.0556,0 0.1389,0.0053 0.25,0.0159 0.2833,-0.376301 0.5389,-0.673102 0.7667,-0.8904029 L 17.8667,0 c 0.0222,0 0.3666,0.185501 1.0333,0.556502 0.0222,0.0159 0.0333,0.03445 0.0333,0.05565 0,0.132501 -0.1416,0.498198 -0.425,1.097108 0.0945,0.1219 0.1778,0.2597 0.25,0.4134 C 19.5861,2.20216 20,2.28431 20,2.36911 Z"/>
-                                                                        </children>
-                                                                        <effect>
-                                                                           <DropShadow blurType="ONE_PASS_BOX"
-                                                                                       offsetY="4.0">
-                                                                              <color>
-                                                                                 <Color opacity="0.24521072208881378"/>
-                                                                              </color>
-                                                                           </DropShadow>
-                                                                        </effect>
-                                                                     </Group>
-                                                                  </graphic>
-                                                                  <tooltip>
-                                                                     <Tooltip text="Inferred Axioms"/>
-                                                                  </tooltip>
-                                                               </Button>
-                                                            </children>
-                                                         </HBox>
-                                                      </children>
-                                                   </VBox>
-                                                   <BorderPane fx:id="inferredAxiomPane" prefWidth="791.0"
-                                                               styleClass="axiom-container" HBox.hgrow="ALWAYS">
-                                                      <center>
-                                                         <Label fx:id="notAvailInferredAxiomLabel" alignment="CENTER"
-                                                                prefHeight="37.0" prefWidth="265.0" text="Not Available"
-                                                                textAlignment="CENTER" textFill="#c99c9c">
-                                                            <font>
-                                                               <Font name="Open Sans Regular" size="18.0"/>
-                                                            </font>
-                                                         </Label>
-                                                      </center>
-                                                   </BorderPane>
-                                                </children>
-                                             </HBox>
-                                             <HBox prefHeight="324.0" prefWidth="856.0">
-                                                <children>
-                                                   <VBox prefHeight="133.0" prefWidth="58.0">
-                                                      <children>
-                                                         <HBox prefWidth="200.0">
-                                                            <children>
-                                                               <SVGPath
-                                                                       content="M0.999675 0.958313L0.999674 11.0416L7.33301 5.99998"
-                                                                       fill="#676767" visible="false">
-                                                                  <HBox.margin>
-                                                                     <Insets left="5.0" right="4.0" top="5.0"/>
-                                                                  </HBox.margin>
-                                                               </SVGPath>
-                                                               <Text fill="#0d9cf4" strokeType="OUTSIDE"
-                                                                     strokeWidth="0.0" text="EL++" textAlignment="RIGHT"
-                                                                     wrappingWidth="48.265625">
-                                                                  <HBox.margin>
-                                                                     <Insets/>
-                                                                  </HBox.margin>
-                                                                  <font>
-                                                                     <Font name="Open Sans Bold" size="16.0"/>
-                                                                  </font>
-                                                               </Text>
-                                                            </children>
-                                                         </HBox>
-                                                         <HBox alignment="CENTER" prefHeight="29.0" prefWidth="58.0"
-                                                               spacing="10.0">
-                                                            <children>
-                                                               <Button alignment="CENTER" contentDisplay="CENTER"
-                                                                       maxHeight="10.0" mnemonicParsing="false"
-                                                                       prefHeight="10.0" styleClass="axiom-count-btn"
-                                                                       text="0" visible="false">
-                                                                  <font>
-                                                                     <Font name="Open Sans Regular" size="10.0"/>
-                                                                  </font>
-                                                               </Button>
-                                                               <Button alignment="CENTER" contentDisplay="GRAPHIC_ONLY"
-                                                                       graphicTextGap="0.0" layoutX="14.0"
-                                                                       layoutY="13.0" maxHeight="10.0"
-                                                                       mnemonicParsing="false" prefHeight="10.0"
-                                                                       styleClass="axiom-stated-chat-bubble-btn">
-                                                                  <font>
-                                                                     <Font name="Open Sans Regular" size="10.0"/>
-                                                                  </font>
-                                                                  <graphic>
-                                                                     <Group cache="true">
-                                                                        <children>
-                                                                           <SVGPath
-                                                                                   content="M63.65 8.07c42.66.21 59.94 22.46 60.26 50.15c.18 15.48-9.79 28.84-25.07 36.98c-7.45 5.27 1.42 22.54 8.52 26.95c0 0-25.1-1.71-32.02-19.4h0c-3.82.56-7.75.85-11.78.85c-33.28 0-60.17-17.68-60.17-45.38S20.58 7.86 63.65 8.07z"
-                                                                                   fill="WHITE" scaleX="0.1"
-                                                                                   scaleY="0.1" stroke="BLACK"
-                                                                                   strokeLineCap="ROUND"
-                                                                                   strokeLineJoin="ROUND"
-                                                                                   strokeType="OUTSIDE"
-                                                                                   strokeWidth="6.0"
-                                                                                   styleClass="axiom-stated-chat-bubble-btn"/>
-                                                                        </children>
-                                                                        <effect>
-                                                                           <DropShadow blurType="ONE_PASS_BOX"
-                                                                                       offsetY="4.0">
-                                                                              <color>
-                                                                                 <Color opacity="0.24521072208881378"/>
-                                                                              </color>
-                                                                           </DropShadow>
-                                                                        </effect>
-                                                                     </Group>
-                                                                  </graphic>
-                                                                  <tooltip>
-                                                                     <Tooltip text="Stated Axioms"/>
-                                                                  </tooltip>
-                                                               </Button>
-                                                            </children>
-                                                         </HBox>
-                                                      </children>
-                                                   </VBox>
-                                                   <BorderPane fx:id="statedAxiomPane" prefWidth="777.0"
-                                                               styleClass="axiom-container" HBox.hgrow="ALWAYS">
-                                                      <center>
-                                                         <Label fx:id="notAvailStatedAxiomLabel" alignment="CENTER"
-                                                                prefHeight="47.0" prefWidth="264.0" text="Not Available"
-                                                                textFill="#c99c9c">
-                                                            <font>
-                                                               <Font size="18.0"/>
-                                                            </font>
-                                                         </Label>
-                                                      </center>
-                                                   </BorderPane>
-                                                </children>
-                                             </HBox>
-                                          </items>
-                                       </SplitPane>
-                                    </content>
-                                    <styleClass>
-                                       <String fx:value="kview-titled-pane"/>
-                                    </styleClass>
-                                 </TitledPane>
-                                 <Pane prefHeight="200.0" prefWidth="200.0">
-                                    <children>
-                                       <Button fx:id="addAxiomButton" layoutX="-32.0" mnemonicParsing="false"
-                                               onAction="#popupAddAxiomContextMenu" styleClass="add-pencil-button"
-                                               text="Button">
+                                 <padding>
+                                    <Insets topRightBottomLeft="0.0"/>
+                                 </padding>
+                              </AnchorPane>
+                           </TitledPane>
+                           <Separator orientation="VERTICAL" visible="${addDescriptionButton.visible}"
+                                      AnchorPane.topAnchor="5.0" AnchorPane.rightAnchor="42.0"/>
+                           <Button fx:id="addDescriptionButton" mnemonicParsing="false"
+                                   styleClass="add-pencil-button" text="Button"
+                                   AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="12.0"
+                                   disable="${!descriptionsTitledPane.expanded}">
+                              <graphic>
+                                 <Region styleClass="add-pencil"/>
+                              </graphic>
+                           </Button>
+                        </AnchorPane>
+                        <AnchorPane styleClass="concept-section">
+                           <TitledPane fx:id="axiomsTitledPane" text="AXIOMS"
+                                       maxWidth="Infinity" maxHeight="Infinity"
+                                       contentDisplay="BOTTOM" nodeOrientation="LEFT_TO_RIGHT"
+                                       AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                       AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0">
+                              <AnchorPane>
+                                 <SplitPane dividerPositions="0.5" orientation="VERTICAL"
+                                            AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0">
+                                    <BorderPane fx:id="inferredAxiomPane" styleClass="axiom-section">
+                                       <left>
+                                          <VBox>
+                                             <Label textFill="#0d9cf4" text="EL++" textAlignment="RIGHT">
+                                                <font>
+                                                   <Font name="Open Sans Bold" size="16.0"/>
+                                                </font>
+                                             </Label>
+                                             <Button fx:id="elppSemanticCountButton"
+                                                     alignment="CENTER" contentDisplay="GRAPHIC_ONLY"
+                                                     prefHeight="10.0" maxHeight="10.0" mnemonicParsing="false"
+                                                     styleClass="axiom-inferred-gear-btn">
+                                                <graphic>
+                                                   <Group cache="true">
+                                                      <SVGPath
+                                                              content="m 11.4667,6.99602 c 0,-0.5618 -0.2084,-1.04145 -0.625,-1.43895 C 10.425,5.15957 9.92222,4.96082 9.33333,4.96082 8.74444,4.96082 8.24167,5.15957 7.825,5.55707 7.40833,5.95457 7.2,6.43422 7.2,6.99602 c 0,0.56181 0.20833,1.04146 0.625,1.43896 0.41667,0.3975 0.91944,0.59625 1.50833,0.59625 0.58889,0 1.09167,-0.19875 1.50837,-0.59625 0.4166,-0.3975 0.625,-0.87715 0.625,-1.43896 z m 6.4,4.07038 c 0,-0.2756 -0.1056,-0.5141 -0.3167,-0.7155 -0.2111,-0.2014 -0.4611,-0.3021 -0.75,-0.3021 -0.2889,0 -0.5389,0.1007 -0.75,0.3021 -0.2111,0.2014 -0.3167,0.4399 -0.3167,0.7155 0,0.2809 0.1042,0.5208 0.3125,0.7195 0.2084,0.1988 0.4598,0.2981 0.7542,0.2981 0.2944,0 0.5458,-0.0993 0.7542,-0.2981 0.2083,-0.1987 0.3125,-0.4386 0.3125,-0.7195 z m 0,-8.14079 c 0,-0.2756 -0.1056,-0.5141 -0.3167,-0.7155 -0.2111,-0.2014 -0.4611,-0.3021 -0.75,-0.3021 -0.2889,0 -0.5389,0.1007 -0.75,0.3021 -0.2111,0.2014 -0.3167,0.4399 -0.3167,0.7155 0,0.2809 0.1042,0.52073 0.3125,0.71948 0.2084,0.19875 0.4598,0.29812 0.7542,0.29812 0.2944,0 0.5458,-0.09937 0.7542,-0.29812 0.2083,-0.19875 0.3125,-0.43858 0.3125,-0.71948 z m -3.2,3.34696 v 1.47076 c 0,0.053 -0.0195,0.10467 -0.0584,0.15502 C 14.5694,7.9487 14.525,7.97653 14.475,7.98183 l -1.2917,0.1908 c -0.0611,0.1855 -0.15,0.3869 -0.2666,0.6042 0.1889,0.2544 0.4389,0.55915 0.75,0.91425 0.0389,0.0583 0.0583,0.11131 0.0583,0.15901 0,0.0636 -0.0194,0.11395 -0.0583,0.15101 -0.1278,0.159 -0.357,0.3962 -0.6875,0.7116 -0.3306,0.3153 -0.5486,0.473 -0.6542,0.473 -0.0611,0 -0.1194,-0.0186 -0.175,-0.0557 l -0.9583,-0.7155 c -0.2056,0.1007 -0.4195,0.1829 -0.6417,0.2465 -0.0611,0.5724 -0.125,0.9831 -0.1917,1.2322 -0.0389,0.1272 -0.1222,0.1908 -0.25,0.1908 H 8.55833 c -0.06111,0 -0.11666,-0.0198 -0.16666,-0.0596 -0.05,-0.0397 -0.07778,-0.0861 -0.08334,-0.1391 L 8.11667,10.6689 C 7.92778,10.6159 7.71944,10.5338 7.49167,10.4225 L 6.50833,11.13 c -0.03889,0.0371 -0.09444,0.0557 -0.16666,0.0557 -0.06111,0 -0.11945,-0.0212 -0.175,-0.0636 -0.8,-0.7049 -1.2,-1.12891 -1.2,-1.27201 0,-0.0477 0.01944,-0.09806 0.05833,-0.15106 C 5.08056,9.62483 5.19444,9.48438 5.36667,9.27768 5.53889,9.07098 5.66944,8.90933 5.75833,8.79273 5.63056,8.55953 5.53333,8.34223 5.46667,8.14083 L 4.2,7.95003 C 4.14444,7.94473 4.09722,7.91955 4.05833,7.8745 4.01944,7.82945 4,7.77778 4,7.71948 V 6.24872 C 4,6.19572 4.01944,6.14405 4.05833,6.0937 4.09722,6.04335 4.14167,6.01552 4.19167,6.01022 L 5.48333,5.81942 C 5.54444,5.63392 5.63333,5.43252 5.75,5.21522 5.56111,4.96082 5.31111,4.65607 5,4.30097 4.96111,4.24267 4.94167,4.18966 4.94167,4.14196 4.94167,4.07836 4.96111,4.02536 5,3.98296 5.12222,3.82396 5.35,3.58811 5.68333,3.27541 6.01667,2.96271 6.23611,2.80636 6.34167,2.80636 c 0.06111,0 0.11944,0.01855 0.175,0.05565 L 7.475,3.57751 c 0.18889,-0.0954 0.40278,-0.1802 0.64167,-0.2544 0.06111,-0.5724 0.125,-0.9805 0.19166,-1.2243 0.03889,-0.1272 0.12223,-0.1908 0.25,-0.1908 h 1.54997 c 0.0611,0 0.1167,0.01987 0.1667,0.05962 0.05,0.03975 0.0778,0.08613 0.0833,0.13913 L 10.55,3.32311 c 0.1889,0.053 0.3972,0.13515 0.625,0.24645 l 0.9833,-0.70755 c 0.0445,-0.0371 0.1,-0.05565 0.1667,-0.05565 0.0611,0 0.1194,0.0212 0.175,0.0636 0.8,0.7049 1.2,1.1289 1.2,1.272 0,0.0424 -0.0194,0.09276 -0.0583,0.15106 -0.0667,0.0848 -0.1834,0.2279 -0.35,0.4293 -0.1667,0.2014 -0.2917,0.3604 -0.375,0.477 0.1277,0.2544 0.2222,0.4717 0.2833,0.6519 l 1.2667,0.18285 c 0.0555,0.0106 0.1027,0.03843 0.1416,0.08348 0.0389,0.04505 0.0584,0.09672 0.0584,0.15502 z M 20,10.5099 v 1.113 c 0,0.0848 -0.4139,0.167 -1.2417,0.2465 -0.0666,0.1431 -0.15,0.2809 -0.25,0.4134 0.2834,0.5989 0.425,0.9646 0.425,1.0971 0,0.0212 -0.0111,0.0397 -0.0333,0.0556 C 18.2222,13.8118 17.8778,14 17.8667,14 17.8222,14 17.6944,13.8754 17.4833,13.6263 17.2722,13.3772 17.1278,13.197 17.05,13.0857 c -0.1111,0.0106 -0.1944,0.0159 -0.25,0.0159 -0.0556,0 -0.1389,-0.0053 -0.25,-0.0159 -0.0778,0.1113 -0.2222,0.2915 -0.4333,0.5406 C 15.9056,13.8754 15.7778,14 15.7333,14 15.7222,14 15.3778,13.8118 14.7,13.4355 c -0.0222,-0.0159 -0.0333,-0.0344 -0.0333,-0.0556 0,-0.1325 0.1416,-0.4982 0.425,-1.0971 -0.1,-0.1325 -0.1834,-0.2703 -0.25,-0.4134 C 14.0139,11.7899 13.6,11.7077 13.6,11.6229 v -1.113 c 0,-0.0848 0.4139,-0.1669 1.2417,-0.2464 0.0722,-0.1537 0.1555,-0.29151 0.25,-0.41341 -0.2834,-0.59891 -0.425,-0.96461 -0.425,-1.09711 0,-0.0212 0.0111,-0.03975 0.0333,-0.05565 0.0222,-0.0106 0.1194,-0.0636 0.2917,-0.159 0.1722,-0.0954 0.3361,-0.1855 0.4916,-0.2703 0.1556,-0.0848 0.2389,-0.1272 0.25,-0.1272 0.0445,0 0.1723,0.12322 0.3834,0.36968 0.2111,0.24645 0.3555,0.42532 0.4333,0.53662 0.1111,-0.0106 0.1944,-0.0159 0.25,-0.0159 0.0556,0 0.1389,0.0053 0.25,0.0159 0.2833,-0.3763 0.5389,-0.6731 0.7667,-0.8904 l 0.05,-0.0159 c 0.0222,0 0.3666,0.1855 1.0333,0.5565 0.0222,0.0159 0.0333,0.03445 0.0333,0.05565 0,0.1325 -0.1416,0.4982 -0.425,1.09711 0.0945,0.1219 0.1778,0.25971 0.25,0.41341 C 19.5861,10.343 20,10.4251 20,10.5099 Z m 0,-8.14079 v 1.113 c 0,0.0848 -0.4139,0.16695 -1.2417,0.24645 -0.0666,0.1431 -0.15,0.2809 -0.25,0.4134 0.2834,0.59891 0.425,0.96461 0.425,1.09711 0,0.0212 -0.0111,0.03975 -0.0333,0.05565 -0.6778,0.3763 -1.0222,0.56445 -1.0333,0.56445 -0.0445,0 -0.1723,-0.12455 -0.3834,-0.37365 -0.2111,-0.2491 -0.3555,-0.4293 -0.4333,-0.5406 -0.1111,0.0106 -0.1944,0.0159 -0.25,0.0159 -0.0556,0 -0.1389,-0.0053 -0.25,-0.0159 -0.0778,0.1113 -0.2222,0.2915 -0.4333,0.5406 -0.2111,0.2491 -0.3389,0.37365 -0.3834,0.37365 -0.0111,0 -0.3555,-0.18815 -1.0333,-0.56445 -0.0222,-0.0159 -0.0333,-0.03445 -0.0333,-0.05565 0,-0.1325 0.1416,-0.4982 0.425,-1.09711 -0.1,-0.1325 -0.1834,-0.2703 -0.25,-0.4134 C 14.0139,3.64906 13.6,3.56691 13.6,3.48211 v -1.113 c 0,-0.0848 0.4139,-0.16695 1.2417,-0.24645 0.0722,-0.1537 0.1555,-0.2915 0.25,-0.4134 -0.2834,-0.59891 -0.425,-0.964607 -0.425,-1.097108 0,-0.0212 0.0111,-0.03975 0.0333,-0.05565 0.0222,-0.0106 0.1194,-0.0636 0.2917,-0.159001 0.1722,-0.0954 0.3361,-0.1855 0.4916,-0.270301 C 15.6389,0.0424001 15.7222,0 15.7333,0 c 0.0445,0 0.1723,0.123225 0.3834,0.369676 0.2111,0.246451 0.3555,0.425327 0.4333,0.536627 0.1111,-0.0106 0.1944,-0.0159 0.25,-0.0159 0.0556,0 0.1389,0.0053 0.25,0.0159 0.2833,-0.376301 0.5389,-0.673102 0.7667,-0.8904029 L 17.8667,0 c 0.0222,0 0.3666,0.185501 1.0333,0.556502 0.0222,0.0159 0.0333,0.03445 0.0333,0.05565 0,0.132501 -0.1416,0.498198 -0.425,1.097108 0.0945,0.1219 0.1778,0.2597 0.25,0.4134 C 19.5861,2.20216 20,2.28431 20,2.36911 Z"
+                                                              fill="white" stroke="#44495E"
+                                                              strokeLineCap="ROUND"
+                                                              strokeLineJoin="ROUND"
+                                                              strokeType="OUTSIDE"/>
+                                                      <effect>
+                                                         <DropShadow blurType="ONE_PASS_BOX" color="#00000066"
+                                                                     offsetY="4.0">
+                                                         </DropShadow>
+                                                      </effect>
+                                                   </Group>
+                                                </graphic>
+                                                <tooltip>
+                                                   <Tooltip text="Inferred Axioms"/>
+                                                </tooltip>
+                                             </Button>
+                                          </VBox>
+                                       </left>
+                                       <center>
+                                          <Label fx:id="notAvailInferredAxiomLabel" text="Not Available"
+                                                 alignment="CENTER" textAlignment="CENTER" textFill="#c99c9c">
+                                             <font>
+                                                <Font name="Open Sans Regular" size="18.0"/>
+                                             </font>
+                                          </Label>
+                                       </center>
+                                    </BorderPane>
+                                    <BorderPane fx:id="statedAxiomPane" styleClass="axiom-section">
+                                       <left>
+                                          <VBox>
+                                             <Label textFill="#0d9cf4" text="EL++" textAlignment="RIGHT">
+                                                <font>
+                                                   <Font name="Open Sans Bold" size="16.0"/>
+                                                </font>
+                                             </Label>
+                                             <Button alignment="CENTER" contentDisplay="GRAPHIC_ONLY"
+                                                     prefHeight="10.0" maxHeight="10.0" mnemonicParsing="false"
+                                                     styleClass="axiom-stated-chat-bubble-btn">
+                                                <graphic>
+                                                   <Group cache="true">
+                                                      <SVGPath
+                                                              content="M63.65 8.07c42.66.21 59.94 22.46 60.26 50.15c.18 15.48-9.79 28.84-25.07 36.98c-7.45 5.27 1.42 22.54 8.52 26.95c0 0-25.1-1.71-32.02-19.4h0c-3.82.56-7.75.85-11.78.85c-33.28 0-60.17-17.68-60.17-45.38S20.58 7.86 63.65 8.07z"
+                                                              fill="white" scaleX="0.1"
+                                                              scaleY="0.1" stroke="#44495E"
+                                                              strokeLineCap="ROUND"
+                                                              strokeLineJoin="ROUND"
+                                                              strokeType="OUTSIDE"
+                                                              strokeWidth="10.0"/>
+                                                      <effect>
+                                                         <DropShadow blurType="ONE_PASS_BOX" color="#00000066"
+                                                                     offsetY="4.0">
+                                                         </DropShadow>
+                                                      </effect>
+                                                   </Group>
+                                                </graphic>
+                                                <tooltip>
+                                                   <Tooltip text="Stated Axioms"/>
+                                                </tooltip>
+                                             </Button>
+                                          </VBox>
+                                       </left>
+                                       <center>
+                                          <Label fx:id="notAvailStatedAxiomLabel" text="Not Available"
+                                                 alignment="CENTER" textAlignment="CENTER" textFill="#c99c9c">
+                                             <font>
+                                                <Font name="Open Sans Regular" size="18.0"/>
+                                             </font>
+                                          </Label>
+                                       </center>
+                                    </BorderPane>
+                                    <padding>
+                                       <Insets topRightBottomLeft="0.0"/>
+                                    </padding>
+                                 </SplitPane>
+                                 <padding>
+                                    <Insets topRightBottomLeft="0.0"/>
+                                 </padding>
+                              </AnchorPane>
+                           </TitledPane>
+                           <Separator orientation="VERTICAL" visible="${addAxiomButton.visible}"
+                                      AnchorPane.topAnchor="5.0" AnchorPane.rightAnchor="42.0"/>
+                           <Button fx:id="addAxiomButton" mnemonicParsing="false" text="Button"
+                                   onAction="#popupAddAxiomContextMenu" styleClass="add-pencil-button"
+                                   AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="12.0"
+                                   disable="${!axiomsTitledPane.expanded}">
+                              <graphic>
+                                 <Region styleClass="add-pencil"/>
+                              </graphic>
+                              <contextMenu>
+                                 <ContextMenu fx:id="addContextMenu" styleClass="kview-context-menu">
+                                    <items>
+                                       <MenuItem mnemonicParsing="false" text="ADD AXIOM"/>
+                                       <SeparatorMenuItem mnemonicParsing="false"/>
+                                       <MenuItem mnemonicParsing="false" onAction="#addSufficientSet"
+                                                 text="Add Sufficient Set">
                                           <graphic>
-                                             <Region prefHeight="200.0" prefWidth="200.0" styleClass="add-pencil"/>
+                                             <Region prefHeight="20.0" prefWidth="20.0"
+                                                     styleClass="concept-edit-description-menu-icon"/>
                                           </graphic>
-                                          <contextMenu>
-                                             <ContextMenu fx:id="addContextMenu" opacity="0.99"
-                                                          styleClass="kview-context-menu">
-                                                <items>
-                                                   <MenuItem mnemonicParsing="false" text="ADD AXIOM"/>
-                                                   <SeparatorMenuItem mnemonicParsing="false"/>
-                                                   <MenuItem mnemonicParsing="false" onAction="#addSufficientSet"
-                                                             text="Add Sufficient Set">
-                                                      <graphic>
-                                                         <Region prefHeight="20.0" prefWidth="20.0"
-                                                                 styleClass="concept-edit-description-menu-icon"/>
-                                                      </graphic>
-                                                   </MenuItem>
-                                                   <MenuItem mnemonicParsing="false" onAction="#addNecessarySet"
-                                                             text="Add Necessary Set">
-                                                      <graphic>
-                                                         <Region prefHeight="20.0" prefWidth="20.0"
-                                                                 styleClass="concept-edit-description-menu-icon"/>
-                                                      </graphic>
-                                                   </MenuItem>
-                                                   <SeparatorMenuItem mnemonicParsing="false"/>
-                                                </items>
-                                             </ContextMenu>
-                                          </contextMenu>
-                                       </Button>
-                                    </children>
-                                 </Pane>
-                              </children>
-                           </HBox>
-                        </children>
-                        <opaqueInsets>
-                           <Insets/>
-                        </opaqueInsets>
+                                       </MenuItem>
+                                       <MenuItem mnemonicParsing="false" onAction="#addNecessarySet"
+                                                 text="Add Necessary Set">
+                                          <graphic>
+                                             <Region prefHeight="20.0" prefWidth="20.0"
+                                                     styleClass="concept-edit-description-menu-icon"/>
+                                          </graphic>
+                                       </MenuItem>
+                                       <SeparatorMenuItem mnemonicParsing="false"/>
+                                    </items>
+                                 </ContextMenu>
+                              </contextMenu>
+                           </Button>
+                        </AnchorPane>
                      </VBox>
                   </ScrollPane>
                </center>
-               <top>
-                  <BorderPane prefHeight="103.0" prefWidth="894.0" styleClass="concept-detail-banner-background" BorderPane.alignment="CENTER">
-                     <center>
-                        <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="156.0" styleClass="concept-detail-banner-background">
-                           <columnConstraints>
-                              <ColumnConstraints halignment="LEFT" maxWidth="586.0" prefWidth="581.0" />
-                           </columnConstraints>
-                           <rowConstraints>
-                              <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="ALWAYS" />
-                              <RowConstraints maxHeight="77.0" minHeight="0.0" prefHeight="0.0" vgrow="SOMETIMES" />
-                              <RowConstraints maxHeight="1.7976931348623157E308" minHeight="2.0" prefHeight="22.0" vgrow="SOMETIMES" />
-                              <RowConstraints maxHeight="65.0" minHeight="4.0" prefHeight="8.0" vgrow="SOMETIMES" />
-                              <RowConstraints minHeight="9.0" prefHeight="22.0" vgrow="NEVER" />
-                           </rowConstraints>
-                           <children>
-                              <HBox prefHeight="42.0" prefWidth="501.0" GridPane.rowIndex="2" GridPane.rowSpan="2" GridPane.valignment="TOP" GridPane.vgrow="SOMETIMES">
-                                 <children>
-                                    <Label minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="70.0" text="Definition:">
-                                       <font>
-                                          <Font name="Open Sans Regular" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <TextArea fx:id="definitionTextArea" editable="false" prefHeight="30.0" prefWidth="431.0" styleClass="copyable-text" wrapText="true" HBox.hgrow="SOMETIMES" />
-                                 </children>
-                              </HBox>
-                              <HBox GridPane.rowIndex="4">
-                                 <children>
-                                    <Label minWidth="70.0" prefHeight="25.0" text="IDENTIFIER:">
-                                       <font>
-                                          <Font name="Open Sans Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <TextField fx:id="identifierText" alignment="TOP_LEFT" editable="false" maxWidth="1.7976931348623157E308" prefHeight="27.0" styleClass="copyable-label" HBox.hgrow="ALWAYS">
-                                       <font>
-                                          <Font name="Open Sans Regular" size="12.0" />
-                                       </font>
-                                       <opaqueInsets>
-                                          <Insets />
-                                       </opaqueInsets>
-                                       <tooltip>
-                                          <Tooltip fx:id="identifierTooltip" />
-                                       </tooltip>
-                                    </TextField>
-                                 </children>
-                              </HBox>
-                              <Label fx:id="fqnTitleText" maxHeight="1.7976931348623157E308" prefHeight="43.0" prefWidth="598.0" styleClass="concept-title" text="Concept Name " wrapText="true">
-                                 <font>
-                                    <Font name="Open Sans Bold" size="14.0" />
-                                 </font>
-                                 <tooltip>
-                                    <Tooltip fx:id="conceptNameTooltip" text="Empty Tooltip" />
-                                 </tooltip>
-                              </Label>
-                           </children>
-                        </GridPane>
-                     </center>
-                     <left>
-                        <VBox minWidth="-Infinity" prefHeight="55.0" prefWidth="51.0" BorderPane.alignment="CENTER">
-                           <children>
-                              <ImageView fx:id="identiconImageView" fitHeight="36.0" fitWidth="36.0" pickOnBounds="true" preserveRatio="true" />
-                           </children>
-                           <padding>
-                              <Insets left="8.0" right="8.0" top="8.0" />
-                           </padding>
-                        </VBox>
-                     </left>
-                     <right>
-                        <AnchorPane prefHeight="128.0" prefWidth="210.0" BorderPane.alignment="CENTER">
-                           <BorderPane.margin>
-                              <Insets />
-                           </BorderPane.margin>
-                           <children>
-                              <VBox prefHeight="108.0" prefWidth="210.0">
-                                 <children>
-                                    <FlowPane>
-                                       <children>
-                                          <Label text="Status:">
-                                             <font>
-                                                <Font name="Open Sans Regular" size="12.0" />
-                                             </font>
-                                          </Label>
-                                          <Text fx:id="statusText" strokeType="OUTSIDE" strokeWidth="0.0">
-                                             <font>
-                                                <Font name="Open Sans Regular" size="12.0" />
-                                             </font>
-                                          </Text>
-                                       </children>
-                                    </FlowPane>
-                                    <FlowPane>
-                                       <children>
-                                          <Label minWidth="-Infinity" text="Last Updated:">
-                                             <font>
-                                                <Font name="Open Sans Regular" size="12.0" />
-                                             </font>
-                                          </Label>
-                                          <Text fx:id="lastUpdatedText" strokeType="OUTSIDE" strokeWidth="0.0">
-                                             <font>
-                                                <Font name="Open Sans Regular" size="12.0" />
-                                             </font>
-                                          </Text>
-                                       </children>
-                                    </FlowPane>
-                                    <FlowPane>
-                                       <children>
-                                          <Label text="Module:">
-                                             <font>
-                                                <Font name="Open Sans Regular" size="12.0" />
-                                             </font>
-                                          </Label>
-                                          <Text fx:id="moduleText" strokeType="OUTSIDE" strokeWidth="0.0">
-                                             <font>
-                                                <Font name="Open Sans Regular" size="12.0" />
-                                             </font>
-                                          </Text>
-                                       </children>
-                                    </FlowPane>
-                                    <FlowPane>
-                                       <children>
-                                          <Label text="Path:">
-                                             <font>
-                                                <Font name="Open Sans Regular" size="12.0" />
-                                             </font>
-                                          </Label>
-                                          <Text fx:id="pathText" strokeType="OUTSIDE" strokeWidth="0.0" />
-                                       </children>
-                                    </FlowPane>
-                                    <FlowPane prefHeight="43.0" prefWidth="202.0">
-                                       <children>
-                                          <Label text="Origination:">
-                                             <font>
-                                                <Font name="Open Sans Regular" size="12.0" />
-                                             </font>
-                                          </Label>
-                                          <Text fx:id="originationText" strokeType="OUTSIDE" strokeWidth="0.0" />
-                                       </children>
-                                    </FlowPane>
-                                 </children>
-                                 <padding>
-                                    <Insets left="8.0" top="8.0" />
-                                 </padding>
-                              </VBox>
-                              <Button contentDisplay="GRAPHIC_ONLY" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#popupStampEdit" prefHeight="11.0" prefWidth="30.0" styleClass="mini-options-button" text="Button" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="4.0">
-                                 <graphic>
-                                    <Region styleClass="hamburger" />
-                                 </graphic>
-                                 <contextMenu>
-                                    <ContextMenu styleClass="kview-context-menu">
-                                       <items>
-                                          <MenuItem mnemonicParsing="false" styleClass="menu-header" text="EDIT STAMP" />
-                                          <SeparatorMenuItem mnemonicParsing="false" />
-                                          <Menu mnemonicParsing="false" text="Status" />
-                                          <Menu mnemonicParsing="false" text="Path" />
-                                          <Menu mnemonicParsing="false" text="Module" />
-                                          <SeparatorMenuItem mnemonicParsing="false" />
-                                       </items>
-                                    </ContextMenu>
-                                 </contextMenu>
-                              </Button>
-                           </children>
-                        </AnchorPane>
-                     </right>
-                  </BorderPane>
-               </top>
             </BorderPane>
          </center>
       </BorderPane>
    </center>
    <styleClass>
-      <String fx:value="concept-detail-pane" />
-      <String fx:value="concept-window" />
+      <String fx:value="concept-detail-pane"/>
+      <String fx:value="concept-window"/>
    </styleClass>
 </BorderPane>

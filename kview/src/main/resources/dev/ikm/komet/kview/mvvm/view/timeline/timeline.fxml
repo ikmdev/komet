@@ -17,7 +17,7 @@
 <?import javafx.scene.text.Text?>
 <?import java.lang.String?>
 
-<BorderPane maxHeight="1.7976931348623157E308" prefHeight="700.0" prefWidth="298.0" styleClass="timeline-outer-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.timeline.TimelineController">
+<BorderPane maxHeight="Infinity" prefWidth="298.0" styleClass="timeline-outer-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.timeline.TimelineController">
    <top>
       <HBox alignment="CENTER" maxHeight="96.0" prefHeight="42.0" prefWidth="298.0" styleClass="timeline-header-bar">
          <children>

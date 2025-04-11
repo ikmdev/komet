@@ -24,6 +24,8 @@ import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -33,6 +35,7 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SkinBase;
 import javafx.scene.input.KeyCode;
@@ -107,6 +110,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * Internal property key for storing the clamp-listener reference in each window’s properties map.
      */
     private static final String CLAMP_WINDOW_POSITION_LISTENER = "clampWindowPositionListener";
+
+    private static final String WINDOW_SCENE_SYNC_LISTENER = "windowSceneSyncListener";
+    private static final String WINDOW_HEIGHT_SYNC_LISTENER = "windowHeightSyncListener";
 
     /**
      * The pane that holds all {@link ChapterKlWindow} nodes within the workspace.
@@ -596,6 +602,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         // Apply a maximum height constraint
         windowPanel.setMaxHeight(MAX_WINDOW_HEIGHT);
 
+        // Synchronize the window panel's preferred height with its actual height
+        initializeWindowPrefHeight(windowPanel);
+
         final KLDropRegion dropRegion = desktopPane.getDropRegion();
         final KLWorkspace workspace = getSkinnable();
 
@@ -627,7 +636,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                     if (canPlace(dropX, dropY, dropW, dropH, desktopWidth, desktopHeight)) {
                         windowPanel.setTranslateX(dropX);
                         windowPanel.setTranslateY(dropY);
-                        windowPanel.setPrefSize(dropW, dropH);
+                        windowPanel.setPrefWidth(dropW);
                         desktopPane.getChildren().add(windowPanel);
 
                         // Auto-scroll the workspace to reveal the newly dropped window
@@ -665,7 +674,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
                     windowPanel.setTranslateX(newX);
                     windowPanel.setTranslateY(newY);
-                    windowPanel.setPrefSize(windowWidth, windowHeight);
+                    windowPanel.setPrefWidth(windowWidth);
                     desktopPane.getChildren().add(windowPanel);
 
                     // Auto-scroll the workspace to reveal the newly dropped window
@@ -695,7 +704,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             if (canPlace(savedX, savedY, windowWidth, windowHeight, desktopWidth, desktopHeight)) {
                 windowPanel.setTranslateX(savedX);
                 windowPanel.setTranslateY(savedY);
-                windowPanel.setPrefSize(windowWidth, windowHeight);
+                windowPanel.setPrefWidth(windowWidth);
                 desktopPane.getChildren().add(windowPanel);
                 desktopPane.layout();
                 // No auto-scrolling for returning windows
@@ -713,7 +722,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         if (placement != null) {
             windowPanel.setTranslateX(placement.getX());
             windowPanel.setTranslateY(placement.getY());
-            windowPanel.setPrefSize(windowWidth, windowHeight);
+            windowPanel.setPrefWidth(windowWidth);
             desktopPane.getChildren().add(windowPanel);
 
             if (firstTime) {
@@ -1297,6 +1306,59 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         if (pane.getHeight() > desktopPaneHeight) {
             pane.setPrefHeight(desktopPaneHeight);
         }
+    }
+
+    /**
+     * Initializes listeners that synchronize the window panel's preferred height with its actual height
+     * after rendering. This ensures the window maintains a consistent size that reflects its content.
+     *
+     * @param pane the window pane to set up preferred height synchronization for
+     */
+    private void initializeWindowPrefHeight(Pane pane) {
+        // Create the window scene sync listener
+        InvalidationListener windowSceneSyncListener = sceneObservable -> {
+            Scene scene = pane.getScene();
+            if (scene != null) {
+                // Synchronize the window panel's preferred height with its actual height after rendering.
+                Platform.runLater(() -> {
+                    pane.layout();
+
+                    // Create the window height sync listener
+                    InvalidationListener windowHeightSyncListener = heightObservable -> {
+                        final double height = pane.getHeight();
+                        if (height > 0) {
+                            pane.setPrefHeight(height);
+
+                            if (pane.getProperties().containsKey(WINDOW_HEIGHT_SYNC_LISTENER)) {
+                                final InvalidationListener heightListener =
+                                        (InvalidationListener) pane.getProperties().get(WINDOW_HEIGHT_SYNC_LISTENER);
+                                pane.heightProperty().removeListener(heightListener);
+                                pane.getProperties().remove(WINDOW_HEIGHT_SYNC_LISTENER);
+                            }
+                        }
+                    };
+
+                    // Store a reference for later cleanup
+                    pane.getProperties().put(WINDOW_HEIGHT_SYNC_LISTENER, windowHeightSyncListener);
+
+                    // Add the listener to the window panel
+                    pane.heightProperty().addListener(windowHeightSyncListener);
+                });
+            }
+
+            if (pane.getProperties().containsKey(WINDOW_SCENE_SYNC_LISTENER)) {
+                final InvalidationListener sceneListener =
+                        (InvalidationListener) pane.getProperties().get(WINDOW_SCENE_SYNC_LISTENER);
+                pane.sceneProperty().removeListener(sceneListener);
+                pane.getProperties().remove(WINDOW_SCENE_SYNC_LISTENER);
+            }
+        };
+
+        // Store a reference for later cleanup
+        pane.getProperties().put(WINDOW_SCENE_SYNC_LISTENER, windowSceneSyncListener);
+
+        // Add the listener to the window panel
+        pane.sceneProperty().addListener(windowSceneSyncListener);
     }
 
     // =========================================================================
