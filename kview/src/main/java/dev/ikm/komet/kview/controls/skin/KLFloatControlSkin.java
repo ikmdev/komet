@@ -2,13 +2,11 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLFloatControl;
 import javafx.animation.PauseTransition;
-import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.util.Duration;
 import javafx.util.Subscription;
 
 import java.text.MessageFormat;
@@ -21,7 +19,6 @@ import java.util.regex.Pattern;
 public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
 
     private static final Pattern NUMERICAL_PATTERN = Pattern.compile("^[+-]?(\\d+([.]\\d*)?([eE][+-]?\\d+)?|[.]\\d+([eE][+-]?\\d+)?)$");
-    private static final PseudoClass ERROR_PSEUDO_CLASS = PseudoClass.getPseudoClass("error");
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.float-control");
 
     private final Label titleLabel;
@@ -58,6 +55,7 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
 
         textField.setTextFormatter(new TextFormatter<>(null, null, change -> {
             errorLabel.setText(null);
+            control.setShowError(false);
             String oldText = change.getControlText();
             String newText = change.getControlNewText();
             String addedText = change.getText();
@@ -79,10 +77,12 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
                     // discard if we have a valid value, but it is infinite or NaN
                     if (Double.isInfinite(value) || Double.isNaN(value)) {
                         errorLabel.setText(MessageFormat.format(resources.getString("error.float.text"), newText));
+                        control.setShowError(true);
                         return null;
                     }
                 } catch (NumberFormatException nfe) {
-                    // ignore
+                    errorLabel.setText(MessageFormat.format(resources.getString("error.float.text"), newText));
+                    control.setShowError(true);
                 }
                 return change;
             } else if ("-".equals(addedText) || "+".equals(addedText)) { // typing '-'/'+' in any other position
@@ -111,6 +111,7 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
                 }
             }
             errorLabel.setText(MessageFormat.format(resources.getString("error.input.text"), addedText));
+            control.setShowError(true);
             return null;
         }));
 
@@ -137,17 +138,17 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
             textChangedViaKeyEvent = false;
         }));
 
-        final PauseTransition pauseTransition = new PauseTransition(Duration.seconds(1));
+        final PauseTransition pauseTransition = new PauseTransition(KLIntegerControlSkin.ERROR_DURATION);
         pauseTransition.setOnFinished(f -> {
-            getSkinnable().pseudoClassStateChanged(ERROR_PSEUDO_CLASS, false);
+            getSkinnable().pseudoClassStateChanged(KLIntegerControlSkin.ERROR_PSEUDO_CLASS, false);
             errorLabel.setText(null);
         });
         subscription = subscription.and(errorLabel.textProperty().subscribe(nv -> {
             if (nv != null) {
-                getSkinnable().pseudoClassStateChanged(ERROR_PSEUDO_CLASS, true);
+                getSkinnable().pseudoClassStateChanged(KLIntegerControlSkin.ERROR_PSEUDO_CLASS, true);
                 pauseTransition.playFromStart();
             } else {
-                getSkinnable().pseudoClassStateChanged(ERROR_PSEUDO_CLASS, false);
+                getSkinnable().pseudoClassStateChanged(KLIntegerControlSkin.ERROR_PSEUDO_CLASS, false);
                 pauseTransition.stop();
             }
         }));
@@ -202,7 +203,7 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
             y += textFieldPrefHeight + 2;
             labelPrefWidth = errorLabel.prefWidth(-1);
             labelPrefHeight = errorLabel.prefHeight(labelPrefWidth);
-            errorLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
+            errorLabel.resizeRelocate(x, y, textField.getWidth(), labelPrefHeight);
         }
     }
 
