@@ -231,7 +231,7 @@
 }
 
 .concept-window .main-center-container .concept-section > .titled-pane .split-pane {
-    -fx-background-color: transaparent;
+    -fx-background-color: transparent;
     -fx-background-insets: 0;
 }
 
