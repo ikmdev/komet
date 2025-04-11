@@ -3,7 +3,7 @@ package dev.ikm.komet.kview.controls;
 import dev.ikm.komet.kview.controls.skin.KLReadOnlyComponentControlSkin;
 import javafx.scene.control.Skin;
 
-public class KLReadOnlyComponentControl extends KLReadOnlyBaseControl<ComponentItem> {
+public class KLReadOnlyComponentControl extends KLReadOnlyBaseSingleValueControl<ComponentItem> {
 
     public KLReadOnlyComponentControl() {
         getStyleClass().add("read-only-component-control");
