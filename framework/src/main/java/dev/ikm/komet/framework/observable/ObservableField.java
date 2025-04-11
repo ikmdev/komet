@@ -24,6 +24,7 @@ import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.Transaction;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -38,6 +39,31 @@ public final class ObservableField<T> implements Field<T> {
 
     public final BooleanProperty refreshProperties = new SimpleBooleanProperty(false);
     public final boolean writeOnEveryChange;
+
+    /**
+     * Responsible for creating a new an uncommitted semantic version for the versionProperty owned by ObservableVersion.
+     */
+    private InvalidationListener autoSaveChangeListener;
+
+    void setAutoSaveChangeListener(InvalidationListener autoSaveChangeListener) {
+        this.autoSaveChangeListener = autoSaveChangeListener;
+    }
+
+    InvalidationListener getAutoSaveChangeListener() {
+        return this.autoSaveChangeListener;
+    }
+
+    public void autoSaveOn() {
+        if (autoSaveChangeListener != null) {
+            valueProperty().removeListener(getAutoSaveChangeListener());
+            valueProperty().addListener(getAutoSaveChangeListener());
+        }
+    }
+    public void autoSaveOff() {
+        if (autoSaveChangeListener != null) {
+            valueProperty().removeListener(getAutoSaveChangeListener());
+        }
+    }
 
     public ObservableField(FieldRecord<T> fieldRecord, boolean writeOnEveryChange) {
         this.writeOnEveryChange = writeOnEveryChange;

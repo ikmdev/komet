@@ -32,6 +32,7 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.beans.InvalidationListener;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -39,13 +40,17 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 
+import java.util.Objects;
+
 public final class ObservableSemanticVersion
         extends ObservableVersion<SemanticVersionRecord>
         implements SemanticEntityVersion {
     ObservableSemanticVersion(SemanticVersionRecord semanticVersionRecord) {
         super(semanticVersionRecord);
-    }
+        // fields and their index.
+        // loop and create changelistners
 
+    }
     @Override
     protected SemanticVersionRecord withStampNid(int stampNid) {
         return version().withStampNid(stampNid);
@@ -86,15 +91,15 @@ public final class ObservableSemanticVersion
 
 
             // create a change listener
-            ChangeListener autoSave = (obs, ov, nv) -> {
+            InvalidationListener autoSave = (observableValue) -> {
                 System.out.println("Inside AUTOSAVE Method.");
-                if (nv !=null) {
-//                if(observableField.value() != null && // Create a version only when new value is not null.
-//                        (observableField.fieldProperty.getValue().value() != null &&  // If the old
-//                                // Check if the previous value is different from changed.This check is required for C-List C-Set
-//                                !Objects.equals(observableField.value().toString(), observableField.fieldProperty.getValue().value().toString()))
-//                ) {
-                    manageEntityVersion(nv, index);
+//                if (nv !=null) {
+                if(observableField.value() != null && // Create a version only when new value is not null.
+                        (observableField.fieldProperty.getValue().value() != null &&  // If the old
+                                // Check if the previous value is different from changed.This check is required for C-List C-Set
+                                !Objects.equals(observableField.value().toString(), observableField.fieldProperty.getValue().value().toString()))
+                ) {
+                    manageEntityVersion(observableField.value(), index);
                 }
             };
             observableField.setAutoSaveChangeListener(autoSave);

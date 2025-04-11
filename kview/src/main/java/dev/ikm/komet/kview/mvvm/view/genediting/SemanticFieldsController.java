@@ -56,6 +56,7 @@ import javafx.scene.control.Separator;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -170,18 +171,6 @@ public class SemanticFieldsController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
                 EntityVersionChangeEvent.class, entityVersionChangeEventSubscriber);
-/*        genEditingEventSubscriber = evt -> {
-            LOG.info("Version has been updated: " + evt.getEventType());
-            if (evt.getEventType() == VERSION_UPDATED && evt.getNid() == semantic.nid()) {
-                *//*nodes.removeAll(observableFields);
-                observableFields.clear();
-                observableFields.addAll(evt.getList());*//*
-            }
-        };
-        EvtBusFactory.getDefaultEvtBus().subscribe(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
-                GenEditingEvent.class, genEditingEventSubscriber);*/
-
-
     }
 
     private void loadVBox() {

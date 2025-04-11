@@ -1,14 +1,12 @@
 package dev.ikm.komet.framework.events;
 
 import dev.ikm.tinkar.entity.EntityVersion;
-import org.eclipse.collections.api.list.ImmutableList;
 
 public class EntityVersionChangeEvent extends Evt {
 
     public static final EvtType<EntityVersionChangeEvent> VERSION_UPDATED = new EvtType<>(Evt.ANY, "VERSION_UPDATED");
 
-    private int nid;
-    private ImmutableList<Object> observableSemanticVersion;
+    private final EntityVersion entityVersion;
 
     /**
      * Constructs a prototypical Event.
@@ -17,17 +15,13 @@ public class EntityVersionChangeEvent extends Evt {
      * @param eventType
      * @throws IllegalArgumentException if source is null
      */
-    public <V extends EntityVersion> EntityVersionChangeEvent(Object source, EvtType eventType, int nid, ImmutableList<Object> observableSemanticVersion) {
+    public <V extends EntityVersion> EntityVersionChangeEvent(Object source, EvtType eventType, EntityVersion entityVersion) {
         super(source, eventType);
-        this.nid = nid;
-        this.observableSemanticVersion = observableSemanticVersion;
+
+        this.entityVersion = entityVersion;
     }
 
-    public int getNid() {
-        return nid;
-    }
-
-    public  ImmutableList<Object> getObservableSemanticVersion() {
-        return observableSemanticVersion;
+    public EntityVersion getEntityVersion() {
+        return entityVersion;
     }
 }

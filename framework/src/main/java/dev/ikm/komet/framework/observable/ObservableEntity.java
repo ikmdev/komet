@@ -32,7 +32,6 @@ import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.PatternRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticRecord;
-import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampRecord;
 import javafx.application.Platform;
@@ -70,8 +69,6 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
 
     public void saveToDB(Entity<?> analogue, EntityVersion oldVersionRecord, EntityVersion newVersionRecord ) {
         Entity.provider().putEntity(analogue);
-//        versionProperty.add(wrap((V) analogue.getVersion(versionStampNid).get()));
-//        updateVersions(entity(), this);
         if(oldVersionRecord.committed()){
             versionProperty.add(wrap((V) newVersionRecord));
         }else {
@@ -79,9 +76,9 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
             versionProperty.add(wrap((V) newVersionRecord));
         }
 
-        System.out.println(" ");
+        versionProperty.add(wrap((V)newVersionRecord));
         EvtBusFactory.getDefaultEvtBus()
-                .publish(VERSION_CHANGED_TOPIC, new EntityVersionChangeEvent(this, EntityVersionChangeEvent.VERSION_UPDATED, nid(), ((SemanticVersionRecord) newVersionRecord).fieldValues()));
+                .publish(VERSION_CHANGED_TOPIC, new EntityVersionChangeEvent(this, EntityVersionChangeEvent.VERSION_UPDATED, newVersionRecord));
     }
 
     ObservableEntity(Entity<V> entity) {
