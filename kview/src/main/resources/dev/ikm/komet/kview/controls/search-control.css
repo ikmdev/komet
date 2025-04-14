@@ -1,6 +1,11 @@
 .search-control {
-    -fx-padding: 4 0 4 4;
+    -fx-padding: 12 0 12 0;
     -fx-background-color: transparent;
+    -fx-pref-height: 56;
+}
+
+.search-control:results {
+    -fx-pref-height: 223;
 }
 
 .search-control > .text-field {
@@ -109,4 +114,116 @@
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14;
+}
+
+.search-control > .search-results-list-view {
+    -fx-background-color: transparent;
+    -fx-pref-height: 167;
+    -fx-padding: 0;
+}
+
+.search-control > .search-results-list-view > .virtual-flow > .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.search-control > .search-results-list-view > .virtual-flow > .scroll-bar:vertical > .track {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 0em;
+    -fx-border-radius: 0;
+    -fx-background-insets: 0;
+}
+
+.search-control > .search-results-list-view > .virtual-flow > .scroll-bar:vertical > .thumb {
+    -fx-background-color: transparent, #F2F2F299;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 2, 2;
+}
+
+.search-control > .search-results-list-view > .virtual-flow > .scroll-bar:vertical > .increment-button,
+.search-control > .search-results-list-view > .virtual-flow > .scroll-bar:vertical > .decrement-button,
+.search-control > .search-results-list-view > .virtual-flow > .scroll-bar:vertical > .increment-button > .increment-arrow,
+.search-control > .search-results-list-view > .virtual-flow > .scroll-bar:vertical > .decrement-button > .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0 1 0 1;
+}
+
+.list-cell {
+    -fx-padding: 0 0 5 0;
+}
+.list-cell,
+.list-cell:odd,
+.list-cell:filled:selected,
+.search-control > .search-results-list.list-view:focused > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
+.search-control > .search-results-list.list-view:focused > .virtual-flow > .clipped-container > .sheet > .list-cell:focused {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-table-cell-border-color: transparent;
+    -fx-background-insets: 0;
+}
+
+.search-result {
+    -fx-background-color: #FBFBFC, #FBFBFC;
+    -fx-background-radius: 3;
+    -fx-background-insets: 0, 2;
+    -fx-padding: 2 8 2 8;
+    -fx-alignment: center-left;
+    -fx-pref-height: 38;
+    -fx-min-width: 0;
+    -fx-pref-width: 1;
+}
+
+.search-result > .highlight-path {
+    -fx-fill: #C0F5A0;
+    -fx-stroke-width: 0;
+}
+
+.search-result > .parent-description-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 10px;
+    -fx-text-fill: #545D72;
+    -fx-font-weight: 500;
+}
+
+.search-result > .description-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 11px;
+    -fx-text-fill: #212430;
+    -fx-font-weight: 500;
+    -fx-graphic-text-gap: 0;
+}
+
+.search-result > .description-label > .region {
+    -fx-pref-width: 12;
+    -fx-pref-height: 18;
+}
+
+.search-result > .description-label > .region > .icon.curve {
+    -fx-shape: "M 8.5 11.198 C 5.77 11.179 3.576 10.279 2.166 8.82 C 0.752 7.357 0 5.23 0 2.947 C 0 0.748 0 -0.006 0 -0.21 C 0 -0.236 0 -0.253 0 -0.263 C 0 -0.268 0 -0.271 0 -0.273 C 0 -0.274 0 -0.274 0 -0.275 C 0 -0.275 0 -0.275 0 -0.275 C 0 -0.275 0 -0.275 0 -0.275 C 0 -0.275 0 -0.275 0 -0.275 C 0 -0.275 0 -0.275 0 -0.275 C 0 -0.275 0 -0.275 0 -0.275 C 0 -0.275 0 -0.275 0 -0.275 L 1 -0.275 C 1 -0.275 1 -0.275 1 -0.275 C 1 -0.275 1 -0.275 1 -0.275 C 1 -0.275 1 -0.275 1 -0.275 C 1 -0.275 1 -0.275 1 -0.275 C 1 -0.275 1 -0.275 1 -0.275 C 1 -0.275 1 -0.275 1 -0.275 C 1 -0.275 1 -0.275 1 -0.275 C 1 -0.275 1 -0.274 1 -0.274 C 1 -0.27 1 -0.246 1 -0.216 C 1 -0.155 1 -0.069 1 -0.069 L 0 -0.069 C 0 -0.069 0 -0.155 0 -0.216 C 0 -0.246 0 -0.27 0 -0.274 C 0 -0.274 0 -0.275 0 -0.275 C 0 -0.275 0 -0.275 0 -0.275 C 0 -0.275 0 -0.275 0 -0.275 C 0 -0.275 0 -0.275 0 -0.275 C 0 -0.275 0 -0.275 0 -0.275 C 0 -0.275 0 -0.275 0 -0.275 C 0 -0.275 0 -0.275 0 -0.275 C 0 -0.275 0 -0.275 0 -0.275 L 1 -0.275 C 1 -0.275 1 -0.275 1 -0.275 C 1 -0.275 1 -0.275 1 -0.275 C 1 -0.275 1 -0.275 1 -0.275 C 1 -0.275 1 -0.275 1 -0.275 C 1 -0.275 1 -0.275 1 -0.275 C 1 -0.275 1 -0.275 1 -0.275 C 1 -0.274 1 -0.274 1 -0.273 C 1 -0.271 1 -0.268 1 -0.263 C 1 -0.253 1 -0.236 1 -0.21 C 1 -0.006 1 0.748 1 2.947 C 1 5.064 1.615 6.812 2.885 8.125 C 4.158 9.442 5.964 10.217 8.5 10.198 L 8.5 11.198 Z";
+    -fx-background-color: #6E7989;
+    -fx-scale-shape: false;
+    -fx-position-shape: false;
+}
+
+.search-result > .select-region {
+    -fx-min-width: 11;
+    -fx-pref-width: 11;
+    -fx-max-width: 11;
+    -fx-min-height: 18;
+    -fx-pref-height: 18;
+    -fx-max-height: 18;
+    -fx-background-color: transparent;
+    visibility: hidden;
+}
+
+.search-result:long-hover > .select-region {
+    visibility: visible;
+}
+
+.search-result > .select-region > .icon.select {
+    -fx-background-color: #9A9DA0;
+    -fx-scale-shape: false;
+    -fx-shape: "M 4 2 C 4 3.105 3.105 4 2 4 C 0.895 4 0 3.105 0 2 C 0 0.895 0.895 0 2 0 C 3.105 0 4 0.895 4 2 Z M 11 2 C 11 3.105 10.105 4 9 4 C 7.895 4 7 3.105 7 2 C 7 0.895 7.895 0 9 0 C 10.105 0 11 0.895 11 2 Z M 4 9 C 4 10.105 3.105 11 2 11 C 0.895 11 0 10.105 0 9 C 0 7.895 0.895 7 2 7 C 3.105 7 4 7.895 4 9 Z M 11 9 C 11 10.105 10.105 11 9 11 C 7.895 11 7 10.105 7 9 C 7 7.895 7.895 7 9 7 C 10.105 7 11 7.895 11 9 Z M 4 16 C 4 17.105 3.105 18 2 18 C 0.895 18 0 17.105 0 16 C 0 14.895 0.895 14 2 14 C 3.105 14 4 14.895 4 16 Z M 11 16 C 11 17.105 10.105 18 9 18 C 7.895 18 7 17.105 7 16 C 7 14.895 7.895 14 9 14 C 10.105 14 11 14.895 11 16 Z"
 }
