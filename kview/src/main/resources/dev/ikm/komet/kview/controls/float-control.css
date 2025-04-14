@@ -34,4 +34,7 @@
     -fx-font-family: "Noto Sans";
     -fx-font-size: 12px;
     -fx-text-fill: -Accent-color-red;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+    -fx-alignment: center;
 }
