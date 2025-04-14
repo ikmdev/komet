@@ -32,6 +32,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
+import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -75,7 +76,8 @@ public class SemanticFieldsController {
     private Button submitButton;
 
     @InjectViewModel
-    private ValidationViewModel semanticFieldsViewModel;
+    //private ValidationViewModel semanticFieldsViewModel;
+    private GenEditingViewModel genEditingViewModel;
 
     private List<ObservableField<?>> observableFields = new ArrayList<>();
 
@@ -118,7 +120,7 @@ public class SemanticFieldsController {
     }
 
     private void processCommittedValues() {
-        EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
+        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         Latest<SemanticEntityVersion> semanticEntityVersionLatest = retrieveCommittedLatestVersion(semantic,getViewProperties());
         committedHash = generateHashValue(semanticEntityVersionLatest, getViewProperties());
     }
@@ -139,7 +141,7 @@ public class SemanticFieldsController {
         editFieldsVBox.getChildren().clear();
         updateStampVersions = true;
         submitButton.setDisable(true);
-        EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
+        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         if (semantic != null) {
             StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
             Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
@@ -175,7 +177,7 @@ public class SemanticFieldsController {
         //  pencil icon and wants to edit all the fields
         // if the FIELD_INDEX is >= 0 then the user chose the context menu of a single field
         //  to edit that field
-        semanticFieldsViewModel.getObjectProperty(FIELD_INDEX).subscribe(fieldIndex -> {
+        genEditingViewModel.getObjectProperty(FIELD_INDEX).subscribe(fieldIndex -> {
             int fieldIdx = (int)fieldIndex;
             editFieldsVBox.getChildren().clear();
 
@@ -200,7 +202,7 @@ public class SemanticFieldsController {
      * for each field and pick up the latest value for each contradiction?
      */
     private void updateStampVersionsNidsForAllFields() {
-        EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
+        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
         updateStampVersions = false;
@@ -221,7 +223,7 @@ public class SemanticFieldsController {
     }
 
     public ViewProperties getViewProperties() {
-        return semanticFieldsViewModel.getPropertyValue(VIEW_PROPERTIES);
+        return genEditingViewModel.getPropertyValue(VIEW_PROPERTIES);
     }
 
     @FXML
@@ -243,7 +245,7 @@ public class SemanticFieldsController {
         List<ObservableField<?>> list = new ArrayList<>(observableFields);
 
         //Get the semantic need to pass along with event for loading values across Opened Semantics.
-        EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
+        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
         semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
@@ -252,9 +254,9 @@ public class SemanticFieldsController {
             Transaction.forVersion(version).ifPresentOrElse(transaction -> {
                 commitTransactionTask(transaction);
                 // EventBus implementation changes to refresh the details area if commit successful
-                EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                         new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
-                // refesh the pattern navigation
+                // refresh the pattern navigation
                 EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
                         new PatternCreationEvent(actionEvent.getSource(), PATTERN_CREATION_EVENT));
             }, () -> {

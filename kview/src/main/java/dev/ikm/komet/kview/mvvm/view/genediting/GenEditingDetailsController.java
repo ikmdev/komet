@@ -440,14 +440,16 @@ public class GenEditingDetailsController {
         // Setup Property screen bump out
         // Load Concept Properties View Panel (FXML & Controller)
         Config config = new Config(GENEDITING_PROPERTIES_VIEW_FXML_URL)
-                .updateViewModel("propertiesViewModel", (propertiesViewModel) -> propertiesViewModel
-                        .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC))
-                        .setPropertyValue(WINDOW_TOPIC, genEditingViewModel.getPropertyValue(WINDOW_TOPIC))
-                        .setPropertyValue(VIEW_PROPERTIES, genEditingViewModel.getPropertyValue(VIEW_PROPERTIES))
-                        .setPropertyValue(SEMANTIC, genEditingViewModel.getPropertyValue(SEMANTIC))
-                        .setPropertyValue(REF_COMPONENT, genEditingViewModel.getPropertyValue(REF_COMPONENT))
-
-                );
+                .addNamedViewModel(new NamedVm("genEditingViewModel", genEditingViewModel))
+//                .updateViewModel("propertiesViewModel", (propertiesViewModel) -> propertiesViewModel
+//                        .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC))
+//                        .setPropertyValue(WINDOW_TOPIC, genEditingViewModel.getPropertyValue(WINDOW_TOPIC))
+//                        .setPropertyValue(VIEW_PROPERTIES, genEditingViewModel.getPropertyValue(VIEW_PROPERTIES))
+//                        .setPropertyValue(SEMANTIC, genEditingViewModel.getPropertyValue(SEMANTIC))
+//                        .setPropertyValue(REF_COMPONENT, genEditingViewModel.getPropertyValue(REF_COMPONENT))
+//
+//                )
+                ;
 
         JFXNode<BorderPane, PropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(config);
         this.propertiesBorderPane = propsFXMLLoader.node();

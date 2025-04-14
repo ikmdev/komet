@@ -75,8 +75,12 @@ public class PropertiesController {
 
     private ClosePropertiesController closePropertiesController;
 
+//    @InjectViewModel
+//    private SimpleViewModel propertiesViewModel;
+
     @InjectViewModel
-    private SimpleViewModel propertiesViewModel;
+    private GenEditingViewModel genEditingViewModel;
+
 
     Subscriber<PropertyPanelEvent> showPanelSubscriber;
 
@@ -95,6 +99,7 @@ public class PropertiesController {
 
     //Refers to Add Reference Component
     private void setupShowReferencePanelHandlers() {
+        /*
         Config addReferenceConfig = new Config(this.getClass().getResource("reference-component.fxml"));
         addReferenceConfig.updateViewModel("referenceComponentViewModel", (referenceComponentViewModel) -> {
             referenceComponentViewModel
@@ -105,24 +110,32 @@ public class PropertiesController {
                     .addProperty(REF_COMPONENT, propertiesViewModel.getObjectProperty(REF_COMPONENT))
                     .addProperty(FIELD_INDEX, -1);
         });
+         */
+        Config addReferenceConfig = new Config(this.getClass().getResource("reference-component.fxml"))
+                .addNamedViewModel(new NamedVm("genEditingViewModel", genEditingViewModel));
         referenceComponentJfxNode = FXMLMvvmLoader.make(addReferenceConfig);
     }
 
     private void setupShowingPanelHandlers() {
         Config config = new Config(this.getClass().getResource("semantic-edit-fields.fxml"));
-        config.updateViewModel("semanticFieldsViewModel", (semanticFieldsViewModel) -> {
-            semanticFieldsViewModel
-                    .addProperty(CURRENT_JOURNAL_WINDOW_TOPIC, propertiesViewModel.getObjectProperty(CURRENT_JOURNAL_WINDOW_TOPIC))
-                    .addProperty(WINDOW_TOPIC, propertiesViewModel.getObjectProperty(WINDOW_TOPIC))
-                    .addProperty(VIEW_PROPERTIES, propertiesViewModel.getObjectProperty(VIEW_PROPERTIES))
-                    .addProperty(SEMANTIC, propertiesViewModel.getObjectProperty(SEMANTIC))
-                    .addProperty(REF_COMPONENT, propertiesViewModel.getObjectProperty(REF_COMPONENT))
-                    .addProperty(FIELD_INDEX, -1);
+        config
+            .updateViewModel("genEditingViewModel", (genEditingViewModel) -> {
+                genEditingViewModel.addProperty(FIELD_INDEX, -1);
+                //FIXME we want to use only one viewModel that is the genEditingViewModel
+//            .updateViewModel("semanticFieldsViewModel", (semanticFieldsViewModel) -> {
+//                semanticFieldsViewModel
+//                    .addProperty(CURRENT_JOURNAL_WINDOW_TOPIC, propertiesViewModel.getObjectProperty(CURRENT_JOURNAL_WINDOW_TOPIC))
+//                    .addProperty(WINDOW_TOPIC, propertiesViewModel.getObjectProperty(WINDOW_TOPIC))
+//                    .addProperty(VIEW_PROPERTIES, propertiesViewModel.getObjectProperty(VIEW_PROPERTIES))
+//                    .addProperty(SEMANTIC, propertiesViewModel.getObjectProperty(SEMANTIC))
+//                    .addProperty(REF_COMPONENT, propertiesViewModel.getObjectProperty(REF_COMPONENT))
+//                    .addProperty(FIELD_INDEX, -1)
+//                    ;
         });
         editFieldsJfxNode = FXMLMvvmLoader.make(config);
 
         Config closePropertiesConfig = new Config(this.getClass().getResource("close-properties.fxml"))
-                .addNamedViewModel(new NamedVm("propertiesViewModel", propertiesViewModel));
+                .addNamedViewModel(new NamedVm("genEditingViewModel", genEditingViewModel));
 
         JFXNode<Pane, ClosePropertiesController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
 
@@ -132,7 +145,7 @@ public class PropertiesController {
             LOG.info("Publish event type: " + evt.getEventType());
             contentBorderPane.setCenter(closePropsJfxNode.node());
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(propertiesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, genEditingEventSubscriber);
 
         showPanelSubscriber = evt -> {
@@ -140,15 +153,15 @@ public class PropertiesController {
             propertyToggleButtonGroup.selectToggle(addEditButton);
 
             ValidationViewModel semanticFieldsViewModel = (ValidationViewModel) editFieldsJfxNode
-                    .getViewModel("semanticFieldsViewModel").get();
+                    .getViewModel("genEditingViewModel").get();
             if (evt.getEventType() == PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
-                semanticFieldsViewModel.setPropertyValue(FIELD_INDEX, -1);
+                genEditingViewModel.setPropertyValue(FIELD_INDEX, -1);
                 contentBorderPane.setCenter(editFieldsJfxNode.node());
             } else if (evt.getEventType() == PropertyPanelEvent.SHOW_EDIT_SINGLE_SEMANTIC_FIELD) {
-                semanticFieldsViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
+                genEditingViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
                 contentBorderPane.setCenter(editFieldsJfxNode.node());
             } else if (evt.getEventType() == PropertyPanelEvent.SHOW_ADD_REFERENCE_SEMANTIC_FIELD) {
-                semanticFieldsViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
+                genEditingViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
                 contentBorderPane.setCenter(referenceComponentJfxNode.node());
             } else if (evt.getEventType() == PropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
                 // change the heading on the top of the panel
@@ -157,7 +170,8 @@ public class PropertiesController {
                 contentBorderPane.setCenter(closePropsPane);
             }
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(propertiesViewModel.getPropertyValue(WINDOW_TOPIC), PropertyPanelEvent.class, showPanelSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                PropertyPanelEvent.class, showPanelSubscriber);
 
 
     }
