@@ -380,9 +380,9 @@ public class GenEditingDetailsController {
         EntityFacade refComponent = refComponentProp.get();
 
         //Disable the  edit the Reference Component of an existing semantic once submitted
-        if(refComponent != null){
+        if (refComponent != null) {
             addReferenceButton.setDisable(true);
-        }else{
+        } else {
             addReferenceButton.setDisable(false);
         }
 
