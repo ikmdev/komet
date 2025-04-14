@@ -22,7 +22,6 @@ import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.DeviceViewModel.DEVICE_ENTITY;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.addToMembershipPattern;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
@@ -36,7 +35,6 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.FULLY_QUALIFIED_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.OTHER_NAMES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
@@ -77,7 +75,6 @@ import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityService;
@@ -109,7 +106,6 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
@@ -118,11 +114,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
@@ -179,7 +171,7 @@ public class DetailsController  {
     private Tooltip conceptNameTooltip;
 
     @FXML
-    private TextArea definitionTextArea;
+    private TextField definitionTextField;
 
     @FXML
     private TextField identifierText;
@@ -188,19 +180,19 @@ public class DetailsController  {
     private Tooltip identifierTooltip;
 
     @FXML
-    private Text lastUpdatedText;
+    private Label lastUpdatedLabel;
 
     @FXML
-    private Text moduleText;
+    private Label moduleLabel;
 
     @FXML
-    private Text pathText;
+    private Label pathLabel;
 
     @FXML
-    private Text originationText;
+    private Label originationLabel;
 
     @FXML
-    private Text statusText;
+    private Label statusLabel;
 
     /**
      * Applied to lastUpdatedText component.
@@ -388,7 +380,7 @@ public class DetailsController  {
         });
 
         Tooltip.install(identifierText, identifierTooltip);
-        Tooltip.install(lastUpdatedText, authorTooltip);
+        Tooltip.install(lastUpdatedLabel, authorTooltip);
         Tooltip.install(fqnTitleText, conceptNameTooltip);
 
         clearView();
@@ -819,7 +811,7 @@ public class DetailsController  {
         conceptNameTooltip.setText(conceptNameStr);
 
         // Definition description text
-        definitionTextArea.setText("");
+        definitionTextField.setText("");
 
     }
     /**
@@ -840,7 +832,7 @@ public class DetailsController  {
         conceptNameTooltip.setText(conceptNameStr);
 
         // Definition description text
-        definitionTextArea.setText(viewCalculator.getDefinitionDescriptionText(entityFacade.nid()).orElse(""));
+        definitionTextField.setText(viewCalculator.getDefinitionDescriptionText(entityFacade.nid()).orElse(""));
 
         // Public ID (UUID)
         List<String> idList = entityFacade.publicId().asUuidList().stream()
@@ -861,22 +853,22 @@ public class DetailsController  {
 
         // Status
         String status = stamp.state() != null && State.ACTIVE == stamp.state() ? "Active" : "Inactive";
-        statusText.setText(status);
+        statusLabel.setText(status);
 
         // Module
         String module = stamp.module().description();
-        moduleText.setText(module);
+        moduleLabel.setText(module);
 
         // Path
         String path = stamp.path().description();
-        pathText.setText(path);
+        pathLabel.setText(path);
 
         // Latest update time
         DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
         Instant stampInstance = Instant.ofEpochSecond(stamp.time()/1000);
         ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
         String time = DATE_TIME_FORMATTER.format(stampTime);
-        lastUpdatedText.setText(time);
+        lastUpdatedLabel.setText(time);
 
         // Author tooltip
         authorTooltip.setText(stamp.author().description());
@@ -915,6 +907,8 @@ public class DetailsController  {
             LOG.error("missing case sensitivity and language when adding a fully qualified name");
             fqnDescriptionSemanticText.setText("");
         }
+
+        fqnContainer.getChildren().setAll(latestFqnText, fqnDescriptionSemanticText);
     }
 
     public void updateOtherNamesDescription(List<DescrName> descrNameViewModels) {
@@ -1123,6 +1117,9 @@ public class DetailsController  {
         } else {
             fqnDescriptionSemanticText.setText("");
         }
+
+        fqnContainer.getChildren().setAll(latestFqnText, fqnDescriptionSemanticText);
+
         // update date
         Instant stampInstance = Instant.ofEpochSecond(semanticEntityVersion.stamp().time()/1000);
         ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
@@ -1287,18 +1284,18 @@ public class DetailsController  {
     }
 
     public void clearView() {
-        identiconImageView.setImage(null);
-        //fqnTitleText.setText(""); // Defaults to 'Concept Name'. It's what is specified in Scene builder
-        definitionTextArea.setText("");
-        identifierText.setText("");
-        lastUpdatedText.setText("");
-        moduleText.setText("");
-        pathText.setText("");
-        originationText.setText("");
-        statusText.setText("");
+        definitionTextField.clear();
+        identifierText.clear();
+        lastUpdatedLabel.setText("");
+        moduleLabel.setText("");
+        pathLabel.setText("");
+        originationLabel.setText("");
+        statusLabel.setText("");
         authorTooltip.setText("");
         notAvailInferredAxiomLabel.setVisible(true);
         notAvailStatedAxiomLabel.setVisible(true);
+        fqnContainer.getChildren().clear();
+        fqnDateAddedTextFlow.getChildren().clear();
         otherNamesNodeListControl.getItems().clear();
     }
     @FXML
@@ -1443,20 +1440,20 @@ public class DetailsController  {
         ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
         String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
 
-        lastUpdatedText.setText(lastUpdated);
+        lastUpdatedLabel.setText(lastUpdated);
         ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
         if (moduleEntity == null) {
             LOG.warn("Must select a valid module for Stamp.");
             return;
         }
         String moduleDescr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleEntity.nid());
-        moduleText.setText(moduleDescr);
+        moduleLabel.setText(moduleDescr);
         ConceptEntity pathEntity = stampViewModel.getValue(PATH);
         String pathDescr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
-        pathText.setText(pathDescr);
+        pathLabel.setText(pathDescr);
         State status = stampViewModel.getValue(STATUS);
         String statusMsg = status == null ? "Active" : viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
-        statusText.setText(statusMsg);
+        statusLabel.setText(statusMsg);
     }
 
     public void compactSizeWindow() {
