@@ -439,8 +439,6 @@ public class PatternDetailsController {
         contextMenu.getItems().addAll(addNewSemanticElement);
         this.contextMenu.getStyleClass().add("klcontext-menu");
         detailsOuterBorderPane.setOnContextMenuRequested(contextMenuEvent -> {
-//            contextMenu.show(detailsOuterBorderPane, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
-
             contextMenu.show(detailsOuterBorderPane.getScene().getWindow(), contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
             contextMenuEvent.consume();
         });
