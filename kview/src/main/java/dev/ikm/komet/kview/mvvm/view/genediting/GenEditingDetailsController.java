@@ -218,12 +218,6 @@ public class GenEditingDetailsController {
             // create empty semantic for the pattern and set it in the view model
             semantic = DataModelHelper.createEmptySemantic(getViewProperties(), pattern);
             genEditingViewModel.setPropertyValue(SEMANTIC, semantic);
-
-            //FIXME do we need to set this up so early? wouldn't it be null here?
-            //are we intenting to just seed the genEditingViewModel
-            SemanticEntity entity = (SemanticEntity) EntityService.get().getEntity(semantic.nid()).get();
-            EntityFacade refComponent = EntityService.get().getEntity(entity.referencedComponentNid()).get();
-            genEditingViewModel.setPropertyValue(REF_COMPONENT, refComponent);
         } else {
             genEditingViewModel.setPropertyValue(MODE, EDIT);
         }
@@ -297,7 +291,7 @@ public class GenEditingDetailsController {
                         // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
                         // Should we check if the value is different before updating? (blindly updating now).
                         //if (!field.value().equals(updatedField.valueProperty())) {
-                        field.valueProperty().setValue(updatedField.valueProperty().getValue());
+                            field.valueProperty().setValue(updatedField.valueProperty().getValue());
                         //}
                     }
                 }
