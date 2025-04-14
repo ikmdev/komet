@@ -63,9 +63,11 @@ import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
+import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -250,28 +252,7 @@ public class GenEditingDetailsController {
         // Populate the Semantic Details
 
         if (genEditingViewModel.getPropertyValue(MODE).equals(EDIT)) {
-            // populate the observable fields and nodes for this semantic
-            observableFields.addAll(KlFieldHelper
-                    .generateObservableFieldsAndNodes(getViewProperties(),
-                            nodes,
-                            semanticEntityVersionLatest, false));
-
-            // function to apply for the components' edit action (a.k.a. right click > Edit)
-            BiFunction<Node, Integer, Runnable> editAction = (node, fieldIndex) ->
-                    () -> {
-                        final EntityVersion finalEntityVersion = getSemanticVersion().get();
-                        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                                new PropertyPanelEvent(node, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
-                        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                                new PropertyPanelEvent(node, OPEN_PANEL));
-                    };
-
-            // add setEditOnAction
-            for (int index = 0; index < nodes.size(); index++) {
-                KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) nodes.get(index);
-                klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index));
-                semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
-            }
+            setUpObservables();
         } else {
             EntityFacade pattern = genEditingViewModel.getPropertyValue(PATTERN);
             PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(pattern).get();
@@ -288,6 +269,19 @@ public class GenEditingDetailsController {
         EntityFacade finalSemantic = semantic;
         Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
             if (evt.getEventType() == GenEditingEvent.PUBLISH && evt.getNid() == finalSemantic.nid()) {
+                if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
+                    // populate the semantic and its observable fields once saved
+                    semanticEntityVersionLatest = retrieveCommittedLatestVersion(finalSemantic, getViewProperties());
+
+                    // clear out the temporary placeholders
+                    semanticDetailsVBox.getChildren().clear();
+
+                    // set up the real observables now that the semantic has been created
+                    setUpObservables();
+
+                    // change the mode from CREATE to EDIT
+                    genEditingViewModel.setPropertyValue(MODE, EDIT);
+                }
                 for (int i = 0; i < evt.getList().size(); i++) {
                     ObservableField field = observableFields.get(i);
                     ObservableField updatedField = evt.getList().get(i);
@@ -305,6 +299,31 @@ public class GenEditingDetailsController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, refreshSubscriber);
+    }
+
+    private void setUpObservables() {
+        // populate the observable fields and nodes for this semantic
+        observableFields.addAll(KlFieldHelper
+                .generateObservableFieldsAndNodes(getViewProperties(),
+                        nodes,
+                        semanticEntityVersionLatest, false));
+
+        // function to apply for the components' edit action (a.k.a. right click > Edit)
+        BiFunction<Node, Integer, Runnable> editAction = (node, fieldIndex) ->
+                () -> {
+                    final EntityVersion finalEntityVersion = getSemanticVersion().get();
+                    EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                            new PropertyPanelEvent(node, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
+                    EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                            new PropertyPanelEvent(node, OPEN_PANEL));
+                };
+
+        // add setEditOnAction
+        for (int index = 0; index < nodes.size(); index++) {
+            KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) nodes.get(index);
+            klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index));
+            semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
+        }
     }
 
 
