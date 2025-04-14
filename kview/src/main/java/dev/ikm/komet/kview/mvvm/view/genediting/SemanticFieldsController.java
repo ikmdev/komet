@@ -24,21 +24,28 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_W
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
+import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
+import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
+import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -230,7 +237,53 @@ public class SemanticFieldsController {
 
     @FXML
     private void clearForm(ActionEvent actionEvent) {
+        EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
+        Latest<SemanticEntityVersion>  latestCommitted =  retrieveCommittedLatestVersion(semantic, getViewProperties());
+        latestCommitted.ifPresent(semanticEntityVersion -> {
+            if(semanticEntityVersion.committed()){
+                updateFieldValues(semanticEntityVersion);
+            } else {
+                EntityFacade pattern = EntityFacade.make(semanticEntityVersion.pattern().nid());
+                Latest<PatternEntityVersion> patternEntityVersionLatest = getViewProperties().calculator().latest(pattern.nid());
+                updateFieldValues(patternEntityVersionLatest.get());
+            }
+        });
+
         actionEvent.consume();
+    }
+
+    private void updateFieldValues(EntityVersion entityVersion) {
+        if(entityVersion instanceof PatternEntityVersion patternEntityVersion) {
+            for (int i = 0; i < patternEntityVersion.fieldDefinitions().size(); i++) {
+                Object object = null;
+                FieldDefinitionForEntity fieldDefinitionForEntity = patternEntityVersion.fieldDefinitions().get(i);
+                if (fieldDefinitionForEntity.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
+                    object = ANONYMOUS_CONCEPT;
+                } else if (fieldDefinitionForEntity.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
+                        || fieldDefinitionForEntity.dataTypeNid() == TinkarTerm.STRING.nid()) {
+                    object = "";
+                } else if (fieldDefinitionForEntity.dataTypeNid() == INTEGER_FIELD.nid()) {
+                    object = 0;
+                } else if (fieldDefinitionForEntity.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
+                    object = 0.0F;
+                } else if (fieldDefinitionForEntity.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
+                    object = false;
+                } else if (fieldDefinitionForEntity.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
+                    object = IntIds.list.empty();
+                } else if (fieldDefinitionForEntity.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
+                    object = IntIds.set.empty();
+                }
+                ObservableField observableField = observableFields.get(i);
+                observableField.valueProperty().setValue(object);
+            }
+        } else if (entityVersion instanceof SemanticEntityVersion semanticEntityVersion) {
+            for(int i = 0; i < semanticEntityVersion.fieldValues().size(); i++){
+                Object object = semanticEntityVersion.fieldValues().get(i);
+                ObservableField observableField = observableFields.get(i);
+                observableField.valueProperty().setValue(object);
+            }
+
+        }
     }
 
     @FXML

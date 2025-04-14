@@ -384,7 +384,7 @@ public class DataModelHelper {
                                 fieldValues.with(ANONYMOUS_CONCEPT);
                             } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
                                     || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
-                                fieldValues.with("Default String Value");
+                                fieldValues.with("");
                             } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
                                 fieldValues.with(0);
                             } else if (f.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
