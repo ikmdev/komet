@@ -1,4 +1,4 @@
-FROM csanchez/maven:3-azulzulu-23-alpine AS builder
+FROM azul/zulu-openjdk-alpine:23-latest AS builder
 
 COPY .. /komet/
 
@@ -8,7 +8,7 @@ RUN ls /komet/
 RUN ./mvnw clean install -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
 RUN ./mvnw clean -f application -Pjpro jpro:release
 
-FROM azul/zulu-openjdk-alpine:23-latest
+FROM azul/zulu-openjdk-alpine:23-jre-headless-latest
 
 # Update the package list and install bash (for script compatibility)
 RUN apk update && apk add --no-cache --upgrade bash
