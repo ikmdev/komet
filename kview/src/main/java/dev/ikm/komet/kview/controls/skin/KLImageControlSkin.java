@@ -129,8 +129,11 @@ public class KLImageControlSkin extends SkinBase<KLImageControl> {
 
         // Show open file dialog
         File selectedFile = fileChooser.showOpenDialog(control.getScene().getWindow());
-        Image image = new Image(selectedFile.toURI().toString());
+        if (selectedFile == null) {
+            return;
+        }
 
+        Image image = new Image(selectedFile.toURI().toString());
         getSkinnable().setImage(image);
     }
 
