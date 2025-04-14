@@ -188,7 +188,6 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
 
         private final Label parentDescriptionLabel;
         private final Label descriptionLabel;
-        private final StackPane selectStackPane;
         private Text actualDescriptionText;
         private String highlight;
         private PauseTransition hoverTransition;
@@ -226,11 +225,7 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
                     .then(ContentDisplay.LEFT).otherwise(ContentDisplay.TEXT_ONLY));
             descriptionLabel.getStyleClass().add("description-label");
 
-            IconRegion selectIcon = new IconRegion("icon", "select");
-            selectStackPane = new StackPane(selectIcon);
-            selectStackPane.getStyleClass().add("select-region");
-
-            getChildren().addAll(parentDescriptionLabel, descriptionLabel, selectStackPane);
+            getChildren().addAll(parentDescriptionLabel, descriptionLabel);
 
             subscription = subscription.and(hoverProperty().subscribe(h -> {
                 if (h) {
@@ -267,12 +262,7 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
         @Override
         protected void layoutChildren() {
             super.layoutChildren();
-            double selectHeight = snapSizeX(selectStackPane.prefHeight(getWidth()));
-            double selectWidth = snapSizeY(selectStackPane.prefWidth(getHeight()));
-            selectStackPane.resizeRelocate(getWidth() - snappedRightInset() - selectWidth,
-                    (getHeight() - snappedTopInset() - snappedBottomInset() - selectHeight) / 2 + snappedTopInset(),
-                    selectWidth, selectHeight);
-            double maxWidth = getWidth() - snappedLeftInset() - selectWidth - snappedRightInset();
+            double maxWidth = getWidth() - snappedLeftInset() - snappedRightInset();
             double parentWidth = snapSizeX(Math.min(parentDescriptionLabel.prefWidth(getHeight()), maxWidth));
             parentDescriptionLabel.resizeRelocate(snappedLeftInset(), snappedTopInset(), parentWidth, parentDescriptionLabel.prefHeight(parentWidth));
             double conceptWidth = snapSizeX(Math.min(descriptionLabel.prefWidth(getHeight()), maxWidth));
