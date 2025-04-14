@@ -674,9 +674,6 @@
 
     <profiles>
         <profile>
-            <activation>
-                <
-            </activation>
             <id>integrationTestFX</id>
             <activation>
                 <property>
