@@ -8,9 +8,10 @@ import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.beans.binding.Bindings;
+import javafx.collections.ListChangeListener;
 import javafx.event.Event;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
@@ -22,6 +23,7 @@ import org.eclipse.collections.api.factory.primitive.IntLists;
 import org.eclipse.collections.api.list.primitive.MutableIntList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +58,13 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
     private int currentDropIndex = -1;
 
+    private final ListChangeListener<Node> nodeListChangeListener = change -> {
+        while(change.next()) {
+            System.out.println(" WE ARE HERE THE CHANGE IS OF THIS TYPE " + change.toString());
+
+        }
+    };
+
     /**
      * Creates a new KLComponentListControlSkin instance, installing the necessary child
      * nodes into the Control {@link javafx.scene.control.Control#getChildrenUnmodifiable() children} list, as
@@ -65,6 +74,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
      */
     public KLComponentListControlSkin(KLComponentListControl control) {
         super(control);
+        getChildren().addListener(nodeListChangeListener);
 
         // Title
         titleLabel = new Label();

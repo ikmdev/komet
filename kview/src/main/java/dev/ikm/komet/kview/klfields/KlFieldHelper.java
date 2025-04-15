@@ -8,7 +8,6 @@ import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
@@ -31,7 +30,6 @@ import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.Node;
 import javafx.scene.control.Tooltip;
@@ -201,7 +199,8 @@ public class KlFieldHelper {
         observableFieldsList.forEach(observableField -> {
             // TODO re-evaluate if toString is the right approach for complex datatypes.
             var observableFieldValue = observableField.valueProperty().get();
-            if (observableFieldValue == null || (observableFieldValue instanceof EntityProxy entityProxy && entityProxy.nid() == KLComponentControl.EMPTY_NID)) {
+            if (observableFieldValue == null //|| (observableFieldValue instanceof EntityProxy entityProxy && entityProxy.nid() == KLComponentControl.EMPTY_NID)
+            ) {
                 stringBuilder.append("|");
             } else {
                 stringBuilder.append(observableField.valueProperty().get().toString()).append("|");

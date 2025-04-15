@@ -24,6 +24,11 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
             KLComponentListControl<IntIdList> klComponentListControl = new KLComponentListControl<>();
             klComponentListControl.setTitle(getTitle());
             klComponentListControl.valueProperty().bindBidirectional(observableProperty);
+            klComponentListControl.valueProperty().addListener(observable -> {
+                System.out.println(observableProperty +  " OP ");
+                klComponentListControl.setTitle(field().field().meaning().description());
+                updateTooltipText();
+            });
             node = klComponentListControl;
         } else {
             KLReadOnlyComponentListControl klReadOnlyComponentListControl = new KLReadOnlyComponentListControl();

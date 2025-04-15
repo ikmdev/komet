@@ -64,7 +64,7 @@ public class KLComponentControl extends Control {
     }
 
     public boolean isEmpty() {
-        return getEntity() == null || getEntity().nid() == KLComponentControl.EMPTY_NID;
+        return getEntity() == null;// || getEntity().nid() == KLComponentControl.EMPTY_NID;
     }
 
     /**
@@ -84,7 +84,7 @@ public class KLComponentControl extends Control {
     /**
      * This property holds the {@link Entity} that has been added to the control
      */
-    private final ObjectProperty<EntityProxy> entityProperty = new SimpleObjectProperty<>(this, "entity", EntityProxy.make(EMPTY_NID));
+    private final ObjectProperty<EntityProxy> entityProperty = new SimpleObjectProperty<>(this, "entity", null);
     public final ObjectProperty<EntityProxy> entityProperty() {
        return entityProperty;
     }

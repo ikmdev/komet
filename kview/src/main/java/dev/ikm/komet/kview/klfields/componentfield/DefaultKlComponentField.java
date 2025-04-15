@@ -28,8 +28,8 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
             EntityProxy entity = field().value();
             componentControl.setEntity(entity);
 
-            componentControl.entityProperty().subscribe(newEntity -> {
-                field().valueProperty().set(newEntity);
+            componentControl.entityProperty().bindBidirectional(observableComponentField.valueProperty());
+            observableComponentField.valueProperty().addListener((obs, ov, nv) ->{
                 componentControl.setTitle(field().field().meaning().description());
                 updateTooltipText();
             });
@@ -59,7 +59,7 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
 
     private void updateControlValue(EntityProxy entityProxy, KLReadOnlyComponentControl klReadOnlyComponentControl) {
         ComponentItem componentItem;
-        if (entityProxy.nid() == KLComponentControl.EMPTY_NID) {
+        if (entityProxy == null) {
             componentItem = null;
         } else {
             String description = entityProxy.description();
