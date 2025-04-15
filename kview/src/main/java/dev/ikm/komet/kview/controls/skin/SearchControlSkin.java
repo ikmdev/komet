@@ -5,6 +5,8 @@ import dev.ikm.komet.kview.controls.SearchControl;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
@@ -188,13 +190,16 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
 
         private final Label parentDescriptionLabel;
         private final Label descriptionLabel;
+        private final SearchControl searchControl;
         private Text actualDescriptionText;
         private String highlight;
         private PauseTransition hoverTransition;
         private Subscription subscription;
         private SearchControl.SearchResult searchResult;
+        private final StringProperty actualTextProperty;
 
         public SearchResultBox(SearchControl searchControl) {
+            this.searchControl = searchControl;
             subscription = Subscription.EMPTY;
 
             parentDescriptionLabel = new Label();
@@ -203,6 +208,7 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
             IconRegion iconRegion = new IconRegion("icon", "curve");
             StackPane stackPane = new StackPane(iconRegion);
             stackPane.getStyleClass().add("region");
+            actualTextProperty = new SimpleStringProperty();
             descriptionLabel = new Label(null, stackPane) {
                 @Override
                 protected Skin<?> createDefaultSkin() {
@@ -212,12 +218,7 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
                             .map(Text.class::cast)
                             .findFirst()
                             .orElseThrow();
-                    subscription = subscription.and(actualDescriptionText.textProperty().subscribe(text -> {
-                        Platform.runLater(() -> addHighlightPaths(highlight));
-                        if (text != null && !text.isEmpty() && !text.equals(getText())) {
-                            setTooltip(new Tooltip(getText()));
-                        }
-                    }));
+                    actualTextProperty.bind(actualDescriptionText.textProperty());
                     return defaultSkin;
                 }
             };
@@ -227,6 +228,22 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
 
             getChildren().addAll(parentDescriptionLabel, descriptionLabel);
 
+            getStyleClass().add("search-result");
+            getStylesheets().add(SearchControl.class.getResource("search-control.css").toExternalForm());
+        }
+
+        void setSearchResult(SearchControl.SearchResult result) {
+            cleanup();
+            this.searchResult = result;
+            highlight = result.highlight().toLowerCase(Locale.ROOT);
+            parentDescriptionLabel.setText(result.parentConcept() != null ? result.parentConcept().description() : null);
+            descriptionLabel.setText(result.concept().description());
+            subscription = subscription.and(actualTextProperty.subscribe(text -> {
+                Platform.runLater(this::addHighlightPaths);
+                if (text != null && !text.isEmpty() && descriptionLabel.getText() != null && !text.equals(descriptionLabel.getText())) {
+                    descriptionLabel.setTooltip(new Tooltip(descriptionLabel.getText()));
+                }
+            }));
             subscription = subscription.and(hoverProperty().subscribe(h -> {
                 if (h) {
                     hoverTransition = new PauseTransition(new Duration(searchControl.getActivation()));
@@ -237,15 +254,6 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
                     hoverTransition.stop();
                 }
             }));
-            getStyleClass().add("search-result");
-            getStylesheets().add(SearchControl.class.getResource("search-control.css").toExternalForm());
-        }
-
-        void setSearchResult(SearchControl.SearchResult result) {
-            this.searchResult = result;
-            highlight = result.highlight().toLowerCase(Locale.ROOT);
-            parentDescriptionLabel.setText(result.parentConcept() != null ? result.parentConcept().description() : null);
-            descriptionLabel.setText(result.concept().description());
         }
 
         void cleanup() {
@@ -257,6 +265,10 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
                 hoverTransition.stop();
                 hoverTransition = null;
             }
+            if (actualDescriptionText != null) {
+                actualDescriptionText.setText(null);
+            }
+            descriptionLabel.setTooltip(null);
         }
 
         @Override
@@ -269,14 +281,13 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
             descriptionLabel.resizeRelocate(snappedLeftInset(), snappedTopInset() + parentDescriptionLabel.getHeight() + 1, conceptWidth, descriptionLabel.prefHeight(conceptWidth));
         }
 
-        private void addHighlightPaths(String highlight) {
+        private void addHighlightPaths() {
             getChildren().removeIf(Path.class::isInstance);
-            String text = actualDescriptionText.getText();
+            String text = actualTextProperty.get();
             if (text == null || text.isEmpty()) {
                 return;
             }
             String label = descriptionLabel.getText().toLowerCase(Locale.ROOT);
-
             int lastIndex = 0;
             while (lastIndex != -1) {
                 lastIndex = label.indexOf(highlight, lastIndex);
