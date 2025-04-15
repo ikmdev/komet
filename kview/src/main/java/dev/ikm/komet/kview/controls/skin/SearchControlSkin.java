@@ -63,6 +63,7 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
             {
                 searchResult = new SearchResultBox(control);
                 setText(null);
+                getStyleClass().add("search-result-cell");
             }
 
             @Override

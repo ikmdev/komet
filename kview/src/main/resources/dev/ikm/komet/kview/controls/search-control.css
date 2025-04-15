@@ -152,14 +152,14 @@
     -fx-padding: 0 1 0 1;
 }
 
-.list-cell {
+.search-result-cell.list-cell {
     -fx-padding: 2.5 2 2.5 0;
 }
-.list-cell,
-.list-cell:odd,
-.list-cell:filled:selected,
-.search-control > .search-results-list.list-view:focused > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
-.search-control > .search-results-list.list-view:focused > .virtual-flow > .clipped-container > .sheet > .list-cell:focused {
+.search-result-cell.list-cell,
+.search-result-cell.list-cell:odd,
+.search-result-cell.list-cell:filled:selected,
+.search-control > .search-results-list.list-view:focused > .virtual-flow > .clipped-container > .sheet > .search-result-cell.list-cell:filled:selected,
+.search-control > .search-results-list.list-view:focused > .virtual-flow > .clipped-container > .sheet > .search-result-cell.list-cell:focused {
     -fx-background: transparent;
     -fx-background-color: transparent;
     -fx-table-cell-border-color: transparent;
