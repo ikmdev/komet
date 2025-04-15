@@ -7,6 +7,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
@@ -26,10 +27,11 @@ import javafx.util.Duration;
 import javafx.util.Subscription;
 
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class SearchControlSkin extends SkinBase<SearchControl> {
 
-    private static final PseudoClass SEARCH_HAS_RESULTS = PseudoClass.getPseudoClass("has-results");
+    private static final double SEARCH_RESULT_HEIGHT = 43; // 38 + 5
 
     private final TextField textField;
     private final StackPane searchPane;
@@ -41,9 +43,21 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
 
     public SearchControlSkin(SearchControl control) {
         super(control);
+        ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.search-control");
 
         resultsPane = new ListView<>();
         resultsPane.getStyleClass().add("search-results-list-view");
+
+        Label placeholder = new Label();
+        placeholder.getStyleClass().add("placeholder-label");
+        placeholder.textProperty().bind(Bindings.createStringBinding(() -> {
+            if (control.getResultsPlaceholder() != null) {
+                return control.getResultsPlaceholder();
+            }
+            return resources.getString("no.results.found.text");
+        },  control.resultsPlaceholderProperty()));
+        resultsPane.setPlaceholder(placeholder);
+
         resultsPane.setCellFactory(_ -> new ListCell<>() {
             private final SearchResultBox searchResult;
             {
@@ -73,6 +87,11 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
         resultsPane.managedProperty().bind(resultsPane.visibleProperty());
         resultsPane.setVisible(false);
         resultsPane.setItems(control.resultsProperty());
+        control.resultsProperty().addListener((ListChangeListener<SearchControl.SearchResult>) _ -> {
+            int itemCount = Math.max(1, Math.min(resultsPane.getItems().size(), 4));
+            resultsPane.setPrefHeight(itemCount * SEARCH_RESULT_HEIGHT);
+        });
+        resultsPane.setPrefHeight(SEARCH_RESULT_HEIGHT);
 
         textField = new TextField();
         searchPane = new StackPane(new IconRegion("icon", "search"));
@@ -100,12 +119,13 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
                 filterPane.getChildren().setAll(new IconRegion("icon", "filter"));
             }
         });
-        subscription = subscription.and(resultsPane.visibleProperty().
-                subscribe(b -> control.pseudoClassStateChanged(SEARCH_HAS_RESULTS, b)));
 
         getChildren().addAll(textField, searchPane, closePane, filterPane, resultsPane);
 
         textField.textProperty().bindBidirectional(control.textProperty());
+        if (control.getPromptText() == null) {
+            control.setPromptText(resources.getString("prompt.text"));
+        }
         textField.promptTextProperty().bind(control.promptTextProperty());
         closePane.visibleProperty().bind(textField.textProperty().isNotEmpty());
         closePane.managedProperty().bind(closePane.visibleProperty());
@@ -162,7 +182,7 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
         double searchPaneWidth = snapSizeX(searchPane.prefWidth(contentHeight));
         double closePaneWidth = snapSizeX(closePane.prefWidth(contentHeight));
         double filterPaneWidth = snapSizeX(filterPane.prefWidth(contentHeight));
-        double textFieldWidth = contentWidth - filterPaneWidth - 8;
+        double textFieldWidth = contentWidth - filterPaneWidth - 12;
         double textFieldHeight = snapSizeY(textField.prefHeight(textFieldWidth));
         textField.resizeRelocate(x, y, textFieldWidth, textFieldHeight);
 
@@ -175,7 +195,7 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
                 closePaneWidth, closeHeight);
 
         double filterHeight = snapSizeY(filterPane.prefHeight(filterPaneWidth));
-        filterPane.resizeRelocate(contentWidth - filterPaneWidth + snappedLeftInset(), y + (textFieldHeight - filterHeight) / 2,
+        filterPane.resizeRelocate(contentWidth - filterPaneWidth + snappedLeftInset() - 4, y + (textFieldHeight - filterHeight) / 2,
                 filterPaneWidth, filterHeight);
 
         if (resultsPane.isVisible()) {

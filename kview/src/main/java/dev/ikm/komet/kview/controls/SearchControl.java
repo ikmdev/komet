@@ -105,6 +105,18 @@ public class SearchControl extends Control {
        return resultsProperty;
     }
 
+    // resultsPlaceholderProperty
+    private final StringProperty resultsPlaceholderProperty = new SimpleStringProperty(this, "resultsPlaceholder");
+    public final StringProperty resultsPlaceholderProperty() {
+        return resultsPlaceholderProperty;
+    }
+    public final String getResultsPlaceholder() {
+        return resultsPlaceholderProperty.get();
+    }
+    public final void setResultsPlaceholder(String value) {
+        resultsPlaceholderProperty.set(value);
+    }
+
     @Override
     protected Skin<?> createDefaultSkin() {
         return new SearchControlSkin(this);

@@ -22,7 +22,7 @@
         </Label>
         <SplitPane fx:id="root" prefWidth="200.0" styleClass="sample-control-container">
             <VBox styleClass="inner-container">
-                <SearchControl fx:id="searchControl" promptText="Search"/>
+                <SearchControl fx:id="searchControl"/>
                 <KLConceptNavigatorControl fx:id="conceptNavigatorControl"/>
             </VBox>
             <VBox fx:id="conceptArea" styleClass="center-container"/>

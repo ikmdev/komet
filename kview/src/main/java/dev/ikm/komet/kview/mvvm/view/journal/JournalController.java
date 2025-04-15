@@ -881,10 +881,10 @@ public class JournalController {
     public void loadConceptNavigatorPanel(ViewProperties viewProperties) {
         Navigator navigator = new ViewNavigator(viewProperties.nodeView());
         SearchControl searchControl = new SearchControl();
-        searchControl.setPromptText("Search"); // DUMMY, resources?
 
         searchControl.setOnAction(_ -> {
             ViewCalculator calculator = viewProperties.calculator();
+            searchControl.setResultsPlaceholder("Searching..."); // DUMMY, resources?
             TinkExecutor.threadPool().execute(() -> {
                 try {
                     List<LatestVersionSearchResult> results = calculator.search(searchControl.getText(), 1000).toList();
@@ -913,7 +913,11 @@ public class JournalController {
 
                     // NOTE: different semanticIds can give the same entity, remove duplicates
                     List<SearchControl.SearchResult> distinctResults = searchResults.stream().distinct().toList();
-                    Platform.runLater(() -> searchControl.resultsProperty().addAll(distinctResults));
+                    Platform.runLater(() -> {
+                        searchControl.setResultsPlaceholder(null);
+                        searchControl.resultsProperty().addAll(distinctResults);
+                    });
+
                 } catch (Exception e) {
                     LOG.error(e.getMessage(), e);
                 }

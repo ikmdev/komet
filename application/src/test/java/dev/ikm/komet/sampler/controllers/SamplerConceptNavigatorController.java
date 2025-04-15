@@ -79,7 +79,8 @@ public class SamplerConceptNavigatorController {
             
             .sample-control-container > * > .inner-container {
                 -fx-background-color: #6E7989;
-                -fx-padding: 0 8 8 8;
+                -fx-padding: 0;
+                -fx-spacing: -8;
             }
             .sample-control-container > * > .center-container {
                 -fx-background-color: #fbfbfb;
@@ -146,6 +147,7 @@ public class SamplerConceptNavigatorController {
                 return;
             }
             ViewCalculator calculator = navigator.getViewCalculator();
+            searchControl.setResultsPlaceholder("Searching...");
             TinkExecutor.threadPool().execute(() -> {
                 try {
                     List<LatestVersionSearchResult> results = calculator.search(searchControl.getText(), 1000).toList();
@@ -171,7 +173,10 @@ public class SamplerConceptNavigatorController {
                             });
                     // NOTE: different semanticIds give same entity
                     List<SearchControl.SearchResult> distinctResults = searchResults.stream().distinct().toList();
-                    Platform.runLater(() -> searchControl.resultsProperty().addAll(distinctResults));
+                    Platform.runLater(() -> {
+                        searchControl.setResultsPlaceholder(null);
+                        searchControl.resultsProperty().addAll(distinctResults);
+                    });
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

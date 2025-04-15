@@ -18,11 +18,11 @@
 .concept-navigator-control.tree-view,
 .concept-navigator-control.tree-view:focused {
     -fx-background: -Grey-3;
-    -fx-background-color: -fx-background;
-    -fx-background-insets: 0;
-    -fx-background-radius: 5;
-    -fx-padding: 4 3 3 3;
-    -fx-min-width: 432;
+    -fx-background-color: transparent, -fx-background;
+    -fx-background-insets: 0, 8;
+    -fx-background-radius: 0, 5;
+    -fx-padding: 12 11 12 11;
+    -fx-min-width: 448;
 }
 
 .concept-navigator-control.tree-view > .concept-header.label {
@@ -33,10 +33,13 @@
     -fx-padding: 0 0 4 0;
     -fx-alignment: center;
     -fx-background: -Grey-3;
-    -fx-background-color: -fx-background;
-    -fx-min-width: 432;
-    -fx-pref-width: 432;
-    -fx-max-width: 432;
+    -fx-background-color: transparent, -fx-background;
+    -fx-background-radius: 0, 5 5 0 0;
+    -fx-background-insets: 0, 0 7 0 7;
+    -fx-min-width: 448;
+    -fx-pref-width: 448;
+    -fx-max-width: 448;
+
 }
 
 .concept-navigator-control.tree-view > .virtual-flow > .clipped-container > .sheet {
@@ -112,7 +115,7 @@
 }
 
 .tree-cell {
-    -fx-background: -Grey-3;
+    -fx-background: transparent;
     -fx-background-insets: 0;
     -fx-background-color: -fx-background;
     -fx-background-radius: 0;
