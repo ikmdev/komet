@@ -33,9 +33,9 @@ services:
       - GITEA__admin__USER=admin
       - GITEA__admin__PASSWORD=admin
       - GITEA__admin__EMAIL=admin@example.com
-    ports:
-      - "3000:3000"
-      - "2222:22"
+#    ports:
+#      - "3000:3000"
+#      - "2222:22"
     volumes:
       - gitea_data:/data
     networks:
@@ -70,7 +70,7 @@ services:
       dockerfile: docker/Dockerfile-nginx
     container_name: nginx
     ports:
-      - "80:80"
+      - "${NGINX_PORT:-80}:80"
     volumes:
       - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./docker/nginx-logs:/var/log/nginx
@@ -78,7 +78,7 @@ services:
       - nexus
       - komet
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      test: ["CMD", "curl", "-f", "http://localhost:${NGINX_PORT:-80}/"]
       interval: 30s
       timeout: 10s
       retries: 3

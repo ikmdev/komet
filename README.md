@@ -101,6 +101,14 @@ The application should now be running in the Docker container. Access it by navi
 [http://localhost](http://localhost) in your web browser. If running on a remote server, replace localhost with 
 the server’s IP address.
 
+Note: On the off chance that you have issues with running on the specific port on your computer, the 
+docker-compose file is configurable to allow for other ports.  This can be run in the following way, substituting 8080
+for whatever port you would like to assign:
+
+   ```bash
+   NGINX_PORT=8080 docker compose up -d
+   ```
+
 ## TestFX Framework for GUI Testing in Komet JavaFX Application
 
 ### Running Komet GUI Unit Tests Using the TestFX Framework

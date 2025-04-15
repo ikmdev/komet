@@ -21,6 +21,8 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
@@ -68,6 +70,29 @@ public class FXUtils {
             parent = parent.getParent();
         }
         return bounds;
+    }
+
+    /**
+     * Fits an ImageView to the given bounds if the Image width or height doesn't fit
+     * within those bounds. Otherwise, sets the ImageView to the original dimensions of
+     * its Image.
+     *
+     * @param imageView the ImageView we want to update.
+     * @param maxImageWidth the maximum image bounds width.
+     * @param maxImageHeight the maximum image bounds height.
+     */
+    public static void fitImageToBounds(ImageView imageView, int maxImageWidth, int maxImageHeight) {
+        Image image = imageView.getImage();
+        double imageWidth = image.getWidth();
+        double imageHeight = image.getHeight();
+
+        if (imageWidth > maxImageWidth || imageHeight > maxImageHeight) {
+            imageView.setFitWidth(maxImageWidth);
+            imageView.setFitHeight(maxImageHeight);
+        } else {
+            imageView.setFitWidth(imageWidth);
+            imageView.setFitHeight(imageHeight);
+        }
     }
 
     public static Bounds localToParent(Node node, Parent targetParent) {
