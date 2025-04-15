@@ -36,6 +36,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.STAMP_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
@@ -50,6 +51,7 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ComponentItem;
+import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
@@ -72,9 +74,11 @@ import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.SemanticFacade;
 import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -215,8 +219,21 @@ public class GenEditingDetailsController {
             genEditingViewModel.setPropertyValue(MODE, CREATE);
             EntityFacade pattern = genEditingViewModel.getPropertyValue(PATTERN);
 
+            StampViewModel defaultStampViewModel = new StampViewModel();
+            defaultStampViewModel.setPropertyValue(STATUS, State.ACTIVE);
+            defaultStampViewModel.setPropertyValue(AUTHOR, TinkarTerm.USER);
+            defaultStampViewModel.setPropertyValue(MODULE, TinkarTerm.DEVELOPMENT_MODULE);
+            defaultStampViewModel.setPropertyValue(PATH, TinkarTerm.DEVELOPMENT_PATH);
+            defaultStampViewModel.save();
+
+            genEditingViewModel.setPropertyValue(STAMP_VIEW_MODEL, defaultStampViewModel);
+
             // create empty semantic for the pattern and set it in the view model
-            semantic = DataModelHelper.createEmptySemantic(getViewProperties(), pattern);
+            semantic = DataModelHelper.createEmptySemantic(getViewProperties(), pattern,
+                    defaultStampViewModel.getValue(STATUS),
+                    defaultStampViewModel.getValue(AUTHOR),
+                    defaultStampViewModel.getValue(MODULE),
+                    defaultStampViewModel.getValue(PATH));
             genEditingViewModel.setPropertyValue(SEMANTIC, semantic);
         } else {
             genEditingViewModel.setPropertyValue(MODE, EDIT);
@@ -425,7 +442,7 @@ public class GenEditingDetailsController {
         if (refComponent == null) {
             if (semanticEntityVersionLatest != null) {
                 semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
-                    refComponentProp.set(semanticEntityVersion.referencedComponent());
+                    refComponentProp.set(semanticEntityVersion.referencedComponent().toProxy());
                 });
             }
         } else {

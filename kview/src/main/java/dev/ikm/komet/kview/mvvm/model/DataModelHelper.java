@@ -353,13 +353,16 @@ public class DataModelHelper {
      * @param pattern existing pattern
      * @return a default, empty semantic
      */
-    public static EntityFacade createEmptySemantic(ViewProperties viewProperties, EntityFacade pattern) {
+    public static EntityFacade createEmptySemantic(ViewProperties viewProperties, EntityFacade pattern, State status,
+                                                   EntityProxy.Concept author,
+                                                   EntityProxy.Concept module,
+                                                   EntityProxy.Concept path) {
         EntityFacade semantic;
         // set up defaults for the initial STAMP on a new Semantic
-        State status = State.ACTIVE;
-        EntityProxy.Concept author = TinkarTerm.USER;
-        EntityProxy.Concept module = TinkarTerm.DEVELOPMENT_MODULE;
-        EntityProxy.Concept path = TinkarTerm.DEVELOPMENT_PATH;
+        //State status = State.ACTIVE;
+        //EntityProxy.Concept author = TinkarTerm.USER;
+        //EntityProxy.Concept module = TinkarTerm.DEVELOPMENT_MODULE;
+        //EntityProxy.Concept path = TinkarTerm.DEVELOPMENT_PATH;
         EntityProxy patternProxy = pattern.toProxy();
 
 

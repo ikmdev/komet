@@ -55,8 +55,10 @@ public class ReferenceComponentController {
         KLComponentControl componentControl = new KLComponentControl();
         componentControl.setTitle("Reference component");
         ObjectProperty<EntityProxy> refComponentProperty = genEditingViewModel.getProperty(REF_COMPONENT);
-        refComponentProperty.bind(componentControl.entityProperty());
-        componentControl.setEntity(refComponentProperty.getValue());
+        //refComponentProperty.bind(componentControl.entityProperty());
+        componentControl.entityProperty().bindBidirectional(refComponentProperty);
+        //EntityProxy entityProxy = refComponentProperty.get().toProxy();
+        //componentControl.setEntity(entityProxy);
         referenceComponentVBox.getChildren().add(componentControl);
     }
 
@@ -93,7 +95,7 @@ public class ReferenceComponentController {
                                 stampViewModel.getPropertyValue(PATH));
         session.compose((SemanticAssembler semanticAssembler) ->
                             semanticAssembler
-                                            .semantic(semantic.toProxy())
+                                    .semantic(semantic.toProxy())
                                     // add the reference component to the Semantic
                                     .reference(refComponent.toProxy()));
 
