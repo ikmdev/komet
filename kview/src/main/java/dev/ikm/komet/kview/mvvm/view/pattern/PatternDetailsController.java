@@ -16,59 +16,6 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
-import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
-import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
-import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
-import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_EDIT_OTHER_NAME;
-import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_DEFINITION;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FIELDS;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_FQN;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_ADD_OTHER_NAME;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_DEFINITION;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FIELDS;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_FQN;
-import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_EDIT_OTHER_NAME;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
-import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FIELDS_COLLECTION;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_CASE_SIGNIFICANCE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DATE_ADDED_STR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_LANGUAGE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.IS_INVALID;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_DATE_STR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAMES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TITLE_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_DATE_STR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.SELECTED_PATTERN_FIELD;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STAMP_VIEW_MODEL;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
@@ -76,13 +23,7 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
-import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
-import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
-import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
-import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
-import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
-import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
-import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
+import dev.ikm.komet.kview.events.pattern.*;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
@@ -104,48 +45,45 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.TilePane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.FillRule;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import org.carlfx.axonic.StateMachine;
-import org.carlfx.cognitive.loader.Config;
-import org.carlfx.cognitive.loader.FXMLMvvmLoader;
-import org.carlfx.cognitive.loader.InjectViewModel;
-import org.carlfx.cognitive.loader.JFXNode;
-import org.carlfx.cognitive.loader.NamedVm;
+import org.carlfx.cognitive.loader.*;
 import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+
+import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
+import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
+import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_EDIT_OTHER_NAME;
+import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
+import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
+import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 
 public class PatternDetailsController {
 
@@ -266,7 +204,9 @@ public class PatternDetailsController {
      * Stamp Edit
      */
     private PopOver stampEdit;
+
     private StampEditController stampEditController;
+
     @InjectViewModel
     private PatternViewModel patternViewModel;
 
@@ -445,8 +385,8 @@ public class PatternDetailsController {
         //Listen to the changes in the fieldsTilePane and update the field numbers.
         ObservableList<Node> fieldsTilePaneList = fieldsTilePane.getChildren();
         fieldsTilePaneList.addListener((ListChangeListener<Node>) (listener) -> {
-            while(listener.next()){
-                if(listener.wasAdded() || listener.wasRemoved()){
+            while (listener.next()) {
+                if (listener.wasAdded() || listener.wasRemoved()) {
                     updateFieldValues();
                 }
             }
@@ -455,12 +395,12 @@ public class PatternDetailsController {
         patternFieldsPanelEventSubscriber = evt -> {
             PatternField patternField = evt.getPatternField();
             PatternField previousPatternField = evt.getPreviousPatternField();
-            int fieldPosition = evt.getCurrentFieldOrder()-1;
-            if(evt.getEventType() == EDIT_FIELD && previousPatternField != null){
+            int fieldPosition = evt.getCurrentFieldOrder() - 1;
+            if (evt.getEventType() == EDIT_FIELD && previousPatternField != null) {
                 // 1st remove it from list before adding the new entry
                 patternFieldList.remove(previousPatternField);
             }
-            //Update the fields collection data.
+            // Update the fields collection data.
             patternFieldList.add(fieldPosition, patternField);
             // save and therefore validate
             patternViewModel.save();
@@ -468,13 +408,21 @@ public class PatternDetailsController {
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
 
         patternFieldList.addListener((ListChangeListener<? super PatternField>) changeListner -> {
-            while(changeListner.next()){
-                if(changeListner.wasAdded()){
-                    int fieldPosition = changeListner.getTo()-1;
-                    //update the display.
-                    fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(changeListner.getAddedSubList().getFirst(), changeListner.getTo()));
-                }else if(changeListner.wasRemoved()){
-                    fieldsTilePaneList.remove(changeListner.getTo());
+            while (changeListner.next()) {
+                // when the collection is cleared, the removed size will equal the tile pane size, so clear the tile pane
+                // since the changeListner.wasRemoved() will not account for clearing all of them if the collection is cleared
+                if (changeListner.getRemovedSize() > 0 && changeListner.getRemovedSize() == fieldsTilePaneList.size()) {
+                    fieldsTilePaneList.clear();
+                } else {
+                    if (changeListner.wasAdded()) {
+                        int fieldPosition = changeListner.getTo() - 1;
+                        // update the display.
+                        fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(changeListner.getAddedSubList().getFirst(), changeListner.getTo()));
+                    } else if (changeListner.wasRemoved()) {
+                        fieldsTilePaneList.remove(changeListner.getTo());
+
+                    }
+                    patternViewModel.save();
                 }
             }
         });
@@ -490,9 +438,10 @@ public class PatternDetailsController {
         MenuItem addNewSemanticElement = new MenuItem("Add New Semantic Element",kometPlusIcon);
         contextMenu.getItems().addAll(addNewSemanticElement);
         this.contextMenu.getStyleClass().add("klcontext-menu");
-        detailsOuterBorderPane.setOnContextMenuRequested(contextMenuEvent ->
-                contextMenu.show(detailsOuterBorderPane, contextMenuEvent.getScreenX(),contextMenuEvent.getScreenY())
-        );
+        detailsOuterBorderPane.setOnContextMenuRequested(contextMenuEvent -> {
+            contextMenu.show(detailsOuterBorderPane.getScene().getWindow(), contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
+            contextMenuEvent.consume();
+        });
         addNewSemanticElement.setOnAction(actionEvent -> {
             EntityFacade patternFacade = patternViewModel.getPropertyValue(PATTERN);
             LOG.info("Summon create new Semantic Element. " + patternFacade.description());
@@ -619,10 +568,10 @@ public class PatternDetailsController {
      */
     private void updateFieldValues() {
         ObservableList<Node> fieldVBoxes = fieldsTilePane.getChildren();
-        for(int i=0 ; i < fieldVBoxes.size(); i++){
+        for (int i=0 ; i < fieldVBoxes.size(); i++) {
             Node node = fieldVBoxes.get(i);
             Node labelNode = node.lookup(".pattern-field");
-            if(labelNode instanceof Label label){
+            if (labelNode instanceof Label label) {
                 label.setText("FIELD " + (i+1));
             }
         }
@@ -660,10 +609,13 @@ public class PatternDetailsController {
         commentIconRegion.getStyleClass().add("grey-comment-icon");
         outerHBox.getChildren().addAll(innerHBox, commentIconRegion);
         fieldVBoxContainer.getChildren().addAll(fieldLabel, fieldText, outerHBox);
-        fieldVBoxContainer.setOnMouseClicked(mouseEvent -> {
-            ContextMenu contextMenu = createContextMenuForPatternField (patternField);
-            contextMenu.show(fieldVBoxContainer, mouseEvent.getScreenX(),  mouseEvent.getScreenY());
+
+        fieldVBoxContainer.setOnContextMenuRequested(contextMenuEvent -> {
+            ContextMenu contextMenu = createContextMenuForPatternField(patternField);
+            contextMenu.show(fieldVBoxContainer.getScene().getWindow(), contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
+            contextMenuEvent.consume();
         });
+
         return fieldVBoxContainer;
     }
 

@@ -48,7 +48,7 @@ jobs:
     if: needs.post-build.outputs.IS_TAG == 'true'
     strategy:
       matrix:
-        os: [macos-13, macos-14, ubuntu-20.04, windows-2022]
+        os: [macos-13, macos-14, ubuntu-24.04, windows-2022]
     runs-on: ${{matrix.os}}
     steps:
       - name: Checkout Code Repository

@@ -17,7 +17,9 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
 import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
+import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculteHashValue;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateHashValue;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
@@ -34,6 +36,7 @@ import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
+import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -263,8 +266,12 @@ public class SemanticFieldsController {
             SemanticVersionRecord version = Entity.getVersionFast(semantic.nid(), stamp.nid());
             Transaction.forVersion(version).ifPresentOrElse(transaction -> {
                 commitTransactionTask(transaction);
-                //EventBus implementation changes to refresh the details area if commit successful
-                EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
+                // EventBus implementation changes to refresh the details area if commit successful
+                EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                        new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
+                // refesh the pattern navigation
+                EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
+                        new PatternCreationEvent(actionEvent.getSource(), PATTERN_CREATION_EVENT));
             }, () -> {
                 //TODO this is a temp alert / workaround till we figure how to reload transactions across multiple restarts of app.
                 LOG.error("Unable to commit: Transaction for the given version does not exist.");
