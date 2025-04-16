@@ -15,6 +15,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
 import javafx.scene.input.DragEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.shape.Line;
 import javafx.util.Subscription;
@@ -232,6 +233,14 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         }
 
         componentControl.showDragHandleProperty().bind(componentControl.hoverProperty());
+
+        componentControl.addEventHandler(MouseEvent.DRAG_DETECTED, mouseEvent -> {
+            componentControl.setVisible(false);
+        });
+
+        componentControl.addEventHandler(DragEvent.DRAG_DONE, dragEvent -> {
+            componentControl.setVisible(true);
+        });
 
         Label numberLabel = createNumberLabel(componentControl);
 
