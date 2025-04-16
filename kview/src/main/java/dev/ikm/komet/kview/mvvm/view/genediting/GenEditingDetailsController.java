@@ -173,7 +173,7 @@ public class GenEditingDetailsController {
     private Text semanticPurposeText;
 
     @FXML
-    private Button addEditReferenceButton;
+    private Button addReferenceButton;
 
     @FXML
     private Button editFieldsButton;
@@ -397,6 +397,9 @@ public class GenEditingDetailsController {
         // check if there is a reference component if not check if there is a semantic entity.
         ObjectProperty<EntityFacade> refComponentProp = genEditingViewModel.getProperty(REF_COMPONENT);
         EntityFacade refComponent = refComponentProp.get();
+
+        //Disable the  edit the Reference Component of an existing semantic once submitted
+        addReferenceButton.setDisable(refComponent != null);
 
         Consumer<EntityFacade> updateRefComponentInfo = (refComponent2) -> {
             // update items

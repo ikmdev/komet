@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.NodeUtils;
 import dev.ikm.komet.kview.controls.KLImageControl;
+import dev.ikm.komet.kview.fxutils.FXUtils;
 import javafx.beans.binding.StringBinding;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
@@ -24,6 +25,9 @@ public class KLImageControlSkin extends SkinBase<KLImageControl> {
     private static final PseudoClass IMAGE_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("image-selected");
 
     private static final String ATTACH_BUTTON_TEXT = "ATTACH IMAGE";
+
+    public static final int MAX_IMAGE_WIDTH = 640;
+    public static final int MAX_IMAGE_HEIGHT = 262;
 
     private final VBox mainContainer = new VBox();
 
@@ -85,11 +89,15 @@ public class KLImageControlSkin extends SkinBase<KLImageControl> {
             }
         });
 
+        // Image View
+        imageView.setPreserveRatio(true);
+        control.imageProperty().subscribe(this::updateImage);
+
+        // Attach Button
         attachImageButton.setText(ATTACH_BUTTON_TEXT);
         attachImageButton.setOnAction(this::attachImageAction);
 
         promptTextLabel.textProperty().bind(control.promptTextProperty());
-        initImage(control);
 
         // CSS
         mainContainer.getStyleClass().add("main-container");
@@ -121,35 +129,32 @@ public class KLImageControlSkin extends SkinBase<KLImageControl> {
 
         // Show open file dialog
         File selectedFile = fileChooser.showOpenDialog(control.getScene().getWindow());
-        Image image = new Image(selectedFile.toURI().toString());
+        if (selectedFile == null) {
+            return;
+        }
 
+        Image image = new Image(selectedFile.toURI().toString());
         getSkinnable().setImage(image);
     }
 
-    private void initImage(KLImageControl control) {
-        control.imageProperty().addListener(observable -> {
-            updateImage(control);
-        });
-        updateImage(control);
+    private void updateImage(Image newImage) {
+        updatePromptTextAndClearButtonVisibility(newImage);
+        updateImageToShow(newImage);
     }
 
-    private void updateImage(KLImageControl control) {
-        updatePromptTextAndClearButtonVisibility(control);
-        updateImageToShow(control);
+    private void updatePromptTextAndClearButtonVisibility(Image newImage) {
+        NodeUtils.setShowing(promptTextLabel, newImage == null);
+        NodeUtils.setShowing(clearContainer, newImage != null);
     }
 
-    private void updatePromptTextAndClearButtonVisibility(KLImageControl control) {
-        NodeUtils.setShowing(promptTextLabel, control.getImage() == null);
-        NodeUtils.setShowing(clearContainer, control.getImage() != null);
-    }
-
-    private void updateImageToShow(KLImageControl control) {
-        if (control.getImage() == null) {
+    private void updateImageToShow(Image newImage) {
+        if (newImage == null) {
             imageView.setImage(promptImage);
 
             pseudoClassStateChanged(IMAGE_SELECTED_PSEUDO_CLASS, false);
         } else {
-            imageView.setImage(control.getImage());
+            imageView.setImage(newImage);
+            FXUtils.fitImageToBounds(imageView, MAX_IMAGE_WIDTH, MAX_IMAGE_HEIGHT);
 
             pseudoClassStateChanged(IMAGE_SELECTED_PSEUDO_CLASS, true);
         }
