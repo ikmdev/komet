@@ -2,7 +2,6 @@ package dev.ikm.komet.kview.klfields;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
 import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
-import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
@@ -93,7 +92,7 @@ public class KlFieldHelper {
         } else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.FLOAT.nid()) {
             KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
             node = klFloatFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
-        } else if (dataTypeNid == TinkarTerm.INTEGER_FIELD.nid()) {
+        } else if (dataTypeNid == INTEGER_FIELD.nid()) {
             KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
             node = klIntegerFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
         } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
@@ -124,7 +123,7 @@ public class KlFieldHelper {
         List<ObservableField<?>> observableFields = new ArrayList<>();
         Consumer<FieldRecord<Object>> generateConsumer = (fieldRecord) -> {
             ObservableField<?> writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, editable);
-            ObservableField<?> observableField = new ObservableField<>(writeObservableField.field(), false); //do not write on every change.
+            ObservableField<?> observableField = new ObservableField<>(writeObservableField.field(), editable);
             observableFields.add(observableField);
 
             Node node = generateNode(fieldRecord, observableField, viewProperties, semanticEntityVersionLatest, editable);
