@@ -67,15 +67,8 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
 
     final private AtomicReference<Entity<V>> entityReference;
 
-    public void saveToDB(Entity<?> analogue, EntityVersion oldVersionRecord, EntityVersion newVersionRecord ) {
+    public void saveToDB(Entity<?> analogue, EntityVersion newVersionRecord ) {
         Entity.provider().putEntity(analogue);
-        if(oldVersionRecord.committed()){
-            versionProperty.add(wrap((V) newVersionRecord));
-        }else {
-            versionProperty.remove(wrap((V) oldVersionRecord));
-            versionProperty.add(wrap((V) newVersionRecord));
-        }
-
         versionProperty.add(wrap((V)newVersionRecord));
         EvtBusFactory.getDefaultEvtBus()
                 .publish(VERSION_CHANGED_TOPIC, new EntityVersionChangeEvent(this, EntityVersionChangeEvent.VERSION_UPDATED, newVersionRecord));

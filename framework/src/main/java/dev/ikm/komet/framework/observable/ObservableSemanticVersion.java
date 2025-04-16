@@ -32,15 +32,13 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.beans.InvalidationListener;
+import javafx.beans.value.ChangeListener;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
-
-import java.util.Objects;
 
 public final class ObservableSemanticVersion
         extends ObservableVersion<SemanticVersionRecord>
@@ -91,13 +89,14 @@ public final class ObservableSemanticVersion
 
 
             // create a change listener
-            InvalidationListener autoSave = (observableValue) -> {
+        //    InvalidationListener autoSave = (observableValue) -> {
+            ChangeListener autoSave = (observableValue, ov, nv) -> {
                 System.out.println("Inside AUTOSAVE Method.");
 //                if (nv !=null) {
-                if(observableField.value() != null && // Create a version only when new value is not null.
-                        (observableField.fieldProperty.getValue().value() != null &&  // If the old
-                                // Check if the previous value is different from changed.This check is required for C-List C-Set
-                                !Objects.equals(observableField.value().toString(), observableField.fieldProperty.getValue().value().toString()))
+                if(observableField.value() != null // Create a version only when new value is not null.
+//                 &&        (observableField.fieldProperty.getValue().value() != null &&  // If the old
+//                                // Check if the previous value is different from changed.This check is required for C-List C-Set
+//                                !Objects.equals(observableField.value().toString(), observableField.fieldProperty.getValue().value().toString()))
                 ) {
                     manageEntityVersion(observableField.value(), index);
                 }
@@ -133,15 +132,19 @@ public final class ObservableSemanticVersion
         MutableList<Object> fieldsForNewVersion = org.eclipse.collections.impl.factory.Lists.mutable.of(version.fieldValues().toArray());
         StampRecord stamp = Entity.getStamp(version.stampNid());
         fieldsForNewVersion.set(index, value);
-        if (!version.uncommitted()) {
+
+
+        if(version.committed()) {
             Transaction t = Transaction.make();
             // newStamp already written to the entity store.
             StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
             // Create new version...
             newVersion = version.with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
+
         } else {
             newVersion = version.withFieldValues(fieldsForNewVersion.toImmutable());
         }
+
         versionProperty.set(newVersion);
     }
 
