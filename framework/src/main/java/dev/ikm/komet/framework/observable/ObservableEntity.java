@@ -19,7 +19,6 @@ import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOP
 import dev.ikm.komet.framework.events.EntityVersionChangeEvent;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.tinkar.collection.ConcurrentReferenceHashMap;
-import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.broadcast.Subscriber;
 import dev.ikm.tinkar.component.FieldDataType;
@@ -54,7 +53,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         implements Entity<O>, ObservableComponent
         permits ObservableConcept, ObservablePattern, ObservableSemantic, ObservableStamp {
 
-    protected static final ConcurrentReferenceHashMap<PublicId, ObservableEntity> SINGLETONS =
+    protected static final ConcurrentReferenceHashMap<String, ObservableEntity> SINGLETONS =
             new ConcurrentReferenceHashMap<>(ConcurrentReferenceHashMap.ReferenceType.WEAK,
                     ConcurrentReferenceHashMap.ReferenceType.WEAK);
     private final EntityChangeSubscriber ENTITY_CHANGE_SUBSCRIBER = new EntityChangeSubscriber();
@@ -111,7 +110,8 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
             updateVersions(observableEntity.entity(), observableEntity);
             return (OE) entity;
         }
-        ObservableEntity observableEntity = SINGLETONS.computeIfAbsent(entity.publicId(), publicId ->
+
+        ObservableEntity observableEntity = SINGLETONS.computeIfAbsent(entity.publicId().idString(), publicId ->
                 switch (entity) {
                     case ConceptEntity conceptEntity -> new ObservableConcept(conceptEntity);
                     case PatternEntity patternEntity -> new ObservablePattern(patternEntity);
@@ -119,11 +119,12 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
                     case StampEntity stampEntity -> new ObservableStamp(stampEntity);
                     default -> throw new UnsupportedOperationException("Can't handle: " + entity);
                 });
-        if (!Platform.isFxApplicationThread()) {
-            Platform.runLater(() -> updateVersions(entity, observableEntity));
-        } else {
-            updateVersions(entity, observableEntity);
-        }
+//        if (!Platform.isFxApplicationThread()) {
+//            Platform.runLater(() -> updateVersions(entity, observableEntity));
+//        } else {
+//            updateVersions(entity, observableEntity);
+//        }
+        System.out.println(" OBSERVABLE ENTITY ADDRESS " + observableEntity.entity().publicId().idString() +  "   " + observableEntity);
         return (OE) observableEntity;
     }
 

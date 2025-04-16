@@ -214,6 +214,7 @@ public class SemanticFieldsController {
             // Displaying editable controls and populating the observable fields array list.
             observableFields.clear();
             observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
+            ObservableSemantic observableSemantic2 = ObservableSemantic.get(observableSemantic.nid());
             observableFields.forEach(observableField -> {
                 // disable calling writeToData method of observable field by setting refresh flag to true.
                 FieldRecord<?> fieldRecord = observableField.field();

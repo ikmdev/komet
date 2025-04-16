@@ -92,13 +92,15 @@ public final class ObservableSemanticVersion
         //    InvalidationListener autoSave = (observableValue) -> {
             ChangeListener autoSave = (observableValue, ov, nv) -> {
                 System.out.println("Inside AUTOSAVE Method.");
+                // ObservableSemanticVersion and thee SemanticVersion (record).
+                // ObservableSemanticVersion owns the versionProperty<SemanticVersion>
 //                if (nv !=null) {
                 if(observableField.value() != null // Create a version only when new value is not null.
 //                 &&        (observableField.fieldProperty.getValue().value() != null &&  // If the old
 //                                // Check if the previous value is different from changed.This check is required for C-List C-Set
 //                                !Objects.equals(observableField.value().toString(), observableField.fieldProperty.getValue().value().toString()))
                 ) {
-                    manageEntityVersion(observableField.value(), index);
+                    autoSaveSematicVersion(observableField.value(), index); // Creating uncommitted version records. e.g., (c)hello, (u)hello1, (u)hello12, (u)hello123
                 }
             };
             observableField.setAutoSaveChangeListener(autoSave);
@@ -126,7 +128,7 @@ public final class ObservableSemanticVersion
 
     }
 
-    private void manageEntityVersion(Object value, int index) {
+    private void autoSaveSematicVersion(Object value, int index) {
         SemanticVersionRecord newVersion = null;
         SemanticVersionRecord version = version();
         MutableList<Object> fieldsForNewVersion = org.eclipse.collections.impl.factory.Lists.mutable.of(version.fieldValues().toArray());
