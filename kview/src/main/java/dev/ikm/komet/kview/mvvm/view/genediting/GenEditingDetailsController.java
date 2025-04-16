@@ -262,9 +262,17 @@ public class GenEditingDetailsController {
 
         // Populate the Semantic Details
 
-        // populate the observable fields and nodes for this semantic
-        loadUIData();
 
+        if (genEditingViewModel.getPropertyValue(MODE).equals(EDIT)) {
+            setUpObservables();
+        } else {
+            EntityFacade pattern = genEditingViewModel.getPropertyValue(PATTERN);
+            PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(pattern).get();
+
+            // generate read only UI controls in create mode
+            List<Node> defaultNodes = KlFieldHelper.addReadOnlyBlankControlsToContainer(patternVersionRecord, getViewProperties());
+            semanticDetailsVBox.getChildren().addAll(defaultNodes);
+        }
 
         // Setup Properties Bump out view.
         setupProperties();
@@ -308,16 +316,6 @@ public class GenEditingDetailsController {
 
     private void loadUIData() {
         nodes.clear();
-        if (genEditingViewModel.getPropertyValue(MODE).equals(EDIT)) {
-            setUpObservables();
-        } else {
-            EntityFacade pattern = genEditingViewModel.getPropertyValue(PATTERN);
-            PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(pattern).get();
-
-            // generate read only UI controls in create mode
-            List<Node> defaultNodes = KlFieldHelper.addReadOnlyBlankControlsToContainer(patternVersionRecord, getViewProperties());
-            semanticDetailsVBox.getChildren().addAll(defaultNodes);
-        }
         if (semanticEntityVersionLatest.isPresent()) {
             observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
             ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
@@ -347,11 +345,7 @@ public class GenEditingDetailsController {
     }
     private void setUpObservables() {
         // populate the observable fields and nodes for this semantic
-        observableFields.addAll(KlFieldHelper
-                .generateObservableFieldsAndNodes(getViewProperties(),
-                        nodes,
-                        semanticEntityVersionLatest, false));
-
+        loadUIData();
         // function to apply for the components' edit action (a.k.a. right click > Edit)
         BiFunction<Node, Integer, Runnable> editAction = (node, fieldIndex) ->
                 () -> {
@@ -369,7 +363,6 @@ public class GenEditingDetailsController {
             semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
         }
     }
-
 
 
     private void setSemanticVersion(Latest<SemanticEntityVersion> semanticEntityVersionLatest) {
