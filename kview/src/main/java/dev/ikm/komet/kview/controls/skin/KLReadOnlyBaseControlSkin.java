@@ -27,6 +27,8 @@ public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseSingleVa
 
     private InvalidationListener editModeChanged = this::onEditModeChanged;
 
+    private boolean wasEditActionFired = false;
+
     /**
      * @param control The control for which this Skin should attach to.
      */
@@ -73,13 +75,20 @@ public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseSingleVa
         control.setContextMenu(contextMenu);
 
         contextMenu.showingProperty().addListener(observable -> {
-            control.setEditMode(contextMenu.isShowing());
+            if (!contextMenu.isShowing() && !wasEditActionFired) {
+                control.setEditMode(false);
+            } else if (!contextMenu.isShowing() && wasEditActionFired){
+                control.setEditMode(true);
+            } else if (contextMenu.isShowing()) {
+                control.setEditMode(true);
+            }
         });
 
     }
 
     protected void fireOnEditAction(ActionEvent actionEvent) {
         if (getSkinnable().getOnEditAction() != null) {
+            wasEditActionFired = true;
             getSkinnable().getOnEditAction().run();
         }
     }
@@ -98,5 +107,6 @@ public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseSingleVa
 
     private void onEditModeChanged(Observable observable) {
         pseudoClassStateChanged(EDIT_MODE_PSEUDO_CLASS, getSkinnable().isEditMode());
+        wasEditActionFired = false;
     }
 }

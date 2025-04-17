@@ -20,15 +20,44 @@
     /* No alternate highlighting */
     -fx-background: -fx-control-inner-background;
 }
-.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected {
-    -fx-background:  -fx-selection-bar-non-focused;
-    -fx-background-color:  -fx-background;
-}
+
+.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
 .auto-complete-popup  > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover,
 .auto-complete-popup  > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected:hover {
-    -fx-background: -fx-accent;
-    -fx-background-color: -fx-selection-bar;
+    -fx-background: #eaeaea;
+    -fx-background-color: -fx-background;
 }
+
 .auto-complete-popup > .list-view > .placeholder > .label {
     -fx-text-fill: derive(-fx-control-inner-background,-30%);
+}
+
+/* Remove horizontal scrollbar */
+.auto-complete-popup  > .list-view .scroll-bar:horizontal .increment-arrow,
+.auto-complete-popup  > .list-view .scroll-bar:horizontal .decrement-arrow,
+.auto-complete-popup  > .list-view .scroll-bar:horizontal .increment-button,
+.auto-complete-popup  > .list-view .scroll-bar:horizontal .decrement-button {
+    -fx-padding:0;
+}
+
+/* Scrollbars in ListView */
+.auto-complete-popup > .list-view .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.auto-complete-popup > .list-view .scroll-bar:vertical .increment-button,
+.auto-complete-popup > .list-view .scroll-bar:vertical .decrement-button,
+.auto-complete-popup > .list-view .scroll-bar:vertical .increment-arrow,
+.auto-complete-popup > .list-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: transparent;
+
+    -fx-background-radius: 0em;
+    -fx-padding: 0 2 0 2;
+}
+
+.auto-complete-popup > .list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #a9aeb8;
+    -fx-background-insets: 3px 2px 3px 5px;
+    -fx-background-radius: 16px;
 }

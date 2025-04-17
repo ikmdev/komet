@@ -1,12 +1,17 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.SearchControlSkin;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Control;
@@ -80,6 +85,37 @@ public class SearchControl extends Control {
         filterSetProperty.set(value);
     }
 
+    // activationProperty
+    private final DoubleProperty activationProperty = new SimpleDoubleProperty(this, "activation", 500);
+    public final DoubleProperty activationProperty() {
+        return activationProperty;
+    }
+    public final double getActivation() {
+        return activationProperty.get();
+    }
+    public final void setActivation(double value) {
+        activationProperty.set(value);
+    }
+
+    public record SearchResult(ConceptFacade parentConcept, ConceptFacade concept, String highlight) {}
+
+    // resultsProperty
+    private final ObservableList<SearchResult> resultsProperty = FXCollections.observableArrayList();
+    public final ObservableList<SearchResult> resultsProperty() {
+       return resultsProperty;
+    }
+
+    // resultsPlaceholderProperty
+    private final StringProperty resultsPlaceholderProperty = new SimpleStringProperty(this, "resultsPlaceholder");
+    public final StringProperty resultsPlaceholderProperty() {
+        return resultsPlaceholderProperty;
+    }
+    public final String getResultsPlaceholder() {
+        return resultsPlaceholderProperty.get();
+    }
+    public final void setResultsPlaceholder(String value) {
+        resultsPlaceholderProperty.set(value);
+    }
 
     @Override
     protected Skin<?> createDefaultSkin() {

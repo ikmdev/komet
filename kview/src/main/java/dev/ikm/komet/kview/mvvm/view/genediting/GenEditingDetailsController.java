@@ -258,8 +258,8 @@ public class GenEditingDetailsController {
             PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(pattern).get();
 
             // generate read only UI controls in create mode
-            List<Node> defaultNodes = KlFieldHelper.addReadOnlyBlankControlsToContainer(patternVersionRecord, getViewProperties());
-            semanticDetailsVBox.getChildren().addAll(defaultNodes);
+            List<KLReadOnlyBaseControl> readOnlyControls = KlFieldHelper.addReadOnlyBlankControlsToContainer(patternVersionRecord, getViewProperties());
+            semanticDetailsVBox.getChildren().addAll(readOnlyControls);
         }
 
         // Setup Properties Bump out view.
@@ -309,13 +309,13 @@ public class GenEditingDetailsController {
                         semanticEntityVersionLatest, false));
 
         // function to apply for the components' edit action (a.k.a. right click > Edit)
-        BiFunction<Node, Integer, Runnable> editAction = (node, fieldIndex) ->
+        BiFunction<KLReadOnlyBaseControl, Integer, Runnable> editAction = (readOnlyBaseControl, fieldIndex) ->
                 () -> {
-                    final EntityVersion finalEntityVersion = getSemanticVersion().get();
+
                     EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                            new PropertyPanelEvent(node, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
+                            new PropertyPanelEvent(readOnlyBaseControl, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
                     EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                            new PropertyPanelEvent(node, OPEN_PANEL));
+                            new PropertyPanelEvent(readOnlyBaseControl, OPEN_PANEL));
                 };
 
         // add setEditOnAction
@@ -463,6 +463,12 @@ public class GenEditingDetailsController {
                 if (isOpen(propertiesSlideoutTrayPane)) {
                     slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
+
+                // Turn off edit mode for all read only controls
+                for (Node node : nodes) {
+                    KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) node;
+                    klReadOnlyBaseControl.setEditMode(false);
+                }
             } else if (evt.getEventType() == PropertyPanelEvent.OPEN_PANEL
                     || evt.getEventType() == PropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
                 LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
@@ -552,6 +558,12 @@ public class GenEditingDetailsController {
                                 SHOW_EDIT_SEMANTIC_FIELDS, semantic));
         // open properties bump out.
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
+
+        // Set all controls to edit mode
+        for (Node node : nodes) {
+            KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) node;
+            klReadOnlyBaseControl.setEditMode(true);
+        }
     }
 
     @FXML
