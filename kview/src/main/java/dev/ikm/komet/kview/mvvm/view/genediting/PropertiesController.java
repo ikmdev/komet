@@ -117,10 +117,9 @@ public class PropertiesController {
     }
 
     private void setupShowingPanelHandlers() {
-        Config config = new Config(this.getClass().getResource("semantic-edit-fields.fxml"));
-        config
-            .updateViewModel("genEditingViewModel", (genEditingViewModel) -> {
-                genEditingViewModel.addProperty(FIELD_INDEX, -1);
+        Config config = new Config(this.getClass().getResource("semantic-edit-fields.fxml"))
+            .addNamedViewModel(new NamedVm("genEditingViewModel", genEditingViewModel));
+
                 //FIXME we want to use only one viewModel that is the genEditingViewModel
 //            .updateViewModel("semanticFieldsViewModel", (semanticFieldsViewModel) -> {
 //                semanticFieldsViewModel
@@ -131,11 +130,12 @@ public class PropertiesController {
 //                    .addProperty(REF_COMPONENT, propertiesViewModel.getObjectProperty(REF_COMPONENT))
 //                    .addProperty(FIELD_INDEX, -1)
 //                    ;
-        });
+        //});
         editFieldsJfxNode = FXMLMvvmLoader.make(config);
 
         Config closePropertiesConfig = new Config(this.getClass().getResource("close-properties.fxml"))
                 .addNamedViewModel(new NamedVm("genEditingViewModel", genEditingViewModel));
+
 
         JFXNode<Pane, ClosePropertiesController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
 

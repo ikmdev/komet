@@ -17,6 +17,7 @@ package dev.ikm.komet.kview.mvvm.model;
 
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
 import static dev.ikm.tinkar.terms.TinkarTerm.ARRAY_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
@@ -46,6 +47,7 @@ import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
+import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -60,11 +62,13 @@ import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.Field;
 import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
@@ -356,23 +360,18 @@ public class DataModelHelper {
     public static EntityFacade createEmptySemantic(ViewProperties viewProperties, EntityFacade pattern, State status,
                                                    EntityProxy.Concept author,
                                                    EntityProxy.Concept module,
-                                                   EntityProxy.Concept path) {
+                                                   EntityProxy.Concept path,Session session,
+                                                   Composer composer) {
         EntityFacade semantic;
-        // set up defaults for the initial STAMP on a new Semantic
-        //State status = State.ACTIVE;
-        //EntityProxy.Concept author = TinkarTerm.USER;
-        //EntityProxy.Concept module = TinkarTerm.DEVELOPMENT_MODULE;
-        //EntityProxy.Concept path = TinkarTerm.DEVELOPMENT_PATH;
         EntityProxy patternProxy = pattern.toProxy();
-
 
         ViewCalculator viewCalculator = viewProperties.calculator();
         PatternVersionRecord patternVersionRecord = (PatternVersionRecord) viewCalculator.latest(pattern).get();
 
         // create empty semantic using the Composer API
-        EntityService.get().beginLoadPhase();
-        Composer composer = new Composer("Semantic for %s".formatted(pattern.description()));
-        Session session = composer.open(status, author, module, path);
+        //EntityService.get().beginLoadPhase();
+
+//        Session session = composer.open(status, author, module, path);
 
         EntityProxy.Semantic defaultSemantic = EntityProxy.Semantic.make(PublicIds.newRandom());
         session.compose((SemanticAssembler semanticAssembler) -> {
@@ -400,12 +399,53 @@ public class DataModelHelper {
                                 fieldValues.with(IntIds.set.empty());
                             }
                         });
-                    }).attach((USDialect dialect) -> dialect
-                            .acceptability(PREFERRED));
+                    });
         });
         // don't commit yet; only commit once the user is ready to submit and not change the reference component
-        EntityService.get().endLoadPhase();
+        //EntityService.get().endLoadPhase();
         semantic = defaultSemantic.toProxy();
+        return semantic;
+    }
+
+    /**
+     * write the semantic
+     * @param viewProperties viewProperties
+     * @param pattern pattern
+     * @param status STAMP status
+     * @param author STAMP author
+     * @param module STAMP module
+     * @param path STAMP path
+     * @param semantic the semantic
+     * @param refComponent the semantic's reference component
+     * @param composer shared composer
+     * @return
+     */
+    public static EntityFacade commitSemantic(ViewProperties viewProperties, EntityFacade pattern, State status,
+                                              EntityProxy.Concept author,
+                                              EntityProxy.Concept module,
+                                              EntityProxy.Concept path,
+                                              EntityFacade semantic,
+                                              EntityProxy refComponent,
+                                              Composer composer,
+                                              Session session,
+                                              boolean commitFlag) {
+        EntityProxy patternProxy = pattern.toProxy();
+        //Session session = composer.open(status, author, module, path);
+        Latest<SemanticEntityVersion> semanticEntityVersionLatest = KlFieldHelper.retrieveCommittedLatestVersion(semantic, viewProperties);
+        session.compose((SemanticAssembler semanticAssembler) -> {
+                    semanticAssembler
+                            .semantic(semantic.toProxy())
+                            // assign the reference component
+                            .reference(refComponent)
+                            .pattern((EntityProxy.Pattern) patternProxy)
+                            .fieldValues((fields) -> {
+                                        fields.clear();
+                                        semanticEntityVersionLatest.get().fieldValues().forEach(field -> fields.add(field));
+                            });
+                });
+        if (commitFlag) {
+            composer.commitSession(session);
+        }
         return semantic;
     }
 

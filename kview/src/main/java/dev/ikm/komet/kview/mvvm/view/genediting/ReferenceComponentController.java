@@ -1,8 +1,11 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.COMPOSER;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SESSION;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.STAMP_VIEW_MODEL;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
@@ -10,10 +13,9 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLComponentControl;
+import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
-import dev.ikm.tinkar.composer.Composer;
-import dev.ikm.tinkar.composer.Session;
-import dev.ikm.tinkar.composer.assembler.SemanticAssembler;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.ObjectProperty;
@@ -22,8 +24,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
-import org.carlfx.cognitive.viewmodel.ValidationViewModel;
-import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,24 +81,31 @@ public class ReferenceComponentController {
     @FXML
     public void submit(ActionEvent actionEvent) {
         actionEvent.consume();
+        if (genEditingViewModel.getPropertyValue(REF_COMPONENT) != null) {
+            EntityFacade refComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
+            EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+            EntityFacade pattern = genEditingViewModel.getPropertyValue(PATTERN);
+            StampViewModel stampViewModel = genEditingViewModel.getPropertyValue(STAMP_VIEW_MODEL);
 
-        EntityFacade refComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
-        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+            semantic = DataModelHelper.commitSemantic(getViewProperties(),
+                    pattern,
+                    stampViewModel.getValue(STATUS),
+                    stampViewModel.getValue(AUTHOR),
+                    stampViewModel.getValue(MODULE),
+                    stampViewModel.getValue(PATH),
+                    semantic, refComponent.toProxy(),
+                    genEditingViewModel.getPropertyValue(COMPOSER),
+                    genEditingViewModel.getPropertyValue(SESSION),
+                    false);
+            // replacing the semantic
+            genEditingViewModel.setPropertyValue(SEMANTIC, semantic.toProxy());
 
-        ViewModel stampViewModel = genEditingViewModel.getPropertyValue(STAMP_VIEW_MODEL);
-        
-        Composer composer = new Composer("Add reference component %s for semantic %s"
-                                .formatted(refComponent.description(), semantic.description()));
-        Session session = composer.open(stampViewModel.getPropertyValue(STATUS),
-                                stampViewModel.getPropertyValue(AUTHOR),
-                                stampViewModel.getPropertyValue(MODULE),
-                                stampViewModel.getPropertyValue(PATH));
-        session.compose((SemanticAssembler semanticAssembler) ->
-                            semanticAssembler
-                                    .semantic(semantic.toProxy())
-                                    // add the reference component to the Semantic
-                                    .reference(refComponent.toProxy()));
-
-        genEditingViewModel.setPropertyValue(SEMANTIC, semantic);
+            //TODO override call create method
+            genEditingViewModel.save();
+/*
+            EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                    new GenEditingEvent(actionEvent.getSource(), REFERENCE_COMPONENT_CHANGED_EVENT));
+*/
+        }
     }
 }
