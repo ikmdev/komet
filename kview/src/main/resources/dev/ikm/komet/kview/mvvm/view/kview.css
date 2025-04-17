@@ -2879,14 +2879,18 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-radius: 4;
     -fx-border-width: 1px;
     -fx-border-color: -Grey-8;
+
     -fx-pref-width: 340.0;
     -fx-pref-height: 24.0;
-    -fx-alignment: center;
+
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
     -fx-font-weight: 500;
+
     -fx-text-fill: white;
+    -fx-prompt-text-fill: #bbb;
+
     -fx-alignment: center-left;
 
     -fx-background-color: -Grey-8;
