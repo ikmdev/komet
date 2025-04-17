@@ -2,6 +2,7 @@ package dev.ikm.komet.sampler.controllers;
 
 import dev.ikm.komet.app.AppState;
 import dev.ikm.komet.app.LoadDataSourceTask;
+import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.SearchControl;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
@@ -192,6 +193,10 @@ public class SamplerConceptNavigatorController {
                 populateArea(items.stream()
                         .map(item -> item.publicId().asUuidArray())
                         .toList()));
+        searchControl.setOnLongHover(conceptNavigatorControl::expandAndHighlightConcept);
+        searchControl.setOnSearchResultClick(_ -> conceptNavigatorControl.unhighlightConceptsWithDelay());
+        searchControl.setOnClearSearch(_ -> ConceptNavigatorUtils.resetConceptNavigator(conceptNavigatorControl));
+
         showTagsCheckBox.selectedProperty().subscribe(s -> conceptNavigatorControl.setShowTags(s));
 
         conceptArea.setOnDragDropped(event -> {

@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.IconRegion;
+import dev.ikm.komet.kview.controls.InvertedTree;
 import dev.ikm.komet.kview.controls.SearchControl;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
@@ -101,6 +102,9 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
         closePane = new StackPane(new IconRegion("icon", "close"));
         closePane.getStyleClass().add("region");
         closePane.setOnMouseClicked(_ -> {
+            if (control.getOnClearSearch() != null) {
+                control.getOnClearSearch().handle(new ActionEvent());
+            }
             textField.clear();
             resultsPane.getItems().clear();
             resultsPane.setVisible(false);
@@ -141,6 +145,13 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
             }
             resultsPane.setVisible(true);
             control.requestLayout();
+        });
+
+        textField.focusedProperty().subscribe(f -> {
+            if (f && !resultsPane.getItems().isEmpty() && !resultsPane.isVisible()) {
+                resultsPane.setVisible(true);
+                control.requestLayout();
+            }
         });
     }
 
@@ -268,13 +279,33 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
             subscription = subscription.and(hoverProperty().subscribe(h -> {
                 if (h) {
                     hoverTransition = new PauseTransition(new Duration(searchControl.getActivation()));
-                    hoverTransition.setOnFinished(_ -> pseudoClassStateChanged(LONG_HOVER_PSEUDO_CLASS, true));
+                    hoverTransition.setOnFinished(_ -> {
+                        pseudoClassStateChanged(LONG_HOVER_PSEUDO_CLASS, true);
+                        if (searchControl.getOnLongHover() != null) {
+                            searchControl.getOnLongHover().accept(new InvertedTree.ConceptItem(
+                                    searchResult.parentConcept().nid(),
+                                    searchResult.concept().nid(),
+                                    searchResult.parentConcept().description()));
+                        }
+                    });
                     hoverTransition.playFromStart();
                 } else if (hoverTransition != null) {
                     pseudoClassStateChanged(LONG_HOVER_PSEUDO_CLASS, false);
                     hoverTransition.stop();
                 }
             }));
+            setOnMouseClicked(_ -> {
+                if (searchControl.getOnSearchResultClick() != null) {
+                    searchControl.getOnSearchResultClick().accept(new InvertedTree.ConceptItem(
+                            searchResult.parentConcept().nid(),
+                            searchResult.concept().nid(),
+                            searchResult.parentConcept().description()));
+                }
+                searchControl.getChildrenUnmodifiable().stream()
+                        .filter(ListView.class::isInstance)
+                        .findFirst()
+                        .ifPresent(n -> n.setVisible(false));
+            });
         }
 
         void cleanup() {

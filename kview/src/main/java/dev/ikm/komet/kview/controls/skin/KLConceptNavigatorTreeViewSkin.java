@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem.STATE;
@@ -388,7 +387,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
      */
     private void unmarkAllItems(STATE state) {
         getConceptNavigatorTreeCellStream().forEach(ConceptNavigatorHelper::unselectItem);
-        iterateTree((ConceptNavigatorTreeItem) getSkinnable().getRoot(), model -> {
+        ConceptNavigatorUtils.iterateTree((ConceptNavigatorTreeItem) getSkinnable().getRoot(), model -> {
             PS_STATE.clearBitsRange(model.getBitSet(), state);
             markCellDirty(model);
         });
@@ -483,23 +482,6 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         return getConceptNavigatorTreeCellStream()
                 .filter(cell -> treeItem.equals(cell.getTreeItem()))
                 .findFirst();
-    }
-
-    /**
-     * <p>Recursive method that traverses the children of a {@link ConceptNavigatorTreeItem}, applying a certain
-     * function to each of them.
-     * </p>
-     * @param treeItem a {@link ConceptNavigatorTreeItem}
-     * @param consumer a {@link Consumer<ConceptNavigatorTreeItem>} to apply to each tree item
-     */
-    private void iterateTree(ConceptNavigatorTreeItem treeItem, Consumer<ConceptNavigatorTreeItem> consumer) {
-        for (TreeItem<ConceptFacade> child : treeItem.getChildren()) {
-            ConceptNavigatorTreeItem model = (ConceptNavigatorTreeItem) child;
-            consumer.accept(model);
-            if (!child.isLeaf()) {
-                iterateTree(model, consumer);
-            }
-        }
     }
 
     /**

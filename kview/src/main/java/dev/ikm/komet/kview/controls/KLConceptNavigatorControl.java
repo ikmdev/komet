@@ -4,6 +4,7 @@ import dev.ikm.komet.kview.controls.skin.KLConceptNavigatorTreeViewSkin;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import javafx.animation.PauseTransition;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -15,6 +16,7 @@ import javafx.beans.property.StringProperty;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TreeView;
+import javafx.util.Duration;
 
 import java.util.Arrays;
 import java.util.List;
@@ -310,7 +312,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      * @param parentNid the nid of the parent of the concept, or -1 if root.
      * @return a {@link ConceptNavigatorTreeItem} for that concept
      */
-    private ConceptNavigatorTreeItem getConceptNavigatorTreeItem(int nid, int parentNid) {
+    ConceptNavigatorTreeItem getConceptNavigatorTreeItem(int nid, int parentNid) {
         ConceptNavigatorTreeItem conceptNavigatorTreeItem = createSingleConceptNavigatorTreeItem(nid, parentNid);
         conceptNavigatorTreeItem.expandedProperty().subscribe((_, expanded) -> {
             if (expanded && conceptNavigatorTreeItem.getChildren().isEmpty()) {
@@ -356,4 +358,27 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
         return conceptNavigatorTreeItem;
     }
 
+    /**
+     * <p>Expands the treeView starting from its root node, so this concept gets visible, and
+     * then highlights it.
+     * </p>
+     * <p>From all the possible concept's lineages, the one that gets expanded is the shorter one
+     * that matches both its nid and parent nid.
+     * </p>
+     * @param conceptItem a {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
+     * @see ConceptNavigatorUtils#findShorterLineage(InvertedTree.ConceptItem, Navigator)
+     */
+    public void expandAndHighlightConcept(InvertedTree.ConceptItem conceptItem) {
+        ConceptNavigatorUtils.expandAndHighlightConcept(this, conceptItem);
+    }
+
+    /**
+     * <p>Removes the highlight state of every concept in this treeView.
+     * </p>
+     */
+    public void unhighlightConceptsWithDelay() {
+        PauseTransition pause = new PauseTransition(Duration.millis(getActivation()));
+        pause.setOnFinished(_ -> ConceptNavigatorUtils.iterateTree((ConceptNavigatorTreeItem) getRoot(), item -> item.setHighlighted(false)));
+        pause.play();
+    }
 }

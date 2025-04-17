@@ -90,6 +90,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
     private static final PseudoClass ADDED_TAG_PSEUDO_CLASS = PseudoClass.getPseudoClass("added-tag");
     private static final PseudoClass RETIRED_TAG_PSEUDO_CLASS = PseudoClass.getPseudoClass("retired-tag");
 
+    private static final PseudoClass HIGHLIGHTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("highlighted");
     /**
      * <p>Custom data format identifier used as means of identifying the data stored on a dragboard
      * when one or more concept items are selected and dragged to a given target.
@@ -256,6 +257,27 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
     }
     public final void setTag(ConceptNavigatorTreeItem.TAG value) {
         tagProperty.set(value);
+    }
+
+    /**
+     * <p>Property that toggles the 'highlighted' pseudo class.
+     * </p>
+     * @see ConceptNavigatorTreeItem#highlightedProperty()
+     */
+    private final BooleanProperty highlightedProperty = new SimpleBooleanProperty(this, "highlighted") {
+        @Override
+        protected void invalidated() {
+            pseudoClassStateChanged(HIGHLIGHTED_PSEUDO_CLASS, get());
+        }
+    };
+    public final BooleanProperty highlightedProperty() {
+        return highlightedProperty;
+    }
+    public final boolean isHighlighted() {
+        return highlightedProperty.get();
+    }
+    public final void setHighlighted(boolean value) {
+        highlightedProperty.set(value);
     }
 
     private void unselectItem() {

@@ -17,6 +17,8 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
+import java.util.function.Consumer;
+
 public class SearchControl extends Control {
 
     public SearchControl() {
@@ -59,6 +61,18 @@ public class SearchControl extends Control {
     }
     public final void setOnAction(EventHandler<ActionEvent> value) {
         onActionProperty.set(value);
+    }
+
+    // onClearSearchProperty
+    private final ObjectProperty<EventHandler<ActionEvent>> onClearSearchProperty = new SimpleObjectProperty<>(this, "onClearSearch");
+    public final ObjectProperty<EventHandler<ActionEvent>> onClearSearchProperty() {
+       return onClearSearchProperty;
+    }
+    public final EventHandler<ActionEvent> getOnClearSearch() {
+       return onClearSearchProperty.get();
+    }
+    public final void setOnClearSearch(EventHandler<ActionEvent> value) {
+        onClearSearchProperty.set(value);
     }
 
     // onFilterActionProperty
@@ -115,6 +129,30 @@ public class SearchControl extends Control {
     }
     public final void setResultsPlaceholder(String value) {
         resultsPlaceholderProperty.set(value);
+    }
+
+    // onLongHoverProperty
+    private final ObjectProperty<Consumer<InvertedTree.ConceptItem>> onLongHoverProperty = new SimpleObjectProperty<>(this, "onLongHover");
+    public final ObjectProperty<Consumer<InvertedTree.ConceptItem>> onLongHoverProperty() {
+       return onLongHoverProperty;
+    }
+    public final Consumer<InvertedTree.ConceptItem> getOnLongHover() {
+       return onLongHoverProperty.get();
+    }
+    public final void setOnLongHover(Consumer<InvertedTree.ConceptItem> value) {
+        onLongHoverProperty.set(value);
+    }
+
+    // onSearchResultClickProperty
+    private final ObjectProperty<Consumer<InvertedTree.ConceptItem>> onSearchResultClickProperty = new SimpleObjectProperty<>(this, "onSearchResultClick");
+    public final ObjectProperty<Consumer<InvertedTree.ConceptItem>> onSearchResultClickProperty() {
+       return onSearchResultClickProperty;
+    }
+    public final Consumer<InvertedTree.ConceptItem> getOnSearchResultClick() {
+       return onSearchResultClickProperty.get();
+    }
+    public final void setOnSearchResultClick(Consumer<InvertedTree.ConceptItem> value) {
+        onSearchResultClickProperty.set(value);
     }
 
     @Override
