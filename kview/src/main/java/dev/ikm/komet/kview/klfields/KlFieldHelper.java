@@ -218,8 +218,8 @@ public class KlFieldHelper {
      * @param viewProperties       view properties
      * @return
      */
-    public static List<Node> addReadOnlyBlankControlsToContainer(PatternVersionRecord patternVersionRecord, ViewProperties viewProperties) {
-        List<Node> defaultNodes = new ArrayList<>();
+    public static List<KLReadOnlyBaseControl> addReadOnlyBlankControlsToContainer(PatternVersionRecord patternVersionRecord, ViewProperties viewProperties) {
+        List<KLReadOnlyBaseControl> defaultNodes = new ArrayList<>();
         patternVersionRecord.fieldDefinitions().forEach(fieldDefinitionRecord -> {
             Tooltip tooltip = new Tooltip(viewProperties.calculator().getDescriptionTextOrNid(fieldDefinitionRecord.purposeNid()));
 
