@@ -33,6 +33,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
@@ -152,15 +153,17 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             pseudoClassStateChanged(MULTIPLE_SELECTION_PSEUDO_CLASS, multiple);
         });
         treeView.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            if (isMultipleSelectionByBoundingBox() &&
-                    !new Rectangle2D(xMin, yMin, xMax - xMin, yMax - yMin).contains(e.getSceneX(), e.getSceneY())) {
-                setMultipleSelectionByBoundingBox(false);
+            if (e.getButton() == MouseButton.PRIMARY) {
+                if (isMultipleSelectionByBoundingBox() &&
+                        !new Rectangle2D(xMin, yMin, xMax - xMin, yMax - yMin).contains(e.getSceneX(), e.getSceneY())) {
+                    setMultipleSelectionByBoundingBox(false);
+                }
+                x = e.getX();
+                y = e.getY();
             }
-            x = e.getX();
-            y = e.getY();
         });
         treeView.addEventFilter(MouseEvent.MOUSE_DRAGGED, e -> {
-            if (isDraggingAllowed() && draggedItems.isEmpty() && !isMultipleSelectionByClicking()) {
+            if (e.getButton() == MouseButton.PRIMARY && isDraggingAllowed() && draggedItems.isEmpty() && !isMultipleSelectionByClicking()) {
                 setMultipleSelectionByBoundingBox(true);
                 virtualFlow.setMouseTransparent(true);
                 double newX = e.getX();

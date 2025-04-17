@@ -4,6 +4,7 @@ import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.LineageBox;
 import javafx.scene.control.skin.ScrollPaneSkin;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 
@@ -27,11 +28,13 @@ public class LineageBoxSkin extends ScrollPaneSkin {
         closePane = new StackPane(closeIconRegion);
         closePane.getStyleClass().addAll("region", "close");
         closePane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            ConceptNavigatorTreeItem concept = lineageBox.getConcept();
-            if (concept != null) {
-                concept.setViewLineage(false);
-                concept.getInvertedTree().reset();
-                lineageBox.setConcept(null);
+            if (e.getButton() == MouseButton.PRIMARY) {
+                ConceptNavigatorTreeItem concept = lineageBox.getConcept();
+                if (concept != null) {
+                    concept.setViewLineage(false);
+                    concept.getInvertedTree().reset();
+                    lineageBox.setConcept(null);
+                }
             }
             e.consume();
         });
