@@ -8,8 +8,11 @@ import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.css.PseudoClass;
 import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -40,6 +43,9 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
     private final Label titleLabel;
     private final Button addEntryButton;
+
+    // Pseudo-class for green-dotted outline visibility.
+    private static final PseudoClass PSEUDO_IS_DRAG_OVER_SAME_COMPONENT = PseudoClass.getPseudoClass("drag-over-same-component");
 
     /**
      * This is the list of Components being rendered. The components with their nids will always be in the same
@@ -234,12 +240,25 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
         componentControl.showDragHandleProperty().bind(componentControl.hoverProperty());
 
-        componentControl.addEventHandler(MouseEvent.DRAG_DETECTED, mouseEvent -> {
+        EventHandler<MouseEvent> onMouseMoved = mouseEvent -> {
+            if (mouseEvent.getTarget() == componentControl) {
+                componentControl.setVisible(true);
+                componentControl.pseudoClassStateChanged(PSEUDO_IS_DRAG_OVER_SAME_COMPONENT, true);
+            } else {
+                componentControl.setVisible(false);
+                componentControl.pseudoClassStateChanged(PSEUDO_IS_DRAG_OVER_SAME_COMPONENT, false);
+            }
+        };
+
+        componentControl.addEventHandler(MouseEvent.DRAG_DETECTED, _ -> {
             componentControl.setVisible(false);
+            componentControl.addEventHandler(MouseEvent.MOUSE_MOVED, onMouseMoved);
         });
 
-        componentControl.addEventHandler(DragEvent.DRAG_DONE, dragEvent -> {
+        componentControl.addEventHandler(DragEvent.DRAG_DONE, _ -> {
             componentControl.setVisible(true);
+            componentControl.removeEventHandler(MouseEvent.MOUSE_MOVED, onMouseMoved);
+            componentControl.pseudoClassStateChanged(PSEUDO_IS_DRAG_OVER_SAME_COMPONENT, false);
         });
 
         Label numberLabel = createNumberLabel(componentControl);
