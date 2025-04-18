@@ -12,6 +12,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
@@ -85,7 +86,7 @@ public class ConceptTile extends HBox {
         disclosurePane = new StackPane(disclosureIconRegion);
         disclosurePane.getStyleClass().add("region");
         disclosurePane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            if (cell.getTreeItem() != null) {
+            if (e.isPrimaryButtonDown() && cell.getTreeItem() != null) {
                 cell.getTreeItem().setExpanded(!cell.getTreeItem().isExpanded());
                 e.consume();
             }
@@ -93,7 +94,9 @@ public class ConceptTile extends HBox {
         IconRegion selectIconRegion = new IconRegion("icon", "select");
         StackPane selectPane = new StackPane(selectIconRegion);
         selectPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            cell.pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, true);
+            if (e.getButton() == MouseButton.PRIMARY) {
+                cell.pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, true);
+            }
             e.consume();
         });
         selectPane.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
@@ -120,7 +123,9 @@ public class ConceptTile extends HBox {
         };
         Tooltip.install(treePane, treeTooltip);
         treePane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            getConcept().setViewLineage(!getConcept().isViewLineage());
+            if (e.getButton() == MouseButton.PRIMARY) {
+                getConcept().setViewLineage(!getConcept().isViewLineage());
+            }
             e.consume();
         });
         treePane.managedProperty().bind(treePane.visibleProperty());
@@ -140,11 +145,13 @@ public class ConceptTile extends HBox {
 
         selectPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             e.consume();
-            treeViewSkin.setDraggingAllowed(false);
+            if (e.getButton() == MouseButton.PRIMARY) {
+                treeViewSkin.setDraggingAllowed(false);
+            }
         });
         selectPane.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> treeViewSkin.setDraggingAllowed(true));
         selectPane.addEventFilter(MouseEvent.DRAG_DETECTED, e -> {
-            if (!cell.isEmpty()) {
+            if (e.getButton() == MouseButton.PRIMARY && !cell.isEmpty()) {
                 Dragboard dragboard = startDragAndDrop(TransferMode.COPY_OR_MOVE);
                 ClipboardContent clipboardContent = new ClipboardContent();
                 ConceptNavigatorTreeItem treeItem = (ConceptNavigatorTreeItem) cell.getTreeItem();

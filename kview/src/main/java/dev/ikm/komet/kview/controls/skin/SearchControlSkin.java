@@ -20,6 +20,7 @@ import javafx.scene.control.Skin;
 import javafx.scene.control.SkinBase;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Path;
@@ -101,19 +102,21 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
 
         closePane = new StackPane(new IconRegion("icon", "close"));
         closePane.getStyleClass().add("region");
-        closePane.setOnMouseClicked(_ -> {
-            if (control.getOnClearSearch() != null) {
-                control.getOnClearSearch().handle(new ActionEvent());
+        closePane.setOnMouseClicked(e -> {
+            if (e.getButton() == MouseButton.PRIMARY) {
+                if (control.getOnClearSearch() != null) {
+                    control.getOnClearSearch().handle(new ActionEvent());
+                }
+                textField.clear();
+                resultsPane.getItems().clear();
+                resultsPane.setVisible(false);
             }
-            textField.clear();
-            resultsPane.getItems().clear();
-            resultsPane.setVisible(false);
         });
 
         filterPane = new StackPane(new IconRegion("icon", "filter"));
         filterPane.getStyleClass().add("filter-region");
-        filterPane.setOnMouseClicked(_ -> {
-            if (control.getOnFilterAction() != null) {
+        filterPane.setOnMouseClicked(e -> {
+            if (e.getButton() == MouseButton.PRIMARY && control.getOnFilterAction() != null) {
                 control.getOnFilterAction().handle(new ActionEvent());
             }
         });
