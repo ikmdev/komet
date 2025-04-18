@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.kview.controls.skin.ConceptNavigatorHelper;
 import dev.ikm.komet.kview.controls.skin.KLConceptNavigatorTreeViewSkin;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.entity.Entity;
@@ -108,6 +109,26 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      * @see ConceptNavigatorUtils#STYLE
      */
     public static final int MAX_LEVEL = 32;
+
+    /**
+     * Used to access internal methods of KLConceptNavigatorControl from
+     * {@link dev.ikm.komet.kview.controls.skin.KLConceptNavigatorTreeViewSkin}.
+     */
+    static {
+        ConceptNavigatorHelper.setConceptNavigatorAccessor(new ConceptNavigatorHelper.ConceptNavigatorAccessor() {
+
+            @Override
+            public void markCellDirty(KLConceptNavigatorTreeCell treeCell) {}
+
+            @Override
+            public void unselectItem(KLConceptNavigatorTreeCell treeCell) {}
+
+            @Override
+            public ConceptNavigatorTreeItem getConceptNavigatorTreeItem(KLConceptNavigatorControl treeView, int nid, int parentNid) {
+                return treeView.getConceptNavigatorTreeItem(nid, parentNid);
+            }
+        });
+    }
 
     private KLConceptNavigatorTreeViewSkin conceptNavigatorTreeViewSkin;
 
@@ -312,7 +333,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      * @param parentNid the nid of the parent of the concept, or -1 if root.
      * @return a {@link ConceptNavigatorTreeItem} for that concept
      */
-    ConceptNavigatorTreeItem getConceptNavigatorTreeItem(int nid, int parentNid) {
+    private ConceptNavigatorTreeItem getConceptNavigatorTreeItem(int nid, int parentNid) {
         ConceptNavigatorTreeItem conceptNavigatorTreeItem = createSingleConceptNavigatorTreeItem(nid, parentNid);
         conceptNavigatorTreeItem.expandedProperty().subscribe((_, expanded) -> {
             if (expanded && conceptNavigatorTreeItem.getChildren().isEmpty()) {
@@ -369,11 +390,11 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      * @see ConceptNavigatorUtils#findShorterLineage(InvertedTree.ConceptItem, Navigator)
      */
     public void expandAndHighlightConcept(InvertedTree.ConceptItem conceptItem) {
-        ConceptNavigatorUtils.expandAndHighlightConcept(this, conceptItem);
+        conceptNavigatorTreeViewSkin.expandAndHighlightConcept(conceptItem);
     }
 
     /**
-     * <p>Removes the highlight state of every concept in this treeView.
+     * <p>Toggles off the highlight state of every concept that might have it in this treeView.
      * </p>
      */
     public void unhighlightConceptsWithDelay() {

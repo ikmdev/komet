@@ -296,35 +296,6 @@ public class ConceptNavigatorUtils {
     }
 
     /**
-     * <p>Expands and highlights the concept in the treeView, matching both its nid and parent nid.
-     * </p>
-     * @param treeView the {@link KLConceptNavigatorControl}
-     * @param conceptItem a {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
-     */
-    public static void expandAndHighlightConcept(KLConceptNavigatorControl treeView, InvertedTree.ConceptItem conceptItem) {
-        resetConceptNavigator(treeView);
-
-        List<InvertedTree.ConceptItem> lineage = ConceptNavigatorUtils.findShorterLineage(conceptItem, treeView.getNavigator());
-        ConceptNavigatorTreeItem parent = (ConceptNavigatorTreeItem) treeView.getRoot();
-        for (int i = 0; i < lineage.size(); i++) {
-            int parentNid = lineage.get(i).nid();
-            int nid = lineage.get(i).childNid();
-            ConceptNavigatorTreeItem item = (ConceptNavigatorTreeItem) parent.getChildren().stream()
-                    .filter(c -> c.getValue().nid() == nid)
-                    .findFirst()
-                    .orElse(treeView.getConceptNavigatorTreeItem(nid, parentNid));
-            item.setExpanded(true);
-            parent = item;
-            if (i == lineage.size() - 1) {
-                treeView.getSelectionModel().select(item);
-                treeView.scrollTo(treeView.getSelectionModel().getSelectedIndex());
-                treeView.getSelectionModel().clearSelection();
-                item.setHighlighted(true);
-            }
-        }
-    }
-
-    /**
      * <p>Recursive method that traverses the children of a {@link ConceptNavigatorTreeItem}, applying a certain
      * function to each of them.
      * </p>

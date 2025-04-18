@@ -124,6 +124,7 @@ public class ConceptTile extends HBox {
         Tooltip.install(treePane, treeTooltip);
         treePane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (e.getButton() == MouseButton.PRIMARY) {
+                getConcept().setHighlighted(false);
                 getConcept().setViewLineage(!getConcept().isViewLineage());
             }
             e.consume();

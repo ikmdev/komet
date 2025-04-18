@@ -49,6 +49,11 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
             public void unselectItem(KLConceptNavigatorTreeCell treeCell) {
                 treeCell.unselectItem();
             }
+
+            @Override
+            public ConceptNavigatorTreeItem getConceptNavigatorTreeItem(KLConceptNavigatorControl treeView, int nid, int parentNid) {
+                return null;
+            }
         });
     }
 
