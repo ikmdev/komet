@@ -8,6 +8,8 @@ import dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell;
 import dev.ikm.komet.kview.controls.MultipleSelectionContextMenu;
 import dev.ikm.komet.kview.controls.SingleSelectionContextMenu;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -24,6 +26,7 @@ import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.skin.TreeViewSkin;
@@ -36,6 +39,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.ClosePath;
@@ -94,6 +98,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
 
     private MultipleSelectionContextMenu multipleSelectionContextMenu;
     private final SingleSelectionContextMenu singleSelectionContextMenu;
+    private boolean isScrollBarDragging;
 
     /**
      * <p>Creates a {@link KLConceptNavigatorTreeViewSkin} instance.
@@ -119,6 +124,8 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
 
         Rectangle clip = new Rectangle();
         clip.yProperty().bind(header.heightProperty());
+        clip.xProperty().bind(virtualFlow.layoutXProperty());
+        clip.yProperty().bind(virtualFlow.layoutYProperty());
         clip.widthProperty().bind(virtualFlow.widthProperty());
         clip.heightProperty().bind(virtualFlow.heightProperty());
         draggingBox.setClip(clip);
@@ -163,9 +170,12 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             }
         });
         treeView.addEventFilter(MouseEvent.MOUSE_DRAGGED, e -> {
-            if (e.getButton() == MouseButton.PRIMARY && isDraggingAllowed() && draggedItems.isEmpty() && !isMultipleSelectionByClicking()) {
+            Point2D point = getSheet().sceneToLocal(new Point2D(e.getSceneX(), e.getSceneY()));
+            if (e.getButton() == MouseButton.PRIMARY && isDraggingAllowed() &&
+                    draggedItems.isEmpty() && !isMultipleSelectionByClicking() &&
+                    getSheet().contains(point) && !isScrollBarDragging) {
                 setMultipleSelectionByBoundingBox(true);
-                virtualFlow.setMouseTransparent(true);
+                getSheet().setMouseTransparent(true);
                 double newX = e.getX();
                 double newY = e.getY();
                 double x0 = Math.min(newX, x), y0 = Math.min(newY, y);
@@ -206,6 +216,20 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             }
         });
         treeView.setOnDragDone(_ -> resetSelection());
+
+        ScrollBar verticalBar = (ScrollBar) treeView.lookup(".scroll-bar:vertical");
+        verticalBar.skinProperty().addListener(new InvalidationListener() {
+            @Override
+            public void invalidated(Observable observable) {
+                if (verticalBar.getSkin() != null) {
+                    StackPane thumb = (StackPane) verticalBar.lookup(".thumb");
+                    thumb.addEventHandler(MouseEvent.MOUSE_PRESSED, _ -> isScrollBarDragging = false);
+                    thumb.addEventHandler(MouseEvent.MOUSE_DRAGGED, _ -> isScrollBarDragging = true);
+                    thumb.addEventHandler(MouseEvent.MOUSE_RELEASED, _ -> isScrollBarDragging = false);
+                    verticalBar.skinProperty().removeListener(this);
+                }
+            }
+        });
 
         singleSelectionContextMenu = new SingleSelectionContextMenu();
         treeView.setOnContextMenuRequested(e -> {
@@ -561,7 +585,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         getConceptNavigatorTreeCellStream()
                 .filter(cell -> cell.getGraphic() != null)
                 .forEach(cell -> cell.pseudoClassStateChanged(KLConceptNavigatorTreeCell.LONG_HOVER_PSEUDO_CLASS, false));
-        virtualFlow.setMouseTransparent(false);
+        getSheet().setMouseTransparent(false);
     }
 
     /**
