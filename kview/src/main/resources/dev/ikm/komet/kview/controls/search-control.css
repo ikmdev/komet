@@ -177,6 +177,10 @@
     -fx-pref-width: 1;
 }
 
+.search-result:long-hover {
+    -fx-background-color: #5896F6, #F4F9FF;
+}
+
 .search-result > .highlight-path {
     -fx-fill: #C0F5A0;
     -fx-stroke-width: 0;

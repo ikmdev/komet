@@ -72,6 +72,7 @@ import dev.ikm.komet.framework.tabs.TabGroup;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.NotificationPopup;
@@ -881,7 +882,6 @@ public class JournalController {
     public void loadConceptNavigatorPanel(ViewProperties viewProperties) {
         Navigator navigator = new ViewNavigator(viewProperties.nodeView());
         SearchControl searchControl = new SearchControl();
-
         searchControl.setOnAction(_ -> {
             ViewCalculator calculator = viewProperties.calculator();
             searchControl.setResultsPlaceholder("Searching..."); // DUMMY, resources?
@@ -937,6 +937,9 @@ public class JournalController {
                 populateWorkspaceWithSelection(items.stream()
                         .map(item -> item.publicId().asUuidArray())
                         .toList()));
+        searchControl.setOnLongHover(conceptNavigatorControl::expandAndHighlightConcept);
+        searchControl.setOnSearchResultClick(_ -> conceptNavigatorControl.unhighlightConceptsWithDelay());
+        searchControl.setOnClearSearch(_ -> ConceptNavigatorUtils.resetConceptNavigator(conceptNavigatorControl));
 
         VBox nodePanel = new VBox(searchControl, conceptNavigatorControl);
         nodePanel.getStyleClass().add("concept-navigator-container");

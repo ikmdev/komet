@@ -3,11 +3,13 @@ package dev.ikm.komet.kview.controls.skin;
 import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.ConceptTile;
+import dev.ikm.komet.kview.controls.InvertedTree;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell;
 import dev.ikm.komet.kview.controls.MultipleSelectionContextMenu;
 import dev.ikm.komet.kview.controls.SingleSelectionContextMenu;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -55,7 +57,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem.STATE;
@@ -87,6 +88,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
     private static final PseudoClass MULTIPLE_SELECTION_PSEUDO_CLASS = PseudoClass.getPseudoClass("multiple");
 
     private final Label header;
+    private final KLConceptNavigatorControl treeView;
     private ConceptNavigatorVirtualFlow virtualFlow;
     private final Path draggingBox;
     private Group sheet;
@@ -111,6 +113,8 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
      */
     public KLConceptNavigatorTreeViewSkin(KLConceptNavigatorControl treeView) {
         super(treeView);
+        this.treeView = treeView;
+
         header = new Label();
         header.getStyleClass().add("concept-header");
         header.textProperty().bind(treeView.headerProperty());
@@ -145,6 +149,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                     pseudoClassStateChanged(MULTIPLE_SELECTION_PSEUDO_CLASS, true);
                     for (TreeItem<ConceptFacade> item : c.getAddedSubList()) {
                         ConceptNavigatorTreeItem model = (ConceptNavigatorTreeItem) item;
+                        model.setHighlighted(false);
                         getCellForTreeItem(model).ifPresent(cell -> {
                             if (cell.getGraphic() instanceof ConceptTile tile) {
                                 imageMap.put(model, ConceptNavigatorUtils.getTileSnapshot(tile));
@@ -415,7 +420,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
      */
     private void unmarkAllItems(STATE state) {
         getConceptNavigatorTreeCellStream().forEach(ConceptNavigatorHelper::unselectItem);
-        iterateTree((ConceptNavigatorTreeItem) getSkinnable().getRoot(), model -> {
+        ConceptNavigatorUtils.iterateTree((ConceptNavigatorTreeItem) getSkinnable().getRoot(), model -> {
             PS_STATE.clearBitsRange(model.getBitSet(), state);
             markCellDirty(model);
         });
@@ -465,7 +470,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         virtualFlow.requestLayout();
 
         // debug:
-//        ConceptNavigatorUtils.printTree((KLConceptNavigatorControl) getSkinnable(), (ConceptNavigatorTreeItem) getSkinnable().getRoot(), false);
+//        ConceptNavigatorUtils.printTree(treeView, (ConceptNavigatorTreeItem) getSkinnable().getRoot(), false);
     }
 
     /**
@@ -510,23 +515,6 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         return getConceptNavigatorTreeCellStream()
                 .filter(cell -> treeItem.equals(cell.getTreeItem()))
                 .findFirst();
-    }
-
-    /**
-     * <p>Recursive method that traverses the children of a {@link ConceptNavigatorTreeItem}, applying a certain
-     * function to each of them.
-     * </p>
-     * @param treeItem a {@link ConceptNavigatorTreeItem}
-     * @param consumer a {@link Consumer<ConceptNavigatorTreeItem>} to apply to each tree item
-     */
-    private void iterateTree(ConceptNavigatorTreeItem treeItem, Consumer<ConceptNavigatorTreeItem> consumer) {
-        for (TreeItem<ConceptFacade> child : treeItem.getChildren()) {
-            ConceptNavigatorTreeItem model = (ConceptNavigatorTreeItem) child;
-            consumer.accept(model);
-            if (!child.isLeaf()) {
-                iterateTree(model, consumer);
-            }
-        }
     }
 
     /**
@@ -633,8 +621,8 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
     private void setupContextMenu(List<ConceptFacade> items) {
         multipleSelectionContextMenu = new MultipleSelectionContextMenu();
         multipleSelectionContextMenu.setPopulateMessageAction(_ -> {
-            if (((KLConceptNavigatorControl) getSkinnable()).getOnAction() != null) {
-                ((KLConceptNavigatorControl) getSkinnable()).getOnAction().accept(items);
+            if (treeView.getOnAction() != null) {
+                treeView.getOnAction().accept(items);
             }
             resetSelection();
         });
@@ -653,5 +641,44 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         setMultipleSelectionByBoundingBox(false);
         setMultipleSelectionByClicking(false);
         getSkinnable().getSelectionModel().clearSelection();
+    }
+
+    /**
+     * <p>Expands and highlights the concept in the treeView, matching both its nid and parent nid.
+     * </p>
+     * @param conceptItem a {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
+     */
+    public void expandAndHighlightConcept(InvertedTree.ConceptItem conceptItem) {
+        ConceptNavigatorUtils.resetConceptNavigator(treeView);
+
+        List<InvertedTree.ConceptItem> lineage = ConceptNavigatorUtils.findShorterLineage(conceptItem, treeView.getNavigator());
+        ConceptNavigatorTreeItem parent = (ConceptNavigatorTreeItem) treeView.getRoot();
+        for (int i = 0; i < lineage.size(); i++) {
+            int parentNid = lineage.get(i).nid();
+            int nid = lineage.get(i).childNid();
+            ConceptNavigatorTreeItem item = (ConceptNavigatorTreeItem) parent.getChildren().stream()
+                    .filter(c -> c.getValue().nid() == nid)
+                    .findFirst()
+                    .orElse(ConceptNavigatorHelper.getConceptNavigatorTreeItem(treeView, nid, parentNid));
+            item.setExpanded(true);
+            parent = item;
+            if (i == lineage.size() - 2) { // select and scroll to parent, so it stays visible on top of the treeView
+                treeView.getSelectionModel().select(item);
+                treeView.scrollTo(treeView.getSelectionModel().getSelectedIndex());
+                treeView.getSelectionModel().clearSelection();
+            } else if (i == lineage.size() - 1) { // then, select, and highlight item
+                treeView.getSelectionModel().select(item);
+                int index = treeView.getSelectionModel().getSelectedIndex();
+                Platform.runLater(() -> {
+                    // check if the item is visible
+                    if (getCellForTreeItem(item).isEmpty()) {
+                        // else scroll to it (in case of a long list of previous siblings)
+                        treeView.scrollTo(index);
+                    }
+                });
+                treeView.getSelectionModel().clearSelection();
+                item.setHighlighted(true);
+            }
+        }
     }
 }

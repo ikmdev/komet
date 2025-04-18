@@ -124,6 +124,7 @@ public class ConceptTile extends HBox {
         Tooltip.install(treePane, treeTooltip);
         treePane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (e.getButton() == MouseButton.PRIMARY) {
+                getConcept().setHighlighted(false);
                 getConcept().setViewLineage(!getConcept().isViewLineage());
             }
             e.consume();
@@ -185,6 +186,8 @@ public class ConceptTile extends HBox {
             }
             cell.tagProperty().unbind();
             cell.setTag(ConceptNavigatorTreeItem.TAG.NONE);
+            cell.highlightedProperty().unbind();
+            cell.setHighlighted(false);
             cell.viewLineageProperty().unbind();
             cell.setViewLineage(false);
             treePane.setVisible(false);
@@ -211,6 +214,7 @@ public class ConceptTile extends HBox {
                 pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, treeItem.isDefined());
                 cell.viewLineageProperty().bind(treeItem.viewLineageProperty());
                 cell.tagProperty().bind(treeItem.tagProperty());
+                cell.highlightedProperty().bind(treeItem.highlightedProperty());
                 treePane.setVisible(treeItem.isMultiParent());
             } else {
                 stopHoverTransition();
