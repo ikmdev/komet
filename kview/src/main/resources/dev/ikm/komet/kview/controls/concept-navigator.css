@@ -52,9 +52,13 @@
     -fx-background-insets: 0;
 }
 
-.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical,
+.concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical {
+    -fx-padding: 0;
+    -fx-translate-x: 1;
+}
 .concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal {
     -fx-padding: 0;
+    -fx-translate-y: 1;
 }
 
 .concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal,
@@ -229,7 +233,7 @@
 .navigator-tree-cell.tree-cell > .concept-tile > .concept-label {
     -fx-font-family: "Noto Sans";
     -fx-font-weight: normal;
-    -fx-font-size: 12;
+    -fx-font-size: 13;
     -fx-text-fill: -Grey-11;
     -fx-background-color: transparent;
     -fx-border-color: transparent;
@@ -635,7 +639,7 @@
 .lineage-box > .lineage-hbox > .lineage-label {
     -fx-font-family: "Noto Sans";
     -fx-font-weight: 500;
-    -fx-font-size: 10;
+    -fx-font-size: 12;
     -fx-text-fill: -Grey-11;
     -fx-alignment: center-left;
 }

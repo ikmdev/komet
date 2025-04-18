@@ -42,6 +42,7 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
     private final KLConceptNavigatorControl treeView;
     private final LineageBox lineageBox;
     private final HBox tagBox;
+    private double cellHeight, expandedHeight;
 
     /**
      * <p>Creates a new KLConceptNavigatorTreeCellSkin instance.
@@ -178,7 +179,7 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
         }
 
         boolean expanded = treeItem != null && treeItem.isViewLineage();
-        double expandedHeight = expanded ? Math.min(lineageBox.prefHeight(w), lineageBox.maxHeight(w)) : 0;
+        expandedHeight = expanded ? Math.min(lineageBox.prefHeight(w), lineageBox.maxHeight(w)) : 0;
         if (expanded) {
             y += expandedHeight;
             h -= expandedHeight;
@@ -186,6 +187,7 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
 
         layoutLabelInArea(x, y, w, h);
 
+        cellHeight = h + snappedTopInset() + snappedBottomInset();
         updateConnections();
 
         if (expanded) {
@@ -194,6 +196,7 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
             }
             double cellPadding = treeCell.getInsets().getLeft();
             lineageBox.resizeRelocate(cellPadding, y - expandedHeight, getSkinnable().getWidth() - cellPadding, expandedHeight);
+            lineageBox.toFront();
         }
 
         if (!getChildren().contains(tagBox)) {
@@ -266,8 +269,8 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
      */
     private Path getLine(double x, String styleClass) {
         Path line = new Path();
-        double yOrigin = treeCell.isViewLineage() ? treeCell.getHeight() - 24 : 0;
-        line.getElements().addAll(new MoveTo(x, yOrigin), new LineTo(x, yOrigin + 24));
+        double conceptTileHeight = treeCell.getHeight() - expandedHeight;
+        line.getElements().addAll(new MoveTo(x, 0), new LineTo(x, expandedHeight + conceptTileHeight));
         line.getStyleClass().add(styleClass);
         return line;
     }
@@ -284,16 +287,16 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
      */
     private Path getCurvedLine(double x, boolean isLastSibling, String styleClass) {
         Path curvedLine = new Path();
-        double yOrigin = treeCell.isViewLineage() ? treeCell.getHeight() - 24 : 0;
+        double conceptTileHeight = treeCell.getHeight() - expandedHeight;
         if (isLastSibling) {
             curvedLine.getElements().addAll(
-                    new MoveTo(x, yOrigin), new LineTo(x, yOrigin + 7),
-                    new ArcTo(5, 5, 90, x + 5, yOrigin + 12, false, false)
+                    new MoveTo(x, 0), new LineTo(x, expandedHeight + conceptTileHeight / 2 - 5),
+                    new ArcTo(5, 5, 90, x + 5, expandedHeight + conceptTileHeight / 2, false, false)
             );
         } else {
             curvedLine.getElements().addAll(
-                    new MoveTo(x, yOrigin), new LineTo(x, yOrigin + 24), new MoveTo(x, yOrigin + 7),
-                    new ArcTo(5, 5, 90, x + 5, yOrigin + 12, false, false)
+                    new MoveTo(x, 0), new LineTo(x, expandedHeight + conceptTileHeight), new MoveTo(x, expandedHeight + conceptTileHeight / 2 - 5),
+                    new ArcTo(5, 5, 90, x + 5, expandedHeight + conceptTileHeight / 2, false, false)
             );
         }
         curvedLine.getStyleClass().add(styleClass);
