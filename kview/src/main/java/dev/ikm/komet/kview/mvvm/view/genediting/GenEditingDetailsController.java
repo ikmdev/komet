@@ -67,7 +67,6 @@ import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
@@ -232,7 +231,6 @@ public class GenEditingDetailsController {
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
         observableSemantic = ObservableEntity.get(semantic.nid());
-        ObservableEntity.updateVersions(Entity.getFast(semantic.nid()), observableSemantic);
         observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
         //retrieve latest committed semanticVersion
         semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
