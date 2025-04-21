@@ -104,10 +104,9 @@
 
 .concept-window .main-center-container {
     -fx-background-color: white;
-    -fx-background-radius: 4px;
-
-    -fx-background-insets: 0 5px 5px 5px;
-    -fx-padding: 5px;
+    -fx-background-radius: 4;
+    -fx-background-insets: 0 5 5 5;
+    -fx-padding: 5;
 }
 
 .main-right-container .properties-tab-outer-container {
@@ -121,13 +120,31 @@
     -fx-border-radius: 10;
 }
 
-.concept-detail-pane .content-description-insets {
-    -fx-padding: 8 12 16 12;
-}
-
 .concept-detail-banner-background {
     -fx-background-color: white;
     -fx-background-radius: 4px 4px 0 0;
+}
+
+.concept-details-definitions {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8 8 0 0;
+    -fx-height: 104;
+    -fx-min-height: -fx-height;
+    -fx-pref-height: -fx-height;
+    -fx-max-height: -fx-height;
+}
+
+.stamp-text {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 11px;
+    -fx-fill: -Grey-11;
+}
+
+.stamp-label {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-weight: 500;
+    -fx-font-size: 12px;
+    -fx-text-fill: -Grey-11;
 }
 
 .identicon-frame {
@@ -137,11 +154,10 @@
 
 .copyable-label, .copyable-label:focused {
     -fx-border-color: transparent;
-    -fx-background-color: transparent ;
-    -fx-background-insets: 0px ;
-    -fx-padding: 4 0 4 0;
-
+    -fx-background-color: transparent;
+    -fx-padding: 0;
 }
+
 .text-area.copyable-text, .text-area.copyable-text:focused {
     -fx-border-color: transparent;
     -fx-background-color: white ;
@@ -154,9 +170,14 @@
     -fx-background-color: white ;
     -fx-background-radius: 2;
 }
+
 .concept-title {
-    -fx-text-fill: -fx-kview-titled-pane-text-color;
-    -fx-fill: -fx-kview-titled-pane-text-color;
+    -fx-text-fill: -Grey-12;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 17px;
+    -fx-alignment: top-left;
+    -fx-max-width: infinity;
+    -fx-max-height: infinity;
 }
 
 .titled-pane {
@@ -195,15 +216,36 @@
     -fx-border-insets: -1 0 0 0;
 }
 
-.concept-window .main-center-container .titled-pane .content {
+.concept-window .main-center-container .concept-section > .titled-pane .content {
     -fx-border-width: 0;
     -fx-background-color: transparent;
 }
 
-.concept-window .main-center-container .titled-pane .title {
+.concept-window .main-center-container .concept-section > .titled-pane .title {
     -fx-font-family: "Noto Sans SemiBold";
     -fx-font-size: 12;
+    -fx-background-radius: 0;
+    -fx-background-insets: 0, 1 0 0 0;
+    -fx-background-color: -Grey-10, -Grey-2;
     -fx-padding: 6 12 6 12;
+}
+
+.concept-window .main-center-container .concept-section > .titled-pane .split-pane {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
+.concept-section > .separator:vertical {
+    -fx-height: 20;
+    -fx-min-height: -fx-height;
+    -fx-pref-height: -fx-height;
+    -fx-max-height: -fx-height;
+}
+
+.concept-section > .separator:vertical > .line {
+    -fx-border-color: transparent -Grey-5 transparent transparent;
+    -fx-border-width: 1;
+    -fx-border-insets: 0 1 0 0;
 }
 
 /* a add pencil button for add/edit */
@@ -230,6 +272,10 @@
 
 .button.add-pencil-button:pressed {
     -fx-background-color: -Primary-04;
+}
+
+.button.add-pencil-button:disabled {
+    -fx-fill: -Grey-10;
 }
 
 .button.date-time-calendar-button {
@@ -355,23 +401,36 @@
 }
 
 .axiom-inferred-gear-btn {
-    -fx-pref-width: 15;
-    -fx-pref-height: 14;
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-background-radius: 2;
+
+    -fx-size: 24;
+    -fx-min-width: -fx-size;
+    -fx-min-height: -fx-size;
+    -fx-pref-width: -fx-size;
+    -fx-pref-height: -fx-size;
+    -fx-max-width: -fx-size;
+    -fx-max-height: -fx-size;
 }
+
 .axiom-stated-chat-bubble-btn {
-    -fx-pref-width: 16;
-    -fx-pref-height: 15;
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-background-radius: 2;
 
+    -fx-size: 24;
+    -fx-min-width: -fx-size;
+    -fx-min-height: -fx-size;
+    -fx-pref-width: -fx-size;
+    -fx-pref-height: -fx-size;
+    -fx-max-width: -fx-size;
+    -fx-max-height: -fx-size;
 }
 
-.axiom-container > .property-sheet .property-pane {
-    -fx-background-color: white;
+.axiom-section {
+    -fx-background-color: transparent;
+    -fx-padding: 12 0 10 12;
 }
 
 /* common container pane used on bump outs needing scroll pane */
@@ -381,16 +440,14 @@
 
 .sub-container .scroll-pane,
 .lidr-sub-container .scroll-pane,
-.analyte-group-container .scroll-pane,
-.axiom-container .scroll-pane {
+.analyte-group-container .scroll-pane {
     -fx-background-color: transparent;
     -fx-border-insets: 1;
     -fx-background-radius: 0 0 10 10;
 }
 .sub-container .scroll-pane > .viewport,
 .lidr-sub-container .scroll-pane > .viewport,
-.analyte-group-container .scroll-pane > .viewport,
-.axiom-container .scroll-pane > .viewport {
+.analyte-group-container .scroll-pane > .viewport {
     -fx-background-color: transparent;
     -fx-background-radius: 0 0 10 10;
 }
@@ -2822,14 +2879,18 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-radius: 4;
     -fx-border-width: 1px;
     -fx-border-color: -Grey-8;
+
     -fx-pref-width: 340.0;
     -fx-pref-height: 24.0;
-    -fx-alignment: center;
+
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
     -fx-font-weight: 500;
+
     -fx-text-fill: white;
+    -fx-prompt-text-fill: #bbb;
+
     -fx-alignment: center-left;
 
     -fx-background-color: -Grey-8;
@@ -4822,9 +4883,9 @@ Styling a context menu for kview ui/ux controls
 }
 
 .concept-detail-pane .main-center-container > .scroll-pane {
-    -fx-background-color: white;
+    -fx-background-color: transparent;
     -fx-border-color: transparent;
-    -fx-padding: 0 -12 0 0;
+    -fx-padding: 0 -13 0 -1;
 }
 
 .concept-detail-pane .main-center-container > .scroll-pane > .viewport {
@@ -5304,8 +5365,8 @@ Styling a context menu for kview ui/ux controls
  ******************************************************************************/
 .concept-navigator-container {
     -fx-background-color: -Grey-8;
-    -fx-padding: 8;
-    -fx-spacing: 8;
+    -fx-padding: 0;
+    -fx-spacing: -8;
 }
 
 /*******************************************************************************

@@ -4,12 +4,23 @@ import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.LineageBox;
 import javafx.scene.control.skin.ScrollPaneSkin;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 
+/**
+ * <p>Custom skin implementation for the {@link LineageBox} control.
+ * It just extends the {@link ScrollPaneSkin} by adding a close icon
+ * to the top right side of the lineage box, that allows closing it.
+ * </p>
+ */
 public class LineageBoxSkin extends ScrollPaneSkin {
     private final StackPane closePane;
 
+    /**
+     * <p>Create a {@link LineageBoxSkin} instance</p>
+     * @param lineageBox The control that this skin should be installed onto.
+     */
     public LineageBoxSkin(LineageBox lineageBox) {
         super(lineageBox);
 
@@ -17,11 +28,13 @@ public class LineageBoxSkin extends ScrollPaneSkin {
         closePane = new StackPane(closeIconRegion);
         closePane.getStyleClass().addAll("region", "close");
         closePane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            ConceptNavigatorTreeItem concept = lineageBox.getConcept();
-            if (concept != null) {
-                concept.setViewLineage(false);
-                concept.getInvertedTree().reset();
-                lineageBox.setConcept(null);
+            if (e.getButton() == MouseButton.PRIMARY) {
+                ConceptNavigatorTreeItem concept = lineageBox.getConcept();
+                if (concept != null) {
+                    concept.setViewLineage(false);
+                    concept.getInvertedTree().reset();
+                    lineageBox.setConcept(null);
+                }
             }
             e.consume();
         });
@@ -29,6 +42,7 @@ public class LineageBoxSkin extends ScrollPaneSkin {
         getChildren().add(closePane);
     }
 
+    /** {@inheritDoc} **/
     @Override
     protected void layoutChildren(double x, double y, double w, double h) {
         super.layoutChildren(x, y, w, h);
