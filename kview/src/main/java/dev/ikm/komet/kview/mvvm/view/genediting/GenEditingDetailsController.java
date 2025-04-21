@@ -312,6 +312,13 @@ public class GenEditingDetailsController {
         // function to apply for the components' edit action (a.k.a. right click > Edit)
         BiFunction<KLReadOnlyBaseControl, Integer, Runnable> editAction = (readOnlyBaseControl, fieldIndex) ->
                 () -> {
+                    // Clear edit mode for all other controls (in case any of them was already in edit mode)
+                    for (Node node : nodes) {
+                        if (node != readOnlyBaseControl) {
+                            KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) node;
+                            klReadOnlyBaseControl.setEditMode(false);
+                        }
+                    }
 
                     EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
                             new PropertyPanelEvent(readOnlyBaseControl, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
