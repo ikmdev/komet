@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import static dev.ikm.komet.framework.events.EntityVersionChangeEvent.VERSION_UPDATED;
 import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
 import dev.ikm.komet.framework.events.EntityVersionChangeEvent;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -53,6 +54,10 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         implements Entity<O>, ObservableComponent
         permits ObservableConcept, ObservablePattern, ObservableSemantic, ObservableStamp {
 
+    /**
+     * The concurrent reference map whose reference type is SOFT.
+     * TODO revisit reference type (WEAK vs SOFT)
+     */
     protected static final ConcurrentReferenceHashMap<Integer, ObservableEntity> SINGLETONS =
             new ConcurrentReferenceHashMap<>(ConcurrentReferenceHashMap.ReferenceType.SOFT,
                     ConcurrentReferenceHashMap.ReferenceType.SOFT);
@@ -66,11 +71,17 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
 
     final private AtomicReference<Entity<V>> entityReference;
 
+    /**
+     * Saves the uncommited entity version to the DB and fires event (VERSION_UPDATED).
+     * it also adds the version to the versionProperty list.
+     * @param analogue the entity record
+     * @param newVersionRecord entity version record
+     */
     public void saveToDB(Entity<?> analogue, EntityVersion newVersionRecord ) {
         Entity.provider().putEntity(analogue);
         versionProperty.add(wrap((V)newVersionRecord));
         EvtBusFactory.getDefaultEvtBus()
-                .publish(VERSION_CHANGED_TOPIC, new EntityVersionChangeEvent(this, EntityVersionChangeEvent.VERSION_UPDATED, newVersionRecord));
+                .publish(VERSION_CHANGED_TOPIC, new EntityVersionChangeEvent(this, VERSION_UPDATED, newVersionRecord));
     }
 
     ObservableEntity(Entity<V> entity) {
@@ -121,6 +132,11 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         return (OE) observableEntity;
     }
 
+    /**
+     * updates the versions in the versionProperty list.
+     * @param entity
+     * @param observableEntity
+     */
     public static void updateVersions(Entity<? extends EntityVersion> entity, ObservableEntity observableEntity) {
         if (!((Entity) observableEntity.entityReference.get()).versions().equals(entity.versions())) {
             observableEntity.entityReference.set(entity);

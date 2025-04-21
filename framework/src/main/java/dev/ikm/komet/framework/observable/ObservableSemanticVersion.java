@@ -123,9 +123,14 @@ public final class ObservableSemanticVersion
             StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
             versionProperty.set(version.with().stampNid(newStamp.nid()).build());
         }
-
     }
 
+    /**
+     * Create a new version and transaction if the current version is for committed.
+     * Updates the existing version if uncommitted.
+     * @param value
+     * @param index
+     */
     private void autoSaveSematicVersion(Object value, int index) {
         SemanticVersionRecord newVersion = null;
         SemanticVersionRecord version = version();
@@ -133,8 +138,7 @@ public final class ObservableSemanticVersion
         StampRecord stamp = Entity.getStamp(version.stampNid());
         fieldsForNewVersion.set(index, value);
 
-
-        if(version.committed()) {
+        if (version.committed()) {
             Transaction t = Transaction.make();
             // newStamp already written to the entity store.
             StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
@@ -144,7 +148,6 @@ public final class ObservableSemanticVersion
         } else {
             newVersion = version.withFieldValues(fieldsForNewVersion.toImmutable());
         }
-
         versionProperty.set(newVersion);
     }
 

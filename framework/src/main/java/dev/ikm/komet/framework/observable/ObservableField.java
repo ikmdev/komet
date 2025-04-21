@@ -54,12 +54,19 @@ public final class ObservableField<T> implements Field<T> {
         return this.autoSaveChangeListener;
     }
 
+    /**
+     * Enables autosave on observable field
+     */
     public void autoSaveOn() {
         if (autoSaveChangeListener != null) {
             valueProperty().removeListener(getAutoSaveChangeListener());
             valueProperty().addListener(getAutoSaveChangeListener());
         }
     }
+
+    /**
+     * Disables autosave on observable field
+     */
     public void autoSaveOff() {
         if (autoSaveChangeListener != null) {
             valueProperty().removeListener(getAutoSaveChangeListener());
@@ -83,7 +90,6 @@ public final class ObservableField<T> implements Field<T> {
                 writeToDataBase();
             }
         });
-
     }
     public ObservableField(FieldRecord<T> fieldRecord) {
         this(fieldRecord, true);

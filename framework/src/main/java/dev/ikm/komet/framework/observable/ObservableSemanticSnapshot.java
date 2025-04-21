@@ -116,6 +116,12 @@ public final class ObservableSemanticSnapshot extends ObservableEntitySnapshot<O
     public Latest<ImmutableList<ObservableField>> getLatestFields() {
         return getLatestFields(false);
     }
+
+    /**
+     * Set the default to autoSave off.
+     * @param autoSaveOn
+     * @return
+     */
     public Latest<ImmutableList<ObservableField>> getLatestFields(boolean autoSaveOn) {
         return latestVersion.ifAbsentOrFunction(
                 Latest::empty,
