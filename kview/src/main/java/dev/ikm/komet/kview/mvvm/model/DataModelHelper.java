@@ -368,11 +368,6 @@ public class DataModelHelper {
         ViewCalculator viewCalculator = viewProperties.calculator();
         PatternVersionRecord patternVersionRecord = (PatternVersionRecord) viewCalculator.latest(pattern).get();
 
-        // create empty semantic using the Composer API
-        //EntityService.get().beginLoadPhase();
-
-//        Session session = composer.open(status, author, module, path);
-
         EntityProxy.Semantic defaultSemantic = EntityProxy.Semantic.make(PublicIds.newRandom());
         session.compose((SemanticAssembler semanticAssembler) -> {
             semanticAssembler
@@ -430,7 +425,6 @@ public class DataModelHelper {
                                               Session session,
                                               boolean commitFlag) {
         EntityProxy patternProxy = pattern.toProxy();
-        //Session session = composer.open(status, author, module, path);
         Latest<SemanticEntityVersion> semanticEntityVersionLatest = KlFieldHelper.retrieveCommittedLatestVersion(semantic, viewProperties);
         session.compose((SemanticAssembler semanticAssembler) -> {
                     semanticAssembler
