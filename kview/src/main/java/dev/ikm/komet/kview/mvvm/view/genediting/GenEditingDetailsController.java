@@ -276,6 +276,7 @@ public class GenEditingDetailsController {
 
                     // clear out the temporary placeholders
                     semanticDetailsVBox.getChildren().clear();
+                    nodes.clear();
 
                     // set up the real observables now that the semantic has been created
                     setUpObservables();
