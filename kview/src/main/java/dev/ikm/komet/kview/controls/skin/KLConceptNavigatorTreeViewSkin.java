@@ -698,6 +698,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                         }
                     }
                 });
+                item.setViewLineage(false);
                 item.setHighlighted(true);
                 highlighted.set(true);
             }
