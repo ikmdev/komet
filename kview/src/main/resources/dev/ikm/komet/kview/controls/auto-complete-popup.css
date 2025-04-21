@@ -1,0 +1,63 @@
+.auto-complete-popup > .list-view {
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+
+    -fx-background-color:
+            linear-gradient(to bottom,
+                derive(-fx-color,-17%),
+                derive(-fx-color,-30%)
+            ),
+        -fx-control-inner-background;
+    -fx-background-insets: -1 -2 -1 -1, 0 -1 0 0;
+
+    -fx-background-radius: 4;
+
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.2) , 12, 0.0 , 0 , 8 );
+}
+
+.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-padding: 4 0 4 5;
+    /* No alternate highlighting */
+    -fx-background: -fx-control-inner-background;
+}
+
+.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
+.auto-complete-popup  > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover,
+.auto-complete-popup  > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected:hover {
+    -fx-background: #eaeaea;
+    -fx-background-color: -fx-background;
+}
+
+.auto-complete-popup > .list-view > .placeholder > .label {
+    -fx-text-fill: derive(-fx-control-inner-background,-30%);
+}
+
+/* Remove horizontal scrollbar */
+.auto-complete-popup  > .list-view .scroll-bar:horizontal .increment-arrow,
+.auto-complete-popup  > .list-view .scroll-bar:horizontal .decrement-arrow,
+.auto-complete-popup  > .list-view .scroll-bar:horizontal .increment-button,
+.auto-complete-popup  > .list-view .scroll-bar:horizontal .decrement-button {
+    -fx-padding:0;
+}
+
+/* Scrollbars in ListView */
+.auto-complete-popup > .list-view .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.auto-complete-popup > .list-view .scroll-bar:vertical .increment-button,
+.auto-complete-popup > .list-view .scroll-bar:vertical .decrement-button,
+.auto-complete-popup > .list-view .scroll-bar:vertical .increment-arrow,
+.auto-complete-popup > .list-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: transparent;
+
+    -fx-background-radius: 0em;
+    -fx-padding: 0 2 0 2;
+}
+
+.auto-complete-popup > .list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #a9aeb8;
+    -fx-background-insets: 3px 2px 3px 5px;
+    -fx-background-radius: 16px;
+}

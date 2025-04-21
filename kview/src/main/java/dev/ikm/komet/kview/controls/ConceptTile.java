@@ -1,20 +1,18 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLConceptNavigatorTreeViewSkin;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.animation.PauseTransition;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.PseudoClass;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
-import javafx.scene.Node;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
-import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
@@ -22,7 +20,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
-import javafx.scene.transform.Scale;
 import javafx.util.Duration;
 import javafx.util.Subscription;
 
@@ -32,11 +29,28 @@ import java.util.UUID;
 
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 
+/**
+ * <p>A ConceptTile is an {@link HBox} container that renders:
+ * - A custom disclosure node
+ * - An indication of defined concept, for a given {@link ConceptNavigatorTreeItem}
+ * - The description of a {@link dev.ikm.tinkar.terms.ConceptFacade}, for a given {@link ConceptNavigatorTreeItem}
+ * - a selection button
+ * - a show lineage button
+ * </p>
+ * <p>The concept tile is set as the graphic node of a {@link KLConceptNavigatorTreeCell} and when
+ * {@link KLConceptNavigatorTreeCell#updateItem(ConceptFacade, boolean)} is called, the {@link #conceptProperty()}
+ * gets updated with the @link ConceptNavigatorTreeItem} for such cell, and the tile components get updated
+ * accordingly.</p>
+ * <p>Different pseudoClasses are applied to visualize additional states like long-hovered or selected state, or drag
+ * gestures</p>
+ * @see ConceptNavigatorTreeItem#definedProperty()
+ * @see ConceptNavigatorTreeItem.STATE
+ */
 public class ConceptTile extends HBox {
 
     private static final PseudoClass EXPANDED_PSEUDO_CLASS = PseudoClass.getPseudoClass("expanded");
     private static final PseudoClass LEAF_PSEUDO_CLASS = PseudoClass.getPseudoClass("leaf");
-    private static final PseudoClass DEFINED_PSEUDO_CLASS = PseudoClass.getPseudoClass("defined");
+    static final PseudoClass DEFINED_PSEUDO_CLASS = PseudoClass.getPseudoClass("defined");
     public static final PseudoClass DRAG_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("drag-selected");
 
     private final KLConceptNavigatorTreeCell cell;
@@ -47,12 +61,22 @@ public class ConceptTile extends HBox {
     private final StackPane disclosurePane;
     private final Label conceptLabel;
     private final StackPane treePane;
-    private final ConceptNavigatorTooltip tooltip;
+    private final ConceptNavigatorTooltip conceptNavigatorTooltip;
     private final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.concept-navigator");
 
     private Subscription subscription;
     private PauseTransition hoverTransition;
 
+    /**
+     * <p>Creates a {@link ConceptTile} instance.
+     * </p>
+     * <p>The custom disclosure node replaces the one from the regular treeCell, and takes care of
+     * expanding or collapsing the related treeItem.</p>
+     * <p>The select pane allows dragging this concept tile to the {@link KLWorkspace}.
+     * </p>
+     * @param cell the {@link KLConceptNavigatorTreeCell} for which this tile is the graphic node
+     * @param treeView the {@link KLConceptNavigatorControl}
+     */
     public ConceptTile(KLConceptNavigatorTreeCell cell, KLConceptNavigatorControl treeView) {
         this.cell = cell;
         this.treeView = treeView;
@@ -62,7 +86,7 @@ public class ConceptTile extends HBox {
         disclosurePane = new StackPane(disclosureIconRegion);
         disclosurePane.getStyleClass().add("region");
         disclosurePane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            if (cell.getTreeItem() != null) {
+            if (e.isPrimaryButtonDown() && cell.getTreeItem() != null) {
                 cell.getTreeItem().setExpanded(!cell.getTreeItem().isExpanded());
                 e.consume();
             }
@@ -70,7 +94,9 @@ public class ConceptTile extends HBox {
         IconRegion selectIconRegion = new IconRegion("icon", "select");
         StackPane selectPane = new StackPane(selectIconRegion);
         selectPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            cell.pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, true);
+            if (e.getButton() == MouseButton.PRIMARY) {
+                cell.pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, true);
+            }
             e.consume();
         });
         selectPane.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
@@ -83,6 +109,9 @@ public class ConceptTile extends HBox {
         treePane = new StackPane(treeIconRegion);
         Tooltip treeTooltip = new Tooltip(resources.getString("alternate.parents")) {
 
+            /**
+             * Show tooltip at the right border of the stackPane
+             */
             @Override
             protected void show() {
                 final Bounds bounds = treePane.localToScreen(treePane.getBoundsInLocal());
@@ -94,7 +123,9 @@ public class ConceptTile extends HBox {
         };
         Tooltip.install(treePane, treeTooltip);
         treePane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            getConcept().setViewLineage(!getConcept().isViewLineage());
+            if (e.getButton() == MouseButton.PRIMARY) {
+                getConcept().setViewLineage(!getConcept().isViewLineage());
+            }
             e.consume();
         });
         treePane.managedProperty().bind(treePane.visibleProperty());
@@ -110,18 +141,17 @@ public class ConceptTile extends HBox {
         getChildren().addAll(disclosurePane, ellipse, conceptLabel, spacer, selectPane, treePane);
         getStyleClass().add("concept-tile");
 
-        tooltip = new ConceptNavigatorTooltip(conceptLabel);
-        tooltip.showDelayProperty().bind(Bindings.createObjectBinding(() ->
-                new Duration(treeView.getActivation()), treeView.activationProperty()));
-        tooltip.setHideDelay(Duration.ZERO);
+        conceptNavigatorTooltip = new ConceptNavigatorTooltip(conceptLabel, treeView.activationProperty());
 
         selectPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             e.consume();
-            treeViewSkin.setDraggingAllowed(false);
+            if (e.getButton() == MouseButton.PRIMARY) {
+                treeViewSkin.setDraggingAllowed(false);
+            }
         });
         selectPane.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> treeViewSkin.setDraggingAllowed(true));
         selectPane.addEventFilter(MouseEvent.DRAG_DETECTED, e -> {
-            if (!cell.isEmpty()) {
+            if (e.getButton() == MouseButton.PRIMARY && !cell.isEmpty()) {
                 Dragboard dragboard = startDragAndDrop(TransferMode.COPY_OR_MOVE);
                 ClipboardContent clipboardContent = new ClipboardContent();
                 ConceptNavigatorTreeItem treeItem = (ConceptNavigatorTreeItem) cell.getTreeItem();
@@ -131,7 +161,7 @@ public class ConceptTile extends HBox {
                 }
                 clipboardContent.putString(treeItem.toString());
                 dragboard.setContent(clipboardContent);
-                dragboard.setDragView(getTileSnapshot());
+                dragboard.setDragView(ConceptNavigatorUtils.getTileSnapshot(this));
                 cell.pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, false);
                 treeViewSkin.setDraggingAllowed(true);
             }
@@ -140,18 +170,13 @@ public class ConceptTile extends HBox {
         selectPane.setOnDragDone(e -> treeViewSkin.setDraggingAllowed(true));
     }
 
-    public void unselectItem() {
-        if (hoverTransition != null) {
-            hoverTransition.stop();
-            hoverTransition = null;
-        }
-    }
-
-    public void cleanup() {
-        setConcept(null);
-    }
-
-    // conceptProperty
+    /**
+     * <p>The concept property holds the {@link ConceptNavigatorTreeItem} of a given {@link KLConceptNavigatorTreeCell},
+     * for which this tile is the graphic node.
+     * </p>
+     * <p>When the property gets invalidated, the tile gets cleaned up first, and then, if there is a valid
+     * treeItem, its components get properly updated.</p>
+     */
     private final ObjectProperty<ConceptNavigatorTreeItem> conceptProperty = new SimpleObjectProperty<>(this, "concept") {
         @Override
         protected void invalidated() {
@@ -188,7 +213,7 @@ public class ConceptTile extends HBox {
                 cell.tagProperty().bind(treeItem.tagProperty());
                 treePane.setVisible(treeItem.isMultiParent());
             } else {
-                unselectItem();
+                stopHoverTransition();
                 conceptLabel.setText(null);
                 pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, false);
             }
@@ -204,23 +229,22 @@ public class ConceptTile extends HBox {
         conceptProperty.set(value);
     }
 
-    public void updateTooltip() {
-        tooltip.setGraphicText(getConcept().isDefined() ? resources.getString("defined.concept") : resources.getString("primitive.concept"));
-        tooltip.getGraphic().pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, getConcept().isDefined());
-        Node lookup = conceptLabel.lookup(".text");
-        String description = getConcept().getValue() != null ? getConcept().getValue().description() : "";
-        if (lookup instanceof Text labelledText && !labelledText.getText().equals(description)) {
-            tooltip.setText(description);
-        } else {
-            tooltip.setText(null);
+    void updateTooltip() {
+        conceptNavigatorTooltip.updateTooltip(
+                conceptLabel.lookup(".text") instanceof Text labelledText ? labelledText.getText() : null,
+                getConcept().getValue() != null ? getConcept().getValue().description() : "",
+                getConcept().isDefined());
+    }
+
+    void stopHoverTransition() {
+        if (hoverTransition != null) {
+            hoverTransition.stop();
+            hoverTransition = null;
         }
     }
 
-    public WritableImage getTileSnapshot() {
-        SnapshotParameters p = new SnapshotParameters();
-        double scale = getScene().getWindow().getOutputScaleY();
-        p.setTransform(new Scale(scale, scale));
-        return snapshot(p, null);
+    void cleanup() {
+        setConcept(null);
     }
 
 }

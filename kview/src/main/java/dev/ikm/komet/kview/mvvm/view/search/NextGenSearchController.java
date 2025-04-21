@@ -23,6 +23,7 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.kview.events.SearchSortOptionEvent;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
@@ -37,6 +38,8 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.provider.search.TypeAheadSearch;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -46,12 +49,12 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
@@ -111,7 +114,7 @@ public class NextGenSearchController extends AbstractBasicController {
     private Button sortByButton;
 
     @FXML
-    private TextField searchField;
+    private AutoCompleteTextField<ConceptFacade> searchField;
 
     private PopOver sortOptions;
 
@@ -126,7 +129,7 @@ public class NextGenSearchController extends AbstractBasicController {
         eventBus = EvtBusFactory.getDefaultEvtBus();
 
         clearView();
-
+        setUpTypeAhead();
         setUpSearchOptionsPopOver();
 
         Subscriber<SearchSortOptionEvent> searchSortOptionListener = (evt -> {
@@ -142,6 +145,53 @@ public class NextGenSearchController extends AbstractBasicController {
             sortOptions.hide();
         });
         eventBus.subscribe(SEARCH_SORT_TOPIC, SearchSortOptionEvent.class, searchSortOptionListener);
+    }
+
+    private void setUpTypeAhead() {
+        searchField.setCompleter(newSearchText -> {
+            TypeAheadSearch typeAheadSearch = TypeAheadSearch.get();
+            List<ConceptFacade> conceptFacades = null;
+
+//            try {
+//                conceptFacades = typeAheadSearch.typeAheadSuggestions(
+//                        getViewProperties().nodeView().calculator().navigationCalculator(), /* nav calculator */
+//                        searchField.getText(), /* text */
+//                        10); /* max results returned */
+//                System.out.println("Number of suggested concepts: " + conceptFacades.size());
+//            } catch (Throwable e) {
+//                System.out.println("throwable appeared here: " + e);
+//                try {
+//                    typeAheadSearch.buildSuggester();
+//                    conceptFacades = typeAheadSearch
+//                            .typeAheadSuggestions(
+//                                    getViewProperties().nodeView().calculator().navigationCalculator(), /* nav calculator */
+//                                    searchField.getText(), /* text */
+//                                    10); /* max results returned */
+//                    System.out.println("Number of suggested concepts: " + conceptFacades.size());
+//                } catch (IOException ioException) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
+
+            conceptFacades = typeAheadSearch.typeAheadSuggestions(
+                getViewProperties().nodeView().calculator().navigationCalculator(), /* nav calculator */
+                searchField.getText(), /* text */
+                10  /* max results returned */
+            );
+            return conceptFacades;
+        });
+
+        searchField.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(ConceptFacade conceptFacade) {
+                return getViewProperties().nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(conceptFacade.nid());
+            }
+
+            @Override
+            public ConceptFacade fromString(String string) {
+                return null;
+            }
+        });
     }
 
 
