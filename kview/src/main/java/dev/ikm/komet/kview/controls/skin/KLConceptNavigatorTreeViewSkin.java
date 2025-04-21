@@ -13,8 +13,10 @@ import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
@@ -25,6 +27,7 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -101,6 +104,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
     private MultipleSelectionContextMenu multipleSelectionContextMenu;
     private final SingleSelectionContextMenu singleSelectionContextMenu;
     private boolean isScrollBarDragging;
+    private final BooleanProperty highlighted = new SimpleBooleanProperty();
 
     /**
      * <p>Creates a {@link KLConceptNavigatorTreeViewSkin} instance.
@@ -677,7 +681,25 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                     }
                 });
                 treeView.getSelectionModel().clearSelection();
+
+                // Clicking anywhere, unhighlights the item
+                EventHandler<MouseEvent> eventFilter = _ -> {
+                    treeView.unhighlightConceptsWithDelay();
+                    highlighted.set(false);
+                };
+                // install/uninstall event filter to the scene that holds the control
+                highlighted.subscribe((_, v) -> {
+                    Scene scene = treeView.getScene();
+                    if (scene != null) {
+                        if (v) {
+                            scene.addEventFilter(MouseEvent.MOUSE_PRESSED, eventFilter);
+                        } else {
+                            scene.removeEventFilter(MouseEvent.MOUSE_PRESSED, eventFilter);
+                        }
+                    }
+                });
                 item.setHighlighted(true);
+                highlighted.set(true);
             }
         }
     }

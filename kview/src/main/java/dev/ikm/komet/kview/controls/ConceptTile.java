@@ -94,6 +94,7 @@ public class ConceptTile extends HBox {
         IconRegion selectIconRegion = new IconRegion("icon", "select");
         StackPane selectPane = new StackPane(selectIconRegion);
         selectPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            getConcept().setHighlighted(false);
             if (e.getButton() == MouseButton.PRIMARY) {
                 cell.pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, true);
             }

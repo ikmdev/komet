@@ -11,7 +11,10 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
+import javafx.scene.Scene;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -21,6 +24,7 @@ import javafx.scene.control.SkinBase;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Path;
@@ -150,10 +154,28 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
             control.requestLayout();
         });
 
-        textField.focusedProperty().subscribe(f -> {
-            if (f && !resultsPane.getItems().isEmpty() && !resultsPane.isVisible()) {
+        // Clicking anywhere outside the control, hides the resultsPane
+        EventHandler<MouseEvent> eventFilter = e -> {
+            Point2D point2D = new Point2D(e.getSceneX(), e.getSceneY());
+            if (resultsPane.isVisible() && !control.contains(control.sceneToLocal(point2D))) {
+                resultsPane.setVisible(false);
+            }
+        };
+        // install/uninstall event filter to the scene that holds the control
+        subscription = resultsPane.visibleProperty().subscribe((_, b) -> {
+            Scene scene = control.getScene();
+            if (scene != null) {
+                if (b) {
+                    scene.addEventFilter(MouseEvent.MOUSE_CLICKED, eventFilter);
+                } else {
+                    scene.removeEventFilter(MouseEvent.MOUSE_CLICKED, eventFilter);
+                }
+            }
+        });
+        // when clicking inside the textField, show resultsPane
+        textField.addEventHandler(MouseEvent.MOUSE_CLICKED, _ -> {
+            if (!resultsPane.getItems().isEmpty() && !resultsPane.isVisible()) {
                 resultsPane.setVisible(true);
-                control.requestLayout();
             }
         });
     }
