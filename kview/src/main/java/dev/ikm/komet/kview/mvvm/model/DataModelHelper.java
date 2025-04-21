@@ -397,7 +397,6 @@ public class DataModelHelper {
                     });
         });
         // don't commit yet; only commit once the user is ready to submit and not change the reference component
-        //EntityService.get().endLoadPhase();
         semantic = defaultSemantic.toProxy();
         return semantic;
     }

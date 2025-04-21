@@ -43,7 +43,6 @@ public class ReferenceComponentController {
     private Button submitButton;
 
     @InjectViewModel
-    //private ValidationViewModel referenceComponentViewModel;
     private GenEditingViewModel genEditingViewModel;
 
     @FXML
