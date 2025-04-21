@@ -17,7 +17,6 @@ package dev.ikm.komet.kview.mvvm.model;
 
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
 import static dev.ikm.tinkar.terms.TinkarTerm.ARRAY_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
@@ -33,7 +32,6 @@ import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_T
 import static dev.ikm.tinkar.terms.TinkarTerm.INSTANT_LITERAL;
 import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.LONG;
-import static dev.ikm.tinkar.terms.TinkarTerm.PREFERRED;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.SEMANTIC_FIELD_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
@@ -57,18 +55,15 @@ import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.composer.Composer;
 import dev.ikm.tinkar.composer.Session;
 import dev.ikm.tinkar.composer.assembler.SemanticAssembler;
-import dev.ikm.tinkar.composer.template.USDialect;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.Field;
 import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
@@ -357,11 +352,8 @@ public class DataModelHelper {
      * @param pattern existing pattern
      * @return a default, empty semantic
      */
-    public static EntityFacade createEmptySemantic(ViewProperties viewProperties, EntityFacade pattern, State status,
-                                                   EntityProxy.Concept author,
-                                                   EntityProxy.Concept module,
-                                                   EntityProxy.Concept path,Session session,
-                                                   Composer composer) {
+    public static EntityFacade createEmptySemantic(ViewProperties viewProperties, EntityFacade pattern, Session session) {
+
         EntityFacade semantic;
         EntityProxy patternProxy = pattern.toProxy();
 
@@ -414,15 +406,12 @@ public class DataModelHelper {
      * @param composer shared composer
      * @return
      */
-    public static EntityFacade commitSemantic(ViewProperties viewProperties, EntityFacade pattern, State status,
-                                              EntityProxy.Concept author,
-                                              EntityProxy.Concept module,
-                                              EntityProxy.Concept path,
-                                              EntityFacade semantic,
-                                              EntityProxy refComponent,
-                                              Composer composer,
-                                              Session session,
-                                              boolean commitFlag) {
+    public static EntityFacade saveSemantic(ViewProperties viewProperties, EntityFacade pattern,
+                                            EntityFacade semantic,
+                                            EntityProxy refComponent,
+                                            Composer composer,
+                                            Session session,
+                                            boolean commitFlag) {
         EntityProxy patternProxy = pattern.toProxy();
         Latest<SemanticEntityVersion> semanticEntityVersionLatest = KlFieldHelper.retrieveCommittedLatestVersion(semantic, viewProperties);
         session.compose((SemanticAssembler semanticAssembler) -> {

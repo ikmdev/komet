@@ -86,12 +86,8 @@ public class ReferenceComponentController {
             EntityFacade pattern = genEditingViewModel.getPropertyValue(PATTERN);
             StampViewModel stampViewModel = genEditingViewModel.getPropertyValue(STAMP_VIEW_MODEL);
 
-            semantic = DataModelHelper.commitSemantic(getViewProperties(),
+            semantic = DataModelHelper.saveSemantic(getViewProperties(),
                     pattern,
-                    stampViewModel.getValue(STATUS),
-                    stampViewModel.getValue(AUTHOR),
-                    stampViewModel.getValue(MODULE),
-                    stampViewModel.getValue(PATH),
                     semantic, refComponent.toProxy(),
                     genEditingViewModel.getPropertyValue(COMPOSER),
                     genEditingViewModel.getPropertyValue(SESSION),

@@ -251,21 +251,14 @@ public class SemanticFieldsController {
 
         //Get the semantic need to pass along with event for loading values across Opened Semantics.
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
-        StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
-
-        StampViewModel stampViewModel = genEditingViewModel.getPropertyValue(STAMP_VIEW_MODEL);
 
         EntityFacade referenceComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
 
         EntityFacade pattern = genEditingViewModel.getPropertyValue(PATTERN);
 
         // write the semantic
-        semantic = DataModelHelper.commitSemantic(getViewProperties(),
+        semantic = DataModelHelper.saveSemantic(getViewProperties(),
                 pattern,
-                stampViewModel.getValue(STATUS),
-                stampViewModel.getValue(AUTHOR),
-                stampViewModel.getValue(MODULE),
-                stampViewModel.getValue(PATH),
                 semantic, referenceComponent.toProxy(),
                 genEditingViewModel.getPropertyValue(COMPOSER),
                 genEditingViewModel.getPropertyValue(SESSION),

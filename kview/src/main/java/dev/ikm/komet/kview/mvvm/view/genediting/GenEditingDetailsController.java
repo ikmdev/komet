@@ -233,15 +233,8 @@ public class GenEditingDetailsController {
             genEditingViewModel.setPropertyValue(STAMP_VIEW_MODEL, defaultStampViewModel);
 
             // create empty semantic for the pattern and set it in the view model
-            //genEditingViewModel.setPropertyValue(REF_COMPONENT, ANONYMOUS_CONCEPT);
             genEditingViewModel.setPropertyValue(SESSION, session);
-            semantic = DataModelHelper.createEmptySemantic(getViewProperties(), pattern,
-                    defaultStampViewModel.getValue(STATUS),
-                    defaultStampViewModel.getValue(AUTHOR),
-                    defaultStampViewModel.getValue(MODULE),
-                    defaultStampViewModel.getValue(PATH),
-                    session,
-                    genEditingViewModel.getPropertyValue(COMPOSER));
+            semantic = DataModelHelper.createEmptySemantic(getViewProperties(), pattern,session);
 
             genEditingViewModel.setPropertyValue(SEMANTIC, semantic);
         } else {
