@@ -397,10 +397,6 @@ public class DataModelHelper {
      * write the semantic
      * @param viewProperties viewProperties
      * @param pattern pattern
-     * @param status STAMP status
-     * @param author STAMP author
-     * @param module STAMP module
-     * @param path STAMP path
      * @param semantic the semantic
      * @param refComponent the semantic's reference component
      * @param composer shared composer
