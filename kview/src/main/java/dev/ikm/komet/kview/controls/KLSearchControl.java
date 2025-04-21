@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
-import dev.ikm.komet.kview.controls.skin.SearchControlSkin;
+import dev.ikm.komet.kview.controls.skin.KLSearchControlSkin;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -19,9 +19,9 @@ import javafx.scene.control.Skin;
 
 import java.util.function.Consumer;
 
-public class SearchControl extends Control {
+public class KLSearchControl extends Control {
 
-    public SearchControl() {
+    public KLSearchControl() {
 
         getStyleClass().add("search-control");
         getStylesheets().add(getUserAgentStylesheet());
@@ -157,11 +157,11 @@ public class SearchControl extends Control {
 
     @Override
     protected Skin<?> createDefaultSkin() {
-        return new SearchControlSkin(this);
+        return new KLSearchControlSkin(this);
     }
 
     @Override
     public String getUserAgentStylesheet() {
-        return SearchControl.class.getResource("search-control.css").toExternalForm();
+        return KLSearchControl.class.getResource("search-control.css").toExternalForm();
     }
 }

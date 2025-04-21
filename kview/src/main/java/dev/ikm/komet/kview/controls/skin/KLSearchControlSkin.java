@@ -2,7 +2,7 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.InvertedTree;
-import dev.ikm.komet.kview.controls.SearchControl;
+import dev.ikm.komet.kview.controls.KLSearchControl;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -35,7 +35,7 @@ import javafx.util.Subscription;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-public class SearchControlSkin extends SkinBase<SearchControl> {
+public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
 
     private static final double SEARCH_RESULT_HEIGHT = 43; // 38 + 5
 
@@ -45,9 +45,9 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
     private final StackPane filterPane;
     private Subscription subscription;
 
-    private final ListView<SearchControl.SearchResult> resultsPane;
+    private final ListView<KLSearchControl.SearchResult> resultsPane;
 
-    public SearchControlSkin(SearchControl control) {
+    public KLSearchControlSkin(KLSearchControl control) {
         super(control);
         ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.search-control");
 
@@ -81,7 +81,7 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
             }
 
             @Override
-            protected void updateItem(SearchControl.SearchResult item, boolean empty) {
+            protected void updateItem(KLSearchControl.SearchResult item, boolean empty) {
                 super.updateItem(item, empty);
                 if (item != null && !empty) {
                     searchResult.setSearchResult(item);
@@ -94,7 +94,7 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
         resultsPane.managedProperty().bind(resultsPane.visibleProperty());
         resultsPane.setVisible(false);
         resultsPane.setItems(control.resultsProperty());
-        control.resultsProperty().addListener((ListChangeListener<SearchControl.SearchResult>) _ -> {
+        control.resultsProperty().addListener((ListChangeListener<KLSearchControl.SearchResult>) _ -> {
             int itemCount = Math.max(1, Math.min(resultsPane.getItems().size(), 4));
             resultsPane.setPrefHeight(itemCount * SEARCH_RESULT_HEIGHT);
         });
@@ -247,15 +247,15 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
 
         private final Label parentDescriptionLabel;
         private final Label descriptionLabel;
-        private final SearchControl searchControl;
+        private final KLSearchControl searchControl;
         private Text actualDescriptionText;
         private String highlight;
         private PauseTransition hoverTransition;
         private Subscription subscription;
-        private SearchControl.SearchResult searchResult;
+        private KLSearchControl.SearchResult searchResult;
         private final StringProperty actualTextProperty;
 
-        public SearchResultBox(SearchControl searchControl) {
+        public SearchResultBox(KLSearchControl searchControl) {
             this.searchControl = searchControl;
             subscription = Subscription.EMPTY;
 
@@ -286,10 +286,10 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
             getChildren().addAll(parentDescriptionLabel, descriptionLabel);
 
             getStyleClass().add("search-result");
-            getStylesheets().add(SearchControl.class.getResource("search-control.css").toExternalForm());
+            getStylesheets().add(KLSearchControl.class.getResource("search-control.css").toExternalForm());
         }
 
-        void setSearchResult(SearchControl.SearchResult result) {
+        void setSearchResult(KLSearchControl.SearchResult result) {
             cleanup();
             this.searchResult = result;
             highlight = result.highlight().toLowerCase(Locale.ROOT);

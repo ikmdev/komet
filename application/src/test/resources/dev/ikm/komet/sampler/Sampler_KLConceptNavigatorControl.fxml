@@ -10,7 +10,7 @@
 <?import dev.ikm.komet.kview.controls.KLConceptNavigatorControl?>
 
 <?import javafx.scene.control.CheckBox?>
-<?import dev.ikm.komet.kview.controls.SearchControl?>
+<?import dev.ikm.komet.kview.controls.KLSearchControl?>
 <ScrollPane styleClass="sample-container" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.sampler.controllers.SamplerConceptNavigatorController">
     <VBox>
@@ -22,7 +22,7 @@
         </Label>
         <SplitPane fx:id="root" prefWidth="200.0" styleClass="sample-control-container">
             <VBox styleClass="inner-container">
-                <SearchControl fx:id="searchControl"/>
+                <KLSearchControl fx:id="searchControl"/>
                 <KLConceptNavigatorControl fx:id="conceptNavigatorControl"/>
             </VBox>
             <VBox fx:id="conceptArea" styleClass="center-container"/>

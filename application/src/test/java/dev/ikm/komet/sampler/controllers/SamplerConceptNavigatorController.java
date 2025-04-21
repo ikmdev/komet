@@ -4,7 +4,7 @@ import dev.ikm.komet.app.AppState;
 import dev.ikm.komet.app.LoadDataSourceTask;
 import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
-import dev.ikm.komet.kview.controls.SearchControl;
+import dev.ikm.komet.kview.controls.KLSearchControl;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
@@ -47,7 +47,7 @@ public class SamplerConceptNavigatorController {
     private Label samplerDescription;
 
     @FXML
-    private SearchControl searchControl;
+    private KLSearchControl searchControl;
 
     @FXML
     private KLConceptNavigatorControl conceptNavigatorControl;
@@ -152,7 +152,7 @@ public class SamplerConceptNavigatorController {
             TinkExecutor.threadPool().execute(() -> {
                 try {
                     List<LatestVersionSearchResult> results = calculator.search(searchControl.getText(), 1000).toList();
-                    List<SearchControl.SearchResult> searchResults = new ArrayList<>();
+                    List<KLSearchControl.SearchResult> searchResults = new ArrayList<>();
                     results.stream()
                             .filter(result -> result.latestVersion().isPresent())
                             .forEach(result -> {
@@ -160,20 +160,20 @@ public class SamplerConceptNavigatorController {
                                 searchResults.addAll(
                                         Entity.getConceptForSemantic(semantic.nid()).map(entity -> {
                                             int[] parentNids = navigator.getParentNids(entity.nid());
-                                            List<SearchControl.SearchResult> list = new ArrayList<>();
+                                            List<KLSearchControl.SearchResult> list = new ArrayList<>();
                                             if (parentNids != null) {
                                                 for (int parentNid : parentNids) {
                                                     ConceptFacade parent = Entity.getFast(parentNid);
-                                                    list.add(new SearchControl.SearchResult(parent, entity, searchControl.getText()));
+                                                    list.add(new KLSearchControl.SearchResult(parent, entity, searchControl.getText()));
                                                 }
                                             } else {
-                                                list.add(new SearchControl.SearchResult(null, entity, searchControl.getText()));
+                                                list.add(new KLSearchControl.SearchResult(null, entity, searchControl.getText()));
                                             }
                                             return list;
                                         }).orElse(List.of()));
                             });
                     // NOTE: different semanticIds give same entity
-                    List<SearchControl.SearchResult> distinctResults = searchResults.stream().distinct().toList();
+                    List<KLSearchControl.SearchResult> distinctResults = searchResults.stream().distinct().toList();
                     Platform.runLater(() -> {
                         searchControl.setResultsPlaceholder(null);
                         searchControl.resultsProperty().addAll(distinctResults);
