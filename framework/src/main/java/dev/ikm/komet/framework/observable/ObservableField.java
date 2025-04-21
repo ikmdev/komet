@@ -24,11 +24,11 @@ import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.Transaction;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 
@@ -44,13 +44,13 @@ public final class ObservableField<T> implements Field<T> {
     /**
      * Responsible for creating a new an uncommitted semantic version for the versionProperty owned by ObservableVersion.
      */
-    private ChangeListener autoSaveChangeListener;
+    private InvalidationListener autoSaveChangeListener;
 
-    void setAutoSaveChangeListener(ChangeListener autoSaveChangeListener) {
+    void setAutoSaveChangeListener(InvalidationListener autoSaveChangeListener) {
         this.autoSaveChangeListener = autoSaveChangeListener;
     }
 
-    ChangeListener getAutoSaveChangeListener() {
+    InvalidationListener getAutoSaveChangeListener() {
         return this.autoSaveChangeListener;
     }
 

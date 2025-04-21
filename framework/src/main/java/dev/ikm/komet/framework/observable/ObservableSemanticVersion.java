@@ -32,13 +32,15 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.beans.value.ChangeListener;
+import javafx.beans.InvalidationListener;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
+
+import java.util.Objects;
 
 public final class ObservableSemanticVersion
         extends ObservableVersion<SemanticVersionRecord>
@@ -89,16 +91,16 @@ public final class ObservableSemanticVersion
 
 
             // create a change listener
-        //    InvalidationListener autoSave = (observableValue) -> {
-            ChangeListener autoSave = (observableValue, ov, nv) -> {
+            InvalidationListener autoSave = (observableValue) -> {
+//            ChangeListener autoSave = (observableValue, ov, nv) -> {
                 System.out.println("Inside AUTOSAVE Method.");
                 // ObservableSemanticVersion and thee SemanticVersion (record).
                 // ObservableSemanticVersion owns the versionProperty<SemanticVersion>
 //                if (nv !=null) {
                 if(observableField.value() != null // Create a version only when new value is not null.
-//                 &&        (observableField.fieldProperty.getValue().value() != null &&  // If the old
-//                                // Check if the previous value is different from changed.This check is required for C-List C-Set
-//                                !Objects.equals(observableField.value().toString(), observableField.fieldProperty.getValue().value().toString()))
+                 &&        (observableField.fieldProperty.getValue().value() != null &&  // If the old
+                                // Check if the previous value is different from changed.This check is required for C-List C-Set
+                                !Objects.equals(observableField.value().toString(), observableField.fieldProperty.getValue().value().toString()))
                 ) {
                     autoSaveSematicVersion(observableField.value(), index); // Creating uncommitted version records. e.g., (c)hello, (u)hello1, (u)hello12, (u)hello123
                 }

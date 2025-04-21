@@ -53,9 +53,9 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         implements Entity<O>, ObservableComponent
         permits ObservableConcept, ObservablePattern, ObservableSemantic, ObservableStamp {
 
-    protected static final ConcurrentReferenceHashMap<String, ObservableEntity> SINGLETONS =
-            new ConcurrentReferenceHashMap<>(ConcurrentReferenceHashMap.ReferenceType.WEAK,
-                    ConcurrentReferenceHashMap.ReferenceType.WEAK);
+    protected static final ConcurrentReferenceHashMap<Integer, ObservableEntity> SINGLETONS =
+            new ConcurrentReferenceHashMap<>(ConcurrentReferenceHashMap.ReferenceType.SOFT,
+                    ConcurrentReferenceHashMap.ReferenceType.SOFT);
     private final EntityChangeSubscriber ENTITY_CHANGE_SUBSCRIBER = new EntityChangeSubscriber();
 
     {
@@ -111,7 +111,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
             return (OE) entity;
         }
 
-        ObservableEntity observableEntity = SINGLETONS.computeIfAbsent(entity.publicId().idString(), publicId ->
+        ObservableEntity observableEntity = SINGLETONS.computeIfAbsent(entity.nid(), publicId ->
                 switch (entity) {
                     case ConceptEntity conceptEntity -> new ObservableConcept(conceptEntity);
                     case PatternEntity patternEntity -> new ObservablePattern(patternEntity);
@@ -124,7 +124,6 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
 //        } else {
 //            updateVersions(entity, observableEntity);
 //        }
-        System.out.println(" OBSERVABLE ENTITY ADDRESS " + observableEntity.entity().publicId().idString() +  "   " + observableEntity);
         return (OE) observableEntity;
     }
 
