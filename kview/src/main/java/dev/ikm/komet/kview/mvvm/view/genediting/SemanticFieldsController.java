@@ -21,8 +21,6 @@ import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
 import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculteHashValue;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateHashValue;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
@@ -34,6 +32,7 @@ import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
@@ -43,9 +42,11 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.FieldRecord;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampRecord;
+import dev.ikm.tinkar.entity.VersionData;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -66,7 +67,9 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class SemanticFieldsController {
 
@@ -123,13 +126,28 @@ public class SemanticFieldsController {
     }
 
     private void processCommittedValues() {
-        EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
-        StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
-        Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
-        if(semanticEntityVersionLatest.get().stamp().time() == Long.MAX_VALUE){
-            semanticEntityVersionLatest = retrieveCommittedLatestVersion(semanticEntityVersionLatest, observableSemanticSnapshot);
-        }
-        committedHash = generateHashValue(semanticEntityVersionLatest, getViewProperties());
+        AtomicReference<ImmutableList<ObservableField>> immutableList = new AtomicReference<>();
+        //Get the latest version
+        Latest<ObservableSemanticVersion> observableSemanticVersionLatest = observableSemanticSnapshot.getLatestVersion();
+        observableSemanticVersionLatest.ifPresent(observableSemanticVersion -> { // if latest version present
+           if (observableSemanticVersion.committed()) { // and if latest version is committed then,
+               immutableList.set(observableSemanticSnapshot.getLatestFields().get()); // get the latest fields
+           } else { //if The latest version is Uncommitted, then retrieve the committed version from historic versions list.
+               ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
+               // replace any versions with uncommited stamp
+               Optional<ObservableSemanticVersion> observableSemanticVersionOptional = observableSemanticVersionImmutableList.stream().filter(VersionData::committed).findFirst();
+               observableSemanticVersionOptional.ifPresent(committedObservableSemanticVersion -> {
+                   EntityFacade pattern = EntityFacade.make(committedObservableSemanticVersion.patternNid());
+                   Latest<PatternEntityVersion> patternEntityVersionLatest = getViewProperties().calculator().latest(pattern.nid());
+                   if (patternEntityVersionLatest.isPresent()) {
+                       immutableList.set(committedObservableSemanticVersion.fields(patternEntityVersionLatest.get()));
+                   }
+               });
+           }
+        });
+        List<ObservableField<?>> observableFieldsList = new ArrayList<>((Collection) immutableList.get());
+        committedHash = calculteHashValue(observableFieldsList);  // and calculate the hashValue for commited data.
+
     }
 
     @FXML

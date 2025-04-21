@@ -87,7 +87,6 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         };
 
         this.entityReference = new AtomicReference<>(entityClone);
-        //versionProperty.removeListener();
         for (V version : entity.versions()) {
             versionProperty.add(wrap(version));
         }
@@ -119,6 +118,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
                     case StampEntity stampEntity -> new ObservableStamp(stampEntity);
                     default -> throw new UnsupportedOperationException("Can't handle: " + entity);
                 });
+//      TODO Keeping below commented code to see if we need to update versions when multiple users modify the same semantic.
 //        if (!Platform.isFxApplicationThread()) {
 //            Platform.runLater(() -> updateVersions(entity, observableEntity));
 //        } else {
@@ -127,7 +127,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         return (OE) observableEntity;
     }
 
-    private static void updateVersions(Entity<? extends EntityVersion> entity, ObservableEntity observableEntity) {
+    public static void updateVersions(Entity<? extends EntityVersion> entity, ObservableEntity observableEntity) {
         if (!((Entity) observableEntity.entityReference.get()).versions().equals(entity.versions())) {
             observableEntity.entityReference.set(entity);
             observableEntity.versionProperty.clear();
