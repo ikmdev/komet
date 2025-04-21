@@ -3,6 +3,7 @@ package dev.ikm.komet.kview.controls.skin;
 import dev.ikm.komet.kview.NodeUtils;
 import dev.ikm.komet.kview.controls.KLReadOnlyImageControl;
 import dev.ikm.komet.kview.controls.KometIcon;
+import dev.ikm.komet.kview.fxutils.FXUtils;
 import javafx.css.PseudoClass;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.Image;
@@ -29,36 +30,33 @@ public class KLReadOnlyImageControlSkin extends KLReadOnlyBaseControlSkin<KLRead
 
         control.setPromptText("Add image");
 
-        initImage(control);
+        // Image
+        imageView.setPreserveRatio(true);
+        control.valueProperty().subscribe(this::updateImage);
+
         setupContextMenu(control);
 
         // CSS
         imageContainer.getStyleClass().add("image-container");
     }
 
-    private void initImage(KLReadOnlyImageControl control) {
-        control.valueProperty().addListener(observable -> {
-            updateImage(control);
-        });
-        updateImage(control);
+    private void updateImage(Image newImage) {
+        updatePromptTextVisibility(newImage);
+        updateImageToShow(newImage);
     }
 
-    private void updateImage(KLReadOnlyImageControl control) {
-        updatePromptTextVisibility(control);
-        updateImageToShow(control);
+    private void updatePromptTextVisibility(Image newImage) {
+        NodeUtils.setShowing(promptTextLabel, newImage == null);
     }
 
-    private void updatePromptTextVisibility(KLReadOnlyImageControl control) {
-        NodeUtils.setShowing(promptTextLabel, control.getValue() == null);
-    }
-
-    private void updateImageToShow(KLReadOnlyImageControl control) {
-        if (control.getValue()== null) {
+    private void updateImageToShow(Image newImage) {
+        if (newImage == null) {
             imageView.setImage(promptImage);
 
             pseudoClassStateChanged(IMAGE_SELECTED_PSEUDO_CLASS, false);
         } else {
-            imageView.setImage(control.getValue());
+            imageView.setImage(newImage);
+            FXUtils.fitImageToBounds(imageView, KLImageControlSkin.MAX_IMAGE_WIDTH, KLImageControlSkin.MAX_IMAGE_HEIGHT);
 
             pseudoClassStateChanged(IMAGE_SELECTED_PSEUDO_CLASS, true);
         }
