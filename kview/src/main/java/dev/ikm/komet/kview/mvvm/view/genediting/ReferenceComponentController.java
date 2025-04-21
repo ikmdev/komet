@@ -97,10 +97,6 @@ public class ReferenceComponentController {
 
             //TODO override call create method
             genEditingViewModel.save();
-/*
-            EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
-                    new GenEditingEvent(actionEvent.getSource(), REFERENCE_COMPONENT_CHANGED_EVENT));
-*/
         }
     }
 }
