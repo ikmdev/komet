@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.50.0-view-calculator-invalidate-cache-impl-SNAPSHOT</version>
+        <version>1.50.0-SNAPSHOT</version>
     </parent>
     <artifactId>artifact</artifactId>
     <dependencies>
