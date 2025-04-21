@@ -259,6 +259,7 @@ public class GenEditingDetailsController {
 
             // generate read only UI controls in create mode
             List<KLReadOnlyBaseControl> readOnlyControls = KlFieldHelper.addReadOnlyBlankControlsToContainer(patternVersionRecord, getViewProperties());
+            nodes.addAll(readOnlyControls);
             semanticDetailsVBox.getChildren().addAll(readOnlyControls);
         }
 
