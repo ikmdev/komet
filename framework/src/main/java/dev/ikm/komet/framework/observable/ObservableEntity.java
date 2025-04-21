@@ -118,12 +118,6 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
                     case StampEntity stampEntity -> new ObservableStamp(stampEntity);
                     default -> throw new UnsupportedOperationException("Can't handle: " + entity);
                 });
-//      TODO Keeping below commented code to see if we need to update versions when multiple users modify the same semantic.
-//        if (!Platform.isFxApplicationThread()) {
-//            Platform.runLater(() -> updateVersions(entity, observableEntity));
-//        } else {
-//            updateVersions(entity, observableEntity);
-//        }
         return (OE) observableEntity;
     }
 
