@@ -15,8 +15,10 @@
  */
 package dev.ikm.komet.kview.mvvm.view.journal;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
+import static dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent.GLOBAL_REFRESH;
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
@@ -63,6 +65,7 @@ import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.events.appevents.ProgressEvent;
+import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.search.SearchPanelController;
@@ -123,6 +126,7 @@ import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
@@ -324,6 +328,8 @@ public class JournalController {
 
     private ObservableViewNoOverride windowView;
 
+    private Subscriber<RefreshCalculatorCacheEvent> refreshCalculatorEventSubscriber;
+
     public JournalController() {
         journalTopic = UUID.randomUUID();
     }
@@ -407,6 +413,15 @@ public class JournalController {
         });
 
         workspace.addEventHandler(MouseEvent.MOUSE_CLICKED, this::onMouseClickedOnDesktopSurfacePane);
+        refreshCalculatorEventSubscriber = evt -> {
+            LOG.info("Refresh Calculator Event");
+            if(evt.getEventType() == GLOBAL_REFRESH) {
+                LOG.info("Global Refresh EventYpe...");
+                CachingService.clearAll();
+            }
+        };
+        journalEventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
+
     }
 
     private void onMouseClickedOnDesktopSurfacePane(MouseEvent mouseEvent) {
