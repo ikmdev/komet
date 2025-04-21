@@ -66,22 +66,22 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
             // - adding '-' or '+' if empty or ends in e/E
             // - back when text ends in [-/+, e, e-/+, E, E-/+]
             // - pattern
-            if (newText.isEmpty() ||
-                    (hasExponent(newText) && !hasExponent(oldText) && !oldText.isEmpty()) ||
-                    (("-".equals(addedText) || "+".equals(addedText)) && (oldText.isEmpty() || endsWithExponent(oldText))) ||
-                    (addedText.isEmpty() && ("+".equals(newText) || "-".equals(newText) || hasExponent(newText) || hasSignedExponent(newText))) ||
-                    NUMERICAL_PATTERN.matcher(newText).matches()) {
-                try {
-                    double value = Double.parseDouble(newText);
-                    // discard if we have a valid value, but it is infinite or NaN
-                    if (Double.isInfinite(value) || Double.isNaN(value)) {
+            if (newText.isEmpty() || NUMERICAL_PATTERN.matcher(newText).matches()) {
+                if (!newText.isEmpty() && ((hasExponent(newText) && !hasExponent(oldText) && !oldText.isEmpty()) ||
+                        (("-".equals(addedText) || "+".equals(addedText)) && (oldText.isEmpty() || endsWithExponent(oldText))) ||
+                        (addedText.isEmpty() && ("+".equals(newText) || "-".equals(newText) || hasExponent(newText) || hasSignedExponent(newText))))) {
+                    try {
+                        double value = Double.parseDouble(newText);
+                        // discard if we have a valid value, but it is infinite or NaN
+                        if (Double.isInfinite(value) || Double.isNaN(value)) {
+                            errorLabel.setText(resources.getString("error.float.text"));
+                            control.setShowError(true);
+                            return null;
+                        }
+                    } catch (NumberFormatException nfe) {
                         errorLabel.setText(resources.getString("error.float.text"));
                         control.setShowError(true);
-                        return null;
                     }
-                } catch (NumberFormatException nfe) {
-                    errorLabel.setText(resources.getString("error.float.text"));
-                    control.setShowError(true);
                 }
                 return change;
             } else if ("-".equals(addedText) || "+".equals(addedText)) { // typing '-'/'+' in any other position

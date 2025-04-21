@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+
+<?import dev.ikm.komet.kview.controls.KLConceptNavigatorControl?>
+
+<?import javafx.scene.control.CheckBox?>
+<?import dev.ikm.komet.kview.controls.SearchControl?>
+<ScrollPane styleClass="sample-container" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.sampler.controllers.SamplerConceptNavigatorController">
+    <VBox>
+        <Label layoutX="43.0" layoutY="20.0" styleClass="header" text="Concept Navigator" />
+        <Label fx:id="samplerDescription" styleClass="body-text" wrapText="true">
+            <VBox.margin>
+                <Insets  bottom="40.0" />
+            </VBox.margin>
+        </Label>
+        <SplitPane fx:id="root" prefWidth="200.0" styleClass="sample-control-container">
+            <VBox styleClass="inner-container">
+                <SearchControl fx:id="searchControl"/>
+                <KLConceptNavigatorControl fx:id="conceptNavigatorControl"/>
+            </VBox>
+            <VBox fx:id="conceptArea" styleClass="center-container"/>
+            <VBox maxWidth="200" styleClass="control-configuration-container" BorderPane.alignment="CENTER">
+                <Label text="Pick the dataset" styleClass="title"/>
+                <VBox fx:id="datasetBox" styleClass="dataset-box"/>
+                <CheckBox fx:id="showTagsCheckBox" text="Show Tags" styleClass="title"/>
+            </VBox>
+        </SplitPane>
+
+        <padding>
+            <Insets bottom="60.0" right="60.0" />
+        </padding>
+    </VBox>
+</ScrollPane>

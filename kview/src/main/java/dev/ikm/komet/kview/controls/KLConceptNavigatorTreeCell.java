@@ -14,6 +14,7 @@ import javafx.scene.control.Cell;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TreeCell;
 import javafx.scene.input.DataFormat;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Path;
 
@@ -137,13 +138,15 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
         setText(null);
 
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            if (e.getClickCount() == 2 && !isEmpty() && !isViewLineage()) {
+            if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2 && !isEmpty() && !isViewLineage()) {
                 if (treeView.getOnAction() != null) {
                     treeView.getOnAction().accept(List.of(getItem()));
                 }
                 e.consume();
             }
         });
+
+        getStyleClass().add("navigator-tree-cell");
     }
 
     /**

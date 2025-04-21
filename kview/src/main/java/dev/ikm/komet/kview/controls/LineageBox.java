@@ -10,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Skin;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -281,8 +282,8 @@ public class LineageBox extends ScrollPane {
          * <p>A tooltip is set in case the label text is too long and it gets truncated.
          * </p>
          * <p>A mouse click listener is added to mimic the tree expand/collapse gesture.
-         * When the item was collapsed, new {@link ParentHBox} are added, with the ancestors.
-         * When the item was expanded, the existing ancestors are removed.
+         * When the item is collapsed, new {@link ParentHBox} are added, with the ancestors.
+         * When the item is expanded, the existing ancestors are removed.
          * </p>
          * @param treeItem the {@link InvertedTree.ConceptItem}
          * @return a {@link Label}
@@ -300,6 +301,10 @@ public class LineageBox extends ScrollPane {
                 }
             };
             label.setOnMouseClicked(e -> {
+                e.consume();
+                if (e.getButton() != MouseButton.PRIMARY) {
+                    return;
+                }
                 ParentHBox currentHBox = (ParentHBox) label.getParent();
                 int currentIndex = lineageBoxRoot.getChildren().indexOf(currentHBox);
                 if (currentHBox.invertedTree.isLeaf()) {
