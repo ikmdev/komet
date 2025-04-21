@@ -230,6 +230,12 @@
     -fx-padding: 4 4 2 2;
 }
 
+.navigator-tree-cell.tree-cell:highlighted > .concept-tile,
+.navigator-tree-cell.tree-cell:selected:highlighted > .concept-tile {
+    -fx-background-color: #00BD63, #F4FBF0;
+    -fx-background-insets: 0, 1;
+}
+
 .navigator-tree-cell.tree-cell > .concept-tile > .concept-label {
     -fx-font-family: "Noto Sans";
     -fx-font-weight: normal;

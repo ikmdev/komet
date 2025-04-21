@@ -227,6 +227,26 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
         tagProperty.set(value);
     }
 
+    /**
+     * Property that toggles the highlighted state of this concept TreeItem.
+     */
+    private final BooleanProperty highlightedProperty = new SimpleBooleanProperty(this, "highlighted");
+    public final BooleanProperty highlightedProperty() {
+       return highlightedProperty;
+    }
+    public final boolean isHighlighted() {
+       return highlightedProperty.get();
+    }
+    public final void setHighlighted(boolean value) {
+        highlightedProperty.set(value);
+    }
+
+    /**
+     * <p>Gets the {@link InvertedTree} instance of this concept TreeItem, which might by empty.
+     * </p>
+     * @return an {@link InvertedTree}
+     * @see ConceptNavigatorUtils#buildInvertedTree(int, Navigator)
+     */
     public final InvertedTree getInvertedTree() {
         return invertedTree;
     }
