@@ -105,6 +105,7 @@ import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
 import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
+import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.komet.preferences.ConceptWindowSettings;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -123,8 +124,10 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
@@ -876,16 +879,58 @@ public class JournalController {
      * Add a ConceptNavigator tree view, currently tied to the "heart" left lav button
      */
     public void loadConceptNavigatorPanel(ViewProperties viewProperties) {
+        Navigator navigator = new ViewNavigator(viewProperties.nodeView());
         SearchControl searchControl = new SearchControl();
-        searchControl.setPromptText("Search"); // DUMMY, resources?
-        searchControl.setOnAction(_ -> System.out.println("Search for: " + searchControl.getText()));
+
+        searchControl.setOnAction(_ -> {
+            ViewCalculator calculator = viewProperties.calculator();
+            searchControl.setResultsPlaceholder("Searching..."); // DUMMY, resources?
+            TinkExecutor.threadPool().execute(() -> {
+                try {
+                    List<LatestVersionSearchResult> results = calculator.search(searchControl.getText(), 1000).toList();
+                    List<SearchControl.SearchResult> searchResults = new ArrayList<>();
+                    results.stream()
+                            .filter(result -> result.latestVersion().isPresent())
+                            .forEach(result -> {
+                                SemanticEntityVersion semantic = result.latestVersion().get();
+                                searchResults.addAll(
+                                        Entity.getConceptForSemantic(semantic.nid()).map(entity -> {
+                                            int[] parentNids = navigator.getParentNids(entity.nid());
+                                            List<SearchControl.SearchResult> list = new ArrayList<>();
+                                            if (parentNids != null) {
+                                                // Add one search result per parent
+                                                for (int parentNid : parentNids) {
+                                                    ConceptFacade parent = Entity.getFast(parentNid);
+                                                    list.add(new SearchControl.SearchResult(parent, entity, searchControl.getText()));
+                                                }
+                                            } else {
+                                                list.add(new SearchControl.SearchResult(null, entity, searchControl.getText()));
+                                            }
+                                            return list;
+                                        })
+                                        .orElse(List.of()));
+                            });
+
+                    // NOTE: different semanticIds can give the same entity, remove duplicates
+                    List<SearchControl.SearchResult> distinctResults = searchResults.stream().distinct().toList();
+                    Platform.runLater(() -> {
+                        searchControl.setResultsPlaceholder(null);
+                        searchControl.resultsProperty().addAll(distinctResults);
+                    });
+
+                } catch (Exception e) {
+                    LOG.error(e.getMessage(), e);
+                }
+            });
+        });
+
         searchControl.setOnFilterAction(_ -> {
             // DUMMY
             searchControl.setFilterSet(!searchControl.isFilterSet());
         });
 
         KLConceptNavigatorControl conceptNavigatorControl = new KLConceptNavigatorControl();
-        conceptNavigatorControl.setNavigator(new ViewNavigator(viewProperties.nodeView()));
+        conceptNavigatorControl.setNavigator(navigator);
         conceptNavigatorControl.setHeader("Concept Header");
         conceptNavigatorControl.setShowTags(false);
         conceptNavigatorControl.setOnAction(items ->

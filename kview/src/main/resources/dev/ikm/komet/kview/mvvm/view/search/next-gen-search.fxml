@@ -11,6 +11,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
+<?import dev.ikm.komet.kview.controls.AutoCompleteTextField?>
 <StackPane stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController">
     <children>
         <ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" minWidth="-Infinity" prefWidth="372.0">
@@ -26,14 +27,11 @@
                                     <children>
                                         <HBox prefHeight="100.0" prefWidth="200.0">
                                             <children>
-                                                <TextField fx:id="searchField" onAction="#doSearch" onMouseClicked="#clearSearchTextField" prefWidth="424.0" promptText="🔍  Search" styleClass="search-text-field">
-                                                    <opaqueInsets>
-                                                        <Insets />
-                                                    </opaqueInsets>
-                                       <cursor>
-                                          <Cursor fx:constant="TEXT" />
-                                       </cursor>
-                                                </TextField>
+                                                <AutoCompleteTextField fx:id="searchField" onAction="#doSearch" onMouseClicked="#clearSearchTextField" prefWidth="424.0" promptText="🔍  Search" styleClass="search-text-field">
+                                                   <cursor>
+                                                      <Cursor fx:constant="TEXT" />
+                                                   </cursor>
+                                                </AutoCompleteTextField>
                                                 <Button mnemonicParsing="false" styleClass="search-button">
                                                     <graphic>
                                                         <Region focusTraversable="true">
