@@ -92,11 +92,8 @@ public final class ObservableSemanticVersion
 
             // create a change listener
             InvalidationListener autoSave = (observableValue) -> {
-//            ChangeListener autoSave = (observableValue, ov, nv) -> {
-                System.out.println("Inside AUTOSAVE Method.");
-                // ObservableSemanticVersion and thee SemanticVersion (record).
+                // ObservableSemanticVersion and the SemanticVersion (record).
                 // ObservableSemanticVersion owns the versionProperty<SemanticVersion>
-//                if (nv !=null) {
                 if(observableField.value() != null // Create a version only when new value is not null.
                  &&        (observableField.fieldProperty.getValue().value() != null &&  // If the old
                                 // Check if the previous value is different from changed.This check is required for C-List C-Set
@@ -106,7 +103,6 @@ public final class ObservableSemanticVersion
                 }
             };
             observableField.setAutoSaveChangeListener(autoSave);
-
             fieldArray[indexInPattern] = observableField;
         }
 

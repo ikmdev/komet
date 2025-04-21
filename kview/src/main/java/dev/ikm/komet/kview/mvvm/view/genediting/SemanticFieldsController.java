@@ -98,22 +98,6 @@ public class SemanticFieldsController {
 
     Subscriber<EntityVersionChangeEvent> entityVersionChangeEventSubscriber;
 
-//    private void refreshData(ListChangeListener.Change<? extends ObservableSemanticVersion> change) {
-//        System.out.println(" IN REFRESH DATA section");
-//        while(change.next()){
-//            if(change.wasAdded()){
-//                System.out.println(" IN REFRESH DATA section : ADDED" );
-//                observableSemantic.versionProperty().removeListener(versionChangeListener);
-//                observableSemantic = ObservableSemantic.get(observableSemantic.nid());
-//                observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-//                loadUIData();
-//            }
-//            if(change.wasRemoved()) {
-//                System.out.println(" IN REFRESH DATA section : REMOVED" );
-//            }
-//        }
-//    }
-
     private void enableDisableSubmitButton(){
         //Disable submit button if any of the fields are blank.
         boolean disabled = checkForEmptyFields();
@@ -219,7 +203,6 @@ public class SemanticFieldsController {
                 // disable calling writeToData method of observable field by setting refresh flag to true.
                 FieldRecord<?> fieldRecord = observableField.field();
                 nodes.add(KlFieldHelper.generateNode(fieldRecord, observableField, getViewProperties(), semanticEntityVersionLatest, true));
-                System.out.println(" THE CLASS INSTANCE : " + this.toString()  + "  VALUE " + observableField.value());
                 observableField.autoSaveOn();
             });
 
@@ -227,7 +210,6 @@ public class SemanticFieldsController {
         //Set the hascode for the committed values.
         enableDisableSubmitButton();
         loadVBox();
-//        observableSemantic.versionProperty().addListener(versionChangeListener);
     }
 
     private static Separator createSeparator() {
