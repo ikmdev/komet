@@ -75,9 +75,6 @@ public class PropertiesController {
 
     private ClosePropertiesController closePropertiesController;
 
-//    @InjectViewModel
-//    private SimpleViewModel propertiesViewModel;
-
     @InjectViewModel
     private GenEditingViewModel genEditingViewModel;
 
@@ -99,18 +96,6 @@ public class PropertiesController {
 
     //Refers to Add Reference Component
     private void setupShowReferencePanelHandlers() {
-        /*
-        Config addReferenceConfig = new Config(this.getClass().getResource("reference-component.fxml"));
-        addReferenceConfig.updateViewModel("referenceComponentViewModel", (referenceComponentViewModel) -> {
-            referenceComponentViewModel
-                    .addProperty(CURRENT_JOURNAL_WINDOW_TOPIC, propertiesViewModel.getObjectProperty(CURRENT_JOURNAL_WINDOW_TOPIC))
-                    .addProperty(WINDOW_TOPIC, propertiesViewModel.getObjectProperty(WINDOW_TOPIC))
-                    .addProperty(VIEW_PROPERTIES, propertiesViewModel.getObjectProperty(VIEW_PROPERTIES))
-                    .addProperty(SEMANTIC, propertiesViewModel.getObjectProperty(SEMANTIC))
-                    .addProperty(REF_COMPONENT, propertiesViewModel.getObjectProperty(REF_COMPONENT))
-                    .addProperty(FIELD_INDEX, -1);
-        });
-         */
         Config addReferenceConfig = new Config(this.getClass().getResource("reference-component.fxml"))
                 .addNamedViewModel(new NamedVm("genEditingViewModel", genEditingViewModel));
         referenceComponentJfxNode = FXMLMvvmLoader.make(addReferenceConfig);
@@ -120,17 +105,6 @@ public class PropertiesController {
         Config config = new Config(this.getClass().getResource("semantic-edit-fields.fxml"))
             .addNamedViewModel(new NamedVm("genEditingViewModel", genEditingViewModel));
 
-                //FIXME we want to use only one viewModel that is the genEditingViewModel
-//            .updateViewModel("semanticFieldsViewModel", (semanticFieldsViewModel) -> {
-//                semanticFieldsViewModel
-//                    .addProperty(CURRENT_JOURNAL_WINDOW_TOPIC, propertiesViewModel.getObjectProperty(CURRENT_JOURNAL_WINDOW_TOPIC))
-//                    .addProperty(WINDOW_TOPIC, propertiesViewModel.getObjectProperty(WINDOW_TOPIC))
-//                    .addProperty(VIEW_PROPERTIES, propertiesViewModel.getObjectProperty(VIEW_PROPERTIES))
-//                    .addProperty(SEMANTIC, propertiesViewModel.getObjectProperty(SEMANTIC))
-//                    .addProperty(REF_COMPONENT, propertiesViewModel.getObjectProperty(REF_COMPONENT))
-//                    .addProperty(FIELD_INDEX, -1)
-//                    ;
-        //});
         editFieldsJfxNode = FXMLMvvmLoader.make(config);
 
         Config closePropertiesConfig = new Config(this.getClass().getResource("close-properties.fxml"))

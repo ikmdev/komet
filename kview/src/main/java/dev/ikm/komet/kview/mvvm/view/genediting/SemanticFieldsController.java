@@ -81,7 +81,6 @@ public class SemanticFieldsController {
     private Button submitButton;
 
     @InjectViewModel
-    //private ValidationViewModel semanticFieldsViewModel;
     private GenEditingViewModel genEditingViewModel;
 
     private List<ObservableField<?>> observableFields = new ArrayList<>();
