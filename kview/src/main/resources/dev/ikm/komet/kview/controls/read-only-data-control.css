@@ -19,12 +19,11 @@
 .read-only-data-control:edit-mode .main-container .text-container {
     -fx-background-color: #f4fbf0;
     -fx-border-color: #66bb38;
-
-    -fx-text-fill: #395c9a;
 }
 
-.read-only-data-control .main-container .text-container > .text {
+.read-only-data-control .main-container .text-containers .text {
     -fx-text-fill: #111;
+    -fx-font-size: 13px;
 }
 
 .read-only-data-control .main-container .text-container .prompt-text {
