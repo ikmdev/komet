@@ -119,6 +119,7 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
                 throw new IllegalStateException("Version is already committed, cannot change value.");
             }
         });
+
     }
 
     public V version() {

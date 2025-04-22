@@ -11,6 +11,8 @@ import javafx.beans.property.StringProperty;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
+import java.util.Objects;
+
 /**
  * <p>KLFloatControl is a custom control that allows displaying and editing
  * Float data types</p>
@@ -58,7 +60,9 @@ public class KLFloatControl extends Control {
         return valueProperty.get();
     }
     public final void setValue(Float value) {
-        valueProperty.set(value);
+        if(value != null && !Objects.equals(valueProperty.get(), value)){
+            valueProperty.set(value);
+        }
     }
 
     /**
