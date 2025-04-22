@@ -158,7 +158,6 @@ public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMu
     }
 
     protected void fireOnPopulateAction(ActionEvent actionEvent, ComponentItem componentItem) {
-        actionEvent.consume();
         EntityFacade entityFacade = EntityService.get().getEntityFast(componentItem.getNid());
         if (entityFacade instanceof ConceptEntity conceptEntity) {
             EvtBusFactory.getDefaultEvtBus().publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,

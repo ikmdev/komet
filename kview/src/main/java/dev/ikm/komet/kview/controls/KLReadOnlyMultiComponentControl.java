@@ -16,8 +16,8 @@ public abstract class KLReadOnlyMultiComponentControl extends KLReadOnlyBaseCont
     public void setOnRemoveAction(Consumer<ComponentItem> onEditAction) { this.onRemoveAction.set(onEditAction); }
 
     // -- on populate action
-    private ObjectProperty<Consumer<ComponentItem>> onPopulateAction = new SimpleObjectProperty<>();
-    public Consumer<ComponentItem> getOnPopulateAction() { return onPopulateAction.get(); }
-    public ObjectProperty<Consumer<ComponentItem>> onPopulateActionProperty() { return onPopulateAction; }
-    public void setOnPopulateAction(Consumer<ComponentItem> onPopulateAction) { this.onPopulateAction.set(onPopulateAction); }
+    private ObjectProperty<Consumer<Integer>> onPopulateAction = new SimpleObjectProperty<>();
+    public Consumer<Integer> getOnPopulateAction() { return onPopulateAction.get(); }
+    public ObjectProperty<Consumer<Integer>> onPopulateActionProperty() { return onPopulateAction; }
+    public void setOnPopulateAction(Consumer<Integer> onPopulateAction) { this.onPopulateAction.set(onPopulateAction); }
 }
