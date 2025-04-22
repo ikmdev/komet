@@ -17,7 +17,6 @@ package dev.ikm.komet.kview.events;
 
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.tinkar.terms.ConceptFacade;
 
 public class MakeConceptWindowEvent extends Evt {
@@ -29,12 +28,6 @@ public class MakeConceptWindowEvent extends Evt {
     private ConceptFacade conceptFacade;
 
 
-    public ObservableViewNoOverride windowViewProperty() {
-        return windowView;
-    }
-
-    private ObservableViewNoOverride windowView;
-
     /**
      * Constructs a prototypical Event.
      *
@@ -43,18 +36,13 @@ public class MakeConceptWindowEvent extends Evt {
      * @param conceptFacade
      * @throws IllegalArgumentException if source is null
      */
-    public MakeConceptWindowEvent(Object source, EvtType eventType, ConceptFacade conceptFacade, ObservableViewNoOverride windowView) {
+    public MakeConceptWindowEvent(Object source, EvtType eventType, ConceptFacade conceptFacade) {
         super(source, eventType);
         this.conceptFacade = conceptFacade;
-        this.windowView = windowView;
     }
 
     public ConceptFacade getConceptFacade() {
         return conceptFacade;
     }
 
-
-    public ObservableViewNoOverride getWindowView() {
-        return windowView;
-    }
 }

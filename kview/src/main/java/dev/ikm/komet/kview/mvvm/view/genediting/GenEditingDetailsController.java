@@ -487,7 +487,8 @@ public class GenEditingDetailsController {
                 default -> "Unknown";
             };
 
-            ComponentItem componentItem = new ComponentItem(refComponent2.description(), Identicon.generateIdenticonImage(refComponent2.publicId()));
+            ComponentItem componentItem = new ComponentItem(refComponent2.description(),
+                    Identicon.generateIdenticonImage(refComponent2.publicId()), refComponent2.nid());
 
             referenceComponent.setTitle(refType);
             referenceComponent.setValue(componentItem);
