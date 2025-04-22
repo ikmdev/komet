@@ -49,6 +49,10 @@
             <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>reasoner-hybrid</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.github.RoaringBitmap.RoaringBitmap</groupId>
+            <artifactId>roaringbitmap</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
