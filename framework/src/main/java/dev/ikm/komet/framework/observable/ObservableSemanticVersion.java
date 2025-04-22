@@ -19,21 +19,38 @@ import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculatorWithCache;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
+import dev.ikm.tinkar.entity.FieldDefinitionRecord;
+import dev.ikm.tinkar.entity.FieldRecord;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.SemanticVersionRecord;
+import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.StampRecord;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.beans.InvalidationListener;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
-import dev.ikm.tinkar.entity.*;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
+
+import java.util.Objects;
 
 public final class ObservableSemanticVersion
         extends ObservableVersion<SemanticVersionRecord>
         implements SemanticEntityVersion {
     ObservableSemanticVersion(SemanticVersionRecord semanticVersionRecord) {
         super(semanticVersionRecord);
-    }
+        // fields and their index.
+        // loop and create changelistners
 
+    }
     @Override
     protected SemanticVersionRecord withStampNid(int stampNid) {
         return version().withStampNid(stampNid);
@@ -67,11 +84,72 @@ public final class ObservableSemanticVersion
             FieldDefinitionForEntity fieldDef = patternVersion.fieldDefinitions().get(indexInPattern);
             FieldDefinitionRecord fieldDefinitionRecord = new FieldDefinitionRecord(fieldDef.dataTypeNid(),
                     fieldDef.purposeNid(), fieldDef.meaningNid(), patternVersion.stampNid(), patternVersion.nid(), indexInPattern);
-            fieldArray[indexInPattern] = new ObservableField(new FieldRecord(value, this.nid(), this.stampNid(), fieldDefinitionRecord));
+
+            ObservableField<?> observableField = new ObservableField<>(new FieldRecord<>(value, this.nid(), this.stampNid(), fieldDefinitionRecord),false);
+            observableField.refreshProperties.setValue(true);
+            int index = indexInPattern;
+
+
+            // create a change listener
+            InvalidationListener autoSave = (observableValue) -> {
+                // ObservableSemanticVersion and the SemanticVersion (record).
+                // ObservableSemanticVersion owns the versionProperty<SemanticVersion>
+                if(observableField.value() != null // Create a version only when new value is not null.
+                 &&        (observableField.fieldProperty.getValue().value() != null &&  // If the old
+                                // Check if the previous value is different from changed.This check is required for C-List C-Set
+                                !Objects.equals(observableField.value().toString(), observableField.fieldProperty.getValue().value().toString()))
+                ) {
+                    autoSaveSematicVersion(observableField.value(), index); // Creating uncommitted version records. e.g., (c)hello, (u)hello1, (u)hello12, (u)hello123
+                }
+            };
+            observableField.setAutoSaveChangeListener(autoSave);
+            fieldArray[indexInPattern] = observableField;
         }
+
+       //TODO POC this is a temp workaround remove call to handleUncommittedVersionTransactionStatus()?
+       // handleUncommittedVersionTransactionStatus();
         return Lists.immutable.of(fieldArray);
     }
 
+    /**
+     * TODO POC this is a temp workaround Should be removed later?
+     * This method will create a transaction if a version is uncommitted and transaction for that version does not exist.
+     */
+    private void handleUncommittedVersionTransactionStatus() {
+        if(version().uncommitted() && Transaction.forVersion(version()).isEmpty()){
+            SemanticVersionRecord version = version();
+            StampRecord stamp = Entity.getStamp(version.stampNid());
+            Transaction t = Transaction.make();
+            StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
+            versionProperty.set(version.with().stampNid(newStamp.nid()).build());
+        }
+    }
+
+    /**
+     * Create a new version and transaction if the current version is for committed.
+     * Updates the existing version if uncommitted.
+     * @param value
+     * @param index
+     */
+    private void autoSaveSematicVersion(Object value, int index) {
+        SemanticVersionRecord newVersion = null;
+        SemanticVersionRecord version = version();
+        MutableList<Object> fieldsForNewVersion = org.eclipse.collections.impl.factory.Lists.mutable.of(version.fieldValues().toArray());
+        StampRecord stamp = Entity.getStamp(version.stampNid());
+        fieldsForNewVersion.set(index, value);
+
+        if (version.committed()) {
+            Transaction t = Transaction.make();
+            // newStamp already written to the entity store.
+            StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
+            // Create new version...
+            newVersion = version.with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
+
+        } else {
+            newVersion = version.withFieldValues(fieldsForNewVersion.toImmutable());
+        }
+        versionProperty.set(newVersion);
+    }
 
     @Override
     public ImmutableMap<FieldCategory, ObservableField> getObservableFields() {

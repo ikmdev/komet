@@ -10,6 +10,8 @@ public class GenEditingEvent extends Evt {
 
     public static final EvtType<GenEditingEvent> PUBLISH = new EvtType<>(Evt.ANY, "GEN_EDIT_PUBLISH_SEMANTIC");
 
+    public static final EvtType<GenEditingEvent> VERSION_UPDATED = new EvtType<>(Evt.ANY, "VERSION_UPDATED");
+
     private List<ObservableField<?>> list;
 
     private int nid;

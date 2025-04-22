@@ -81,7 +81,7 @@ public class KLReadOnlyDataTypeControlSkin<T> extends KLReadOnlyBaseControlSkin<
 
         contextMenu.getItems().addAll(
                 new SeparatorMenuItem(),
-                createMenuItem("Remove", IconValue.TRASH, this::fireOnRmoveAction)
+                createMenuItem("Remove", IconValue.TRASH, this::fireOnRemoveAction)
         );
     }
 

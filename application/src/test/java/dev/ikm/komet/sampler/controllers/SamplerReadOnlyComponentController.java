@@ -41,7 +41,7 @@ public class SamplerReadOnlyComponentController {
 
     @FXML
     private void onTextChanged(ActionEvent actionEvent) {
-        ComponentItem componentItem = new ComponentItem(textTextField.getText(), null);
+        ComponentItem componentItem = new ComponentItem(textTextField.getText(), null, null);
         readOnlyComponentControl.setValue(componentItem);
     }
 
