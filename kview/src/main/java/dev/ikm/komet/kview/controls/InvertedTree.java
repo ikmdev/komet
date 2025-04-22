@@ -1,7 +1,13 @@
 package dev.ikm.komet.kview.controls;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 /**
@@ -210,4 +216,79 @@ public class InvertedTree {
         iterateTree(this, tree -> depth = Math.max(tree.getLevel(), depth));
         return depth;
     }
+
+    /**
+     * <p>For this inverted tree, with root in a given ConceptITem, and children
+     * all its ancestors, until the rootNid is reached, gets the all the possible
+     * routes of conceptItems, starting from the direct parents, until the rootNid,
+     * returning a sorted map of routes, from shorter to larger, collected in lists.
+     * </p>
+     * <p>For instance, for the InvertedTree at D, which is part of the lineages A-B-C-D,
+     * A-B-E-F-D and A-G-D:</p>
+     * <pre><code>
+     *     A --- B --- C --- D
+     *      \     \
+     *       \      E --- F -- D
+     *        G --- D
+     * </code></pre>
+     * </p>
+     * <p>then the lineage map for D is:
+     * <pre><code>
+     *     0, [A, G]
+     *     1, [A, B, C]
+     *     2, [A, B, E, F]
+     * </code></pre>
+     * </p>
+     * @return a map with lists of lineages from rootNid to the parents of this item,
+     * sorted from shorter to larger lineages.
+     */
+    public Map<Integer, List<ConceptItem>> getLineageMap() {
+        Map<Integer, List<ConceptItem>> map = new HashMap<>();
+        flatInvertedTree(new AtomicInteger(), map);
+        return map.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.comparingInt(List::size)))
+                .collect(LinkedHashMap::new,
+                        (m, e) -> m.put(e.getKey(), e.getValue().reversed()),
+                        LinkedHashMap::putAll);
+    }
+
+    /**
+     * <p>Recursive method that creates an unsorted map of inverted lineages, that span from the root
+     * conceptItem of this inverted tree, until the rootNid is reached.
+     * </p>
+     * <p>For instance, for the InvertedTree at D, which is part of the lineages A-B-C-D,
+     * A-B-E-F-D and A-G-D:</p>
+     * <pre><code>
+     *     A --- B --- C --- D
+     *      \     \
+     *       \      E --- F -- D
+     *        G --- D
+     * </code></pre>
+     * </p>
+     * <p>then the unsorted lineage map for D is:
+     * <pre><code>
+     *     0, [C, B, A]
+     *     1, [F, E, B, A]
+     *     2, [G, A]
+     * </code></pre>
+     * </p>
+     * @param route an {@link AtomicInteger} to define the map keys, as indices for the different lineages.
+     * @param map an unsorted {@link Map} of list of inverted lineages.
+     */
+    private void flatInvertedTree(AtomicInteger route, Map<Integer, List<ConceptItem>> map) {
+        for (int i = 0; i < children.size(); i++) {
+            InvertedTree tree = children.get(i);
+            int thisRoute = route.get();
+            List<ConceptItem> conceptItems = map.computeIfAbsent(thisRoute, _ ->
+                    new ArrayList<>(thisRoute > 0 ? map.get(thisRoute - 1).stream().limit(getLevel()).toList() : List.of()));
+            conceptItems.add(tree.item);
+            map.put(thisRoute, conceptItems);
+            tree.flatInvertedTree(route, map);
+            if (i < children.size() - 1) {
+                // next sibling opens a new route, that already includes the items of the previous ancestors until here:
+                route.getAndIncrement();
+            }
+        }
+    }
+
 }

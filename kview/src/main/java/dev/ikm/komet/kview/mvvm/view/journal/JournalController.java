@@ -72,10 +72,11 @@ import dev.ikm.komet.framework.tabs.TabGroup;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.NotificationPopup;
-import dev.ikm.komet.kview.controls.SearchControl;
+import dev.ikm.komet.kview.controls.KLSearchControl;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
@@ -880,15 +881,14 @@ public class JournalController {
      */
     public void loadConceptNavigatorPanel(ViewProperties viewProperties) {
         Navigator navigator = new ViewNavigator(viewProperties.nodeView());
-        SearchControl searchControl = new SearchControl();
-
+        KLSearchControl searchControl = new KLSearchControl();
         searchControl.setOnAction(_ -> {
             ViewCalculator calculator = viewProperties.calculator();
             searchControl.setResultsPlaceholder("Searching..."); // DUMMY, resources?
             TinkExecutor.threadPool().execute(() -> {
                 try {
                     List<LatestVersionSearchResult> results = calculator.search(searchControl.getText(), 1000).toList();
-                    List<SearchControl.SearchResult> searchResults = new ArrayList<>();
+                    List<KLSearchControl.SearchResult> searchResults = new ArrayList<>();
                     results.stream()
                             .filter(result -> result.latestVersion().isPresent())
                             .forEach(result -> {
@@ -896,15 +896,15 @@ public class JournalController {
                                 searchResults.addAll(
                                         Entity.getConceptForSemantic(semantic.nid()).map(entity -> {
                                             int[] parentNids = navigator.getParentNids(entity.nid());
-                                            List<SearchControl.SearchResult> list = new ArrayList<>();
+                                            List<KLSearchControl.SearchResult> list = new ArrayList<>();
                                             if (parentNids != null) {
                                                 // Add one search result per parent
                                                 for (int parentNid : parentNids) {
                                                     ConceptFacade parent = Entity.getFast(parentNid);
-                                                    list.add(new SearchControl.SearchResult(parent, entity, searchControl.getText()));
+                                                    list.add(new KLSearchControl.SearchResult(parent, entity, searchControl.getText()));
                                                 }
                                             } else {
-                                                list.add(new SearchControl.SearchResult(null, entity, searchControl.getText()));
+                                                list.add(new KLSearchControl.SearchResult(null, entity, searchControl.getText()));
                                             }
                                             return list;
                                         })
@@ -912,7 +912,7 @@ public class JournalController {
                             });
 
                     // NOTE: different semanticIds can give the same entity, remove duplicates
-                    List<SearchControl.SearchResult> distinctResults = searchResults.stream().distinct().toList();
+                    List<KLSearchControl.SearchResult> distinctResults = searchResults.stream().distinct().toList();
                     Platform.runLater(() -> {
                         searchControl.setResultsPlaceholder(null);
                         searchControl.resultsProperty().addAll(distinctResults);
@@ -937,6 +937,9 @@ public class JournalController {
                 populateWorkspaceWithSelection(items.stream()
                         .map(item -> item.publicId().asUuidArray())
                         .toList()));
+        searchControl.setOnLongHover(conceptNavigatorControl::expandAndHighlightConcept);
+        searchControl.setOnSearchResultClick(_ -> conceptNavigatorControl.unhighlightConceptsWithDelay());
+        searchControl.setOnClearSearch(_ -> ConceptNavigatorUtils.resetConceptNavigator(conceptNavigatorControl));
 
         VBox nodePanel = new VBox(searchControl, conceptNavigatorControl);
         nodePanel.getStyleClass().add("concept-navigator-container");
