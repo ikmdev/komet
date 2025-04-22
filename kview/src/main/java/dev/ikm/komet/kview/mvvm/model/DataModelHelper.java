@@ -409,7 +409,9 @@ public class DataModelHelper {
                                             Session session,
                                             boolean commitFlag) {
         EntityProxy patternProxy = pattern.toProxy();
-        Latest<SemanticEntityVersion> semanticEntityVersionLatest = KlFieldHelper.retrieveCommittedLatestVersion(semantic, viewProperties);
+        ObservableSemantic observableSemantic = ObservableEntity.get(semantic.nid());
+        ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
+        Latest<SemanticEntityVersion> semanticEntityVersionLatest = KlFieldHelper.retrieveCommittedLatestVersion(viewProperties.calculator().stampCalculator().latest(semantic.nid()), observableSemanticSnapshot);
         session.compose((SemanticAssembler semanticAssembler) -> {
                     semanticAssembler
                             .semantic(semantic.toProxy())

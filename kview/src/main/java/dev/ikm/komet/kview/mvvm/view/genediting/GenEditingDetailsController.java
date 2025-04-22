@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
+import static dev.ikm.komet.framework.observable.ObservableEntity.updateVersions;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_ADD_REFERENCE_SEMANTIC_FIELD;
@@ -50,7 +51,11 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
@@ -68,8 +73,9 @@ import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -101,6 +107,7 @@ import org.carlfx.cognitive.loader.NamedVm;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,6 +117,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -206,6 +214,10 @@ public class GenEditingDetailsController {
 
     private Latest<SemanticEntityVersion> semanticEntityVersionLatest;
 
+    ObservableSemantic observableSemantic;
+
+    ObservableSemanticSnapshot observableSemanticSnapshot;
+
     public GenEditingDetailsController() {
     }
 
@@ -234,32 +246,37 @@ public class GenEditingDetailsController {
 
             // create empty semantic for the pattern and set it in the view model
             genEditingViewModel.setPropertyValue(SESSION, session);
-            semantic = DataModelHelper.createEmptySemantic(getViewProperties(), pattern,session);
+            semantic = DataModelHelper.createEmptySemantic(getViewProperties(), pattern, session);
 
             genEditingViewModel.setPropertyValue(SEMANTIC, semantic);
         } else {
             genEditingViewModel.setPropertyValue(MODE, EDIT);
         }
+
         StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
         LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
-        if (semantic != null) {
-            //retrieve latest semanticVersion
-            semanticEntityVersionLatest = retrieveCommittedLatestVersion(semantic, getViewProperties());
-            semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
-                Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
-                patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
-                    String meaning = languageCalculator.getDescriptionText(patternEntityVersion.semanticMeaningNid()).orElse("No Description");
-                    String purpose = languageCalculator.getDescriptionText(patternEntityVersion.semanticPurposeNid()).orElse("No Description");
-                    semanticMeaningText.setText(meaning);
-                    semanticPurposeText.setText(purpose);
-
-                    String patternFQN = getViewProperties().calculator().languageCalculator()
-                            .getFullyQualifiedDescriptionTextWithFallbackOrNid(patternEntityVersion.nid());
-                    semanticDescriptionLabel.setText("Semantic for %s".formatted(patternFQN));
-                    semanticTitleText.setText("%s of component for %s in %s".formatted(meaning, purpose, patternFQN));
-                });
-            });
+        observableSemantic = ObservableEntity.get(semantic.nid());
+        updateVersions(Entity.getFast(observableSemantic.nid()), observableSemantic);
+        observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+        //retrieve latest committed semanticVersion
+        semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
+        if(semanticEntityVersionLatest.get().stamp().lastVersion().uncommitted()){
+            semanticEntityVersionLatest = retrieveCommittedLatestVersion(semanticEntityVersionLatest, observableSemanticSnapshot);
         }
+        semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
+            Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
+            patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
+                String meaning = languageCalculator.getDescriptionText(patternEntityVersion.semanticMeaningNid()).orElse("No Description");
+                String purpose = languageCalculator.getDescriptionText(patternEntityVersion.semanticPurposeNid()).orElse("No Description");
+                semanticMeaningText.setText(meaning);
+                semanticPurposeText.setText(purpose);
+
+                String patternFQN = getViewProperties().calculator().languageCalculator()
+                        .getFullyQualifiedDescriptionTextWithFallbackOrNid(patternEntityVersion.nid());
+                semanticDescriptionLabel.setText("Semantic for %s".formatted(patternFQN));
+                semanticTitleText.setText("%s of component for %s in %s".formatted(meaning, purpose, patternFQN));
+            });
+        });
 
         // Setup Stamp section
         setupStampPopup(semanticEntityVersionLatest);
@@ -287,11 +304,12 @@ public class GenEditingDetailsController {
 
         //Set up the Listener to refresh the details area (After user hits submit button on the right side)
         EntityFacade finalSemantic = semantic;
+        Latest<SemanticEntityVersion> latestSemanticEntityVersion = getViewProperties().calculator().stampCalculator().latest(semantic.nid());
         Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
             if (evt.getEventType() == GenEditingEvent.PUBLISH && evt.getNid() == finalSemantic.nid()) {
                 if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
                     // populate the semantic and its observable fields once saved
-                    semanticEntityVersionLatest = retrieveCommittedLatestVersion(finalSemantic, getViewProperties());
+                    semanticEntityVersionLatest = retrieveCommittedLatestVersion(latestSemanticEntityVersion, observableSemantic.getSnapshot(getViewProperties().calculator()));
 
                     // clear out the temporary placeholders
                     semanticDetailsVBox.getChildren().clear();
@@ -324,13 +342,38 @@ public class GenEditingDetailsController {
                 GenEditingEvent.class, refreshSubscriber);
     }
 
+    private void loadUIData() {
+        nodes.clear();
+        if (semanticEntityVersionLatest.isPresent()) {
+            observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+            ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
+            if (observableSemanticVersionImmutableList.isEmpty()) {
+                observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
+            } else {
+                //Cast to mutable list
+                List<ObservableSemanticVersion> observableSemanticVersionList = new ArrayList<>(observableSemanticVersionImmutableList.castToList());
+                //filter list to have only the latest semantic version passed as argument and remove rest of the entries.
+                observableSemanticVersionList.removeIf(p -> !semanticEntityVersionLatest.stampNids().contains(p.stampNid()));
+                if (observableSemanticVersionList.isEmpty()) {
+                    observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
+                } else {
+                    ObservableSemanticVersion observableSemanticVersion = observableSemanticVersionList.getFirst();
+                    Latest<PatternEntityVersion> latestPatternEntityVersion = getViewProperties().calculator().latestPatternEntityVersion(observableSemanticVersion.patternNid());
+                    // Populate the Semantic Details
+                    // Displaying editable controls and populating the observable fields array list.
+                    observableFields.addAll((Collection) observableSemanticVersion.fields(latestPatternEntityVersion.get()));
+                }
+            }
+            observableFields.forEach(observableField -> {
+                // disable calling writeToData method of observable field by setting refresh flag to true.
+                FieldRecord<?> fieldRecord = observableField.field();
+                nodes.add(KlFieldHelper.generateNode(fieldRecord, observableField, getViewProperties(), semanticEntityVersionLatest, false));
+            });
+        }
+    }
     private void setUpObservables() {
         // populate the observable fields and nodes for this semantic
-        observableFields.addAll(KlFieldHelper
-                .generateObservableFieldsAndNodes(getViewProperties(),
-                        nodes,
-                        semanticEntityVersionLatest, false));
-
+        loadUIData();
         // function to apply for the components' edit action (a.k.a. right click > Edit)
         BiFunction<KLReadOnlyBaseControl, Integer, Runnable> editAction = (readOnlyBaseControl, fieldIndex) ->
                 () -> {

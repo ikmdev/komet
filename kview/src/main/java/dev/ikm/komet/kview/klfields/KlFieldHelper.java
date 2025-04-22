@@ -6,7 +6,6 @@ import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
-import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -36,7 +35,6 @@ import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.Node;
@@ -101,7 +99,7 @@ public class KlFieldHelper {
         } else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.FLOAT.nid()) {
             KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
             node = klFloatFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
-        } else if (dataTypeNid == TinkarTerm.INTEGER_FIELD.nid()) {
+        } else if (dataTypeNid == INTEGER_FIELD.nid()) {
             KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
             node = klIntegerFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
         } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
@@ -169,27 +167,15 @@ public class KlFieldHelper {
      *
      * @return entityVersionLatest
      * */
-    public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(EntityFacade entityFacade, ViewProperties viewProperties) {
+    public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(Latest<SemanticEntityVersion> semanticEntityVersionLatest, ObservableSemanticSnapshot observableSemanticSnapshot) {
         AtomicReference<Latest<SemanticEntityVersion>> entityVersionLatest = new AtomicReference<>();
-
-        StampCalculator stampCalculator = viewProperties.calculator().stampCalculator();
-        //retrieve latest semanticVersion
-        Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(entityFacade.nid());
-        if(semanticEntityVersionLatest.get().stamp().time() != Long.MAX_VALUE){
-            return semanticEntityVersionLatest;
-        }
-        ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
-        ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
         //Get list of previously committed data sorted in latest at the top.
         ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
         // Filter out Uncommitted data. Data whose time stamp parameter is Long.MAX_VALUE. and get the 1st available.
         Optional<ObservableSemanticVersion> observableSemanticVersionOptional = observableSemanticVersionImmutableList.stream().filter(p -> p.stamp().time() != Long.MAX_VALUE).findFirst();
-
         observableSemanticVersionOptional.ifPresentOrElse( (p) -> {
             entityVersionLatest.set(new Latest<>(p));
         }, () -> {entityVersionLatest.set(semanticEntityVersionLatest);});
-
-
         return entityVersionLatest.get();
     }
 

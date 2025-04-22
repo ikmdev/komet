@@ -15,19 +15,31 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import static dev.ikm.komet.framework.events.EntityVersionChangeEvent.VERSION_UPDATED;
+import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
+import dev.ikm.komet.framework.events.EntityVersionChangeEvent;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.tinkar.collection.ConcurrentReferenceHashMap;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.util.broadcast.Subscriber;
+import dev.ikm.tinkar.component.FieldDataType;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.ConceptRecord;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.PatternEntity;
+import dev.ikm.tinkar.entity.PatternRecord;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticRecord;
+import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.StampRecord;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
-import dev.ikm.tinkar.collection.ConcurrentReferenceHashMap;
-import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.common.service.PrimitiveData;
-import dev.ikm.tinkar.common.util.broadcast.Subscriber;
-import dev.ikm.tinkar.component.FieldDataType;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.*;
 import org.eclipse.collections.api.map.ImmutableMap;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -42,12 +54,16 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         implements Entity<O>, ObservableComponent
         permits ObservableConcept, ObservablePattern, ObservableSemantic, ObservableStamp {
 
-    protected static final ConcurrentReferenceHashMap<PublicId, ObservableEntity> SINGLETONS =
-            new ConcurrentReferenceHashMap<>(ConcurrentReferenceHashMap.ReferenceType.WEAK,
-                    ConcurrentReferenceHashMap.ReferenceType.WEAK);
-    private static final EntityChangeSubscriber ENTITY_CHANGE_SUBSCRIBER = new EntityChangeSubscriber();
+    /**
+     * The concurrent reference map whose reference type is SOFT.
+     * TODO revisit reference type (WEAK vs SOFT)
+     */
+    protected static final ConcurrentReferenceHashMap<Integer, ObservableEntity> SINGLETONS =
+            new ConcurrentReferenceHashMap<>(ConcurrentReferenceHashMap.ReferenceType.SOFT,
+                    ConcurrentReferenceHashMap.ReferenceType.SOFT);
+    private final EntityChangeSubscriber ENTITY_CHANGE_SUBSCRIBER = new EntityChangeSubscriber();
 
-    static {
+    {
         Entity.provider().addSubscriberWithWeakReference(ENTITY_CHANGE_SUBSCRIBER);
     }
 
@@ -55,6 +71,18 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
 
     final private AtomicReference<Entity<V>> entityReference;
 
+    /**
+     * Saves the uncommited entity version to the DB and fires event (VERSION_UPDATED).
+     * it also adds the version to the versionProperty list.
+     * @param analogue the entity record
+     * @param newVersionRecord entity version record
+     */
+    public void saveToDB(Entity<?> analogue, EntityVersion newVersionRecord ) {
+        Entity.provider().putEntity(analogue);
+        versionProperty.add(wrap((V)newVersionRecord));
+        EvtBusFactory.getDefaultEvtBus()
+                .publish(VERSION_CHANGED_TOPIC, new EntityVersionChangeEvent(this, VERSION_UPDATED, newVersionRecord));
+    }
 
     ObservableEntity(Entity<V> entity) {
         Entity<V> entityClone = switch (entity) {
@@ -88,9 +116,12 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
 
     public static <OE extends ObservableEntity> OE get(Entity<? extends EntityVersion> entity) {
         if (entity instanceof ObservableEntity) {
+            ObservableEntity observableEntity = (ObservableEntity) entity;
+            updateVersions(observableEntity.entity(), observableEntity);
             return (OE) entity;
         }
-        ObservableEntity observableEntity = SINGLETONS.computeIfAbsent(entity.publicId(), publicId ->
+
+        ObservableEntity observableEntity = SINGLETONS.computeIfAbsent(entity.nid(), publicId ->
                 switch (entity) {
                     case ConceptEntity conceptEntity -> new ObservableConcept(conceptEntity);
                     case PatternEntity patternEntity -> new ObservablePattern(patternEntity);
@@ -98,16 +129,15 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
                     case StampEntity stampEntity -> new ObservableStamp(stampEntity);
                     default -> throw new UnsupportedOperationException("Can't handle: " + entity);
                 });
-        if (!Platform.isFxApplicationThread()) {
-            Platform.runLater(() -> updateVersions(entity, observableEntity));
-        } else {
-            updateVersions(entity, observableEntity);
-        }
-
         return (OE) observableEntity;
     }
 
-    private static void updateVersions(Entity<? extends EntityVersion> entity, ObservableEntity observableEntity) {
+    /**
+     * updates the versions in the versionProperty list.
+     * @param entity
+     * @param observableEntity
+     */
+    public static void updateVersions(Entity<? extends EntityVersion> entity, ObservableEntity observableEntity) {
         if (!((Entity) observableEntity.entityReference.get()).versions().equals(entity.versions())) {
             observableEntity.entityReference.set(entity);
             observableEntity.versionProperty.clear();
@@ -174,12 +204,11 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         throw new UnsupportedOperationException();
     }
 
-    public static class EntityChangeSubscriber implements Subscriber<Integer> {
+    private class EntityChangeSubscriber implements Subscriber<Integer> {
 
         @Override
         public void onNext(Integer nid) {
             // Do nothing with item, but request another...
-
             if (SINGLETONS.containsKey(PrimitiveData.publicId(nid))) {
                 Platform.runLater(() -> {
                     get(Entity.getFast(nid));
