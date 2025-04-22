@@ -113,7 +113,9 @@ public class SemanticFieldsController {
             disabled = (committedHash == uncommittedHash);
         }
         submitButton.setDisable(disabled);
-        if(!submitButton.isDisabled()){
+
+        //TODO move this logic to a better place. This is temp working solution.
+        if (!submitButton.isDisabled()) {
             Session session = genEditingViewModel.getPropertyValue(SESSION);
             if(session == null){
                 Composer composer =  genEditingViewModel.getPropertyValue(COMPOSER);
