@@ -63,7 +63,7 @@ public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KL
 
         contextMenu.getItems().addAll(
                 new SeparatorMenuItem(),
-                createMenuItem("Remove", KometIcon.IconValue.TRASH, this::fireOnRmoveAction)
+                createMenuItem("Remove", KometIcon.IconValue.TRASH, this::fireOnRemoveAction)
         );
     }
 }
