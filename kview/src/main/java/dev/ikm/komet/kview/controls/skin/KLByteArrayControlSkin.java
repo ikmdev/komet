@@ -203,7 +203,7 @@ public class KLByteArrayControlSkin extends SkinBase<KLByteArrayControl> {
         double y = contentY + padding.getTop();
         double spacing = 5;
         titleLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
-        y += labelPrefHeight + spacing;
+        y += labelPrefHeight + KLComponentListControlSkin.SPACE_BETWEEN_COMPONENTS;
         if (fileContainer.isVisible()) {
             double containerHeight = fileContainer.prefHeight(-1);
             fileContainer.resizeRelocate(x, y, contentWidth, containerHeight);

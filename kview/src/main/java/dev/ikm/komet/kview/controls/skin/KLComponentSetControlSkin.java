@@ -109,7 +109,7 @@ public class KLComponentSetControlSkin extends SkinBase<KLComponentSetControl> {
         double x = contentX + padding.getLeft();
         double y = contentY + padding.getTop();
         titleLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
-        y += labelPrefHeight;
+        y += labelPrefHeight + KLComponentListControlSkin.SPACE_BETWEEN_COMPONENTS;
         double spacing = 10;
         for (KLComponentControl componentControl : getChildren().stream()
                 .filter(KLComponentControl.class::isInstance)

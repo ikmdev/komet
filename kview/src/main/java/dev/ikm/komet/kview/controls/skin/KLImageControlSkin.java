@@ -7,9 +7,11 @@ import javafx.beans.binding.StringBinding;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
 import javafx.scene.control.SkinBase;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -56,8 +58,12 @@ public class KLImageControlSkin extends SkinBase<KLImageControl> {
 
         getChildren().add(mainContainer);
 
+        var horizontalSeparator = new Separator(Orientation.HORIZONTAL);
+        horizontalSeparator.setPrefHeight(KLComponentListControlSkin.SPACE_BETWEEN_COMPONENTS);
+
         mainContainer.getChildren().addAll(
                 titleLabel,
+                horizontalSeparator,
                 imageContainer,
                 attachImageButtonContainer
         );

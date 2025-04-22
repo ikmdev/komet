@@ -8,7 +8,6 @@ import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.beans.binding.Bindings;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
@@ -22,6 +21,7 @@ import org.eclipse.collections.api.factory.primitive.IntLists;
 import org.eclipse.collections.api.list.primitive.MutableIntList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +34,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
     private static final Logger LOG = LoggerFactory.getLogger(KLComponentListControlSkin.class);
 
-    private final static double SPACE_BETWEEN_COMPONENTS = 10;
+    public final static double SPACE_BETWEEN_COMPONENTS = 10;
     private final static double SPACE_BETWEEN_NUMBER_AND_CONTROL = 5;
 
     private final Label titleLabel;
@@ -297,7 +297,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         double x = contentX + padding.getLeft();
         double y = contentY + padding.getTop();
         titleLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
-        y += labelPrefHeight;
+        y += labelPrefHeight + KLComponentListControlSkin.SPACE_BETWEEN_COMPONENTS;
 
         int labelNumber = 1;
         int index = 0;
