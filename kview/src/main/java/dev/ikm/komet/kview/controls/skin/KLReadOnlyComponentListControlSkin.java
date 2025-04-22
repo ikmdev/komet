@@ -7,8 +7,6 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 
-import java.util.function.Consumer;
-
 public class KLReadOnlyComponentListControlSkin extends KLReadOnlyMultiComponentControlSkin<KLReadOnlyComponentListControl> {
 
     private static final String EDIT_MENU_ITEM_LABEL = "Edit List";
