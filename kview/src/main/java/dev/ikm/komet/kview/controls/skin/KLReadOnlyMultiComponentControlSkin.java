@@ -107,7 +107,7 @@ public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMu
 
         // Populate Concept
         MenuItem populateMenuItem = createMenuItem(POPULATE_CONCEPT_MENU_ITEM_LABEL, KometIcon.IconValue.POPULATE,
-                actionEvent -> this.fireOnPopulateAction(actionEvent, componentItem));
+                actionEvent -> this.fireOnPopulateAction(actionEvent, componentItem.getNid()));
 
         // Populate and Edit
         contextMenu.getItems().addAll(
@@ -157,11 +157,9 @@ public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMu
         }
     }
 
-    protected void fireOnPopulateAction(ActionEvent actionEvent, ComponentItem componentItem) {
-        EntityFacade entityFacade = EntityService.get().getEntityFast(componentItem.getNid());
-        if (entityFacade instanceof ConceptEntity conceptEntity) {
-            EvtBusFactory.getDefaultEvtBus().publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
-                    MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
+    protected void fireOnPopulateAction(ActionEvent actionEvent, Integer nid) {
+        if (getSkinnable().getOnPopulateAction() != null) {
+            getSkinnable().getOnPopulateAction().accept(nid);
         }
     }
 }
