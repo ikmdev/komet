@@ -313,6 +313,7 @@ public class GenEditingDetailsController {
 
                     // clear out the temporary placeholders
                     semanticDetailsVBox.getChildren().clear();
+                    nodes.clear();
 
                     // set up the real observables now that the semantic has been created
                     setUpObservables();
@@ -333,7 +334,9 @@ public class GenEditingDetailsController {
                         //}
                     }
                 }
-            }
+            } /*else if (evt.getEventType() == REFERENCE_COMPONENT_CHANGED_EVENT) {
+                setupReferenceComponentUI(semanticEntityVersionLatest);
+            }*/
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, refreshSubscriber);
