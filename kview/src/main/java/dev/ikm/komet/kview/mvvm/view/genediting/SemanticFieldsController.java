@@ -113,6 +113,16 @@ public class SemanticFieldsController {
             disabled = (committedHash == uncommittedHash);
         }
         submitButton.setDisable(disabled);
+        if(!submitButton.isDisabled()){
+            Session session = genEditingViewModel.getPropertyValue(SESSION);
+            if(session == null){
+                Composer composer =  genEditingViewModel.getPropertyValue(COMPOSER);
+                SemanticEntityVersion semanticEntityVersion = (SemanticEntityVersion) getViewProperties().calculator().latest(observableSemantic.nid()).get();
+                StampEntity stamp = semanticEntityVersion.stamp();
+                session = composer.open(stamp.state(), stamp.author().toProxy(), stamp.module().toProxy(), stamp.path().toProxy());
+                genEditingViewModel.setPropertyValue(SESSION, session);
+            }
+        }
     }
 
     /**
@@ -184,15 +194,6 @@ public class SemanticFieldsController {
                     observableField.valueProperty().set(values.get(i));
                     observableField.autoSaveOn();
                 }
-            }
-
-            Session session = genEditingViewModel.getPropertyValue(SESSION);
-            if(session == null){
-                Composer composer =  genEditingViewModel.getPropertyValue(COMPOSER);
-                SemanticEntityVersion semanticEntityVersion = (SemanticEntityVersion) getViewProperties().calculator().latest(semantic.nid()).get();
-                StampEntity stamp = semanticEntityVersion.stamp();
-                session = composer.open(stamp.state(), stamp.author().toProxy(), stamp.module().toProxy(), stamp.path().toProxy());
-                genEditingViewModel.setPropertyValue(SESSION, session);
             }
             enableDisableSubmitButton();
         };
