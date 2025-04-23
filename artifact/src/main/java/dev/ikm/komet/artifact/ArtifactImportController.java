@@ -33,10 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
 import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent.GLOBAL_REFRESH;
 
@@ -116,8 +113,8 @@ public class ArtifactImportController {
 
         importProgressBar.progressProperty().unbind();
         importProgressBar.progressProperty().bind(importTask.progressProperty());
-        Future future =  ProgressHelper.progress(importTask, "Cancel Import");
 
+        Future future =  ProgressHelper.progress(importTask, "Cancel Import");
         try {
             Thread.sleep(5000);
         } catch (InterruptedException e) {
