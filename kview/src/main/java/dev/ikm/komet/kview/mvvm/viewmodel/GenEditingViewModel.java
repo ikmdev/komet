@@ -62,6 +62,9 @@ public class GenEditingViewModel extends FormViewModel {
     public static String COMPOSER = "composer";
     public static String SESSION = "session";
 
+    // store the hash of the default values
+    public static String DEFAULT_FIELDS_HASH = "defaultFieldsHash";
+
     public GenEditingViewModel() {
         super();
         addProperty(VIEW_PROPERTIES, (ViewProperties) null)
@@ -75,6 +78,7 @@ public class GenEditingViewModel extends FormViewModel {
                 .addProperty(FIELD_INDEX, Integer.valueOf(-1))
                 .addProperty(COMPOSER, (Composer) null)
                 .addProperty(SESSION, (Session) null)
+                .addProperty(DEFAULT_FIELDS_HASH, (Integer) null)
         ;
     }
 
