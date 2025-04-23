@@ -238,14 +238,11 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         EventHandler<MouseEvent> onMouseMoved = mouseEvent -> {
             if (mouseEvent.getTarget() == componentControl) {
                 componentControl.setVisible(true);
-            } else {
-                componentControl.setVisible(false);
             }
         };
 
         componentControl.addEventHandler(MouseEvent.DRAG_DETECTED, _ -> {
             componentControl.setVisible(false);
-            componentControl.addEventHandler(MouseEvent.MOUSE_MOVED, onMouseMoved);
         });
 
         componentControl.addEventHandler(DragEvent.DRAG_DONE, _ -> {
