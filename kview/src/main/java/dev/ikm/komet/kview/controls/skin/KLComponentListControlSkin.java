@@ -8,7 +8,6 @@ import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.beans.binding.Bindings;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
@@ -22,6 +21,7 @@ import org.eclipse.collections.api.factory.primitive.IntLists;
 import org.eclipse.collections.api.list.primitive.MutableIntList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +38,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
     private final static double SPACE_BETWEEN_NUMBER_AND_CONTROL = 5;
 
     private final Label titleLabel;
+    private final Line topDropLine;
     private final Button addEntryButton;
 
     /**
@@ -70,6 +71,8 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         titleLabel = new Label();
         titleLabel.getStyleClass().add("title-label");
         titleLabel.textProperty().bind(control.titleProperty());
+
+        topDropLine = createDropLine(null);
 
         // Create component controls based on this control's values
         control.getValue().forEach(nid -> {
@@ -123,13 +126,18 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
                 currentDropIndex = componentIndex;
 
-                if (componentIndex >= 1) {
+                LOG.info("updateDropTargetLocation() currentDropIndex: {}", currentDropIndex);
+
+                if (componentIndex == 0) {
+                    // show the top drop line
+                    currentDropLine = componentToDropLine.get(null);
+                    currentDropLine.setVisible(true);
+                    currentDropIndex = 0;
+                } else {
                     KLComponentControl previousComponentControl = componentControls.get(componentIndex - 1);
 
                     currentDropLine = componentToDropLine.get(previousComponentControl);
                     currentDropLine.setVisible(true);
-                } else {
-                    currentDropLine = null;
                 }
 
                 if (previousDropLine != null && previousDropLine != currentDropLine) {
@@ -156,6 +164,8 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
         mutableList.remove(componentNid);
         mutableList.addAtIndex(currentDropIndex, componentNid);
+
+        LOG.info("onDragDropped() currentDropIndex: {}", currentDropIndex);
 
         componentControls.remove(componentControl);
         componentControls.add(currentDropIndex, componentControl);
@@ -245,13 +255,15 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         getSkinnable().requestLayout();
     }
 
-    private void createDropLine(KLComponentControl componentControl) {
+    private Line createDropLine(KLComponentControl componentControl) {
         Line dropLine = new Line();
         dropLine.getStyleClass().add("drop-line");
-        componentToDropLine.put(componentControl, dropLine);
         dropLine.setVisible(false);
 
+        componentToDropLine.put(componentControl, dropLine);
         getChildren().add(dropLine);
+
+        return dropLine;
     }
 
     private Label createNumberLabel(KLComponentControl componentControl) {
@@ -299,6 +311,10 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         titleLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
         y += labelPrefHeight;
 
+        double topDropPanePreferredHeight = layoutTopDropPane(contentWidth, x, y, padding, contentX);
+
+        y += topDropPanePreferredHeight;
+
         int labelNumber = 1;
         int index = 0;
         for (; index < getSkinnable().getValue().size(); ++index) {
@@ -316,6 +332,22 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         double buttonPrefWidth = addEntryButton.prefWidth(-1);
         addEntryButton.resizeRelocate(contentWidth - buttonPrefWidth - padding.getRight(), y,
                                       buttonPrefWidth, addEntryButton.prefHeight(buttonPrefWidth));
+    }
+
+    private double layoutTopDropPane(double contentWidth, double x, double y, Insets padding, double dropLineX) {
+        double topDropPrefWidth = contentWidth - padding.getRight() - x;
+
+//        topDropPane.setBackground(new Background(new BackgroundFill(Color.BLUE, null, null)));
+//        topDropPane.resizeRelocate(x, y, topDropPrefWidth, KLComponentListControlSkin.SPACE_BETWEEN_COMPONENTS);
+
+        Line dropLine = componentToDropLine.get(null);
+
+        dropLine.setStartX(0);
+        dropLine.setStartY(y + SPACE_BETWEEN_COMPONENTS / 2d);
+        dropLine.setEndX(topDropPrefWidth);
+        dropLine.setEndY(y + SPACE_BETWEEN_COMPONENTS / 2d + 2);
+
+        return KLComponentListControlSkin.SPACE_BETWEEN_COMPONENTS;
     }
 
     /**
