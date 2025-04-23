@@ -111,6 +111,8 @@ public class SemanticFieldsController {
         boolean disabled = checkForEmptyFields();
         if (!disabled) {
             int uncommittedHash = calculteHashValue(observableFields);
+            // carve out in the logic so that when you are in create mode and the default values
+            // are exactly what they are then you are allowed to just save them as is
             if ((genEditingViewModel.getPropertyValue(MODE) == CREATE) &&
                 (Integer.valueOf(uncommittedHash).equals(genEditingViewModel.getPropertyValue(DEFAULT_FIELDS_HASH)))) {
                 disabled = false;
