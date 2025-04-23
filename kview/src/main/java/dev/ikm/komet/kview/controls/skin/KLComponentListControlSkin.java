@@ -247,7 +247,6 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
         componentControl.addEventHandler(DragEvent.DRAG_DONE, _ -> {
             componentControl.setVisible(true);
-            componentControl.removeEventHandler(MouseEvent.MOUSE_MOVED, onMouseMoved);
         });
 
         Label numberLabel = createNumberLabel(componentControl);
