@@ -116,21 +116,14 @@ public class ArtifactImportController {
 
         importProgressBar.progressProperty().unbind();
         importProgressBar.progressProperty().bind(importTask.progressProperty());
-        ProgressHelper.progress(importTask, "Cancel Import");
         Future future =  ProgressHelper.progress(importTask, "Cancel Import");
-        CompletableFuture.runAsync(() -> {
-            try {
-                LOG.info("Before future get()");
-                future.get();
-                LOG.info("After future get()");
-                EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC, new RefreshCalculatorCacheEvent(future, GLOBAL_REFRESH));
 
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (ExecutionException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC, new RefreshCalculatorCacheEvent(future, GLOBAL_REFRESH));
 
     }
 

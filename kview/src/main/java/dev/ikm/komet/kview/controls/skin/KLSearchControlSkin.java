@@ -1,7 +1,9 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.IconRegion;
-import dev.ikm.komet.kview.controls.SearchControl;
+import dev.ikm.komet.kview.controls.InvertedTree;
+import dev.ikm.komet.kview.controls.KLSearchControl;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -10,7 +12,10 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
+import javafx.scene.Scene;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -20,6 +25,7 @@ import javafx.scene.control.SkinBase;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Path;
@@ -30,7 +36,18 @@ import javafx.util.Subscription;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-public class SearchControlSkin extends SkinBase<SearchControl> {
+/**
+ * <p>Custom skin implementation for the {@link KLSearchControl}.
+ * </p>
+ * <p>This implementation takes care of adding a {@link TextField} as a search field for the user,
+ * with a clear button in it, a filter button and results area to display a
+ * {@link ListView<dev.ikm.komet.kview.controls.KLSearchControl.SearchResult>} with the
+ * search results, with a limited height. This area is only shown when the search field contains some text,
+ * the user has pressed ENTER and a search engine has performed a certain search, setting the results in
+ * the {@link KLSearchControl#resultsProperty()}.
+ * </p>
+ */
+public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
 
     private static final double SEARCH_RESULT_HEIGHT = 43; // 38 + 5
 
@@ -40,9 +57,22 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
     private final StackPane filterPane;
     private Subscription subscription;
 
-    private final ListView<SearchControl.SearchResult> resultsPane;
+    private final ListView<KLSearchControl.SearchResult> resultsPane;
 
-    public SearchControlSkin(SearchControl control) {
+    /**
+     * <p>Creates a {@link KLSearchControlSkin} instance.
+     * </p>
+     * <p>Create the {@link ListView<dev.ikm.komet.kview.controls.KLSearchControl.SearchResult>} instance, and
+     * provide a custom cell factory that uses a {@link SearchResultBox} instance for the graphic node.
+     * </p>
+     * <p>The list height is limited, and up until 4 search results will be visible.
+     * </p>
+     * <p>Adds bindings and listeners to perform the necessary actions based on the {@link KLSearchControl}
+     * properties.
+     * </p>
+     * @param control The control that this skin should be installed onto
+     */
+    public KLSearchControlSkin(KLSearchControl control) {
         super(control);
         ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.search-control");
 
@@ -76,7 +106,7 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
             }
 
             @Override
-            protected void updateItem(SearchControl.SearchResult item, boolean empty) {
+            protected void updateItem(KLSearchControl.SearchResult item, boolean empty) {
                 super.updateItem(item, empty);
                 if (item != null && !empty) {
                     searchResult.setSearchResult(item);
@@ -89,7 +119,7 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
         resultsPane.managedProperty().bind(resultsPane.visibleProperty());
         resultsPane.setVisible(false);
         resultsPane.setItems(control.resultsProperty());
-        control.resultsProperty().addListener((ListChangeListener<SearchControl.SearchResult>) _ -> {
+        control.resultsProperty().addListener((ListChangeListener<KLSearchControl.SearchResult>) _ -> {
             int itemCount = Math.max(1, Math.min(resultsPane.getItems().size(), 4));
             resultsPane.setPrefHeight(itemCount * SEARCH_RESULT_HEIGHT);
         });
@@ -103,6 +133,9 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
         closePane.getStyleClass().add("region");
         closePane.setOnMouseClicked(e -> {
             if (e.getButton() == MouseButton.PRIMARY) {
+                if (control.getOnClearSearch() != null) {
+                    control.getOnClearSearch().handle(new ActionEvent());
+                }
                 textField.clear();
                 resultsPane.getItems().clear();
                 resultsPane.setVisible(false);
@@ -145,8 +178,34 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
             resultsPane.setVisible(true);
             control.requestLayout();
         });
+
+        // Clicking anywhere outside the control, hides the resultsPane
+        EventHandler<MouseEvent> eventFilter = e -> {
+            Point2D point2D = new Point2D(e.getSceneX(), e.getSceneY());
+            if (resultsPane.isVisible() && !control.contains(control.sceneToLocal(point2D))) {
+                resultsPane.setVisible(false);
+            }
+        };
+        // install/uninstall event filter to the scene that holds the control
+        subscription = resultsPane.visibleProperty().subscribe((_, b) -> {
+            Scene scene = control.getScene();
+            if (scene != null) {
+                if (b) {
+                    scene.addEventFilter(MouseEvent.MOUSE_CLICKED, eventFilter);
+                } else {
+                    scene.removeEventFilter(MouseEvent.MOUSE_CLICKED, eventFilter);
+                }
+            }
+        });
+        // when clicking inside the textField, show resultsPane
+        textField.addEventHandler(MouseEvent.MOUSE_CLICKED, _ -> {
+            if (!resultsPane.getItems().isEmpty() && !resultsPane.isVisible()) {
+                resultsPane.setVisible(true);
+            }
+        });
     }
 
+    /** {@inheritDoc} **/
     @Override
     public void dispose() {
         if (subscription != null) {
@@ -160,11 +219,13 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
         super.dispose();
     }
 
+    /** {@inheritDoc} **/
     @Override
     protected double computeMinHeight(double width, double topInset, double rightInset, double bottomInset, double leftInset) {
         return computePrefHeight(width, topInset, rightInset, bottomInset, leftInset);
     }
 
+    /** {@inheritDoc} **/
     @Override
     protected double computePrefHeight(double width, double topInset, double rightInset, double bottomInset, double leftInset) {
         double prefHeight = textField.prefHeight(width) + snappedTopInset() + snappedBottomInset();
@@ -174,11 +235,13 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
         return prefHeight;
     }
 
+    /** {@inheritDoc} **/
     @Override
     protected double computeMaxHeight(double width, double topInset, double rightInset, double bottomInset, double leftInset) {
         return computePrefHeight(width, topInset, rightInset, bottomInset, leftInset);
     }
 
+    /** {@inheritDoc} **/
     @Override
     protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
         double x = snapPositionX(contentX);
@@ -208,21 +271,39 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
         }
     }
 
+    /**
+     * <p>Custom implementation of a {@link Pane} layout, to render the content of a
+     * {@link dev.ikm.komet.kview.controls.KLSearchControl.SearchResult}.
+     * </p>
+     * <p>This can be used to render search results in a {@link ListView} control.
+     * </p>
+     */
     static class SearchResultBox extends Pane {
 
         private static final PseudoClass LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("long-hover");
 
         private final Label parentDescriptionLabel;
         private final Label descriptionLabel;
-        private final SearchControl searchControl;
+        private final KLSearchControl searchControl;
         private Text actualDescriptionText;
         private String highlight;
         private PauseTransition hoverTransition;
         private Subscription subscription;
-        private SearchControl.SearchResult searchResult;
+        private KLSearchControl.SearchResult searchResult;
         private final StringProperty actualTextProperty;
 
-        public SearchResultBox(SearchControl searchControl) {
+        /**
+         * <p>Creates an instance of a {@link SearchResultBox}.
+         * </p>
+         * <p>A {@link Label} node is used on top with the {@link ConceptFacade#description()} of the parent concept.
+         * </p>
+         * <p>A {@link Label} node is used below with the {@link ConceptFacade#description()} of the concept found in
+         * the search, highlighting the occurrences of the {@link KLSearchControl#textProperty()}.
+         * </p>
+         * @param searchControl the {@link KLSearchControl} with a {@link ListView} control, that
+         *                      will use this box as graphic node for its cells.
+         */
+        public SearchResultBox(KLSearchControl searchControl) {
             this.searchControl = searchControl;
             subscription = Subscription.EMPTY;
 
@@ -253,10 +334,16 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
             getChildren().addAll(parentDescriptionLabel, descriptionLabel);
 
             getStyleClass().add("search-result");
-            getStylesheets().add(SearchControl.class.getResource("search-control.css").toExternalForm());
+            getStylesheets().add(KLSearchControl.class.getResource("search-control.css").toExternalForm());
         }
 
-        void setSearchResult(SearchControl.SearchResult result) {
+        /**
+         * <p>Update the content of this {@link SearchResultBox} with a new
+         * {@link dev.ikm.komet.kview.controls.KLSearchControl.SearchResult}
+         * </p>
+         * @param result a {@link dev.ikm.komet.kview.controls.KLSearchControl.SearchResult}
+         */
+        void setSearchResult(KLSearchControl.SearchResult result) {
             cleanup();
             this.searchResult = result;
             highlight = result.highlight().toLowerCase(Locale.ROOT);
@@ -271,15 +358,40 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
             subscription = subscription.and(hoverProperty().subscribe(h -> {
                 if (h) {
                     hoverTransition = new PauseTransition(new Duration(searchControl.getActivation()));
-                    hoverTransition.setOnFinished(_ -> pseudoClassStateChanged(LONG_HOVER_PSEUDO_CLASS, true));
+                    hoverTransition.setOnFinished(_ -> {
+                        pseudoClassStateChanged(LONG_HOVER_PSEUDO_CLASS, true);
+                        if (searchControl.getOnLongHover() != null) {
+                            searchControl.getOnLongHover().accept(new InvertedTree.ConceptItem(
+                                    searchResult.parentConcept().nid(),
+                                    searchResult.concept().nid(),
+                                    searchResult.parentConcept().description()));
+                        }
+                    });
                     hoverTransition.playFromStart();
                 } else if (hoverTransition != null) {
                     pseudoClassStateChanged(LONG_HOVER_PSEUDO_CLASS, false);
                     hoverTransition.stop();
                 }
             }));
+            setOnMouseClicked(_ -> {
+                if (searchControl.getOnSearchResultClick() != null) {
+                    searchControl.getOnSearchResultClick().accept(new InvertedTree.ConceptItem(
+                            searchResult.parentConcept().nid(),
+                            searchResult.concept().nid(),
+                            searchResult.parentConcept().description()));
+                }
+                searchControl.getChildrenUnmodifiable().stream()
+                        .filter(ListView.class::isInstance)
+                        .findFirst()
+                        .ifPresent(n -> n.setVisible(false));
+            });
         }
 
+        /**
+         * Since this {@link SearchResultBox} is reused in the cells of a listView, before a new
+         * {@link dev.ikm.komet.kview.controls.KLSearchControl.SearchResult} is set, this method performs
+         * necessary clean up operations.
+         */
         void cleanup() {
             pseudoClassStateChanged(LONG_HOVER_PSEUDO_CLASS, false);
             if (subscription != null) {
@@ -289,12 +401,10 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
                 hoverTransition.stop();
                 hoverTransition = null;
             }
-            if (actualDescriptionText != null) {
-                actualDescriptionText.setText(null);
-            }
             descriptionLabel.setTooltip(null);
         }
 
+        /** {@inheritDoc} **/
         @Override
         protected void layoutChildren() {
             super.layoutChildren();
@@ -305,6 +415,11 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
             descriptionLabel.resizeRelocate(snappedLeftInset(), snappedTopInset() + parentDescriptionLabel.getHeight() + 1, conceptWidth, descriptionLabel.prefHeight(conceptWidth));
         }
 
+        /**
+         * Find and add the background {@link Path} nodes to this {@link SearchResultBox}, highlighting
+         * the occurrences of the {@link KLSearchControl#textProperty()} in the
+         * {@link ConceptFacade#description()}.
+         */
         private void addHighlightPaths() {
             getChildren().removeIf(Path.class::isInstance);
             String text = actualTextProperty.get();
@@ -325,6 +440,11 @@ public class SearchControlSkin extends SkinBase<SearchControl> {
             }
         }
 
+        /**
+         * Uses the {@link Text#rangeShape(int, int)} API to get a {@link Path} that
+         * can be filled to define the background of a given segment of a {@link Label},
+         * simulating a highlighting effect.
+         */
         private void addBackgroundPath(int start, int end) {
             final Path path = new Path(actualDescriptionText.rangeShape(start, end));
             path.getStyleClass().add("highlight-path");

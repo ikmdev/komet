@@ -75,10 +75,11 @@ import dev.ikm.komet.framework.tabs.TabGroup;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.NotificationPopup;
-import dev.ikm.komet.kview.controls.SearchControl;
+import dev.ikm.komet.kview.controls.KLSearchControl;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
@@ -367,9 +368,9 @@ public class JournalController {
         makeConceptWindowEventSubscriber = evt -> {
             ConceptFacade conceptFacade = evt.getConceptFacade();
             if (evt.getEventType().equals(OPEN_CONCEPT_FROM_SEMANTIC)) {
-                makeConceptWindow(evt.getWindowView(), conceptFacade, SEMANTIC_ENTITY, null);
+                makeConceptWindow(conceptFacade, SEMANTIC_ENTITY, null);
             } else if (evt.getEventType().equals(OPEN_CONCEPT_FROM_CONCEPT)) {
-                makeConceptWindow(evt.getWindowView(), conceptFacade, NID_TEXT, null);
+                makeConceptWindow(conceptFacade, NID_TEXT, null);
             }
         };
         journalEventBus.subscribe(JOURNAL_TOPIC, MakeConceptWindowEvent.class, makeConceptWindowEventSubscriber);
@@ -535,7 +536,7 @@ public class JournalController {
                     if (dragAndDropType.equals(DragAndDropType.CONCEPT)) {
                         publicId = conceptFacade.publicId();
                         Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-                        makeConceptWindow(windowView, ConceptFacade.make(entity.nid()));
+                        makeConceptWindow(ConceptFacade.make(entity.nid()));
                     } else if (dragAndDropType.equals(DragAndDropType.PATTERN)) {
                         publicId = patternFacade.publicId();
                         makePatternWindow(patternFacade, windowView.makeOverridableViewProperties());
@@ -826,7 +827,7 @@ public class JournalController {
                 nidTextEnum = NID_TEXT;
                 Entity entity = Entity.getFast(nidTextRecord.nid());
                 if (entity instanceof ConceptFacade conceptFacade) {
-                    makeConceptWindow(windowView, conceptFacade, nidTextEnum, null);
+                    makeConceptWindow(conceptFacade, nidTextEnum, null);
                 } else if (entity instanceof PatternFacade patternFacade) {
                     makePatternWindow(patternFacade, getNavigatorNode().getViewProperties());
                 }
@@ -834,7 +835,7 @@ public class JournalController {
             } else if (treeItemValue instanceof SemanticEntityVersion semanticEntityVersion) {
                 nidTextEnum = SEMANTIC_ENTITY;
                 ConceptFacade conceptFacade = Entity.getConceptForSemantic(semanticEntityVersion.nid()).get();
-                makeConceptWindow(windowView, conceptFacade, nidTextEnum, null);
+                makeConceptWindow(conceptFacade, nidTextEnum, null);
             }
         };
         controller.getDoubleCLickConsumers().add(displayInDetailsView);
@@ -895,15 +896,14 @@ public class JournalController {
      */
     public void loadConceptNavigatorPanel(ViewProperties viewProperties) {
         Navigator navigator = new ViewNavigator(viewProperties.nodeView());
-        SearchControl searchControl = new SearchControl();
-
+        KLSearchControl searchControl = new KLSearchControl();
         searchControl.setOnAction(_ -> {
             ViewCalculator calculator = viewProperties.calculator();
             searchControl.setResultsPlaceholder("Searching..."); // DUMMY, resources?
             TinkExecutor.threadPool().execute(() -> {
                 try {
                     List<LatestVersionSearchResult> results = calculator.search(searchControl.getText(), 1000).toList();
-                    List<SearchControl.SearchResult> searchResults = new ArrayList<>();
+                    List<KLSearchControl.SearchResult> searchResults = new ArrayList<>();
                     results.stream()
                             .filter(result -> result.latestVersion().isPresent())
                             .forEach(result -> {
@@ -911,15 +911,15 @@ public class JournalController {
                                 searchResults.addAll(
                                         Entity.getConceptForSemantic(semantic.nid()).map(entity -> {
                                             int[] parentNids = navigator.getParentNids(entity.nid());
-                                            List<SearchControl.SearchResult> list = new ArrayList<>();
+                                            List<KLSearchControl.SearchResult> list = new ArrayList<>();
                                             if (parentNids != null) {
                                                 // Add one search result per parent
                                                 for (int parentNid : parentNids) {
                                                     ConceptFacade parent = Entity.getFast(parentNid);
-                                                    list.add(new SearchControl.SearchResult(parent, entity, searchControl.getText()));
+                                                    list.add(new KLSearchControl.SearchResult(parent, entity, searchControl.getText()));
                                                 }
                                             } else {
-                                                list.add(new SearchControl.SearchResult(null, entity, searchControl.getText()));
+                                                list.add(new KLSearchControl.SearchResult(null, entity, searchControl.getText()));
                                             }
                                             return list;
                                         })
@@ -927,7 +927,7 @@ public class JournalController {
                             });
 
                     // NOTE: different semanticIds can give the same entity, remove duplicates
-                    List<SearchControl.SearchResult> distinctResults = searchResults.stream().distinct().toList();
+                    List<KLSearchControl.SearchResult> distinctResults = searchResults.stream().distinct().toList();
                     Platform.runLater(() -> {
                         searchControl.setResultsPlaceholder(null);
                         searchControl.resultsProperty().addAll(distinctResults);
@@ -952,6 +952,9 @@ public class JournalController {
                 populateWorkspaceWithSelection(items.stream()
                         .map(item -> item.publicId().asUuidArray())
                         .toList()));
+        searchControl.setOnLongHover(conceptNavigatorControl::expandAndHighlightConcept);
+        searchControl.setOnSearchResultClick(_ -> conceptNavigatorControl.unhighlightConceptsWithDelay());
+        searchControl.setOnClearSearch(_ -> ConceptNavigatorUtils.resetConceptNavigator(conceptNavigatorControl));
 
         VBox nodePanel = new VBox(searchControl, conceptNavigatorControl);
         nodePanel.getStyleClass().add("concept-navigator-container");
@@ -962,7 +965,7 @@ public class JournalController {
     private void populateWorkspaceWithSelection(List<UUID[]> uuids) {
         for (UUID[] uuid : uuids) {
             Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForUuids(uuid));
-            makeConceptWindow(windowView, ConceptFacade.make(entity.nid()));
+            makeConceptWindow(ConceptFacade.make(entity.nid()));
         }
     }
 
@@ -970,15 +973,14 @@ public class JournalController {
      * Creates and displays a concept window for the given concept using default settings.
      * <p>
      * This method is a convenience overload that delegates to
-     * {@link #makeConceptWindow(ObservableViewNoOverride, ConceptFacade, NidTextEnum, Map)}
+     * {@link #makeConceptWindow(ConceptFacade, NidTextEnum, Map)}
      * with the default {@link NidTextEnum} value of {@code NID_TEXT} and no concept window settings.
-     *
-     * @param windowView    the current window view context (of type {@link ObservableViewNoOverride})
+     **
      * @param conceptFacade the {@link ConceptFacade} representing the concept to be displayed
      */
-    private void makeConceptWindow(ObservableViewNoOverride windowView, ConceptFacade conceptFacade) {
+    private void makeConceptWindow(ConceptFacade conceptFacade) {
         // This is our overloaded method to call makeConceptWindow when no map is created yet.
-        makeConceptWindow(windowView, conceptFacade, NID_TEXT, null);
+        makeConceptWindow(conceptFacade, NID_TEXT, null);
     }
 
     /**
@@ -987,7 +989,6 @@ public class JournalController {
      * An on-close handler is attached so that when the window is closed, it is removed from the workspace and its
      * associated preferences are cleaned up.
      *
-     * @param windowView               the current window view context (of type {@link ObservableViewNoOverride})
      * @param conceptFacade            the {@link ConceptFacade} representing the concept to be displayed
      * @param nidTextEnum              the {@link NidTextEnum} indicating the type of the concept (e.g.,
      *                                 {@code NID_TEXT} or {@code SEMANTIC_ENTITY})
@@ -995,7 +996,7 @@ public class JournalController {
      *                                 initial properties. May be {@code null} if no concept window settings are
      *                                 provided
      */
-    private void makeConceptWindow(ObservableViewNoOverride windowView, ConceptFacade conceptFacade,
+    private void makeConceptWindow(ConceptFacade conceptFacade,
                                    NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
         ConceptKlWindowFactory conceptKlWindowFactory = new ConceptKlWindowFactory();
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
@@ -1035,14 +1036,13 @@ public class JournalController {
      * An on-close handler is attached to ensure that when the window is closed, it is removed from the workspace and
      * its associated preferences are cleaned up.
      *
-     * @param windowView               the current window view context (of type {@link ObservableViewNoOverride})
      * @param nidTextEnum              the {@link NidTextEnum} representing the type of the concept window
      *                                 (e.g., {@code NID_TEXT})
      * @param conceptWindowSettingsMap an optional map of {@link ConceptWindowSettings} to configure the window's
      *                                 initial properties (such as folder name, position, and size). May be
      *                                 {@code null} if no concept window settings are provided
      */
-    private void makeCreateConceptWindow(ObservableViewNoOverride windowView, NidTextEnum nidTextEnum,
+    private void makeCreateConceptWindow(NidTextEnum nidTextEnum,
                                          Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
         ConceptKlWindowFactory conceptKlWindowFactory = new ConceptKlWindowFactory();
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
@@ -1322,7 +1322,7 @@ public class JournalController {
                 ConceptFacade conceptFacade = item.getValue();
                 if (conceptFacade == null) return;
 
-                makeConceptWindow(windowView, conceptFacade);
+                makeConceptWindow(conceptFacade);
 
             }
         });
@@ -1570,7 +1570,7 @@ public class JournalController {
             conceptWindowSettingsMap.put(CONCEPT_YPOS, conceptPreferences.getDouble(conceptPreferences.enumToGeneralKey(CONCEPT_YPOS), DEFAULT_CONCEPT_YPOS));
 
             //Calling make concept window to finish.
-            makeConceptWindow(window, conceptFacade, nidTextEnum, conceptWindowSettingsMap);
+            makeConceptWindow(conceptFacade, nidTextEnum, conceptWindowSettingsMap);
         }
     }
 
@@ -1611,7 +1611,7 @@ public class JournalController {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
-        makeCreateConceptWindow(windowSettings.getView(), NID_TEXT, null);
+        makeCreateConceptWindow(NID_TEXT, null);
 
     }
 

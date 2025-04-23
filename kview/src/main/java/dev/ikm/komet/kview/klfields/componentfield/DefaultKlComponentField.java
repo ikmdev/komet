@@ -64,7 +64,7 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
         } else {
             String description = entityProxy.description();
             Image identicon = Identicon.generateIdenticonImage(observableField.valueProperty().get().publicId());
-            componentItem = new ComponentItem(description, identicon);
+            componentItem = new ComponentItem(description, identicon, entityProxy.nid());
         }
 
         klReadOnlyComponentControl.setValue(componentItem);

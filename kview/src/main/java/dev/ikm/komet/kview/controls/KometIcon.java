@@ -7,7 +7,8 @@ public class KometIcon extends StackPane {
     public enum IconValue {
         PENCIL("pencil"),
         TRASH("trash"),
-        PLUS("plus");
+        PLUS("plus"),
+        POPULATE("populate");
 
         private String styleClass;
 

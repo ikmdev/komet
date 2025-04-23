@@ -15,17 +15,15 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.tinkar.coordinate.logic.PremiseType;
-import dev.ikm.tinkar.entity.EntityService;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Field;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.terms.EntityFacade;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -116,6 +114,15 @@ public final class ObservableSemanticSnapshot extends ObservableEntitySnapshot<O
     }
 
     public Latest<ImmutableList<ObservableField>> getLatestFields() {
+        return getLatestFields(false);
+    }
+
+    /**
+     * Set the default to autoSave off.
+     * @param autoSaveOn
+     * @return
+     */
+    public Latest<ImmutableList<ObservableField>> getLatestFields(boolean autoSaveOn) {
         return latestVersion.ifAbsentOrFunction(
                 Latest::empty,
                 version -> {
@@ -127,6 +134,10 @@ public final class ObservableSemanticSnapshot extends ObservableEntitySnapshot<O
                                     for (ObservableSemanticVersion contradiction : latestVersion.contradictions()) {
                                         latest.addLatest(contradiction.fields(patternEntityVersion));
                                     }
+                                }
+                                // Caller wants observable fields to have auto save feature.
+                                if (autoSaveOn && latest.isPresent()) {
+                                    latest.get().forEach( observableField -> observableField.autoSaveOn());
                                 }
                                 return latest;
                             });
