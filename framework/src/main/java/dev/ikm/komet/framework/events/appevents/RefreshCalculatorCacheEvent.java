@@ -28,7 +28,6 @@ public class RefreshCalculatorCacheEvent extends Evt {
 
     public static final EvtType<RefreshCalculatorCacheEvent> REFRESH_CACHE = new EvtType<>(Evt.ANY, "REFRESH_CACHE");
     public static final EvtType<RefreshCalculatorCacheEvent> GLOBAL_REFRESH = new EvtType<>(REFRESH_CACHE, "GLOBAL_REFRESH");
-//    public static final EvtType<RefreshCalculatorCacheEvent> CALCULATOR_REFRESH = new EvtType<>(REFRESH_CACHE, "REFRESH_CACHE");
 
     /**
      * Constructs a new {@code RefreshCalculatorCacheEvent}.
