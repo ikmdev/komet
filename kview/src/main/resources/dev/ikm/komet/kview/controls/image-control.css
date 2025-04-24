@@ -1,3 +1,5 @@
+@import "../mvvm/view/kview.css";
+
 .image-control .main-container {
     -fx-spacing: 8px;
 }

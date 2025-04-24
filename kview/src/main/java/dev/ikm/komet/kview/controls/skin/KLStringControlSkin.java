@@ -26,7 +26,7 @@ public class KLStringControlSkin extends SkinBase<KLStringControl> {
 
         titleLabel = new Label();
         titleLabel.textProperty().bind(control.titleProperty());
-        titleLabel.getStyleClass().add("title-label");
+        titleLabel.getStyleClass().add("editable-title-label");
 
         textField = new TextField();
         textField.promptTextProperty().bind(control.promptTextProperty());
@@ -46,7 +46,7 @@ public class KLStringControlSkin extends SkinBase<KLStringControl> {
     /** {@inheritDoc} */
     @Override
     protected double computePrefHeight(double width, double topInset, double rightInset, double bottomInset, double leftInset) {
-        final double titleLabelHeight = titleLabel.prefHeight(-1) + 5;
+        final double titleLabelHeight = titleLabel.prefHeight(-1);
         final double innerTextControlHeight = textField.prefHeight(width);
         return topInset + titleLabelHeight + innerTextControlHeight + bottomInset;
     }
@@ -67,7 +67,7 @@ public class KLStringControlSkin extends SkinBase<KLStringControl> {
         double x = contentX + padding.getLeft();
         double y = contentY + padding.getTop();
         titleLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
-        y += labelPrefHeight + 5;
+        y += labelPrefHeight;
 
         double textFieldPrefHeight = textField.prefHeight(contentWidth);
         textField.resizeRelocate(x, y, contentWidth, textFieldPrefHeight);

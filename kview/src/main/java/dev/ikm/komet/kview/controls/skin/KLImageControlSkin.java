@@ -101,7 +101,7 @@ public class KLImageControlSkin extends SkinBase<KLImageControl> {
 
         // CSS
         mainContainer.getStyleClass().add("main-container");
-        titleLabel.getStyleClass().add("title");
+        titleLabel.getStyleClass().add("editable-title-label");
         promptTextLabel.getStyleClass().add("prompt-text");
         imageContainer.getStyleClass().add("image-container");
         attachImageButtonContainer.getStyleClass().add("image-button-container");

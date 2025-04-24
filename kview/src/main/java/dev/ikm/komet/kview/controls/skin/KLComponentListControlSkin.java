@@ -8,9 +8,7 @@ import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.beans.binding.Bindings;
 import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -24,6 +22,7 @@ import org.eclipse.collections.api.factory.primitive.IntLists;
 import org.eclipse.collections.api.list.primitive.MutableIntList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -70,7 +69,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
         // Title
         titleLabel = new Label();
-        titleLabel.getStyleClass().add("title-label");
+        titleLabel.getStyleClass().add("editable-title-label");
         titleLabel.textProperty().bind(control.titleProperty());
 
         // Create component controls based on this control's values

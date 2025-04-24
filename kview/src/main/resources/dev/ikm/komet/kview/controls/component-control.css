@@ -3,14 +3,6 @@
 .component-control {
 }
 
-.component-control > .title-label {
-    -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
-    -fx-font-style: normal;
-    -fx-text-fill: -Grey-11;
-    -fx-font-weight: 500;
-}
-
 .component-control > .selected-concept-container,
 .component-control > .concept-container {
     -fx-padding: 8;
