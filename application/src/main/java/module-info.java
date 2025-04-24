@@ -20,6 +20,7 @@ import dev.ikm.komet.framework.events.DefaultEvtBus;
 import dev.ikm.tinkar.common.service.DataServiceController;
 import dev.ikm.tinkar.common.service.DefaultDescriptionForNidService;
 import dev.ikm.tinkar.common.service.PublicIdService;
+import dev.ikm.tinkar.entity.ChangeSetWriterService;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.StampService;
 
@@ -49,6 +50,7 @@ module dev.ikm.komet.application {
     requires org.carlfx.cognitive;
 
     requires org.controlsfx.controls;
+    requires dev.ikm.tinkar.provider.changeset;
     requires dev.ikm.komet.classification;
     requires dev.ikm.komet.details;
     requires dev.ikm.komet.builder;
@@ -77,6 +79,7 @@ module dev.ikm.komet.application {
     uses StampService;
     uses TaskListsService;
     uses DefaultEvtBus;
+    uses ChangeSetWriterService;
 
     // For ScenicView...
     //requires org.scenicview.scenicview;
