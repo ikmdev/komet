@@ -121,7 +121,7 @@
             --add-exports=javafx.base/com.sun.javafx.logging=org.testfx.monocle
             --add-opens=javafx.graphics/javafx.scene=org.controlsfx.controls
             --add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
-<!--            &#45;&#45;enable-preview-->
+            --enable-preview
         </commonTestFXArgs>
     </properties>
 
@@ -667,7 +667,7 @@
                     <release>23</release>
                     <compilerArgs>
                         <arg>-parameters</arg>
-<!--                        <arg>&#45;&#45;enable-preview</arg>-->
+                        <arg>--enable-preview</arg>
                     </compilerArgs>
                     <annotationProcessorPaths>
                         <annotationProcessorPath>
