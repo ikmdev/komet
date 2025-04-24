@@ -120,7 +120,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         double x = contentX + padding.getLeft();
         double y = contentY + padding.getTop();
         titleLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
-        y += labelPrefHeight + KLComponentListControlSkin.SPACE_BETWEEN_COMPONENTS;
+        y += labelPrefHeight + KLComponentListControlSkin.TITLE_SPACE;
         selectedConceptContainer.resizeRelocate(x, y, contentWidth - padding.getRight() - x, contentHeight - padding.getBottom() - y);
         conceptContainer.resizeRelocate(x, y, contentWidth - padding.getRight() - x, contentHeight - padding.getBottom() - y);
         aboutToRearrangeHBox.resizeRelocate(x, y, contentWidth - padding.getRight() - x, contentHeight - padding.getBottom() - y);

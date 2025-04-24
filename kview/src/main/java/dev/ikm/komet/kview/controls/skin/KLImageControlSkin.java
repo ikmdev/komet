@@ -59,7 +59,7 @@ public class KLImageControlSkin extends SkinBase<KLImageControl> {
         getChildren().add(mainContainer);
 
         var horizontalSeparator = new Separator(Orientation.HORIZONTAL);
-        horizontalSeparator.setPrefHeight(KLComponentListControlSkin.SPACE_BETWEEN_COMPONENTS);
+        horizontalSeparator.setPrefHeight(KLComponentListControlSkin.TITLE_SPACE);
 
         mainContainer.getChildren().addAll(
                 titleLabel,

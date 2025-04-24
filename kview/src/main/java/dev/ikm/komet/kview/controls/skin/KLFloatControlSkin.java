@@ -195,7 +195,7 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
         double x = contentX + padding.getLeft();
         double y = contentY + padding.getTop();
         titleLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
-        y += labelPrefHeight + KLComponentListControlSkin.SPACE_BETWEEN_COMPONENTS;
+        y += labelPrefHeight + KLComponentListControlSkin.TITLE_SPACE;
 
         double textFieldPrefHeight = textField.prefHeight(contentWidth);
         textField.resizeRelocate(x, y, contentWidth, textFieldPrefHeight);

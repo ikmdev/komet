@@ -25,7 +25,7 @@ public class KLBooleanControlSkin extends SkinBase<KLBooleanControl> {
     public KLBooleanControlSkin(KLBooleanControl control) {
         super(control);
 
-        mainContainer.setSpacing(KLComponentListControlSkin.SPACE_BETWEEN_COMPONENTS);
+        mainContainer.setSpacing(KLComponentListControlSkin.TITLE_SPACE);
 
         mainContainer.getChildren().addAll(titleLabel, comboBox);
         getChildren().add(mainContainer);

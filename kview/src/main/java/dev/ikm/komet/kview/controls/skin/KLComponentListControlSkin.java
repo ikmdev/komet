@@ -34,8 +34,15 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
     private static final Logger LOG = LoggerFactory.getLogger(KLComponentListControlSkin.class);
 
-    public final static double SPACE_BETWEEN_COMPONENTS = 10;
+    private final static double SPACE_BETWEEN_COMPONENTS = 10;
     private final static double SPACE_BETWEEN_NUMBER_AND_CONTROL = 5;
+
+    /**
+     * The horizontal space after the titleLabel in editable controls must be at least the
+     * same as the KLComponentListControlSkin.SPACE_BETWEEN_COMPONENTS, as this also provides
+     * the space for top the drop line for Component Drag n Drop.
+     */
+    public final static double TITLE_SPACE = SPACE_BETWEEN_COMPONENTS;
 
     private final Label titleLabel;
     private final Button addEntryButton;
@@ -297,7 +304,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         double x = contentX + padding.getLeft();
         double y = contentY + padding.getTop();
         titleLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
-        y += labelPrefHeight + KLComponentListControlSkin.SPACE_BETWEEN_COMPONENTS;
+        y += labelPrefHeight + KLComponentListControlSkin.TITLE_SPACE;
 
         int labelNumber = 1;
         int index = 0;
