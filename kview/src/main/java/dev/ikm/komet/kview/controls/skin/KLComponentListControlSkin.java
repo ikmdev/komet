@@ -311,7 +311,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         titleLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
         y += labelPrefHeight;
 
-        double topDropPanePreferredHeight = layoutTopDropPane(contentWidth, x, y, padding, contentX);
+        double topDropPanePreferredHeight = layoutTopDropLine(contentWidth, x, y, padding, contentX);
 
         y += topDropPanePreferredHeight;
 
@@ -334,11 +334,8 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
                                       buttonPrefWidth, addEntryButton.prefHeight(buttonPrefWidth));
     }
 
-    private double layoutTopDropPane(double contentWidth, double x, double y, Insets padding, double dropLineX) {
+    private double layoutTopDropLine(double contentWidth, double x, double y, Insets padding, double dropLineX) {
         double topDropPrefWidth = contentWidth - padding.getRight() - x;
-
-//        topDropPane.setBackground(new Background(new BackgroundFill(Color.BLUE, null, null)));
-//        topDropPane.resizeRelocate(x, y, topDropPrefWidth, KLComponentListControlSkin.SPACE_BETWEEN_COMPONENTS);
 
         Line dropLine = componentToDropLine.get(null);
 
