@@ -160,15 +160,19 @@ public class KlFieldHelper {
      *
      * @return entityVersionLatest
      * */
-    public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(Latest<SemanticEntityVersion> semanticEntityVersionLatest, ObservableSemanticSnapshot observableSemanticSnapshot) {
+    public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(ObservableSemanticSnapshot observableSemanticSnapshot) {
         AtomicReference<Latest<SemanticEntityVersion>> entityVersionLatest = new AtomicReference<>();
+        SemanticEntityVersion semanticEntityVersion = (SemanticEntityVersion) observableSemanticSnapshot.getLatestVersion().get().getEntityVersion();
+        if(semanticEntityVersion.committed()){
+            return new Latest<>(semanticEntityVersion);
+        }
         //Get list of previously committed data sorted in latest at the top.
         ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
         // Filter out Uncommitted data. Data whose time stamp parameter is Long.MAX_VALUE. and get the 1st available.
         Optional<ObservableSemanticVersion> observableSemanticVersionOptional = observableSemanticVersionImmutableList.stream().filter(p -> p.stamp().time() != Long.MAX_VALUE).findFirst();
-        observableSemanticVersionOptional.ifPresentOrElse( (p) -> {
+        observableSemanticVersionOptional.ifPresentOrElse((p) -> {
             entityVersionLatest.set(new Latest<>(p));
-        }, () -> {entityVersionLatest.set(semanticEntityVersionLatest);});
+        }, () -> {entityVersionLatest.set(new Latest<>());});
         return entityVersionLatest.get();
     }
 
