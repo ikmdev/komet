@@ -17,6 +17,8 @@ package dev.ikm.komet.artifact;
 
 
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import javafx.event.ActionEvent;
@@ -26,29 +28,32 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Future;
+import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
+import static dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent.GLOBAL_REFRESH;
 
 public class ArtifactImportController {
-    @FXML
 
+    private static final Logger LOG = LoggerFactory.getLogger(ArtifactImportController.class);
+
+    @FXML
     private Label choosenFileLabel;
+
     @FXML
-
-
     private Button importButton;
+
     @FXML
-
-
     private Button cancelButton;
+
     @FXML
-
-
     private ProgressBar importProgressBar;
+
     @FXML
-
-
     private FileChooser fileChooser;
 
     @FXML
@@ -108,7 +113,15 @@ public class ArtifactImportController {
 
         importProgressBar.progressProperty().unbind();
         importProgressBar.progressProperty().bind(importTask.progressProperty());
-        ProgressHelper.progress(importTask, "Cancel Import");
+
+        Future future =  ProgressHelper.progress(importTask, "Cancel Import");
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC, new RefreshCalculatorCacheEvent(future, GLOBAL_REFRESH));
+
     }
 
     @FXML
