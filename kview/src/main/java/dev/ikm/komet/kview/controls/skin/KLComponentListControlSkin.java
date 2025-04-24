@@ -9,11 +9,13 @@ import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
 import javafx.scene.input.DragEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.shape.Line;
 import javafx.util.Subscription;
@@ -242,6 +244,14 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         }
 
         componentControl.showDragHandleProperty().bind(componentControl.hoverProperty());
+
+        componentControl.addEventHandler(MouseEvent.DRAG_DETECTED, _ -> {
+            componentControl.setVisible(false);
+        });
+
+        componentControl.addEventHandler(DragEvent.DRAG_DONE, _ -> {
+            componentControl.setVisible(true);
+        });
 
         Label numberLabel = createNumberLabel(componentControl);
 

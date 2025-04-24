@@ -260,8 +260,8 @@ public class GenEditingDetailsController {
         observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
         //retrieve latest committed semanticVersion
         semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
-        if(semanticEntityVersionLatest.get().stamp().lastVersion().uncommitted()){
-            semanticEntityVersionLatest = retrieveCommittedLatestVersion(semanticEntityVersionLatest, observableSemanticSnapshot);
+        if(semanticEntityVersionLatest.get().stamp().lastVersion().uncommitted() && genEditingViewModel.getPropertyValue(MODE) != CREATE){
+            semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
         }
         semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
             Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
@@ -309,7 +309,7 @@ public class GenEditingDetailsController {
             if (evt.getEventType() == GenEditingEvent.PUBLISH && evt.getNid() == finalSemantic.nid()) {
                 if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
                     // populate the semantic and its observable fields once saved
-                    semanticEntityVersionLatest = retrieveCommittedLatestVersion(latestSemanticEntityVersion, observableSemantic.getSnapshot(getViewProperties().calculator()));
+                    semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemantic.getSnapshot(getViewProperties().calculator()));
 
                     // clear out the temporary placeholders
                     semanticDetailsVBox.getChildren().clear();
@@ -329,14 +329,10 @@ public class GenEditingDetailsController {
                         // readonly integer value 1, editable integer value 5 do update
                         // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
                         // Should we check if the value is different before updating? (blindly updating now).
-                        //if (!field.value().equals(updatedField.valueProperty())) {
                             field.valueProperty().setValue(updatedField.valueProperty().getValue());
-                        //}
                     }
                 }
-            } /*else if (evt.getEventType() == REFERENCE_COMPONENT_CHANGED_EVENT) {
-                setupReferenceComponentUI(semanticEntityVersionLatest);
-            }*/
+            }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, refreshSubscriber);
