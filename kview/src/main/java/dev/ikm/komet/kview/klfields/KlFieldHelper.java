@@ -1,22 +1,17 @@
 package dev.ikm.komet.kview.klfields;
 
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
 import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl;
-import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
 import dev.ikm.komet.kview.klfields.componentlistfield.KlComponentListFieldFactory;
@@ -29,8 +24,6 @@ import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
@@ -167,15 +160,19 @@ public class KlFieldHelper {
      *
      * @return entityVersionLatest
      * */
-    public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(Latest<SemanticEntityVersion> semanticEntityVersionLatest, ObservableSemanticSnapshot observableSemanticSnapshot) {
+    public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(ObservableSemanticSnapshot observableSemanticSnapshot) {
         AtomicReference<Latest<SemanticEntityVersion>> entityVersionLatest = new AtomicReference<>();
+        SemanticEntityVersion semanticEntityVersion = (SemanticEntityVersion) observableSemanticSnapshot.getLatestVersion().get().getEntityVersion();
+        if(semanticEntityVersion.committed()){
+            return new Latest<>(semanticEntityVersion);
+        }
         //Get list of previously committed data sorted in latest at the top.
         ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
         // Filter out Uncommitted data. Data whose time stamp parameter is Long.MAX_VALUE. and get the 1st available.
         Optional<ObservableSemanticVersion> observableSemanticVersionOptional = observableSemanticVersionImmutableList.stream().filter(p -> p.stamp().time() != Long.MAX_VALUE).findFirst();
-        observableSemanticVersionOptional.ifPresentOrElse( (p) -> {
+        observableSemanticVersionOptional.ifPresentOrElse((p) -> {
             entityVersionLatest.set(new Latest<>(p));
-        }, () -> {entityVersionLatest.set(semanticEntityVersionLatest);});
+        }, () -> {entityVersionLatest.set(new Latest<>());});
         return entityVersionLatest.get();
     }
 

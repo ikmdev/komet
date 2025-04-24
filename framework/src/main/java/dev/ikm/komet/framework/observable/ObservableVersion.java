@@ -34,6 +34,8 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
         permits ObservableConceptVersion, ObservablePatternVersion, ObservableSemanticVersion, ObservableStampVersion {
     protected final SimpleObjectProperty<V> versionProperty = new SimpleObjectProperty<>();
 
+    private final EntityVersion entityVersion;
+
     final SimpleObjectProperty<State> stateProperty = new SimpleObjectProperty<>();
     final SimpleLongProperty timeProperty = new SimpleLongProperty();
     final SimpleObjectProperty<ConceptFacade> authorProperty = new SimpleObjectProperty<>();
@@ -43,6 +45,7 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
 
     ObservableVersion(V entityVersion) {
         versionProperty.set(entityVersion);
+        this.entityVersion = entityVersion;
         stateProperty.set(entityVersion.state());
         timeProperty.set(entityVersion.time());
         authorProperty.set(Entity.provider().getEntityFast(entityVersion.authorNid()));
@@ -124,6 +127,10 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
 
     public V version() {
         return versionProperty.getValue();
+    }
+
+    public EntityVersion getEntityVersion(){
+        return this.entityVersion;
     }
 
     protected abstract V withStampNid(int stampNid);

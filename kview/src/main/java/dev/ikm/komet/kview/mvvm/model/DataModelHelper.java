@@ -373,7 +373,7 @@ public class DataModelHelper {
                                 fieldValues.with(ANONYMOUS_CONCEPT);
                             } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
                                     || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
-                                fieldValues.with("Default String Value");
+                                fieldValues.with("");
                             } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
                                 fieldValues.with(0);
                             } else if (f.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
@@ -411,7 +411,7 @@ public class DataModelHelper {
         EntityProxy patternProxy = pattern.toProxy();
         ObservableSemantic observableSemantic = ObservableEntity.get(semantic.nid());
         ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
-        Latest<SemanticEntityVersion> semanticEntityVersionLatest = KlFieldHelper.retrieveCommittedLatestVersion(viewProperties.calculator().stampCalculator().latest(semantic.nid()), observableSemanticSnapshot);
+        Latest<SemanticEntityVersion> semanticEntityVersionLatest = KlFieldHelper.retrieveCommittedLatestVersion(observableSemanticSnapshot);
         session.compose((SemanticAssembler semanticAssembler) -> {
                     semanticAssembler
                             .semantic(semantic.toProxy())
