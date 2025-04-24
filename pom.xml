@@ -70,7 +70,7 @@
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.6.0</tinkar-composer.version>
-        <tinkar-core.version>1.96.0</tinkar-core.version>
+        <tinkar-core.version>1.97.0</tinkar-core.version>
 
         <!-- IKM Evrete Variables -->
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
@@ -258,6 +258,11 @@
             <dependency>
                 <groupId>${tinkar-core.groupId}</groupId>
                 <artifactId>data-ephemeral-provider</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>changeset-writer-provider</artifactId>
                 <version>${tinkar-core.version}</version>
             </dependency>
             <dependency>

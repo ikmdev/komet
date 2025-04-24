@@ -3,14 +3,6 @@
 .bytearray-control {
 }
 
-.bytearray-control > .title-label {
-    -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
-    -fx-font-style: normal;
-    -fx-text-fill: -Grey-11;
-    -fx-font-weight: 500;
-}
-
 .bytearray-control > .file-container {
     -fx-padding: 8;
     -fx-background-radius: 8px;

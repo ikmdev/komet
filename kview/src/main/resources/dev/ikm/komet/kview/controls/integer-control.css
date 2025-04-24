@@ -3,14 +3,6 @@
 .integer-control {
 }
 
-.integer-control > .title-label {
-    -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
-    -fx-font-style: normal;
-    -fx-text-fill: -Grey-11;
-    -fx-font-weight: 500;
-}
-
 .integer-control > .value-text-field {
     -fx-background-color: white;
     -fx-background-radius: 4;

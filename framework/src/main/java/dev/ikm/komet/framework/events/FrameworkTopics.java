@@ -22,5 +22,7 @@ public enum FrameworkTopics {
 
     PROGRESS_TOPIC,
 
-    VERSION_CHANGED_TOPIC
+    VERSION_CHANGED_TOPIC,
+
+    CALCULATOR_CACHE_TOPIC
 }

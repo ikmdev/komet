@@ -93,7 +93,12 @@
             <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>data-ephemeral-provider</artifactId>
         </dependency>
-        <!-- Start JPro related dependencies -->
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>changeset-writer-provider</artifactId>
+        </dependency>
+
+    <!-- Start JPro related dependencies -->
         <dependency>
             <groupId>one.jpro</groupId>
             <artifactId>jpro-webapi</artifactId>

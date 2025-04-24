@@ -9,7 +9,6 @@ import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -71,7 +70,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
         // Title
         titleLabel = new Label();
-        titleLabel.getStyleClass().add("title-label");
+        titleLabel.getStyleClass().add("editable-title-label");
         titleLabel.textProperty().bind(control.titleProperty());
 
         topDropLine = createDropLine(null);
