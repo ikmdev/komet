@@ -27,6 +27,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_W
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.DEFAULT_FIELDS_HASH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
@@ -122,9 +123,16 @@ public class SemanticFieldsController {
     private void enableDisableSubmitButton(){
         //Disable submit button if any of the fields are blank.
         boolean disabled = checkForEmptyFields();
-        if(!disabled){
+        if (!disabled) {
             int uncommittedHash = calculteHashValue(observableFields);
-            disabled = (committedHash == uncommittedHash);
+            // carve out in the logic so that when you are in create mode and the default values
+            // are exactly what they are then you are allowed to just save them as is
+            if ((genEditingViewModel.getPropertyValue(MODE) == CREATE) &&
+                (Integer.valueOf(uncommittedHash).equals(genEditingViewModel.getPropertyValue(DEFAULT_FIELDS_HASH)))) {
+                disabled = false;
+            } else {
+                disabled = (committedHash == uncommittedHash);
+            }
         }
         submitButton.setDisable(disabled);
     }
