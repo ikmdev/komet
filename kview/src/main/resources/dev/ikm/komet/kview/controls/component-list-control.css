@@ -3,14 +3,6 @@
 .component-list-control {
 }
 
-.component-list-control > .title-label {
-    -fx-font-family: "Noto Sans";
-    -fx-font-size: 1.166667em;  /* 14 */
-    -fx-font-style: normal;
-    -fx-text-fill: -Grey-11;
-    -fx-font-weight: 500;
-}
-
 .component-list-control > .number-label {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 1.166667em; /* 14 */

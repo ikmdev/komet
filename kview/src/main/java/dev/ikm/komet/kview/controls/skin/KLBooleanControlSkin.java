@@ -2,16 +2,8 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLBooleanControl;
 import javafx.css.PseudoClass;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.SkinBase;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 
 /**
  * Default skin implementation for the {@link KLBooleanControl} control
@@ -37,6 +29,7 @@ public class KLBooleanControlSkin extends SkinBase<KLBooleanControl> {
         getChildren().add(mainContainer);
 
         titleLabel.textProperty().bind(control.titleProperty());
+        titleLabel.getStyleClass().add("editable-title-label");
 
         addMenuItemsToComboBox();
         comboBox.valueProperty().bindBidirectional(control.valueProperty());

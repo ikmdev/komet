@@ -20,11 +20,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.*;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.scene.transform.Scale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +60,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         super(control);
 
         titleLabel = new Label();
-        titleLabel.getStyleClass().add("title-label");
+        titleLabel.getStyleClass().add("editable-title-label");
         titleLabel.textProperty().bind(control.titleProperty());
         titleLabel.managedProperty().bind(titleLabel.visibleProperty());
         titleLabel.visibleProperty().bind(titleLabel.textProperty().isNotEmpty());

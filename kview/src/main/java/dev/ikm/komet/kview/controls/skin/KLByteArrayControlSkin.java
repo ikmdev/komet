@@ -68,7 +68,7 @@ public class KLByteArrayControlSkin extends SkinBase<KLByteArrayControl> {
 
         titleLabel = new Label();
         titleLabel.textProperty().bind(control.titleProperty());
-        titleLabel.getStyleClass().add("title-label");
+        titleLabel.getStyleClass().add("editable-title-label");
 
         progressBar = new ProgressBar();
         progressBar.managedProperty().bind(progressBar.visibleProperty());
@@ -203,7 +203,7 @@ public class KLByteArrayControlSkin extends SkinBase<KLByteArrayControl> {
         double y = contentY + padding.getTop();
         double spacing = 5;
         titleLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
-        y += labelPrefHeight + spacing;
+        y += labelPrefHeight;
         if (fileContainer.isVisible()) {
             double containerHeight = fileContainer.prefHeight(-1);
             fileContainer.resizeRelocate(x, y, contentWidth, containerHeight);
