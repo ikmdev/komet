@@ -129,6 +129,11 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
                     case StampEntity stampEntity -> new ObservableStamp(stampEntity);
                     default -> throw new UnsupportedOperationException("Can't handle: " + entity);
                 });
+        if (!Platform.isFxApplicationThread()) {
+            Platform.runLater(() -> updateVersions(entity, observableEntity));
+        } else {
+            updateVersions(entity, observableEntity);
+        }
         return (OE) observableEntity;
     }
 
