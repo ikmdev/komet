@@ -45,12 +45,13 @@ import java.util.Objects;
 public final class ObservableSemanticVersion
         extends ObservableVersion<SemanticVersionRecord>
         implements SemanticEntityVersion {
+
     ObservableSemanticVersion(SemanticVersionRecord semanticVersionRecord) {
         super(semanticVersionRecord);
         // fields and their index.
         // loop and create changelistners
-
     }
+
     @Override
     protected SemanticVersionRecord withStampNid(int stampNid) {
         return version().withStampNid(stampNid);
@@ -285,7 +286,6 @@ public final class ObservableSemanticVersion
                 }
             }
         }
-
         return fieldMap.toImmutable();
     }
 
