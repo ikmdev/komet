@@ -70,7 +70,7 @@
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.6.0</tinkar-composer.version>
-        <tinkar-core.version>1.94.0</tinkar-core.version>
+        <tinkar-core.version>1.96.0</tinkar-core.version>
 
         <!-- IKM Evrete Variables -->
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
@@ -78,7 +78,6 @@
 
         <!-- JPMS Jar Variables-->
         <tinkar-jpms-deps.groupId>dev.ikm.jpms</tinkar-jpms-deps.groupId>
-        <jpms-roaringbitmap.version>0.9.31-r11</jpms-roaringbitmap.version>
         <jpms-record-builder-core.version>36-r7</jpms-record-builder-core.version>
         <eclipse-collections.version>11.1.0-r13</eclipse-collections.version>
         <eclipse-collections-api.version>11.1.0-r11</eclipse-collections-api.version>
@@ -94,6 +93,7 @@
         <openjfx-monocle.version>21.0.2-jpms</openjfx-monocle.version>
 
         <!-- Everything Else -->
+        <roaringbitmap.version>1.4.0</roaringbitmap.version>
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
         <classgraph.version>4.8.179</classgraph.version>
         <cognitive.version>1.5.1</cognitive.version>
@@ -324,11 +324,6 @@
                 <artifactId>eclipse-collections-api</artifactId>
                 <version>${eclipse-collections-api.version}</version>
             </dependency>
-            <dependency>
-                <groupId>${tinkar-jpms-deps.groupId}</groupId>
-                <artifactId>roaringbitmap</artifactId>
-                <version>${jpms-roaringbitmap.version}</version>
-            </dependency>
             <dependency><!-- <groupId>com.google.code.findbugs</groupId>-->
                 <groupId>${tinkar-jpms-deps.groupId}</groupId>
                 <artifactId>jsr305</artifactId>
@@ -336,6 +331,11 @@
             </dependency>
 
             <!-- External dependencies -->
+            <dependency>
+                <groupId>com.github.RoaringBitmap.RoaringBitmap</groupId>
+                <artifactId>roaringbitmap</artifactId>
+                <version>${roaringbitmap.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-controls</artifactId>
@@ -617,6 +617,14 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
     <build>
         <pluginManagement>
             <plugins>

@@ -20,7 +20,7 @@ import dev.ikm.tinkar.reasoner.service.ReasonerService;
 module dev.ikm.komet.classification {
 	requires dev.ikm.jpms.eclipse.collections;
 	requires dev.ikm.jpms.eclipse.collections.api;
-	requires dev.ikm.jpms.roaringbitmap;
+	requires roaringbitmap;
 	requires org.jgrapht.core;
 	requires org.slf4j;
 	
