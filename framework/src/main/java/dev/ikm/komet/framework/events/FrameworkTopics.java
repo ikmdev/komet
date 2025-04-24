@@ -20,5 +20,7 @@ public enum FrameworkTopics {
 
     SEARCH_SORT_TOPIC,
 
-    PROGRESS_TOPIC
+    PROGRESS_TOPIC,
+
+    VERSION_CHANGED_TOPIC
 }

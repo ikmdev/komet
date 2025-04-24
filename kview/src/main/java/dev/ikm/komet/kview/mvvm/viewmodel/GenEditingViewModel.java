@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import static dev.ikm.tinkar.terms.TinkarTerm.PREFERRED;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIds;
@@ -57,6 +58,10 @@ public class GenEditingViewModel extends FormViewModel {
     // for single semantic editing
     public static String FIELD = "field";
 
+    // share the composer
+    public static String COMPOSER = "composer";
+    public static String SESSION = "session";
+
     public GenEditingViewModel() {
         super();
         addProperty(VIEW_PROPERTIES, (ViewProperties) null)
@@ -66,7 +71,11 @@ public class GenEditingViewModel extends FormViewModel {
                 .addProperty(FIELDS_COLLECTION, new ArrayList<FieldRecord<Object>>()) // Ordered collection of Fields
                 .addProperty(REF_COMPONENT, (EntityFacade) null)
                 .addProperty(SEMANTIC, (EntityFacade) null)
-                .addProperty(PATTERN, (EntityFacade) null);
+                .addProperty(PATTERN, (EntityFacade) null)
+                .addProperty(FIELD_INDEX, Integer.valueOf(-1))
+                .addProperty(COMPOSER, (Composer) null)
+                .addProperty(SESSION, (Session) null)
+        ;
     }
 
     public void loadPatternValues(){

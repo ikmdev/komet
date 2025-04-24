@@ -18,7 +18,14 @@ package dev.ikm.komet.framework.observable;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.FieldDefinitionRecord;
+import dev.ikm.tinkar.entity.FieldRecord;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticRecord;
+import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.map.ImmutableMap;
@@ -35,7 +42,17 @@ public final class ObservableSemantic
 
     @Override
     protected ObservableSemanticVersion wrap(SemanticVersionRecord version) {
-        return new ObservableSemanticVersion(version);
+        ObservableSemanticVersion observableSemanticVersion = new ObservableSemanticVersion(version);
+        observableSemanticVersion.versionProperty.addListener((observable) -> {
+                updateEntity(observableSemanticVersion.versionProperty.get());
+        });
+        return observableSemanticVersion;
+    }
+
+    private void updateEntity(SemanticVersionRecord newSemanticVersionRecord) {
+        SemanticRecord semantic = Entity.getFast(newSemanticVersionRecord.nid());
+        SemanticRecord analogue = semantic.with(newSemanticVersionRecord).build();
+        saveToDB(analogue, newSemanticVersionRecord);
     }
 
     @Override

@@ -93,7 +93,7 @@ public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseSingleVa
         }
     }
 
-    protected void fireOnRmoveAction(ActionEvent actionEvent) {
+    protected void fireOnRemoveAction(ActionEvent actionEvent) {
         if (getSkinnable().getOnRemoveAction() != null) {
             getSkinnable().getOnRemoveAction().run();
         }
