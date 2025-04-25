@@ -318,7 +318,17 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         double x = contentX + padding.getLeft();
         double y = contentY + padding.getTop();
         titleLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
-        y += labelPrefHeight;
+
+        double adjustedPrefHeight = labelPrefHeight;
+        double bottomPadding = titleLabel.getPadding().getBottom();
+
+        if (bottomPadding <= SPACE_BETWEEN_COMPONENTS) {
+            adjustedPrefHeight -= bottomPadding;
+        } else {
+            adjustedPrefHeight -= (bottomPadding - SPACE_BETWEEN_COMPONENTS);
+        }
+
+        y += adjustedPrefHeight;
 
         double topDropPanePreferredHeight = layoutTopDropLine(contentWidth, x, y, padding, contentX);
 
