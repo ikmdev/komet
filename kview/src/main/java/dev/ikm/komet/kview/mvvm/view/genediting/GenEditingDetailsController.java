@@ -35,13 +35,10 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_W
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.COMPOSER;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.DEFAULT_FIELDS_HASH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SESSION;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.STAMP_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
@@ -55,6 +52,9 @@ import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservablePattern;
+import dev.ikm.komet.framework.observable.ObservablePatternSnapshot;
+import dev.ikm.komet.framework.observable.ObservablePatternVersion;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
@@ -65,29 +65,25 @@ import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
-import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
-import dev.ikm.tinkar.composer.Composer;
-import dev.ikm.tinkar.composer.Session;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldRecord;
+import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
+import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
-import dev.ikm.tinkar.terms.SemanticFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -228,67 +224,46 @@ public class GenEditingDetailsController {
         // clear all semantic details.
         semanticDetailsVBox.getChildren().clear();
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
-        Composer composer = new Composer("Semantic composer");
-        genEditingViewModel.setPropertyValue(COMPOSER, composer);
+
+        //Populate the Title Pattern meaning purpose
+        setupSemanticForPatternInfo();
+
+
+
+        ObjectProperty<EntityFacade> refComponentProp = genEditingViewModel.getProperty(REF_COMPONENT);
+        editFieldsButton.disableProperty().bind(refComponentProp.isNull());
+        addReferenceButton.disableProperty().bind(refComponentProp.isNotNull());
 
         // if the semantic is null, then we generate a default one
         if (semantic == null) {
             genEditingViewModel.setPropertyValue(MODE, CREATE);
-            EntityFacade pattern = genEditingViewModel.getPropertyValue(PATTERN);
 
-            StampViewModel defaultStampViewModel = new StampViewModel();
-            defaultStampViewModel.setPropertyValue(STATUS, State.ACTIVE);
-            defaultStampViewModel.setPropertyValue(AUTHOR, TinkarTerm.USER);
-            defaultStampViewModel.setPropertyValue(MODULE, TinkarTerm.DEVELOPMENT_MODULE);
-            defaultStampViewModel.setPropertyValue(PATH, TinkarTerm.DEVELOPMENT_PATH);
-            Session session = composer.open(State.ACTIVE, TinkarTerm.USER, TinkarTerm.DEVELOPMENT_MODULE, TinkarTerm.DEVELOPMENT_PATH);
-            defaultStampViewModel.save();
+            setupStampPopup(semanticEntityVersionLatest);
+            updateUIStamp(getStampViewModel());
 
-            genEditingViewModel.setPropertyValue(STAMP_VIEW_MODEL, defaultStampViewModel);
 
-            // create empty semantic for the pattern and set it in the view model
-            genEditingViewModel.setPropertyValue(SESSION, session);
-            semantic = DataModelHelper.createEmptySemantic(getViewProperties(), pattern, session);
+            PatternFacade patternFacade = (PatternFacade) genEditingViewModel.getProperty(PATTERN).getValue();
+            PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(patternFacade).get();
 
-            genEditingViewModel.setPropertyValue(SEMANTIC, semantic);
+            // generate read only UI controls in create mode
+            List<KLReadOnlyBaseControl> readOnlyControls = KlFieldHelper.addReadOnlyBlankControlsToContainer(patternVersionRecord, getViewProperties());
+            nodes.addAll(readOnlyControls);
+            semanticDetailsVBox.getChildren().addAll(readOnlyControls);
         } else {
             genEditingViewModel.setPropertyValue(MODE, EDIT);
-        }
-
-        StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
-        LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
-        observableSemantic = ObservableEntity.get(semantic.nid());
-        updateVersions(Entity.getFast(observableSemantic.nid()), observableSemantic);
-        observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-        //retrieve latest committed semanticVersion
-        semanticEntityVersionLatest = stampCalculator.latest(semantic.nid());
-        if(semanticEntityVersionLatest.get().stamp().lastVersion().uncommitted() && genEditingViewModel.getPropertyValue(MODE) != CREATE){
+            observableSemantic = ObservableEntity.get(semantic.nid());
+            updateVersions(Entity.getFast(observableSemantic.nid()), observableSemantic);
+            observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+            //retrieve latest committed semanticVersion
             semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
+            setupStampPopup(semanticEntityVersionLatest);
+            updateUIStamp(getStampViewModel());
+            setUpObservables();
         }
-        semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
-            Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
-            patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
-                String meaning = languageCalculator.getDescriptionText(patternEntityVersion.semanticMeaningNid()).orElse("No Description");
-                String purpose = languageCalculator.getDescriptionText(patternEntityVersion.semanticPurposeNid()).orElse("No Description");
-                semanticMeaningText.setText(meaning);
-                semanticPurposeText.setText(purpose);
-
-                String patternFQN = getViewProperties().calculator().languageCalculator()
-                        .getFullyQualifiedDescriptionTextWithFallbackOrNid(patternEntityVersion.nid());
-                semanticDescriptionLabel.setText("Semantic for %s".formatted(patternFQN));
-                semanticTitleText.setText("%s of component for %s in %s".formatted(meaning, purpose, patternFQN));
-            });
-        });
-
-        // Setup Stamp section
-        setupStampPopup(semanticEntityVersionLatest);
-        updateUIStamp(getStampViewModel());
-
-        // Update reference component section
+        //Populate readonly reference component.
         setupReferenceComponentUI(semanticEntityVersionLatest);
 
         // Populate the Semantic Details
-
         if (genEditingViewModel.getPropertyValue(MODE).equals(EDIT)) {
             setUpObservables();
         } else {
@@ -299,16 +274,15 @@ public class GenEditingDetailsController {
             List<KLReadOnlyBaseControl> readOnlyControls = KlFieldHelper.addReadOnlyBlankControlsToContainer(patternVersionRecord, getViewProperties());
             nodes.addAll(readOnlyControls);
             semanticDetailsVBox.getChildren().addAll(readOnlyControls);
+            // get the initial value of the observable fields
         }
-        // get the initial value of the observable fields
         genEditingViewModel.setPropertyValue(DEFAULT_FIELDS_HASH, calculteHashValue(observableFields));
-
         // Setup Properties Bump out view.
         setupProperties();
 
         //Set up the Listener to refresh the details area (After user hits submit button on the right side)
         EntityFacade finalSemantic = semantic;
-        Latest<SemanticEntityVersion> latestSemanticEntityVersion = getViewProperties().calculator().stampCalculator().latest(semantic.nid());
+//        Latest<SemanticEntityVersion> latestSemanticEntityVersion = getViewProperties().calculator().stampCalculator().latest(semantic.nid());
         Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
             if (evt.getEventType() == GenEditingEvent.PUBLISH && evt.getNid() == finalSemantic.nid()) {
                 if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
@@ -340,6 +314,32 @@ public class GenEditingDetailsController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, refreshSubscriber);
+
+        Subscriber<GenEditingEvent> refComponentSubscriber = evt -> {
+            if (evt.getEventType() == GenEditingEvent.CONFIRM_REFERENCE_COMPONENT) {
+                setupReferenceComponentUI(semanticEntityVersionLatest);
+            }
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                GenEditingEvent.class, refComponentSubscriber);
+    }
+
+    private void setupSemanticForPatternInfo() {
+        PatternFacade patternFacade = (PatternFacade) genEditingViewModel.getProperty(PATTERN).getValue();
+        LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
+        ObservablePattern observablePattern = ObservableEntity.get(patternFacade.nid());
+        ObservablePatternSnapshot observablePatternSnapshot = observablePattern.getSnapshot(getViewProperties().calculator());
+        ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
+        PatternEntityVersion patternEntityVersion = observablePatternVersion.getVersionRecord();
+        //            patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
+        String meaning = languageCalculator.getDescriptionText(patternEntityVersion.semanticMeaningNid()).orElse("No Description");
+        String purpose = languageCalculator.getDescriptionText(patternEntityVersion.semanticPurposeNid()).orElse("No Description");
+        semanticMeaningText.setText(meaning);
+        semanticPurposeText.setText(purpose);
+        String patternFQN = getViewProperties().calculator().languageCalculator()
+                .getFullyQualifiedDescriptionTextWithFallbackOrNid(patternEntityVersion.nid());
+        semanticDescriptionLabel.setText("Semantic for %s".formatted(patternFQN));
+        semanticTitleText.setText("%s of component for %s in %s".formatted(meaning, purpose, patternFQN));
     }
 
     private void loadUIData() {
@@ -384,13 +384,11 @@ public class GenEditingDetailsController {
                             klReadOnlyBaseControl.setEditMode(false);
                         }
                     }
-
                     EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
                             new PropertyPanelEvent(readOnlyBaseControl, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
                     EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
                             new PropertyPanelEvent(readOnlyBaseControl, OPEN_PANEL));
                 };
-
         // add setEditOnAction
         for (int index = 0; index < nodes.size(); index++) {
             KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) nodes.get(index);
@@ -419,13 +417,15 @@ public class GenEditingDetailsController {
                 .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(getViewProperties()), true);
 
         // populate STAMP values
-        StampEntity stampEntity = semanticEntityVersionLatest.get().stamp();
-        stampViewModel.setPropertyValue(STATUS, stampEntity.state())
-                .setPropertyValue(TIME, stampEntity.time())
-                .setPropertyValue(AUTHOR, stampEntity.author())
-                .setPropertyValue(MODULE, stampEntity.module())
-                .setPropertyValue(PATH, stampEntity.path())
-        ;
+        if(semanticEntityVersionLatest != null) {
+            StampEntity stampEntity = semanticEntityVersionLatest.get().stamp();
+            stampViewModel.setPropertyValue(STATUS, stampEntity.state())
+                    .setPropertyValue(TIME, stampEntity.time())
+                    .setPropertyValue(AUTHOR, stampEntity.author())
+                    .setPropertyValue(MODULE, stampEntity.module())
+                    .setPropertyValue(PATH, stampEntity.path())
+            ;
+        }
         stampViewModel.save(true);
     }
 
@@ -472,41 +472,22 @@ public class GenEditingDetailsController {
         EntityFacade refComponent = refComponentProp.get();
 
         //Disable the  edit the Reference Component of an existing semantic once submitted
-        addReferenceButton.setDisable(refComponent != null);
-
         Consumer<EntityFacade> updateRefComponentInfo = (refComponent2) -> {
-            if (refComponent2 == null) {
-                return;
-            }
-            EntityFacade entityFacade = EntityService.get().getEntityFast(refComponent2.nid());
+            Entity<? extends EntityVersion> entity = Entity.getFast(refComponent2.nid());
             // update items
-            String refType = switch (entityFacade) {
-                case ConceptFacade ignored -> "Concept";
-                case SemanticFacade ignored -> "Semantic";
-                case PatternFacade ignored -> "Pattern";
+            String refType = switch (entity) {
+                case ConceptEntity ignored -> "Concept";
+                case SemanticEntity ignored -> "Semantic";
+                case PatternEntity ignored -> "Pattern";
                 default -> "Unknown";
             };
-
             ComponentItem componentItem = new ComponentItem(refComponent2.description(),
                     Identicon.generateIdenticonImage(refComponent2.publicId()), refComponent2.nid());
-
+            EntityProxy entityProxy = EntityProxy.Concept.make(componentItem.getNid());
             referenceComponent.setTitle(refType);
             referenceComponent.setValue(componentItem);
         };
-
-        // when ever the property REF_COMPONENT changes update the UI.
-        refComponentProp.addListener((observable, oldValue, newValue) -> {
-            updateRefComponentInfo.accept(newValue);
-        });
-
-        // if empty look up semantic's reference component.
-        if (refComponent == null) {
-            if (semanticEntityVersionLatest != null) {
-                semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
-                    refComponentProp.set(semanticEntityVersion.referencedComponent().toProxy());
-                });
-            }
-        } else {
+        if (refComponent != null) {
             updateRefComponentInfo.accept(refComponent);
         }
     }

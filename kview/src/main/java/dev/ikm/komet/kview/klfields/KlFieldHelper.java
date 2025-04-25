@@ -161,6 +161,9 @@ public class KlFieldHelper {
      * @return entityVersionLatest
      * */
     public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(ObservableSemanticSnapshot observableSemanticSnapshot) {
+        if(observableSemanticSnapshot == null){
+            return new Latest<>();
+        }
         AtomicReference<Latest<SemanticEntityVersion>> entityVersionLatest = new AtomicReference<>();
         SemanticEntityVersion semanticEntityVersion = (SemanticEntityVersion) observableSemanticSnapshot.getLatestVersion().get().getEntityVersion();
         if(semanticEntityVersion.committed()){

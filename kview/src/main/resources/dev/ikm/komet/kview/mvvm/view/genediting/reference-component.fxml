@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<BorderPane prefHeight="146.0" prefWidth="500.0" styleClass="sub-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.genediting.ReferenceComponentController">
+<BorderPane prefHeight="146.0" prefWidth="500.0" styleClass="sub-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.genediting.ReferenceComponentController">
    <center>
       <ScrollPane fitToWidth="true" hbarPolicy="NEVER" BorderPane.alignment="CENTER">
          <BorderPane.margin>
@@ -37,7 +37,7 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
-            <Label alignment="TOP_CENTER" styleClass="lidr-device-title-label" text="Pattern Fields" textAlignment="CENTER" GridPane.columnIndex="1">
+            <Label alignment="TOP_CENTER" styleClass="lidr-device-title-label" text="Reference Component" textAlignment="CENTER" GridPane.columnIndex="1">
                <GridPane.margin>
                   <Insets left="28.0" />
                </GridPane.margin>
@@ -64,7 +64,7 @@
             <Button fx:id="cancelButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#cancel" prefHeight="32.0" text="CANCEL" HBox.hgrow="ALWAYS" />
             <Region maxWidth="1.7976931348623157E308" prefHeight="32.0" prefWidth="150.0" HBox.hgrow="ALWAYS" />
             <Button fx:id="clearFormButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#clearForm" text="CLEAR FORM" />
-            <Button fx:id="submitButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#submit" styleClass="primary" text="SUBMIT" />
+            <Button fx:id="confirmButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#confirm" styleClass="primary" text="CONFIRM" />
          </children>
       </HBox>
    </bottom>
