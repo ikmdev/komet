@@ -120,7 +120,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
         for (KLComponentControl componentControl : componentControls) {
             double componentExtendedBoundsLowerY = componentControl.getLayoutY() - SPACE_BETWEEN_COMPONENTS;
-            double componentExtendedBoundsUpperY = componentControl.getLayoutY() + componentControl.getHeight();
+            double componentExtendedBoundsUpperY = componentControl.getLayoutY();
 
             if (y >= componentExtendedBoundsLowerY && y <= componentExtendedBoundsUpperY) {
                 int componentIndex = componentControls.indexOf(componentControl);
@@ -147,6 +147,11 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
                 previousDropLine = currentDropLine;
 
                 break;
+            } else {
+                if (previousDropLine != null) {
+                    previousDropLine.setVisible(false);
+                    previousDropLine = null;
+                }
             }
         }
     }
