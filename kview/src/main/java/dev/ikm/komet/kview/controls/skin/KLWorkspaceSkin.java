@@ -585,13 +585,13 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     private void addWindow(ChapterKlWindow<Pane> window) {
         final Pane windowPanel = window.fxGadget();
         // Make the window draggable/resizable
-        new WindowSupport(windowPanel, desktopPane);
+        new WindowSupport(windowPanel);
 
         // Add listeners to keep the window in bounds
         final ChangeListener<? super Number> clampListener =
                 (obs, oldVal, newVal) -> clampWindowPosition(windowPanel);
-        windowPanel.translateXProperty().addListener(clampListener);
-        windowPanel.translateYProperty().addListener(clampListener);
+        windowPanel.layoutXProperty().addListener(clampListener);
+        windowPanel.layoutYProperty().addListener(clampListener);
         windowPanel.widthProperty().addListener(clampListener);
         windowPanel.heightProperty().addListener(clampListener);
         windowPanel.getProperties().put(CLAMP_WINDOW_POSITION_LISTENER, clampListener);
@@ -634,8 +634,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                 case BOX -> {
                     // Use the drop region's bounding box directly
                     if (canPlace(dropX, dropY, dropW, dropH, desktopWidth, desktopHeight)) {
-                        windowPanel.setTranslateX(dropX);
-                        windowPanel.setTranslateY(dropY);
+                        windowPanel.setLayoutX(dropX);
+                        windowPanel.setLayoutY(dropY);
                         windowPanel.setPrefWidth(dropW);
                         desktopPane.getChildren().add(windowPanel);
 
@@ -672,8 +672,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                         }
                     }
 
-                    windowPanel.setTranslateX(newX);
-                    windowPanel.setTranslateY(newY);
+                    windowPanel.setLayoutX(newX);
+                    windowPanel.setLayoutY(newY);
                     windowPanel.setPrefWidth(windowWidth);
                     desktopPane.getChildren().add(windowPanel);
 
@@ -696,20 +696,18 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         // --------------------------------------------------------------------
         // 2) If the window has a saved position and it is valid
         // --------------------------------------------------------------------
-        final double savedX = windowPanel.getTranslateX();
-        final double savedY = windowPanel.getTranslateY();
+        final double savedX = windowPanel.getLayoutX();
+        final double savedY = windowPanel.getLayoutY();
         final boolean hasSavedPos = (savedX != 0 || savedY != 0);
 
         if (hasSavedPos) {
-            if (canPlace(savedX, savedY, windowWidth, windowHeight, desktopWidth, desktopHeight)) {
-                windowPanel.setTranslateX(savedX);
-                windowPanel.setTranslateY(savedY);
-                windowPanel.setPrefWidth(windowWidth);
-                desktopPane.getChildren().add(windowPanel);
-                desktopPane.layout();
-                // No auto-scrolling for returning windows
-                return;
-            }
+            windowPanel.setLayoutX(savedX);
+            windowPanel.setLayoutY(savedY);
+            windowPanel.setPrefWidth(windowWidth);
+            desktopPane.getChildren().add(windowPanel);
+            desktopPane.layout();
+            // No auto-scrolling for returning windows
+            return;
         }
 
         // --------------------------------------------------------------------
@@ -720,8 +718,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                 workspace.getHorizontalGap(), workspace.getVerticalGap());
 
         if (placement != null) {
-            windowPanel.setTranslateX(placement.getX());
-            windowPanel.setTranslateY(placement.getY());
+            windowPanel.setLayoutX(placement.getX());
+            windowPanel.setLayoutY(placement.getY());
             windowPanel.setPrefWidth(windowWidth);
             desktopPane.getChildren().add(windowPanel);
 
@@ -749,8 +747,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         if (windowPanel.getProperties().containsKey(CLAMP_WINDOW_POSITION_LISTENER)) {
             @SuppressWarnings("unchecked") final ChangeListener<? super Number> clampListener =
                     (ChangeListener<? super Number>) windowPanel.getProperties().get(CLAMP_WINDOW_POSITION_LISTENER);
-            windowPanel.translateXProperty().removeListener(clampListener);
-            windowPanel.translateYProperty().removeListener(clampListener);
+            windowPanel.layoutXProperty().removeListener(clampListener);
+            windowPanel.layoutYProperty().removeListener(clampListener);
             windowPanel.widthProperty().removeListener(clampListener);
             windowPanel.heightProperty().removeListener(clampListener);
             windowPanel.getProperties().remove(CLAMP_WINDOW_POSITION_LISTENER);
@@ -911,8 +909,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                     occupantBounds);
 
             if (pos != null) {
-                pane.setTranslateX(pos.getX());
-                pane.setTranslateY(pos.getY());
+                pane.setLayoutX(pos.getX());
+                pane.setLayoutY(pos.getY());
             }
 
             desktopPane.getChildren().add(pane);
@@ -1263,14 +1261,14 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * Clamps the position and size of the specified window pane so that it remains fully visible
      * within the bounds of the desktop pane.
      * <p>
-     * This method adjusts the pane's horizontal (translateX) and vertical (translateY) positions
+     * This method adjusts the pane's horizontal (layoutX) and vertical (layoutY) positions
      * to ensure that the entire window fits inside the desktop pane. If any part of the window
      * extends beyond the desktop boundaries, its position is modified to bring it back into view.
      * Additionally, if the window's size exceeds the dimensions of the desktop pane, the preferred
      * width and height are reduced accordingly.
      * <p>
-     * Typically, this method is registered as a change listener on the pane's translate and size
-     * properties (i.e., {@code translateXProperty()}, {@code translateYProperty()},
+     * Typically, this method is registered as a change listener on the pane's position and size
+     * properties (i.e., {@code layoutXProperty()}, {@code layoutYProperty()},
      * {@code widthProperty()}, and {@code heightProperty()}) to dynamically enforce that the window
      * remains within the visible workspace area.
      *
@@ -1286,18 +1284,18 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             return;
         }
 
-        final double newX = pane.getTranslateX();
-        final double newY = pane.getTranslateY();
+        final double newX = pane.getLayoutX();
+        final double newY = pane.getLayoutY();
 
         if (newX < 0) {
-            pane.setTranslateX(0);
+            pane.setLayoutX(0);
         } else if (newX + windowWidth > desktopPaneWidth) {
-            pane.setTranslateX(desktopPaneWidth - windowWidth);
+            pane.setLayoutX(desktopPaneWidth - windowWidth);
         }
         if (newY < 0) {
-            pane.setTranslateY(0);
+            pane.setLayoutY(0);
         } else if (newY + windowHeight > desktopPaneHeight) {
-            pane.setTranslateY(desktopPaneHeight - windowHeight);
+            pane.setLayoutY(desktopPaneHeight - windowHeight);
         }
 
         if (pane.getWidth() > desktopPaneWidth) {

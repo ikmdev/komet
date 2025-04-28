@@ -1161,7 +1161,7 @@ public class JournalController {
      * <p>
      * If a non-null {@code conceptWindowSettingsMap} is provided, this method retrieves the folder name using the
      * {@code CONCEPT_PREF_NAME} key (defaulting to a generated value if not present) and then sets the pane's
-     * translation (X and Y) and preferred size (width and height) based on the values in the map.
+     * position (X and Y) and preferred size (width and height) based on the values in the map.
      * <p>
      * If the {@code conceptWindowSettingsMap} is {@code null}, a new unique folder name is generated using a
      * predefined prefix and a random UUID. In this case, a new settings map is created via
@@ -1187,8 +1187,8 @@ public class JournalController {
 
         // Checking if map is null (if yes not values are set) if not null, setting position of concept windows.
         if (conceptWindowSettingsMap != null) {
-            conceptWindowPane.setTranslateX((Double) conceptWindowSettingsMap.get(CONCEPT_XPOS));
-            conceptWindowPane.setTranslateY((Double) conceptWindowSettingsMap.get(CONCEPT_YPOS));
+            conceptWindowPane.setLayoutX((Double) conceptWindowSettingsMap.get(CONCEPT_XPOS));
+            conceptWindowPane.setLayoutY((Double) conceptWindowSettingsMap.get(CONCEPT_YPOS));
             conceptWindowPane.setPrefWidth((Double) conceptWindowSettingsMap.get(CONCEPT_WIDTH));
             conceptWindowPane.setPrefHeight((Double) conceptWindowSettingsMap.get(CONCEPT_HEIGHT));
         }
@@ -1518,10 +1518,10 @@ public class JournalController {
                 conceptPreferences.put(CONCEPT_PREF_NAME, conceptPrefName);
                 conceptPreferences.put(NID_TYPE, conceptPreference.getNidType().toString());
                 conceptPreferences.putInt(NID_VALUE, conceptPreference.getNid());
+                conceptPreferences.putDouble(CONCEPT_XPOS, conceptPreference.getConceptPane().getLayoutX());
+                conceptPreferences.putDouble(CONCEPT_YPOS, conceptPreference.getConceptPane().getLayoutY());
                 conceptPreferences.putDouble(CONCEPT_HEIGHT, conceptPreference.getConceptPane().getPrefHeight());
                 conceptPreferences.putDouble(CONCEPT_WIDTH, conceptPreference.getConceptPane().getPrefWidth());
-                conceptPreferences.putDouble(CONCEPT_XPOS, conceptPreference.getConceptPane().getTranslateX());
-                conceptPreferences.putDouble(CONCEPT_YPOS, conceptPreference.getConceptPane().getTranslateY());
                 conceptPreferences.flush();
             } catch (Exception e) {
                 throw new RuntimeException(e);
