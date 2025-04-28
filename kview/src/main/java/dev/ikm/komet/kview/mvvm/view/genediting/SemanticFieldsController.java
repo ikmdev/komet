@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
 import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
@@ -25,7 +26,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.DEFAULT_FIELDS_HASH;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
@@ -40,7 +41,11 @@ import static dev.ikm.tinkar.terms.TinkarTerm.STRING_FIELD;
 import dev.ikm.komet.framework.events.EntityVersionChangeEvent;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservablePattern;
+import dev.ikm.komet.framework.observable.ObservablePatternSnapshot;
+import dev.ikm.komet.framework.observable.ObservablePatternVersion;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
@@ -51,6 +56,7 @@ import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.Entity;
@@ -65,6 +71,7 @@ import dev.ikm.tinkar.entity.VersionData;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -120,16 +127,9 @@ public class SemanticFieldsController {
     private void enableDisableSubmitButton(){
         //Disable submit button if any of the fields are blank.
         boolean disabled = checkForEmptyFields();
-        if (!disabled) {
+        if(!disabled){
             int uncommittedHash = calculteHashValue(observableFields);
-            // carve out in the logic so that when you are in create mode and the default values
-            // are exactly what they are then you are allowed to just save them as is
-            if ((genEditingViewModel.getPropertyValue(MODE) == CREATE) &&
-                (Integer.valueOf(uncommittedHash).equals(genEditingViewModel.getPropertyValue(DEFAULT_FIELDS_HASH)))) {
-                disabled = false;
-            } else {
-                disabled = (committedHash == uncommittedHash);
-            }
+            disabled = (committedHash == uncommittedHash);
         }
         submitButton.setDisable(disabled);
     }
@@ -177,18 +177,31 @@ public class SemanticFieldsController {
 
     @FXML
     private void initialize() {
-     /*   // clear all semantic details.
+        // clear all semantic details.
         editFieldsVBox.setSpacing(8.0);
         editFieldsVBox.getChildren().clear();
         submitButton.setDisable(true);
         genEditingViewModel.save();
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         reloadPatternNavigator = true;
-        observableSemantic = ObservableEntity.get(semantic.nid());
-        observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-        processCommittedValues();
 
-        loadUIData(); // And populates Nodes and Observable fields.
+        if (semantic != null) {
+            //Change the button name to RESET FORM
+            clearFormButton.setText("RESET FORM");
+            observableSemantic = ObservableEntity.get(semantic.nid());
+            observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+            processCommittedValues();
+            loadUIData(); // And populates Nodes and Observable fields.
+        }else {
+            PatternFacade patternFacade = (PatternFacade) genEditingViewModel.getProperty(PATTERN).getValue();
+            LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
+            ObservablePattern observablePattern = ObservableEntity.get(patternFacade.nid());
+            ObservablePatternSnapshot observablePatternSnapshot = observablePattern.getSnapshot(getViewProperties().calculator());
+            ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
+            PatternEntityVersion patternEntityVersion = observablePatternVersion.getVersionRecord();
+        }
+
+
 
         entityVersionChangeEventSubscriber = evt -> {
 
@@ -216,10 +229,6 @@ public class SemanticFieldsController {
         EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
                 EntityVersionChangeEvent.class, entityVersionChangeEventSubscriber);
 
-        //Change the button name to RESET FORM
-        if (genEditingViewModel.getPropertyValue(MODE) == EDIT) {
-            clearFormButton.setText("RESET FORM");
-        }*/
     }
 
     private void loadVBox() {
