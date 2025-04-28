@@ -104,6 +104,7 @@ import java.time.Year;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 
@@ -128,14 +129,8 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_NAMES;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CAN_DELETE;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
 
 /**
  * Main application class for the Komet application, extending JavaFX {@link Application}.
@@ -336,10 +331,13 @@ public class WebApp extends Application {
 
         // Create a subscriber for handling CreateJournalEvent
         Subscriber<CreateJournalEvent> detailsSubscriber = evt -> {
-            String journalName = evt.getWindowSettingsObjectMap().getValue(JOURNAL_TITLE);
+            final PrefX windowSettings = evt.getWindowSettingsObjectMap();
+            final UUID journalTopic = windowSettings.getValue(JOURNAL_TOPIC);
+            final String journalName = evt.getWindowSettingsObjectMap().getValue(JOURNAL_TITLE);
             // Check if a journal window with the same title is already open
             journalControllersList.stream()
-                    .filter(journalController -> journalController.getTitle().equals(journalName))
+                    .filter(journalController ->
+                            journalController.getJournalTopic().equals(journalTopic))
                     .findFirst()
                     .ifPresentOrElse(journalController -> {
                                 if (IS_BROWSER) {
@@ -351,7 +349,7 @@ public class WebApp extends Application {
                                     journalController.windowToFront();
                                 }
                             },
-                            () -> launchJournalViewPage(evt.getWindowSettingsObjectMap()));
+                            () -> launchJournalViewPage(windowSettings));
         };
 
         // Subscribe the subscriber to the JOURNAL_TOPIC
@@ -725,13 +723,28 @@ public class WebApp extends Application {
 
             if (journalWindowSettings != null) {
                 // load journal specific window settings
-                String journalName = journalWindowSettings.getValue(JOURNAL_TITLE);
+                final UUID journalTopic = journalWindowSettings.getValue(JOURNAL_TOPIC);
+                if (journalTopic != null) {
+                    journalController.setJournalTopic(journalTopic);
+                }
+                final String journalName = journalWindowSettings.getValue(JOURNAL_TITLE);
                 journalStage.setTitle(journalName);
+
+                // Get the UUID-based directory name from preferences
+                String journalDirName = journalWindowSettings.getValue(JOURNAL_DIR_NAME);
+
+                // For new journals (no UUID yet), generate one using the controller's UUID
+                if (journalDirName == null) {
+                    journalDirName = journalController.generateJournalDirName();
+                    journalWindowSettings.setValue(JOURNAL_DIR_NAME, journalDirName);
+                }
+
                 if (journalWindowSettings.getValue(JOURNAL_HEIGHT) != null) {
                     journalStage.setHeight(journalWindowSettings.getValue(JOURNAL_HEIGHT));
                     journalStage.setWidth(journalWindowSettings.getValue(JOURNAL_WIDTH));
                     journalStage.setX(journalWindowSettings.getValue(JOURNAL_XPOS));
                     journalStage.setY(journalWindowSettings.getValue(JOURNAL_YPOS));
+                    journalController.setWindowView(windowSettings.getView());
                     journalController.recreateConceptWindows(journalWindowSettings);
                 }else{
                     journalStage.setMaximized(true);
@@ -790,13 +803,15 @@ public class WebApp extends Application {
         // launched (journal Controllers List) will overwrite existing window preferences.
         List<String> journalSubWindowFolders = new ArrayList<>(journalControllersList.size());
         for (JournalController controller : journalControllersList) {
-            String journalSubWindowPrefFolder = controller.generateJournalDirNameBasedOnTitle();
+            final String journalSubWindowPrefFolder = controller.generateJournalDirName();
             journalSubWindowFolders.add(journalSubWindowPrefFolder);
 
             KometPreferences journalSubWindowPreferences = appPreferences.node(JOURNAL_WINDOW +
                     File.separator + journalSubWindowPrefFolder);
             controller.saveConceptWindowPreferences(journalSubWindowPreferences);
+            journalSubWindowPreferences.putUuid(JOURNAL_TOPIC, controller.getJournalTopic());
             journalSubWindowPreferences.put(JOURNAL_TITLE, controller.getTitle());
+            journalSubWindowPreferences.put(JOURNAL_DIR_NAME, journalSubWindowPrefFolder);
             journalSubWindowPreferences.putDouble(JOURNAL_HEIGHT, controller.getHeight());
             journalSubWindowPreferences.putDouble(JOURNAL_WIDTH, controller.getWidth());
             journalSubWindowPreferences.putDouble(JOURNAL_XPOS, controller.getX());

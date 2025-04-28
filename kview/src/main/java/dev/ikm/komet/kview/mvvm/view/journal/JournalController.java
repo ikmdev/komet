@@ -293,8 +293,8 @@ public class JournalController {
     private ActivityStream navigatorActivityStream;
     private ActivityStream searchActivityStream;
     private ActivityStream reasonerActivityStream;
-    private final UUID journalTopic;
-    private EvtBus journalEventBus = EvtBusFactory.getDefaultEvtBus();
+    private UUID journalTopic;
+    private final EvtBus journalEventBus = EvtBusFactory.getDefaultEvtBus();
     private volatile boolean isSlideOutOpen = false;
 
     private List<PublicIdStringKey<ActivityStream>> activityStreams = new ArrayList<>();
@@ -331,10 +331,6 @@ public class JournalController {
 
     private Subscriber<RefreshCalculatorCacheEvent> refreshCalculatorEventSubscriber;
 
-    public JournalController() {
-        journalTopic = UUID.randomUUID();
-    }
-
     /**
      * Called after JavaFX FXML DI has occurred. Any annotated items above should be valid.
      */
@@ -358,7 +354,9 @@ public class JournalController {
         conceptWindows.addListener((ListChangeListener<ConceptPreference>) change -> {
             PrefX journalWindowPref = PrefX.create();
             journalWindowPref.setValue(CONCEPT_COUNT, conceptWindows.size());
+            journalWindowPref.setValue(JOURNAL_TOPIC, getJournalTopic());
             journalWindowPref.setValue(JOURNAL_TITLE, getTitle());
+            journalWindowPref.setValue(JOURNAL_DIR_NAME, generateJournalDirName());
 
             journalEventBus.publish(JOURNAL_TOPIC,
                     new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowPref));
@@ -1241,10 +1239,9 @@ public class JournalController {
     private void removeConceptPreferences(String conceptPrefDirName) {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
 
-        // Applying the preferences naming convention to the files.
-        // e.g., journal-window/JOURNAL_Journal_1/CONCEPT_XXX
+        // Use UUID-based journal directory name for the preferences path
         String path = JOURNAL_WINDOW +
-                separator + generateJournalDirNameBasedOnTitle() +
+                separator + generateJournalDirName() +
                 separator + conceptPrefDirName;
         try {
             if (appPreferences.nodeExists(path)) {
@@ -1332,7 +1329,6 @@ public class JournalController {
 
     private void loadNavigationPanel(PublicIdStringKey<ActivityStream> navigationActivityStreamKey,
                                      ObservableViewNoOverride windowView, KometNodeFactory navigationFactory) {
-
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
         Pane navigatorNodePanel = loadClassicConceptNavigator(navigationActivityStreamKey, windowView, navigationFactory);
         Config patternConceptConfig = new Config(ConceptPatternNavController.class.getResource(CONCEPT_PATTERN_NAV_FXML_URL))
@@ -1486,14 +1482,31 @@ public class JournalController {
     }
 
     /**
-     * This will use the title of the journal project and convert it to a unique journal directory name.
-     * This function will convert Journal 1 to JOURNAL_Journal_1.
-     * Todo Refactor code to allow user to change the name of the journal project and a unique name that doesn't conflict with the file system.
+     * Generates a unique journal directory name based on the journal's UUID.
+     * This ensures a consistent identifier even if the journal is renamed.
      *
-     * @return
+     * @return A string in the format JOURNAL_UUID for use as a preference folder name
      */
-    public String generateJournalDirNameBasedOnTitle() {
-        return JOURNAL_FOLDER_PREFIX + getTitle().replace(" ", "_");
+    public String generateJournalDirName() {
+        return JOURNAL_FOLDER_PREFIX + journalTopic.toString();
+    }
+
+    /**
+     * Gets the unique UUID for this journal instance.
+     *
+     * @return the UUID that uniquely identifies this journal
+     */
+    public UUID getJournalTopic() {
+        return journalTopic;
+    }
+
+    /**
+     * Sets the unique UUID for this journal instance.
+     *
+     * @param journalTopic the UUID to set for this journal
+     */
+    public void setJournalTopic(UUID journalTopic) {
+        this.journalTopic = journalTopic;
     }
 
     public void saveConceptWindowPreferences(KometPreferences journalSubWindowPreferences) {
@@ -1512,7 +1525,7 @@ public class JournalController {
             conceptFolderNames.add(conceptPrefName);
 
             // Applying the preferences naming convention to the files.
-            // e.g., journal-window/JOURNAL_Journal_1/CONCEPT_XXX
+            // e.g., journal-window/JOURNAL_UUID/CONCEPT_XXX
             try {
                 KometPreferences conceptPreferences = journalSubWindowPreferences.node(conceptPrefName);
                 conceptPreferences.put(CONCEPT_PREF_NAME, conceptPrefName);

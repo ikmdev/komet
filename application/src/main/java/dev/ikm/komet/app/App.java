@@ -40,6 +40,7 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
 
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
@@ -136,6 +137,7 @@ import java.time.Year;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 
@@ -168,7 +170,7 @@ public class App extends Application {
      * This is a list of new windows that have been launched. During shutdown, the application close each stage gracefully.
      */
     private static Stage landingPageWindow;
-    private List<JournalController> journalControllersList = new ArrayList<>();
+    private final List<JournalController> journalControllersList = new ArrayList<>();
 
     private EvtBus kViewEventBus;
 
@@ -289,16 +291,17 @@ public class App extends Application {
         // get the instance of the event bus
         kViewEventBus = EvtBusFactory.getInstance(EvtBus.class);
         Subscriber<CreateJournalEvent> detailsSubscriber = evt -> {
-
-            String journalName = evt.getWindowSettingsObjectMap().getValue(JOURNAL_TITLE);
+            final PrefX windowSettings = evt.getWindowSettingsObjectMap();
+            final UUID journalTopic = windowSettings.getValue(JOURNAL_TOPIC);
             // Inspects the existing journal windows to see if it is already open
             // So that we do not open duplicate journal windows
             journalControllersList.stream()
-                    .filter(journalController -> journalController.getTitle().equals(journalName))
+                    .filter(journalController ->
+                            journalController.getJournalTopic().equals(journalTopic))
                     .findFirst()
                     .ifPresentOrElse(
                             JournalController::windowToFront, /* Window already launched now make window to the front (so user sees window) */
-                            () -> launchJournalViewWindow(evt.getWindowSettingsObjectMap()) /* launch new Journal view window */
+                            () -> launchJournalViewWindow(windowSettings) /* launch new Journal view window */
                     );
         };
         // subscribe to the topic
@@ -486,11 +489,24 @@ public class App extends Application {
                 generateMsWindowsMenu(journalBorderPane, journalStageWindow);
             }
 
-            String journalName;
             if (journalWindowSettings != null) {
                 // load journal specific window settings
-                journalName = journalWindowSettings.getValue(JOURNAL_TITLE);
+                final UUID journalTopic = journalWindowSettings.getValue(JOURNAL_TOPIC);
+                if (journalTopic != null) {
+                    journalController.setJournalTopic(journalTopic);
+                }
+                final String journalName = journalWindowSettings.getValue(JOURNAL_TITLE);
                 journalStageWindow.setTitle(journalName);
+
+                // Get the UUID-based directory name from preferences
+                String journalDirName = journalWindowSettings.getValue(JOURNAL_DIR_NAME);
+
+                // For new journals (no UUID yet), generate one using the controller's UUID
+                if (journalDirName == null) {
+                    journalDirName = journalController.generateJournalDirName();
+                    journalWindowSettings.setValue(JOURNAL_DIR_NAME, journalDirName);
+                }
+
                 if (journalWindowSettings.getValue(JOURNAL_HEIGHT) != null) {
                     journalStageWindow.setHeight(journalWindowSettings.getValue(JOURNAL_HEIGHT));
                     journalStageWindow.setWidth(journalWindowSettings.getValue(JOURNAL_WIDTH));
@@ -550,13 +566,15 @@ public class App extends Application {
         // launched (journal Controllers List) will overwrite existing window preferences.
         List<String> journalSubWindowFolders = new ArrayList<>(journalControllersList.size());
         for (JournalController controller : journalControllersList) {
-            String journalSubWindowPrefFolder = controller.generateJournalDirNameBasedOnTitle();
+            final String journalSubWindowPrefFolder = controller.generateJournalDirName();
             journalSubWindowFolders.add(journalSubWindowPrefFolder);
 
             KometPreferences journalSubWindowPreferences = appPreferences.node(JOURNAL_WINDOW +
                     File.separator + journalSubWindowPrefFolder);
             controller.saveConceptWindowPreferences(journalSubWindowPreferences);
+            journalSubWindowPreferences.putUuid(JOURNAL_TOPIC, controller.getJournalTopic());
             journalSubWindowPreferences.put(JOURNAL_TITLE, controller.getTitle());
+            journalSubWindowPreferences.put(JOURNAL_DIR_NAME, journalSubWindowPrefFolder);
             journalSubWindowPreferences.putDouble(JOURNAL_HEIGHT, controller.getHeight());
             journalSubWindowPreferences.putDouble(JOURNAL_WIDTH, controller.getWidth());
             journalSubWindowPreferences.putDouble(JOURNAL_XPOS, controller.getX());
@@ -569,7 +587,6 @@ public class App extends Application {
             } catch (BackingStoreException e) {
                 throw new RuntimeException(e);
             }
-
         }
 
         // Make sure windows that are not summoned will not be deleted (not added to JOURNAL_NAMES)

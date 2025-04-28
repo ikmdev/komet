@@ -41,11 +41,14 @@ import javafx.scene.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.UUID;
+
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
 public class JournalCardController implements BasicController {
+
     private static final Logger LOG = LoggerFactory.getLogger(JournalCardController.class);
-    private EvtBus journalEventBus;
+
     @FXML
     Pane cardPane;
 
@@ -60,8 +63,12 @@ public class JournalCardController implements BasicController {
 
     @FXML
     Button menuOptionButton;
-    ContextMenu contextMenu = buildMenuOptionContextMenu();
-    Subscriber<JournalTileEvent> updateCard;
+
+    private UUID journalTopic;
+    private EvtBus journalEventBus;
+    private Subscriber<JournalTileEvent> updateCard;
+    private final ContextMenu contextMenu = buildMenuOptionContextMenu();
+
     @FXML
     public void initialize() {
         journalEventBus = EvtBusFactory.getDefaultEvtBus();
@@ -72,19 +79,21 @@ public class JournalCardController implements BasicController {
 
         // Listen for update card or journal tile event .
         updateCard = evt -> {
+            final PrefX journalWindowSettingsMap = evt.getJournalWindowSettingsMap();
+
             // grab the name of the journal
-            String journalName = evt.getJournalWindowSettingsMap().getValue(JOURNAL_TITLE);
+            final String journalName = journalWindowSettingsMap.getValue(JOURNAL_TITLE);
             // Process UPDATE_JOURNAL_TILE event type only.
             if (evt.getEventType() != UPDATE_JOURNAL_TILE || !journalCardName.getText().equals(journalName)) return;
 
             // Update the card's info
-            if (evt.getJournalWindowSettingsMap().getValue(CONCEPT_COUNT) != null) {
-                journalCardConceptCount.setText("Concepts: " + evt.getJournalWindowSettingsMap().getValue(CONCEPT_COUNT));
+            if (journalWindowSettingsMap.getValue(CONCEPT_COUNT) != null) {
+                journalCardConceptCount.setText("Concepts: " + journalWindowSettingsMap.getValue(CONCEPT_COUNT));
             }
 
             // Update the card's menu option user can delete
-            if (evt.getJournalWindowSettingsMap().getValue(CAN_DELETE) != null) {
-                Boolean canDelete = evt.getJournalWindowSettingsMap().getValue(CAN_DELETE);
+            if (journalWindowSettingsMap.getValue(CAN_DELETE) != null) {
+                Boolean canDelete = journalWindowSettingsMap.getValue(CAN_DELETE);
                 if (canDelete == null) {
                     canDelete = true;
                 }
@@ -183,7 +192,7 @@ public class JournalCardController implements BasicController {
                 { MenuHelper.SEPARATOR },
                 { "Delete", true,  (EventHandler<ActionEvent>) actionEvent ->
                         journalEventBus.publish(JOURNAL_TOPIC,
-                                new DeleteJournalEvent(this, DELETE_JOURNAL, journalCardName.getText()))
+                                new DeleteJournalEvent(this, DELETE_JOURNAL, journalTopic))
                 },
         };
         for (Object[] menuItemObj : menuItems) {
@@ -214,7 +223,9 @@ public class JournalCardController implements BasicController {
         return contextMenu;
     }
 
-
+    public void setJournalTopic(UUID journalTopic) {
+        this.journalTopic = journalTopic;
+    }
 
     public void setJournalCardName(String journalCardName) {
         this.journalCardName.setText(journalCardName);
