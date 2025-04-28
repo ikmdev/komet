@@ -1,10 +1,8 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.NodeUtils;
-import dev.ikm.komet.kview.controls.*;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
+import dev.ikm.komet.kview.controls.KometIcon;
 import javafx.scene.control.Label;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.ImageView;
