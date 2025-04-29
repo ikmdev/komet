@@ -4,6 +4,7 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KLByteArrayControl;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
@@ -100,6 +101,9 @@ public class KlFieldHelper {
         } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
             KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
             node = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
+        } else if (dataTypeNid == TinkarTerm.IMAGE_FIELD.nid()) {
+            KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
+            node = imageFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
         } else if (dataTypeNid == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
             //TODO: We're using BYTE_ARRAY for the moment for Image data type
             //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
@@ -230,10 +234,10 @@ public class KlFieldHelper {
                 control = new KLReadOnlyComponentListControl();
             } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 control = new KLReadOnlyComponentSetControl();
+            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.IMAGE_FIELD.nid()) {
+                control = new KLReadOnlyImageControl();
             } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
-                //TODO: We're using BYTE_ARRAY for the moment for Image data type
-                //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
-                //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
+                //TODO we need a KLReadOnlyByteArrayControl, this doesn't exist yet
                 control = new KLReadOnlyImageControl();
             }
 
