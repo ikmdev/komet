@@ -103,23 +103,25 @@ public class DataModelHelper {
      */
     public static Set<ConceptEntity> fetchFieldDefinitionDataTypes() {
 
+        //TODO the datatypes that are commented out are unsupported at this time
         return Set.of(
                 Entity.getFast(STRING.nid()),
                 Entity.getFast(COMPONENT_FIELD.nid()),
                 Entity.getFast(COMPONENT_ID_SET_FIELD.nid()),
                 Entity.getFast(COMPONENT_ID_LIST_FIELD.nid()),
-                Entity.getFast(DITREE_FIELD.nid()),
-                Entity.getFast(DIGRAPH_FIELD.nid()),
+//                Entity.getFast(DITREE_FIELD.nid()),
+//                Entity.getFast(DIGRAPH_FIELD.nid()),
                 Entity.getFast(CONCEPT_FIELD.nid()),
-                Entity.getFast(SEMANTIC_FIELD_TYPE.nid()),
+//                Entity.getFast(SEMANTIC_FIELD_TYPE.nid()),
                 Entity.getFast(INTEGER_FIELD.nid()),
                 Entity.getFast(FLOAT_FIELD.nid()),
                 Entity.getFast(BOOLEAN_FIELD.nid()),
+                //TODO the backend will support IMAGE as a subset of BYTE_ARRAY in the future
                 Entity.getFast(BYTE_ARRAY_FIELD.nid()),
                 Entity.getFast(ARRAY_FIELD.nid()),
-                Entity.getFast(INSTANT_LITERAL.nid()),
+//                Entity.getFast(INSTANT_LITERAL.nid()),
                 Entity.getFast(LONG.nid()),
-                Entity.getFast(VERTEX_FIELD.nid()),
+//                Entity.getFast(VERTEX_FIELD.nid()),
 //                Entity.getFast(PLANAR_POINT.nid()),
 //                Entity.getFast(SPATIAL_POINT.nid()),
                 Entity.getFast(UUID_DATA_TYPE.nid())
