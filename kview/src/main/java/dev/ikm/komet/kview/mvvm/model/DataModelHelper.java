@@ -103,7 +103,6 @@ public class DataModelHelper {
      */
     public static Set<ConceptEntity> fetchFieldDefinitionDataTypes() {
 
-        //TODO the datatypes that are commented out are unsupported at this time
         return Set.of(
                 Entity.getFast(STRING.nid()),
                 Entity.getFast(COMPONENT_FIELD.nid()),
