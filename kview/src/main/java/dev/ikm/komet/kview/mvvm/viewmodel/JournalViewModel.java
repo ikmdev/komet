@@ -13,13 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.mvvm.view.journal;
+package dev.ikm.komet.kview.mvvm.viewmodel;
 
-import javafx.fxml.FXMLLoader;
+/**
+ * Manages journal entry state and actions, building on common form behavior provided by {@link FormViewModel}.
+ */
+public class JournalViewModel extends FormViewModel {
 
-public class JournalViewFactory {
-    public static FXMLLoader createFXMLLoader() {
-        FXMLLoader journalViewLoader = new FXMLLoader(JournalViewFactory.class.getResource("journal.fxml"));
-        return journalViewLoader;
+    /**
+     * Initializes a new JournalViewModel with default form configuration.
+     */
+    public JournalViewModel() {
+        super();
     }
+
+    // Add journal-specific properties and commands as needed
 }

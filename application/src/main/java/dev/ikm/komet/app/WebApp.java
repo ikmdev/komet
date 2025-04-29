@@ -44,7 +44,6 @@ import dev.ikm.komet.kview.events.SignInUserEvent;
 import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
 import dev.ikm.komet.kview.mvvm.view.changeset.ExportController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
-import dev.ikm.komet.kview.mvvm.view.journal.JournalViewFactory;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
 import dev.ikm.komet.kview.mvvm.view.login.LoginPageController;
@@ -125,10 +124,13 @@ import static dev.ikm.komet.framework.window.WindowSettings.Keys.RIGHT_TAB_PREFE
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_NAMES;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_HEIGHT;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
 
@@ -701,95 +703,91 @@ public class WebApp extends Application {
      * @param journalWindowSettings if present will give the size and positioning of the journal window
      */
     private void launchJournalViewPage(PrefX journalWindowSettings) {
-        try {
-            KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-            KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
-            WindowSettings windowSettings = new WindowSettings(windowPreferences);
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
+        WindowSettings windowSettings = new WindowSettings(windowPreferences);
+        final UUID journalTopic = journalWindowSettings.getValue(JOURNAL_TOPIC);
 
-            FXMLLoader journalLoader = JournalViewFactory.createFXMLLoader();
-            BorderPane journalBorderPane = journalLoader.load();
-            JournalController journalController = journalLoader.getController();
+        Config journalConfig = new Config(JournalController.class.getResource("journal.fxml"))
+                .updateViewModel("journalViewModel", journalViewModel ->
+                        journalViewModel.setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic));
+        JFXNode<BorderPane, JournalController> journalJFXNode = FXMLMvvmLoader.make(journalConfig);
+        BorderPane journalBorderPane = journalJFXNode.node();
+        JournalController journalController = journalJFXNode.controller();
 
-            Scene sourceScene = new Scene(journalBorderPane, 800, 600);
-            addStylesheets(sourceScene, KOMET_CSS, KVIEW_CSS);
+        Scene sourceScene = new Scene(journalBorderPane, DEFAULT_JOURNAL_WIDTH, DEFAULT_JOURNAL_HEIGHT);
+        addStylesheets(sourceScene, KOMET_CSS, KVIEW_CSS);
 
-            Stage journalStage = new Stage();
-            journalStage.getIcons().setAll(appIcon);
-            journalStage.setScene(sourceScene);
+        Stage journalStage = new Stage();
+        journalStage.getIcons().setAll(appIcon);
+        journalStage.setScene(sourceScene);
 
-            if (!IS_MAC) {
-                generateMsWindowsMenu(journalBorderPane, journalStage);
+        if (!IS_MAC) {
+            generateMsWindowsMenu(journalBorderPane, journalStage);
+        }
+
+        if (journalWindowSettings != null) {
+            // load journal specific window settings
+            final String journalName = journalWindowSettings.getValue(JOURNAL_TITLE);
+            journalStage.setTitle(journalName);
+
+            // Get the UUID-based directory name from preferences
+            String journalDirName = journalWindowSettings.getValue(JOURNAL_DIR_NAME);
+
+            // For new journals (no UUID yet), generate one using the controller's UUID
+            if (journalDirName == null) {
+                journalDirName = journalController.generateJournalDirName();
+                journalWindowSettings.setValue(JOURNAL_DIR_NAME, journalDirName);
             }
+
+            if (journalWindowSettings.getValue(JOURNAL_HEIGHT) != null) {
+                journalStage.setHeight(journalWindowSettings.getValue(JOURNAL_HEIGHT));
+                journalStage.setWidth(journalWindowSettings.getValue(JOURNAL_WIDTH));
+                journalStage.setX(journalWindowSettings.getValue(JOURNAL_XPOS));
+                journalStage.setY(journalWindowSettings.getValue(JOURNAL_YPOS));
+                journalController.setWindowView(windowSettings.getView());
+                journalController.recreateConceptWindows(journalWindowSettings);
+            } else {
+                journalStage.setMaximized(true);
+            }
+        }
+
+        journalStage.setOnHidden(windowEvent -> {
+            saveJournalWindowsToPreferences();
+            journalController.shutdown();
+            journalControllersList.remove(journalController);
 
             if (journalWindowSettings != null) {
-                // load journal specific window settings
-                final UUID journalTopic = journalWindowSettings.getValue(JOURNAL_TOPIC);
-                if (journalTopic != null) {
-                    journalController.setJournalTopic(journalTopic);
-                }
-                final String journalName = journalWindowSettings.getValue(JOURNAL_TITLE);
-                journalStage.setTitle(journalName);
-
-                // Get the UUID-based directory name from preferences
-                String journalDirName = journalWindowSettings.getValue(JOURNAL_DIR_NAME);
-
-                // For new journals (no UUID yet), generate one using the controller's UUID
-                if (journalDirName == null) {
-                    journalDirName = journalController.generateJournalDirName();
-                    journalWindowSettings.setValue(JOURNAL_DIR_NAME, journalDirName);
-                }
-
-                if (journalWindowSettings.getValue(JOURNAL_HEIGHT) != null) {
-                    journalStage.setHeight(journalWindowSettings.getValue(JOURNAL_HEIGHT));
-                    journalStage.setWidth(journalWindowSettings.getValue(JOURNAL_WIDTH));
-                    journalStage.setX(journalWindowSettings.getValue(JOURNAL_XPOS));
-                    journalStage.setY(journalWindowSettings.getValue(JOURNAL_YPOS));
-                    journalController.setWindowView(windowSettings.getView());
-                    journalController.recreateConceptWindows(journalWindowSettings);
-                }else{
-                    journalStage.setMaximized(true);
-                }
+                journalWindowSettings.setValue(CAN_DELETE, true);
+                kViewEventBus.publish(JOURNAL_TOPIC,
+                        new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
             }
+        });
 
-            journalStage.setOnHidden(windowEvent -> {
-                saveJournalWindowsToPreferences();
-                journalController.shutdown();
-                journalControllersList.remove(journalController);
+        journalController.setWindowView(windowSettings.getView());
+        journalStage.setOnShown(windowEvent -> {
+            KometNodeFactory navigatorNodeFactory = new GraphNavigatorNodeFactory();
+            KometNodeFactory searchNodeFactory = new SearchNodeFactory();
 
-                if (journalWindowSettings != null) {
-                    journalWindowSettings.setValue(CAN_DELETE, true);
-                    kViewEventBus.publish(JOURNAL_TOPIC,
-                            new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
-                }
-            });
+            journalController.launchKometFactoryNodes(
+                    journalWindowSettings.getValue(JOURNAL_TITLE),
+                    navigatorNodeFactory,
+                    searchNodeFactory);
+            // load additional panels
+            journalController.loadNextGenReasonerPanel();
+            journalController.loadNextGenSearchPanel();
+            journalController.loadConceptNavigatorPanel(windowSettings.getView().makeOverridableViewProperties());
+        });
+        // disable the delete menu option for a Journal Card.
+        journalWindowSettings.setValue(CAN_DELETE, false);
+        kViewEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
+        journalControllersList.add(journalController);
 
-            journalController.setWindowView(windowSettings.getView());
-            journalStage.setOnShown(windowEvent -> {
-                KometNodeFactory navigatorNodeFactory = new GraphNavigatorNodeFactory();
-                KometNodeFactory searchNodeFactory = new SearchNodeFactory();
-
-                journalController.launchKometFactoryNodes(
-                        journalWindowSettings.getValue(JOURNAL_TITLE),
-                        navigatorNodeFactory,
-                        searchNodeFactory);
-                // load additional panels
-                journalController.loadNextGenReasonerPanel();
-                journalController.loadNextGenSearchPanel();
-                journalController.loadConceptNavigatorPanel(windowSettings.getView().makeOverridableViewProperties());
-            });
-            // disable the delete menu option for a Journal Card.
-            journalWindowSettings.setValue(CAN_DELETE, false);
-            kViewEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
-            journalControllersList.add(journalController);
-
-            if (IS_BROWSER) {
-                String journalName = journalWindowSettings.getValue(JOURNAL_TITLE);
-                webAPI.openStageAsTab(journalStage, journalName.replace(" ", "_"));
-            } else {
-                journalStage.show();
-            }
-        } catch (IOException e) {
-            LOG.error("Failed to launch the journal view window", e);
+        if (IS_BROWSER) {
+            String journalName = journalWindowSettings.getValue(JOURNAL_TITLE);
+            webAPI.openStageAsTab(journalStage, journalName.replace(" ", "_"));
+        } else {
+            journalStage.show();
         }
     }
 

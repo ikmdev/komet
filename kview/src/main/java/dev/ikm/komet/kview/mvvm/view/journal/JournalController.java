@@ -106,7 +106,7 @@ import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
 import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
 import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
-import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
 import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
 import dev.ikm.komet.navigator.graph.Navigator;
@@ -199,7 +199,6 @@ import java.util.prefs.BackingStoreException;
  * This is associated with the FXML file journal.fxml.
  *
  * @see DetailsNode
- * @see JournalViewFactory
  */
 public class JournalController {
     private static final Logger LOG = LoggerFactory.getLogger(JournalController.class);
@@ -324,18 +323,21 @@ public class JournalController {
 
     private Subscriber<CloseReasonerPanelEvent> closeReasonerPanelEventSubscriber;
 
-    @InjectViewModel
-    private NextGenSearchViewModel nextGenSearchViewModel;
-
     private ObservableViewNoOverride windowView;
 
     private Subscriber<RefreshCalculatorCacheEvent> refreshCalculatorEventSubscriber;
+
+    @InjectViewModel
+    private JournalViewModel journalViewModel;
 
     /**
      * Called after JavaFX FXML DI has occurred. Any annotated items above should be valid.
      */
     @FXML
     public void initialize() {
+        // Initialize journal topic (UUID) value
+        journalTopic = journalViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
+
         reasonerNodePanel = new BorderPane();
         progressPopupPane.getStyleClass().add("progress-popup-pane");
 
@@ -1498,15 +1500,6 @@ public class JournalController {
      */
     public UUID getJournalTopic() {
         return journalTopic;
-    }
-
-    /**
-     * Sets the unique UUID for this journal instance.
-     *
-     * @param journalTopic the UUID to set for this journal
-     */
-    public void setJournalTopic(UUID journalTopic) {
-        this.journalTopic = journalTopic;
     }
 
     public void saveConceptWindowPreferences(KometPreferences journalSubWindowPreferences) {
