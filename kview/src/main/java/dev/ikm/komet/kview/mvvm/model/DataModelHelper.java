@@ -105,6 +105,7 @@ public class DataModelHelper {
     public static Set<ConceptEntity> fetchFieldDefinitionDataTypes() {
 
         return Set.of(
+// unsupported datatypes are commented out
                 Entity.getFast(STRING.nid()),
                 Entity.getFast(COMPONENT_FIELD.nid()),
                 Entity.getFast(COMPONENT_ID_SET_FIELD.nid()),
@@ -116,8 +117,8 @@ public class DataModelHelper {
                 Entity.getFast(INTEGER_FIELD.nid()),
                 Entity.getFast(FLOAT_FIELD.nid()),
                 Entity.getFast(BOOLEAN_FIELD.nid()),
-                //TODO the backend will support IMAGE as a subset of BYTE_ARRAY in the future
-                Entity.getFast(BYTE_ARRAY_FIELD.nid()),
+                //FIXME add byte array as its own type that is NOT an image
+//                Entity.getFast(BYTE_ARRAY_FIELD.nid()),
                 Entity.getFast(IMAGE_FIELD.nid())
 //                Entity.getFast(ARRAY_FIELD.nid()),
 //                Entity.getFast(INSTANT_LITERAL.nid()),
