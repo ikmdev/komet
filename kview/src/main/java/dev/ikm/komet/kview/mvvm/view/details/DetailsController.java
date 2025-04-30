@@ -1007,14 +1007,11 @@ public class DetailsController  {
 
         // TODO: need to retrieve the description Semantic's Text field (latest version text).
 
-        // during CREATE mode the semanticPublicId is null, which causes the
-        // NullPointerException when attempting to display the other name
-
         PublicId semanticPid = otherName.getSemanticPublicId();
         Text otherNameLabel;
 
-        // the semanticPid is null in CREATE mode, so use the nameText that was entered
-        // instead of the semanticPid field value
+        // the semanticPublicId is null in CREATE mode, so use the nameText that was entered
+        // instead of the semanticPublicId field value
         if (semanticPid != null) {
             int nid = EntityService.get().nidForPublicId(semanticPid);
             Latest<SemanticEntityVersion> regularDescriptionTextversion = getViewProperties().calculator().latest(nid);
