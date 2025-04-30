@@ -17,7 +17,6 @@ package dev.ikm.komet.kview.mvvm.model;
 
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
-import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
 import static dev.ikm.tinkar.terms.TinkarTerm.ARRAY_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
@@ -40,6 +39,8 @@ import static dev.ikm.tinkar.terms.TinkarTerm.VERTEX_FIELD;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservablePatternSnapshot;
+import dev.ikm.komet.framework.observable.ObservablePatternVersion;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
@@ -67,7 +68,6 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.RecordListBuilder;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticRecord;
@@ -81,12 +81,14 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -96,6 +98,7 @@ import java.util.stream.Collectors;
 public class DataModelHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataModelHelper.class);
+    public static final EntityProxy.Concept BLANK_CONCEPT = EntityProxy.Concept.make("", UUID.randomUUID());
 
     /**
      * data types for field definitions
@@ -348,49 +351,35 @@ public class DataModelHelper {
     }
 
     /**
-     * given a pattern create a default, empty semantic
-     * @param pattern existing pattern
-     * @return a default, empty semantic
+     * Create default semantic fields value based on the provided pattern
+     * @param pattern
+     * @param viewProperties
+     * @return fieldValues.toImmutable() - returns list of immutable field values.
      */
-    public static EntityFacade createEmptySemantic(ViewProperties viewProperties, EntityFacade pattern, Session session, EntityProxy referenceComponent) {
-
-        EntityFacade semantic;
-        EntityProxy patternProxy = pattern.toProxy();
-
-        ViewCalculator viewCalculator = viewProperties.calculator();
-        PatternVersionRecord patternVersionRecord = (PatternVersionRecord) viewCalculator.latest(pattern).get();
-
-        EntityProxy.Semantic defaultSemantic = EntityProxy.Semantic.make(PublicIds.newRandom());
-        session.compose((SemanticAssembler semanticAssembler) -> {
-            semanticAssembler
-                    .semantic(defaultSemantic)
-                    // using anonymous concept for both reference component and for fields that are concepts for consistency
-                    .reference(referenceComponent)
-                    .pattern((EntityProxy.Pattern) patternProxy)
-                    .fieldValues(fieldValues -> {
-                        patternVersionRecord.fieldDefinitions().forEach(f -> {
-                            if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
-                                fieldValues.with(ANONYMOUS_CONCEPT);
-                            } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
-                                    || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
-                                fieldValues.with("");
-                            } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
-                                fieldValues.with(0);
-                            } else if (f.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
-                                fieldValues.with(0.0);
-                            } else if (f.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
-                                fieldValues.with(false);
-                            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
-                                fieldValues.with(IntIds.list.empty());
-                            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
-                                fieldValues.with(IntIds.set.empty());
-                            }
-                        });
-                    });
+    public static ImmutableList<Object> createDefaultFieldValues(EntityFacade pattern, ViewProperties viewProperties) {
+        ObservableEntity observableEntity = ObservableEntity.get(pattern.nid());
+        ObservablePatternSnapshot observablePatternSnapshot = (ObservablePatternSnapshot) observableEntity.getSnapshot(viewProperties.calculator());
+        ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
+        MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(observablePatternVersion.fieldDefinitions().size());
+        observablePatternVersion.fieldDefinitions().forEach(f -> {
+            if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
+                fieldsValues.add(BLANK_CONCEPT.toProxy());
+            } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
+                    || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
+                fieldsValues.add("");
+            } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
+                fieldsValues.add(0);
+            } else if (f.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
+                fieldsValues.add(0.0F);
+            } else if (f.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
+                fieldsValues.add(false);
+            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
+                fieldsValues.add(IntIds.list.empty());
+            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
+                fieldsValues.add(IntIds.set.empty());
+            }
         });
-        // don't commit yet; only commit once the user is ready to submit and not change the reference component
-        semantic = defaultSemantic.toProxy();
-        return semantic;
+        return fieldsValues.toImmutable();
     }
 
     /**

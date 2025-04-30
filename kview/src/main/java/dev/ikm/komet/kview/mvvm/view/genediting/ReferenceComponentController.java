@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.CONFIRM_REFERENCE_COMPONENT;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.createDefaultFieldValues;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
@@ -13,19 +14,13 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
-import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
-import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.observable.ObservableEntity;
-import dev.ikm.komet.framework.observable.ObservablePatternSnapshot;
-import dev.ikm.komet.framework.observable.ObservablePatternVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
-import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
@@ -41,7 +36,6 @@ import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -49,9 +43,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
-import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,7 +140,7 @@ public class ReferenceComponentController {
         int pathNid = ((ConceptEntity)  stampViewModel.getPropertyValue(PATH)).nid();
         StampEntity stampEntity = transaction.getStampForEntities(state, authorNid, moduleNid, pathNid, semanticRecord);
 
-        ImmutableList<Object> fieldValues = createDefaultFieldValues(patternFacade);
+        ImmutableList<Object> fieldValues = createDefaultFieldValues(patternFacade, getViewProperties());
         versions.add(SemanticVersionRecordBuilder.builder()
                 .chronology(semanticRecord)
                 .stampNid(stampEntity.nid())
@@ -160,37 +152,9 @@ public class ReferenceComponentController {
                 .builder(semanticRecord)
                 .versions(versions.toImmutable()).build();
 
-        System.out.println(" SEMANTIC Entity " + semanticEntity.nid());
         Entity.provider().putEntity(semanticEntity);
         return semanticEntity;
 
-    }
-//    public static final EntityProxy.Concept BLANK_CONCEPT =
-//            EntityProxy.Concept.make("", UUID.randomUUID());
-    private ImmutableList<Object> createDefaultFieldValues(EntityFacade patternFacade) {
-        ObservableEntity observableEntity = ObservableEntity.get(patternFacade.nid());
-        ObservablePatternSnapshot observablePatternSnapshot = (ObservablePatternSnapshot) observableEntity.getSnapshot(getViewProperties().calculator());
-        ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
-        MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(observablePatternVersion.fieldDefinitions().size());
-        observablePatternVersion.fieldDefinitions().forEach(f -> {
-            if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
-                fieldsValues.add(ANONYMOUS_CONCEPT);
-            } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
-                    || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
-                fieldsValues.add("");
-            } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
-                fieldsValues.add(0);
-            } else if (f.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
-                fieldsValues.add(0.0F);
-            } else if (f.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
-                fieldsValues.add(false);
-            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
-                fieldsValues.add(IntIds.list.empty());
-            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
-                fieldsValues.add(IntIds.set.empty());
-            }
-        });
-        return fieldsValues.toImmutable();
     }
 
 }

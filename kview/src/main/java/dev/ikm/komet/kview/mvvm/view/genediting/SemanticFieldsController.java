@@ -23,6 +23,7 @@ import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CR
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculteHashValue;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateNode;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.BLANK_CONCEPT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
@@ -70,6 +71,7 @@ import dev.ikm.tinkar.entity.VersionData;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -294,10 +296,13 @@ public class SemanticFieldsController {
         observableFields.clear();
         if(observableSemanticSnapshot != null) {
             observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
-        }else {
-
         }
         observableFields.forEach(observableField -> {
+            if(observableField.value() instanceof EntityProxy entityProxy){
+                if(entityProxy.nid() == BLANK_CONCEPT.nid()){
+                    observableField.valueProperty().setValue(null);
+                }
+            }
             // disable calling writeToData method of observable field by setting refresh flag to true.
             FieldRecord<?> fieldRecord = observableField.field();
             nodes.add(generateNode(fieldRecord, observableField, getViewProperties(), true));
