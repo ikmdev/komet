@@ -318,13 +318,13 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
     @Override
     protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
         Insets padding = getSkinnable().getPadding();
-        double labelPrefWidth = titleLabel.prefWidth(-1);
-        double labelPrefHeight = titleLabel.prefHeight(labelPrefWidth);
+        double titlePrefWidth = titleLabel.prefWidth(-1);
+        double titlePrefHeight = titleLabel.prefHeight(titlePrefWidth);
         double x = contentX + padding.getLeft();
         double y = contentY + padding.getTop();
-        titleLabel.resizeRelocate(x, y, labelPrefWidth, labelPrefHeight);
+        titleLabel.resizeRelocate(x, y, titlePrefWidth, titlePrefHeight);
 
-        double adjustedPrefHeight = labelPrefHeight;
+        double adjustedPrefHeight = titlePrefHeight;
         double bottomPadding = titleLabel.getPadding().getBottom();
 
         if (bottomPadding <= SPACE_BETWEEN_COMPONENTS) {
