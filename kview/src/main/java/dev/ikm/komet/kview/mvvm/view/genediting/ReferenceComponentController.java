@@ -132,7 +132,6 @@ public class ReferenceComponentController {
 
         StampViewModel stampViewModel = genEditingViewModel.getPropertyValue(STAMP_VIEW_MODEL);
         Transaction transaction = Transaction.make("Transaction For "+semanticRecord.nid());
-        System.out.println(" SEMANTIC RECORD " + semanticRecord.nid());
 
         State state = stampViewModel.getPropertyValue(STATUS);
         int authorNid = ((EntityProxy.Concept) stampViewModel.getPropertyValue(AUTHOR)).nid();
