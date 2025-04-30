@@ -223,8 +223,9 @@ public class GenEditingDetailsController {
     @FXML
     private void initialize() {
 
-        ObjectProperty<EntityFacade> semanticProperty = genEditingViewModel.getProperty(SEMANTIC);
-//        semanticProperty.addListener( _ -> setupSemanticDetails());
+        EntityFacade refComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
+        editFieldsButton.setDisable(refComponent == null);
+        addReferenceButton.setDisable(refComponent != null);
 
         // clear all semantic details.
         semanticDetailsVBox.getChildren().clear();

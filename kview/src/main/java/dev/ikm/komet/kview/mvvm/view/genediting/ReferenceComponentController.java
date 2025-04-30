@@ -13,6 +13,7 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
+import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
 import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableEntity;
@@ -164,8 +165,8 @@ public class ReferenceComponentController {
         return semanticEntity;
 
     }
-    public static final EntityProxy.Concept BLANK_CONCEPT =
-            EntityProxy.Concept.make("", UUID.randomUUID());
+//    public static final EntityProxy.Concept BLANK_CONCEPT =
+//            EntityProxy.Concept.make("", UUID.randomUUID());
     private ImmutableList<Object> createDefaultFieldValues(EntityFacade patternFacade) {
         ObservableEntity observableEntity = ObservableEntity.get(patternFacade.nid());
         ObservablePatternSnapshot observablePatternSnapshot = (ObservablePatternSnapshot) observableEntity.getSnapshot(getViewProperties().calculator());
@@ -173,7 +174,7 @@ public class ReferenceComponentController {
         MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(observablePatternVersion.fieldDefinitions().size());
         observablePatternVersion.fieldDefinitions().forEach(f -> {
             if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
-                fieldsValues.add(BLANK_CONCEPT);
+                fieldsValues.add(ANONYMOUS_CONCEPT);
             } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
                     || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
                 fieldsValues.add("");
