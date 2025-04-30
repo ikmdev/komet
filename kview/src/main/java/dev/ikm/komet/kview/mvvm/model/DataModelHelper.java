@@ -17,6 +17,7 @@ package dev.ikm.komet.kview.mvvm.model;
 
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
+import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
 import static dev.ikm.tinkar.terms.TinkarTerm.ARRAY_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
@@ -88,7 +89,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -98,7 +98,6 @@ import java.util.stream.Collectors;
 public class DataModelHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataModelHelper.class);
-    public static final EntityProxy.Concept BLANK_CONCEPT = EntityProxy.Concept.make("", UUID.randomUUID());
 
     /**
      * data types for field definitions
@@ -363,7 +362,7 @@ public class DataModelHelper {
         MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(observablePatternVersion.fieldDefinitions().size());
         observablePatternVersion.fieldDefinitions().forEach(f -> {
             if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
-                fieldsValues.add(BLANK_CONCEPT.toProxy());
+                fieldsValues.add(ANONYMOUS_CONCEPT);
             } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
                     || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
                 fieldsValues.add("");
@@ -377,6 +376,12 @@ public class DataModelHelper {
                 fieldsValues.add(IntIds.list.empty());
             } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 fieldsValues.add(IntIds.set.empty());
+            } else if (f.dataTypeNid() == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
+                //TODO: We're using BYTE_ARRAY for the moment for Image data type
+                //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
+                //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
+                // The NULL value will not work since the object requires to be NON-NULL
+                fieldsValues.add(null);
             }
         });
         return fieldsValues.toImmutable();

@@ -23,13 +23,11 @@ import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CR
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculteHashValue;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateNode;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.BLANK_CONCEPT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
@@ -52,19 +50,16 @@ import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
-import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.VersionData;
@@ -187,27 +182,13 @@ public class SemanticFieldsController {
         reloadPatternNavigator = true;
 
         ObjectProperty<EntityFacade> semanticProperty = genEditingViewModel.getProperty(SEMANTIC);
-        semanticProperty.addListener( n ->
-                        setupEditSemanticDetails()
-        //        createNewSemanticDetails()
-        );
+        // listen if the semantic property is updated during Create mode.
+        semanticProperty.addListener( _ -> setupEditSemanticDetails());
 
         if (semantic != null && genEditingViewModel.getPropertyValue(MODE) == EDIT) {
-//            if(genEditingViewModel.getPropertyValue(MODE) == EDIT){
-                //Change the button name to RESET FORM
+                //Change the button name to RESET FORM in EDIT MODE
                 clearFormButton.setText("RESET FORM");
-//            }
             setupEditSemanticDetails();
-        }else {
-            /*PatternFacade patternFacade = (PatternFacade) genEditingViewModel.getProperty(PATTERN).getValue();
-            ObservablePattern observablePattern = ObservableEntity.get(patternFacade.nid());
-            ObservablePatternSnapshot observablePatternSnapshot = observablePattern.getSnapshot(getViewProperties().calculator());
-            ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
-            PatternEntityVersion patternEntityVersion = observablePatternVersion.getVersionRecord();
-            SemanticRecord semanticRecord = Entity.getFast(semantic.nid());
-
-            ObservableField observableField = new ObservableField()*/
-
         }
 
         entityVersionChangeEventSubscriber = evt -> {
@@ -235,27 +216,6 @@ public class SemanticFieldsController {
         EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
                 EntityVersionChangeEvent.class, entityVersionChangeEventSubscriber);
 
-    }
-
-    private void createNewSemanticDetails() {
-        nodes.clear();
-        StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
-        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
-        Optional<SemanticVersionRecord> optionalSemanticEntityVersion = ((SemanticRecord) semantic).versions().getLastOptional();
-        EntityFacade patternFacade = genEditingViewModel.getPropertyValue(PATTERN);
-        PatternEntityVersion patternEntityVersion = (PatternEntityVersion) stampCalculator.latest(patternFacade.nid()).get();
-        optionalSemanticEntityVersion.ifPresent(semanticEntityVersion -> {
-            List<FieldRecord<Object>> fieldRecords = DataModelHelper.fieldRecords(semanticEntityVersion, patternEntityVersion);
-            fieldRecords.forEach(fieldRecord -> {
-                ObservableField<?> observableField = new ObservableField<>(fieldRecord, false);
-                observableFields.add(observableField);
-                Node node = generateNode(fieldRecord, observableField, getViewProperties(), true);
-                nodes.add(node);
-            });
-        });
-        //Set the hascode for the committed values.
-        enableDisableSubmitButton();
-        loadVBox();
     }
 
     private void setupEditSemanticDetails() {
@@ -298,8 +258,8 @@ public class SemanticFieldsController {
             observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
         }
         observableFields.forEach(observableField -> {
-            if(observableField.value() instanceof EntityProxy entityProxy){
-                if(entityProxy.nid() == BLANK_CONCEPT.nid()){
+            if (genEditingViewModel.getPropertyValue(MODE) == CREATE && observableField.value() instanceof EntityProxy entityProxy){
+                if(entityProxy.nid() == ANONYMOUS_CONCEPT.nid()){
                     observableField.valueProperty().setValue(null);
                 }
             }

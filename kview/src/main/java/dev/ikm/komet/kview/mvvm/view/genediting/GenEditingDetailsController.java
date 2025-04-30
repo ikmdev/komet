@@ -224,7 +224,9 @@ public class GenEditingDetailsController {
     private void initialize() {
 
         EntityFacade refComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
+        //Enable edit fields button if refComponent is NOT null else disable it.
         editFieldsButton.setDisable(refComponent == null);
+        //Enable reference component edit button if refComponent is NULL else disable it.
         addReferenceButton.setDisable(refComponent != null);
 
         // clear all semantic details.
@@ -239,7 +241,7 @@ public class GenEditingDetailsController {
         setupReferenceComponentUI();
         //Populate readonly semantic details
         setupSemanticDetails();
-        // update stamp data
+        // update stamp UI
         updateUIStamp(getStampViewModel());
     }
 
@@ -339,6 +341,7 @@ public class GenEditingDetailsController {
         semanticTitleText.setText("%s of component for %s in %s".formatted(meaning, purpose, patternFQN));
     }
 
+    //TODO revisit and optimize this method.
     private void populateSemanticDetails() {
         nodes.clear();
         if (semanticEntityVersionLatest.isPresent()) {
@@ -387,14 +390,6 @@ public class GenEditingDetailsController {
         }
     }
 
-
-    private void setSemanticVersion(Latest<SemanticEntityVersion> semanticEntityVersionLatest) {
-        this.semanticEntityVersionLatest = semanticEntityVersionLatest;
-    }
-
-    private Latest<SemanticEntityVersion> getSemanticVersion() {
-        return semanticEntityVersionLatest;
-    }
 
     /**
      * Upper right button that allows user to edit stamp popup
