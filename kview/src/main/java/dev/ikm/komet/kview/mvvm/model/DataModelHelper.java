@@ -352,7 +352,7 @@ public class DataModelHelper {
      * @param pattern existing pattern
      * @return a default, empty semantic
      */
-    public static EntityFacade createEmptySemantic(ViewProperties viewProperties, EntityFacade pattern, Session session) {
+    public static EntityFacade createEmptySemantic(ViewProperties viewProperties, EntityFacade pattern, Session session, EntityProxy referenceComponent) {
 
         EntityFacade semantic;
         EntityProxy patternProxy = pattern.toProxy();
@@ -365,7 +365,7 @@ public class DataModelHelper {
             semanticAssembler
                     .semantic(defaultSemantic)
                     // using anonymous concept for both reference component and for fields that are concepts for consistency
-                    .reference(ANONYMOUS_CONCEPT)
+                    .reference(referenceComponent)
                     .pattern((EntityProxy.Pattern) patternProxy)
                     .fieldValues(fieldValues -> {
                         patternVersionRecord.fieldDefinitions().forEach(f -> {

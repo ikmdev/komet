@@ -37,6 +37,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.STAMP_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
@@ -44,6 +45,9 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
+import static dev.ikm.tinkar.terms.State.ACTIVE;
+import static dev.ikm.tinkar.terms.TinkarTerm.DEVELOPMENT_MODULE;
+import static dev.ikm.tinkar.terms.TinkarTerm.DEVELOPMENT_PATH;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
@@ -218,6 +222,10 @@ public class GenEditingDetailsController {
 
     @FXML
     private void initialize() {
+
+        ObjectProperty<EntityFacade> semanticProperty = genEditingViewModel.getProperty(SEMANTIC);
+//        semanticProperty.addListener( _ -> setupSemanticDetails());
+
         // clear all semantic details.
         semanticDetailsVBox.getChildren().clear();
         // Setup Properties Bump out view.
@@ -225,11 +233,6 @@ public class GenEditingDetailsController {
         //Populate the Title Pattern meaning purpose
         setupSemanticForPatternInfo();
         setupStampPopupOptions();
-
-        //Enable disable pencil icons
-        ObjectProperty<EntityFacade> refComponentProp = genEditingViewModel.getProperty(REF_COMPONENT);
-        editFieldsButton.disableProperty().bind(refComponentProp.isNull());
-        addReferenceButton.disableProperty().bind(refComponentProp.isNotNull());
 
         //Populate readonly reference component.
         setupReferenceComponentUI();
@@ -243,12 +246,19 @@ public class GenEditingDetailsController {
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         // if the semantic is null, then we generate a default one
         if (semantic == null) {
+            // Set the mode to Create
             genEditingViewModel.setPropertyValue(MODE, CREATE);
 
-            // Populate the Semantic Details
+            // Set default STAMP values to load
+            stampViewModel.setPropertyValue(STATUS, ACTIVE)
+                    .setPropertyValue(MODULE, Entity.getFast(DEVELOPMENT_MODULE.nid()))
+                    .setPropertyValue(PATH, Entity.getFast(DEVELOPMENT_PATH.nid()))
+            ;
+            stampViewModel.save(true);
+
+            // Set empty Semantic Details using pattern fields
             PatternFacade patternFacade = (PatternFacade) genEditingViewModel.getProperty(PATTERN).getValue();
             PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(patternFacade).get();
-
             // generate read only UI controls in create mode
             List<KLReadOnlyBaseControl> readOnlyControls = KlFieldHelper.addReadOnlyBlankControlsToContainer(patternVersionRecord, getViewProperties());
             nodes.addAll(readOnlyControls);
@@ -261,8 +271,8 @@ public class GenEditingDetailsController {
             //retrieve latest committed semanticVersion
             semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
             //Set and Update STAMP values
-            if(semanticEntityVersionLatest != null) {
-                StampEntity stampEntity = semanticEntityVersionLatest.get().stamp();
+            semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
+                StampEntity stampEntity = semanticEntityVersion.stamp();
                 stampViewModel.setPropertyValue(STATUS, stampEntity.state())
                         .setPropertyValue(TIME, stampEntity.time())
                         .setPropertyValue(AUTHOR, stampEntity.author())
@@ -270,17 +280,18 @@ public class GenEditingDetailsController {
                         .setPropertyValue(PATH, stampEntity.path())
                 ;
                 stampViewModel.save(true);
-            }
+            });
             // Populate the Semantic Details
             populateSemanticDetails();
         }
 
-
         Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
             //Set up the Listener to refresh the details area (After user hits submit button on the right side)
-            EntityFacade finalSemantic = semantic;
+            EntityFacade finalSemantic = genEditingViewModel.getPropertyValue(SEMANTIC);
             if (evt.getEventType() == GenEditingEvent.PUBLISH && evt.getNid() == finalSemantic.nid()) {
                 if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
+                    // get the latest value for the semantic created.
+                    observableSemantic = ObservableEntity.get(finalSemantic.nid());
                     // populate the semantic and its observable fields once saved
                     semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemantic.getSnapshot(getViewProperties().calculator()));
 
@@ -367,7 +378,7 @@ public class GenEditingDetailsController {
             int index = 0;
             for(ObservableField<?> observableField : observableFields){
                 FieldRecord<?> fieldRecord = observableField.field();
-                KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) KlFieldHelper.generateNode(fieldRecord, observableField, getViewProperties(), semanticEntityVersionLatest, false);
+                KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) KlFieldHelper.generateNode(fieldRecord, observableField, getViewProperties(), false);
                 nodes.add(klReadOnlyBaseControl);
                 klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index++));
                 semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
@@ -406,6 +417,7 @@ public class GenEditingDetailsController {
         pathText.setText(pathEntity.description());
         State status = stampViewModel.getValue(STATUS);
         statusText.setText(status.name());
+        genEditingViewModel.setPropertyValue(STAMP_VIEW_MODEL, stampViewModel);
     }
 
     public ValidationViewModel getStampViewModel() {
@@ -456,7 +468,9 @@ public class GenEditingDetailsController {
             if (evt.getEventType() == GenEditingEvent.CONFIRM_REFERENCE_COMPONENT) {
                 ObjectProperty<EntityFacade> newRefComponentProp = genEditingViewModel.getProperty(REF_COMPONENT);
                 updateRefComponentInfo.accept(newRefComponentProp.get());
-                setupReferenceComponentUI();
+                //Enable disable pencil icons
+                editFieldsButton.disableProperty().bind(newRefComponentProp.isNull());
+                addReferenceButton.disableProperty().bind(newRefComponentProp.isNotNull());
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),

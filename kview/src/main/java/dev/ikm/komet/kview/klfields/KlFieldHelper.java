@@ -62,11 +62,9 @@ public class KlFieldHelper {
      * @param fieldRecord
      * @param observableField
      * @param viewProperties
-     * @param semanticEntityVersionLatest
      * @return
      */
-    public static Node generateNode(FieldRecord fieldRecord, ObservableField observableField, ViewProperties viewProperties,
-                                    Latest<SemanticEntityVersion> semanticEntityVersionLatest, boolean editable) {
+    public static Node generateNode(FieldRecord fieldRecord, ObservableField observableField, ViewProperties viewProperties, boolean editable) {
 
         Node node = null;
         ReadOnlyKLFieldFactory rowf = ReadOnlyKLFieldFactory.getInstance();
@@ -126,7 +124,7 @@ public class KlFieldHelper {
             ObservableField<?> observableField = new ObservableField<>(writeObservableField.field(), editable);
             observableFields.add(observableField);
 
-            Node node = generateNode(fieldRecord, observableField, viewProperties, semanticEntityVersionLatest, editable);
+            Node node = generateNode(fieldRecord, observableField, viewProperties, editable);
             items.add(node);
         };
         generateSemanticUIFields(viewProperties, semanticEntityVersionLatest, generateConsumer);
