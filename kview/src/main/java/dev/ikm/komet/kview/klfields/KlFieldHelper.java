@@ -1,17 +1,10 @@
 package dev.ikm.komet.kview.klfields;
 
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
-import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.controls.KLComponentControl;
-import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
-import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
-import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
-import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
-import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl;
+import dev.ikm.komet.kview.controls.*;
 import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
 import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
 import dev.ikm.komet.kview.klfields.componentlistfield.KlComponentListFieldFactory;
@@ -39,6 +32,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
+import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 
 public class KlFieldHelper {
 
@@ -228,6 +224,11 @@ public class KlFieldHelper {
                 control = new KLReadOnlyComponentListControl();
             } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 control = new KLReadOnlyComponentSetControl();
+            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
+                //TODO: We're using BYTE_ARRAY for the moment for Image data type
+                //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
+                //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
+                control = new KLReadOnlyImageControl();
             }
 
             control.setTitle(fieldDefinitionRecord.meaning().description());
