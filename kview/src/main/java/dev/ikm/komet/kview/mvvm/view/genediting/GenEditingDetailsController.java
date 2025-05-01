@@ -318,6 +318,20 @@ public class GenEditingDetailsController {
                     }
                 }
             }
+
+            semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
+            //Set and Update STAMP values
+            semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
+                StampEntity stampEntity = semanticEntityVersion.stamp();
+                stampViewModel.setPropertyValue(STATUS, stampEntity.state())
+                        .setPropertyValue(TIME, stampEntity.time())
+                        .setPropertyValue(AUTHOR, stampEntity.author())
+                        .setPropertyValue(MODULE, stampEntity.module())
+                        .setPropertyValue(PATH, stampEntity.path())
+                ;
+                stampViewModel.save(true);
+            });
+            updateUIStamp(stampViewModel);
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, refreshSubscriber);
