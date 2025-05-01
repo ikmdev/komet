@@ -198,6 +198,10 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
             componentControl.setEntity(entityProxy);
         }
 
+        // Setup Typeahead
+        componentControl.setTypeAheadCompleter(control.getTypeAheadCompleter());
+        componentControl.setTypeAheadStringConverter(control.getTypeAheadStringConverter());
+
         componentControls.add(componentControl);
 
         Subscription subscription = componentControl.entityProperty().subscribe(entity -> {
