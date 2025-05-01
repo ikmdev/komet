@@ -44,7 +44,6 @@ import java.util.function.Predicate;
  * @see KLComponentListControl
  */
 public class KLComponentControl extends Control {
-    public static int EMPTY_NID = Integer.MIN_VALUE;
 
     private static final String SEARCH_TEXT_VALUE = "search.text.value";
 
@@ -64,7 +63,7 @@ public class KLComponentControl extends Control {
     }
 
     public boolean isEmpty() {
-        return getEntity() == null || getEntity().nid() == KLComponentControl.EMPTY_NID;
+        return getEntity() == null;
     }
 
     /**
@@ -84,7 +83,7 @@ public class KLComponentControl extends Control {
     /**
      * This property holds the {@link Entity} that has been added to the control
      */
-    private final ObjectProperty<EntityProxy> entityProperty = new SimpleObjectProperty<>(this, "entity", EntityProxy.make(EMPTY_NID));
+    private final ObjectProperty<EntityProxy> entityProperty = new SimpleObjectProperty<>(this, "entity", null);
     public final ObjectProperty<EntityProxy> entityProperty() {
        return entityProperty;
     }

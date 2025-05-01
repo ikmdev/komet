@@ -59,7 +59,7 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
 
     private void updateControlValue(EntityProxy entityProxy, KLReadOnlyComponentControl klReadOnlyComponentControl) {
         ComponentItem componentItem;
-        if (entityProxy.nid() == KLComponentControl.EMPTY_NID) {
+        if (entityProxy == null) {
             componentItem = null;
         } else {
             String description = entityProxy.description();
