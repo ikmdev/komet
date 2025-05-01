@@ -366,12 +366,8 @@ public class SemanticFieldsController {
            });
        });
 
-        // EventBus implementation changes to refresh the details area if commit successful
-        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
-                new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
-
-        processCommittedValues();
-        enableDisableSubmitButton();
+       processCommittedValues();
+       enableDisableSubmitButton();
     }
 
     private void commitTransactionTask(Transaction transaction) {
