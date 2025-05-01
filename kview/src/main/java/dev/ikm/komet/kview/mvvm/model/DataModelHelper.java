@@ -17,7 +17,6 @@ package dev.ikm.komet.kview.mvvm.model;
 
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
-import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
 import static dev.ikm.tinkar.terms.TinkarTerm.ARRAY_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
@@ -38,25 +37,13 @@ import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
 import static dev.ikm.tinkar.terms.TinkarTerm.UUID_DATA_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.VERTEX_FIELD;
 import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.observable.ObservableEntity;
-import dev.ikm.komet.framework.observable.ObservableField;
-import dev.ikm.komet.framework.observable.ObservablePatternSnapshot;
-import dev.ikm.komet.framework.observable.ObservablePatternVersion;
-import dev.ikm.komet.framework.observable.ObservableSemantic;
-import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
-import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
-import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.composer.Composer;
-import dev.ikm.tinkar.composer.Session;
-import dev.ikm.tinkar.composer.assembler.SemanticAssembler;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
@@ -82,14 +69,12 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -311,116 +296,6 @@ public class DataModelHelper {
             );
         }
         return fieldRecords;
-    }
-
-    /**
-     *
-     * @param viewProperties viewProperties cannot be null. Required to get the calculator.
-     * @param semanticEntityVersionLatest
-     * @param fieldRecord
-     * @return observableField
-     */
-    public static ObservableField<?> obtainObservableField(ViewProperties viewProperties, Latest<SemanticEntityVersion> semanticEntityVersionLatest, FieldRecord<Object> fieldRecord, boolean uncommitted){
-        ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntityVersionLatest.get().nid());
-        ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
-        ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
-        if (uncommitted || observableSemanticVersionImmutableList == null || observableSemanticVersionImmutableList.isEmpty()) {
-            //Get the latest version which is uncommited version
-            ImmutableList<ObservableField> observableFields = observableSemanticSnapshot.getLatestFields().get();
-            return observableFields.get(fieldRecord.fieldIndex());
-        } else {
-            //Cast to mutable list
-            List<ObservableSemanticVersion> observableSemanticVersionList = new ArrayList<>(observableSemanticVersionImmutableList.castToList());
-            //filter list to have only the latest semantic version passed as argument and remove rest of the entries.
-            observableSemanticVersionList.removeIf(p -> !semanticEntityVersionLatest.stampNids().contains(p.stampNid()));
-            AtomicReference<ImmutableList<ObservableField>> observableFields = new AtomicReference<>();
-            //If no historic data is available then return the last uncommited value, this is true when creating a new Semantic.
-            if (observableSemanticVersionList.isEmpty()) {
-              return obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, true);
-            }
-            //Get the 1st version value of the matched stamp
-            ObservableSemanticVersion observableSemanticVersion = observableSemanticVersionList.getFirst();
-            Latest<PatternEntityVersion> latestPatternEntityVersion = viewProperties.calculator().latestPatternEntityVersion(observableSemanticVersion.patternNid());
-            //Get the latest commited fields from patternEntityVersion
-            latestPatternEntityVersion.ifPresent(patternEntityVersion -> {
-                observableFields.set(observableSemanticVersion.fields(patternEntityVersion));
-            });
-            return observableFields.get().get(fieldRecord.fieldIndex());
-        }
-    }
-
-    /**
-     * Create default semantic fields value based on the provided pattern
-     * @param pattern
-     * @param viewProperties
-     * @return fieldValues.toImmutable() - returns list of immutable field values.
-     */
-    public static ImmutableList<Object> createDefaultFieldValues(EntityFacade pattern, ViewProperties viewProperties) {
-        ObservableEntity observableEntity = ObservableEntity.get(pattern.nid());
-        ObservablePatternSnapshot observablePatternSnapshot = (ObservablePatternSnapshot) observableEntity.getSnapshot(viewProperties.calculator());
-        ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
-        MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(observablePatternVersion.fieldDefinitions().size());
-        observablePatternVersion.fieldDefinitions().forEach(f -> {
-            if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
-                fieldsValues.add(ANONYMOUS_CONCEPT);
-            } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
-                    || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
-                fieldsValues.add("");
-            } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
-                fieldsValues.add(0);
-            } else if (f.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
-                fieldsValues.add(0.0F);
-            } else if (f.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
-                fieldsValues.add(false);
-            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
-                fieldsValues.add(IntIds.list.empty());
-            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
-                fieldsValues.add(IntIds.set.empty());
-            } else if (f.dataTypeNid() == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
-                //TODO: We're using BYTE_ARRAY for the moment for Image data type
-                //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
-                //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
-                // The NULL value will not work since the object requires to be NON-NULL
-                fieldsValues.add(null);
-            }
-        });
-        return fieldsValues.toImmutable();
-    }
-
-    /**
-     * write the semantic
-     * @param viewProperties viewProperties
-     * @param pattern pattern
-     * @param semantic the semantic
-     * @param refComponent the semantic's reference component
-     * @param composer shared composer
-     * @return
-     */
-    public static EntityFacade saveSemantic(ViewProperties viewProperties, EntityFacade pattern,
-                                            EntityFacade semantic,
-                                            EntityProxy refComponent,
-                                            Composer composer,
-                                            Session session,
-                                            boolean commitFlag) {
-        EntityProxy patternProxy = pattern.toProxy();
-        ObservableSemantic observableSemantic = ObservableEntity.get(semantic.nid());
-        ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewProperties.calculator());
-        Latest<SemanticEntityVersion> semanticEntityVersionLatest = KlFieldHelper.retrieveCommittedLatestVersion(observableSemanticSnapshot);
-        session.compose((SemanticAssembler semanticAssembler) -> {
-                    semanticAssembler
-                            .semantic(semantic.toProxy())
-                            // assign the reference component
-                            .reference(refComponent)
-                            .pattern((EntityProxy.Pattern) patternProxy)
-                            .fieldValues((fields) -> {
-                                        fields.clear();
-                                        semanticEntityVersionLatest.get().fieldValues().forEach(field -> fields.add(field));
-                            });
-                });
-        if (commitFlag) {
-            composer.commitSession(session);
-        }
-        return semantic;
     }
 
 }

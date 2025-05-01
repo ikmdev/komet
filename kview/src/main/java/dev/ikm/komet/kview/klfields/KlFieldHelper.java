@@ -1,8 +1,11 @@
 package dev.ikm.komet.kview.klfields;
 
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.obtainObservableField;
+import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
 import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
+import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservablePatternSnapshot;
+import dev.ikm.komet.framework.observable.ObservablePatternVersion;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -21,40 +24,25 @@ import dev.ikm.komet.kview.klfields.imagefield.KlImageFieldFactory;
 import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
-import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
+import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.FieldRecord;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.Node;
 import javafx.scene.control.Tooltip;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 public class KlFieldHelper {
-
-
-    public static void generateSemanticUIFields(ViewProperties viewProperties,
-                                       Latest<SemanticEntityVersion> semanticEntityVersionLatest,
-                                       Consumer<FieldRecord<Object>> updateUIConsumer) {
-        semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
-            StampCalculator stampCalculator = viewProperties.calculator().stampCalculator();
-            Latest<PatternEntityVersion> patternEntityVersionLatest = stampCalculator.latest(semanticEntityVersion.pattern());
-            patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
-                List<FieldRecord<Object>> fieldRecords = DataModelHelper.fieldRecords(semanticEntityVersion, patternEntityVersion);
-                fieldRecords.forEach(fieldRecord -> updateUIConsumer.accept(fieldRecord));
-            });
-        });
-    }
-
 
     /**
      * function to return the correct node given the semantic entity and field information
@@ -107,47 +95,41 @@ public class KlFieldHelper {
     }
 
     /**
-     * Returns a list of observable fields and displays editable controls on a Pane using the latest semantic entity version.
-     * @param viewProperties View Properties
-     * @param items list of JavaFX Nodes; each node is a custom UI control that is either read only or editable
-     * @param semanticEntityVersionLatest Semantic Entity Version object containing all field records and their field definitions & value
-     * @param editable flag for editable vs readonly
-     * @return A list of observable fields
-     */
-    public static List<ObservableField<?>> generateObservableFieldsAndNodes(ViewProperties viewProperties, List<Node> items,
-                                                                            Latest<SemanticEntityVersion> semanticEntityVersionLatest, boolean editable) {
-
-        List<ObservableField<?>> observableFields = new ArrayList<>();
-        Consumer<FieldRecord<Object>> generateConsumer = (fieldRecord) -> {
-            ObservableField<?> writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, editable);
-            ObservableField<?> observableField = new ObservableField<>(writeObservableField.field(), editable);
-            observableFields.add(observableField);
-
-            Node node = generateNode(fieldRecord, observableField, viewProperties, editable);
-            items.add(node);
-        };
-        generateSemanticUIFields(viewProperties, semanticEntityVersionLatest, generateConsumer);
-
-        return observableFields;
-    }
-
-    /**
-     * This method calculates the hashValue for the passed semantic version.
-     * It implements its own logic for fieldRecordConsumer and reuses the  generateSemanticUIFields(...)
-     * method to get the field records.
-     * @param semanticEntityVersionLatest
+     * Create default semantic fields value based on the provided pattern
+     * @param pattern
      * @param viewProperties
-     * @return integer hashCode for field values.
+     * @return fieldValues.toImmutable() - returns list of immutable field values.
      */
-    public static int generateHashValue(Latest<SemanticEntityVersion> semanticEntityVersionLatest, ViewProperties viewProperties ) {
-        List<ObservableField<?>> observableFieldsList = new ArrayList<>();
-        Consumer<FieldRecord<Object>> fieldRecordConsumer = (fieldRecord) -> {
-            ObservableField<?> writeObservableField = obtainObservableField(viewProperties, semanticEntityVersionLatest, fieldRecord, false);
-            ObservableField<?> observableField = new ObservableField<>(writeObservableField.field(), false);
-            observableFieldsList.add(observableField);
-        };
-        generateSemanticUIFields(viewProperties, semanticEntityVersionLatest, fieldRecordConsumer);
-        return calculteHashValue(observableFieldsList);
+    public static ImmutableList<Object> createDefaultFieldValues(EntityFacade pattern, ViewProperties viewProperties) {
+        ObservableEntity observableEntity = ObservableEntity.get(pattern.nid());
+        ObservablePatternSnapshot observablePatternSnapshot = (ObservablePatternSnapshot) observableEntity.getSnapshot(viewProperties.calculator());
+        ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
+        MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(observablePatternVersion.fieldDefinitions().size());
+        observablePatternVersion.fieldDefinitions().forEach(f -> {
+            if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
+                fieldsValues.add(ANONYMOUS_CONCEPT);
+            } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
+                    || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
+                fieldsValues.add("");
+            } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
+                fieldsValues.add(0);
+            } else if (f.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
+                fieldsValues.add(0.0F);
+            } else if (f.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
+                fieldsValues.add(false);
+            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
+                fieldsValues.add(IntIds.list.empty());
+            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
+                fieldsValues.add(IntIds.set.empty());
+            } else if (f.dataTypeNid() == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
+                //TODO: We're using BYTE_ARRAY for the moment for Image data type
+                //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
+                //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
+                // The NULL value will not work since the object requires to be NON-NULL
+                fieldsValues.add(null);
+            }
+        });
+        return fieldsValues.toImmutable();
     }
 
     /**
