@@ -150,7 +150,7 @@ public class SemanticFieldsController {
         Latest<ObservableSemanticVersion> observableSemanticVersionLatest = observableSemanticSnapshot.getLatestVersion();
         observableSemanticVersionLatest.ifPresent(observableSemanticVersion -> { // if latest version present
            if (observableSemanticVersion.committed()) { // and if latest version is committed then,
-               immutableList.set(observableSemanticSnapshot.getLatestFields().get()); // get the latest fields
+               immutableList.set(observableSemanticSnapshot.getLatestFields(true, false).get()); // get the latest fields
            } else { //if The latest version is Uncommitted, then retrieve the committed version from historic versions list.
                ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
                // replace any versions with uncommited stamp
@@ -255,7 +255,7 @@ public class SemanticFieldsController {
         // Displaying editable controls and populating the observable fields array list.
         observableFields.clear();
         if(observableSemanticSnapshot != null) {
-            observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
+            observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields(true, false).get());
         }
         observableFields.forEach(observableField -> {
             if (genEditingViewModel.getPropertyValue(MODE) == CREATE && observableField.value() instanceof EntityProxy entityProxy){

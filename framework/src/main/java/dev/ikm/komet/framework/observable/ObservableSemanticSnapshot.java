@@ -114,7 +114,7 @@ public final class ObservableSemanticSnapshot extends ObservableEntitySnapshot<O
     }
 
     public Latest<ImmutableList<ObservableField>> getLatestFields() {
-        return getLatestFields(false);
+        return getLatestFields(false, true);
     }
 
     /**
@@ -122,14 +122,14 @@ public final class ObservableSemanticSnapshot extends ObservableEntitySnapshot<O
      * @param autoSaveOn
      * @return
      */
-    public Latest<ImmutableList<ObservableField>> getLatestFields(boolean autoSaveOn) {
+    public Latest<ImmutableList<ObservableField>> getLatestFields(boolean autoSaveOn, boolean writeOnEveryChange) {
         return latestVersion.ifAbsentOrFunction(
                 Latest::empty,
                 version -> {
                     Latest<PatternEntityVersion> latestPattern = viewCalculator.latestPatternEntityVersion(version.patternNid());
                     return latestPattern.ifAbsentOrFunction(Latest::empty,
                             patternEntityVersion -> {
-                                Latest<ImmutableList<ObservableField>> latest = Latest.of(version.fields(patternEntityVersion));
+                                Latest<ImmutableList<ObservableField>> latest = Latest.of(version.fields(patternEntityVersion, writeOnEveryChange));
                                 if (latestVersion.isContradicted()) {
                                     for (ObservableSemanticVersion contradiction : latestVersion.contradictions()) {
                                         latest.addLatest(contradiction.fields(patternEntityVersion));

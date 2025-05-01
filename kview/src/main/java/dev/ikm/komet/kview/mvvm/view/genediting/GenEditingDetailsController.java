@@ -348,14 +348,14 @@ public class GenEditingDetailsController {
             observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
             ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
             if (observableSemanticVersionImmutableList.isEmpty()) {
-                observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
+                observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields(true, false).get());
             } else {
                 //Cast to mutable list
                 List<ObservableSemanticVersion> observableSemanticVersionList = new ArrayList<>(observableSemanticVersionImmutableList.castToList());
                 //filter list to have only the latest semantic version passed as argument and remove rest of the entries.
                 observableSemanticVersionList.removeIf(p -> !semanticEntityVersionLatest.stampNids().contains(p.stampNid()));
                 if (observableSemanticVersionList.isEmpty()) {
-                    observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
+                    observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields(true, false).get());
                 } else {
                     ObservableSemanticVersion observableSemanticVersion = observableSemanticVersionList.getFirst();
                     Latest<PatternEntityVersion> latestPatternEntityVersion = getViewProperties().calculator().latestPatternEntityVersion(observableSemanticVersion.patternNid());
