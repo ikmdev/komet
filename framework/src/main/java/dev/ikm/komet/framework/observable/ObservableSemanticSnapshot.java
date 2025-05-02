@@ -118,9 +118,24 @@ public final class ObservableSemanticSnapshot extends ObservableEntitySnapshot<O
     }
 
     /**
-     * Set the default to autoSave off.
-     * @param autoSaveOn
-     * @return
+     * Returns a list of ObservableField objects usually used for the custom UI knowledge layout JavaFX controls.
+     * KLControls are either Read-Only or Editable. When editable they would have autosave behavior (creating
+     * uncommitted entities). Note: This function will preserve classic Komet's writeOnEveryChange behavior and make
+     * use of the new autosave behavior for Next Gen Komet.
+     * The following are the settings for three scenarios (writeOnEveryChange, autoSave (off), auto save (on):
+     * <pre>
+     *   writeOnEveryChange - If true (turns off NextGen autosave) it will enable classic Komet's details fields'
+     *                        saving data functionality implemented in ObservableField.java.
+     *   autoSaveOn - If true, (turns off classic Komet's writeOnEveryChange) This flag will enable saving data
+     *                functionality implemented in ObservableSemanticVersion.
+     *                If false in conjunction with writeOnEveryChange false, both auto save and classic Komet's save
+     *                functionality are turned off. When both are turn off it is used for a pure read-only fields.
+     * </pre>
+     *
+     *
+     * @param autoSaveOn true to support nex-gen Komet, otherwise false
+     * @param writeOnEveryChange true to support classic Komet, otherwise false
+     * @return List of ObservableFields
      */
     public Latest<ImmutableList<ObservableField>> getLatestFields(boolean autoSaveOn, boolean writeOnEveryChange) {
         return latestVersion.ifAbsentOrFunction(
