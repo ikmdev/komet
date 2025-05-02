@@ -10,6 +10,8 @@ public class GenEditingEvent extends Evt {
 
     public static final EvtType<GenEditingEvent> PUBLISH = new EvtType<>(Evt.ANY, "GEN_EDIT_PUBLISH_SEMANTIC");
 
+    public static final EvtType<GenEditingEvent> CONFIRM_REFERENCE_COMPONENT = new EvtType<>(Evt.ANY, "CONFIRM_REFERENCE_COMPONENT");
+
     public static final EvtType<GenEditingEvent> VERSION_UPDATED = new EvtType<>(Evt.ANY, "VERSION_UPDATED");
 
     private List<ObservableField<?>> list;
@@ -20,6 +22,10 @@ public class GenEditingEvent extends Evt {
         super(source,eventType);
         this.list = list;
         this.nid = nid;
+    }
+
+    public GenEditingEvent(Object source, EvtType<GenEditingEvent> eventType) {
+        super(source,eventType);
     }
 
     public List<ObservableField<?>> getList(){

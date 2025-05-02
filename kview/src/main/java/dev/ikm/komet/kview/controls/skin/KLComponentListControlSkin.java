@@ -339,9 +339,9 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
         y += adjustedPrefHeight;
 
-        double topDropPanePreferredHeight = layoutTopDropLine(contentWidth, x, y, padding, contentX);
+//        double topDropPanePreferredHeight = layoutTopDropLine(contentWidth, x, y, padding, contentX);
 
-        y += topDropPanePreferredHeight;
+//        y += topDropPanePreferredHeight;
 
         int labelNumber = 1;
         int index = 0;
@@ -362,18 +362,18 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
                                       buttonPrefWidth, addEntryButton.prefHeight(buttonPrefWidth));
     }
 
-    private double layoutTopDropLine(double contentWidth, double x, double y, Insets padding, double dropLineX) {
-        double topDropPrefWidth = contentWidth - padding.getRight() - x;
-
-        Line dropLine = componentToDropLine.get(null);
-
-        dropLine.setStartX(0);
-        dropLine.setStartY(y + SPACE_BETWEEN_COMPONENTS / 2d);
-        dropLine.setEndX(topDropPrefWidth);
-        dropLine.setEndY(y + SPACE_BETWEEN_COMPONENTS / 2d + 2);
-
-        return KLComponentListControlSkin.SPACE_BETWEEN_COMPONENTS;
-    }
+//    private double layoutTopDropLine(double contentWidth, double x, double y, Insets padding, double dropLineX) {
+//        double topDropPrefWidth = contentWidth - padding.getRight() - x;
+//
+//        Line dropLine = componentToDropLine.get(null);
+//
+//        dropLine.setStartX(0);
+//        dropLine.setStartY(y + SPACE_BETWEEN_COMPONENTS / 2d);
+//        dropLine.setEndX(topDropPrefWidth);
+//        dropLine.setEndY(y + SPACE_BETWEEN_COMPONENTS / 2d + 2);
+//
+//        return KLComponentListControlSkin.SPACE_BETWEEN_COMPONENTS;
+//    }
 
     /**
      * Lays out an individual component control and also the drop line associated with it in case there is any.
