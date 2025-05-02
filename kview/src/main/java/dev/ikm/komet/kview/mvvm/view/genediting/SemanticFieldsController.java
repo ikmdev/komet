@@ -19,6 +19,7 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculteHashValue;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateNode;
@@ -29,6 +30,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
 import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
@@ -49,6 +51,7 @@ import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
+import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.tinkar.common.id.IntIds;
@@ -286,6 +289,8 @@ public class SemanticFieldsController {
 
     @FXML
     private void cancel(ActionEvent actionEvent) {
+        clearForm(actionEvent);
+        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         actionEvent.consume();
         // if previous state was closed cancel will close properties bump out.
         // else show
@@ -334,6 +339,9 @@ public class SemanticFieldsController {
                 observableField.valueProperty().setValue(object);
             }
         }
+        //TODO the observable fields are not getting cleared.
+        nodes.clear();
+        setupEditSemanticDetails();
     }
 
     @FXML
