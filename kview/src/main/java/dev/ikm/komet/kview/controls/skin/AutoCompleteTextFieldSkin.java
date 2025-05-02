@@ -58,7 +58,7 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
 
         autoCompletePopup = new AutoCompletePopup<>(control);
         autoCompletePopup.getStyleClass().add("auto-complete-popup");
-        autoCompletePopup.setAutoFix(true);
+
     }
 
     /***************************************************************************
@@ -145,6 +145,9 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
 
         public AutoCompletePopup(AutoCompleteTextField<T> autoCompleteTextField) {
             this.autoCompleteTextField = autoCompleteTextField;
+
+            setAutoFix(true);
+            setAutoHide(true);
         }
 
         @Override
