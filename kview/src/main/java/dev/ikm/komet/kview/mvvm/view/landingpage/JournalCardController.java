@@ -19,7 +19,7 @@ import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.CreateJournalEvent.CREATE_JOURNAL;
 import static dev.ikm.komet.kview.events.DeleteJournalEvent.DELETE_JOURNAL;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CONCEPT_COUNT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_COUNT;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 
 import dev.ikm.komet.kview.mvvm.view.BasicController;
@@ -59,7 +59,7 @@ public class JournalCardController implements BasicController {
     Label journalTimestampValue;
 
     @FXML
-    Text journalCardConceptCount;
+    Text journalCardWindowCount;
 
     @FXML
     Button menuOptionButton;
@@ -87,8 +87,8 @@ public class JournalCardController implements BasicController {
             if (evt.getEventType() != UPDATE_JOURNAL_TILE || !journalCardName.getText().equals(journalName)) return;
 
             // Update the card's info
-            if (journalWindowSettingsMap.getValue(CONCEPT_COUNT) != null) {
-                journalCardConceptCount.setText("Concepts: " + journalWindowSettingsMap.getValue(CONCEPT_COUNT));
+            if (journalWindowSettingsMap.getValue(WINDOW_COUNT) != null) {
+                journalCardWindowCount.setText("Windows: " + journalWindowSettingsMap.getValue(WINDOW_COUNT));
             }
 
             // Update the card's menu option user can delete
@@ -235,7 +235,7 @@ public class JournalCardController implements BasicController {
         this.journalTimestampValue.setText(journalTimestampValue);
     }
 
-    public void setJournalCardConceptCount(String journalCardConceptCount) {
-        this.journalCardConceptCount.setText(journalCardConceptCount);
+    public void setJournalCardWindowCount(String journalCardWindowCount) {
+        this.journalCardWindowCount.setText(journalCardWindowCount);
     }
 }

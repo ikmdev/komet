@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.ikm.komet.kview.klwindows.concept;
 
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
+import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
+import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -32,6 +32,7 @@ import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.scene.layout.Pane;
+import org.eclipse.collections.api.factory.Lists;
 
 import java.util.UUID;
 
@@ -55,17 +56,17 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
      *
      * @param journalTopic   the UUID representing the journal topic the owning Journal Window uses to communicate events.
      * @param entityFacade   entity facade when not null usually this will load and display the current details.
-     * @param windowView     an existing {@link ObservableViewNoOverride} to be used as the window view
      * @param viewProperties view properties is access to view calculators to query data.
      * @param preferences    komet preferences assists on reading and writing data to preferences user.home/Solor/database_folder/preferences
      */
-    public ConceptKlWindow(UUID journalTopic, EntityFacade entityFacade, ObservableViewNoOverride windowView,
+    public ConceptKlWindow(UUID journalTopic, EntityFacade entityFacade,
                            ViewProperties viewProperties, KometPreferences preferences) {
         super(journalTopic, entityFacade, viewProperties, preferences);
 
         final boolean isCreateMode = (entityFacade == null);
+
         String uniqueDetailsTopic = isCreateMode
-                ? "details-%s".formatted(UUID.randomUUID())
+                ? "details-%s".formatted(getWindowTopic())
                 : "details-%s".formatted(entityFacade.nid());
         UUID uuid = UuidT5Generator.get(uniqueDetailsTopic);
 
@@ -75,7 +76,7 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
 
         // Initialize the DetailsNode with a factory.
         KometNodeFactory detailsNodeFactory = new DetailsNodeFactory();
-        this.detailsNode = (DetailsNode) detailsNodeFactory.create(windowView,
+        this.detailsNode = (DetailsNode) detailsNodeFactory.create(viewProperties.parentView(),
                 detailsActivityStreamKey,
                 ActivityStreamOption.PUBLISH.keyForOption(),
                 AlertStreams.ROOT_ALERT_STREAM_KEY,
@@ -90,6 +91,9 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
             detailsNode.getDetailsViewController().updateModel(viewProperties);
             detailsNode.getDetailsViewController().updateView();
         }
+
+        // This will refresh the Concept details, history, timeline
+        detailsNode.handleActivity(Lists.immutable.of(entityFacade));
 
         // Getting the concept window pane
         this.paneWindow = (Pane) detailsNode.getNode();
@@ -117,5 +121,10 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
      */
     public DetailsNode getDetailsNode() {
         return detailsNode;
+    }
+
+    @Override
+    public EntityKlWindowType getWindowType() {
+        return EntityKlWindowTypes.CONCEPT;
     }
 }

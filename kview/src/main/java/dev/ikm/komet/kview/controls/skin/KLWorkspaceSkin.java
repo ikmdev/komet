@@ -24,9 +24,7 @@ import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
@@ -35,7 +33,6 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SkinBase;
 import javafx.scene.input.KeyCode;
@@ -54,6 +51,7 @@ import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NA
 import static dev.ikm.komet.kview.controls.KLDropRegion.Type.BOX;
 import static dev.ikm.komet.kview.controls.KLDropRegion.Type.LINE;
 import static dev.ikm.komet.kview.controls.KLWorkspace.*;
+import static dev.ikm.komet.kview.fxutils.FXUtils.synchronizeHeightWithSceneAwareness;
 
 /**
  * A custom skin implementation for the {@link KLWorkspace} control that provides a scrollable
@@ -107,12 +105,9 @@ import static dev.ikm.komet.kview.controls.KLWorkspace.*;
 public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
     /**
-     * Internal property key for storing the clamp-listener reference in each window’s properties map.
+     * Internal property key for storing the window state in each window’s properties map.
      */
-    private static final String CLAMP_WINDOW_POSITION_LISTENER = "clampWindowPositionListener";
-
-    private static final String WINDOW_SCENE_SYNC_LISTENER = "windowSceneSyncListener";
-    private static final String WINDOW_HEIGHT_SYNC_LISTENER = "windowHeightSyncListener";
+    private static final String WINDOW_STATE_LISTENER = "windowStateListener";
 
     /**
      * The pane that holds all {@link ChapterKlWindow} nodes within the workspace.
@@ -587,14 +582,16 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         // Make the window draggable/resizable
         new WindowSupport(windowPanel);
 
-        // Add listeners to keep the window in bounds
-        final ChangeListener<? super Number> clampListener =
-                (obs, oldVal, newVal) -> clampWindowPosition(windowPanel);
-        windowPanel.layoutXProperty().addListener(clampListener);
-        windowPanel.layoutYProperty().addListener(clampListener);
-        windowPanel.widthProperty().addListener(clampListener);
-        windowPanel.heightProperty().addListener(clampListener);
-        windowPanel.getProperties().put(CLAMP_WINDOW_POSITION_LISTENER, clampListener);
+        // Add listeners to keep the window in bounds and save its state
+        final InvalidationListener windowStateListener = obs -> {
+            clampWindowPosition(windowPanel);
+            window.save();
+        };
+        windowPanel.layoutXProperty().addListener(windowStateListener);
+        windowPanel.layoutYProperty().addListener(windowStateListener);
+        windowPanel.widthProperty().addListener(windowStateListener);
+        windowPanel.heightProperty().addListener(windowStateListener);
+        windowPanel.getProperties().put(WINDOW_STATE_LISTENER, windowStateListener);
 
         // Apply a minimum width constraint
         windowPanel.setMinWidth(MIN_WINDOW_WIDTH);
@@ -603,7 +600,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         windowPanel.setMaxHeight(MAX_WINDOW_HEIGHT);
 
         // Synchronize the window panel's preferred height with its actual height
-        initializeWindowPrefHeight(windowPanel);
+        synchronizeHeightWithSceneAwareness(windowPanel);
 
         final KLDropRegion dropRegion = desktopPane.getDropRegion();
         final KLWorkspace workspace = getSkinnable();
@@ -701,9 +698,6 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         final boolean hasSavedPos = (savedX != 0 || savedY != 0);
 
         if (hasSavedPos) {
-            windowPanel.setLayoutX(savedX);
-            windowPanel.setLayoutY(savedY);
-            windowPanel.setPrefWidth(windowWidth);
             desktopPane.getChildren().add(windowPanel);
             desktopPane.layout();
             // No auto-scrolling for returning windows
@@ -731,6 +725,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             // Auto-scroll the workspace to reveal the newly placed window
             autoScrollToTopEdge(windowPanel, desktopWidth, desktopHeight);
         }
+
+        // Save the window's position and size
+        window.save();
     }
 
     /**
@@ -744,14 +741,14 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         desktopPane.getChildren().remove(windowPanel);
 
         // Remove clamp listeners stored in the window's properties
-        if (windowPanel.getProperties().containsKey(CLAMP_WINDOW_POSITION_LISTENER)) {
-            @SuppressWarnings("unchecked") final ChangeListener<? super Number> clampListener =
-                    (ChangeListener<? super Number>) windowPanel.getProperties().get(CLAMP_WINDOW_POSITION_LISTENER);
+        if (windowPanel.getProperties().containsKey(WINDOW_STATE_LISTENER)) {
+            final InvalidationListener clampListener =
+                    (InvalidationListener) windowPanel.getProperties().get(WINDOW_STATE_LISTENER);
             windowPanel.layoutXProperty().removeListener(clampListener);
             windowPanel.layoutYProperty().removeListener(clampListener);
             windowPanel.widthProperty().removeListener(clampListener);
             windowPanel.heightProperty().removeListener(clampListener);
-            windowPanel.getProperties().remove(CLAMP_WINDOW_POSITION_LISTENER);
+            windowPanel.getProperties().remove(WINDOW_STATE_LISTENER);
         }
     }
 
@@ -1304,59 +1301,6 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         if (pane.getHeight() > desktopPaneHeight) {
             pane.setPrefHeight(desktopPaneHeight);
         }
-    }
-
-    /**
-     * Initializes listeners that synchronize the window panel's preferred height with its actual height
-     * after rendering. This ensures the window maintains a consistent size that reflects its content.
-     *
-     * @param pane the window pane to set up preferred height synchronization for
-     */
-    private void initializeWindowPrefHeight(Pane pane) {
-        // Create the window scene sync listener
-        InvalidationListener windowSceneSyncListener = sceneObservable -> {
-            Scene scene = pane.getScene();
-            if (scene != null) {
-                // Synchronize the window panel's preferred height with its actual height after rendering.
-                Platform.runLater(() -> {
-                    pane.layout();
-
-                    // Create the window height sync listener
-                    InvalidationListener windowHeightSyncListener = heightObservable -> {
-                        final double height = pane.getHeight();
-                        if (height > 0) {
-                            pane.setPrefHeight(height);
-
-                            if (pane.getProperties().containsKey(WINDOW_HEIGHT_SYNC_LISTENER)) {
-                                final InvalidationListener heightListener =
-                                        (InvalidationListener) pane.getProperties().get(WINDOW_HEIGHT_SYNC_LISTENER);
-                                pane.heightProperty().removeListener(heightListener);
-                                pane.getProperties().remove(WINDOW_HEIGHT_SYNC_LISTENER);
-                            }
-                        }
-                    };
-
-                    // Store a reference for later cleanup
-                    pane.getProperties().put(WINDOW_HEIGHT_SYNC_LISTENER, windowHeightSyncListener);
-
-                    // Add the listener to the window panel
-                    pane.heightProperty().addListener(windowHeightSyncListener);
-                });
-            }
-
-            if (pane.getProperties().containsKey(WINDOW_SCENE_SYNC_LISTENER)) {
-                final InvalidationListener sceneListener =
-                        (InvalidationListener) pane.getProperties().get(WINDOW_SCENE_SYNC_LISTENER);
-                pane.sceneProperty().removeListener(sceneListener);
-                pane.getProperties().remove(WINDOW_SCENE_SYNC_LISTENER);
-            }
-        };
-
-        // Store a reference for later cleanup
-        pane.getProperties().put(WINDOW_SCENE_SYNC_LISTENER, windowSceneSyncListener);
-
-        // Add the listener to the window panel
-        pane.sceneProperty().addListener(windowSceneSyncListener);
     }
 
     // =========================================================================

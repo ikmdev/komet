@@ -1,3 +1,18 @@
+/*
+ * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package dev.ikm.komet.kview.klwindows.genediting;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
@@ -9,6 +24,8 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
+import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
+import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.mvvm.view.genediting.GenEditingDetailsController;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.entity.EntityService;
@@ -32,9 +49,7 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
     /**
      * Root container for the FXML UI and its controller.
      */
-    private JFXNode<Pane, GenEditingDetailsController> jfxNode;
-
-    private UUID windowTopic;
+    private final JFXNode<Pane, GenEditingDetailsController> jfxNode;
 
     /**
      * Constructs a new editing window for a specific semantic entity.
@@ -60,12 +75,11 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
             patternFacade = entity.pattern().toProxy();
             refComponent = EntityService.get().getEntity(entity.referencedComponentNid()).get();
         }
-        windowTopic = UUID.randomUUID();
         Config config = new Config(GenEditingDetailsController.class.getResource("genediting-details.fxml"))
                 .updateViewModel("genEditingViewModel", genEditingViewModel ->
                         genEditingViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
                                 .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
-                                .setPropertyValue(WINDOW_TOPIC, windowTopic)
+                                .setPropertyValue(WINDOW_TOPIC, getWindowTopic())
 //                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
                                 .setPropertyValue(FIELDS_COLLECTION, new ArrayList<String>()) // Ordered collection of Fields
                                 .setPropertyValue(REF_COMPONENT, refComponent)
@@ -85,14 +99,13 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
         });
     }
 
-    /**
-     * Called when the window is shown.
-     */
+    @Override
     public void onShown() {
         jfxNode.controller().putTitlePanesArrowOnRight();
     }
 
-    public UUID getWindowTopic() {
-        return windowTopic;
+    @Override
+    public EntityKlWindowType getWindowType() {
+        return EntityKlWindowTypes.GEN_EDITING;
     }
 }

@@ -15,7 +15,26 @@
  */
 package dev.ikm.komet.preferences;
 
+import java.util.Optional;
+
 public enum NidTextEnum {
+
     NID_TEXT,
-    SEMANTIC_ENTITY,
+    SEMANTIC_ENTITY;
+
+    /**
+     * Returns the enum constant of this type with the specified name.
+     * The string must match exactly an identifier used to declare an
+     * enum constant in this type.
+     *
+     * @param name the name of the enum constant to be returned.
+     * @return Optional containing the enum constant if found, or empty Optional if not found.
+     */
+    public static Optional<NidTextEnum> fromString(String name) {
+        try {
+            return Optional.of(valueOf(name.toUpperCase()));
+        } catch (IllegalArgumentException | NullPointerException ex) {
+            return Optional.empty();
+        }
+    }
 }
