@@ -139,6 +139,7 @@ public class PropertiesController {
                 contentBorderPane.setCenter(referenceComponentJfxNode.node());
             } else if (evt.getEventType() == PropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
                 // change the heading on the top of the panel
+                genEditingViewModel.setPropertyValue(FIELD_INDEX, -1);
                 closePropertiesController.setHeadingText("No Selection Made");
                 closePropertiesController.setSubtextLine2("to edit the Semantic Element");
                 contentBorderPane.setCenter(closePropsPane);
