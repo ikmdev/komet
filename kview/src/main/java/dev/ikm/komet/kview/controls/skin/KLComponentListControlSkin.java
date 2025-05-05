@@ -65,7 +65,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
      *
      * @param control The control that this skin should be installed onto.
      */
-    public KLComponentListControlSkin(KLComponentListControl control) {
+    public KLComponentListControlSkin(KLComponentListControl<T> control) {
         super(control);
 
         // Title
@@ -82,6 +82,16 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
                 createComponentUI(entityProxy.nid());
             }
         });
+
+//        control.valueProperty().subscribe( newValue -> {
+//            componentControls.clear();
+//            newValue.forEach(nid -> {
+//                if (nid != 0) {
+//                    EntityProxy entityProxy = EntityProxy.make(nid);
+//                    createComponentUI(entityProxy.nid());
+//                }
+//            });
+//        });
 
         // Add entry button
         addEntryButton = new Button(getString("add.entry.button.text"));

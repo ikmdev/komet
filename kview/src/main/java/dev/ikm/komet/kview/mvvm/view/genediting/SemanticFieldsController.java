@@ -313,7 +313,7 @@ public class SemanticFieldsController {
                 Object object = null;
                 FieldDefinitionForEntity fieldDefinitionForEntity = patternEntityVersion.fieldDefinitions().get(i);
                 if (fieldDefinitionForEntity.dataTypeNid() == COMPONENT_FIELD.nid()) {
-                    object = ANONYMOUS_CONCEPT;
+                    object = null;
                 } else if (fieldDefinitionForEntity.dataTypeNid() == STRING_FIELD.nid()
                         || fieldDefinitionForEntity.dataTypeNid() == STRING.nid()) {
                     object = "";
@@ -339,8 +339,8 @@ public class SemanticFieldsController {
             }
         }
         //TODO the observable fields are not getting cleared.
-        nodes.clear();
-        setupEditSemanticDetails();
+//        nodes.clear();
+//        setupEditSemanticDetails();
     }
 
     @FXML
