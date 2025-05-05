@@ -194,11 +194,19 @@ public class SemanticFieldsController {
             setupEditSemanticDetails();
         }
 
+    }
+
+    private void setupEditSemanticDetails() {
+        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+        observableSemantic = ObservableEntity.get(semantic.nid());
+        observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+        processCommittedValues();
+        loadUIData(); // And populates Nodes and Observable fields.
         entityVersionChangeEventSubscriber = evt -> {
             LOG.info("Version has been updated: " + evt.getEventType());
-                // get payload
+            // get payload
             if (evt.getEntityVersion().nid() == observableSemantic.nid()
-            && evt.getEntityVersion() instanceof SemanticVersionRecord semanticVersionRecord) {
+                    && evt.getEntityVersion() instanceof SemanticVersionRecord semanticVersionRecord) {
                 ImmutableList<Object> values = semanticVersionRecord.fieldValues();
                 for (int i = 0; i< values.size(); i++) {
                     ObservableField observableField = observableFields.get(i);
@@ -218,15 +226,6 @@ public class SemanticFieldsController {
 
         EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
                 EntityVersionChangeEvent.class, entityVersionChangeEventSubscriber);
-
-    }
-
-    private void setupEditSemanticDetails() {
-        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
-        observableSemantic = ObservableEntity.get(semantic.nid());
-        observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-        processCommittedValues();
-        loadUIData(); // And populates Nodes and Observable fields.
     }
 
     private void loadVBox() {
