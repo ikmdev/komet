@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentListControl;
 import dev.ikm.komet.kview.controls.KLComponentSetControl;
@@ -15,7 +16,6 @@ import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
@@ -252,38 +252,30 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private boolean haveAllowedDND(KLComponentControl source, KLComponentControl target) {
         // only allowed if both source and target have the same parent
         return hasAllowedDND(source) && hasAllowedDND(target) &&
-                ((source.getParent() instanceof KLComponentSetControl cs1 && target.getParent() instanceof KLComponentSetControl cs2 && cs1 == cs2)
-//                    || (source.getParent() instanceof KLComponentListControl cl1 && target.getParent() instanceof KLComponentListControl cl2 && cl1 == cl2)
-                );
+                ((source.getParent() instanceof KLComponentSetControl cs1 && target.getParent() instanceof KLComponentSetControl cs2 && cs1 == cs2));
     }
 
     private HBox createSearchBox() {
-        TextField searchTextField = new TextField();
-        searchTextField.getStyleClass().add("concept-text-field");
-        searchTextField.setPromptText(getString("textfield.prompt.text"));
-        searchTextField.onActionProperty().bind(getSkinnable().onSearchActionProperty());
-        searchTextField.textProperty().subscribe(text -> getSkinnable().getProperties().put(SEARCH_TEXT_VALUE, text));
-        HBox.setHgrow(searchTextField, Priority.ALWAYS);
+        AutoCompleteTextField<EntityProxy> typeAheadSearchField = new AutoCompleteTextField<>();
+
+        typeAheadSearchField.getStyleClass().add("concept-text-field");
+        typeAheadSearchField.setPromptText(getString("textfield.prompt.text"));
+        typeAheadSearchField.textProperty().subscribe(text -> getSkinnable().getProperties().put(SEARCH_TEXT_VALUE, text));
+
+        // Type ahead setup
+        typeAheadSearchField.valueProperty().subscribe(() -> getSkinnable().setEntity(typeAheadSearchField.getValue()));
+        typeAheadSearchField.completerProperty().bind(getSkinnable().completerProperty());
+        typeAheadSearchField.converterProperty().bind(getSkinnable().typeAheadStringConverterProperty());
+
+        HBox.setHgrow(typeAheadSearchField, Priority.ALWAYS);
 
         Region searchRegion = new Region();
         searchRegion.getStyleClass().add("concept-search-region");
         Button searchButton = new Button(null, searchRegion);
         searchButton.getStyleClass().add("concept-search-button");
-        searchButton.disableProperty().bind(searchTextField.textProperty().isEmpty());
-        searchButton.onActionProperty().bind(getSkinnable().onSearchActionProperty());
+        searchButton.disableProperty().bind(typeAheadSearchField.textProperty().isEmpty());
 
-        Region addRegion = new Region();
-        addRegion.getStyleClass().add("concept-add-region");
-        addRegion.setOnMouseClicked(e -> {
-            if (getSkinnable().getOnAddConceptAction() != null) {
-                getSkinnable().getOnAddConceptAction().handle(new ActionEvent());
-            }
-        });
-        HBox.setMargin(addRegion, new Insets(2, 5, 2, 4));
-        addRegion.managedProperty().bind(addRegion.visibleProperty());
-        addRegion.visibleProperty().bind(getSkinnable().showAddConceptProperty());
-
-        HBox searchBox = new HBox(searchTextField, searchButton, addRegion);
+        HBox searchBox = new HBox(typeAheadSearchField, searchButton);
         searchBox.getStyleClass().add("concept-search-box");
         return searchBox;
     }
