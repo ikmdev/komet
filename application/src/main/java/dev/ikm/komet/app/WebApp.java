@@ -468,9 +468,7 @@ public class WebApp extends Application {
             journalControllersList.forEach(JournalController::close);
         } else {
             // launched (journal Controllers List) will overwrite existing window preferences.
-            for (JournalController controller : journalControllersList) {
-                controller.saveToPreferences();
-            }
+            Lists.immutable.ofAll(this.journalControllersList).forEach(JournalController::saveToPreferences);
         }
     }
 

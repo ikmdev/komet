@@ -1471,7 +1471,7 @@ public class JournalController {
      * <p>
      * This method persists all journal-related data, including:
      * <ul>
-     *   <li>All open window states (via {@link #saveWindows(KometPreferences)})</li>
+     *   <li>All open window states (via {@link #saveWindowsAsync(KometPreferences)})</li>
      *   <li>Journal metadata (topic UUID, title, directory name)</li>
      *   <li>Window geometry (width, height, x/y position)</li>
      *   <li>Author information</li>
@@ -1494,7 +1494,7 @@ public class JournalController {
         final Stage stage = (Stage) journalBorderPane.getScene().getWindow();
         final KometPreferences journalWindowPreferences = journalPreferences.node(journalDirName);
         // Saves the current state of all windows in the journal workspace
-        saveWindows(journalWindowPreferences);
+        saveWindowsAsync(journalWindowPreferences);
         // Save journal metadata
         journalWindowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
         journalWindowPreferences.put(JOURNAL_TITLE, stage.getTitle());

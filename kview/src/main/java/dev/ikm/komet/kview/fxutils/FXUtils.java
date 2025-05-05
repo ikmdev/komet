@@ -37,6 +37,9 @@ import java.util.concurrent.Executor;
 
 public abstract class FXUtils {
 
+    /**
+     * Executor that ensures tasks run on the JavaFX application thread.
+     */
     public static final Executor FX_THREAD_EXECUTOR = FXUtils::runOnFxThread;
 
     /**
