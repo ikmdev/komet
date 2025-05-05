@@ -366,8 +366,8 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
     }
 
     private double layoutDropLine(Line dropLine, double contentWidth, Insets padding, double y) {
-        // subtract the padding and an arbitrary value to be less than the width of the components
-        double dropLineWidth = contentWidth - padding.getRight() - padding.getLeft() - 10;
+        // subtract the padding and at least 1 to be less than the width of the components
+        double dropLineWidth = contentWidth - padding.getRight() - padding.getLeft() - 2;
         // center the drop line horizontally within the contentWidth
         double dropLineX = contentWidth / 2 - dropLineWidth / 2;
         // center the drop line vertically within the height, which is the Space between the components
