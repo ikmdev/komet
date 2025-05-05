@@ -5,6 +5,7 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLComponentControl;
+import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -19,7 +20,8 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
 
         Parent node;
         if (isEditable) {
-            KLComponentControl componentControl = new KLComponentControl();
+            KLComponentControl componentControl = KLComponentControlFactory.createTypeAheadComponentControl(
+                    observableView.calculator().navigationCalculator());
 
             // title
             componentControl.setTitle(field().meaning().description());
