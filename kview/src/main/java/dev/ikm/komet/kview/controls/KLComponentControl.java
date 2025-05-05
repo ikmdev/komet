@@ -28,9 +28,8 @@ import java.util.function.Predicate;
  * independent item, with relevant information.
  * Initially, if the control is empty, the user can either:
  * </p>
- * <p>- type in a {@link javafx.scene.control.TextField} to search for a concept. Based on the
- * {@link #onSearchActionProperty}, an action will be executed. The {@link #searchTextProperty} holds the text
- * to search for.</p>
+ * <p>- type in a {@link javafx.scene.control.TextField} to search for a concept The {@link #searchTextProperty} holds
+ * the text to search for.</p>
  * <p>- or drag and drop a concept from any other external JavaFX node that holds a valid {@link Entity}.
  * The {@link #entityProperty} keeps the entity that was added.
  *</p>
@@ -69,6 +68,8 @@ public class KLComponentControl extends Control {
                 getProperties().remove(SEARCH_TEXT_VALUE);
             }
         });
+
+        getStylesheets().add(getUserAgentStylesheet());
     }
 
     /***************************************************************************
@@ -126,6 +127,7 @@ public class KLComponentControl extends Control {
     public final void setTypeAheadStringConverter(StringConverter<EntityProxy> value) { typeAheadStringConverterProperty().set(value); }
     public final StringConverter<EntityProxy> getTypeAheadStringConverter() {return typeAheadStringConverterProperty().get(); }
 
+    // -- search text
     /**
      * A read only property with the text that was typed to be searched for.
      */
@@ -136,21 +138,6 @@ public class KLComponentControl extends Control {
     public final String getSearchText() {
        return searchTextProperty.get();
     }
-
-
-//    /**
-//     * A property with an action to be executed when the user types some text to be searched for.
-//     */
-//    private final ObjectProperty<EventHandler<ActionEvent>> onSearchActionProperty = new SimpleObjectProperty<>(this, "onSearchAction");
-//    public final ObjectProperty<EventHandler<ActionEvent>> onSearchActionProperty() {
-//       return onSearchActionProperty;
-//    }
-//    public final EventHandler<ActionEvent> getOnSearchAction() {
-//       return onSearchActionProperty.get();
-//    }
-//    public final void setOnSearchAction(EventHandler<ActionEvent> value) {
-//        onSearchActionProperty.set(value);
-//    }
 
     // -- show add concept
     /**
@@ -186,21 +173,6 @@ public class KLComponentControl extends Control {
     public Predicate<PublicId> getComponentAllowedFilter() { return componentAllowedFilter.get(); }
     public ObjectProperty<Predicate<PublicId>> componentAllowedFilterProperty() { return componentAllowedFilter; }
     public void setComponentAllowedFilter(Predicate<PublicId> value) { componentAllowedFilter.set(value); }
-
-
-//    /**
-//     * A property that defines the action to be executed when the add concept button is pressed.
-//     */
-//    private final ObjectProperty<EventHandler<ActionEvent>> onAddConceptActionProperty = new SimpleObjectProperty<>(this, "onAddConceptAction");
-//    public final ObjectProperty<EventHandler<ActionEvent>> onAddConceptActionProperty() {
-//       return onAddConceptActionProperty;
-//    }
-//    public final EventHandler<ActionEvent> getOnAddConceptAction() {
-//       return onAddConceptActionProperty.get();
-//    }
-//    public final void setOnAddConceptAction(EventHandler<ActionEvent> value) {
-//        onAddConceptActionProperty.set(value);
-//    }
 
     // -- on remove action
     /**
