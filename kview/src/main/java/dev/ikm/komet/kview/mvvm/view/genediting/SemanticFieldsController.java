@@ -288,7 +288,7 @@ public class SemanticFieldsController {
 
     @FXML
     private void cancel(ActionEvent actionEvent) {
-        clearForm(actionEvent);
+        clearOrResetForm(actionEvent);
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         actionEvent.consume();
         // if previous state was closed cancel will close properties bump out.
@@ -296,7 +296,7 @@ public class SemanticFieldsController {
     }
 
     @FXML
-    private void clearForm(ActionEvent actionEvent) {
+    private void clearOrResetForm(ActionEvent actionEvent) {
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         Latest<SemanticEntityVersion>  latestCommitted =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
         latestCommitted.ifPresentOrElse(this::updateFieldValues, () -> {
@@ -304,7 +304,6 @@ public class SemanticFieldsController {
             Latest<PatternEntityVersion> patternEntityVersionLatest = getViewProperties().calculator().latest(pattern.nid());
             updateFieldValues(patternEntityVersionLatest.get());
         });
-        actionEvent.consume();
     }
 
     private void updateFieldValues(EntityVersion entityVersion) {
@@ -313,7 +312,7 @@ public class SemanticFieldsController {
                 Object object = null;
                 FieldDefinitionForEntity fieldDefinitionForEntity = patternEntityVersion.fieldDefinitions().get(i);
                 if (fieldDefinitionForEntity.dataTypeNid() == COMPONENT_FIELD.nid()) {
-                    object = null;
+                    object = ANONYMOUS_CONCEPT;
                 } else if (fieldDefinitionForEntity.dataTypeNid() == STRING_FIELD.nid()
                         || fieldDefinitionForEntity.dataTypeNid() == STRING.nid()) {
                     object = "";
@@ -339,8 +338,8 @@ public class SemanticFieldsController {
             }
         }
         //TODO the observable fields are not getting cleared.
-//        nodes.clear();
-//        setupEditSemanticDetails();
+        nodes.clear();
+        setupEditSemanticDetails();
     }
 
     @FXML
