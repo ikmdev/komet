@@ -44,15 +44,10 @@
 }
 
 
-/* works for EDIT MODE without the next two itmes, but with them it double boxes and includes the identicon */
-
-
-/* last two work in CREATE mode then click FIELDS PENCIL 
 .read-only-component-control .main-container .text-container:hover {
     -fx-background-color: #f4f4f4;
     -fx-border-color: #dfdfdf;
 }
-*/
 
 .read-only-component-control:edit-mode .main-container .text-container .label {
     -fx-background-color: #f4fbf0;
