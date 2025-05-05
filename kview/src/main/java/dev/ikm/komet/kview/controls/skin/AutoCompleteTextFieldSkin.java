@@ -68,6 +68,12 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
      **************************************************************************/
 
     private void onAction(ActionEvent actionEvent) {
+        AutoCompleteTextField<T> textField = (AutoCompleteTextField<T>) getSkinnable();
+        int selectedIndex = autoCompletePopup.getSelectedItemIndex();
+        if (selectedIndex >= 0) {
+            textField.setValue((T) autoCompletePopup.getItems().get(selectedIndex));
+        }
+
         if (autoCompletePopup != null) {
             autoCompletePopup.hide();
         }
@@ -128,6 +134,7 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
         Point2D textFieldScreenCoords = autoCompleteTextField.localToScreen(autoCompleteTextField.getBoundsInLocal().getMinX(), autoCompleteTextField.getBoundsInLocal().getMaxY());
 
         if (!autoCompletePopup.isShowing()) {
+            autoCompletePopup.setSelectedItemIndex(-1); // When showing popup we initially don't want any suggestion selected
             autoCompletePopup.show(autoCompleteTextField.getScene().getWindow(), textFieldScreenCoords.getX() + borderLeft, textFieldScreenCoords.getY());
         }
     }
@@ -241,12 +248,6 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
             autoCompleteTextField.addEventFilter(KeyEvent.KEY_PRESSED, this::onKeyPressed);
 
             control.selectedItemIndexProperty().addListener(this::onSelectedItemChanged);
-
-            control.setOnHidden(this::onHidden);
-        }
-
-        private void onHidden(WindowEvent windowEvent) {
-            control.setSelectedItemIndex(-1);
         }
 
         private void onSelectedItemChanged(Observable observable, Number oldValue, Number newValue) {
@@ -299,7 +300,10 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
 
                 node.setOnMousePressed(event -> {
                     autoCompleteTextField.setText(convertSuggestedObjectToString(result));
-                    control.hide();
+
+                    AutoCompletePopup<T> control = getSkinnable();
+                    control.setSelectedItemIndex(control.getItems().indexOf(result));
+
                     autoCompleteTextField.fireEvent(new ActionEvent());
                 });
                 autoCompleteListView.getItems().add(node);
