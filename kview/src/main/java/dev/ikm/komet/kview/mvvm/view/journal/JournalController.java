@@ -25,7 +25,7 @@ import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
-import static dev.ikm.komet.kview.fxutils.FXUtils.JFX_TASK_EXECUTOR;
+import static dev.ikm.komet.kview.fxutils.FXUtils.FX_THREAD_EXECUTOR;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createWindow;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.restoreWindow;
@@ -1425,8 +1425,8 @@ public class JournalController {
                 windowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
                 try {
                     CompletableFuture.supplyAsync(() -> restoreWindow(windowPreferences),
-                                    Platform.isFxApplicationThread() ? JFX_TASK_EXECUTOR : VIRTUAL_TASK_EXECUTOR)
-                            .thenAcceptAsync(this::setupWorkspaceWindow, JFX_TASK_EXECUTOR);
+                                    Platform.isFxApplicationThread() ? FX_THREAD_EXECUTOR : VIRTUAL_TASK_EXECUTOR)
+                            .thenAcceptAsync(this::setupWorkspaceWindow, FX_THREAD_EXECUTOR);
                 } catch (Exception e) {
                     LOG.error("Error restoring window: {}", windowId, e);
                 }

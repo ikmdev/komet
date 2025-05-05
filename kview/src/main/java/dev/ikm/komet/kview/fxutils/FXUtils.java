@@ -37,7 +37,7 @@ import java.util.concurrent.Executor;
 
 public abstract class FXUtils {
 
-    public static final Executor JFX_TASK_EXECUTOR = Platform::runLater;
+    public static final Executor FX_THREAD_EXECUTOR = FXUtils::runOnFxThread;
 
     /**
      * Property key for storing scene synchronization listener in a node's properties map.
@@ -144,6 +144,19 @@ public abstract class FXUtils {
             return findParent(parent, styleClass);
         }
 
+    }
+
+    /**
+     * Ensures that a code segment is run on the FX thread.
+     *
+     * @param runnable a {@code Runnable} encapsulating the code
+     */
+    public static void runOnFxThread(Runnable runnable) {
+        if (Platform.isFxApplicationThread()) {
+            runnable.run();
+        } else {
+            Platform.runLater(runnable);
+        }
     }
 
     /**
