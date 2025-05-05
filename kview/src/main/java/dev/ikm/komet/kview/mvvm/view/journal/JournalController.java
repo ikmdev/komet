@@ -18,7 +18,6 @@ package dev.ikm.komet.kview.mvvm.view.journal;
 import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
-import static dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent.GLOBAL_REFRESH;
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
@@ -34,8 +33,8 @@ import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
 import static dev.ikm.komet.preferences.ConceptWindowPreferences.CONCEPT_FOLDER_PREFIX;
-import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_WIDTH;
 import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_HEIGHT;
+import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_WIDTH;
 import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_XPOS;
 import static dev.ikm.komet.preferences.ConceptWindowPreferences.DEFAULT_CONCEPT_YPOS;
 import static dev.ikm.komet.preferences.ConceptWindowSettings.CONCEPT_HEIGHT;
@@ -77,9 +76,9 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
+import dev.ikm.komet.kview.controls.KLSearchControl;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.NotificationPopup;
-import dev.ikm.komet.kview.controls.KLSearchControl;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
@@ -127,7 +126,6 @@ import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
@@ -316,6 +314,7 @@ public class JournalController {
 
     private ConceptPatternNavController conceptPatternNavController;
 
+    //////////////////// Subscribers /////////////////////////////////////////////////
     private Subscriber<MakeConceptWindowEvent> makeConceptWindowEventSubscriber;
 
     private Subscriber<MakePatternWindowEvent> makePatternWindowEventSubscriber;
@@ -324,12 +323,13 @@ public class JournalController {
 
     private Subscriber<CloseReasonerPanelEvent> closeReasonerPanelEventSubscriber;
 
+    private Subscriber<RefreshCalculatorCacheEvent> refreshCalculatorEventSubscriber;
+    //////////////////////////////////////////////////////////////////////////////////
+
     @InjectViewModel
     private NextGenSearchViewModel nextGenSearchViewModel;
 
     private ObservableViewNoOverride windowView;
-
-    private Subscriber<RefreshCalculatorCacheEvent> refreshCalculatorEventSubscriber;
 
     public JournalController() {
         journalTopic = UUID.randomUUID();
@@ -414,13 +414,9 @@ public class JournalController {
         });
 
         workspace.addEventHandler(MouseEvent.MOUSE_CLICKED, this::onMouseClickedOnDesktopSurfacePane);
-        refreshCalculatorEventSubscriber = evt -> {
-            LOG.info("Refresh Calculator Event");
-            if(evt.getEventType() == GLOBAL_REFRESH) {
-                LOG.info("Global Refresh EventYpe...");
-                CachingService.clearAll();
-            }
-        };
+
+        // Refresh Concept navigator
+        refreshCalculatorEventSubscriber = _ -> getNavigatorNode().getController().refresh();
         journalEventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
 
     }
@@ -742,7 +738,8 @@ public class JournalController {
         journalEventBus.unsubscribe(makeConceptWindowEventSubscriber,
                 makePatternWindowEventSubscriber,
                 showNavigationalPanelEventSubscriber,
-                closeReasonerPanelEventSubscriber);
+                closeReasonerPanelEventSubscriber,
+                refreshCalculatorEventSubscriber);
     }
 
     /**
@@ -1000,6 +997,9 @@ public class JournalController {
                                    NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
         ConceptKlWindowFactory conceptKlWindowFactory = new ConceptKlWindowFactory();
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
+
+        //ViewCoordinateHelper.changeViewCalculatorToLatest(viewProperties);
+
         ConceptKlWindow conceptKlWindow = conceptKlWindowFactory.create(journalTopic, conceptFacade, windowView,
                 viewProperties, null);
         activityStreams.add(conceptKlWindow.getDetailsActivityStreamKey());
@@ -1046,6 +1046,8 @@ public class JournalController {
                                          Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
         ConceptKlWindowFactory conceptKlWindowFactory = new ConceptKlWindowFactory();
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
+        // update according to the concept navigators view coordinate.
+        viewProperties.nodeView().setOverrides(getNavigatorNode().viewCoordinateRecord());
         ConceptKlWindow conceptKlWindow = conceptKlWindowFactory.create(journalTopic,
                 null, windowView, viewProperties, null);
         activityStreams.add(conceptKlWindow.getDetailsActivityStreamKey());
