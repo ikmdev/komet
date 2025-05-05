@@ -79,19 +79,31 @@ import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.Preferences;
 import dev.ikm.komet.progress.CompletionNodeFactory;
 import dev.ikm.komet.progress.ProgressNodeFactory;
+import dev.ikm.komet.reasoner.ReasonerResultsNode;
 import dev.ikm.komet.search.SearchNodeFactory;
 import dev.ikm.komet.table.TableNodeFactory;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.binary.Encodable;
+import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.service.ServiceKeys;
+import dev.ikm.tinkar.common.service.ServiceProperties;
 import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.coordinate.Calculators;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.ChangeSetWriterService;
+import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
+import dev.ikm.tinkar.reasoner.service.ClassifierResults;
+import dev.ikm.tinkar.reasoner.service.ReasonerService;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -121,6 +133,12 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.transport.FetchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,11 +149,21 @@ import java.lang.management.ManagementFactory;
 
 import com.sun.management.OperatingSystemMXBean;
 
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 
@@ -355,12 +383,24 @@ public class App extends Application {
             windowMenu.getItems().addAll(tk.createMinimizeMenuItem(), tk.createZoomMenuItem(), tk.createCycleWindowsItem(),
                     new SeparatorMenuItem(), tk.createBringAllToFrontItem());
 
+            // Exchange Menu
+            Menu exchangeMenu = new Menu("Exchange");
+
+            MenuItem infoMenuItem = new MenuItem("Info");
+            infoMenuItem.setOnAction(actionEvent -> infoAction());
+            MenuItem pullMenuItem = new MenuItem("Pull");
+            pullMenuItem.setOnAction(actionEvent -> syncAction(false));
+            MenuItem pushMenuItem = new MenuItem("Sync");
+            pushMenuItem.setOnAction(actionEvent -> syncAction(true));
+
+            exchangeMenu.getItems().addAll(infoMenuItem, pullMenuItem, pushMenuItem);
+
             // Help Menu
             Menu helpMenu = new Menu("Help");
             helpMenu.getItems().addAll(new MenuItem("Getting started"));
 
             MenuBar bar = new MenuBar();
-            bar.getMenus().addAll(kometAppMenu, fileMenu, editMenu, viewMenu, windowMenu, helpMenu);
+            bar.getMenus().addAll(kometAppMenu, fileMenu, editMenu, viewMenu, windowMenu, exchangeMenu, helpMenu);
             tk.setAppearanceMode(AppearanceMode.AUTO);
             tk.setDockIconMenu(createDockMenu());
             tk.autoAddWindowMenuItems(windowMenu);
@@ -772,6 +812,130 @@ public class App extends Application {
         Scene exportScene = new Scene(exportPane, Color.TRANSPARENT);
         exportStage.setScene(exportScene);
         exportStage.show();
+    }
+
+    private void gitProcess(Consumer<Git> gitProcess) {
+        Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
+        if (optionalDataStoreRoot.isEmpty()) {
+            throw new IllegalStateException("ServiceKeys.DATA_STORE_ROOT not provided.");
+        }
+        File changeSetFolder = new File(optionalDataStoreRoot.get(), "changeSets");
+        if (!changeSetFolder.exists()) {
+            throw new IllegalStateException("Changeset Writer Service not ready.");
+        }
+        gitConnect(changeSetFolder).whenComplete((git, _) -> {
+            gitProcess.accept(git);
+        });
+    }
+
+    private CompletableFuture<Git> gitConnect(File changeSetFolder) {
+        try {
+            Git git = Git.open(changeSetFolder);
+            return CompletableFuture.supplyAsync(() -> git, TinkExecutor.ioThreadPool());
+        } catch (IOException e) {
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    TinkExecutor.ioThreadPool().submit(new InitializeTask(changeSetFolder.toPath())).get();
+                    return Git.open(changeSetFolder);
+                } catch (InterruptedException | ExecutionException | IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }, TinkExecutor.ioThreadPool());
+        }
+    }
+
+    private void infoAction() {
+        gitProcess((git) -> {
+            Task task = new InfoTask(git);
+            Platform.runLater(task);
+        });
+    }
+
+    private void syncAction(boolean push) {
+        gitProcess((git) -> {
+            File changeSetFolder = git.getRepository().getDirectory().getParentFile();
+            //Pull
+            CompletableFuture.supplyAsync(() -> {
+                try {
+                    TinkExecutor.threadPool().submit(new PullTask(changeSetFolder.toPath())).get();
+                    return Git.open(changeSetFolder);
+                } catch (InterruptedException | ExecutionException | IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }, TinkExecutor.ioThreadPool())
+                    //Load
+                    .whenComplete((_,_) -> {
+                        File[] matchingFiles = changeSetFolder.listFiles((dir, name) -> name.endsWith("ike-cs.zip"));
+                        if (matchingFiles == null) {
+                            return;
+                        }
+                        Arrays.stream(matchingFiles)
+                                .filter(file -> {
+                                    try (FileSystem fs = FileSystems.newFileSystem(file.toPath())) {
+                                        // Filter out unfinished exports and non-export zips
+                                        return Files.exists(fs.getPath("META-INF", "MANIFEST.MF"));
+                                    } catch (IOException e) {
+                                        return false;
+                                    }
+                                })
+                                .forEach((protoFile) -> {
+                                    try {
+                                        TinkExecutor.ioThreadPool().submit(new LoadEntitiesFromProtobufFile(protoFile)).get();
+                                    } catch (InterruptedException | ExecutionException e) {
+                                        LOG.info("Error:" + e);
+                                    }
+                                });
+                    })
+                    //Reasoner
+                    .whenComplete((_,_) -> runReasoner())
+                    //Push
+                    .whenComplete((_,_) -> {
+                        if (push) {
+                            try {
+                                TinkExecutor.threadPool().submit(new AddChangesetsTask(changeSetFolder.toPath())).get();
+                            } catch (InterruptedException | ExecutionException e) {
+                                throw new RuntimeException(e);
+                            }
+                            TinkExecutor.threadPool().submit(new PushTask(changeSetFolder.toPath()));
+                        }
+                    });
+        });
+    }
+
+    private List<ClassifierResults> runReasoner() {
+        String reasonerType = "ElkSnomedReasoner";
+        List<ReasonerService> rss = PluggableService.load(ReasonerService.class).stream()
+                .map(ServiceLoader.Provider::get)
+                .filter(reasoner -> reasoner.getName().contains(reasonerType))
+                .sorted(Comparator.comparing(ReasonerService::getName)).toList();
+        LOG.info("Number of reasoners " + rss.size());
+        List<ClassifierResults> resultList = new ArrayList<>();
+        for (ReasonerService rs : rss) {
+            LOG.info("Reasoner service: " + rs);
+            rs.init(Calculators.View.Default(), TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
+            rs.setProgressUpdater(null);
+            try {
+                // Extract
+                rs.extractData();
+                // Load
+                rs.loadData();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            // Compute
+            rs.computeInferences();
+            // Build NNF
+            rs.buildNecessaryNormalForm();
+            // Write inferred results
+            ClassifierResults results = rs.writeInferredResults();
+
+            LOG.info("After Size of ConceptSet: " + rs.getReasonerConceptSet().size());
+            LOG.info("ClassifierResults: inferred changes size " + results.getConceptsWithInferredChanges().size());
+            LOG.info("ClassifierResults: navigation changes size " + results.getConceptsWithNavigationChanges().size());
+            LOG.info("ClassifierResults: classificationconcept size " + results.getClassificationConceptSet().size());
+            resultList.add(results);
+        }
+        return resultList;
     }
 
     private void generateMsWindowsMenu(BorderPane kometRoot, Stage stage) {

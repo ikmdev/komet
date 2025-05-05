@@ -109,6 +109,7 @@
         <nsmenufx.version>3.1.0</nsmenufx.version>
         <openjfx.version>23.0.1</openjfx.version>
         <scenic-view.version>11.0.2</scenic-view.version>
+        <jgit.version>6.10.0.202406032230-r-r5</jgit.version>
 
         <!-- TestFX / Monocle -->
         <commonTestFXArgs>
@@ -577,6 +578,11 @@
                 <version>${bind-to-slf4j.version}</version>
             </dependency>
             <!-- Bind To SLF4J Dependencies (End) -->
+            <dependency>
+                <groupId>dev.ikm.jpms</groupId>
+                <artifactId>jgit</artifactId>
+                <version>${jgit.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <!-- Cross project dependencies -->

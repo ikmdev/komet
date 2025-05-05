@@ -28,6 +28,7 @@ module dev.ikm.komet.application {
 
     exports dev.ikm.komet.app;
     exports dev.ikm.komet.app.util;
+    exports dev.ikm.komet.app.credential to org.controlsfx.controls;
     opens dev.ikm.komet.app to javafx.fxml;
 
     // TODO Not happy that I have to specify these here... Can't dynamically add modules?
@@ -70,6 +71,8 @@ module dev.ikm.komet.application {
     requires jdk.jdwp.agent;
     requires transitive dev.ikm.komet.rules;
     requires jdk.management;
+    requires org.eclipse.jgit;
+    requires dev.ikm.tinkar.reasoner.service;
 
     uses DataServiceController;
     uses DefaultDescriptionForNidService;
