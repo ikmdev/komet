@@ -32,16 +32,17 @@ import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.resto
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.ENTITY_NID_TYPE;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.*;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
+import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.DEMO_AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
-import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_COUNT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
 import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
 import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
 import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
@@ -63,7 +64,6 @@ import dev.ikm.komet.framework.tabs.DetachableTab;
 import dev.ikm.komet.framework.tabs.TabGroup;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLWorkspace;
@@ -81,6 +81,7 @@ import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.ChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
+import dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils;
 import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
@@ -96,6 +97,7 @@ import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.NidTextEnum;
 import dev.ikm.komet.progress.CompletionNodeFactory;
 import dev.ikm.komet.progress.ProgressNodeFactory;
@@ -162,6 +164,8 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -302,13 +306,15 @@ public class JournalController {
 
     private Subscriber<MakePatternWindowEvent> makePatternWindowEventSubscriber;
 
+    private Subscriber<MakeGenEditingWindowEvent> makeGenEditWindowEventSubscriber;
+
     private Subscriber<ShowNavigationalPanelEvent> showNavigationalPanelEventSubscriber;
 
     private Subscriber<CloseReasonerPanelEvent> closeReasonerPanelEventSubscriber;
 
-    private ObservableViewNoOverride windowView;
-
     private Subscriber<RefreshCalculatorCacheEvent> refreshCalculatorEventSubscriber;
+
+    private ObservableViewNoOverride windowView;
 
     @InjectViewModel
     private JournalViewModel journalViewModel;
@@ -322,9 +328,7 @@ public class JournalController {
         journalTopic = journalViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
 
         // Initialize the journal window view
-        final KometPreferences journalPreferences = getJournalPreferences(journalTopic);
-        WindowSettings windowSettings = new WindowSettings(journalPreferences);
-        windowView = windowSettings.getView();
+        windowView = journalViewModel.getPropertyValue(WINDOW_VIEW);
 
         // Initialize the journal windows list
         journalWindows = FXCollections.unmodifiableObservableList(workspace.getWindows());
@@ -373,7 +377,7 @@ public class JournalController {
         journalEventBus.subscribe(journalTopic, MakePatternWindowEvent.class, makePatternWindowEventSubscriber);
 
         // Listening for when a General authoring Window needs to be summoned.
-        Subscriber<MakeGenEditingWindowEvent> makeGenEditWindowEventSubscriber = evt ->
+        makeGenEditWindowEventSubscriber = evt ->
             // If the pattern is passed as a component, then it is a right click > new semantic and therefore
             // the flag for opening the properties panel should be set to true.
             // If the semantic is passed as a component, then we are in general editing mode and therefore
@@ -728,12 +732,14 @@ public class JournalController {
     public void shutdown() {
         // cleanup code here...
         LOG.info("Journal Window is shutting down...");
-        activityStreams.forEach(activityStreamKey -> ActivityStreams.delete(activityStreamKey));
+        activityStreams.forEach(ActivityStreams::delete);
 
         journalEventBus.unsubscribe(makeConceptWindowEventSubscriber,
                 makePatternWindowEventSubscriber,
+                makeGenEditWindowEventSubscriber,
                 showNavigationalPanelEventSubscriber,
-                closeReasonerPanelEventSubscriber);
+                closeReasonerPanelEventSubscriber,
+                refreshCalculatorEventSubscriber);
     }
 
     /**
@@ -1310,35 +1316,14 @@ public class JournalController {
         };
     }
 
-    //Getter and Setters for various JavaFX components
     public String getTitle() {
-        Stage jStage = (Stage) this.getSettingsToggleButton().getScene().getWindow();
-        return jStage.getTitle();
-    }
-
-    public double getHeight() {
-        Stage jStage = (Stage) this.getSettingsToggleButton().getScene().getWindow();
-        return jStage.getHeight();
-    }
-
-    public double getWidth() {
-        Stage jStage = (Stage) this.getSettingsToggleButton().getScene().getWindow();
-        return jStage.getWidth();
-    }
-
-    public double getX() {
-        Stage jStage = (Stage) this.getSettingsToggleButton().getScene().getWindow();
-        return jStage.getX();
-    }
-
-    public double getY() {
-        Stage jStage = (Stage) this.getSettingsToggleButton().getScene().getWindow();
-        return jStage.getY();
+        Stage stage = (Stage) journalBorderPane.getScene().getWindow();
+        return stage.getTitle();
     }
 
     public void close() {
-        Stage jStage = (Stage) this.getSettingsToggleButton().getScene().getWindow();
-        jStage.close();
+        Stage stage = (Stage) journalBorderPane.getScene().getWindow();
+        stage.close();
     }
 
     /**
@@ -1348,7 +1333,7 @@ public class JournalController {
      * @return A string in the format "JOURNAL_" + UUID for use as a preference folder name
      */
     public String getJournalDirName() {
-        return generateJournalDirName(journalTopic);
+        return KlWindowPreferencesUtils.getJournalDirName(journalTopic);
     }
 
     /**
@@ -1479,6 +1464,55 @@ public class JournalController {
                 throw new CompletionException(e);
             }
         }, IO_TASK_EXECUTOR);
+    }
+
+    /**
+     * Saves the current state of the journal and its windows to the application's preferences system.
+     * <p>
+     * This method persists all journal-related data, including:
+     * <ul>
+     *   <li>All open window states (via {@link #saveWindows(KometPreferences)})</li>
+     *   <li>Journal metadata (topic UUID, title, directory name)</li>
+     *   <li>Window geometry (width, height, x/y position)</li>
+     *   <li>Author information</li>
+     *   <li>Last edit timestamp</li>
+     * </ul>
+     * <p>
+     * The preferences are stored in a hierarchical structure:
+     * <pre>
+     * Root Configuration Preferences
+     *   └── journals
+     *       └── [journal_shortened-UUID]
+     *           ├── Journal metadata (UUID, title, dimensions, position, etc.)
+     *           └── Window states
+     * </pre>
+     */
+    public void saveToPreferences() {
+        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        final KometPreferences journalPreferences = appPreferences.node(JOURNALS);
+        final String journalDirName = getJournalDirName();
+        final Stage stage = (Stage) journalBorderPane.getScene().getWindow();
+        final KometPreferences journalWindowPreferences = journalPreferences.node(journalDirName);
+        // Saves the current state of all windows in the journal workspace
+        saveWindows(journalWindowPreferences);
+        // Save journal metadata
+        journalWindowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
+        journalWindowPreferences.put(JOURNAL_TITLE, stage.getTitle());
+        journalWindowPreferences.put(JOURNAL_DIR_NAME, journalDirName);
+        journalWindowPreferences.putDouble(JOURNAL_WIDTH, stage.getWidth());
+        journalWindowPreferences.putDouble(JOURNAL_HEIGHT, stage.getHeight());
+        journalWindowPreferences.putDouble(JOURNAL_XPOS, stage.getX());
+        journalWindowPreferences.putDouble(JOURNAL_YPOS, stage.getY());
+        journalWindowPreferences.put(JOURNAL_AUTHOR, DEMO_AUTHOR);
+        journalWindowPreferences.putLong(JOURNAL_LAST_EDIT, (LocalDateTime.now())
+                .atZone(ZoneId.systemDefault()).toEpochSecond());
+        try {
+            journalWindowPreferences.flush();
+            journalPreferences.flush();
+            appPreferences.sync();
+        } catch (BackingStoreException e) {
+            LOG.error("error writing journal window state to preferences", e);
+        }
     }
 
     /**

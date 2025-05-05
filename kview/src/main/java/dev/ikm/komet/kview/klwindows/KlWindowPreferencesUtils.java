@@ -115,7 +115,7 @@ public interface KlWindowPreferencesUtils {
      * @param journalTopic the UUID identifying the journal
      * @return A string in the format "JOURNAL_" + shortened UUID for use as a preference folder name
      */
-    static String generateJournalDirName(UUID journalTopic) {
+    static String getJournalDirName(UUID journalTopic) {
         return JOURNAL_FOLDER_PREFIX + shortenUUID(journalTopic);
     }
 
@@ -128,7 +128,7 @@ public interface KlWindowPreferencesUtils {
      */
     static KometPreferences getJournalPreferences(UUID journalTopic) {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final String path = JOURNALS + separator + generateJournalDirName(journalTopic);
+        final String path = JOURNALS + separator + getJournalDirName(journalTopic);
         return appPreferences.node(path);
     }
 

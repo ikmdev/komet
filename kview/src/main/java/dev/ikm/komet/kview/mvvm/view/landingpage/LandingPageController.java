@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.landingpage;
 
-import dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils;
 import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.mvvm.model.JournalCounter;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
@@ -46,7 +45,8 @@ import java.util.prefs.BackingStoreException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.shortenUUID;
+import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalDirName;
+import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
 import static dev.ikm.komet.kview.mvvm.model.Constants.JOURNAL_NAME_PREFIX;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.CreateJournalEvent.CREATE_JOURNAL;
@@ -90,7 +90,7 @@ public class LandingPageController implements BasicController {
 
     private Subscriber<DeleteJournalEvent> deleteJournalSubscriber;
 
-    private final Map<String, JournalCardController> journalCardControllerMap = new HashMap<>();
+    private final Map<UUID, JournalCardController> journalCardControllerMap = new HashMap<>();
 
     public ToggleButton getSettingsToggleButton() {
         return settingsToggleButton;
@@ -160,7 +160,7 @@ public class LandingPageController implements BasicController {
                 // if card already exists then load from disk.
                 if (gridViewFlowPane.getChildren().contains(journalCard)) {
                     // fetch preferences from disk for journal settings.
-                    prefX = loadJournalWindowPreference(journalSettingsFinal.getValue(JOURNAL_DIR_NAME));
+                    prefX = loadJournalWindowPreference(journalTopic);
                 } else {
                     // newly added card to landing page.
                     prefX = journalSettingsFinal;
@@ -168,7 +168,7 @@ public class LandingPageController implements BasicController {
                 // fire create journal event... AND this should be the ONLY place it comes from besides the menu
                 kViewEventBus.publish(JOURNAL_TOPIC, new CreateJournalEvent(this, CREATE_JOURNAL, prefX));
             });
-            journalCardControllerMap.put(journalTopic.toString(), journalCardController);
+            journalCardControllerMap.put(journalTopic, journalCardController);
             journalCard.setUserData(journalSettingsFinal);
             gridViewFlowPane.getChildren().addFirst(journalCard);
         };
@@ -185,27 +185,26 @@ public class LandingPageController implements BasicController {
                 if (!removeIt) return false;
 
                 if (node.getUserData() instanceof PrefX prefX) {
+                    final UUID journalTopic = prefX.getValue(JOURNAL_TOPIC);
+                    final String journalDirName = getJournalDirName(journalTopic);
+
                     // remove preferences.
                     KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-                    KometPreferences journalPreferences = appPreferences.node(JOURNALS);
-                    List<String> journalNames = journalPreferences.getList(JOURNAL_IDS);
+                    KometPreferences journalsPreferences = appPreferences.node(JOURNALS);
+                    KometPreferences journalWindowPreferences = journalsPreferences.node(journalDirName);
+                    List<String> journalDirNames = journalsPreferences.getList(JOURNAL_IDS);
+                    journalDirNames.remove(journalDirName);
 
-                    String journalSubWindowPrefFolder = JOURNAL_FOLDER_PREFIX
-                            + shortenUUID(prefX.getValue(JOURNAL_TOPIC));
-                    journalNames.remove(journalSubWindowPrefFolder);
-
-                    KometPreferences journalSubWindowPreferences = appPreferences.node(JOURNALS +
-                            File.separator + journalSubWindowPrefFolder);
                     try {
-                        journalPreferences.putList(JOURNAL_IDS, journalNames);
-                        journalSubWindowPreferences.flush();
-                        journalSubWindowPreferences.removeNode();
-                        journalPreferences.sync();
+                        journalsPreferences.putList(JOURNAL_IDS, journalDirNames);
+                        journalWindowPreferences.flush();
+                        journalWindowPreferences.removeNode();
+                        journalsPreferences.sync();
                         // TODO Remove all concept folders.
                     } catch (BackingStoreException e) {
                         throw new RuntimeException(e);
                     } finally {
-                        journalCardControllerMap.remove(prefX.getValue(JOURNAL_TOPIC).toString()).cleanup();
+                        journalCardControllerMap.remove((UUID) prefX.getValue(JOURNAL_TOPIC)).cleanup();
                     }
                 }
                 return true;
@@ -231,31 +230,29 @@ public class LandingPageController implements BasicController {
         loadPreferencesForLandingPage();
     }
 
-    private PrefX loadJournalWindowPreference(String journalSubWindowPrefFolder) {
-        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        KometPreferences journalSubWindowPreferences = appPreferences.node(JOURNALS +
-                File.separator + journalSubWindowPrefFolder);
+    private PrefX loadJournalWindowPreference(UUID journalTopic) {
+        final KometPreferences journalWindowPreferences = getJournalPreferences(journalTopic);
+        final String journalTitle = journalWindowPreferences.get(JOURNAL_TITLE)
+                .orElse("Journal %s".formatted(JournalCounter.getInstance().get()));
+        final String journalDirName = getJournalDirName(journalTopic);
 
-        UUID journalTopic = journalSubWindowPreferences.getUuid(JOURNAL_TOPIC).orElse(null);
-        String journalTitle = journalSubWindowPreferences.get(JOURNAL_TITLE).orElse("Journal %s".formatted(JournalCounter.getInstance().get()));
-
-        Double height = journalSubWindowPreferences.getDouble(
-                journalSubWindowPreferences.enumToGeneralKey(JOURNAL_HEIGHT), DEFAULT_JOURNAL_HEIGHT);
-        Double width = journalSubWindowPreferences.getDouble(
-                journalSubWindowPreferences.enumToGeneralKey(JOURNAL_WIDTH), DEFAULT_JOURNAL_WIDTH);
-        Double xpos = journalSubWindowPreferences.getDouble(
-                journalSubWindowPreferences.enumToGeneralKey(JOURNAL_XPOS), DEFAULT_JOURNAL_XPOS);
-        Double ypos = journalSubWindowPreferences.getDouble(
-                journalSubWindowPreferences.enumToGeneralKey(JOURNAL_YPOS), DEFAULT_JOURNAL_YPOS);
-        String journalAuthor = journalSubWindowPreferences.get(
-                journalSubWindowPreferences.enumToGeneralKey(JOURNAL_AUTHOR), "");
-        OptionalLong journalLastEditOpt = journalSubWindowPreferences.getLong(
-                journalSubWindowPreferences.enumToGeneralKey(JOURNAL_LAST_EDIT));
-        List<String> windowList = journalSubWindowPreferences.getList(
-                journalSubWindowPreferences.enumToGeneralKey(WINDOW_NAMES));
+        Double height = journalWindowPreferences.getDouble(
+                journalWindowPreferences.enumToGeneralKey(JOURNAL_HEIGHT), DEFAULT_JOURNAL_HEIGHT);
+        Double width = journalWindowPreferences.getDouble(
+                journalWindowPreferences.enumToGeneralKey(JOURNAL_WIDTH), DEFAULT_JOURNAL_WIDTH);
+        Double xpos = journalWindowPreferences.getDouble(
+                journalWindowPreferences.enumToGeneralKey(JOURNAL_XPOS), DEFAULT_JOURNAL_XPOS);
+        Double ypos = journalWindowPreferences.getDouble(
+                journalWindowPreferences.enumToGeneralKey(JOURNAL_YPOS), DEFAULT_JOURNAL_YPOS);
+        String journalAuthor = journalWindowPreferences.get(
+                journalWindowPreferences.enumToGeneralKey(JOURNAL_AUTHOR), "");
+        OptionalLong journalLastEditOpt = journalWindowPreferences.getLong(
+                journalWindowPreferences.enumToGeneralKey(JOURNAL_LAST_EDIT));
+        List<String> windowList = journalWindowPreferences.getList(
+                journalWindowPreferences.enumToGeneralKey(WINDOW_NAMES));
 
         return PrefX.create()
-                .setValue(JOURNAL_DIR_NAME, journalSubWindowPrefFolder)
+                .setValue(JOURNAL_DIR_NAME, journalDirName)
                 .setValue(JOURNAL_TOPIC, journalTopic)
                 .setValue(JOURNAL_TITLE, journalTitle)
                 .setValue(JOURNAL_HEIGHT, height)
@@ -271,22 +268,18 @@ public class LandingPageController implements BasicController {
     private void loadPreferencesForLandingPage() {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences journalPreferences = appPreferences.node(JOURNALS);
-        List<String> journalNames = journalPreferences.getList(JOURNAL_IDS);
-        List<String> namesToRemove = new ArrayList<>();
-        for (String journalSubWindowPrefFolder : journalNames) {
+        List<String> journalDirNames = journalPreferences.getList(JOURNAL_IDS);
+        List<String> journalsToRemove = new ArrayList<>();
+        for (String journalDirName : journalDirNames) {
             KometPreferences journalSubWindowPreferences = appPreferences.node(JOURNALS +
-                    File.separator + journalSubWindowPrefFolder);
+                    File.separator + journalDirName);
             Optional<UUID> journalTopicOptional = journalSubWindowPreferences.getUuid(JOURNAL_TOPIC);
             if (journalTopicOptional.isEmpty()) {
-                namesToRemove.add(journalSubWindowPrefFolder);
+                journalsToRemove.add(journalDirName);
                 continue;
             }
 
             Optional<String> journalTitleOptional = journalSubWindowPreferences.get(JOURNAL_TITLE);
-            if (journalTitleOptional.isEmpty()) {
-                namesToRemove.add(journalSubWindowPrefFolder);
-                continue;
-            }
 
             Double height = journalSubWindowPreferences.getDouble(
                     journalSubWindowPreferences.enumToGeneralKey(JOURNAL_HEIGHT), DEFAULT_JOURNAL_HEIGHT);
@@ -303,7 +296,7 @@ public class LandingPageController implements BasicController {
             List<String> conceptList = journalSubWindowPreferences.getList(journalSubWindowPreferences.enumToGeneralKey(WINDOW_NAMES));
 
             PrefX prefX = PrefX.create()
-                .setValue(JOURNAL_DIR_NAME, journalSubWindowPrefFolder)
+                .setValue(JOURNAL_DIR_NAME, journalDirName)
                 .setValue(JOURNAL_TOPIC, journalTopicOptional.get())
                 .setValue(JOURNAL_TITLE, journalTitleOptional.get())
                 .setValue(JOURNAL_HEIGHT, height)
@@ -321,8 +314,8 @@ public class LandingPageController implements BasicController {
                     new JournalTileEvent(newProjectJournalButton,
                             CREATE_JOURNAL_TILE, prefX));
         }
-        journalNames.removeAll(namesToRemove);
-        journalPreferences.putList(JOURNAL_IDS, journalNames);
+        journalDirNames.removeAll(journalsToRemove);
+        journalPreferences.putList(JOURNAL_IDS, journalDirNames);
         try {
             journalPreferences.flush();
         } catch (BackingStoreException e) {
@@ -359,26 +352,41 @@ public class LandingPageController implements BasicController {
     @FXML
     void createNewJournalViewFromCard(Event event) {
         // publish the event that the new journal button was pressed
-        PrefX journalWindowSettingsObjectMap = PrefX.create();
-        UUID journalTopic = UUID.randomUUID();
-        String journalName = JOURNAL_NAME_PREFIX + JournalCounter.getInstance().incrementAndGet();
-        String journalDirName = JOURNAL_FOLDER_PREFIX + shortenUUID(journalTopic);
+        final PrefX journalWindowSettingsObjectMap = PrefX.create();
+        final UUID journalTopic = UUID.randomUUID();
+        final String journalName = JOURNAL_NAME_PREFIX + JournalCounter.getInstance().incrementAndGet();
+        final String journalDirName = getJournalDirName(journalTopic);
         journalWindowSettingsObjectMap.setValue(JOURNAL_TOPIC, journalTopic);
         journalWindowSettingsObjectMap.setValue(JOURNAL_TITLE, journalName);
         journalWindowSettingsObjectMap.setValue(JOURNAL_DIR_NAME, journalDirName);
+
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        KometPreferences journalPreferences = appPreferences.node(JOURNALS);
+        List<String> journalDirNames = journalPreferences.getList(JOURNAL_IDS);
+
+        // Add the new journal to the list
+        journalDirNames.add(journalDirName);
+        journalPreferences.putList(JOURNAL_IDS, journalDirNames);
+
+        // Create and populate the journal's preference node
+        KometPreferences journalWindowPreferences = journalPreferences.node(journalDirName);
+        journalWindowPreferences.putUuid(JOURNAL_TOPIC, journalTopic);
+        journalWindowPreferences.put(JOURNAL_TITLE, journalName);
+        journalWindowPreferences.put(JOURNAL_DIR_NAME, journalDirName);
+
+        try {
+            journalWindowPreferences.flush();
+            journalPreferences.sync();
+        } catch (BackingStoreException e) {
+            LOG.error("Failed to persist journal preferences", e);
+        }
 
         // publish an event to create the tile on the landing page
         kViewEventBus.publish(JOURNAL_TOPIC,
                 new JournalTileEvent(newProjectJournalButton, CREATE_JOURNAL_TILE, journalWindowSettingsObjectMap));
 
-        // and also publish an event to create the journal window itself
-        PrefX journalWindowSettingsMap = PrefX.create();
-        journalWindowSettingsMap.setValue(JOURNAL_TOPIC, journalTopic);
-        journalWindowSettingsMap.setValue(JOURNAL_TITLE, journalName);
-        journalWindowSettingsMap.setValue(JOURNAL_DIR_NAME, journalDirName);
-
         kViewEventBus.publish(JOURNAL_TOPIC,
-                new CreateJournalEvent(this, CREATE_JOURNAL, journalWindowSettingsMap));
+                new CreateJournalEvent(this, CREATE_JOURNAL, journalWindowSettingsObjectMap));
 
         LOG.info("CARD LAUNCHED");
     }

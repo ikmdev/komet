@@ -98,9 +98,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.time.LocalDateTime;
 import java.time.Year;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -127,7 +125,7 @@ import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_IDS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_WIDTH;
@@ -334,9 +332,9 @@ public class WebApp extends Application {
 
         // Create a subscriber for handling CreateJournalEvent
         Subscriber<CreateJournalEvent> detailsSubscriber = evt -> {
-            final PrefX windowSettings = evt.getWindowSettingsObjectMap();
-            final UUID journalTopic = windowSettings.getValue(JOURNAL_TOPIC);
-            final String journalName = evt.getWindowSettingsObjectMap().getValue(JOURNAL_TITLE);
+            final PrefX journalWindowSettingsObjectMap = evt.getWindowSettingsObjectMap();
+            final UUID journalTopic = journalWindowSettingsObjectMap.getValue(JOURNAL_TOPIC);
+            final String journalName = journalWindowSettingsObjectMap.getValue(JOURNAL_TITLE);
             // Check if a journal window with the same title is already open
             journalControllersList.stream()
                     .filter(journalController ->
@@ -352,7 +350,7 @@ public class WebApp extends Application {
                                     journalController.windowToFront();
                                 }
                             },
-                            () -> launchJournalViewPage(windowSettings));
+                            () -> launchJournalViewPage(journalWindowSettingsObjectMap));
         };
 
         // Subscribe the subscriber to the JOURNAL_TOPIC
@@ -468,6 +466,11 @@ public class WebApp extends Application {
         if (IS_DESKTOP) {
             // close all journal windows
             journalControllersList.forEach(JournalController::close);
+        } else {
+            // launched (journal Controllers List) will overwrite existing window preferences.
+            for (JournalController controller : journalControllersList) {
+                controller.saveToPreferences();
+            }
         }
     }
 
@@ -705,11 +708,17 @@ public class WebApp extends Application {
      */
     private void launchJournalViewPage(PrefX journalWindowSettings) {
         Objects.requireNonNull(journalWindowSettings, "journalWindowSettings cannot be null");
+        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        final KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
+        final WindowSettings windowSettings = new WindowSettings(windowPreferences);
         final UUID journalTopic = journalWindowSettings.getValue(JOURNAL_TOPIC);
+        Objects.requireNonNull(journalTopic, "journalTopic cannot be null");
 
         Config journalConfig = new Config(JournalController.class.getResource("journal.fxml"))
-                .updateViewModel("journalViewModel", journalViewModel ->
-                        journalViewModel.setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic));
+                .updateViewModel("journalViewModel", journalViewModel -> {
+                    journalViewModel.setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic);
+                    journalViewModel.setPropertyValue(WINDOW_VIEW, windowSettings.getView());
+                });
         JFXNode<BorderPane, JournalController> journalJFXNode = FXMLMvvmLoader.make(journalConfig);
         BorderPane journalBorderPane = journalJFXNode.node();
         JournalController journalController = journalJFXNode.controller();
@@ -749,7 +758,7 @@ public class WebApp extends Application {
         }
 
         journalStage.setOnHidden(windowEvent -> {
-            saveJournalWindowsToPreferences();
+            journalController.saveToPreferences();
             journalController.shutdown();
             journalControllersList.remove(journalController);
 
@@ -780,57 +789,6 @@ public class WebApp extends Application {
             webAPI.openStageAsTab(journalStage, journalName.replace(" ", "_"));
         } else {
             journalStage.show();
-        }
-    }
-
-    private void saveJournalWindowsToPreferences() {
-        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        KometPreferences journalPreferences = appPreferences.node(JOURNALS);
-
-        // Non launched journal windows should be preserved.
-        List<String> journalSubWindowFoldersFromPref = journalPreferences.getList(JOURNAL_IDS);
-
-        // launched (journal Controllers List) will overwrite existing window preferences.
-        List<String> journalSubWindowFolders = new ArrayList<>(journalControllersList.size());
-        for (JournalController controller : journalControllersList) {
-            final String journalSubWindowPrefFolder = controller.getJournalDirName();
-            journalSubWindowFolders.add(journalSubWindowPrefFolder);
-
-            KometPreferences journalSubWindowPreferences = appPreferences.node(JOURNALS +
-                    File.separator + journalSubWindowPrefFolder);
-            controller.saveWindows(journalSubWindowPreferences);
-            journalSubWindowPreferences.putUuid(JOURNAL_TOPIC, controller.getJournalTopic());
-            journalSubWindowPreferences.put(JOURNAL_TITLE, controller.getTitle());
-            journalSubWindowPreferences.put(JOURNAL_DIR_NAME, journalSubWindowPrefFolder);
-            journalSubWindowPreferences.putDouble(JOURNAL_HEIGHT, controller.getHeight());
-            journalSubWindowPreferences.putDouble(JOURNAL_WIDTH, controller.getWidth());
-            journalSubWindowPreferences.putDouble(JOURNAL_XPOS, controller.getX());
-            journalSubWindowPreferences.putDouble(JOURNAL_YPOS, controller.getY());
-            journalSubWindowPreferences.put(JOURNAL_AUTHOR, LandingPageController.DEMO_AUTHOR);
-            journalSubWindowPreferences.putLong(JOURNAL_LAST_EDIT, (LocalDateTime.now())
-                    .atZone(ZoneId.systemDefault()).toEpochSecond());
-            try {
-                journalSubWindowPreferences.flush();
-            } catch (BackingStoreException e) {
-                throw new RuntimeException(e);
-            }
-
-        }
-
-        // Make sure windows that are not summoned will not be deleted (not added to JOURNAL_NAMES)
-        for (String x : journalSubWindowFolders) {
-            if (!journalSubWindowFoldersFromPref.contains(x)) {
-                journalSubWindowFoldersFromPref.add(x);
-            }
-        }
-        journalPreferences.putList(JOURNAL_IDS, journalSubWindowFoldersFromPref);
-
-        try {
-            journalPreferences.flush();
-            appPreferences.flush();
-            appPreferences.sync();
-        } catch (BackingStoreException e) {
-            LOG.error("error writing journal window flag to preferences", e);
         }
     }
 
@@ -1084,8 +1042,6 @@ public class WebApp extends Application {
     }
 
     private void quit() {
-        //TODO: that this call will likely be moved into the landing page functionality
-        saveJournalWindowsToPreferences();
         PrimitiveData.stop();
         Preferences.stop();
         Platform.exit();
