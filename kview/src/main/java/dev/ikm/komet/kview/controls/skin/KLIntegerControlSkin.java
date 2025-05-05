@@ -76,7 +76,7 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
                             Integer.parseInt(text);
                         } catch (Exception e) {
                             // or else discard the change and warn
-                            errorLabel.setText("error1" /* resources.getString("error.integer.text") */);
+                            errorLabel.setText(resources.getString("error.integer.text"));
                             control.setShowError(true);
                             return null;
                         }
@@ -93,7 +93,7 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
                     }
                     return change;
                 } else {
-                    errorLabel.setText("error2" /* resources.getString("error.integer.text") */);
+                    errorLabel.setText(resources.getString("error.integer.text"));
                     control.setShowError(true);
                 }
             }

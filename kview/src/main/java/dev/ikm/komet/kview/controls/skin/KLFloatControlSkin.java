@@ -86,12 +86,12 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
                     double value = Double.parseDouble(newText);
                     // discard if we have a valid value, but it is infinite or NaN
                     if (Double.isInfinite(value) || Double.isNaN(value)) {
-                        errorLabel.setText("error1" /* resources.getString("error.float.text") */);
+                        errorLabel.setText(resources.getString("error.float.text"));
                         control.setShowError(true);
                         return null;
                     }
                 } catch (NumberFormatException nfe) {
-                    errorLabel.setText("error2" /* resources.getString("error.float.text") */);
+                    errorLabel.setText(resources.getString("error.float.text"));
                     control.setShowError(true);
                     return null;
                 }
@@ -121,7 +121,7 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
                     return change;
                 }
             }
-            errorLabel.setText("error3" /* resources.getString("error.float.text") */);
+            errorLabel.setText(resources.getString("error.float.text"));
             control.setShowError(true);
             return null;
         }));
