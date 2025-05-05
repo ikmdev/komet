@@ -79,7 +79,7 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
                     NUMERICAL_PATTERN.matcher(newText).matches()) {
                 // checking for exponent at the end of the newText allows the exponent
                 // to be entered naturally
-                if (newText.isEmpty() || endsWithExponent(newText)) {
+                if (newText.isEmpty() || "-".equals(newText) || "+".equals(newText) || endsWithExponent(newText)) {
                     return change;
                 }
                 try {
