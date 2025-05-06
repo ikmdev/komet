@@ -25,6 +25,9 @@ public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KL
 
         textContainer.getChildren().addAll(iconImageView, promptTextLabel, textLabel);
 
+        HBox.setHgrow(promptTextLabel, Priority.ALWAYS);
+        promptTextLabel.setMaxWidth(Double.MAX_VALUE);
+
         if (control.getValue() != null) {
             textLabel.setText(control.getValue().getText());
             iconImageView.setImage(control.getValue().getIcon());

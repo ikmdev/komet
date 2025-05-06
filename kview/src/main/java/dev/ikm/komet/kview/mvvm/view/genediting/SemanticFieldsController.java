@@ -34,14 +34,6 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
-import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
-import static dev.ikm.tinkar.terms.TinkarTerm.STRING_FIELD;
 import dev.ikm.komet.framework.events.EntityVersionChangeEvent;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -55,12 +47,10 @@ import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
-import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -316,34 +306,11 @@ public class SemanticFieldsController {
     }
 
     /**
-     * Reset the observable field values
+     * Reset the observable field values in edit mode.
      * @param entityVersion
      */
-    private void updateFieldValues(EntityVersion entityVersion) {
-        if(entityVersion instanceof PatternEntityVersion patternEntityVersion) {
-            for (int i = 0; i < patternEntityVersion.fieldDefinitions().size(); i++) {
-                Object object = null;
-                FieldDefinitionForEntity fieldDefinitionForEntity = patternEntityVersion.fieldDefinitions().get(i);
-                if (fieldDefinitionForEntity.dataTypeNid() == COMPONENT_FIELD.nid()) {
-                    object = ANONYMOUS_CONCEPT;
-                } else if (fieldDefinitionForEntity.dataTypeNid() == STRING_FIELD.nid()
-                        || fieldDefinitionForEntity.dataTypeNid() == STRING.nid()) {
-                    object = "";
-                } else if (fieldDefinitionForEntity.dataTypeNid() == INTEGER_FIELD.nid()) {
-                    object = 0;
-                } else if (fieldDefinitionForEntity.dataTypeNid() == FLOAT_FIELD.nid()) {
-                    object = 0.0F;
-                } else if (fieldDefinitionForEntity.dataTypeNid() == BOOLEAN_FIELD.nid()) {
-                    object = false;
-                } else if (fieldDefinitionForEntity.dataTypeNid() == COMPONENT_ID_LIST_FIELD.nid()) {
-                    object = IntIds.list.empty();
-                } else if (fieldDefinitionForEntity.dataTypeNid() == COMPONENT_ID_SET_FIELD.nid()) {
-                    object = IntIds.set.empty();
-                }
-                ObservableField observableField = observableFields.get(i);
-                observableField.valueProperty().setValue(object);
-            }
-        } else if (entityVersion instanceof SemanticEntityVersion semanticEntityVersion) {
+    private void resetFieldValues(EntityVersion entityVersion) {
+        if (entityVersion instanceof SemanticEntityVersion semanticEntityVersion) {
             for(int i = 0; i < semanticEntityVersion.fieldValues().size(); i++){
                 Object object = semanticEntityVersion.fieldValues().get(i);
                 ObservableField observableField = observableFields.get(i);
