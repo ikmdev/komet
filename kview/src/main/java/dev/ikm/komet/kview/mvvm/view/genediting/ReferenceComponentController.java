@@ -93,7 +93,7 @@ public class ReferenceComponentController {
     @FXML
     private void cancel(ActionEvent actionEvent) {
         klComponentControl.entityProperty().set(null);
-        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         actionEvent.consume();
         // if previous state was closed cancel will close properties bump out.
         // else show
@@ -153,7 +153,6 @@ public class ReferenceComponentController {
 
         Entity.provider().putEntity(semanticEntity);
         return semanticEntity;
-
     }
 
 }
