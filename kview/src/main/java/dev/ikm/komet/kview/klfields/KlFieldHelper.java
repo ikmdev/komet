@@ -27,6 +27,7 @@ import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.FieldRecord;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -139,31 +140,7 @@ public class KlFieldHelper {
         ObservableEntity observableEntity = ObservableEntity.get(pattern.nid());
         ObservablePatternSnapshot observablePatternSnapshot = (ObservablePatternSnapshot) observableEntity.getSnapshot(viewProperties.calculator());
         ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
-        MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(observablePatternVersion.fieldDefinitions().size());
-        observablePatternVersion.fieldDefinitions().forEach(f -> {
-            if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
-                fieldsValues.add(ANONYMOUS_CONCEPT);
-            } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
-                    || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
-                fieldsValues.add("");
-            } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
-                fieldsValues.add(0);
-            } else if (f.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
-                fieldsValues.add(0.0F);
-            } else if (f.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
-                fieldsValues.add(false);
-            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
-                fieldsValues.add(IntIds.list.empty());
-            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
-                fieldsValues.add(IntIds.set.empty());
-            } else if (f.dataTypeNid() == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
-                //TODO: We're using BYTE_ARRAY for the moment for Image data type
-                //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
-                //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
-                // The NULL value will not work since the object requires to be NON-NULL
-                fieldsValues.add(null);
-            }
-        });
+        MutableList<Object> fieldsValues = generateDefaultFieldValues(observablePatternVersion);
         return fieldsValues.toImmutable();
     }
 
