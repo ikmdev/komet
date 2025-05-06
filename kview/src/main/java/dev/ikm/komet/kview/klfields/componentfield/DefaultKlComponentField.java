@@ -22,40 +22,25 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
         if (isEditable) {
             KLComponentControl componentControl = KLComponentControlFactory.createTypeAheadComponentControl(
                     observableView.calculator().navigationCalculator());
-
             // title
             componentControl.setTitle(field().meaning().description());
-
-            // entity
-            EntityProxy entity = field().value();
-            componentControl.setEntity(entity);
-
-            componentControl.entityProperty().subscribe(newEntity -> {
-                field().valueProperty().set(newEntity);
-                componentControl.setTitle(field().field().meaning().description());
-                updateTooltipText();
-            });
-
+           // entity
+            componentControl.entityProperty().bindBidirectional(observableComponentField.valueProperty());
             node = componentControl;
         } else {
             KLReadOnlyComponentControl readOnlyComponentControl = new KLReadOnlyComponentControl();
             ObjectProperty<EntityProxy> valueProperty = observableComponentField.valueProperty();
-
             // title
             String title = observableView.calculator().languageCalculator().getDescriptionText(observableComponentField.meaningNid()).orElse("Blank Title");
             readOnlyComponentControl.setTitle(title);
-
             // value
             updateControlValue(valueProperty.get(), readOnlyComponentControl);
-
             // Listen and update when EntityProxy changes
             valueProperty.subscribe(newEntity -> {
                 updateControlValue(newEntity, readOnlyComponentControl);
             });
-
             node = readOnlyComponentControl;
         }
-
         setKlWidget(node);
     }
 
