@@ -84,6 +84,9 @@ public class KlFieldHelper {
         } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
             KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
             node = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
+        } else if (dataTypeNid == TinkarTerm.IMAGE_FIELD.nid()) {
+            KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
+            node = imageFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
         } else if (dataTypeNid == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
             //TODO: We're using BYTE_ARRAY for the moment for Image data type
             //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
@@ -222,6 +225,8 @@ public class KlFieldHelper {
                 control = new KLReadOnlyComponentListControl();
             } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 control = new KLReadOnlyComponentSetControl();
+            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.IMAGE_FIELD.nid()) {
+                control = new KLReadOnlyImageControl();
             } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
                 //TODO: We're using BYTE_ARRAY for the moment for Image data type
                 //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
