@@ -306,7 +306,7 @@ public class SemanticFieldsController {
     }
 
     /**
-     * Reset the observable field values
+     * Reset the observable field values in edit mode.
      * @param entityVersion
      */
     private void resetFieldValues(EntityVersion entityVersion) {
