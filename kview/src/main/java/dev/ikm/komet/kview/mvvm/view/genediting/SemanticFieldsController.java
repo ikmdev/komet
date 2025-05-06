@@ -185,6 +185,13 @@ public class SemanticFieldsController {
                 clearFormButton.setText("RESET FORM");
             setupEditSemanticDetails();
         }
+        genEditingViewModel.getProperty(MODE).subscribe((mode) -> {
+            if(mode == EDIT){
+                clearFormButton.setText("RESET FORM");
+            }else {
+                clearFormButton.setText("CLEAR FORM");
+            }
+        });
 
     }
 
