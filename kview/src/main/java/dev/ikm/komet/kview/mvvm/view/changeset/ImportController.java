@@ -16,7 +16,9 @@
 package dev.ikm.komet.kview.mvvm.view.changeset;
 
 import com.jpro.webapi.WebAPI;
+import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.progress.ProgressHelper;
+import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
@@ -41,7 +43,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.List;
-
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
+import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.SELECTED_FILE;
 
 /**
@@ -208,6 +211,9 @@ public class ImportController {
             File selectedFile = importViewModel.getPropertyValue(SELECTED_FILE);
             LoadEntitiesFromProtobufFile loadEntities = new LoadEntitiesFromProtobufFile(selectedFile);
             ProgressHelper.progress(loadEntities, "Cancel Import");
+            // refresh the Pattern Navigation
+            EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
+                    new PatternCreationEvent(event.getSource(), PATTERN_CREATION_EVENT));
             closeDialog();
             LOG.info("Importing dataset from file: {}", selectedFile);
         }
