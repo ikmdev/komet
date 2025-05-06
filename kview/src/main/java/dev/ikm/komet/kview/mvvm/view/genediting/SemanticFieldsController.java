@@ -183,7 +183,8 @@ public class SemanticFieldsController {
         genEditingViewModel.save();
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         reloadPatternNavigator = true;
-
+        clearFormButton.setDisable(true);
+        cancelButton.setDisable(true);
         ObjectProperty<EntityFacade> semanticProperty = genEditingViewModel.getProperty(SEMANTIC);
         // listen if the semantic property is updated during Create mode.
         semanticProperty.addListener( _ -> setupEditSemanticDetails());
@@ -297,7 +298,6 @@ public class SemanticFieldsController {
 
     @FXML
     private void clearOrResetForm(ActionEvent actionEvent) {
-        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         Latest<SemanticEntityVersion>  latestCommitted =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
         latestCommitted.ifPresentOrElse(this::updateFieldValues, () -> {
             EntityFacade pattern = EntityFacade.make(observableSemantic.pattern().nid());
@@ -306,6 +306,10 @@ public class SemanticFieldsController {
         });
     }
 
+    /**
+     * Clear or Reset the observable field values
+     * @param entityVersion
+     */
     private void updateFieldValues(EntityVersion entityVersion) {
         if(entityVersion instanceof PatternEntityVersion patternEntityVersion) {
             for (int i = 0; i < patternEntityVersion.fieldDefinitions().size(); i++) {
@@ -337,9 +341,9 @@ public class SemanticFieldsController {
                 observableField.valueProperty().setValue(object);
             }
         }
-        //TODO the observable fields are not getting cleared.
-        nodes.clear();
-        setupEditSemanticDetails();
+        //TODO the observable fields are not getting cleared that is the reason for making below calls.
+    //    nodes.clear();
+     //   setupEditSemanticDetails();
     }
 
     @FXML
