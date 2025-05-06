@@ -22,6 +22,7 @@ import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculteHashValue;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateNode;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
@@ -299,15 +300,23 @@ public class SemanticFieldsController {
     @FXML
     private void clearOrResetForm(ActionEvent actionEvent) {
         Latest<SemanticEntityVersion>  latestCommitted =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
-        latestCommitted.ifPresentOrElse(this::updateFieldValues, () -> {
-            EntityFacade pattern = EntityFacade.make(observableSemantic.pattern().nid());
-            Latest<PatternEntityVersion> patternEntityVersionLatest = getViewProperties().calculator().latest(pattern.nid());
-            updateFieldValues(patternEntityVersionLatest.get());
-        });
+        latestCommitted.ifPresentOrElse(this::resetFieldValues, this::clearField);
     }
 
     /**
-     * Clear or Reset the observable field values
+     * Clears the fields in create mode
+     */
+    private void clearField(){
+        EntityFacade pattern = EntityFacade.make(observableSemantic.pattern().nid());
+        ImmutableList<Object> fieldValues = createDefaultFieldValues(pattern, getViewProperties());
+        for (int i = 0; i < fieldValues.size(); i++) {
+            ObservableField observableField = observableFields.get(i);
+            observableField.valueProperty().setValue(fieldValues.get(i));
+        }
+    }
+
+    /**
+     * Reset the observable field values
      * @param entityVersion
      */
     private void updateFieldValues(EntityVersion entityVersion) {
@@ -341,9 +350,6 @@ public class SemanticFieldsController {
                 observableField.valueProperty().setValue(object);
             }
         }
-        //TODO the observable fields are not getting cleared that is the reason for making below calls.
-    //    nodes.clear();
-     //   setupEditSemanticDetails();
     }
 
     @FXML

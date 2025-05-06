@@ -95,6 +95,41 @@ public class KlFieldHelper {
     }
 
     /**
+     * Returns a list of field values.
+     * @param patternVersion Pattern Version containing the field definitions
+     * @return Returns a list of default values.
+     * @param <T> T is of type List
+     */
+    public static <T extends List<Object>> T generateDefaultFieldValues(PatternEntityVersion patternVersion) {
+        MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(patternVersion.fieldDefinitions().size());
+        patternVersion.fieldDefinitions().forEach(f -> {
+            if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
+                fieldsValues.add(ANONYMOUS_CONCEPT);
+            } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
+                    || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
+                fieldsValues.add("");
+            } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
+                fieldsValues.add(0);
+            } else if (f.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
+                fieldsValues.add(0.0F);
+            } else if (f.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
+                fieldsValues.add(false);
+            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
+                fieldsValues.add(IntIds.list.empty());
+            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
+                fieldsValues.add(IntIds.set.empty());
+            } else if (f.dataTypeNid() == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
+                //TODO: We're using BYTE_ARRAY for the moment for Image data type
+                //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
+                //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
+                // The NULL value will not work since the object requires to be NON-NULL
+                fieldsValues.add(null);
+            }
+        });
+        return (T) fieldsValues;
+    }
+
+    /**
      * Create default semantic fields value based on the provided pattern
      * @param pattern
      * @param viewProperties
