@@ -143,31 +143,7 @@ public class KlFieldHelper {
         ObservableEntity observableEntity = ObservableEntity.get(pattern.nid());
         ObservablePatternSnapshot observablePatternSnapshot = (ObservablePatternSnapshot) observableEntity.getSnapshot(viewProperties.calculator());
         ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
-        MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(observablePatternVersion.fieldDefinitions().size());
-        observablePatternVersion.fieldDefinitions().forEach(f -> {
-            if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
-                fieldsValues.add(ANONYMOUS_CONCEPT);
-            } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
-                    || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
-                fieldsValues.add("");
-            } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
-                fieldsValues.add(0);
-            } else if (f.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
-                fieldsValues.add(0.0F);
-            } else if (f.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
-                fieldsValues.add(false);
-            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
-                fieldsValues.add(IntIds.list.empty());
-            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
-                fieldsValues.add(IntIds.set.empty());
-            } else if (f.dataTypeNid() == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
-                //TODO: We're using BYTE_ARRAY for the moment for Image data type
-                //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
-                //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
-                // The NULL value will not work since the object requires to be NON-NULL
-                fieldsValues.add(null);
-            }
-        });
+        MutableList<Object> fieldsValues = generateDefaultFieldValues(observablePatternVersion);
         return fieldsValues.toImmutable();
     }
 
@@ -252,7 +228,9 @@ public class KlFieldHelper {
             } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.IMAGE_FIELD.nid()) {
                 control = new KLReadOnlyImageControl();
             } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
-                //TODO we need a KLReadOnlyByteArrayControl, this doesn't exist yet
+                //TODO: We're using BYTE_ARRAY for the moment for Image data type
+                //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
+                //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
                 control = new KLReadOnlyImageControl();
             }
 
