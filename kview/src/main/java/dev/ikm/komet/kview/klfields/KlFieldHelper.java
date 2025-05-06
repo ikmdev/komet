@@ -9,6 +9,8 @@ import dev.ikm.komet.framework.observable.ObservablePatternVersion;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KLByteArrayControl;
+import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
@@ -83,6 +85,9 @@ public class KlFieldHelper {
         } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
             KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
             node = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
+        } else if (dataTypeNid == TinkarTerm.IMAGE_FIELD.nid()) {
+            KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
+            node = imageFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
         } else if (dataTypeNid == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
             //TODO: We're using BYTE_ARRAY for the moment for Image data type
             //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
@@ -92,6 +97,41 @@ public class KlFieldHelper {
         }
 
         return node;
+    }
+
+    /**
+     * Returns a list of field values.
+     * @param patternVersion Pattern Version containing the field definitions
+     * @return Returns a list of default values.
+     * @param <T> T is of type List
+     */
+    public static <T extends List<Object>> T generateDefaultFieldValues(PatternEntityVersion patternVersion) {
+        MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(patternVersion.fieldDefinitions().size());
+        patternVersion.fieldDefinitions().forEach(f -> {
+            if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
+                fieldsValues.add(ANONYMOUS_CONCEPT);
+            } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
+                    || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
+                fieldsValues.add("");
+            } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
+                fieldsValues.add(0);
+            } else if (f.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
+                fieldsValues.add(0.0F);
+            } else if (f.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
+                fieldsValues.add(false);
+            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
+                fieldsValues.add(IntIds.list.empty());
+            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
+                fieldsValues.add(IntIds.set.empty());
+            } else if (f.dataTypeNid() == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
+                //TODO: We're using BYTE_ARRAY for the moment for Image data type
+                //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
+                //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
+                // The NULL value will not work since the object requires to be NON-NULL
+                fieldsValues.add(null);
+            }
+        });
+        return (T) fieldsValues;
     }
 
     /**
@@ -210,10 +250,10 @@ public class KlFieldHelper {
                 control = new KLReadOnlyComponentListControl();
             } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 control = new KLReadOnlyComponentSetControl();
+            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.IMAGE_FIELD.nid()) {
+                control = new KLReadOnlyImageControl();
             } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
-                //TODO: We're using BYTE_ARRAY for the moment for Image data type
-                //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
-                //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
+                //TODO we need a KLReadOnlyByteArrayControl, this doesn't exist yet
                 control = new KLReadOnlyImageControl();
             }
 
