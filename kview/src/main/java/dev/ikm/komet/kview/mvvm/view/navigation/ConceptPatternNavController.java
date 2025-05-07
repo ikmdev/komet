@@ -136,12 +136,6 @@ public class ConceptPatternNavController {
 
         ViewProperties viewProperties = patternNavViewModel.getPropertyValue(VIEW_PROPERTIES);
 
-//        TODO: Refresh the list of new patterns after an import refresh list with the latest records.
-//        refreshCalculatorEventSubscriber = _ -> {
-//            LOG.info("A New Pattern may exist after an import. Reloading all the Patterns.");
-//            patternsVBox.getChildren().clear();
-//            patternNavViewModel.reload();
-//        };
         EvtBusFactory.getDefaultEvtBus().subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
 
         // callback when all patterns are loaded. For each build up children instances.
