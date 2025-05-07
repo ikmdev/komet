@@ -416,7 +416,12 @@ public class JournalController {
         workspace.addEventHandler(MouseEvent.MOUSE_CLICKED, this::onMouseClickedOnDesktopSurfacePane);
 
         // Refresh Concept navigator
-        refreshCalculatorEventSubscriber = _ -> getNavigatorNode().getController().refresh();
+        refreshCalculatorEventSubscriber = _ -> {
+           // TODO FIXME Must refresh the cache or invalidate cache after a gitsync or import. Below works but will change the UI.
+           // ViewCoordinateHelper.changeViewCalculatorToLatestByTime(getNavigatorNode().getViewProperties(), System.currentTimeMillis() + );
+           getNavigatorNode().getController().refresh();
+        };
+
         journalEventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
 
     }
@@ -996,9 +1001,15 @@ public class JournalController {
     private void makeConceptWindow(ConceptFacade conceptFacade,
                                    NidTextEnum nidTextEnum, Map<ConceptWindowSettings, Object> conceptWindowSettingsMap) {
         ConceptKlWindowFactory conceptKlWindowFactory = new ConceptKlWindowFactory();
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
 
-        //ViewCoordinateHelper.changeViewCalculatorToLatest(viewProperties);
+        // TODO: Test and Fixme this takes a snapshot of the navigator's view coordinate
+        //       and makes a new view properties.
+        ObservableViewNoOverride observableViewNoOverride = new ObservableViewNoOverride(
+                getNavigatorNode()
+                .getViewProperties()
+                .nodeView()
+                .getViewCoordinate());
+        ViewProperties viewProperties = observableViewNoOverride.makeOverridableViewProperties();
 
         ConceptKlWindow conceptKlWindow = conceptKlWindowFactory.create(journalTopic, conceptFacade, windowView,
                 viewProperties, null);

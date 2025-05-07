@@ -68,7 +68,6 @@ import dev.ikm.komet.kview.fxutils.IconsHelper;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
-import dev.ikm.komet.kview.mvvm.model.ViewCoordinateHelper;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
@@ -79,6 +78,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
@@ -357,7 +357,7 @@ public class DetailsController  {
             // query current concept's membership semantic records.
             // build menuItems according to 'add' or 'remove' , style to look like figma designs style classes.
             // show offset to the right of the identicon
-            ViewCalculator viewCalculator = getViewCalculator(true);
+            ViewCalculator viewCalculator = getViewProperties().calculator();
             EntityFacade currentConceptFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
             List<PatternEntityVersion> patterns = getMembershipPatterns();
             ContextMenu membershipContextMenu = new ContextMenu();
@@ -949,7 +949,7 @@ public class DetailsController  {
             return;
         }
 
-        final ViewCalculator viewCalculator = getViewCalculator(true);
+        final ViewCalculator viewCalculator = getViewProperties().calculator();
 
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
         // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
@@ -1049,7 +1049,7 @@ public class DetailsController  {
     private VBox generateOtherNameRow(DescrName otherName) {
         VBox textFlowsBox = new VBox();
         DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-        ViewCalculator viewCalculator = getViewCalculator(true);
+        ViewCalculator viewCalculator = getViewProperties().calculator();
         ConceptEntity caseSigConcept = otherName.getCaseSignificance();
         String casSigText = viewCalculator.getRegularDescriptionText(caseSigConcept.nid())
                 .orElse(caseSigConcept.nid()+"");
@@ -1196,15 +1196,19 @@ public class DetailsController  {
         // TODO: This should rely on the view calculator from the parent view properties. Below will always get the actual latest semantic version
         //        ViewCalculator viewCalculator = getViewProperties().calculator(); /* after import this is not getting latest */
 
-//        ViewCalculator viewCalculator = ViewCoordinateHelper.createViewCalculatorLatest(getViewProperties()); /* First attempt but gets uncommitted records */
-
-        ViewCalculator viewCalculator = getViewCalculator(true); /* returns committed latest from db */
+        ViewCalculator viewCalculator = getViewProperties().calculator(); /* returns committed latest from db */
         viewCalculator.getDescriptionsForComponent(conceptFacade).stream()
                 .filter(semanticEntity -> {
                     // semantic -> semantic version -> pattern version(index meaning field from DESCR_Type)
                     // ((SemanticEntityVersion)viewCalculator.latest(semanticEntity.nid()).get()).fieldValues().get(1) // Hello Status
                     // viewCalculator.latest(semanticEntity).get() semanticVersion.get().fieldValues().get(1)    // Status
-                    Latest<SemanticEntityVersion> semanticVersion = viewCalculator.latest(semanticEntity.nid());
+
+                    // TODO FIXME - the latest() methods should be relative to the
+                    //              concept navigator's view coordinates based on stamp (date time).
+                    //              This will always return the latest record from the database not the
+                    //              latest from the view coordinate position data time range.
+                    Entity entity = Entity.getFast(semanticEntity.nid());
+                    Latest<SemanticEntityVersion> semanticVersion = viewCalculator.latest(entity);
 
                     PatternEntity<PatternEntityVersion> patternEntity = semanticEntity.pattern();
                     PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
@@ -1223,7 +1227,14 @@ public class DetailsController  {
 
                 }).forEach(semanticEntity -> {
                     // Each description obtain the latest semantic version, pattern version and their field values based on index
-                    Latest<SemanticEntityVersion> semanticVersion = viewCalculator.latest(semanticEntity.nid());
+
+                    // TODO FIXME - the latest() methods should be relative to the
+                    //              concept navigator's view coordinates based on stamp (date time).
+                    //              This will always return the latest record from the database not the
+                    //              latest from the view coordinate position data time range.
+                    Entity entity = Entity.getFast(semanticEntity.nid());
+                    Latest<SemanticEntityVersion> semanticVersion = viewCalculator.latest(entity);
+
                     PatternEntity<PatternEntityVersion> patternEntity = semanticEntity.pattern();
                     PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
 
@@ -1495,24 +1506,5 @@ public class DetailsController  {
 
     public void setConceptTopic(UUID conceptTopic) {
         this.conceptTopic = conceptTopic;
-    }
-
-    public ViewCalculator getViewCalculator(boolean isLatest) {
-        if (isLatest) {
-            if (viewCalculatorWithCache == null) {
-//                viewCalculatorWithCache = ViewCoordinateHelper.createViewCalculatorLatestCommittedStamp(getViewProperties());
-                viewCalculatorWithCache = ViewCoordinateHelper.createViewCalculatorLatestByTime(getViewProperties());
-            }
-        }
-        if (viewCalculatorWithCache != null) {
-            return viewCalculatorWithCache;
-        } else {
-            return getViewProperties().calculator();
-        }
-    }
-    public void invalidateViewCalculator() {
-        if (viewCalculatorWithCache != null) {
-            viewCalculatorWithCache = null;
-        }
     }
 }
