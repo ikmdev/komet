@@ -28,6 +28,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.DIGRAPH_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.DITREE_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.INSTANT_LITERAL;
 import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.LONG;
@@ -91,25 +92,28 @@ public class DataModelHelper {
     public static Set<ConceptEntity> fetchFieldDefinitionDataTypes() {
 
         return Set.of(
+// unsupported datatypes are commented out
                 Entity.getFast(STRING.nid()),
                 Entity.getFast(COMPONENT_FIELD.nid()),
                 Entity.getFast(COMPONENT_ID_SET_FIELD.nid()),
                 Entity.getFast(COMPONENT_ID_LIST_FIELD.nid()),
                 Entity.getFast(DITREE_FIELD.nid()),
                 Entity.getFast(DIGRAPH_FIELD.nid()),
-                Entity.getFast(CONCEPT_FIELD.nid()),
-                Entity.getFast(SEMANTIC_FIELD_TYPE.nid()),
+//                Entity.getFast(CONCEPT_FIELD.nid()),
+//                Entity.getFast(SEMANTIC_FIELD_TYPE.nid()),
                 Entity.getFast(INTEGER_FIELD.nid()),
                 Entity.getFast(FLOAT_FIELD.nid()),
                 Entity.getFast(BOOLEAN_FIELD.nid()),
+                //FIXME add byte array as its own type that is NOT an image
                 Entity.getFast(BYTE_ARRAY_FIELD.nid()),
-                Entity.getFast(ARRAY_FIELD.nid()),
-                Entity.getFast(INSTANT_LITERAL.nid()),
-                Entity.getFast(LONG.nid()),
-                Entity.getFast(VERTEX_FIELD.nid()),
+                Entity.getFast(IMAGE_FIELD.nid())
+//                Entity.getFast(ARRAY_FIELD.nid()),
+//                Entity.getFast(INSTANT_LITERAL.nid()),
+//                Entity.getFast(LONG.nid()),
+//                Entity.getFast(VERTEX_FIELD.nid()),
 //                Entity.getFast(PLANAR_POINT.nid()),
 //                Entity.getFast(SPATIAL_POINT.nid()),
-                Entity.getFast(UUID_DATA_TYPE.nid())
+//                Entity.getFast(UUID_DATA_TYPE.nid())
         );
     }
 

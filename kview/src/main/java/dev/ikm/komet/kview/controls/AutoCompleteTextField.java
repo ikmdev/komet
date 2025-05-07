@@ -38,6 +38,15 @@ public class AutoCompleteTextField<T> extends TextField {
      *                                                                         *
      **************************************************************************/
 
+    // -- value
+    /**
+     * The suggestion the user has selected from the suggestions popup or null if he has not yet selected any.
+     */
+    private final ObjectProperty<T> value = new SimpleObjectProperty<>();
+    public T getValue() { return value.get(); }
+    public ObjectProperty<T> valueProperty() { return value; }
+    public void setValue(T value) { this.value.set(value); }
+
     // -- completer
     /**
      * The auto-complete function. It will receive the string the user has input and should return the list of
