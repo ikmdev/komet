@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
@@ -12,6 +13,7 @@ import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
@@ -21,14 +23,11 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
 import javafx.beans.property.Property;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
@@ -85,6 +84,7 @@ public class ConceptPatternNavController {
     private PatternNavViewModel patternNavViewModel;
 
     private Subscriber<PatternCreationEvent> patternCreationEventSubscriber;
+    private Subscriber<RefreshCalculatorCacheEvent> refreshCalculatorEventSubscriber;
 
     public ConceptPatternNavController(Pane navigatorNodePanel) {
         classicConceptNavigator = navigatorNodePanel;
@@ -135,6 +135,9 @@ public class ConceptPatternNavController {
         EvtBusFactory.getDefaultEvtBus().subscribe(SAVE_PATTERN_TOPIC, PatternCreationEvent.class, patternCreationEventSubscriber);
 
         ViewProperties viewProperties = patternNavViewModel.getPropertyValue(VIEW_PROPERTIES);
+
+        EvtBusFactory.getDefaultEvtBus().subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
+
         // callback when all patterns are loaded. For each build up children instances.
         patternNavViewModel.setOnReload(stream -> {
             stream.forEach(patternItem -> {

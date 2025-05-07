@@ -41,8 +41,16 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_COUNT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
 import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
 import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
 import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
@@ -92,6 +100,7 @@ import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
 import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
 import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
 import dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
 import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
 import dev.ikm.komet.navigator.graph.Navigator;
@@ -302,6 +311,7 @@ public class JournalController {
 
     private ConceptPatternNavController conceptPatternNavController;
 
+    //////////////////// Subscribers /////////////////////////////////////////////////
     private Subscriber<MakeConceptWindowEvent> makeConceptWindowEventSubscriber;
 
     private Subscriber<MakePatternWindowEvent> makePatternWindowEventSubscriber;
@@ -313,11 +323,15 @@ public class JournalController {
     private Subscriber<CloseReasonerPanelEvent> closeReasonerPanelEventSubscriber;
 
     private Subscriber<RefreshCalculatorCacheEvent> refreshCalculatorEventSubscriber;
+    //////////////////////////////////////////////////////////////////////////////////
 
-    private ObservableViewNoOverride windowView;
+    @InjectViewModel
+    private NextGenSearchViewModel nextGenSearchViewModel;
 
     @InjectViewModel
     private JournalViewModel journalViewModel;
+
+    private ObservableViewNoOverride windowView;
 
     /**
      * Called after JavaFX FXML DI has occurred. Any annotated items above should be valid.
@@ -1001,8 +1015,17 @@ public class JournalController {
             preferences.put(ENTITY_NID_TYPE, nidTextEnum.name());
         }
 
+        // TODO: Test and Fixme this takes a snapshot of the navigator's view coordinate
+        //       and makes a new view properties.
+        ObservableViewNoOverride observableViewNoOverride = new ObservableViewNoOverride(
+                getNavigatorNode()
+                        .getViewProperties()
+                        .nodeView()
+                        .getViewCoordinate());
+        ViewProperties viewProperties = observableViewNoOverride.makeOverridableViewProperties();
+
         AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
-                journalTopic, conceptFacade, windowView.makeOverridableViewProperties(), preferences);
+                journalTopic, conceptFacade, viewProperties, preferences);
         setupWorkspaceWindow(chapterKlWindow);
     }
 
@@ -1115,7 +1138,7 @@ public class JournalController {
                                   KometPreferences preferences) {
         AbstractEntityChapterKlWindow lidrKlWindow = createWindow(EntityKlWindowTypes.LIDR,
                 journalTopic, deviceConcept, windowView.makeOverridableViewProperties(), preferences);
-       setupWorkspaceWindow(lidrKlWindow);
+        setupWorkspaceWindow(lidrKlWindow);
     }
 
     /**
