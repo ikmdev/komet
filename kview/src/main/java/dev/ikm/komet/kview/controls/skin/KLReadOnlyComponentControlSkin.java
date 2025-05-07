@@ -1,8 +1,8 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.NodeUtils;
-import dev.ikm.komet.kview.controls.*;
-import javafx.beans.binding.Bindings;
+import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
+import dev.ikm.komet.kview.controls.KometIcon;
 import javafx.scene.control.Label;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.ImageView;
@@ -25,8 +25,22 @@ public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KL
 
         textContainer.getChildren().addAll(iconImageView, promptTextLabel, textLabel);
 
-        textLabel.textProperty().bind(Bindings.select(control, "value", "text"));
-        iconImageView.imageProperty().bind(Bindings.select(control, "value", "icon"));
+        HBox.setHgrow(promptTextLabel, Priority.ALWAYS);
+        promptTextLabel.setMaxWidth(Double.MAX_VALUE);
+
+        if (control.getValue() != null) {
+            textLabel.setText(control.getValue().getText());
+            iconImageView.setImage(control.getValue().getIcon());
+        }
+        control.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                textLabel.setText(newVal.getText());
+                iconImageView.setImage(newVal.getIcon());
+            } else {
+                textLabel.setText("");
+                iconImageView.setImage(null);
+            }
+        });
 
         textLabel.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(textLabel, Priority.ALWAYS);

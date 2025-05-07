@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.klfields.componentlistfield;
 
+import static dev.ikm.komet.kview.controls.KLComponentControlFactory.createTypeAheadComponentListControl;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -29,9 +30,11 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
         Parent node;
         ObjectProperty<IntIdList> observableProperty = observableComponentListField.valueProperty();
         if (isEditable) {
-            KLComponentListControl<IntIdList> klComponentListControl = new KLComponentListControl<>();
+            KLComponentListControl<IntIdList> klComponentListControl = createTypeAheadComponentListControl(observableView.calculator().navigationCalculator());
+
             klComponentListControl.setTitle(getTitle());
             klComponentListControl.valueProperty().bindBidirectional(observableProperty);
+
             node = klComponentListControl;
         } else {
             KLReadOnlyComponentListControl klReadOnlyComponentListControl = new KLReadOnlyComponentListControl();

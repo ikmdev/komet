@@ -78,29 +78,33 @@ public final class ObservableSemanticVersion
     }
 
     @Override
-    public ImmutableList<ObservableField> fields(PatternEntityVersion patternVersion) {
+    public ImmutableList<ObservableField> fields(PatternEntityVersion patternVersion){
+        return fields(patternVersion, true);
+    }
+
+    public ImmutableList<ObservableField> fields(PatternEntityVersion patternVersion, boolean writeOnEveryChange) {
         ObservableField[] fieldArray = new ObservableField[fieldValues().size()];
         for (int indexInPattern = 0; indexInPattern < fieldArray.length; indexInPattern++) {
             Object value = fieldValues().get(indexInPattern);
             FieldDefinitionForEntity fieldDef = patternVersion.fieldDefinitions().get(indexInPattern);
             FieldDefinitionRecord fieldDefinitionRecord = new FieldDefinitionRecord(fieldDef.dataTypeNid(),
                     fieldDef.purposeNid(), fieldDef.meaningNid(), patternVersion.stampNid(), patternVersion.nid(), indexInPattern);
+            ObservableField<?> observableField = new ObservableField<>(new FieldRecord<>(value, this.nid(), this.stampNid(), fieldDefinitionRecord), writeOnEveryChange);
 
-            ObservableField<?> observableField = new ObservableField<>(new FieldRecord<>(value, this.nid(), this.stampNid(), fieldDefinitionRecord),false);
-            observableField.refreshProperties.setValue(true);
             int index = indexInPattern;
-
 
             // create a change listener
             InvalidationListener autoSave = (observableValue) -> {
                 // ObservableSemanticVersion and the SemanticVersion (record).
                 // ObservableSemanticVersion owns the versionProperty<SemanticVersion>
-                if(observableField.value() != null // Create a version only when new value is not null.
-                 &&        (observableField.fieldProperty.getValue().value() != null &&  // If the old
-                                // Check if the previous value is different from changed.This check is required for C-List C-Set
-                                !Objects.equals(observableField.value().toString(), observableField.fieldProperty.getValue().value().toString()))
+                if (observableField.value() != null // Create a version only when new value is not null.
+                 && (observableField.fieldProperty.getValue().value() != null &&
+                 // Check if the previous value is different from the changed value.
+                 // This check is required for C-List C-Set
+                 !Objects.equals(observableField.value(), observableField.fieldProperty.getValue().value()))
                 ) {
-                    autoSaveSematicVersion(observableField.value(), index); // Creating uncommitted version records. e.g., (c)hello, (u)hello1, (u)hello12, (u)hello123
+                    // Creating uncommitted version records. e.g., (c)hello, (u)hello1, (u)hello12, (u)hello123
+                    autoSaveSematicVersion(observableField.value(), index);
                 }
             };
             observableField.setAutoSaveChangeListener(autoSave);

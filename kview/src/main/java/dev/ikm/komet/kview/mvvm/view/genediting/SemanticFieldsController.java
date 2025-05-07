@@ -19,26 +19,21 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculteHashValue;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateNode;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.DEFAULT_FIELDS_HASH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
-import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
-import static dev.ikm.tinkar.terms.TinkarTerm.STRING_FIELD;
 import dev.ikm.komet.framework.events.EntityVersionChangeEvent;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -49,16 +44,13 @@ import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
+import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
-import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
-import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -68,6 +60,8 @@ import dev.ikm.tinkar.entity.VersionData;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
+import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -123,16 +117,9 @@ public class SemanticFieldsController {
     private void enableDisableSubmitButton(){
         //Disable submit button if any of the fields are blank.
         boolean disabled = checkForEmptyFields();
-        if (!disabled) {
+        if(!disabled){
             int uncommittedHash = calculteHashValue(observableFields);
-            // carve out in the logic so that when you are in create mode and the default values
-            // are exactly what they are then you are allowed to just save them as is
-            if ((genEditingViewModel.getPropertyValue(MODE) == CREATE) &&
-                (Integer.valueOf(uncommittedHash).equals(genEditingViewModel.getPropertyValue(DEFAULT_FIELDS_HASH)))) {
-                disabled = false;
-            } else {
-                disabled = (committedHash == uncommittedHash);
-            }
+            disabled = (committedHash == uncommittedHash);
         }
         submitButton.setDisable(disabled);
     }
@@ -157,7 +144,7 @@ public class SemanticFieldsController {
         Latest<ObservableSemanticVersion> observableSemanticVersionLatest = observableSemanticSnapshot.getLatestVersion();
         observableSemanticVersionLatest.ifPresent(observableSemanticVersion -> { // if latest version present
            if (observableSemanticVersion.committed()) { // and if latest version is committed then,
-               immutableList.set(observableSemanticSnapshot.getLatestFields().get()); // get the latest fields
+               immutableList.set(observableSemanticSnapshot.getLatestFields(true, false).get()); // get the latest fields
            } else { //if The latest version is Uncommitted, then retrieve the committed version from historic versions list.
                ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
                // replace any versions with uncommited stamp
@@ -187,18 +174,38 @@ public class SemanticFieldsController {
         genEditingViewModel.save();
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         reloadPatternNavigator = true;
+        clearFormButton.setDisable(true);
+        cancelButton.setDisable(true);
+        ObjectProperty<EntityFacade> semanticProperty = genEditingViewModel.getProperty(SEMANTIC);
+        // listen if the semantic property is updated during Create mode.
+        semanticProperty.addListener( _ -> setupEditSemanticDetails());
+
+        if (semantic != null && genEditingViewModel.getPropertyValue(MODE) == EDIT) {
+                //Change the button name to RESET FORM in EDIT MODE
+                clearFormButton.setText("RESET FORM");
+            setupEditSemanticDetails();
+        }
+        genEditingViewModel.getProperty(MODE).subscribe((mode) -> {
+            if(mode == EDIT){
+                clearFormButton.setText("RESET FORM");
+            }else {
+                clearFormButton.setText("CLEAR FORM");
+            }
+        });
+
+    }
+
+    private void setupEditSemanticDetails() {
+        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         observableSemantic = ObservableEntity.get(semantic.nid());
         observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
         processCommittedValues();
-
         loadUIData(); // And populates Nodes and Observable fields.
-
         entityVersionChangeEventSubscriber = evt -> {
-
             LOG.info("Version has been updated: " + evt.getEventType());
-                // get payload
+            // get payload
             if (evt.getEntityVersion().nid() == observableSemantic.nid()
-            && evt.getEntityVersion() instanceof SemanticVersionRecord semanticVersionRecord) {
+                    && evt.getEntityVersion() instanceof SemanticVersionRecord semanticVersionRecord) {
                 ImmutableList<Object> values = semanticVersionRecord.fieldValues();
                 for (int i = 0; i< values.size(); i++) {
                     ObservableField observableField = observableFields.get(i);
@@ -218,11 +225,6 @@ public class SemanticFieldsController {
 
         EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
                 EntityVersionChangeEvent.class, entityVersionChangeEventSubscriber);
-
-        //Change the button name to RESET FORM
-        if (genEditingViewModel.getPropertyValue(MODE) == EDIT) {
-            clearFormButton.setText("RESET FORM");
-        }
     }
 
     private void loadVBox() {
@@ -233,7 +235,6 @@ public class SemanticFieldsController {
         genEditingViewModel.getObjectProperty(FIELD_INDEX).subscribe(fieldIndex -> {
             int fieldIdx = (int)fieldIndex;
             editFieldsVBox.getChildren().clear();
-
             // single field to edit
             if (fieldIdx >= 0) {
                 editFieldsVBox.getChildren().add(nodes.get(fieldIdx));
@@ -251,20 +252,24 @@ public class SemanticFieldsController {
 
     private void loadUIData() {
         nodes.clear();
-        StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
-        Latest<SemanticEntityVersion> semanticEntityVersionLatest = stampCalculator.latest(observableSemantic.nid());
-        if (semanticEntityVersionLatest.isPresent()) {
-            // Populate the Semantic Details
-            // Displaying editable controls and populating the observable fields array list.
-            observableFields.clear();
-            observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
-            observableFields.forEach(observableField -> {
-                // disable calling writeToData method of observable field by setting refresh flag to true.
-                FieldRecord<?> fieldRecord = observableField.field();
-                nodes.add(KlFieldHelper.generateNode(fieldRecord, observableField, getViewProperties(), semanticEntityVersionLatest, true));
-                observableField.autoSaveOn();
-              });
+        // Populate the Semantic Details
+        // Displaying editable controls and populating the observable fields array list.
+        observableFields.clear();
+        if(observableSemanticSnapshot != null) {
+            observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields(true, false).get());
         }
+        observableFields.forEach(observableField -> {
+            if (genEditingViewModel.getPropertyValue(MODE) == CREATE && observableField.value() instanceof EntityProxy entityProxy){
+                if(entityProxy.nid() == ANONYMOUS_CONCEPT.nid()){
+                    observableField.valueProperty().setValue(null);
+                }
+            }
+            // disable calling writeToData method of observable field by setting refresh flag to true.
+            FieldRecord<?> fieldRecord = observableField.field();
+            nodes.add(generateNode(fieldRecord, observableField, getViewProperties(), true));
+            observableField.autoSaveOn();
+          });
+
         //Set the hascode for the committed values.
         enableDisableSubmitButton();
         loadVBox();
@@ -282,48 +287,37 @@ public class SemanticFieldsController {
 
     @FXML
     private void cancel(ActionEvent actionEvent) {
+        clearOrResetForm(actionEvent);
+        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         actionEvent.consume();
         // if previous state was closed cancel will close properties bump out.
         // else show
     }
 
     @FXML
-    private void clearForm(ActionEvent actionEvent) {
-        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+    private void clearOrResetForm(ActionEvent actionEvent) {
         Latest<SemanticEntityVersion>  latestCommitted =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
-        latestCommitted.ifPresentOrElse(this::updateFieldValues, () -> {
-            EntityFacade pattern = EntityFacade.make(observableSemantic.pattern().nid());
-            Latest<PatternEntityVersion> patternEntityVersionLatest = getViewProperties().calculator().latest(pattern.nid());
-            updateFieldValues(patternEntityVersionLatest.get());
-        });
-        actionEvent.consume();
+        latestCommitted.ifPresentOrElse(this::resetFieldValues, this::clearField);
     }
 
-    private void updateFieldValues(EntityVersion entityVersion) {
-        if(entityVersion instanceof PatternEntityVersion patternEntityVersion) {
-            for (int i = 0; i < patternEntityVersion.fieldDefinitions().size(); i++) {
-                Object object = null;
-                FieldDefinitionForEntity fieldDefinitionForEntity = patternEntityVersion.fieldDefinitions().get(i);
-                if (fieldDefinitionForEntity.dataTypeNid() == COMPONENT_FIELD.nid()) {
-                    object = ANONYMOUS_CONCEPT;
-                } else if (fieldDefinitionForEntity.dataTypeNid() == STRING_FIELD.nid()
-                        || fieldDefinitionForEntity.dataTypeNid() == STRING.nid()) {
-                    object = "";
-                } else if (fieldDefinitionForEntity.dataTypeNid() == INTEGER_FIELD.nid()) {
-                    object = 0;
-                } else if (fieldDefinitionForEntity.dataTypeNid() == FLOAT_FIELD.nid()) {
-                    object = 0.0F;
-                } else if (fieldDefinitionForEntity.dataTypeNid() == BOOLEAN_FIELD.nid()) {
-                    object = false;
-                } else if (fieldDefinitionForEntity.dataTypeNid() == COMPONENT_ID_LIST_FIELD.nid()) {
-                    object = IntIds.list.empty();
-                } else if (fieldDefinitionForEntity.dataTypeNid() == COMPONENT_ID_SET_FIELD.nid()) {
-                    object = IntIds.set.empty();
-                }
-                ObservableField observableField = observableFields.get(i);
-                observableField.valueProperty().setValue(object);
-            }
-        } else if (entityVersion instanceof SemanticEntityVersion semanticEntityVersion) {
+    /**
+     * Clears the fields in create mode
+     */
+    private void clearField(){
+        EntityFacade pattern = EntityFacade.make(observableSemantic.pattern().nid());
+        ImmutableList<Object> fieldValues = createDefaultFieldValues(pattern, getViewProperties());
+        for (int i = 0; i < fieldValues.size(); i++) {
+            ObservableField observableField = observableFields.get(i);
+            observableField.valueProperty().setValue(fieldValues.get(i));
+        }
+    }
+
+    /**
+     * Reset the observable field values in edit mode.
+     * @param entityVersion
+     */
+    private void resetFieldValues(EntityVersion entityVersion) {
+        if (entityVersion instanceof SemanticEntityVersion semanticEntityVersion) {
             for(int i = 0; i < semanticEntityVersion.fieldValues().size(); i++){
                 Object object = semanticEntityVersion.fieldValues().get(i);
                 ObservableField observableField = observableFields.get(i);
@@ -344,12 +338,12 @@ public class SemanticFieldsController {
        Latest<SemanticEntityVersion> semanticEntityVersionLatest = getViewProperties().calculator().stampCalculator().latest(semantic.nid());
        semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
            StampRecord stamp = Entity.getStamp(semanticEntityVersion.stampNid());
-           SemanticVersionRecord version = Entity.getVersionFast(observableSemantic.nid(), stamp.nid());
+           SemanticVersionRecord version = Entity.getVersionFast(semantic.nid(), stamp.nid());
            Transaction.forVersion(version).ifPresentOrElse(transaction -> {
                commitTransactionTask(transaction);
                // EventBus implementation changes to refresh the details area if commit successful
                EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
-                       new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, observableSemantic.nid()));
+                       new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
                // refesh the pattern navigation
                EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
                        new PatternCreationEvent(actionEvent.getSource(), PATTERN_CREATION_EVENT));
@@ -362,12 +356,8 @@ public class SemanticFieldsController {
            });
        });
 
-        // EventBus implementation changes to refresh the details area if commit successful
-        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
-                new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
-
-        processCommittedValues();
-        enableDisableSubmitButton();
+       processCommittedValues();
+       enableDisableSubmitButton();
     }
 
     private void commitTransactionTask(Transaction transaction) {
