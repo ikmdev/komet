@@ -272,8 +272,7 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
                 }
             }
 
-            textFieldSkin.wasTextChangedFromPopup = true;
-            autoCompleteTextField.setText(newText);
+            setTextFieldText(newText);
             autoCompleteTextField.positionCaret(newText.length());
         }
 
@@ -302,7 +301,7 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
                 nodes.add(node);
 
                 node.setOnMousePressed(event -> {
-                    autoCompleteTextField.setText(convertSuggestedObjectToString(result));
+                    setTextFieldText(convertSuggestedObjectToString(result));
 
                     AutoCompletePopup<T> control = getSkinnable();
                     control.setSelectedItemIndex(control.getItems().indexOf(result));
@@ -311,6 +310,13 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
                 });
                 autoCompleteListView.getItems().add(node);
             }
+        }
+
+        private void setTextFieldText(String newText) {
+            AutoCompleteTextFieldSkin<?> textFieldSkin = ((AutoCompleteTextFieldSkin)autoCompleteTextField.getSkin());
+            textFieldSkin.wasTextChangedFromPopup = true;
+
+            autoCompleteTextField.setText(newText);
         }
 
         private String convertSuggestedObjectToString(T popupObject) {
