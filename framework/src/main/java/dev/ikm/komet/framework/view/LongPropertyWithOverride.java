@@ -124,7 +124,9 @@ public class LongPropertyWithOverride extends SimpleLongProperty implements Prop
         if (this.oldValue != newValue) {
             if (this.oldValue != null) {
                 if (!this.oldValue.equals(newValue)) {
-                    this.changeListeners.forEach(changeListener -> changeListener.changed(this, this.oldValue, newValue));
+                    if (this.changeListeners != null) {
+                        this.changeListeners.forEach(changeListener -> changeListener.changed(this, this.oldValue, newValue));
+                    }
                 }
             }
         }
@@ -155,11 +157,9 @@ public class LongPropertyWithOverride extends SimpleLongProperty implements Prop
         this.oldValue = get();
         if (newValue == this.overriddenProperty.getValue()) {
             this.overridden = false;
-            if (this.oldValue != null) {
-                if (this.oldValue != null &! this.oldValue.equals(this.overriddenProperty.get())) {
-                    invalidated();
-                    fireValueChangedEvent();
-                }
+            if (this.oldValue != null && !this.oldValue.equals(this.overriddenProperty.get())) {
+                invalidated();
+                fireValueChangedEvent();
             }
         } else {
             // values not equal
