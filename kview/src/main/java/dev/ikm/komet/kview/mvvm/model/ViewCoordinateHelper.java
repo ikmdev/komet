@@ -29,7 +29,7 @@ public class ViewCoordinateHelper {
      */
     public static void changeViewCalculatorToLatestByTime(ViewProperties viewProperties, long time) {
         ViewCalculator existingViewCalculator = viewProperties.calculator();
-        StampCoordinateRecord latestStampCoordinate = existingViewCalculator.vertexStampCalculator().filter().withStampPositionTime(time);
+        StampCoordinateRecord latestStampCoordinate = existingViewCalculator.stampCoordinate().withStampPositionTime(time).toStampCoordinateRecord();
         ViewCoordinateRecord latestViewCoordinate = existingViewCalculator.viewCoordinateRecord().withStampCoordinate(latestStampCoordinate);
         Platform.runLater(() -> viewProperties.nodeView().setValue(latestViewCoordinate));
     }
@@ -50,7 +50,7 @@ public class ViewCoordinateHelper {
      */
     public static ViewCalculatorWithCache createViewCalculatorLatestByTime(ViewProperties viewProperties, long time) {
         ViewCalculator existingViewCalculator = viewProperties.calculator();
-        StampCoordinateRecord latestStampCoordinate = existingViewCalculator.vertexStampCalculator().filter().withStampPositionTime(time);
+        StampCoordinateRecord latestStampCoordinate = existingViewCalculator.stampCoordinate().withStampPositionTime(time).toStampCoordinateRecord();
         ViewCoordinateRecord latestViewCoordinate = existingViewCalculator.viewCoordinateRecord().withStampCoordinate(latestStampCoordinate);
         return new ViewCalculatorWithCache(latestViewCoordinate);
     }
