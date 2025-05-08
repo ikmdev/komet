@@ -13,14 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.preferences;
+package dev.ikm.komet.kview.mvvm.viewmodel;
 
-public enum ConceptWindowSettings {
-    NID_TYPE,
-    NID_VALUE,
-    CONCEPT_HEIGHT,
-    CONCEPT_WIDTH,
-    CONCEPT_XPOS,
-    CONCEPT_YPOS,
-    CONCEPT_PREF_NAME
+import dev.ikm.komet.framework.view.ViewProperties;
+
+/**
+ * Manages journal entry state and actions, building on common form behavior provided by {@link FormViewModel}.
+ */
+public class JournalViewModel extends FormViewModel {
+
+    public static String WINDOW_VIEW = "windowView";
+
+    /**
+     * Initializes a new JournalViewModel with default form configuration.
+     */
+    public JournalViewModel() {
+        super();
+
+        addProperty(WINDOW_VIEW, (ViewProperties) null);
+    }
+
+    // Add journal-specific properties and commands as needed
 }

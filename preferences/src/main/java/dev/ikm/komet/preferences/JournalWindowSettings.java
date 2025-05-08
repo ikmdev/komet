@@ -24,7 +24,7 @@ public enum JournalWindowSettings {
     JOURNAL_YPOS,
     JOURNAL_LAST_EDIT,
     JOURNAL_AUTHOR,
-    CONCEPT_NAMES,
-    CONCEPT_COUNT,
+    WINDOW_NAMES,
+    WINDOW_COUNT,
     CAN_DELETE
 }
