@@ -2,14 +2,12 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.navigator.graph.Navigator;
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.PseudoClass;
+import javafx.geometry.Bounds;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Skin;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
@@ -17,7 +15,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -291,14 +288,17 @@ public class LineageBox extends ScrollPane {
          */
         private Label getConceptLabel(InvertedTree.ConceptItem treeItem) {
             Label label = new Label(treeItem.description()) {
-                @Override
-                protected Skin<?> createDefaultSkin() {
-                    Skin<?> skin = super.createDefaultSkin();
-                    String description = getText();
-                    Text textNode = (Text) lookup(".text");
-                    textNode.textProperty().subscribe((_, t) ->
-                            setTooltip(t != null && !description.equals(t) ? new Tooltip(description) : null));
-                    return skin;
+                {
+                    localToSceneTransformProperty().subscribe(l -> {
+                        Bounds boxBounds = LineageBox.this.localToScene(LineageBox.this.getLayoutBounds());
+                        double tx = l.getTx();
+                        // show tooltip whenever the label is not fully visible from the left or from the right
+                        if (tx < boxBounds.getMinX() || tx + getLayoutBounds().getWidth() > boxBounds.getMaxX()) {
+                            setTooltip(new Tooltip(getText()));
+                        } else {
+                            setTooltip(null);
+                        }
+                    });
                 }
             };
             label.setOnMouseClicked(e -> {
