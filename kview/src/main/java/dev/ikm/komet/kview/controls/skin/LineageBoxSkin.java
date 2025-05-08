@@ -42,6 +42,15 @@ public class LineageBoxSkin extends ScrollPaneSkin {
         getChildren().add(closePane);
     }
 
+    @Override
+    protected double computePrefHeight(double width, double topInset, double rightInset, double bottomInset, double leftInset) {
+        double prefHeight = getSkinnable().getContent().prefHeight(width);
+        if (getHorizontalScrollBar().isVisible()) {
+            prefHeight += getHorizontalScrollBar().prefHeight(width);
+        }
+        return prefHeight + snappedTopInset() + snappedBottomInset();
+    }
+
     /** {@inheritDoc} **/
     @Override
     protected void layoutChildren(double x, double y, double w, double h) {

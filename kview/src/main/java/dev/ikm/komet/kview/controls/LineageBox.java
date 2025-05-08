@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.navigator.graph.Navigator;
+import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
@@ -88,9 +89,9 @@ public class LineageBox extends ScrollPane {
     public LineageBox() {
 
         root = new VBox();
+        root.getChildren().subscribe(() -> Platform.runLater(this::requestLayout));
         root.getStyleClass().add("lineage-box");
 
-        setFitToWidth(true);
         setContent(root);
         getStyleClass().add("lineage-pane");
     }
