@@ -1004,12 +1004,7 @@ public class JournalController {
 
         // TODO: Test and Fixme this takes a snapshot of the navigator's view coordinate
         //       and makes a new view properties.
-        ObservableViewNoOverride observableViewNoOverride = new ObservableViewNoOverride(
-                getNavigatorNode()
-                .getViewProperties()
-                .nodeView()
-                .getViewCoordinate());
-        ViewProperties viewProperties = observableViewNoOverride.makeOverridableViewProperties();
+        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
 
         ConceptKlWindow conceptKlWindow = conceptKlWindowFactory.create(journalTopic, conceptFacade, windowView,
                 viewProperties, null);
@@ -1058,7 +1053,6 @@ public class JournalController {
         ConceptKlWindowFactory conceptKlWindowFactory = new ConceptKlWindowFactory();
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
         // update according to the concept navigators view coordinate.
-        viewProperties.nodeView().setOverrides(getNavigatorNode().viewCoordinateRecord());
         ConceptKlWindow conceptKlWindow = conceptKlWindowFactory.create(journalTopic,
                 null, windowView, viewProperties, null);
         activityStreams.add(conceptKlWindow.getDetailsActivityStreamKey());
