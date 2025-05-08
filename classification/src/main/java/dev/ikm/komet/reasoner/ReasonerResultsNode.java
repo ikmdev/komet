@@ -176,7 +176,7 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 //		}
 	}
 
-	public void runFullReasoner() {
+	private void runFullReasoner() {
 		if (!confirmRun("full"))
 			return;
 		TinkExecutor.threadPool().execute(() -> {

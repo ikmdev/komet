@@ -71,7 +71,6 @@ module dev.ikm.komet.application {
     requires jdk.jdwp.agent;
     requires transitive dev.ikm.komet.rules;
     requires jdk.management;
-    requires org.eclipse.jgit;
     requires dev.ikm.tinkar.reasoner.service;
 
     uses DataServiceController;
