@@ -1,4 +1,4 @@
-package dev.ikm.komet.app;
+package dev.ikm.komet.sync;
 
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.service.TrackingCallable;
@@ -17,7 +17,7 @@ import java.nio.file.Path;
  * adding the necessary git configuration info. .
  * It extends the TrackingCallable class.
  */
-class InitializeTask extends TrackingCallable<Void> {
+public class InitializeTask extends TrackingCallable<Void> {
     private static final Logger LOG = LoggerFactory.getLogger(InitializeTask.class);
 
     final Path changeSetFolder;

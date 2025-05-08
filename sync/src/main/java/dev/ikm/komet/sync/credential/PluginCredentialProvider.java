@@ -1,4 +1,4 @@
-package dev.ikm.komet.app.credential;
+package dev.ikm.komet.sync.credential;
 
 import javafx.application.Platform;
 import org.eclipse.jgit.errors.UnsupportedCredentialItem;

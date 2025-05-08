@@ -1,4 +1,4 @@
-package dev.ikm.komet.app.credential;
+package dev.ikm.komet.sync.credential;
 
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.PasswordField;

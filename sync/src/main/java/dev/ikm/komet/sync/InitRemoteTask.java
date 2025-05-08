@@ -1,6 +1,6 @@
-package dev.ikm.komet.app;
+package dev.ikm.komet.sync;
 
-import dev.ikm.komet.app.credential.CredentialItemWrapper;
+import dev.ikm.komet.sync.credential.CredentialItemWrapper;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

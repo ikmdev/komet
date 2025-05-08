@@ -1,4 +1,4 @@
-package dev.ikm.komet.app;
+package dev.ikm.komet.sync;
 
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.PluggableService;

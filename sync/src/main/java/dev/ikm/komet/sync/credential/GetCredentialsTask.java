@@ -1,4 +1,4 @@
-package dev.ikm.komet.app.credential;
+package dev.ikm.komet.sync.credential;
 
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.Preferences;

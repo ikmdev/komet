@@ -1,6 +1,6 @@
-package dev.ikm.komet.app;
+package dev.ikm.komet.sync;
 
-import dev.ikm.komet.app.credential.PluginCredentialProvider;
+import dev.ikm.komet.sync.credential.PluginCredentialProvider;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import org.eclipse.jgit.api.Git;
@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Path;
 
-class PullTask extends TrackingCallable<Void> {
+public class PullTask extends TrackingCallable<Void> {
     private static final Logger LOG = LoggerFactory.getLogger(PullTask.class);
 
     final Path changeSetFolder;

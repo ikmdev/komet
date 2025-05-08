@@ -157,9 +157,8 @@
             <artifactId>jsr305</artifactId>
         </dependency>
         <dependency>
-            <groupId>dev.ikm.jpms</groupId>
-            <artifactId>jgit</artifactId>
-            <scope>compile</scope>
+            <groupId>dev.ikm.komet</groupId>
+            <artifactId>sync</artifactId>
         </dependency>
     </dependencies>
     <build>

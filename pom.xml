@@ -57,6 +57,7 @@
         <module>search</module>
         <module>knowledge-layout</module>
         <module>kview</module>
+        <module>sync</module>
         <module>application</module>
     </modules>
     <properties>
@@ -212,6 +213,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>knowledge-layout</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>sync</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

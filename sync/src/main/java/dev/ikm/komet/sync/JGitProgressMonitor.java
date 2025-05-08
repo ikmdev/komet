@@ -1,4 +1,4 @@
-package dev.ikm.komet.app;
+package dev.ikm.komet.sync;
 
 import org.eclipse.jgit.lib.ProgressMonitor;
 import org.slf4j.Logger;
