@@ -32,8 +32,11 @@ import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.scene.Node;
 import javafx.scene.control.Tooltip;
+import javafx.util.Duration;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -45,6 +48,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class KlFieldHelper {
 
+
+    public static Timeline createTimeline(){
+        Timeline timeline = new Timeline();
+        KeyFrame keyFrame1 = new KeyFrame(Duration.millis(3000), (evt) -> {});
+        timeline.getKeyFrames().addAll(keyFrame1);
+        return timeline;
+    }
     /**
      * function to return the correct node given the semantic entity and field information
      * @param fieldRecord
