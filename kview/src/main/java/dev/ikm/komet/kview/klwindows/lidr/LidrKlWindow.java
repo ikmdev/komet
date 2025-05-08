@@ -17,6 +17,8 @@ package dev.ikm.komet.kview.klwindows.lidr;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
+import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
+import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.lidr.mvvm.view.details.LidrDetailsController;
 import dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -46,14 +48,13 @@ public class LidrKlWindow extends AbstractEntityChapterKlWindow {
      * Creates a new LIDR window.
      *
      * @param journalTopic   the UUID representing the journal topic the owning Journal Window uses to communicate events.
-     * @param entityFacade   entity facade when not null usually this will load and display the current details.
      * @param deviceConcept  an optional entity facade representing a device, or null for creation mode.
      * @param viewProperties view properties is access to view calculators to query data.
      * @param preferences    komet preferences assists on reading and writing data to preferences user.home/Solor/database_folder/preferences
      */
-    public LidrKlWindow(UUID journalTopic, EntityFacade entityFacade, EntityFacade deviceConcept,
+    public LidrKlWindow(UUID journalTopic, EntityFacade deviceConcept,
                         ViewProperties viewProperties, KometPreferences preferences) {
-        super(journalTopic, entityFacade, viewProperties, preferences);
+        super(journalTopic, deviceConcept, viewProperties, preferences);
 
         // Prefetch modules and paths for the view
         StampViewModel stampViewModel = new StampViewModel();
@@ -63,7 +64,7 @@ public class LidrKlWindow extends AbstractEntityChapterKlWindow {
 
         // In create mode, set up LIDR view model for injection
         ValidationViewModel lidrViewModel = new LidrViewModel()
-                .setPropertyValue(CONCEPT_TOPIC, UUID.randomUUID())
+                .setPropertyValue(CONCEPT_TOPIC, getWindowTopic())
                 .setPropertyValue(VIEW_PROPERTIES, viewProperties)
                 .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel);
 
@@ -91,5 +92,10 @@ public class LidrKlWindow extends AbstractEntityChapterKlWindow {
             getOnClose().ifPresent(Runnable::run);
             // TODO more clean up such as view models and listeners just in case (memory).
         });
+    }
+
+    @Override
+    public EntityKlWindowType getWindowType() {
+        return EntityKlWindowTypes.LIDR;
     }
 }

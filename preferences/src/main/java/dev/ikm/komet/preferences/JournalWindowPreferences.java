@@ -18,11 +18,11 @@ package dev.ikm.komet.preferences;
 public class JournalWindowPreferences {
     public static final String MAIN_KOMET_WINDOW = "main-komet-window";
 
-    public static final String JOURNAL_WINDOW = "journal-window";
+    public static final String JOURNALS = "journals";
 
-    public static final String JOURNAL_NAMES = "JOURNAL_NAMES";
+    public static final String JOURNAL_FOLDER_PREFIX = "journal_";
 
-    public static final String JOURNAL_FOLDER_PREFIX = "JOURNAL_";
+    public static final String JOURNAL_IDS = "JOURNAL_IDS";
 
     public static final Double DEFAULT_JOURNAL_HEIGHT = 600.0;
 
