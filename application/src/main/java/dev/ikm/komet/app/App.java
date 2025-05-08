@@ -15,32 +15,7 @@
  */
 package dev.ikm.komet.app;
 
-import static dev.ikm.komet.app.AppState.LOADING_DATA_SOURCE;
-import static dev.ikm.komet.app.AppState.SHUTDOWN;
-import static dev.ikm.komet.app.AppState.STARTING;
-import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
-import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
-import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
-import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.CENTER_TAB_PREFERENCES;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.LEFT_TAB_PREFERENCES;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.RIGHT_TAB_PREFERENCES;
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
-import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_NAMES;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CAN_DELETE;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
-
+import com.sun.management.OperatingSystemMXBean;
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
 import dev.ikm.komet.details.DetailsNodeFactory;
@@ -57,6 +32,7 @@ import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.KometPreferencesStage;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.preferences.Reconstructor;
+import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.tabs.DetachableTab;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.KometStageController;
@@ -79,7 +55,6 @@ import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.Preferences;
 import dev.ikm.komet.progress.CompletionNodeFactory;
 import dev.ikm.komet.progress.ProgressNodeFactory;
-import dev.ikm.komet.reasoner.ReasonerResultsNode;
 import dev.ikm.komet.search.SearchNodeFactory;
 import dev.ikm.komet.table.TableNodeFactory;
 import dev.ikm.tinkar.common.alert.AlertObject;
@@ -91,8 +66,7 @@ import dev.ikm.tinkar.common.service.ServiceKeys;
 import dev.ikm.tinkar.common.service.ServiceProperties;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.Calculators;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.ChangeSetWriterService;
+import dev.ikm.tinkar.entity.EntityCountSummary;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import dev.ikm.tinkar.reasoner.service.ClassifierResults;
 import dev.ikm.tinkar.reasoner.service.ReasonerService;
@@ -133,12 +107,7 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.TransportException;
-import org.eclipse.jgit.transport.FetchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -146,13 +115,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.management.ManagementFactory;
-
-import com.sun.management.OperatingSystemMXBean;
-
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.ZoneId;
@@ -166,6 +131,32 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
+
+import static dev.ikm.komet.app.AppState.LOADING_DATA_SOURCE;
+import static dev.ikm.komet.app.AppState.SHUTDOWN;
+import static dev.ikm.komet.app.AppState.STARTING;
+import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
+import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
+import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
+import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.CENTER_TAB_PREFERENCES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.LEFT_TAB_PREFERENCES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.RIGHT_TAB_PREFERENCES;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_NAMES;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CAN_DELETE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
 
 
 /**
@@ -855,51 +846,42 @@ public class App extends Application {
         gitProcess((git) -> {
             File changeSetFolder = git.getRepository().getDirectory().getParentFile();
             //Pull
-            CompletableFuture.supplyAsync(() -> {
-                try {
-                    TinkExecutor.threadPool().submit(new PullTask(changeSetFolder.toPath())).get();
-                    return Git.open(changeSetFolder);
-                } catch (InterruptedException | ExecutionException | IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }, TinkExecutor.ioThreadPool())
-                    //Load
+            ProgressHelper.progress(new PullTask(changeSetFolder.toPath()))
                     .whenComplete((_,_) -> {
-                        File[] matchingFiles = changeSetFolder.listFiles((dir, name) -> name.endsWith("ike-cs.zip"));
-                        if (matchingFiles == null) {
-                            return;
-                        }
-                        Arrays.stream(matchingFiles)
-                                .filter(file -> {
-                                    try (FileSystem fs = FileSystems.newFileSystem(file.toPath())) {
-                                        // Filter out unfinished exports and non-export zips
-                                        return Files.exists(fs.getPath("META-INF", "MANIFEST.MF"));
-                                    } catch (IOException e) {
-                                        return false;
-                                    }
-                                })
-                                .forEach((protoFile) -> {
-                                    try {
-                                        TinkExecutor.ioThreadPool().submit(new LoadEntitiesFromProtobufFile(protoFile)).get();
-                                    } catch (InterruptedException | ExecutionException e) {
-                                        LOG.info("Error:" + e);
-                                    }
-                                });
-                    })
-                    //Reasoner
-                    .whenComplete((_,_) -> runReasoner())
-                    //Push
-                    .whenComplete((_,_) -> {
+                        loadChangesets(changeSetFolder);
+                        runReasoner();
                         if (push) {
-                            try {
-                                TinkExecutor.threadPool().submit(new AddChangesetsTask(changeSetFolder.toPath())).get();
-                            } catch (InterruptedException | ExecutionException e) {
-                                throw new RuntimeException(e);
-                            }
-                            TinkExecutor.threadPool().submit(new PushTask(changeSetFolder.toPath()));
+                            ProgressHelper.progress(new AddChangesetsTask(changeSetFolder.toPath()))
+                                    .whenComplete((_,_) -> ProgressHelper.progress(new PushTask(changeSetFolder.toPath())));
                         }
                     });
         });
+    }
+
+    private List<EntityCountSummary> loadChangesets(File changeSetFolder) {
+        File[] pbFiles = changeSetFolder.listFiles((dir, name) -> name.endsWith("ike-cs.zip"));
+        List<EntityCountSummary> loadResults = new ArrayList<>();
+        if (pbFiles == null) {
+            return loadResults;
+        }
+        Arrays.stream(pbFiles)
+                .filter(file -> {
+                    try (FileSystem fs = FileSystems.newFileSystem(file.toPath())) {
+                        // Filter out unfinished exports and non-export zips
+                        return Files.exists(fs.getPath("META-INF", "MANIFEST.MF"));
+                    } catch (IOException e) {
+                        return false;
+                    }
+                })
+                .forEach((protoFile) -> {
+                    try {
+                        EntityCountSummary ecs = TinkExecutor.ioThreadPool().submit(new LoadEntitiesFromProtobufFile(protoFile)).get();
+                        loadResults.add(ecs);
+                    } catch (InterruptedException | ExecutionException e) {
+                        LOG.info("Error:" + e);
+                    }
+                });
+        return loadResults;
     }
 
     private List<ClassifierResults> runReasoner() {
