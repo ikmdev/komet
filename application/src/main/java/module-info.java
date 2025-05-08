@@ -72,6 +72,7 @@ module dev.ikm.komet.application {
     requires transitive dev.ikm.komet.rules;
     requires jdk.management;
     requires dev.ikm.tinkar.reasoner.service;
+    requires org.eclipse.jgit;
 
     uses DataServiceController;
     uses DefaultDescriptionForNidService;
