@@ -18,7 +18,6 @@ package dev.ikm.komet.kview.mvvm.view.journal;
 import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
-import static dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent.GLOBAL_REFRESH;
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
@@ -120,7 +119,6 @@ import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
@@ -423,13 +421,14 @@ public class JournalController {
         });
 
         workspace.addEventHandler(MouseEvent.MOUSE_CLICKED, this::onMouseClickedOnDesktopSurfacePane);
-        refreshCalculatorEventSubscriber = evt -> {
-            LOG.info("Refresh Calculator Event");
-            if(evt.getEventType() == GLOBAL_REFRESH) {
-                LOG.info("Global Refresh EventYpe...");
-                CachingService.clearAll();
-            }
+
+        // Refresh Concept navigator
+        refreshCalculatorEventSubscriber = _ -> {
+            // TODO FIXME Must refresh the cache or invalidate cache after a gitsync or import. Below works but will change the UI.
+            // ViewCoordinateHelper.changeViewCalculatorToLatestByTime(getNavigatorNode().getViewProperties(), System.currentTimeMillis() + );
+            getNavigatorNode().getController().refresh();
         };
+
         journalEventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
 
     }
@@ -1017,12 +1016,7 @@ public class JournalController {
 
         // TODO: Test and Fixme this takes a snapshot of the navigator's view coordinate
         //       and makes a new view properties.
-        ObservableViewNoOverride observableViewNoOverride = new ObservableViewNoOverride(
-                getNavigatorNode()
-                        .getViewProperties()
-                        .nodeView()
-                        .getViewCoordinate());
-        ViewProperties viewProperties = observableViewNoOverride.makeOverridableViewProperties();
+        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
 
         AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
                 journalTopic, conceptFacade, viewProperties, preferences);
