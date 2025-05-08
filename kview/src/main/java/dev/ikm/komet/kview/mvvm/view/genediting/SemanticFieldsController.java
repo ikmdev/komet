@@ -185,6 +185,13 @@ public class SemanticFieldsController {
                 clearFormButton.setText("RESET FORM");
             setupEditSemanticDetails();
         }
+        genEditingViewModel.getProperty(MODE).subscribe((mode) -> {
+            if(mode == EDIT){
+                clearFormButton.setText("RESET FORM");
+            }else {
+                clearFormButton.setText("CLEAR FORM");
+            }
+        });
 
     }
 
@@ -229,7 +236,7 @@ public class SemanticFieldsController {
             int fieldIdx = (int)fieldIndex;
             editFieldsVBox.getChildren().clear();
             // single field to edit
-            if (fieldIdx >= 0) {
+            if (fieldIdx >= 0 && nodes.size() > 0) {
                 editFieldsVBox.getChildren().add(nodes.get(fieldIdx));
             } else {
                 // all fields to edit
