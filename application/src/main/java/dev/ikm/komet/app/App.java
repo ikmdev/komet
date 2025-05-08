@@ -152,10 +152,7 @@ import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_HEIGHT;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_WIDTH;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.CAN_DELETE;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
@@ -553,7 +550,7 @@ public class App extends Application {
         }
 
         journalStageWindow.setOnHidden(windowEvent -> {
-            journalController.saveToPreferences();
+            saveJournalWindowsToPreferences();
             // call shutdown method on the view
             journalController.shutdown();
             journalControllersList.remove(journalController);
@@ -582,6 +579,62 @@ public class App extends Application {
         kViewEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
         journalControllersList.add(journalController);
         journalStageWindow.show();
+    }
+
+    /**
+     * Saves the current state of the journals and its windows to the application's preferences system.
+     * <p>
+     * This method persists all journal-related data, including:
+     * <ul>
+     *   <li>All open window states (via {@link JournalController#saveWindows(KometPreferences)})</li>
+     *   <li>Journal metadata (topic UUID, title, directory name)</li>
+     *   <li>Window geometry (width, height, x/y position)</li>
+     *   <li>Author information</li>
+     *   <li>Last edit timestamp</li>
+     * </ul>
+     * <p>
+     * The preferences are stored in a hierarchical structure:
+     * <pre>
+     * Root Configuration Preferences
+     *   └── journals
+     *       └── [journal_shortened-UUID]
+     *           ├── Journal metadata (UUID, title, dimensions, position, etc.)
+     *           └── Window states
+     * </pre>
+     */
+    private void saveJournalWindowsToPreferences() {
+        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        final KometPreferences journalsPreferences = appPreferences.node(JOURNALS);
+
+        // Non launched journal windows should be preserved.
+        List<String> journalSubWindowFoldersFromPref = journalsPreferences.getList(JOURNAL_IDS);
+
+        // launched (journal Controllers List) will overwrite existing window preferences.
+        List<String> journalSubWindowFolders = new ArrayList<>(journalControllersList.size());
+        for (JournalController controller : journalControllersList) {
+            String journalSubWindowPrefFolder = controller.getJournalDirName();
+            journalSubWindowFolders.add(journalSubWindowPrefFolder);
+
+            final KometPreferences journalSubWindowPreferences = appPreferences.node(JOURNALS +
+                    File.separator + journalSubWindowPrefFolder);
+            controller.saveWindows(journalSubWindowPreferences);
+        }
+
+        // Make sure windows that are not summoned will not be deleted (not added to JOURNAL_NAMES)
+        for (String x : journalSubWindowFolders) {
+            if (!journalSubWindowFoldersFromPref.contains(x)) {
+                journalSubWindowFoldersFromPref.add(x);
+            }
+        }
+        journalsPreferences.putList(JOURNAL_IDS, journalSubWindowFoldersFromPref);
+
+        try {
+            journalsPreferences.flush();
+            appPreferences.flush();
+            appPreferences.sync();
+        } catch (BackingStoreException e) {
+            LOG.error("error writing journal window flag to preferences", e);
+        }
     }
 
     @Override
@@ -947,6 +1000,7 @@ public class App extends Application {
 
 
     private void quit() {
+        saveJournalWindowsToPreferences();
         PrimitiveData.stop();
         Preferences.stop();
         Platform.exit();
