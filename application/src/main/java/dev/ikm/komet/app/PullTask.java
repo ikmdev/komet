@@ -20,7 +20,7 @@ class PullTask extends TrackingCallable<Void> {
     public PullTask(Path changeSetFolder) {
         this.changeSetFolder = changeSetFolder;
         updateTitle("Pulling files from server");
-        addToTotalWork(3);
+        updateProgress(-1,1);
     }
 
     @Override
@@ -34,11 +34,10 @@ class PullTask extends TrackingCallable<Void> {
             pullCommand.setCredentialsProvider(
                     new PluginCredentialProvider());
             PullResult result = pullCommand.call();
-
-            return null;
         } catch (IllegalArgumentException | IOException ex) {
             AlertStreams.dispatchToRoot(ex);
         }
+        updateProgress(1,1);
         return null;
     }
 

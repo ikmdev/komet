@@ -55,13 +55,19 @@ public class GetCredentialsTask extends Task<Boolean>  {
 
         ObservableList<PropertySheet.Item> properties = FXCollections.observableArrayList();
         for (CredentialItem item : credentialItems) {
-            if (item instanceof CredentialItem.Username username) {
-                optionalUser.ifPresentOrElse(s -> username.setValue(s), () -> username.setValue(uri.getUser()));
-            } else if (item instanceof CredentialItem.Password password) {
-                optionalPassword.ifPresentOrElse(p -> password.setValue(p), () -> password.setValue(new char[0]));
+            switch (item) {
+                case CredentialItem.Username username ->
+                        optionalUser.ifPresentOrElse(username::setValue, () -> username.setValue(uri.getUser()));
+                case CredentialItem.Password password ->
+                        optionalPassword.ifPresentOrElse(password::setValue, () -> password.setValue(new char[0]));
+                default -> throw new IllegalStateException("Unexpected value: " + item);
             }
             properties.add(new CredentialItemWrapper(uri, item));
         }
+        if (optionalUser.isPresent() && optionalPassword.isPresent()) {
+            return true;
+        }
+
         PropertySheet propertySheet = new PropertySheet(properties);
         propertySheet.setSearchBoxVisible(false);
         propertySheet.setModeSwitcherVisible(false);

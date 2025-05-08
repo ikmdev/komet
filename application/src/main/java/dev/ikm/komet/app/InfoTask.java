@@ -1,31 +1,20 @@
 package dev.ikm.komet.app;
 
-import dev.ikm.komet.app.credential.CredentialItemWrapper;
-import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.tinkar.common.alert.AlertStreams;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Control;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-import org.controlsfx.control.PropertySheet;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.transport.CredentialItem;
-import org.eclipse.jgit.transport.RemoteConfig;
-import org.eclipse.jgit.transport.URIish;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -55,7 +44,6 @@ public class InfoTask extends Task<Boolean>  {
         AtomicBoolean okButtonPressed = new AtomicBoolean(false);
 
         StringBuilder repoNameText = new StringBuilder("Error: could not retrieve repo name.");
-        String diffText = "Error: could not retrieve diff.";
         String statusText = "Error: could not retrieve status.";
         try {
             git.remoteList().call().stream()
@@ -69,12 +57,13 @@ public class InfoTask extends Task<Boolean>  {
                     });
 
             Status status = git.status().call();
-            statusText = "Added: %s\nUncommitted: %s\nUntracked: %s".formatted(
-                    status.getAdded(),
-                    status.getUncommittedChanges(),
-                    status.getUntracked());
+            List<String> statusItems = new ArrayList<>();
+            statusItems.addAll(status.getAdded());
+            statusItems.addAll(status.getUncommittedChanges());
+            statusItems.addAll(status.getUntracked());
+            statusText = "Uncommitted Files:\n\t%s".formatted(String.join("\n\t", statusItems));
         } catch (GitAPIException e) {
-            System.out.println("Error retrieving git information: " + e);
+            AlertStreams.dispatchToRoot(e);
         }
         Text repoName = new Text(repoNameText.toString());
         Text status = new Text(statusText);

@@ -19,7 +19,7 @@ public class PushTask extends TrackingCallable<Void> {
         public PushTask(Path changeSetFolder) {
             this.changeSetFolder = changeSetFolder;
             updateTitle("Pushing files to server");
-            addToTotalWork(3);
+            updateProgress(-1,1);
         }
 
         @Override
@@ -33,10 +33,10 @@ public class PushTask extends TrackingCallable<Void> {
                 pushCommand.setCredentialsProvider(
                         new PluginCredentialProvider());
                 Iterable<PushResult> result = pushCommand.call();
-                return null;
             } catch (IllegalArgumentException ex) {
                 AlertStreams.dispatchToRoot(ex);
             }
+            updateProgress(1,1);
             return null;
         }
     }

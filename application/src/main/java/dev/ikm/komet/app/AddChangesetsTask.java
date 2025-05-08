@@ -42,7 +42,7 @@ public class AddChangesetsTask extends TrackingCallable<Void> {
         super(false, true);
         this.changeSetFolder = changeSetFolder;
         updateTitle("Adding Changesets for synchronization");
-        addToTotalWork(3);
+        updateProgress(-1,1);
     }
 
     /**
@@ -80,6 +80,7 @@ public class AddChangesetsTask extends TrackingCallable<Void> {
             LOG.error(ex.getLocalizedMessage(), ex);
             AlertStreams.dispatchToRoot(ex);
         }
+        updateProgress(1,1);
         return null;
     }
 
@@ -114,8 +115,7 @@ public class AddChangesetsTask extends TrackingCallable<Void> {
                             return false;
                         }
                     })
-                    .forEach(f -> filesToAdd.add(changeSetFolder.relativize(f.toPath()).toString())
-                    );
+                    .forEach(f -> filesToAdd.add(changeSetFolder.relativize(f.toPath()).toString()));
         }
         List<File> directories = Arrays.stream(directory.toFile().listFiles()).filter(file -> file.isDirectory() &! file.isHidden()).toList();
         directories.forEach(dir -> filesToAdd(dir.toPath(), pattern, filesToAdd));
