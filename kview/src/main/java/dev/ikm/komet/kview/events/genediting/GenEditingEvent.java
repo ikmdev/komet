@@ -14,11 +14,11 @@ public class GenEditingEvent extends Evt {
 
     public static final EvtType<GenEditingEvent> VERSION_UPDATED = new EvtType<>(Evt.ANY, "VERSION_UPDATED");
 
-    private List<ObservableField<?>> list;
+    private List<?> list;
 
     private int nid;
 
-    public GenEditingEvent(Object source,EvtType eventType, List<ObservableField<?>> list, int nid){
+    public GenEditingEvent(Object source,EvtType eventType, List<?> list, int nid){
         super(source,eventType);
         this.list = list;
         this.nid = nid;
@@ -28,7 +28,7 @@ public class GenEditingEvent extends Evt {
         super(source,eventType);
     }
 
-    public List<ObservableField<?>> getList(){
+    public List<?> getList(){
         return list;
     }
 
