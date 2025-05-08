@@ -2,6 +2,8 @@ package dev.ikm.komet.kview.klwindows.pattern;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
+import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
+import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -34,7 +36,7 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
  */
 public class PatternKlWindow extends AbstractEntityChapterKlWindow {
 
-    private JFXNode<Pane, PatternDetailsController> jfxNode;
+    private final JFXNode<Pane, PatternDetailsController> jfxNode;
 
     /**
      * Constructs a new pattern window for a specific semantic entity.
@@ -76,7 +78,7 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
                         patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
                                 .setPropertyValue(MODE, mode)
                                 .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
-                                .setPropertyValue(PATTERN_TOPIC, UUID.randomUUID())
+                                .setPropertyValue(PATTERN_TOPIC, getWindowTopic())
                                 .setPropertyValue(STATE_MACHINE, patternSM)
                                 .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
                                 .setPropertyValue(PATTERN, entityFacade));
@@ -100,7 +102,13 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
     /**
      * Called when the window is shown.
      */
+    @Override
     public void onShown() {
         jfxNode.controller().putTitlePanesArrowOnRight();
+    }
+
+    @Override
+    public EntityKlWindowType getWindowType() {
+        return EntityKlWindowTypes.PATTERN;
     }
 }

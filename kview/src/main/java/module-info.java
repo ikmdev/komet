@@ -1,3 +1,5 @@
+import dev.ikm.komet.kview.klwindows.EntityKlWindowFactory;
+
 /*
  * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
  *
@@ -31,6 +33,7 @@ module dev.ikm.komet.kview {
 
     requires transitive dev.ikm.komet.layout;
     requires jdk.jfr;
+    requires org.apache.commons.logging;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
@@ -44,7 +47,7 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.timeline to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.timeline;
 
-    opens dev.ikm.komet.kview.mvvm.view.journal to javafx.fxml, org.carlfx.cognitive;
+    opens dev.ikm.komet.kview.mvvm.view.journal to javafx.fxml, org.carlfx.cognitive, dev.ikm.komet.application;
     exports dev.ikm.komet.kview.mvvm.view.journal;
 
     opens dev.ikm.komet.kview.mvvm.view.landingpage to javafx.fxml, org.carlfx.cognitive;
@@ -71,7 +74,6 @@ module dev.ikm.komet.kview {
     exports dev.ikm.komet.kview.mvvm.view.stamp;
     opens dev.ikm.komet.kview.mvvm.view.stamp to javafx.fxml, org.carlfx.cognitive;
 
-    opens dev.ikm.komet.kview.mvvm.viewmodel to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.viewmodel;
 
     opens dev.ikm.komet.kview.lidr.mvvm.viewmodel to javafx.fxml, org.carlfx.cognitive;
@@ -134,8 +136,16 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.klwindows.genediting to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.klwindows;
     opens dev.ikm.komet.kview.klwindows to javafx.fxml, org.carlfx.cognitive;
+    opens dev.ikm.komet.kview.mvvm.viewmodel to dev.ikm.komet.application, javafx.fxml, org.carlfx.cognitive;
 
     provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory, dev.ikm.komet.kview.mvvm.view.properties.PropertiesNodeFactory;
 
+    provides EntityKlWindowFactory with
+            dev.ikm.komet.kview.klwindows.concept.ConceptKlWindowFactory,
+            dev.ikm.komet.kview.klwindows.pattern.PatternKlWindowFactory,
+            dev.ikm.komet.kview.klwindows.lidr.LidrKlWindowFactory,
+            dev.ikm.komet.kview.klwindows.genediting.GenEditingKlWindowFactory;
+
     uses dev.ikm.komet.framework.events.EvtBus;
+    uses EntityKlWindowFactory;
 }
