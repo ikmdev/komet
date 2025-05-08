@@ -291,7 +291,14 @@ public class PatternViewModel extends FormViewModel {
     }
 
     private void loadFqnDetails(EntityFacade patternFacade) {
-        SemanticEntityVersion fqnSemanticEntityVersion = getViewProperties().calculator().getFullyQualifiedDescription(patternFacade).get();
+        //TODO - We might not want to use the contradictions collection in future.
+        // Once a backend fix is done we will use different approach.
+        /**
+         * NOTE:
+         * A contradiction implies a discrepancy. IN other parts of the code where we needed to sort thing based on time,
+         * there are position records that can be sorted via a HashTree Collection object.
+         * */
+        SemanticEntityVersion fqnSemanticEntityVersion = getViewProperties().calculator().languageCalculator().getFullyQualifiedDescription(patternFacade).getWithContradictions().getFirstOptional().get();
         ConceptFacade fqnLanguage = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(0);
         String fqnString = (String) fqnSemanticEntityVersion.fieldValues().get(1);
         ConceptFacade fqnCaseSignificance = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(2);

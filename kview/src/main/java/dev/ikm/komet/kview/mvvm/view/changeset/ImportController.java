@@ -15,10 +15,16 @@
  */
 package dev.ikm.komet.kview.mvvm.view.changeset;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
+import static dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent.GLOBAL_REFRESH;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.SELECTED_FILE;
 import com.jpro.webapi.WebAPI;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel;
 import dev.ikm.tinkar.common.alert.AlertStreams;
+import dev.ikm.tinkar.entity.EntityCountSummary;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import javafx.application.Platform;
 import javafx.css.PseudoClass;
@@ -41,8 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.List;
-
-import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.SELECTED_FILE;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * The {@code ImportController} class manages the user interface interactions
@@ -204,10 +209,32 @@ public class ImportController {
      */
     @FXML
     void handleImportButtonEvent(ActionEvent event) {
+
         if (importViewModel.validProperty().get()) {
             File selectedFile = importViewModel.getPropertyValue(SELECTED_FILE);
-            LoadEntitiesFromProtobufFile loadEntities = new LoadEntitiesFromProtobufFile(selectedFile);
-            ProgressHelper.progress(loadEntities, "Cancel Import");
+            LoadEntitiesFromProtobufFile importTask = new LoadEntitiesFromProtobufFile(selectedFile);
+            CompletableFuture<EntityCountSummary> future = ProgressHelper.progress(importTask, "Cancel Import");
+            future.whenComplete((entityCountSummary, throwable) -> {
+                if (throwable != null) {
+                    importTask.updateMessage("Import Failed: "+throwable.getMessage());
+                    throwable.printStackTrace();
+                } else {
+                    if (entityCountSummary != null) {
+                        EntityCountSummary ecs = entityCountSummary;
+                        String completeMsg = importTask.getMessage();
+                        importTask.updateMessage("%s - total: %d, C: %d, Sem: %d, P: %d, Stamps: %d".formatted(
+                                completeMsg,
+                                ecs.getTotalCount(),
+                                ecs.conceptsCount(),
+                                ecs.semanticsCount(),
+                                ecs.patternsCount(),
+                                ecs.stampsCount())
+                        );
+                    }
+                    EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC, new RefreshCalculatorCacheEvent(event.getSource(), GLOBAL_REFRESH));
+                }
+            });
+
             closeDialog();
             LOG.info("Importing dataset from file: {}", selectedFile);
         }

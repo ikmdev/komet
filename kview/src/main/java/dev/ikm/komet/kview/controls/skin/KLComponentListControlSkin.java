@@ -65,7 +65,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
      *
      * @param control The control that this skin should be installed onto.
      */
-    public KLComponentListControlSkin(KLComponentListControl control) {
+    public KLComponentListControlSkin(KLComponentListControl<T> control) {
         super(control);
 
         // Title
@@ -212,6 +212,10 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
             EntityProxy entityProxy = EntityProxy.make(nid);
             componentControl.setEntity(entityProxy);
         }
+
+        // Setup Typeahead
+        componentControl.setTypeAheadCompleter(control.getTypeAheadCompleter());
+        componentControl.setTypeAheadStringConverter(control.getTypeAheadStringConverter());
 
         componentControls.add(componentControl);
 

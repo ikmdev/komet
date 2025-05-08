@@ -27,6 +27,7 @@ import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.FieldRecord;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -83,6 +84,9 @@ public class KlFieldHelper {
         } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
             KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
             node = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
+        } else if (dataTypeNid == TinkarTerm.IMAGE_FIELD.nid()) {
+            KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
+            node = imageFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
         } else if (dataTypeNid == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
             //TODO: We're using BYTE_ARRAY for the moment for Image data type
             //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
@@ -95,17 +99,14 @@ public class KlFieldHelper {
     }
 
     /**
-     * Create default semantic fields value based on the provided pattern
-     * @param pattern
-     * @param viewProperties
-     * @return fieldValues.toImmutable() - returns list of immutable field values.
+     * Returns a list of field values.
+     * @param patternVersion Pattern Version containing the field definitions
+     * @return Returns a list of default values.
+     * @param <T> T is of type List
      */
-    public static ImmutableList<Object> createDefaultFieldValues(EntityFacade pattern, ViewProperties viewProperties) {
-        ObservableEntity observableEntity = ObservableEntity.get(pattern.nid());
-        ObservablePatternSnapshot observablePatternSnapshot = (ObservablePatternSnapshot) observableEntity.getSnapshot(viewProperties.calculator());
-        ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
-        MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(observablePatternVersion.fieldDefinitions().size());
-        observablePatternVersion.fieldDefinitions().forEach(f -> {
+    public static <T extends List<Object>> T generateDefaultFieldValues(PatternEntityVersion patternVersion) {
+        MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(patternVersion.fieldDefinitions().size());
+        patternVersion.fieldDefinitions().forEach(f -> {
             if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
                 fieldsValues.add(ANONYMOUS_CONCEPT);
             } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
@@ -129,6 +130,20 @@ public class KlFieldHelper {
                 fieldsValues.add(null);
             }
         });
+        return (T) fieldsValues;
+    }
+
+    /**
+     * Create default semantic fields value based on the provided pattern
+     * @param pattern
+     * @param viewProperties
+     * @return fieldValues.toImmutable() - returns list of immutable field values.
+     */
+    public static ImmutableList<Object> createDefaultFieldValues(EntityFacade pattern, ViewProperties viewProperties) {
+        ObservableEntity observableEntity = ObservableEntity.get(pattern.nid());
+        ObservablePatternSnapshot observablePatternSnapshot = (ObservablePatternSnapshot) observableEntity.getSnapshot(viewProperties.calculator());
+        ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
+        MutableList<Object> fieldsValues = generateDefaultFieldValues(observablePatternVersion);
         return fieldsValues.toImmutable();
     }
 
@@ -210,6 +225,8 @@ public class KlFieldHelper {
                 control = new KLReadOnlyComponentListControl();
             } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 control = new KLReadOnlyComponentSetControl();
+            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.IMAGE_FIELD.nid()) {
+                control = new KLReadOnlyImageControl();
             } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
                 //TODO: We're using BYTE_ARRAY for the moment for Image data type
                 //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
