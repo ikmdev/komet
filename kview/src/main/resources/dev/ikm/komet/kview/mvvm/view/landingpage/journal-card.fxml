@@ -18,11 +18,7 @@
             <FlowPane prefHeight="143.0" prefWidth="244.0" styleClass="card-chapter-container" VBox.vgrow="ALWAYS">
                <children>
                   <Region prefHeight="99.0" prefWidth="200.0" styleClass="card-chapter-window" />
-                  <Text fx:id="journalCardConceptCount" strokeType="OUTSIDE" strokeWidth="0.0" text="Concepts:" wrappingWidth="115.21630859375">
-                     <FlowPane.margin>
-                        <Insets />
-                     </FlowPane.margin>
-                  </Text>
+                  <Text fx:id="journalCardWindowCount" text="Windows:" wrappingWidth="116"/>
                </children>
             </FlowPane>
             <!-- text="Tetralogy of Fallot Research in Columns" -->

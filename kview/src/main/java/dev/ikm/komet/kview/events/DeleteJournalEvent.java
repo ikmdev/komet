@@ -18,21 +18,58 @@ package dev.ikm.komet.kview.events;
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
 
+import java.util.UUID;
+
+/**
+ * An event that represents a request to delete a journal.
+ * <p>
+ * This class extends the base {@link Evt} class and provides specific functionality
+ * for handling journal deletion events within the application. The event carries
+ * information about which journal topic should be deleted.
+ *
+ * @see dev.ikm.komet.framework.events.Evt
+ * @see dev.ikm.komet.framework.events.EvtType
+ */
 public class DeleteJournalEvent extends Evt {
+
+    /**
+     * The event type constant for journal deletion events.
+     * This type can be used to register event handlers specifically for journal deletion.
+     */
     public static final EvtType<DeleteJournalEvent> DELETE_JOURNAL = new EvtType<>(Evt.ANY, "DELETE");
 
-    private String journalName;
+    /**
+     * The topic identifier of the journal to be deleted.
+     */
+    private UUID journalTopic;
 
-    public DeleteJournalEvent(Object source, EvtType<? extends Evt> evtType, String journalName) {
+    /**
+     * Constructs a new delete journal event.
+     *
+     * @param source       the object that triggered the event
+     * @param evtType      the type of the event
+     * @param journalTopic the topic identifier of the journal to be deleted
+     */
+    public DeleteJournalEvent(Object source, EvtType<? extends Evt> evtType, UUID journalTopic) {
         super(source, evtType);
-        this.journalName = journalName;
+        this.journalTopic = journalTopic;
     }
 
-    public String getJournalName() {
-        return journalName;
+    /**
+     * Returns the topic identifier of the journal to be deleted.
+     *
+     * @return the journal topic identifier
+     */
+    public UUID getJournalTopic() {
+        return journalTopic;
     }
 
-    public void setJournalName(String journalName) {
-        this.journalName = journalName;
+    /**
+     * Sets the topic identifier of the journal to be deleted.
+     *
+     * @param journalTopic the journal topic identifier to set
+     */
+    public void setJournalTopic(UUID journalTopic) {
+        this.journalTopic = journalTopic;
     }
 }

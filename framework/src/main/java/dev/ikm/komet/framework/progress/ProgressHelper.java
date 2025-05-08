@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.progress;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.appevents.ProgressEvent;
@@ -24,9 +25,9 @@ import javafx.concurrent.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-
-import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 
 /**
  * Wraps task or TrackingCallable instances to be messaged to the journal window's progress popup.
@@ -41,7 +42,7 @@ public class ProgressHelper {
      * @param cancelButtonText the cancel button's text
      * @return A Future or an asynchronous call.
      */
-    public static <T> Future<T> progress(TrackingCallable<T> task, String cancelButtonText) {
+    public static <T> CompletableFuture<T> progress(TrackingCallable<T> task, String cancelButtonText) {
         TaskWrapper<T> javafxTask = TaskWrapper.make(task);
         return progress(javafxTask, cancelButtonText);
     }
@@ -52,11 +53,32 @@ public class ProgressHelper {
      * @param cancelButtonText the cancel button's text
      * @return A Future or an asynchronous call.
      */
-    public static <T> Future<T> progress(Task<T> task, String cancelButtonText) {
+    public static <T> CompletableFuture<T> progress(Task<T> task, String cancelButtonText) {
         EvtBusFactory
                 .getDefaultEvtBus()
                 .publish(PROGRESS_TOPIC, new ProgressEvent(task, ProgressEvent.SUMMON, task, cancelButtonText));
-        return (Future<T>) TinkExecutor.threadPool().submit(task);
+        Future future = TinkExecutor.threadPool().submit(task);
+        return wrap(future, TinkExecutor.threadPool());
+    }
+
+    /**
+     * Returns a CompletableFuture wrap the caller's future. This allows the caller to provide additional steps when complete.
+     * @param future The future to wrap.
+     * @param executor The executor (thread pool) to submit task.
+     * @return CompletableFuture wrap the caller's future. This allows the caller to provide additional steps when complete
+     * @param <T> The Future's return type.
+     */
+    public static <T> CompletableFuture<T> wrap(Future<T> future, ExecutorService executor) {
+        CompletableFuture<T> completableFuture = new CompletableFuture<>();
+
+        executor.submit(() -> {
+            try {
+                completableFuture.complete(future.get());
+            } catch (Exception e) {
+                completableFuture.completeExceptionally(e);
+            }
+        });
+        return completableFuture;
     }
 
     /**
