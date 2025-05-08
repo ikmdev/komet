@@ -18,20 +18,47 @@ package dev.ikm.komet.kview.klwindows;
 import dev.ikm.komet.layout.window.KlJournalWindow;
 import javafx.scene.Node;
 
+import java.util.UUID;
+
 /**
  * The {@code ChapterKlWindow} interface extends the {@link KlJournalWindow} interface
- * and provides additional methods for setting a callback that is invoked when the window is closed.
+ * and provides additional functionality for window lifecycle management, including
+ * initialization, close notifications, display events, and window identification.
  *
- * @param <T> the type of the root pane, must extend {@link Node}.
+ * @param <T> the type parameter representing the root JavaFX node that this window contains
+ *            and manages. Must extend {@link Node}.
  */
-// TODO: This interface is purely a placeholder and temporarily replacement for the original KlJournalWindow interface.
-//       It can be removed once the original KlJournalWindow interface will be updated.
 public interface ChapterKlWindow<T extends Node> extends KlJournalWindow<T> {
 
     /**
      * Sets a callback that is invoked when this window is closed.
      *
-     * @param onClose A {@link Runnable} to be executed on close, or null if no action is required.
+     * @param onClose A {@link Runnable} to be executed when the window is closed, or null if no action is required.
      */
     void setOnClose(Runnable onClose);
+
+    /**
+     * Called when the window is shown to the user. Implementations can use this method
+     * to perform initialization that requires the window to be visible, such as
+     * focusing on specific elements or performing layout operations.
+     */
+    void onShown();
+
+    /**
+     * Returns the unique identifier associated with this window's topic or content.
+     * This UUID can be used to track or reference this window across the application.
+     *
+     * @return The UUID representing this window's topic
+     */
+    UUID getWindowTopic();
+
+    /**
+     * Returns the semantic type of this window, which categorizes its content and purpose
+     * within the application. The window type determines how the window behaves and
+     * what kind of content it displays within the knowledge management system.
+     *
+     * @return The {@link EntityKlWindowType} representing the semantic type of this window
+     *         (e.g., "CONCEPT", "PATTERN", "LIDR", etc.)
+     */
+    EntityKlWindowType getWindowType();
 }

@@ -15,6 +15,9 @@
  */
 package dev.ikm.komet.kview.fxutils;
 
+import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
@@ -28,14 +31,36 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Window;
 
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.Executor;
 
-public class FXUtils {
+public abstract class FXUtils {
 
+    /**
+     * Executor that ensures tasks run on the JavaFX application thread.
+     */
+    public static final Executor FX_THREAD_EXECUTOR = FXUtils::runOnFxThread;
+
+    /**
+     * Property key for storing scene synchronization listener in a node's properties map.
+     */
+    private static final String WINDOW_SCENE_SYNC_LISTENER = "windowSceneSyncListener";
+
+    /**
+     * Property key for storing height synchronization listener in a node's properties map.
+     */
+    private static final String WINDOW_HEIGHT_SYNC_LISTENER = "windowHeightSyncListener";
+
+    /**
+     * The number of height changes to wait before setting the preferred height.
+     */
+    private static final int SIMPLE_HEIGHT_UPDATE_THRESHOLD = 3;
 
     /**
      * Given a Text node including its CSS styling this function can determine the bounds.
      * This allows you to create callouts and predetermine the width and height of a Text node.
+     *
      * @param origText - A Text node to measure.
      * @return Bounds The bounds of a Text Node.
      */
@@ -57,7 +82,8 @@ public class FXUtils {
      *     double x = b.getMinX();
      *     double y = b.getMinY();
      * </pre>
-     * @param node The target node to find out it's bounds relative to a parent up the graph.
+     *
+     * @param node     The target node to find out it's bounds relative to a parent up the graph.
      * @param levelsUp How many levels up
      * @return
      */
@@ -77,8 +103,8 @@ public class FXUtils {
      * within those bounds. Otherwise, sets the ImageView to the original dimensions of
      * its Image.
      *
-     * @param imageView the ImageView we want to update.
-     * @param maxImageWidth the maximum image bounds width.
+     * @param imageView      the ImageView we want to update.
+     * @param maxImageWidth  the maximum image bounds width.
      * @param maxImageHeight the maximum image bounds height.
      */
     public static void fitImageToBounds(ImageView imageView, int maxImageWidth, int maxImageHeight) {
@@ -113,14 +139,27 @@ public class FXUtils {
 
     public static Optional<Parent> findParent(Node child, String styleClass) {
         Parent parent = child.getParent();
-        if (parent == null){
+        if (parent == null) {
             return Optional.empty();
-        } else if(parent.getStyleClass().contains(styleClass)) {
+        } else if (parent.getStyleClass().contains(styleClass)) {
             return Optional.of(parent);
         } else {
             return findParent(parent, styleClass);
         }
 
+    }
+
+    /**
+     * Ensures that a code segment is run on the FX thread.
+     *
+     * @param runnable a {@code Runnable} encapsulating the code
+     */
+    public static void runOnFxThread(Runnable runnable) {
+        if (Platform.isFxApplicationThread()) {
+            runnable.run();
+        } else {
+            Platform.runLater(runnable);
+        }
     }
 
     /**
@@ -136,5 +175,100 @@ public class FXUtils {
                 .filter(Window::isFocused)
                 .findFirst()
                 .orElse(null);
+    }
+
+    /**
+     * Synchronizes pane's preferred height using a counter-based approach.
+     * Waits for {@value #SIMPLE_HEIGHT_UPDATE_THRESHOLD} height changes before
+     * setting preferred height to match actual height and removing itself.
+     * Suitable for simple UI scenarios with stable content.
+     *
+     * @param targetPane pane to synchronize (not null)
+     * @throws NullPointerException if targetPane is null
+     * @see #synchronizeHeightWithSceneAwareness(Pane)
+     */
+    public static void synchronizeHeightWithCounter(Pane targetPane) {
+        Objects.requireNonNull(targetPane, "Target pane cannot be null");
+
+        // Register a one-time resize listener to set the final preferred height
+        InvalidationListener resizeListener = new InvalidationListener() {
+            private int updateCount = 0;
+            @Override
+            public void invalidated(Observable observable) {
+                updateCount++;
+
+                // Wait for the threshold number of height changes
+                if (updateCount >= SIMPLE_HEIGHT_UPDATE_THRESHOLD) {
+                    double height = targetPane.getHeight();
+                    if (height > 0) {
+                        targetPane.setPrefHeight(height);
+                    }
+
+                    // Remove the listener once done
+                    targetPane.heightProperty().removeListener(this);
+                }
+            }
+        };
+
+        targetPane.heightProperty().addListener(resizeListener);
+    }
+
+    /**
+     * Synchronizes pane's preferred height using scene-aware approach with property-based
+     * listener tracking. Registers listeners for scene changes and height changes with
+     * proper cleanup. More robust for dynamic UI scenarios where panes may be added or
+     * removed from scene graph.
+     *
+     * @param targetPane pane to synchronize (not null)
+     * @throws NullPointerException if targetPane is null
+     * @see #synchronizeHeightWithCounter(Pane)
+     */
+    public static void synchronizeHeightWithSceneAwareness(Pane targetPane) {
+        Objects.requireNonNull(targetPane, "Target pane cannot be null");
+
+        // Create the window scene sync listener
+        InvalidationListener windowSceneSyncListener = sceneObservable -> {
+            Scene scene = targetPane.getScene();
+            if (scene != null) {
+                // Synchronize the window panel's preferred height with its actual height after rendering.
+                Platform.runLater(() -> {
+                    targetPane.layout();
+
+                    // Create the window height sync listener
+                    InvalidationListener windowHeightSyncListener = heightObservable -> {
+                        final double height = targetPane.getHeight();
+                        if (height > 0) {
+                            targetPane.setPrefHeight(height);
+
+                            if (targetPane.getProperties().containsKey(WINDOW_HEIGHT_SYNC_LISTENER)) {
+                                final InvalidationListener heightListener =
+                                        (InvalidationListener) targetPane.getProperties().get(WINDOW_HEIGHT_SYNC_LISTENER);
+                                targetPane.heightProperty().removeListener(heightListener);
+                                targetPane.getProperties().remove(WINDOW_HEIGHT_SYNC_LISTENER);
+                            }
+                        }
+                    };
+
+                    // Store a reference for later cleanup
+                    targetPane.getProperties().put(WINDOW_HEIGHT_SYNC_LISTENER, windowHeightSyncListener);
+
+                    // Add the listener to the window panel
+                    targetPane.heightProperty().addListener(windowHeightSyncListener);
+                });
+            }
+
+            if (targetPane.getProperties().containsKey(WINDOW_SCENE_SYNC_LISTENER)) {
+                final InvalidationListener sceneListener =
+                        (InvalidationListener) targetPane.getProperties().get(WINDOW_SCENE_SYNC_LISTENER);
+                targetPane.sceneProperty().removeListener(sceneListener);
+                targetPane.getProperties().remove(WINDOW_SCENE_SYNC_LISTENER);
+            }
+        };
+
+        // Store a reference for later cleanup
+        targetPane.getProperties().put(WINDOW_SCENE_SYNC_LISTENER, windowSceneSyncListener);
+
+        // Add the listener to the window panel
+        targetPane.sceneProperty().addListener(windowSceneSyncListener);
     }
 }

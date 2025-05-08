@@ -331,10 +331,7 @@ public interface KometPreferences {
      */
     default Optional<UUID> getUuid(Enum key) {
         Optional<String> optionalString = get(key);
-        if (optionalString.isPresent()) {
-            return Optional.of(UUID.fromString(optionalString.get()));
-        }
-        return Optional.empty();
+        return optionalString.map(UUID::fromString);
     }
 
     /**
