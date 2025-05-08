@@ -37,10 +37,19 @@ public class ProgressHelper {
     private ProgressHelper() {}
 
     /**
+     * Wraps TrackingCallable instance to be messaged to the journal window's progress popup with default cancel button text. Note: It will execute on caller's behalf.
+     * @param task A TrackingCallable instance
+     * @return A CompletableFuture or an asynchronous call.
+     */
+    public static <T> CompletableFuture<T> progress(TrackingCallable<T> task) {
+        return progress(task, "Cancel");
+    }
+
+    /**
      * Wraps TrackingCallable instance to be messaged to the journal window's progress popup. Note: It will execute on caller's behalf.
      * @param task A TrackingCallable instance
      * @param cancelButtonText the cancel button's text
-     * @return A Future or an asynchronous call.
+     * @return A CompletableFuture or an asynchronous call.
      */
     public static <T> CompletableFuture<T> progress(TrackingCallable<T> task, String cancelButtonText) {
         TaskWrapper<T> javafxTask = TaskWrapper.make(task);
@@ -51,7 +60,7 @@ public class ProgressHelper {
      * A known JavaFX task to be messaged to the journal window's progress popup. Note: It will execute on caller's behalf.
      * @param task A TrackingCallable instance
      * @param cancelButtonText the cancel button's text
-     * @return A Future or an asynchronous call.
+     * @return A CompletableFuture or an asynchronous call.
      */
     public static <T> CompletableFuture<T> progress(Task<T> task, String cancelButtonText) {
         EvtBusFactory
