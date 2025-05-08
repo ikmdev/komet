@@ -258,8 +258,13 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private HBox createSearchBox() {
         AutoCompleteTextField<EntityProxy> typeAheadSearchField = new AutoCompleteTextField<>();
 
+        StackPane typeAheadSearchFieldContainer = new StackPane();
+        typeAheadSearchFieldContainer.getStyleClass().add("search-field-container");
+
+        Label searchPrompt = new Label(getString("textfield.prompt.text"));
+        searchPrompt.getStyleClass().add("search-prompt");
+
         typeAheadSearchField.getStyleClass().add("concept-text-field");
-        typeAheadSearchField.setPromptText(getString("textfield.prompt.text"));
         typeAheadSearchField.textProperty().subscribe(text -> getSkinnable().getProperties().put(SEARCH_TEXT_VALUE, text));
 
         // Type ahead setup
@@ -267,15 +272,22 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         typeAheadSearchField.completerProperty().bind(getSkinnable().completerProperty());
         typeAheadSearchField.converterProperty().bind(getSkinnable().typeAheadStringConverterProperty());
 
-        HBox.setHgrow(typeAheadSearchField, Priority.ALWAYS);
+        typeAheadSearchFieldContainer.getChildren().addAll(typeAheadSearchField, searchPrompt);
+
+        searchPrompt.visibleProperty().bind(
+                typeAheadSearchField.focusedProperty().not()
+                .and
+                (typeAheadSearchField.textProperty().isEmpty())
+        );
+
+        HBox.setHgrow(typeAheadSearchFieldContainer, Priority.ALWAYS);
 
         Region searchRegion = new Region();
-        searchRegion.getStyleClass().add("concept-search-region");
-        Button searchButton = new Button(null, searchRegion);
-        searchButton.getStyleClass().add("concept-search-button");
-        searchButton.disableProperty().bind(typeAheadSearchField.textProperty().isEmpty());
+        searchRegion.getStyleClass().add("concept-filter-region");
+        Button filterButton = new Button(null, searchRegion);
+        filterButton.getStyleClass().add("concept-filter-button");
 
-        HBox searchBox = new HBox(typeAheadSearchField, searchButton);
+        HBox searchBox = new HBox(typeAheadSearchFieldContainer, filterButton);
         searchBox.getStyleClass().add("concept-search-box");
         return searchBox;
     }
@@ -323,13 +335,13 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private void addConceptNode(EntityProxy entity) {
         Image identicon = Identicon.generateIdenticonImage(entity.publicId());
         ImageView imageView = new ImageView();
-        imageView.setFitWidth(20);
-        imageView.setFitHeight(20);
+        imageView.setFitWidth(16);
+        imageView.setFitHeight(16);
         imageView.setImage(identicon);
         HBox imageViewWrapper = new HBox();
         imageViewWrapper.setAlignment(Pos.CENTER);
-        HBox.setMargin(imageView, new Insets(0, 8, 0 ,8));
         imageViewWrapper.getChildren().add(imageView);
+        imageViewWrapper.getStyleClass().add("image-view-container");
 
         Label conceptNameLabel = new Label(entity.description());
         conceptNameLabel.getStyleClass().add("selected-concept-description");
