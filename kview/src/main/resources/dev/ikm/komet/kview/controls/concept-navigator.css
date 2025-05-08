@@ -591,6 +591,7 @@
 
 .lineage-pane.scroll-pane > .corner {
     -fx-background-insets: 0;
+    -fx-background-color: transparent;
 }
 
 .lineage-pane.scroll-pane > .scroll-bar:horizontal .track,
@@ -606,7 +607,7 @@
 .lineage-pane.scroll-pane > .scroll-bar:horizontal .decrement-button {
     -fx-background-color: transparent;
     -fx-background-radius: 0em;
-    -fx-padding: 0;
+    -fx-padding: 0 0 4 0;
 }
 
 .lineage-pane.scroll-pane > .scroll-bar:vertical .increment-button,
@@ -636,7 +637,7 @@
 .lineage-box > .lineage-hbox {
     -fx-alignment: center-left;
     -fx-spacing: 0;
-    -fx-padding: 0;
+    -fx-padding: 0 4 0 0;
     -fx-min-height: 18;
     -fx-pref-height: 18;
     -fx-max-height: 18;
