@@ -15,34 +15,7 @@
  */
 package dev.ikm.komet.app;
 
-import static dev.ikm.komet.app.AppState.LOADING_DATA_SOURCE;
-import static dev.ikm.komet.app.AppState.SHUTDOWN;
-import static dev.ikm.komet.app.AppState.STARTING;
-import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
-import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
-import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
-import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.CENTER_TAB_PREFERENCES;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.LEFT_TAB_PREFERENCES;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.RIGHT_TAB_PREFERENCES;
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
-import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_WIDTH;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_HEIGHT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CAN_DELETE;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
-
+import com.sun.management.OperatingSystemMXBean;
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
 import dev.ikm.komet.details.DetailsNodeFactory;
@@ -59,6 +32,7 @@ import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.KometPreferencesStage;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.preferences.Reconstructor;
+import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.tabs.DetachableTab;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.KometStageController;
@@ -81,18 +55,33 @@ import dev.ikm.komet.preferences.Preferences;
 import dev.ikm.komet.progress.CompletionNodeFactory;
 import dev.ikm.komet.progress.ProgressNodeFactory;
 import dev.ikm.komet.search.SearchNodeFactory;
+import dev.ikm.komet.sync.AddChangesetsTask;
+import dev.ikm.komet.sync.InfoTask;
+import dev.ikm.komet.sync.InitializeTask;
+import dev.ikm.komet.sync.PullTask;
+import dev.ikm.komet.sync.PushTask;
 import dev.ikm.komet.table.TableNodeFactory;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.binary.Encodable;
+import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.service.ServiceKeys;
+import dev.ikm.tinkar.common.service.ServiceProperties;
 import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.coordinate.Calculators;
+import dev.ikm.tinkar.entity.EntityCountSummary;
+import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
+import dev.ikm.tinkar.reasoner.service.ClassifierResults;
+import dev.ikm.tinkar.reasoner.service.ReasonerService;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -122,21 +111,58 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.management.ManagementFactory;
-
-import com.sun.management.OperatingSystemMXBean;
-
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.time.Year;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
+
+import static dev.ikm.komet.app.AppState.LOADING_DATA_SOURCE;
+import static dev.ikm.komet.app.AppState.SHUTDOWN;
+import static dev.ikm.komet.app.AppState.STARTING;
+import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
+import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
+import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
+import static dev.ikm.komet.framework.KometNode.PreferenceKey.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.CENTER_TAB_PREFERENCES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.LEFT_TAB_PREFERENCES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.RIGHT_TAB_PREFERENCES;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_HEIGHT;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CAN_DELETE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
 
 
 /**
@@ -355,12 +381,24 @@ public class App extends Application {
             windowMenu.getItems().addAll(tk.createMinimizeMenuItem(), tk.createZoomMenuItem(), tk.createCycleWindowsItem(),
                     new SeparatorMenuItem(), tk.createBringAllToFrontItem());
 
+            // Exchange Menu
+            Menu exchangeMenu = new Menu("Exchange");
+
+            MenuItem infoMenuItem = new MenuItem("Info");
+            infoMenuItem.setOnAction(actionEvent -> infoAction());
+            MenuItem pullMenuItem = new MenuItem("Pull");
+            pullMenuItem.setOnAction(actionEvent -> syncAction(false));
+            MenuItem pushMenuItem = new MenuItem("Sync");
+            pushMenuItem.setOnAction(actionEvent -> syncAction(true));
+
+            exchangeMenu.getItems().addAll(infoMenuItem, pullMenuItem, pushMenuItem);
+
             // Help Menu
             Menu helpMenu = new Menu("Help");
             helpMenu.getItems().addAll(new MenuItem("Getting started"));
 
             MenuBar bar = new MenuBar();
-            bar.getMenus().addAll(kometAppMenu, fileMenu, editMenu, viewMenu, windowMenu, helpMenu);
+            bar.getMenus().addAll(kometAppMenu, fileMenu, editMenu, viewMenu, windowMenu, exchangeMenu, helpMenu);
             tk.setAppearanceMode(AppearanceMode.AUTO);
             tk.setDockIconMenu(createDockMenu());
             tk.autoAddWindowMenuItems(windowMenu);
@@ -729,6 +767,121 @@ public class App extends Application {
         Scene exportScene = new Scene(exportPane, Color.TRANSPARENT);
         exportStage.setScene(exportScene);
         exportStage.show();
+    }
+
+    private void gitProcess(Consumer<Git> gitProcess) {
+        Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
+        if (optionalDataStoreRoot.isEmpty()) {
+            throw new IllegalStateException("ServiceKeys.DATA_STORE_ROOT not provided.");
+        }
+        File changeSetFolder = new File(optionalDataStoreRoot.get(), "changeSets");
+        if (!changeSetFolder.exists()) {
+            throw new IllegalStateException("Changeset Writer Service not ready.");
+        }
+        gitConnect(changeSetFolder).whenComplete((git, _) -> {
+            gitProcess.accept(git);
+        });
+    }
+
+    private CompletableFuture<Git> gitConnect(File changeSetFolder) {
+        try {
+            Git git = Git.open(changeSetFolder);
+            return CompletableFuture.supplyAsync(() -> git, TinkExecutor.ioThreadPool());
+        } catch (IOException e) {
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    TinkExecutor.ioThreadPool().submit(new InitializeTask(changeSetFolder.toPath())).get();
+                    return Git.open(changeSetFolder);
+                } catch (InterruptedException | ExecutionException | IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }, TinkExecutor.ioThreadPool());
+        }
+    }
+
+    private void infoAction() {
+        gitProcess((git) -> {
+            Task task = new InfoTask(git);
+            Platform.runLater(task);
+        });
+    }
+
+    private void syncAction(boolean push) {
+        gitProcess((git) -> {
+            File changeSetFolder = git.getRepository().getDirectory().getParentFile();
+            //Pull
+            ProgressHelper.progress(new PullTask(changeSetFolder.toPath()))
+                    .whenComplete((_,_) -> {
+                        loadChangesets(changeSetFolder);
+                        runReasoner();
+                        if (push) {
+                            ProgressHelper.progress(new AddChangesetsTask(changeSetFolder.toPath()))
+                                    .whenComplete((_,_) -> ProgressHelper.progress(new PushTask(changeSetFolder.toPath())));
+                        }
+                    });
+        });
+    }
+
+    private List<EntityCountSummary> loadChangesets(File changeSetFolder) {
+        File[] pbFiles = changeSetFolder.listFiles((dir, name) -> name.endsWith("ike-cs.zip"));
+        List<EntityCountSummary> loadResults = new ArrayList<>();
+        if (pbFiles == null) {
+            return loadResults;
+        }
+        Arrays.stream(pbFiles)
+                .filter(file -> {
+                    try (FileSystem fs = FileSystems.newFileSystem(file.toPath())) {
+                        // Filter out unfinished exports and non-export zips
+                        return Files.exists(fs.getPath("META-INF", "MANIFEST.MF"));
+                    } catch (IOException e) {
+                        return false;
+                    }
+                })
+                .forEach((protoFile) -> {
+                    try {
+                        EntityCountSummary ecs = TinkExecutor.ioThreadPool().submit(new LoadEntitiesFromProtobufFile(protoFile)).get();
+                        loadResults.add(ecs);
+                    } catch (InterruptedException | ExecutionException e) {
+                        LOG.info("Error:" + e);
+                    }
+                });
+        return loadResults;
+    }
+
+    private List<ClassifierResults> runReasoner() {
+        String reasonerType = "ElkSnomedReasoner";
+        List<ReasonerService> rss = PluggableService.load(ReasonerService.class).stream()
+                .map(ServiceLoader.Provider::get)
+                .filter(reasoner -> reasoner.getName().contains(reasonerType))
+                .sorted(Comparator.comparing(ReasonerService::getName)).toList();
+        LOG.info("Number of reasoners " + rss.size());
+        List<ClassifierResults> resultList = new ArrayList<>();
+        for (ReasonerService rs : rss) {
+            LOG.info("Reasoner service: " + rs);
+            rs.init(Calculators.View.Default(), TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
+            rs.setProgressUpdater(null);
+            try {
+                // Extract
+                rs.extractData();
+                // Load
+                rs.loadData();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            // Compute
+            rs.computeInferences();
+            // Build NNF
+            rs.buildNecessaryNormalForm();
+            // Write inferred results
+            ClassifierResults results = rs.writeInferredResults();
+
+            LOG.info("After Size of ConceptSet: " + rs.getReasonerConceptSet().size());
+            LOG.info("ClassifierResults: inferred changes size " + results.getConceptsWithInferredChanges().size());
+            LOG.info("ClassifierResults: navigation changes size " + results.getConceptsWithNavigationChanges().size());
+            LOG.info("ClassifierResults: classificationconcept size " + results.getClassificationConceptSet().size());
+            resultList.add(results);
+        }
+        return resultList;
     }
 
     private void generateMsWindowsMenu(BorderPane kometRoot, Stage stage) {
