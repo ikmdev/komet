@@ -322,6 +322,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
     /** {@inheritDoc} */
     @Override
     protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
+        // TODO use getInsets() instead of getPadding()
         Insets padding = getSkinnable().getPadding();
         double titlePrefWidth = titleLabel.prefWidth(-1);
         double titlePrefHeight = titleLabel.prefHeight(titlePrefWidth);
@@ -340,21 +341,22 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
         y += adjustedPrefHeight;
 
-//        double topDropPanePreferredHeight = layoutTopDropLine(contentWidth, x, y, padding, contentX);
+        double topDropLineHeight = layoutTopDropLine(contentWidth, padding, y);
 
-//        y += topDropPanePreferredHeight;
+        y += topDropLineHeight;
 
+        // rather than calculate the topDropLine width, use the same width of the dropLine for the components
         int labelNumber = 1;
         int index = 0;
         for (; index < getSkinnable().getValue().size(); ++index) {
-            double componentControlUsedHeight = layoutComponentControl(contentWidth, index, padding, x, y,
-                                                                       labelNumber, contentX);
+            double componentControlUsedHeight = layoutComponentControl(contentWidth, index, padding, y,
+                                                                       labelNumber);
             // prepare for next iteration
             labelNumber += 1;
             y += componentControlUsedHeight + SPACE_BETWEEN_COMPONENTS;
         }
         // layout final empty component control
-        double componentControlUsedHeight = layoutComponentControl(contentWidth, index, padding, x, y, labelNumber, contentX);
+        double componentControlUsedHeight = layoutComponentControl(contentWidth, index, padding, y, labelNumber);
         y += componentControlUsedHeight + SPACE_BETWEEN_COMPONENTS;
 
         // layout add Entry button
@@ -363,18 +365,29 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
                                       buttonPrefWidth, addEntryButton.prefHeight(buttonPrefWidth));
     }
 
-//    private double layoutTopDropLine(double contentWidth, double x, double y, Insets padding, double dropLineX) {
-//        double topDropPrefWidth = contentWidth - padding.getRight() - x;
-//
-//        Line dropLine = componentToDropLine.get(null);
-//
-//        dropLine.setStartX(0);
-//        dropLine.setStartY(y + SPACE_BETWEEN_COMPONENTS / 2d);
-//        dropLine.setEndX(topDropPrefWidth);
-//        dropLine.setEndY(y + SPACE_BETWEEN_COMPONENTS / 2d + 2);
-//
-//        return KLComponentListControlSkin.SPACE_BETWEEN_COMPONENTS;
-//    }
+    private double layoutTopDropLine(double contentWidth, Insets padding, double y) {
+        Line dropLine = componentToDropLine.get(null);
+
+        return layoutDropLine(dropLine, contentWidth, padding, y);
+    }
+
+    private double layoutDropLine(Line dropLine, double contentWidth, Insets padding, double y) {
+        // Subtract the padding and at least 1 to be less than the width of the content pane.
+        // Using the same value as SPACE_BETWEEN_NUMBER_AND_CONTROL keeps the right component border within the
+        // pane, to not be covered by the vertical scroll bar.  This was realized in final testing for the PR.
+        double dropLineWidth = contentWidth - padding.getRight() - padding.getLeft() - SPACE_BETWEEN_NUMBER_AND_CONTROL;
+        // center the drop line horizontally within the contentWidth
+        double dropLineX = contentWidth / 2 - dropLineWidth / 2;
+        // center the drop line vertically within the height, which is the Space between the components
+        double dropLineY = y + SPACE_BETWEEN_COMPONENTS / 2d;
+
+        dropLine.setStartX(dropLineX);
+        dropLine.setStartY(dropLineY);
+        dropLine.setEndX(dropLineX + dropLineWidth);
+        dropLine.setEndY(dropLineY);
+
+        return SPACE_BETWEEN_COMPONENTS;
+    }
 
     /**
      * Lays out an individual component control and also the drop line associated with it in case there is any.
@@ -382,22 +395,21 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
      * @param contentWidth the total width available for laying out this component control
      * @param index the index of the control to layout
      * @param padding the padding
-     * @param componentStartX the start x of the layout of the component
      * @param componentStartY the start y of the layout of the component
      * @param labelNumber the number that should be visible on the number label
-     * @param dropLineX the x start for the drop line
      *
      * @return the height that the component control occupies after it has been laid out
      */
-    private double layoutComponentControl(double contentWidth, int index, Insets padding, double componentStartX,
-                                          double componentStartY, int labelNumber, double dropLineX) {
+    private double layoutComponentControl(double contentWidth, int index, Insets padding,
+                                          double componentStartY, int labelNumber) {
         KLComponentControl componentControl = componentControls.get(index);
+        double componentStartX = padding.getLeft();
 
         Label numberLabel = componentControlToNumberGraphic.get(componentControl);
         double labelWidth = numberLabel.prefWidth(-1);
         double labelHeight = numberLabel.prefHeight(labelWidth);
 
-        double componentControlPrefWidth = contentWidth - padding.getRight() - componentStartX - labelWidth - SPACE_BETWEEN_NUMBER_AND_CONTROL;
+        double componentControlPrefWidth = contentWidth - padding.getRight() - padding.getLeft() - SPACE_BETWEEN_NUMBER_AND_CONTROL - labelWidth;
         double componentControlPrefHeight = componentControl.prefHeight(componentControlPrefWidth);
 
         // Layout number label
@@ -415,11 +427,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         Line dropLine = componentToDropLine.get(componentControl);
 
         if (dropLine != null) {
-            double dropLineWidth = componentControlPrefWidth + labelWidth;
-            dropLine.setStartX(dropLineX);
-            dropLine.setStartY(componentStartY + componentControlPrefHeight + SPACE_BETWEEN_COMPONENTS / 2d);
-            dropLine.setEndX(dropLineX + dropLineWidth);
-            dropLine.setEndY(componentStartY + componentControlPrefHeight + SPACE_BETWEEN_COMPONENTS / 2d + 2);
+            layoutDropLine(dropLine, contentWidth, padding,componentStartY + componentControlPrefHeight);
         }
 
         return componentControlPrefHeight;
