@@ -157,3 +157,98 @@
     -fx-shape: "M15.8337 5.34199L14.6587 4.16699L10.0003 8.82533L5.34199 4.16699L4.16699 5.34199L8.82533 10.0003L4.16699 14.6587L5.34199 15.8337L10.0003 11.1753L14.6587 15.8337L15.8337 14.6587L11.1753 10.0003L15.8337 5.34199Z";
     -fx-scale-shape: false;
 }
+
+/*************  Type Ahead Popup   ****************/
+
+.component-popup.auto-complete-popup > .list-view {
+    -fx-background-color: red;
+    -fx-background-insets: 0;
+
+    -fx-background-color:
+            linear-gradient(to bottom,
+                derive(-fx-color,-17%),
+                derive(-fx-color,-30%)
+            ),
+        -fx-control-inner-background;
+    -fx-background-insets: -1 -2 -1 -1, 0 -1 0 0;
+
+    -fx-background-radius: 0 0 4 4;
+
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.2) , 12, 0.0 , 0 , 8 );
+}
+
+.component-popup.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-padding: 10 2 0 4;
+    /* No alternate highlighting */
+    -fx-background: -fx-control-inner-background;
+}
+
+.component-popup.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
+.component-popup.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover,
+.component-popup.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected:hover {
+    -fx-background-color: #f4fbf0;
+}
+
+.component-popup.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell .label {
+    -fx-padding: 0 0 10 2;
+    -fx-graphic-text-gap: 8;
+
+    -fx-font-family: "Noto Sans Semibold";
+
+    -fx-font-size: 13px;
+
+}
+
+.component-popup.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell .separator {
+    -fx-border-insets: 0;
+    -fx-border-width: 1 0 0 0;
+
+    -fx-background-insets: 0;
+
+    -fx-border-color: #ddd;
+}
+
+.component-popup.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected .separator,
+.component-popup.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover .separator,
+.component-popup.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected:hover .separator {
+    -fx-border-insets: 0;
+    -fx-border-width: 1 0 0 0;
+
+    -fx-background-insets: 0;
+
+    -fx-border-color: #a0d486;
+}
+
+.component-popup.auto-complete-popup > .list-view > .placeholder > .label {
+    -fx-text-fill: derive(-fx-control-inner-background,-30%);
+}
+
+/* Remove horizontal scrollbar */
+.component-popup.auto-complete-popup  > .list-view .scroll-bar:horizontal .increment-arrow,
+.component-popup.auto-complete-popup  > .list-view .scroll-bar:horizontal .decrement-arrow,
+.component-popup.auto-complete-popup  > .list-view .scroll-bar:horizontal .increment-button,
+.component-popup.auto-complete-popup  > .list-view .scroll-bar:horizontal .decrement-button {
+    -fx-padding:0;
+}
+
+/* Scrollbars in ListView */
+.component-popup.auto-complete-popup > .list-view .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.component-popup.auto-complete-popup > .list-view .scroll-bar:vertical .increment-button,
+.component-popup.auto-complete-popup > .list-view .scroll-bar:vertical .decrement-button,
+.component-popup.auto-complete-popup > .list-view .scroll-bar:vertical .increment-arrow,
+.component-popup.auto-complete-popup > .list-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: transparent;
+
+    -fx-background-radius: 0em;
+    -fx-padding: 0 2 0 2;
+}
+
+.component-popup.auto-complete-popup > .list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #a9aeb8;
+    -fx-background-insets: 3px 4px 3px 3px;
+    -fx-background-radius: 16px;
+}
