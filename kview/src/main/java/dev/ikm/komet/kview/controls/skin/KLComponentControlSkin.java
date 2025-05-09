@@ -271,6 +271,10 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         typeAheadSearchField.valueProperty().subscribe(() -> getSkinnable().setEntity(typeAheadSearchField.getValue()));
         typeAheadSearchField.completerProperty().bind(getSkinnable().completerProperty());
         typeAheadSearchField.converterProperty().bind(getSkinnable().typeAheadStringConverterProperty());
+        typeAheadSearchField.suggestionsNodeFactoryProperty().bind(getSkinnable().suggestionsNodeFactoryProperty());
+        typeAheadSearchField.getPopupStyleClasses().add("component-popup");
+        typeAheadSearchField.setSuggestionsNodeHeight(41);
+
 
         typeAheadSearchFieldContainer.getChildren().addAll(typeAheadSearchField, searchPrompt);
 
@@ -289,6 +293,16 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         HBox searchBox = new HBox(typeAheadSearchFieldContainer, filterButton);
         searchBox.getStyleClass().add("concept-search-box");
+
+        typeAheadSearchField.setSkin(new AutoCompleteTextFieldSkin<>(typeAheadSearchField) {
+
+            @Override
+            protected double getPopupWidth() {
+                return searchBox.getWidth() - searchBox.getInsets().getLeft() - searchBox.getInsets().getRight() - 1;
+            }
+        });
+
+
         return searchBox;
     }
 
