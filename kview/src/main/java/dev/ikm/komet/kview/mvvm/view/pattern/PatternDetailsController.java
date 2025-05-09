@@ -356,7 +356,7 @@ public class PatternDetailsController {
         // Generate description semantic and show
         fqnDescriptionSemanticText.textProperty().bind(fqnNameProp.map(descrName -> " (%s)".formatted(generateDescriptionSemantics(descrName))).orElse(""));
 
-        if (patternViewModel.getPropertyValue(MODE).equals(PatternSavedEvent.PATTERN_CREATION_EVENT)) {
+        if (patternViewModel.getPropertyValue(MODE).equals(CREATE)) {
             //FIXME this code was designed for edit... if it is an existing pattern it was overwriting the date added with the current date;
             // we might need to change it to a change listener...
 
