@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.klfields;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
 import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
@@ -197,13 +198,17 @@ public class KlFieldHelper {
     public static int calculteHashValue(List<ObservableField<?>> observableFieldsList ) {
         StringBuilder stringBuilder = new StringBuilder();
         observableFieldsList.forEach(observableField -> {
-            // TODO re-evaluate if toString is the right approach for complex datatypes.
-            var observableFieldValue = observableField.valueProperty().get();
-            if (observableFieldValue == null) {
-                stringBuilder.append("|");
-            } else {
-                stringBuilder.append(observableField.valueProperty().get().toString()).append("|");
+            if (observableField.dataTypeNid() == IMAGE_FIELD.nid() || observableField.dataTypeNid() == BYTE_ARRAY_FIELD.nid()) {
+                // need to handle byte array to ensure that the same image is not getting uploaded and resaved. This is to enable/disable submit button.
+                byte [] byteArray = (byte[]) observableField.valueProperty().get();
+                String str = new String(byteArray, java.nio.charset.StandardCharsets.UTF_8);
+                stringBuilder.append(str);
+            } else if (observableField.valueProperty().get() != null) {
+                // TODO re-evaluate if toString is the right approach for complex datatypes.
+                stringBuilder.append(observableField.valueProperty().get().toString());
             }
+
+            stringBuilder.append("|");
         });
         return stringBuilder.toString().hashCode();
     }
