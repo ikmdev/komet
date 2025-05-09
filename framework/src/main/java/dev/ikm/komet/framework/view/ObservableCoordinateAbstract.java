@@ -15,12 +15,13 @@
  */
 package dev.ikm.komet.framework.view;
 
+import dev.ikm.tinkar.coordinate.ImmutableCoordinate;
+import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import dev.ikm.tinkar.coordinate.ImmutableCoordinate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,10 +75,15 @@ public abstract class ObservableCoordinateAbstract<T extends ImmutableCoordinate
     public void setValue(T value) {
         T oldValue = getValue();
         if (!Objects.equals(oldValue, value)) {
-            changeBaseCoordinate(this.immutableCoordinate, oldValue, value);
-            for (ChangeListener<? super T> listener: changeListenerList) {
-                listener.changed(this.immutableCoordinate, oldValue, value);
-            }
+            // this method is being recursively called.  when listeners are notified, they in turn
+            // call this method setValue().  Within changeBaseCoordinate() listeners are removed then
+            // added back.  An ArrayList cannot be modified when the items are being iterated.
+            Platform.runLater(() -> {
+                changeBaseCoordinate(this.immutableCoordinate, oldValue, value);
+                for (ChangeListener<? super T> listener : changeListenerList) {
+                    listener.changed(this.immutableCoordinate, oldValue, value);
+                }
+            });
         }
     }
 
