@@ -214,8 +214,6 @@ public class ImportController {
 
         if (importViewModel.validProperty().get()) {
             File selectedFile = importViewModel.getPropertyValue(SELECTED_FILE);
-            LoadEntitiesFromProtobufFile loadEntities = new LoadEntitiesFromProtobufFile(selectedFile);
-            ProgressHelper.progress(loadEntities, "Cancel Import");
             LoadEntitiesFromProtobufFile importTask = new LoadEntitiesFromProtobufFile(selectedFile);
             CompletableFuture<EntityCountSummary> future = ProgressHelper.progress(importTask, "Cancel Import");
             future.whenComplete((entityCountSummary, throwable) -> {
