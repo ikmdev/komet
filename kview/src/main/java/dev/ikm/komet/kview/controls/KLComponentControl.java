@@ -15,6 +15,7 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.util.StringConverter;
@@ -69,7 +70,11 @@ public class KLComponentControl extends Control {
             }
         });
 
-        getStylesheets().add(getUserAgentStylesheet());
+        sceneProperty().subscribe(newScene -> {
+            if (newScene != null) {
+                newScene.getStylesheets().add(getUserAgentStylesheet());
+            }
+        });
     }
 
     /***************************************************************************
@@ -126,6 +131,16 @@ public class KLComponentControl extends Control {
     public final ObjectProperty<StringConverter<EntityProxy>> typeAheadStringConverterProperty() { return typeAheadStringConverter; }
     public final void setTypeAheadStringConverter(StringConverter<EntityProxy> value) { typeAheadStringConverterProperty().set(value); }
     public final StringConverter<EntityProxy> getTypeAheadStringConverter() {return typeAheadStringConverterProperty().get(); }
+
+    // -- suggestions node factory
+    /**
+     * This will return a node to be shown in the auto-complete popup for each result returned
+     * by the 'completer'.
+     */
+    private final ObjectProperty<Function<EntityProxy, Node>> suggestionsNodeFactory = new SimpleObjectProperty<>();
+    public final void setSuggestionsNodeFactory(Function<EntityProxy, Node> factory) { suggestionsNodeFactory.set(factory); }
+    public final Function<EntityProxy, Node> getSuggestionsNodeFactory() { return suggestionsNodeFactory.get(); }
+    public final ObjectProperty<Function<EntityProxy, Node>> suggestionsNodeFactoryProperty() { return suggestionsNodeFactory; }
 
     // -- search text
     /**
