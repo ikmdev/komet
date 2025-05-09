@@ -233,11 +233,13 @@ public class ImportController {
                                 ecs.stampsCount())
                         );
                     }
+                    // Refresh the Pattern Navigation
+                    EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,new PatternSavedEvent(event.getSource(), PatternSavedEvent.PATTERN_UPDATE_EVENT));
+
                     EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC, new RefreshCalculatorCacheEvent(event.getSource(), GLOBAL_REFRESH));
+
                 }
 
-                // Refresh the Pattern Navigation
-                EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,new PatternSavedEvent(event.getSource(), PatternSavedEvent.PATTERN_UPDATE_EVENT));
             });
 
             closeDialog();
