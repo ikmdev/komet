@@ -5,6 +5,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -21,7 +22,6 @@ import javafx.scene.control.Skin;
 import javafx.scene.control.skin.TextFieldSkin;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
@@ -57,8 +57,9 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
         control.addEventHandler(ActionEvent.ACTION, this::onAction);
 
         autoCompletePopup = new AutoCompletePopup<>(control);
-        autoCompletePopup.getStyleClass().add("auto-complete-popup");
 
+        control.getPopupStyleClasses().add("auto-complete-popup");
+        Bindings.bindContent(autoCompletePopup.getStyleClass(), control.getPopupStyleClasses());
     }
 
     /***************************************************************************
@@ -124,10 +125,7 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
             autoCompletePopup.hide();
         }
 
-        double borderLeft = autoCompleteTextField.getBorder().getInsets().getLeft();
-        double borderRight = autoCompleteTextField.getBorder().getInsets().getRight();
-        double width = autoCompleteTextField.getBoundsInLocal().getWidth() - borderLeft - borderRight;
-        autoCompletePopup.setPrefWidth(width);
+        autoCompletePopup.setPrefWidth(getPopupWidth());
 
         autoCompletePopup.getItems().setAll(results);
 
@@ -135,8 +133,16 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
 
         if (!autoCompletePopup.isShowing()) {
             autoCompletePopup.setSelectedItemIndex(-1); // When showing popup we initially don't want any suggestion selected
-            autoCompletePopup.show(autoCompleteTextField.getScene().getWindow(), textFieldScreenCoords.getX() + borderLeft, textFieldScreenCoords.getY());
+            double x = textFieldScreenCoords.getX() + autoCompleteTextField.getBorder().getInsets().getLeft();
+            autoCompletePopup.show(autoCompleteTextField.getScene().getWindow(), x, textFieldScreenCoords.getY());
         }
+    }
+
+    protected double getPopupWidth() {
+        AutoCompleteTextField<T> autoCompleteTextField = (AutoCompleteTextField<T>) getSkinnable();
+        double borderLeft = autoCompleteTextField.getBorder().getInsets().getLeft();
+        double borderRight = autoCompleteTextField.getBorder().getInsets().getRight();
+        return autoCompleteTextField.getBoundsInLocal().getWidth() - borderLeft - borderRight;
     }
 
     /***************************************************************************
@@ -190,15 +196,12 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
     /**********************    AutoComplete Popupskin    *************************/
 
     private static class AutoCompletePopupSkin<T> implements Skin<AutoCompletePopup<T>> {
-        public static final String DEFAULT_STYLE_CLASS = "auto-complete-popup";
         public static final String DEFAULT_STYLE_SHEET = AutoCompleteTextField.class.getResource("auto-complete-popup.css").toExternalForm();
-
-        public static final int CELL_HEIGHT = 25; // Hard coded height for now since we only have one node factory implementation
 
         private final AutoCompleteTextField<T> autoCompleteTextField;
         private final AutoCompletePopup<T> control;
 
-        private final ListView autoCompleteListView;
+        protected final ListView autoCompleteListView;
 
         private final List<Node> nodes = new ArrayList<>();
 
@@ -212,7 +215,7 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
             this.control = control;
 
             autoCompleteListView = new ListView<>();
-            autoCompleteListView.getStyleClass().add(DEFAULT_STYLE_CLASS);
+
             autoCompleteListView.getStylesheets().add(DEFAULT_STYLE_SHEET);
 
             autoCompleteListView.prefWidthProperty().bind(control.prefWidthProperty());
@@ -224,18 +227,8 @@ public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
 
                 @Override
                 protected double computeValue() {
-//                    Node cell = autoCompleteListView.lookup(".list-cell");
-//                    double cellHeight;
-//                    if (cell != null) {
-//                        System.out.println("------------- CELL != NULL");
-//                        cellHeight = cell.getBoundsInLocal().getHeight();
-//                        System.out.println("------------- CELL HEIGHT ----- " + cellHeight);
-//                    } else {
-//                        System.out.println("------------- CELL IS NULL!!!");
-//                        cellHeight = 16;
-//                    }
-                    double cellHeight = CELL_HEIGHT; // Hard coded height for now since we only have one node factory implementation
-                    return Math.min(autoCompleteTextField.getMaxNumberOfSuggestions(), control.getItems().size()) * cellHeight + 4;
+                    double cellHeight = autoCompleteTextField.getSuggestionsNodeHeight();
+                    return Math.min(autoCompleteTextField.getMaxNumberOfSuggestions(), control.getItems().size()) * cellHeight + 8;
                 }
             };
 

@@ -557,10 +557,20 @@ public interface KometPreferences {
      */
     default OptionalLong getLong(String key) {
         Optional<String> optionalValue = get(key);
-        if (optionalValue.isPresent()) {
-            return OptionalLong.of(Long.parseLong(optionalValue.get()));
-        }
-        return OptionalLong.empty();
+        return optionalValue.map(s -> OptionalLong.of(Long.parseLong(s)))
+                .orElseGet(OptionalLong::empty);
+    }
+
+    /**
+     * Retrieves the value associated with the given enum key, parses it into a long, and returns it
+     * wrapped in an {@code OptionalLong} if present.
+     *
+     * @param key the key whose associated value is to be retrieved
+     * @return an {@code OptionalLong} containing the parsed long value if the key exists
+     *         and the value can be successfully parsed; otherwise, an empty {@code OptionalLong}
+     */
+    default OptionalLong getLong(Enum key) {
+        return getLong(enumToGeneralKey(key));
     }
 
     /**
