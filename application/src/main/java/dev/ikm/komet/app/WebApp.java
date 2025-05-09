@@ -126,10 +126,18 @@ import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_IDS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_HEIGHT;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowSettings.CAN_DELETE;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
 
 /**
  * Main application class for the Komet application, extending JavaFX {@link Application}.
