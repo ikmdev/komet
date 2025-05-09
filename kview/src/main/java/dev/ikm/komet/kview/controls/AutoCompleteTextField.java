@@ -1,10 +1,14 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.AutoCompleteTextFieldSkin;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -78,6 +82,15 @@ public class AutoCompleteTextField<T> extends TextField {
     public final Function<T, Node> getSuggestionsNodeFactory() { return suggestionsNodeFactory.get(); }
     public final ObjectProperty<Function<T, Node>> suggestionsNodeFactoryProperty() { return suggestionsNodeFactory; }
 
+    // -- suggestions node size
+    /**
+     * The height of each suggestion Node in the auto complete suggestions popup.
+     */
+    private final DoubleProperty suggestionsNodeHeight = new SimpleDoubleProperty(25);
+    public double getSuggestionsNodeHeight() { return suggestionsNodeHeight.get(); }
+    public DoubleProperty suggestionsNodeHeightProperty() { return suggestionsNodeHeight; }
+    public void setSuggestionsNodeHeight(double size) { suggestionsNodeHeight.set(size); }
+
     // --- string converter
     /**
      * Converts the user-typed input to an object of type T, or the object of type T to a String.
@@ -93,6 +106,10 @@ public class AutoCompleteTextField<T> extends TextField {
     public int getMaxNumberOfSuggestions() { return maxNumberOfSuggestions.get(); }
     public IntegerProperty maxNumberOfSuggestionsProperty() { return maxNumberOfSuggestions; }
     public void setMaxNumberOfSuggestions(int value) { maxNumberOfSuggestions.set(value);}
+
+    // -- popup style classes
+    private final ObservableList<String> popupStyleClasses = FXCollections.observableArrayList();
+    public ObservableList<String> getPopupStyleClasses() { return popupStyleClasses; }
 
     /***************************************************************************
      *                                                                         *
