@@ -321,6 +321,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
     /** {@inheritDoc} */
     @Override
     protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
+        // TODO use getInsets() instead of getPadding()
         Insets padding = getSkinnable().getPadding();
         double titlePrefWidth = titleLabel.prefWidth(-1);
         double titlePrefHeight = titleLabel.prefHeight(titlePrefWidth);
@@ -370,8 +371,10 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
     }
 
     private double layoutDropLine(Line dropLine, double contentWidth, Insets padding, double y) {
-        // subtract the padding and at least 1 to be less than the width of the components
-        double dropLineWidth = contentWidth - padding.getRight() - padding.getLeft() - 2;
+        // Subtract the padding and at least 1 to be less than the width of the content pane.
+        // Using the same value as SPACE_BETWEEN_NUMBER_AND_CONTROL keeps the right component border within the
+        // pane, to not be covered by the vertical scroll bar.  This was realized in final testing for the PR.
+        double dropLineWidth = contentWidth - padding.getRight() - padding.getLeft() - SPACE_BETWEEN_NUMBER_AND_CONTROL;
         // center the drop line horizontally within the contentWidth
         double dropLineX = contentWidth / 2 - dropLineWidth / 2;
         // center the drop line vertically within the height, which is the Space between the components
