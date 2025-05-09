@@ -7,6 +7,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.scene.Node;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.util.StringConverter;
@@ -86,6 +87,16 @@ public class KLComponentListControl<T extends IntIdCollection> extends Control {
     public final ObjectProperty<StringConverter<EntityProxy>> typeAheadStringConverterProperty() { return typeAheadStringConverter; }
     public final void setTypeAheadStringConverter(StringConverter<EntityProxy> value) { typeAheadStringConverterProperty().set(value); }
     public final StringConverter<EntityProxy> getTypeAheadStringConverter() {return typeAheadStringConverterProperty().get(); }
+
+    // -- suggestions node factory
+    /**
+     * This will return a Node to be shown in the auto-complete popup for each result returned
+     * by the 'completer'.
+     */
+    private final ObjectProperty<Function<EntityProxy, Node>> suggestionsNodeFactory = new SimpleObjectProperty<>();
+    public final void setSuggestionsNodeFactory(Function<EntityProxy, Node> factory) { suggestionsNodeFactory.set(factory); }
+    public final Function<EntityProxy, Node> getSuggestionsNodeFactory() { return suggestionsNodeFactory.get(); }
+    public final ObjectProperty<Function<EntityProxy, Node>> suggestionsNodeFactoryProperty() { return suggestionsNodeFactory; }
 
     /** {@inheritDoc} */
     @Override

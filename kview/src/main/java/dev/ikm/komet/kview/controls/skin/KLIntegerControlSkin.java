@@ -12,7 +12,6 @@ import javafx.util.Duration;
 import javafx.util.Subscription;
 import javafx.util.converter.IntegerStringConverter;
 
-import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
@@ -21,7 +20,7 @@ import java.util.regex.Pattern;
  */
 public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
 
-    private static final Pattern NUMERICAL_PATTERN = Pattern.compile("^(0|[1-9][0-9]*)$"); // allow '-', don't start with 0, but allow a zero by itself
+    private static final Pattern NUMERICAL_PATTERN = Pattern.compile("^-?(0|[1-9][0-9]*)$"); // allow '-', don't start with 0, but allow a zero by itself
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.integer-control");
 
     // public to share with KLFloatControlSkin
@@ -63,34 +62,42 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
         textField.setTextFormatter(new TextFormatter<>(new IntegerStringConverter(), null, change -> {
             errorLabel.setText(null);
             control.setShowError(false);
-            String text = change.getControlNewText();
-            if (text.isEmpty() || NUMERICAL_PATTERN.matcher(text).matches()) {
-                if (!text.isEmpty() && !"-".equals(text)) {
-                    // check that text is within [MIN_VALUE, MAX_VALUE]
-                    try {
-                        Integer.parseInt(text);
-                    } catch (Exception e) {
-                        // or else discard the change and warn
-                        errorLabel.setText(MessageFormat.format(resources.getString("error.integer.text"), text));
-                        control.setShowError(true);
-                        return null;
-                    }
-                }
-                return change;
-            } else if ("-".equals(change.getText()) ) {
-                if (change.getControlText().startsWith("-")) { // if text starts with '-', cancel it
-                    change.setText("");
-                    change.setRange(0, 1);
-                    change.setCaretPosition(change.getCaretPosition() - 2);
-                    change.setAnchor(change.getAnchor() - 2);
-                } else { // a '-', typed from any position, will be set at the beginning of the text
-                    change.setRange(0, 0);
-                }
+
+            if (!change.isContentChange()) {
+                // change can also be cursor location, so if no content change, then it is
+                // something else like cursor location change
                 return change;
             } else {
-                errorLabel.setText(MessageFormat.format(resources.getString("error.integer.text"), change.getText()));
-                control.setShowError(true);
+                String text = change.getControlNewText();
+                if (text.isEmpty() || NUMERICAL_PATTERN.matcher(text).matches()) {
+                    if (!text.isEmpty() && !"-".equals(text)) {
+                        // check that text is within [MIN_VALUE, MAX_VALUE]
+                        try {
+                            Integer.parseInt(text);
+                        } catch (Exception e) {
+                            // or else discard the change and warn
+                            errorLabel.setText(resources.getString("error.integer.text"));
+                            control.setShowError(true);
+                            return null;
+                        }
+                    }
+                    return change;
+                } else if ("-".equals(change.getText())) {
+                    if (change.getControlText().startsWith("-")) { // if text starts with '-', cancel it
+                        change.setText("");
+                        change.setRange(0, 1);
+                        change.setCaretPosition(change.getCaretPosition() - 2);
+                        change.setAnchor(change.getAnchor() - 2);
+                    } else { // a '-', typed from any position, will be set at the beginning of the text
+                        change.setRange(0, 0);
+                    }
+                    return change;
+                } else {
+                    errorLabel.setText(resources.getString("error.integer.text"));
+                    control.setShowError(true);
+                }
             }
+
             return null;
         }));
 
