@@ -22,7 +22,7 @@ import com.jpro.webapi.WebAPI;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.framework.progress.ProgressHelper;
-import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
+import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.entity.EntityCountSummary;
@@ -49,8 +49,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.List;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
-import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.SELECTED_FILE;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -218,9 +216,6 @@ public class ImportController {
             File selectedFile = importViewModel.getPropertyValue(SELECTED_FILE);
             LoadEntitiesFromProtobufFile loadEntities = new LoadEntitiesFromProtobufFile(selectedFile);
             ProgressHelper.progress(loadEntities, "Cancel Import");
-            // refresh the Pattern Navigation
-            EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
-                    new PatternCreationEvent(event.getSource(), PATTERN_CREATION_EVENT));
             LoadEntitiesFromProtobufFile importTask = new LoadEntitiesFromProtobufFile(selectedFile);
             CompletableFuture<EntityCountSummary> future = ProgressHelper.progress(importTask, "Cancel Import");
             future.whenComplete((entityCountSummary, throwable) -> {
@@ -242,6 +237,9 @@ public class ImportController {
                     }
                     EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC, new RefreshCalculatorCacheEvent(event.getSource(), GLOBAL_REFRESH));
                 }
+
+                // Refresh the Pattern Navigation
+                EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,new PatternSavedEvent(event.getSource(), PatternSavedEvent.PATTERN_UPDATE_EVENT));
             });
 
             closeDialog();
