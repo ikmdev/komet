@@ -2,6 +2,7 @@ package dev.ikm.komet.sampler.controllers;
 
 import dev.ikm.komet.app.AppState;
 import dev.ikm.komet.app.LoadDataSourceTask;
+import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLSearchControl;
@@ -22,16 +23,20 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.TreeItem;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -60,6 +65,9 @@ public class SamplerConceptNavigatorController {
 
     @FXML
     private CheckBox showTagsCheckBox;
+
+    @FXML
+    private Button cleanAreaButton;
 
     @FXML
     private VBox datasetBox;
@@ -189,22 +197,39 @@ public class SamplerConceptNavigatorController {
         });
 
         conceptNavigatorControl.setHeader("Concept Header");
-        conceptNavigatorControl.setOnAction(items ->
-                populateArea(items.stream()
-                        .map(item -> item.publicId().asUuidArray())
-                        .toList()));
+
+        conceptNavigatorControl.setOnAction(action -> switch (action) {
+            case OPEN_IN_WORKSPACE, POPULATE_SELECTION -> item -> {
+                List<UUID[]> uuids = List.<UUID[]>of(item.publicId().asUuidArray());
+                populateArea(uuids);
+            };
+            case SHOW_RELATED_CONCEPTS -> {
+                // Dummy, for now just add the parents of the selected item as related content:
+                TreeItem<ConceptFacade> selectedItem = conceptNavigatorControl.getSelectionModel().getSelectedItem();
+                if (selectedItem != null) {
+                    conceptNavigatorControl.getNavigator().getParentNids(selectedItem.getValue().nid());
+                    List<ConceptFacade> list = Arrays.stream(conceptNavigatorControl.getNavigator().getParentNids(selectedItem.getValue().nid())).boxed()
+                            .map(nid -> (ConceptFacade) Entity.getFast(nid)).toList();
+                    ((ConceptNavigatorTreeItem) selectedItem).setRelatedConcepts(list);
+                }
+                yield i -> System.out.println("Click! on " + i.description());
+            }
+            case SEND_TO_JOURNAL, SEND_TO_CHAPTER, COPY, SAVE_TO_FAVORITES -> _ -> {}; // TODO: Add implementation
+        });
         searchControl.setOnLongHover(conceptNavigatorControl::expandAndHighlightConcept);
         searchControl.setOnSearchResultClick(_ -> conceptNavigatorControl.unhighlightConceptsWithDelay());
         searchControl.setOnClearSearch(_ -> ConceptNavigatorUtils.resetConceptNavigator(conceptNavigatorControl));
 
         showTagsCheckBox.selectedProperty().subscribe(s -> conceptNavigatorControl.setShowTags(s));
 
+        cleanAreaButton.disableProperty().bind(Bindings.size(conceptArea.getChildren()).isEqualTo(0));
+
         conceptArea.setOnDragDropped(event -> {
             boolean success = false;
             if (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)) {
                 Dragboard dragboard = event.getDragboard();
-                List<UUID[]> uuids = (List<UUID[]>) dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
-                populateArea(uuids);
+                List<List<UUID[]>> uuids = (List<List<UUID[]>>) dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
+                uuids.forEach(this::populateArea);
                 success = true;
             }
             event.setDropCompleted(success);
@@ -235,11 +260,15 @@ public class SamplerConceptNavigatorController {
     }
 
     private void populateArea(List<UUID[]> uuids) {
-        conceptArea.getChildren().clear();
         for (UUID[] uuid : uuids) {
             Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForUuids(uuid));
             conceptArea.getChildren().add(new Label(entity.entityToString()));
         }
+    }
+
+    @FXML
+    private void cleanArea() {
+        conceptArea.getChildren().clear();
     }
 
     /**

@@ -9,6 +9,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.TreeItem;
 
 import java.util.BitSet;
+import java.util.List;
 
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorControl.MAX_LEVEL;
 
@@ -239,6 +240,21 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
     }
     public final void setHighlighted(boolean value) {
         highlightedProperty.set(value);
+    }
+
+    /**
+     * Property that adds a list of related concepts to this concept TreeItem
+     * TODO
+     */
+    private final ObjectProperty<List<ConceptFacade>> relatedConceptsProperty = new SimpleObjectProperty<>(this, "relatedConcepts");
+    public final ObjectProperty<List<ConceptFacade>> relatedConceptsProperty() {
+       return relatedConceptsProperty;
+    }
+    public final List<ConceptFacade> getRelatedConcepts() {
+       return relatedConceptsProperty.get();
+    }
+    public final void setRelatedConcepts(List<ConceptFacade> value) {
+        relatedConceptsProperty.set(value);
     }
 
     /**
