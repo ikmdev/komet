@@ -69,7 +69,6 @@ import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
-import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
 import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_EDIT_OTHER_NAME;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
@@ -852,7 +851,7 @@ public class PatternDetailsController {
         if(isValidSave){
             patternViewModel.setPropertyValue(MODE, EDIT);
             patternViewModel.updateStamp();
-            EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternCreationEvent(actionEvent.getSource(), PATTERN_CREATION_EVENT));
+            EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternSavedEvent(actionEvent.getSource(), PatternSavedEvent.PATTERN_UPDATE_EVENT));
 
             EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
                     new MakePatternWindowEvent(this,
