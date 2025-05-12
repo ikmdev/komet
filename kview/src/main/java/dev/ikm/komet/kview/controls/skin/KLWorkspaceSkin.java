@@ -28,6 +28,7 @@ import javafx.beans.InvalidationListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
+import javafx.event.EventHandler;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
@@ -42,6 +43,7 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
+import javafx.util.Subscription;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -51,7 +53,6 @@ import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NA
 import static dev.ikm.komet.kview.controls.KLDropRegion.Type.BOX;
 import static dev.ikm.komet.kview.controls.KLDropRegion.Type.LINE;
 import static dev.ikm.komet.kview.controls.KLWorkspace.*;
-import static dev.ikm.komet.kview.fxutils.FXUtils.synchronizeHeightWithSceneAwareness;
 
 /**
  * A custom skin implementation for the {@link KLWorkspace} control that provides a scrollable
@@ -105,9 +106,14 @@ import static dev.ikm.komet.kview.fxutils.FXUtils.synchronizeHeightWithSceneAwar
 public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
     /**
-     * Internal property key for storing the window state in each window’s properties map.
+     * Internal property key for storing window Subscription in the window's properties map.
      */
-    private static final String WINDOW_STATE_LISTENER = "windowStateListener";
+    private static final String WINDOW_SUBSCRIPTION_KEY = "windowSubscription";
+
+    /**
+     * Internal property key for storing the WindowSupport instance in each window's properties map.
+     */
+    private static final String WINDOW_SUPPORT_KEY = "windowSupportInstance";
 
     /**
      * The pane that holds all {@link ChapterKlWindow} nodes within the workspace.
@@ -201,17 +207,20 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         // --------------------------------------------------------------------
         // 4) Configure user interactions (panning and drag-drop)
         // --------------------------------------------------------------------
-        configurePanningHandlers(workspace);
+        // Setup panning handlers and store subscription for cleanup
+        Subscription panningSubscription = configurePanningHandlers(workspace);
+        workspace.getProperties().put("panningSubscription", panningSubscription);
+
         configureDragDropHandlers(workspace);
 
         // --------------------------------------------------------------------
         // 5) Listen for property changes that affect layout
         // --------------------------------------------------------------------
-        registerChangeListener(workspace.windowsProperty(), o -> updateWorkspaceWindows());
-        registerChangeListener(desktopPane.widthProperty(), o ->
-                workspaceWindows.forEach(win -> clampWindowPosition(win.fxGadget())));
-        registerChangeListener(desktopPane.heightProperty(), o ->
-                workspaceWindows.forEach(win -> clampWindowPosition(win.fxGadget())));
+        registerChangeListener(workspace.windowsProperty(), _ -> updateWorkspaceWindows());
+
+        // Setup desktop resize subscription for window constraints
+        Subscription desktopResizeSubscription = createDesktopResizeSubscription();
+        workspace.getProperties().put("desktopResizeSubscription", desktopResizeSubscription);
     }
 
     /**
@@ -232,6 +241,40 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         desktopPane.requestLayout();
     }
 
+    /**
+     * Creates a subscription that ensures windows remain within the desktop pane's boundaries when its size changes.
+     * <p>
+     * This method establishes listeners on the desktop pane's width and height properties that, when invalidated,
+     * adjust all workspace windows to ensure they remain fully visible within the resized desktop. This prevents
+     * windows from becoming inaccessible by being positioned outside the viewable area after a desktop resize.
+     *
+     * @return A {@link Subscription} that, when unsubscribed, detaches the resize listeners from the desktop pane
+     * @see WindowSupport#constrainToParentBounds(double, double) For the underlying constraint implementation
+     * @see Subscription The resource management pattern used for cleanup
+     */
+    private Subscription createDesktopResizeSubscription() {
+        InvalidationListener resizeListener = obs -> {
+            double width = desktopPane.getWidth();
+            double height = desktopPane.getHeight();
+
+            workspaceWindows.forEach(win -> {
+                Pane windowPanel = win.fxGadget();
+                WindowSupport support = (WindowSupport) windowPanel.getProperties().get(WINDOW_SUPPORT_KEY);
+                if (support != null) {
+                    support.constrainToParentBounds(width, height);
+                }
+            });
+        };
+
+        desktopPane.widthProperty().addListener(resizeListener);
+        desktopPane.heightProperty().addListener(resizeListener);
+
+        return () -> {
+            desktopPane.widthProperty().removeListener(resizeListener);
+            desktopPane.heightProperty().removeListener(resizeListener);
+        };
+    }
+
     // =========================================================================
     //                                PANNING
     // =========================================================================
@@ -249,40 +292,59 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * accordingly (e.g., open hand, closed hand) during these interactions.
      *
      * @param workspace the {@link KLWorkspace} to be configured for panning
+     * @return A subscription that can be used to clean up the panning handlers
      */
-    private void configurePanningHandlers(KLWorkspace workspace) {
-        // Activate panning when Ctrl is pressed
-        workspace.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
-            // Enable panning when the Control key is pressed.
+    private Subscription configurePanningHandlers(KLWorkspace workspace) {
+        List<Subscription> panningSubscriptions = new ArrayList<>();
+
+        // Ctrl key handlers
+        EventHandler<KeyEvent> keyPressHandler = keyEvent -> {
             if (keyEvent.getCode() == KeyCode.CONTROL) {
                 desktopPane.setMouseTransparent(true);
                 desktopScrollPane.setPannable(true);
-                changeViewportCursor(Cursor.OPEN_HAND); // Indicate dragging with an open hand
+                changeViewportCursor(Cursor.OPEN_HAND);
                 desktopScrollPane.requestFocus();
             }
-        });
+        };
 
-        workspace.addEventHandler(KeyEvent.KEY_RELEASED, keyEvent -> {
-            // Disable panning and restore cursor when the Control key is released.
+        EventHandler<KeyEvent> keyReleaseHandler = keyEvent -> {
             if (keyEvent.getCode() == KeyCode.CONTROL) {
                 desktopPane.setMouseTransparent(false);
                 desktopScrollPane.setPannable(false);
-                changeViewportCursor(Cursor.DEFAULT); // Revert to default cursor
+                changeViewportCursor(Cursor.DEFAULT);
             }
+        };
+
+        workspace.addEventHandler(KeyEvent.KEY_PRESSED, keyPressHandler);
+        workspace.addEventHandler(KeyEvent.KEY_RELEASED, keyReleaseHandler);
+
+        panningSubscriptions.add(() -> {
+            workspace.removeEventHandler(KeyEvent.KEY_PRESSED, keyPressHandler);
+            workspace.removeEventHandler(KeyEvent.KEY_RELEASED, keyReleaseHandler);
         });
 
-        // Register mouse event handlers on the scroll pane to provide visual cues during panning.
-        desktopScrollPane.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
+        // Mouse handlers for visual feedback
+        EventHandler<MouseEvent> mousePressHandler = mouseEvent -> {
             if (mouseEvent.isPrimaryButtonDown() && desktopScrollPane.isPannable()) {
-                changeViewportCursor(Cursor.CLOSED_HAND); // Indicate active dragging
+                changeViewportCursor(Cursor.CLOSED_HAND);
             }
+        };
+
+        EventHandler<MouseEvent> mouseReleaseHandler = mouseEvent -> {
+            if (desktopScrollPane.isPannable()) {
+                changeViewportCursor(Cursor.OPEN_HAND);
+            }
+        };
+
+        desktopScrollPane.addEventHandler(MouseEvent.MOUSE_PRESSED, mousePressHandler);
+        desktopScrollPane.addEventHandler(MouseEvent.MOUSE_RELEASED, mouseReleaseHandler);
+
+        panningSubscriptions.add(() -> {
+            desktopScrollPane.removeEventHandler(MouseEvent.MOUSE_PRESSED, mousePressHandler);
+            desktopScrollPane.removeEventHandler(MouseEvent.MOUSE_RELEASED, mouseReleaseHandler);
         });
 
-        desktopScrollPane.addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
-            if (desktopScrollPane.isPannable()) {
-                changeViewportCursor(Cursor.OPEN_HAND); // Revert to open hand after drag
-            }
-        });
+        return Subscription.combine(panningSubscriptions.toArray(Subscription[]::new));
     }
 
     // =========================================================================
@@ -579,28 +641,27 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      */
     private void addWindow(ChapterKlWindow<Pane> window) {
         final Pane windowPanel = window.fxGadget();
-        // Make the window draggable/resizable
-        new WindowSupport(windowPanel);
 
-        // Add listeners to keep the window in bounds and save its state
-        final InvalidationListener windowStateListener = obs -> {
-            clampWindowPosition(windowPanel);
-            window.save();
-        };
-        windowPanel.layoutXProperty().addListener(windowStateListener);
-        windowPanel.layoutYProperty().addListener(windowStateListener);
-        windowPanel.widthProperty().addListener(windowStateListener);
-        windowPanel.heightProperty().addListener(windowStateListener);
-        windowPanel.getProperties().put(WINDOW_STATE_LISTENER, windowStateListener);
+        // Create WindowSupport with proper configuration
+        WindowSupport windowSupport = new WindowSupport(windowPanel);
+        windowPanel.getProperties().put(WINDOW_SUPPORT_KEY, windowSupport);
 
-        // Apply a minimum width constraint
-        windowPanel.setMinWidth(MIN_WINDOW_WIDTH);
+        // Create subscriptions list for all window-related subscriptions
+        List<Subscription> windowSubscriptions = new ArrayList<>();
 
-        // Apply a maximum height constraint
-        windowPanel.setMaxHeight(MAX_WINDOW_HEIGHT);
+        // Configure auto height with subscription
+        windowSubscriptions.add(windowSupport.configureAutoHeight(true, MAX_WINDOW_HEIGHT));
 
-        // Synchronize the window panel's preferred height with its actual height
-        synchronizeHeightWithSceneAwareness(windowPanel);
+        // Add position constraints with state saving callback
+        windowSubscriptions.add(windowSupport.setupPositionConstraints(obs -> window.save()));
+
+        // Store the combined subscription for cleanup
+        Subscription combinedSubscription = Subscription.combine(
+                windowSubscriptions.toArray(Subscription[]::new)
+        );
+        windowPanel.getProperties().put(WINDOW_SUBSCRIPTION_KEY, combinedSubscription);
+
+        windowPanel.setMinWidth(USE_COMPUTED_SIZE);
 
         final KLDropRegion dropRegion = desktopPane.getDropRegion();
         final KLWorkspace workspace = getSkinnable();
@@ -732,7 +793,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
     /**
      * Removes a {@link ChapterKlWindow} from the desktop pane and detaches any
-     * associated clamp listeners.
+     * associated subscriptions.
      *
      * @param window the window to remove
      */
@@ -740,16 +801,15 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         final Pane windowPanel = window.fxGadget();
         desktopPane.getChildren().remove(windowPanel);
 
-        // Remove clamp listeners stored in the window's properties
-        if (windowPanel.getProperties().containsKey(WINDOW_STATE_LISTENER)) {
-            final InvalidationListener clampListener =
-                    (InvalidationListener) windowPanel.getProperties().get(WINDOW_STATE_LISTENER);
-            windowPanel.layoutXProperty().removeListener(clampListener);
-            windowPanel.layoutYProperty().removeListener(clampListener);
-            windowPanel.widthProperty().removeListener(clampListener);
-            windowPanel.heightProperty().removeListener(clampListener);
-            windowPanel.getProperties().remove(WINDOW_STATE_LISTENER);
+        // Clean up resources using subscription
+        if (windowPanel.getProperties().containsKey(WINDOW_SUBSCRIPTION_KEY)) {
+            Subscription subscription = (Subscription) windowPanel.getProperties().get(WINDOW_SUBSCRIPTION_KEY);
+            subscription.unsubscribe();
+            windowPanel.getProperties().remove(WINDOW_SUBSCRIPTION_KEY);
         }
+
+        // Clean up WindowSupport reference
+        windowPanel.getProperties().remove(WINDOW_SUPPORT_KEY);
     }
 
     /**
@@ -1254,55 +1314,6 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         return null;
     }
 
-    /**
-     * Clamps the position and size of the specified window pane so that it remains fully visible
-     * within the bounds of the desktop pane.
-     * <p>
-     * This method adjusts the pane's horizontal (layoutX) and vertical (layoutY) positions
-     * to ensure that the entire window fits inside the desktop pane. If any part of the window
-     * extends beyond the desktop boundaries, its position is modified to bring it back into view.
-     * Additionally, if the window's size exceeds the dimensions of the desktop pane, the preferred
-     * width and height are reduced accordingly.
-     * <p>
-     * Typically, this method is registered as a change listener on the pane's position and size
-     * properties (i.e., {@code layoutXProperty()}, {@code layoutYProperty()},
-     * {@code widthProperty()}, and {@code heightProperty()}) to dynamically enforce that the window
-     * remains within the visible workspace area.
-     *
-     * @param pane the window pane to be clamped within the desktop pane's boundaries.
-     */
-    private void clampWindowPosition(Pane pane) {
-        final double desktopPaneWidth = desktopPane.getWidth();
-        final double desktopPaneHeight = desktopPane.getHeight();
-        final double windowWidth = pane.getWidth();
-        final double windowHeight = pane.getHeight();
-
-        if (desktopPaneWidth <= 0 || desktopPaneHeight <= 0 || windowWidth <= 0 || windowHeight <= 0) {
-            return;
-        }
-
-        final double newX = pane.getLayoutX();
-        final double newY = pane.getLayoutY();
-
-        if (newX < 0) {
-            pane.setLayoutX(0);
-        } else if (newX + windowWidth > desktopPaneWidth) {
-            pane.setLayoutX(desktopPaneWidth - windowWidth);
-        }
-        if (newY < 0) {
-            pane.setLayoutY(0);
-        } else if (newY + windowHeight > desktopPaneHeight) {
-            pane.setLayoutY(desktopPaneHeight - windowHeight);
-        }
-
-        if (pane.getWidth() > desktopPaneWidth) {
-            pane.setPrefWidth(desktopPaneWidth);
-        }
-        if (pane.getHeight() > desktopPaneHeight) {
-            pane.setPrefHeight(desktopPaneHeight);
-        }
-    }
-
     // =========================================================================
     //                            DISPOSAL / CLEANUP
     // =========================================================================
@@ -1312,10 +1323,29 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      */
     @Override
     public void dispose() {
-        if (getSkinnable() != null && workspaceWindows != null) {
+        // Clean up window list listener
+        if (workspaceWindows != null) {
             workspaceWindows.removeListener(weakWindowsListChangeListener);
             workspaceWindows = null;
         }
+
+        if (getSkinnable() != null) {
+            // Clean up size change subscription
+            if (getSkinnable().getProperties().containsKey("desktopResizeSubscription")) {
+                Subscription subscription = (Subscription) getSkinnable().getProperties().get("desktopResizeSubscription");
+                subscription.unsubscribe();
+                getSkinnable().getProperties().remove("desktopResizeSubscription");
+            }
+
+            // Clean up panning subscription
+            if (getSkinnable().getProperties().containsKey("panningSubscription")) {
+                Subscription subscription = (Subscription) getSkinnable().getProperties().get("panningSubscription");
+                subscription.unsubscribe();
+                getSkinnable().getProperties().remove("panningSubscription");
+            }
+        }
+
+        // Clear children and call super dispose
         getChildren().clear();
         super.dispose();
     }
