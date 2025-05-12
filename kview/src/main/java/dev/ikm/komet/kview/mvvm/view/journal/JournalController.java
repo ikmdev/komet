@@ -976,7 +976,7 @@ public class JournalController {
                             .map(nid -> (ConceptFacade) Entity.getFast(nid)).toList();
                     ((ConceptNavigatorTreeItem) selectedItem).setRelatedConcepts(list);
                 }
-                yield i -> System.out.println("Click! on " + i.description());
+                yield i -> LOG.info("Click on {}", i.description());
             }
             // multiple selection
             case POPULATE_SELECTION -> item -> {
