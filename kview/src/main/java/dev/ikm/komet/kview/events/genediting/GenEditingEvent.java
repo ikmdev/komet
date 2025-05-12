@@ -14,11 +14,11 @@ public class GenEditingEvent extends Evt {
 
     public static final EvtType<GenEditingEvent> VERSION_UPDATED = new EvtType<>(Evt.ANY, "VERSION_UPDATED");
 
-    private List<?> list;
+    private List<Object> list;
 
     private int nid;
 
-    public GenEditingEvent(Object source,EvtType eventType, List<?> list, int nid){
+    public GenEditingEvent(Object source,EvtType eventType, List<Object> list, int nid){
         super(source,eventType);
         this.list = list;
         this.nid = nid;
