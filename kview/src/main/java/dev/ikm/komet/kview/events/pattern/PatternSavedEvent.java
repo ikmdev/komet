@@ -3,9 +3,12 @@ package dev.ikm.komet.kview.events.pattern;
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
 
-public class PatternCreationEvent extends Evt {
+public class PatternSavedEvent extends Evt {
 
-    public static final EvtType<PatternCreationEvent> PATTERN_CREATION_EVENT = new EvtType<>(Evt.ANY, "PATTERN_CREATION_EVENT");
+    public static final EvtType<PatternSavedEvent> PATTERN_UPDATE_EVENT = new EvtType<>(Evt.ANY, "PATTERN_UPDATE_EVENT");
+
+    public static final EvtType<PatternSavedEvent> PATTERN_CREATION_EVENT = new EvtType<>(Evt.ANY, "PATTERN_CREATION_EVENT");
+
 
     /**
      * Constructs a prototypical Event.
@@ -14,7 +17,7 @@ public class PatternCreationEvent extends Evt {
      * @param eventType
      * @throws IllegalArgumentException if source is null
      */
-    public PatternCreationEvent(Object source, EvtType eventType) {
+    public PatternSavedEvent(Object source, EvtType eventType) {
         super(source, eventType);
     }
 }

@@ -66,10 +66,13 @@ module dev.ikm.komet.application {
     requires dev.ikm.tinkar.entity;
     requires dev.ikm.tinkar.provider.entity;
     requires dev.ikm.tinkar.terms;
+    requires dev.ikm.komet.sync;
     requires org.kordamp.ikonli.javafx;
     requires jdk.jdwp.agent;
     requires transitive dev.ikm.komet.rules;
     requires jdk.management;
+    requires dev.ikm.tinkar.reasoner.service;
+    requires org.eclipse.jgit;
 
     uses DataServiceController;
     uses DefaultDescriptionForNidService;

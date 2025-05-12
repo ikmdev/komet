@@ -1376,17 +1376,30 @@ public class JournalController {
     public void saveWindows(KometPreferences journalWindowPreferences) {
         Objects.requireNonNull(journalWindowPreferences, "journalWindowPreferences cannot be null");
 
-        try {
-            final ImmutableList<String> windowNames = Lists.immutable.fromStream(workspace.getWindows()
-                    .stream().map(window -> {
-                        final UUID windowTopic = window.getWindowTopic();
-                        final String prefix = window.getWindowType().getPrefix();
-                        return prefix + shortenUUID(windowTopic);
-                    }));
+        final ImmutableList<String> windowNames = Lists.immutable.fromStream(workspace.getWindows()
+                .stream().map(window -> {
+                    final UUID windowTopic = window.getWindowTopic();
+                    final String prefix = window.getWindowType().getPrefix();
+                    return prefix + shortenUUID(windowTopic);
+                }));
 
-            // Putting the list of windows in our preferences.
-            journalWindowPreferences.putList(WINDOW_NAMES, windowNames.castToList());
-            journalWindowPreferences.sync();
+        // Put journal metadata in our preferences.
+        final Stage stage = (Stage) journalBorderPane.getScene().getWindow();
+        journalWindowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
+        journalWindowPreferences.put(JOURNAL_TITLE, stage.getTitle());
+        journalWindowPreferences.put(JOURNAL_DIR_NAME, getJournalDirName());
+        journalWindowPreferences.putDouble(JOURNAL_WIDTH, stage.getWidth());
+        journalWindowPreferences.putDouble(JOURNAL_HEIGHT, stage.getHeight());
+        journalWindowPreferences.putDouble(JOURNAL_XPOS, stage.getX());
+        journalWindowPreferences.putDouble(JOURNAL_YPOS, stage.getY());
+        journalWindowPreferences.put(JOURNAL_AUTHOR, DEMO_AUTHOR);
+        journalWindowPreferences.putLong(JOURNAL_LAST_EDIT, (LocalDateTime.now())
+                .atZone(ZoneId.systemDefault()).toEpochSecond());
+
+        // Putting the list of windows in our preferences.
+        journalWindowPreferences.putList(WINDOW_NAMES, windowNames.castToList());
+        try {
+            journalWindowPreferences.flush();
             LOG.info("Saved state for {} window(s) in journal '{}'", windowNames.size(), getTitle());
         } catch (BackingStoreException ex) {
             LOG.error("Error saving window states for journal '{}'", getTitle(), ex);
@@ -1481,55 +1494,6 @@ public class JournalController {
                 throw new CompletionException(e);
             }
         }, IO_TASK_EXECUTOR);
-    }
-
-    /**
-     * Saves the current state of the journal and its windows to the application's preferences system.
-     * <p>
-     * This method persists all journal-related data, including:
-     * <ul>
-     *   <li>All open window states (via {@link #saveWindowsAsync(KometPreferences)})</li>
-     *   <li>Journal metadata (topic UUID, title, directory name)</li>
-     *   <li>Window geometry (width, height, x/y position)</li>
-     *   <li>Author information</li>
-     *   <li>Last edit timestamp</li>
-     * </ul>
-     * <p>
-     * The preferences are stored in a hierarchical structure:
-     * <pre>
-     * Root Configuration Preferences
-     *   └── journals
-     *       └── [journal_shortened-UUID]
-     *           ├── Journal metadata (UUID, title, dimensions, position, etc.)
-     *           └── Window states
-     * </pre>
-     */
-    public void saveToPreferences() {
-        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final KometPreferences journalPreferences = appPreferences.node(JOURNALS);
-        final String journalDirName = getJournalDirName();
-        final Stage stage = (Stage) journalBorderPane.getScene().getWindow();
-        final KometPreferences journalWindowPreferences = journalPreferences.node(journalDirName);
-        // Saves the current state of all windows in the journal workspace
-        saveWindowsAsync(journalWindowPreferences);
-        // Save journal metadata
-        journalWindowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
-        journalWindowPreferences.put(JOURNAL_TITLE, stage.getTitle());
-        journalWindowPreferences.put(JOURNAL_DIR_NAME, journalDirName);
-        journalWindowPreferences.putDouble(JOURNAL_WIDTH, stage.getWidth());
-        journalWindowPreferences.putDouble(JOURNAL_HEIGHT, stage.getHeight());
-        journalWindowPreferences.putDouble(JOURNAL_XPOS, stage.getX());
-        journalWindowPreferences.putDouble(JOURNAL_YPOS, stage.getY());
-        journalWindowPreferences.put(JOURNAL_AUTHOR, DEMO_AUTHOR);
-        journalWindowPreferences.putLong(JOURNAL_LAST_EDIT, (LocalDateTime.now())
-                .atZone(ZoneId.systemDefault()).toEpochSecond());
-        try {
-            journalWindowPreferences.flush();
-            journalPreferences.flush();
-            appPreferences.sync();
-        } catch (BackingStoreException e) {
-            LOG.error("error writing journal window state to preferences", e);
-        }
     }
 
     /**
