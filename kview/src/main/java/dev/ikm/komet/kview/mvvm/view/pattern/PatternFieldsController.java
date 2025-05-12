@@ -267,14 +267,7 @@ public class PatternFieldsController {
             }
         }));
 
-        // TODO fetchFieldDefinitionDataTypes() method call returns hardcoded values.
-        //  When right backend data is available below logic can be used?
-        //  Set<ConceptEntity> allDataTypes = fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DISPLAY_FIELDS.publicId()));
-        //  AND/OR?
-        //  allDataTypes.addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DYNAMIC_COLUMN_DATA_TYPES.publicId())));
-        //  dataTypeComboBox.getItems().addAll(fetchFieldDefinitionDataTypes().stream()...).toList());
-
-        dataTypeComboBox.getItems().addAll(fetchFieldDefinitionDataTypes().stream().sorted((entityFacade1, entityFacade2) -> {
+        dataTypeComboBox.getItems().addAll(fetchFieldDefinitionDataTypes(getViewProperties()).stream().sorted((entityFacade1, entityFacade2) -> {
             ViewCalculator viewCalculator = getViewProperties().calculator();
             return viewCalculator.getRegularDescriptionText(entityFacade1).get()
                             .compareToIgnoreCase(viewCalculator.getRegularDescriptionText(entityFacade2).get());

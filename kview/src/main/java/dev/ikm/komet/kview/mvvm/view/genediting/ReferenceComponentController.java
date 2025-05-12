@@ -17,6 +17,7 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLComponentControl;
+import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
@@ -75,7 +76,7 @@ public class ReferenceComponentController {
         referenceComponentVBox.setSpacing(8.0);
         referenceComponentVBox.getChildren().clear();
         confirmButton.setDisable(true);
-        klComponentControl = new KLComponentControl();
+        klComponentControl = KLComponentControlFactory.createTypeAheadComponentControl(genEditingViewModel.getViewProperties().calculator());
         klComponentControl.setTitle("Reference component");
         ObjectProperty<EntityProxy> refComponentProperty = genEditingViewModel.getProperty(REF_COMPONENT);
         klComponentControl.entityProperty().bindBidirectional(refComponentProperty);
