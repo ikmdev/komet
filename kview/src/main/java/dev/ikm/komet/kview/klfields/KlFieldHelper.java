@@ -1,6 +1,8 @@
 package dev.ikm.komet.kview.klfields;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
+import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
@@ -9,6 +11,7 @@ import dev.ikm.komet.framework.observable.ObservablePatternVersion;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KLImageControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
@@ -32,12 +35,18 @@ import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Node;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -87,14 +96,13 @@ public class KlFieldHelper {
         } else if (dataTypeNid == TinkarTerm.IMAGE_FIELD.nid()) {
             KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
             node = imageFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
-        } else if (dataTypeNid == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
+        } else if (dataTypeNid == BYTE_ARRAY_FIELD.nid()) {
             //TODO: We're using BYTE_ARRAY for the moment for Image data type
             //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
             //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
             KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
             node = imageFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
         }
-
         return node;
     }
 
@@ -122,7 +130,12 @@ public class KlFieldHelper {
                 fieldsValues.add(IntIds.list.empty());
             } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
                 fieldsValues.add(IntIds.set.empty());
-            } else if (f.dataTypeNid() == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
+            } else if (f.dataTypeNid() == TinkarTerm.IMAGE_FIELD.nid()) {
+                // create empty byte array to save in DB implies blank image
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                byte [] ba = bos.toByteArray();
+                fieldsValues.add(ba);
+            } else if (f.dataTypeNid() == BYTE_ARRAY_FIELD.nid()) {
                 //TODO: We're using BYTE_ARRAY for the moment for Image data type
                 //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
                 //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
@@ -185,13 +198,17 @@ public class KlFieldHelper {
     public static int calculteHashValue(List<ObservableField<?>> observableFieldsList ) {
         StringBuilder stringBuilder = new StringBuilder();
         observableFieldsList.forEach(observableField -> {
-            // TODO re-evaluate if toString is the right approach for complex datatypes.
-            var observableFieldValue = observableField.valueProperty().get();
-            if (observableFieldValue == null) {
-                stringBuilder.append("|");
-            } else {
-                stringBuilder.append(observableField.valueProperty().get().toString()).append("|");
+            if (observableField.dataTypeNid() == IMAGE_FIELD.nid() || observableField.dataTypeNid() == BYTE_ARRAY_FIELD.nid()) {
+                // need to handle byte array to ensure that the same image is not getting uploaded and resaved. This is to enable/disable submit button.
+                byte [] byteArray = (byte[]) observableField.valueProperty().get();
+                String str = new String(byteArray, java.nio.charset.StandardCharsets.UTF_8);
+                stringBuilder.append(str);
+            } else if (observableField.valueProperty().get() != null) {
+                // TODO re-evaluate if toString is the right approach for complex datatypes.
+                stringBuilder.append(observableField.valueProperty().get().toString());
             }
+
+            stringBuilder.append("|");
         });
         return stringBuilder.toString().hashCode();
     }
@@ -227,7 +244,7 @@ public class KlFieldHelper {
                 control = new KLReadOnlyComponentSetControl();
             } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.IMAGE_FIELD.nid()) {
                 control = new KLReadOnlyImageControl();
-            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.BYTE_ARRAY_FIELD.nid()) {
+            } else if (fieldDefinitionRecord.dataTypeNid() == BYTE_ARRAY_FIELD.nid()) {
                 //TODO: We're using BYTE_ARRAY for the moment for Image data type
                 //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
                 //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
