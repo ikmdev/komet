@@ -131,7 +131,6 @@
                </padding>
                <styleClass>
                   <String fx:value="concept-header-control" />
-                  <String fx:value="draggable-region" />
                   <String fx:value="rounded-top" />
                </styleClass>
             </HBox>
@@ -145,7 +144,7 @@
             </HBox>
          </right>
          <center>
-            <BorderPane styleClass="main-center-container" BorderPane.alignment="CENTER">
+            <BorderPane styleClass="main-center-container" BorderPane.alignment="CENTER" minWidth="460.0">
                <top>
                   <AnchorPane styleClass="concept-details-definitions">
                      <GridPane AnchorPane.topAnchor="4.0" AnchorPane.rightAnchor="12.0"

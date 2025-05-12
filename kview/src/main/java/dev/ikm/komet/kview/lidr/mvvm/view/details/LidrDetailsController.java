@@ -52,6 +52,7 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.data.schema.STAMPDetail;
 import dev.ikm.komet.kview.events.StampModifiedEvent;
+import dev.ikm.komet.kview.fxutils.window.DraggableSupport;
 import dev.ikm.komet.kview.lidr.events.AddDeviceEvent;
 import dev.ikm.komet.kview.lidr.events.AddResultInterpretationEvent;
 import dev.ikm.komet.kview.lidr.events.LidrPropertyPanelEvent;
@@ -229,6 +230,9 @@ public class LidrDetailsController {
     @FXML
     private VerticallyFilledPane timelineSlideoutTrayPane;
 
+    @FXML
+    private HBox tabHeader;
+
     /**
      * A function from the caller. This class passes a boolean true if classifier button is pressed invoke caller's function to be returned a view.
      */
@@ -279,12 +283,16 @@ public class LidrDetailsController {
                     if (isOpen(propertiesSlideoutTrayPane)) {
                         slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                     }
+
+                    updateDraggableRegionsForPropertiesPanel(false);
                 } else if (evt.getEventType() == OPEN_PANEL) {
                     LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
                     propertiesToggleButton.setSelected(true);
                     if (isClosed(propertiesSlideoutTrayPane)) {
                         slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                     }
+
+                    updateDraggableRegionsForPropertiesPanel(true);
                 }
         };
         eventBus.subscribe(conceptTopic, LidrPropertyPanelEvent.class, propBumpOutListener);
@@ -335,6 +343,17 @@ public class LidrDetailsController {
         // Setup Properties
         setupProperties();
         setupTimelineBumpOut();
+
+        // Setup window dragging support with explicit draggable regions
+        DraggableSupport.setupDraggableWindow(
+                detailsOuterBorderPane,
+                tabHeader,
+                conceptHeaderControlToolBarHbox
+        );
+
+        if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
+            updateDraggableRegionsForPropertiesPanel(true);
+        }
     }
 
     /**
@@ -470,6 +489,10 @@ public class LidrDetailsController {
     @FXML
     void closeConceptWindow(ActionEvent event) {
         LOG.info("Cleanup occurring: Closing Window with concept: " + deviceTitleText.getText());
+
+        // Clean up draggable support before closing the window
+        DraggableSupport.cleanupDraggableWindow(detailsOuterBorderPane);
+
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
@@ -672,7 +695,28 @@ public class LidrDetailsController {
     private void openPropertiesPanel(ActionEvent event) {
         ToggleButton propertyToggle = (ToggleButton) event.getSource();
         EvtType<LidrPropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? OPEN_PANEL : CLOSE_PANEL;
+
+        updateDraggableRegionsForPropertiesPanel(propertyToggle.isSelected());
+
         eventBus.publish(conceptTopic, new LidrPropertyPanelEvent(propertyToggle, eventEvtType));
+    }
+
+    private void updateDraggableRegionsForPropertiesPanel(boolean isOpen) {
+        if (propertiesViewController != null && propertiesViewController.getPropertiesTabsPane() != null) {
+            if (isOpen) {
+                DraggableSupport.addDraggableRegion(
+                        detailsOuterBorderPane,
+                        propertiesViewController.getPropertiesTabsPane()
+                );
+                LOG.debug("Added properties tabs as draggable region");
+            } else {
+                DraggableSupport.removeDraggableRegion(
+                        detailsOuterBorderPane,
+                        propertiesViewController.getPropertiesTabsPane()
+                );
+                LOG.debug("Removed properties tabs from draggable regions");
+            }
+        }
     }
 
     @FXML

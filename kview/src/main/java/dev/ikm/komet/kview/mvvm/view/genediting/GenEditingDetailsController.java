@@ -66,6 +66,7 @@ import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
+import dev.ikm.komet.kview.fxutils.window.DraggableSupport;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
@@ -93,10 +94,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -193,6 +191,12 @@ public class GenEditingDetailsController {
     @FXML
     private Button saveButton;
 
+    @FXML
+    private HBox tabHeader;
+
+    @FXML
+    private HBox conceptHeaderControlToolBarHbox;
+
     @InjectViewModel
     private StampViewModel stampViewModel;
 
@@ -243,6 +247,17 @@ public class GenEditingDetailsController {
         setupSemanticDetails();
         // update stamp UI
         updateUIStamp(getStampViewModel());
+
+        // Setup window dragging support with explicit draggable regions
+        DraggableSupport.setupDraggableWindow(
+                detailsOuterBorderPane,
+                tabHeader,
+                conceptHeaderControlToolBarHbox
+        );
+
+        if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
+            updateDraggableRegionsForPropertiesPanel(true);
+        }
     }
 
     private void setupSemanticDetails() {
@@ -380,19 +395,19 @@ public class GenEditingDetailsController {
             }
             // function to apply for the components' edit action (a.k.a. right click > Edit)
             BiFunction<KLReadOnlyBaseControl, Integer, Runnable> editAction = (readOnlyBaseControl, fieldIndex) ->
-                () -> {
-                    // Clear edit mode for all other controls (in case any of them was already in edit mode)
-                    for (Node node : nodes) {
-                        if (node != readOnlyBaseControl) {
-                            KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) node;
-                            klReadOnlyBaseControl.setEditMode(false);
+                    () -> {
+                        // Clear edit mode for all other controls (in case any of them was already in edit mode)
+                        for (Node node : nodes) {
+                            if (node != readOnlyBaseControl) {
+                                KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) node;
+                                klReadOnlyBaseControl.setEditMode(false);
+                            }
                         }
-                    }
-                    EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                            new PropertyPanelEvent(readOnlyBaseControl, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
-                    EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                            new PropertyPanelEvent(readOnlyBaseControl, OPEN_PANEL));
-                };
+                        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                                new PropertyPanelEvent(readOnlyBaseControl, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
+                        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                                new PropertyPanelEvent(readOnlyBaseControl, OPEN_PANEL));
+                    };
             int index = 0;
             for(ObservableField<?> observableField : observableFields){
                 FieldRecord<?> fieldRecord = observableField.field();
@@ -511,6 +526,8 @@ public class GenEditingDetailsController {
                     slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
 
+                updateDraggableRegionsForPropertiesPanel(false);
+
                 // Turn off edit mode for all read only controls
                 for (Node node : nodes) {
                     KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) node;
@@ -523,6 +540,8 @@ public class GenEditingDetailsController {
                 if (isClosed(propertiesSlideoutTrayPane)) {
                     slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
+
+                updateDraggableRegionsForPropertiesPanel(true);
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), PropertyPanelEvent.class, propertiesEventSubscriber);
@@ -574,6 +593,10 @@ public class GenEditingDetailsController {
 
     @FXML
     void closeConceptWindow(ActionEvent event) {
+
+        // Clean up draggable support before closing the window
+        DraggableSupport.cleanupDraggableWindow(detailsOuterBorderPane);
+
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
@@ -695,7 +718,28 @@ public class GenEditingDetailsController {
     private void openPropertiesPanel(ActionEvent event) {
         ToggleButton propertyToggle = (ToggleButton) event.getSource();
         EvtType<PropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? OPEN_PANEL : CLOSE_PANEL;
+
+        updateDraggableRegionsForPropertiesPanel(propertyToggle.isSelected());
+
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType));
+    }
+
+    private void updateDraggableRegionsForPropertiesPanel(boolean isOpen) {
+        if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
+            if (isOpen) {
+                DraggableSupport.addDraggableRegion(
+                        detailsOuterBorderPane,
+                        propertiesController.getPropertiesTabsPane()
+                );
+                LOG.debug("Added properties tabs as draggable region");
+            } else {
+                DraggableSupport.removeDraggableRegion(
+                        detailsOuterBorderPane,
+                        propertiesController.getPropertiesTabsPane()
+                );
+                LOG.debug("Removed properties tabs from draggable regions");
+            }
+        }
     }
 
     @FXML
