@@ -22,6 +22,7 @@ import com.jpro.webapi.WebAPI;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.framework.progress.ProgressHelper;
+import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.entity.EntityCountSummary;
@@ -47,6 +48,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.List;
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -231,8 +233,13 @@ public class ImportController {
                                 ecs.stampsCount())
                         );
                     }
+                    // Refresh the Pattern Navigation
+                    EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,new PatternSavedEvent(event.getSource(), PatternSavedEvent.PATTERN_UPDATE_EVENT));
+
                     EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC, new RefreshCalculatorCacheEvent(event.getSource(), GLOBAL_REFRESH));
+
                 }
+
             });
 
             closeDialog();

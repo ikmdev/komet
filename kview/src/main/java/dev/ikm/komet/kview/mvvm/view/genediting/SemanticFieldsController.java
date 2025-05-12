@@ -20,7 +20,6 @@ import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOP
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculteHashValue;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateNode;
@@ -34,6 +33,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
+import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
 import dev.ikm.komet.framework.events.EntityVersionChangeEvent;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -45,7 +45,7 @@ import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
-import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
+import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -75,6 +75,7 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -131,6 +132,9 @@ public class SemanticFieldsController {
     private boolean checkForEmptyFields() {
         AtomicBoolean invalid = new AtomicBoolean(false);
         observableFields.forEach(observableField -> {
+            if(observableField.dataTypeNid() == IMAGE_FIELD.nid()){
+                invalid.set(observableField.valueProperty().get() == null || (((byte[]) observableField.valueProperty().get()).length == 0));
+            }
             if (!invalid.get()) {
                 invalid.set((observableField.value() == null || observableField.value().toString().isEmpty()));
             }
@@ -217,7 +221,7 @@ public class SemanticFieldsController {
             if(reloadPatternNavigator && genEditingViewModel.getPropertyValue(MODE) == CREATE) {
                 // refresh the pattern navigation
                 EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
-                        new PatternCreationEvent(this, PATTERN_CREATION_EVENT));
+                        new PatternSavedEvent(this, PatternSavedEvent.PATTERN_CREATION_EVENT));
                 reloadPatternNavigator = false;
             }
             enableDisableSubmitButton();
@@ -346,7 +350,7 @@ public class SemanticFieldsController {
                        new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
                // refesh the pattern navigation
                EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
-                       new PatternCreationEvent(actionEvent.getSource(), PATTERN_CREATION_EVENT));
+                       new PatternSavedEvent(actionEvent.getSource(), PatternSavedEvent.PATTERN_UPDATE_EVENT));
            }, () -> {
                //TODO this is a temp alert / workaround till we figure how to reload transactions across multiple restarts of app.
                LOG.error("Unable to commit: Transaction for the given version does not exist.");
