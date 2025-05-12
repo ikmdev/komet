@@ -34,6 +34,8 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +49,8 @@ import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NA
 import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
 
 public class SamplerConceptNavigatorController {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SamplerConceptNavigatorController.class);
 
     @FXML
     private Label samplerDescription;
@@ -212,7 +216,7 @@ public class SamplerConceptNavigatorController {
                             .map(nid -> (ConceptFacade) Entity.getFast(nid)).toList();
                     ((ConceptNavigatorTreeItem) selectedItem).setRelatedConcepts(list);
                 }
-                yield i -> System.out.println("Click! on " + i.description());
+                yield i ->  LOG.info("Click on {}", i.description());
             }
             case SEND_TO_JOURNAL, SEND_TO_CHAPTER, COPY, SAVE_TO_FAVORITES -> _ -> {}; // TODO: Add implementation
         });
