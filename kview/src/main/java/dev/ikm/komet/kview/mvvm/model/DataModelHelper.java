@@ -21,8 +21,6 @@ import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.DIGRAPH_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.DITREE_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
@@ -72,6 +70,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -123,22 +122,22 @@ public class DataModelHelper {
      * @return set of allowed data types for a Pattern's field
      */
     public static Set<ConceptEntity> fetchFieldDefinitionDataTypes(ViewProperties viewProperties) {
-        // 4e627b9c-cecb-5563-82fc-cb0ee25113b1 is the publicId for displayFields which is hte parent
+        // 4e627b9c-cecb-5563-82fc-cb0ee25113b1 is the publicId for displayFields which is the parent
         int dataTypeNid = PrimitiveData.nid(UUID.fromString("4e627b9c-cecb-5563-82fc-cb0ee25113b1"));
         IntIdList intIdList = viewProperties.calculator().navigationCalculator().childrenOf(dataTypeNid);
 
-        Set<ConceptEntity> conceptEntitySet = new HashSet<>();
+        Set<ConceptEntity> conceptEntitySet = new TreeSet<>();
 
         for (int i = 0; i < intIdList.size(); i++) {
             EntityFacade entity = Entity.getFast(intIdList.get(i));
-            if (isAllowedDataType(entity.nid())) {
+            if (isSupportedDataTypes(entity.nid())) {
                 conceptEntitySet.add((ConceptEntity) entity);
             }
         }
         return conceptEntitySet;
     }
 
-    private static boolean isAllowedDataType(int nid) {
+    private static boolean isSupportedDataTypes(int nid) {
         return (nid == STRING.nid()
                 || nid == COMPONENT_FIELD.nid()
                 || nid == COMPONENT_ID_SET_FIELD.nid()
