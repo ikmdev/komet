@@ -114,7 +114,7 @@ public class DataModelHelper {
     }
 
     /**
-     * fetch data types based on the childre of the displayFields Concept
+     * fetch data types based on the children of the displayFields Concept
      * @param viewProperties
      * @return set of allowed data types for a Pattern's field
      */
