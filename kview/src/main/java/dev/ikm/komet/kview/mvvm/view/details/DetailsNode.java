@@ -23,6 +23,7 @@ import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.flow.FlowSubscriber;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -31,6 +32,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.control.MenuButton;
 import javafx.scene.layout.BorderPane;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -43,6 +45,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
 
+import static dev.ikm.komet.framework.TopPanelFactory.makeViewMenuButton;
 import static dev.ikm.komet.kview.fxutils.CssHelper.defaultStyleSheet;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
 import static dev.ikm.komet.framework.activity.ActivityStreamOption.PUBLISH;
@@ -115,6 +118,8 @@ public class DetailsNode extends ExplorationNodeAbstract {
 
 
             if (!displayOnJournalView) {
+
+
                 // Add the menu drop down for coordinates & activity stream options with Blue Title of concept
                 Node topPanel = TopPanelFactory.make(
                         viewProperties,
@@ -124,6 +129,11 @@ public class DetailsNode extends ExplorationNodeAbstract {
                         false);
                 this.detailsViewBorderPane.setTop(topPanel);
             }
+
+            // set up the edit coordinate menu for the concept window in the journal view
+            MenuButton viewPropertiesMenuButton = makeViewMenuButton(viewProperties, activityStreamKeyProperty, optionForActivityStreamKeyProperty);
+
+            detailsViewController.setUpEditCoordinateMenu(viewPropertiesMenuButton);
 
             // Load Concept Properties View Panel (FXML & Controller)
             FXMLLoader propsFXMLLoader = new FXMLLoader(PropertiesController.class.getResource(CONCEPT_PROPERTIES_VIEW_FXML_FILE));

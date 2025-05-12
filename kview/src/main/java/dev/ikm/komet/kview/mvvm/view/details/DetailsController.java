@@ -51,6 +51,7 @@ import dev.ikm.komet.framework.events.AxiomChangeEvent;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
@@ -151,8 +152,14 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class DetailsController  {
+
     private static final Logger LOG = LoggerFactory.getLogger(DetailsController.class);
+
     private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
+
+    @FXML
+    private Button editCoordinateButton;
+
     @FXML
     private Button closeConceptButton;
 
@@ -1507,4 +1514,19 @@ public class DetailsController  {
     public void setConceptTopic(UUID conceptTopic) {
         this.conceptTopic = conceptTopic;
     }
+
+    public void setUpEditCoordinateMenu(MenuButton viewPropertiesMenuButton) {
+
+        Menu activityStreamMenu = new Menu("Activity stream", Icon.ACTIVITY.makeIcon());
+        viewPropertiesMenuButton.getItems().add(activityStreamMenu);
+        editCoordinateButton.setOnAction(actionEvent -> {
+            activityStreamMenu.show();
+        });
+    }
+
+    //FIXME do I need this???
+//    @FXML
+//    private void showEditCoordinateMenu(ActionEvent actionEvent) {
+//
+//    }
 }
