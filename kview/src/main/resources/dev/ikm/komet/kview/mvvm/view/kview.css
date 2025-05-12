@@ -5247,6 +5247,10 @@ Styling a context menu for kview ui/ux controls
     -fx-border-color: -Grey-1;
 }
 
+.properties-tab-container-content .controls-container {
+    -fx-padding: 0 12px 0 0;
+}
+
 /*******************************************************************************
  *                                                                             *
  * KL Controls Context Menu                                                    *
