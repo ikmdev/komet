@@ -33,6 +33,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
+import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
@@ -67,8 +68,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -90,8 +93,8 @@ public class DataModelHelper {
                 Entity.getFast(COMPONENT_FIELD.nid()),
                 Entity.getFast(COMPONENT_ID_SET_FIELD.nid()),
                 Entity.getFast(COMPONENT_ID_LIST_FIELD.nid()),
-                Entity.getFast(DITREE_FIELD.nid()),
-                Entity.getFast(DIGRAPH_FIELD.nid()),
+//                Entity.getFast(DITREE_FIELD.nid()),
+//                Entity.getFast(DIGRAPH_FIELD.nid()),
 //                Entity.getFast(CONCEPT_FIELD.nid()),
 //                Entity.getFast(SEMANTIC_FIELD_TYPE.nid()),
                 Entity.getFast(INTEGER_FIELD.nid()),
@@ -108,6 +111,39 @@ public class DataModelHelper {
 //                Entity.getFast(SPATIAL_POINT.nid()),
 //                Entity.getFast(UUID_DATA_TYPE.nid())
         );
+    }
+
+    /**
+     * fetch data types based on the childre of the displayFields Concept
+     * @param viewProperties
+     * @return set of allowed data types for a Pattern's field
+     */
+    public static Set<ConceptEntity> fetchFieldDefinitionDataTypes(ViewProperties viewProperties) {
+        // 4e627b9c-cecb-5563-82fc-cb0ee25113b1 is the publicId for displayFields which is hte parent
+        int dataTypeNid = PrimitiveData.nid(UUID.fromString("4e627b9c-cecb-5563-82fc-cb0ee25113b1"));
+        IntIdList intIdList = viewProperties.calculator().navigationCalculator().childrenOf(dataTypeNid);
+
+        Set<ConceptEntity> conceptEntitySet = new HashSet<>();
+
+        for (int i = 0; i < intIdList.size(); i++) {
+            EntityFacade entity = Entity.getFast(intIdList.get(i));
+            if (isAllowedDataType(entity.nid())) {
+                conceptEntitySet.add((ConceptEntity) entity);
+            }
+        }
+        return conceptEntitySet;
+    }
+
+    private static boolean isAllowedDataType(int nid) {
+        return (nid == STRING.nid()
+                || nid == COMPONENT_FIELD.nid()
+                || nid == COMPONENT_ID_SET_FIELD.nid()
+                || nid == COMPONENT_ID_LIST_FIELD.nid()
+                || nid == INTEGER_FIELD.nid()
+                || nid == FLOAT_FIELD.nid()
+                || nid == BOOLEAN_FIELD.nid()
+                || nid == BYTE_ARRAY_FIELD.nid()
+                || nid == IMAGE_FIELD.nid());
     }
 
     /**

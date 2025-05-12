@@ -274,7 +274,7 @@ public class PatternFieldsController {
         //  allDataTypes.addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DYNAMIC_COLUMN_DATA_TYPES.publicId())));
         //  dataTypeComboBox.getItems().addAll(fetchFieldDefinitionDataTypes().stream()...).toList());
 
-        dataTypeComboBox.getItems().addAll(fetchFieldDefinitionDataTypes().stream().sorted((entityFacade1, entityFacade2) -> {
+        dataTypeComboBox.getItems().addAll(fetchFieldDefinitionDataTypes(getViewProperties()).stream().sorted((entityFacade1, entityFacade2) -> {
             ViewCalculator viewCalculator = getViewProperties().calculator();
             return viewCalculator.getRegularDescriptionText(entityFacade1).get()
                             .compareToIgnoreCase(viewCalculator.getRegularDescriptionText(entityFacade2).get());
