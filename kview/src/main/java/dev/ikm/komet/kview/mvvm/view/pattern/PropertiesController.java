@@ -241,8 +241,8 @@ public class PropertiesController {
                 PatternDefinition patternDefinition = evt.getPatternDefinition();
                 Optional<PatternDefinitionViewModel> optionalDefinitionViewModel = patternDefinitionControllerJFXNode.getViewModel("patternDefinitionViewModel");
                 optionalDefinitionViewModel.ifPresent(definitionViewModel -> {
-                    definitionViewModel.setPropertyValue(PURPOSE_ENTITY, patternDefinition.purpose());
-                    definitionViewModel.setPropertyValue(MEANING_ENTITY, patternDefinition.meaning());
+                    definitionViewModel.setPropertyValue(PURPOSE_ENTITY, patternDefinition.purpose().toProxy());
+                    definitionViewModel.setPropertyValue(MEANING_ENTITY, patternDefinition.meaning().toProxy());
                 });
             } else if (evt.getEventType() == SHOW_EDIT_FIELDS) {
                 //Set the field values for edit.
