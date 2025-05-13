@@ -10,6 +10,7 @@
 <?import javafx.scene.control.ContextMenu?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
@@ -43,6 +44,16 @@
          <top>
             <HBox fx:id="conceptHeaderControlToolBarHbox" BorderPane.alignment="CENTER">
                <children>
+                  <MenuButton fx:id="editCoordinateMenuButton" mnemonicParsing="false">
+                     <graphic>
+                        <Region prefHeight="200.0" prefWidth="200.0">
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="coordinate" />
+                           </styleClass>
+                        </Region>
+                     </graphic>
+                  </MenuButton>
                   <Button fx:id="editCoordinateButton" mnemonicParsing="false" text="Button">
                      <graphic>
                         <Region prefHeight="200.0" prefWidth="200.0">

@@ -129,6 +129,14 @@ public class DetailsNode extends ExplorationNodeAbstract {
                         false);
                 this.detailsViewBorderPane.setTop(topPanel);
             }
+/**
+ * TODO create a new viewProperties that is derived from the navigator
+ *      don't use the topPanel component because it is too highly integrated with classic komet elements
+ *
+ *      1)
+ *
+ */
+
 
             // set up the edit coordinate menu for the concept window in the journal view
             MenuButton viewPropertiesMenuButton = makeViewMenuButton(viewProperties, activityStreamKeyProperty, optionForActivityStreamKeyProperty);

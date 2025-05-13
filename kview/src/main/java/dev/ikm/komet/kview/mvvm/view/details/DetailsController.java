@@ -161,6 +161,9 @@ public class DetailsController  {
     private Button editCoordinateButton;
 
     @FXML
+    private MenuButton editCoordinateMenuButton;
+
+    @FXML
     private Button closeConceptButton;
 
     /**
@@ -1519,9 +1522,12 @@ public class DetailsController  {
 
         Menu activityStreamMenu = new Menu("Activity stream", Icon.ACTIVITY.makeIcon());
         viewPropertiesMenuButton.getItems().add(activityStreamMenu);
-        editCoordinateButton.setOnAction(actionEvent -> {
-            activityStreamMenu.show();
-        });
+
+        editCoordinateMenuButton = viewPropertiesMenuButton;
+
+//        editCoordinateButton.setOnAction(actionEvent -> {
+//            activityStreamMenu.show();
+//        });
     }
 
     //FIXME do I need this???
