@@ -180,17 +180,24 @@ public class PatternFieldsController {
         ObjectProperty<Integer> fieldOrderProp = patternFieldsViewModel.getProperty(FIELD_ORDER);
         ObservableList<Integer> fieldOrderOptions = patternFieldsViewModel.getObservableList(FIELD_ORDER_OPTIONS);
 
-        StringProperty displayNameProp = patternFieldsViewModel.getProperty(DISPLAY_NAME);
         ObjectProperty<ConceptEntity> dataTypeProp = patternFieldsViewModel.getProperty(DATA_TYPE);
         ObjectProperty<ConceptEntity> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
         ObjectProperty<ConceptEntity> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
 
-        displayNameTextField.textProperty().bindBidirectional(displayNameProp);
+        // the display name is derived from the meaning's description text and is not user editable
+        displayNameTextField.setEditable(false);
+        patternFieldsViewModel.getProperty(MEANING_ENTITY).subscribe(meaningObject -> {
+            if (meaningObject != null) {
+                displayNameTextField.setText(((ConceptEntity)meaningObject).description());
+            } else {
+                displayNameTextField.setText("");
+            }
+        });
+
         dataTypeComboBox.valueProperty().bindBidirectional(dataTypeProp);
         fieldOrderComboBox.setItems(fieldOrderOptions); // Set the items in fieldOrder
         fieldOrderComboBox.valueProperty().bindBidirectional(fieldOrderProp);
 
-        displayNameProp.addListener(fieldsValidationListener);
         dataTypeProp.addListener(fieldsValidationListener);
         purposeProp.addListener((obs, oldVal, newVal) -> addPurposeToForm(newVal));
         purposeProp.addListener(fieldsValidationListener);
@@ -484,7 +491,6 @@ public class PatternFieldsController {
         //Reset the field order selection to the last value
         IntegerProperty totalFields = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
         patternFieldsViewModel.setPropertyValue(FIELD_ORDER, (totalFields.get()+1));
-        patternFieldsViewModel.setPropertyValue(DISPLAY_NAME, "");
         patternFieldsViewModel.setPropertyValue(DATA_TYPE, null);
         patternFieldsViewModel.setPropertyValue(PREVIOUS_PATTERN_FIELD, null);
         removePurpose();
