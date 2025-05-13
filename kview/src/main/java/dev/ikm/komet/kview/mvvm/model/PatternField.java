@@ -26,7 +26,7 @@ import dev.ikm.tinkar.terms.EntityFacade;
  * @param purpose     purpose concept
  * @param meaning     meaning concept
  * @param comments    user comments
- * @param time
+ * @param stamp       stamp
  */
 public record PatternField(String displayName, EntityFacade dataType,
                            EntityFacade purpose, EntityFacade meaning, String comments, Stamp stamp) {

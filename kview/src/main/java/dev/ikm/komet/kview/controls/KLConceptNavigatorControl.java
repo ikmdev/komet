@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * <p>The KLConceptNavigatorControl control is a {@link TreeView} that provides a view on to a tree root
@@ -195,22 +196,23 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     }
 
     /**
-     * <p>This property sets a consumer that accepts a list of {@link ConceptFacade}, so when one or more items are
-     * selected from the {@link KLConceptNavigatorControl}, the action defined for such consumer can be performed for
+     * <p>This property sets a {@link Function} that can be used to define an {@link Consumer<ConceptFacade>} after
+     * a given {@link CONTEXT_MENU_ACTION action}, so when one or more {@link ConceptFacade} items are
+     * selected from the {@link KLConceptNavigatorControl}, the operation defined for such function can be performed for
      * each of them.
      * </p>
      * <p>For instance, after selecting a number of items, a drag and drop gesture would drag those items from
      * the control and drop them in the {@link KLWorkspace}.
      * </p>
      */
-    private final ObjectProperty<Consumer<List<ConceptFacade>>> onActionProperty = new SimpleObjectProperty<>(this, "onAction");
-    public final ObjectProperty<Consumer<List<ConceptFacade>>> onActionProperty() {
+    private final ObjectProperty<Function<CONTEXT_MENU_ACTION, Consumer<ConceptFacade>>> onActionProperty = new SimpleObjectProperty<>(this, "onAction");
+    public final ObjectProperty<Function<CONTEXT_MENU_ACTION, Consumer<ConceptFacade>>> onActionProperty() {
        return onActionProperty;
     }
-    public final Consumer<List<ConceptFacade>> getOnAction() {
+    public final Function<CONTEXT_MENU_ACTION, Consumer<ConceptFacade>> getOnAction() {
        return onActionProperty.get();
     }
-    public final void setOnAction(Consumer<List<ConceptFacade>> value) {
+    public final void setOnAction(Function<CONTEXT_MENU_ACTION, Consumer<ConceptFacade>> value) {
         onActionProperty.set(value);
     }
 
@@ -277,6 +279,69 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     }
     public final void setShowTags(boolean value) {
         showTagsProperty.set(value);
+    }
+
+    /**
+     * <p>This enum defines the possible actions that can be executed from the
+     * different context menus that are shown for this control.
+     * </p>
+     * @see #onActionProperty()
+     * @see SingleSelectionContextMenu
+     * @see MultipleSelectionContextMenu
+     */
+    public enum CONTEXT_MENU_ACTION {
+        /**
+         * <p>For a single ConceptNavigatorTreeItem, when this action is fired, show a submenu with a menuItem
+         * per related concept, with its own action.
+         * </p>
+         * @see ConceptNavigatorTreeItem#relatedConceptsProperty()
+         */
+        SHOW_RELATED_CONCEPTS,
+
+        /**
+         * <p>For a single ConceptNavigatorTreeItem, when this action is fired, open it in the
+         * workspace.
+         * </p>
+         * @see KLWorkspace
+         */
+        OPEN_IN_WORKSPACE,
+
+        /**
+         * <p>For a multiple selection of ConceptNavigatorTreeItem, when this action is fired, open them in the
+         * workspace.</p>
+         * @see KLWorkspace
+         */
+        POPULATE_SELECTION,
+
+        /**
+         * TODO
+         */
+        SEND_TO_JOURNAL,
+
+        /**
+         * TODO
+         */
+        SEND_TO_CHAPTER,
+
+        /**
+         * TODO
+         */
+        COPY,
+
+        /**
+         * TODO
+         */
+        SAVE_TO_FAVORITES;
+
+        public static List<CONTEXT_MENU_ACTION> getSingleActions() {
+            return List.of(SHOW_RELATED_CONCEPTS, OPEN_IN_WORKSPACE);
+        }
+
+        public static List<CONTEXT_MENU_ACTION> getMultipleActions() {
+            return List.of(POPULATE_SELECTION, SEND_TO_JOURNAL, SEND_TO_CHAPTER, COPY, SAVE_TO_FAVORITES);
+        }
+
+
     }
 
     /** {@inheritDoc} **/

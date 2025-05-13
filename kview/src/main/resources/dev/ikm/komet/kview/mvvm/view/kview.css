@@ -2894,9 +2894,14 @@ Timeline Year line segment (will overlay change circles)
     -fx-alignment: center-left;
 
     -fx-background-color: -Grey-8;
-    -fx-background-image: url("images/close_24px.png");
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: right center;
+}
+
+.search-text-field > .right-button > .right-button-graphic {
+    -fx-background-color: #ddd;
+}
+
+.search-text-field > .right-button:hover > .right-button-graphic {
+    -fx-background-color: white;
 }
 
 .search-sort-button {
@@ -4843,6 +4848,21 @@ Styling a context menu for kview ui/ux controls
 
 /*******************************************************************************
  *                                                                             *
+ * Pattern Window                                                              *
+ *                                                                             *
+ ******************************************************************************/
+
+.pattern-window .semantic-outer-vbox {
+    -fx-spacing: 8px;
+}
+
+.pattern-window .purpose-meaning-container {
+    -fx-spacing: 10px;
+    -fx-padding: 4px 0 0 0;
+}
+
+/*******************************************************************************
+ *                                                                             *
  * Pattern Window & Lidr Window                                                *
  *                                                                             *
  ******************************************************************************/
@@ -5247,6 +5267,10 @@ Styling a context menu for kview ui/ux controls
     -fx-border-color: -Grey-1;
 }
 
+.properties-tab-container-content .controls-container {
+    -fx-padding: 0 12px 0 0;
+}
+
 /*******************************************************************************
  *                                                                             *
  * KL Controls Context Menu                                                    *
@@ -5409,5 +5433,5 @@ Styling a context menu for kview ui/ux controls
     -fx-font-style: normal;
     -fx-text-fill: -Grey-11;
     -fx-font-weight: 500;
-    -fx-padding: 0 0 10px 0;
+    -fx-padding: 0 0 6px 0;
 }

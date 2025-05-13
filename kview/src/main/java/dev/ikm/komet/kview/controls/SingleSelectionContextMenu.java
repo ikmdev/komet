@@ -11,6 +11,7 @@ import javafx.stage.Window;
 
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 /**
  * <p>A popup control containing an ObservableList of menu items.
@@ -23,9 +24,9 @@ public class SingleSelectionContextMenu extends ContextMenu {
 
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.concept-navigator");
 
-    private final Menu relatedMessage;
-    private final String relatedMessageId = "relatedMessageId";
-    private final MenuItem workspaceMessage;
+    private final Menu relatedMenuItem;
+    private final String relatedMenuItemId = "relatedMenuItemId";
+    private final MenuItem workspaceMenuItem;
 
     private final String actionsStylesheet = SingleSelectionContextMenu.class.getResource("concept-navigator.css").toExternalForm();
     private final ListChangeListener<Window> windowListChangeListener = c -> {
@@ -36,7 +37,8 @@ public class SingleSelectionContextMenu extends ContextMenu {
                     // that is just ContextMenu
                     if (window instanceof SingleSelectionContextMenu ||
                             (window instanceof ContextMenu cm && !cm.getItems().isEmpty() &&
-                                relatedMessageId.equals(cm.getItems().getFirst().getParentMenu().getId()))) {
+                                cm.getItems().getFirst().getParentMenu() != null &&
+                                relatedMenuItemId.equals(cm.getItems().getFirst().getParentMenu().getId()))) {
                         if (!window.getScene().getStylesheets().contains(actionsStylesheet)) {
                             // If the .context-menu styling is not added to the application stylesheet,
                             // we need this hack, to add the styling to the context-menu window scene.
@@ -55,11 +57,11 @@ public class SingleSelectionContextMenu extends ContextMenu {
         setAutoHide(true);
         setId("SingleSelectionContextMenuId");
 
-        relatedMessage = new Menu(resources.getString("single.selection.context.menu.option.related"));
-        relatedMessage.setId(relatedMessageId);
-        workspaceMessage = new MenuItem(resources.getString("single.selection.context.menu.option.workspace"));
+        relatedMenuItem = new Menu(resources.getString("single.selection.context.menu.option.related"));
+        relatedMenuItem.setId(relatedMenuItemId);
+        workspaceMenuItem = new MenuItem(resources.getString("single.selection.context.menu.option.workspace"));
 
-        getItems().addAll(relatedMessage, workspaceMessage);
+        getItems().addAll(relatedMenuItem, workspaceMenuItem);
         setAnchorLocation(AnchorLocation.CONTENT_TOP_LEFT);
 
         setOnShowing(_ -> Window.getWindows().addListener(windowListChangeListener));
@@ -67,30 +69,34 @@ public class SingleSelectionContextMenu extends ContextMenu {
     }
 
     /**
-     * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #workspaceMessage} menu
+     * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #workspaceMenuItem} menu
      * item is fired.
      * </p>
      * @param eventHandler a {@link EventHandler<ActionEvent>}
      */
-    public void setWorkspaceMessageAction(EventHandler<ActionEvent> eventHandler) {
-        workspaceMessage.setOnAction(eventHandler);
+    public void setWorkspaceMenuItemAction(EventHandler<ActionEvent> eventHandler) {
+        workspaceMenuItem.setOnAction(eventHandler);
     }
 
     /**
-     * <p>The passed {@link List<ConceptFacade>} is used to create a subMenu for {@link #relatedMessage}.
+     * <p>The passed {@link List<ConceptFacade>} is used to create a subMenu for {@link #relatedMenuItem}.
      * </p>
-     * <p>For each menu item, it sets the {@link EventHandler<ActionEvent>} that will be handled if such
+     * <p>For each menu item, it sets the {@link Consumer<ConceptFacade>} that will be accepted if such
      * item is fired.
      * </p>
      * @param conceptFacadeList a {@link List<ConceptFacade>}
-     * @param eventHandler a {@link EventHandler<ActionEvent>}
+     * @param consumer a {@link Consumer<ConceptFacade>}
+     * @see ConceptNavigatorTreeItem#relatedConceptsProperty()
      */
-    public void setRelatedByMessageItems(List<ConceptFacade> conceptFacadeList, EventHandler<ActionEvent> eventHandler) {
-        relatedMessage.getItems().setAll(
+    public void setRelatedByMenuItemAction(List<ConceptFacade> conceptFacadeList, Consumer<ConceptFacade> consumer) {
+        if (conceptFacadeList == null) {
+            return;
+        }
+        relatedMenuItem.getItems().setAll(
                 conceptFacadeList.stream()
                         .map(concept -> {
                             MenuItem menuItem = new MenuItem(concept.description());
-                            menuItem.setOnAction(eventHandler);
+                            menuItem.setOnAction(_ -> consumer.accept(concept));
                             return menuItem;
                         })
                         .toList());

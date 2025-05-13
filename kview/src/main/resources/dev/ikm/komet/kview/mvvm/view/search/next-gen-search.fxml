@@ -27,7 +27,7 @@
                                     <children>
                                         <HBox prefHeight="100.0" prefWidth="200.0">
                                             <children>
-                                                <AutoCompleteTextField fx:id="searchField" onAction="#doSearch" onMouseClicked="#clearSearchTextField" prefWidth="424.0" promptText="🔍  Search" styleClass="search-text-field">
+                                                <AutoCompleteTextField fx:id="searchField" onAction="#doSearch" prefWidth="424.0" promptText="🔍  Search" styleClass="search-text-field">
                                                    <cursor>
                                                       <Cursor fx:constant="TEXT" />
                                                    </cursor>

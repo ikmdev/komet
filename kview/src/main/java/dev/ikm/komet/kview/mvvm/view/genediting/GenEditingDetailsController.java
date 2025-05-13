@@ -307,14 +307,14 @@ public class GenEditingDetailsController {
                     genEditingViewModel.setPropertyValue(MODE, EDIT);
                 }
                 for (int i = 0; i < evt.getList().size(); i++) {
-                    ObservableField field = observableFields.get(i);
-                    ObservableField updatedField = evt.getList().get(i);
-                    if (updatedField != null && field != null) {
+                    ObservableField observableField = observableFields.get(i);
+                    Object updatedField = evt.getList().get(i);
+                    if (updatedField != null && observableField != null) {
                         // readonly integer value 1, editable integer value 1 don't update
                         // readonly integer value 1, editable integer value 5 do update
                         // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
                         // Should we check if the value is different before updating? (blindly updating now).
-                        field.valueProperty().setValue(updatedField.valueProperty().getValue());
+                        observableField.valueProperty().setValue(updatedField);
                     }
                 }
             }
@@ -362,14 +362,14 @@ public class GenEditingDetailsController {
             observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
             ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
             if (observableSemanticVersionImmutableList.isEmpty()) {
-                observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields(true, false).get());
+                observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields(false, false).get());
             } else {
                 //Cast to mutable list
                 List<ObservableSemanticVersion> observableSemanticVersionList = new ArrayList<>(observableSemanticVersionImmutableList.castToList());
                 //filter list to have only the latest semantic version passed as argument and remove rest of the entries.
                 observableSemanticVersionList.removeIf(p -> !semanticEntityVersionLatest.stampNids().contains(p.stampNid()));
                 if (observableSemanticVersionList.isEmpty()) {
-                    observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields(true, false).get());
+                    observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields(false, false).get());
                 } else {
                     ObservableSemanticVersion observableSemanticVersion = observableSemanticVersionList.getFirst();
                     Latest<PatternEntityVersion> latestPatternEntityVersion = getViewProperties().calculator().latestPatternEntityVersion(observableSemanticVersion.patternNid());

@@ -71,6 +71,7 @@ import dev.ikm.komet.framework.tabs.DetachableTab;
 import dev.ikm.komet.framework.tabs.TabGroup;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLWorkspace;
@@ -174,6 +175,7 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -492,8 +494,8 @@ public class JournalController {
             Dragboard dragboard = event.getDragboard();
             boolean success = false;
             if (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)) {
-                List<UUID[]> uuids = (List<UUID[]>) dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
-                populateWorkspaceWithSelection(uuids);
+                List<List<UUID[]>> uuids = (List<List<UUID[]>>) dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
+                uuids.forEach(this::populateWorkspaceWithSelection);
                 success = true;
             } else if (dragboard.hasString()) {
                 try {
@@ -959,10 +961,30 @@ public class JournalController {
         conceptNavigatorControl.setNavigator(navigator);
         conceptNavigatorControl.setHeader("Concept Header");
         conceptNavigatorControl.setShowTags(false);
-        conceptNavigatorControl.setOnAction(items ->
-                populateWorkspaceWithSelection(items.stream()
-                        .map(item -> item.publicId().asUuidArray())
-                        .toList()));
+        conceptNavigatorControl.setOnAction(action -> switch (action) {
+            // single selection
+            case OPEN_IN_WORKSPACE -> item -> {
+                List<UUID[]> uuids = List.<UUID[]>of(item.publicId().asUuidArray());
+                populateWorkspaceWithSelection(uuids);
+            };
+            case SHOW_RELATED_CONCEPTS -> {
+                // Dummy, for now just add the parents of the selected item as related content:
+                TreeItem<ConceptFacade> selectedItem = conceptNavigatorControl.getSelectionModel().getSelectedItem();
+                if (selectedItem != null) {
+                    conceptNavigatorControl.getNavigator().getParentNids(selectedItem.getValue().nid());
+                    List<ConceptFacade> list = Arrays.stream(conceptNavigatorControl.getNavigator().getParentNids(selectedItem.getValue().nid())).boxed()
+                            .map(nid -> (ConceptFacade) Entity.getFast(nid)).toList();
+                    ((ConceptNavigatorTreeItem) selectedItem).setRelatedConcepts(list);
+                }
+                yield i -> LOG.info("Click on {}", i.description());
+            }
+            // multiple selection
+            case POPULATE_SELECTION -> item -> {
+                List<UUID[]> uuids = List.<UUID[]>of(item.publicId().asUuidArray());
+                populateWorkspaceWithSelection(uuids);
+            };
+            case SEND_TO_JOURNAL, SEND_TO_CHAPTER, COPY, SAVE_TO_FAVORITES -> _ -> {}; // TODO: Add implementation
+        });
         searchControl.setOnLongHover(conceptNavigatorControl::expandAndHighlightConcept);
         searchControl.setOnSearchResultClick(_ -> conceptNavigatorControl.unhighlightConceptsWithDelay());
         searchControl.setOnClearSearch(_ -> ConceptNavigatorUtils.resetConceptNavigator(conceptNavigatorControl));
