@@ -30,7 +30,6 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -60,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem.STATE;
@@ -102,7 +102,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
     private final Map<ConceptNavigatorTreeItem, WritableImage> imageMap = new HashMap<>();
 
     private MultipleSelectionContextMenu multipleSelectionContextMenu;
-    private final SingleSelectionContextMenu singleSelectionContextMenu;
+    private SingleSelectionContextMenu singleSelectionContextMenu;
     private boolean isScrollBarDragging;
     private final BooleanProperty highlighted = new SimpleBooleanProperty();
 
@@ -147,7 +147,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                 unhoverAllItems();
                 unselectAllItems();
             }
-            setupContextMenu(selectedItems.stream().map(TreeItem::getValue).toList());
+            setupMultipleContextMenu(selectedItems.stream().map(TreeItem::getValue).toList());
             while (c.next()) {
                 if (c.wasAdded()) {
                     pseudoClassStateChanged(MULTIPLE_SELECTION_PSEUDO_CLASS, true);
@@ -211,9 +211,9 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                         .toList());
             }
             if (!draggedItems.isEmpty()) {
-                List<UUID[]> list = draggedItems.stream()
+                List<List<UUID[]>> list = draggedItems.stream()
                         .filter(i -> i.getValue() != null && i.getValue().publicId() != null)
-                        .map(i -> i.getValue().publicId().asUuidArray())
+                        .map(i -> List.<UUID[]>of(i.getValue().publicId().asUuidArray()))
                         .toList();
                 Dragboard dragboard = getSkinnable().startDragAndDrop(TransferMode.COPY_OR_MOVE);
                 ClipboardContent clipboardContent = new ClipboardContent();
@@ -240,33 +240,18 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             }
         });
 
-        singleSelectionContextMenu = new SingleSelectionContextMenu();
+        treeView.getSelectionModel().selectedItemProperty()
+                .subscribe(item -> setupSingleContextMenu((ConceptNavigatorTreeItem) item));
         treeView.setOnContextMenuRequested(e -> {
             if (selectedItems.isEmpty() && draggedItems.isEmpty()) {
                 return;
             }
             if (selectedItems.size() < 2 && draggedItems.size() < 2) {
-                List<ConceptFacade> relatedConcepts;
-                if (!selectedItems.isEmpty()) {
-                    // DUMMY! Just the children of the concept, if any
-                    relatedConcepts = selectedItems.getFirst().getChildren().stream()
-                            .limit(5)
-                            .map(TreeItem::getValue)
-                            .toList();
-                } else {
-                    // DUMMY! Just the children of the concept, if any
-                    relatedConcepts = draggedItems.getFirst().getChildren().stream()
-                            .limit(5)
-                            .map(TreeItem::getValue)
-                            .toList();
-                }
-                singleSelectionContextMenu.setRelatedByMessageItems(relatedConcepts,
-                        // DUMMY action
-                        ev -> System.out.println(((MenuItem) ev.getSource()).getText()));
                 singleSelectionContextMenu.show(treeView.getScene().getWindow(), e.getScreenX(), e.getScreenY());
             } else if (multipleSelectionContextMenu != null) {
                 multipleSelectionContextMenu.show(treeView.getScene().getWindow(), e.getScreenX(), e.getScreenY());
             }
+            e.consume();
         });
     }
 
@@ -561,7 +546,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                             }
                         }
                     });
-            setupContextMenu(draggedItems.stream().map(ConceptNavigatorTreeItem::getValue).toList());
+            setupMultipleContextMenu(draggedItems.stream().map(ConceptNavigatorTreeItem::getValue).toList());
             draggingBox.getElements().clear();
         }
     }
@@ -615,26 +600,63 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
     }
 
     /**
+     * <p>Sets up the single selection context menu, and uses the selected concept
+     * to set an {@link EventHandler<ActionEvent>} for its menu items, based on the
+     * {@link KLConceptNavigatorControl#onActionProperty()}, if defined.
+     * </p>
+     * @param item a {@link ConceptNavigatorTreeItem}
+     */
+    private void setupSingleContextMenu(ConceptNavigatorTreeItem item) {
+        if (singleSelectionContextMenu == null) {
+            singleSelectionContextMenu = new SingleSelectionContextMenu();
+        }
+        if (treeView.getOnAction() != null && item != null) {
+            for (KLConceptNavigatorControl.CONTEXT_MENU_ACTION action : KLConceptNavigatorControl.CONTEXT_MENU_ACTION.getSingleActions()) {
+                Consumer<ConceptFacade> consumer = treeView.getOnAction().apply(action);
+                switch (action) {
+                    case SHOW_RELATED_CONCEPTS -> singleSelectionContextMenu.setRelatedByMenuItemAction(item.getRelatedConcepts(), consumer);
+                    case OPEN_IN_WORKSPACE -> singleSelectionContextMenu.setWorkspaceMenuItemAction(_ -> {
+                        if (consumer != null) {
+                            consumer.accept(item.getValue());
+                        }
+                        resetSelection();
+                    });
+                    default -> throw new IllegalStateException("Unexpected value: " + action);
+                }
+            }
+        }
+    }
+
+    /**
      * <p>Sets up the multiple selection context menu, and uses the list of the selected concepts
-     * to set an {@link EventHandler<ActionEvent>} for
-     * {@link MultipleSelectionContextMenu#setPopulateMessageAction(EventHandler)}, based on the
+     * to set an {@link EventHandler<ActionEvent>} for its different menu items, based on the
      * {@link KLConceptNavigatorControl#onActionProperty()}, if defined.
      * </p>
      * @param items a {@link List<ConceptFacade>}
      */
-    private void setupContextMenu(List<ConceptFacade> items) {
-        multipleSelectionContextMenu = new MultipleSelectionContextMenu();
-        multipleSelectionContextMenu.setPopulateMessageAction(_ -> {
-            if (treeView.getOnAction() != null) {
-                treeView.getOnAction().accept(items);
+    private void setupMultipleContextMenu(List<ConceptFacade> items) {
+        if (multipleSelectionContextMenu == null) {
+            multipleSelectionContextMenu = new MultipleSelectionContextMenu();
+        }
+        if (treeView.getOnAction() != null) {
+            for (KLConceptNavigatorControl.CONTEXT_MENU_ACTION action : KLConceptNavigatorControl.CONTEXT_MENU_ACTION.getMultipleActions()) {
+                Consumer<ConceptFacade> consumer = treeView.getOnAction().apply(action);
+                final EventHandler<ActionEvent> actionEventEventHandler = _ -> {
+                    if (consumer != null) {
+                        items.forEach(consumer);
+                    }
+                    resetSelection();
+                };
+                switch (action) {
+                    case POPULATE_SELECTION -> multipleSelectionContextMenu.setPopulateMenuItemAction(actionEventEventHandler);
+                    case SEND_TO_JOURNAL -> multipleSelectionContextMenu.setJournalMenuItemAction(actionEventEventHandler);
+                    case SEND_TO_CHAPTER -> multipleSelectionContextMenu.setChapterMenuItemAction(actionEventEventHandler);
+                    case COPY -> multipleSelectionContextMenu.setCopyMenuItemAction(actionEventEventHandler);
+                    case SAVE_TO_FAVORITES -> multipleSelectionContextMenu.setSaveMenuItemAction(actionEventEventHandler);
+                    default -> throw new IllegalStateException("Unexpected value: " + action);
+                }
             }
-            resetSelection();
-        });
-        // DUMMY!
-        multipleSelectionContextMenu.setJournalMessageAction(e -> System.out.println("Journal action"));
-        multipleSelectionContextMenu.setChapterMessageAction(e -> System.out.println("Chapter action"));
-        multipleSelectionContextMenu.setCopyMessageAction(e -> System.out.println("Copy action"));
-        multipleSelectionContextMenu.setSaveMessageAction(e -> System.out.println("Save action"));
+        }
     }
 
     /**
