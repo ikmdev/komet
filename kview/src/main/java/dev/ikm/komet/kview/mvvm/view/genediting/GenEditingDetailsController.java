@@ -308,13 +308,13 @@ public class GenEditingDetailsController {
                 }
                 for (int i = 0; i < evt.getList().size(); i++) {
                     ObservableField field = observableFields.get(i);
-                    ObservableField updatedField = evt.getList().get(i);
+                    Object updatedField = evt.getList().get(i);
                     if (updatedField != null && field != null) {
                         // readonly integer value 1, editable integer value 1 don't update
                         // readonly integer value 1, editable integer value 5 do update
                         // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
                         // Should we check if the value is different before updating? (blindly updating now).
-                        field.valueProperty().setValue(updatedField.valueProperty().getValue());
+                        field.valueProperty().setValue(updatedField);
                     }
                 }
             }

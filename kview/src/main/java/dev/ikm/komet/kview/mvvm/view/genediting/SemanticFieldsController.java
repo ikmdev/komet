@@ -333,8 +333,10 @@ public class SemanticFieldsController {
     @FXML
     public void submit(ActionEvent actionEvent) {
        cancelButton.requestFocus();
+
        //create new list for passing to the event.
-       List<ObservableField<?>> list = new ArrayList<>(observableFields);
+       List<Object> list = new ArrayList<>(observableFields.size());
+       observableFields.forEach(observableField -> list.add(observableField.value()));
 
        //Get the semantic need to pass along with event for loading values across Opened Semantics.
        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
