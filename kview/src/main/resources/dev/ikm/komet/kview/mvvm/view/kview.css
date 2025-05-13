@@ -4843,6 +4843,21 @@ Styling a context menu for kview ui/ux controls
 
 /*******************************************************************************
  *                                                                             *
+ * Pattern Window                                                              *
+ *                                                                             *
+ ******************************************************************************/
+
+.pattern-window .semantic-outer-vbox {
+    -fx-spacing: 8px;
+}
+
+.pattern-window .purpose-meaning-container {
+    -fx-spacing: 10px;
+    -fx-padding: 4px 0 0 0;
+}
+
+/*******************************************************************************
+ *                                                                             *
  * Pattern Window & Lidr Window                                                *
  *                                                                             *
  ******************************************************************************/
@@ -5413,5 +5428,5 @@ Styling a context menu for kview ui/ux controls
     -fx-font-style: normal;
     -fx-text-fill: -Grey-11;
     -fx-font-weight: 500;
-    -fx-padding: 0 0 10px 0;
+    -fx-padding: 0 0 6px 0;
 }

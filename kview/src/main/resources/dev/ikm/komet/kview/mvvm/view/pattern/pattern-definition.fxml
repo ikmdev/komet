@@ -6,11 +6,9 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
@@ -26,146 +24,7 @@
          <content>
             <VBox fx:id="semanticOuterVBox">
                <children>
-                  <Label fx:id="purposeLabel" styleClass="lidr-device-label" text="Purpose" />
-                  <VBox fx:id="selectedPurposeOuterContainer" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="424.0">
-                     <children>
-                        <StackPane fx:id="selectedPurposeStackPane" alignment="TOP_CENTER">
-                           <children>
-                              <Region styleClass="lidr-rounded-region" />
-                              <HBox fx:id="selectedPurpose">
-                                 <children>
-                                    <VBox fx:id="selectedPurposeContainer" />
-                                 </children>
-                              </HBox>
-                           </children>
-                           <opaqueInsets>
-                              <Insets />
-                           </opaqueInsets>
-                           <VBox.margin>
-                              <Insets />
-                           </VBox.margin>
-                        </StackPane>
-                     </children>
-                  </VBox>
-                  <VBox fx:id="purposeVBox" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="48.0" prefWidth="424.0">
-                     <children>
-                        <StackPane fx:id="purposeStackPane" alignment="TOP_CENTER">
-                           <children>
-                              <Region prefHeight="200.0" prefWidth="200.0" styleClass="lidr-rounded-region" />
-                              <VBox>
-                                 <StackPane.margin>
-                                    <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                                 </StackPane.margin>
-                                 <children>
-                                    <HBox>
-                                       <children>
-                                          <TextField fx:id="purposeSearchTextField" alignment="TOP_CENTER" prefWidth="180.0" promptText="🔍  Search" styleClass="lidr-search-device-text-input" HBox.hgrow="ALWAYS">
-                                             <opaqueInsets>
-                                                <Insets />
-                                             </opaqueInsets>
-                                          </TextField>
-                                          <Button mnemonicParsing="false" styleClass="lidr-search-button">
-                                             <graphic>
-                                                <Region focusTraversable="true">
-                                                   <styleClass>
-                                                      <String fx:value="lidr-search-button-region" />
-                                                      <String fx:value="icon" />
-                                                   </styleClass>
-                                                </Region>
-                                             </graphic>
-                                          </Button>
-                                          <Region styleClass="region-add">
-                                             <opaqueInsets>
-                                                <Insets />
-                                             </opaqueInsets>
-                                             <HBox.margin>
-                                                <Insets bottom="2.0" left="4.0" right="5.0" top="2.0" />
-                                             </HBox.margin>
-                                          </Region>
-                                       </children>
-                                    </HBox>
-                                 </children>
-                              </VBox>
-                           </children>
-                           <opaqueInsets>
-                              <Insets />
-                           </opaqueInsets>
-                           <VBox.margin>
-                              <Insets />
-                           </VBox.margin>
-                        </StackPane>
-                     </children>
-                     <VBox.margin>
-                        <Insets bottom="16.0" />
-                     </VBox.margin>
-                  </VBox>
-                  <Label fx:id="meaningLabel" styleClass="lidr-device-label" text="Meaning" />
-                  <VBox fx:id="selectedMeaningOuterContainer" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="424.0">
-                     <children>
-                        <StackPane fx:id="selectedMeaningStackPane" alignment="TOP_CENTER">
-                           <children>
-                              <Region styleClass="lidr-rounded-region" />
-                              <HBox>
-                                 <children>
-                                    <VBox fx:id="selectedMeaningContainer" />
-                                 </children>
-                              </HBox>
-                           </children>
-                           <opaqueInsets>
-                              <Insets />
-                           </opaqueInsets>
-                           <VBox.margin>
-                              <Insets />
-                           </VBox.margin>
-                        </StackPane>
-                     </children>
-                  </VBox>
-                  <VBox fx:id="meaningVBox" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="48.0" prefWidth="424.0">
-                     <children>
-                        <StackPane fx:id="meaningStackPane" alignment="TOP_CENTER">
-                           <children>
-                              <Region prefHeight="200.0" prefWidth="200.0" styleClass="lidr-rounded-region" />
-                              <VBox>
-                                 <StackPane.margin>
-                                    <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                                 </StackPane.margin>
-                                 <children>
-                                    <HBox>
-                                       <children>
-                                          <TextField fx:id="meaningSearchTextField" alignment="TOP_CENTER" prefWidth="424.0" promptText="🔍  Search" styleClass="lidr-search-device-text-input" HBox.hgrow="ALWAYS">
-                                             <opaqueInsets>
-                                                <Insets />
-                                             </opaqueInsets>
-                                          </TextField>
-                                          <Button mnemonicParsing="false" styleClass="lidr-search-button">
-                                             <graphic>
-                                                <Region focusTraversable="true">
-                                                   <styleClass>
-                                                      <String fx:value="lidr-search-button-region" />
-                                                      <String fx:value="icon" />
-                                                   </styleClass>
-                                                </Region>
-                                             </graphic>
-                                          </Button>
-                                          <Region styleClass="region-add">
-                                             <HBox.margin>
-                                                <Insets bottom="2.0" left="4.0" right="5.0" top="2.0" />
-                                             </HBox.margin>
-                                          </Region>
-                                       </children>
-                                    </HBox>
-                                 </children>
-                              </VBox>
-                           </children>
-                           <opaqueInsets>
-                              <Insets />
-                           </opaqueInsets>
-                           <VBox.margin>
-                              <Insets />
-                           </VBox.margin>
-                        </StackPane>
-                     </children>
-                  </VBox>
+                  <VBox fx:id="purposeAndMeaningContainer" styleClass="purpose-meaning-container" />
                   <VBox>
                      <VBox.margin>
                         <Insets top="14.0" />

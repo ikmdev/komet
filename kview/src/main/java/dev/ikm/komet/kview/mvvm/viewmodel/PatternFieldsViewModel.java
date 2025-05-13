@@ -83,4 +83,8 @@ public class PatternFieldsViewModel extends FormViewModel {
                 .addProperty(PREVIOUS_PATTERN_FIELD, (PatternField) null)
         ;
     }
+
+    public ViewProperties getViewProperties() {
+        return getPropertyValue(VIEW_PROPERTIES);
+    }
 }
