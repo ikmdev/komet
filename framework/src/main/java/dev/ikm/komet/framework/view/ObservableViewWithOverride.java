@@ -106,9 +106,11 @@ public class ObservableViewWithOverride extends ObservableViewBase {
 
         ObservableList<ObservableLanguageCoordinateBase> languageCoordinateList = FXCollections.observableArrayList();
 
-        observableView.languageCoordinates().forEach(languageCoord -> {
-            languageCoordinateList.add(new ObservableLanguageCoordinateWithOverride(languageCoord));
-        });
+        if (observableView.languageCoordinates() != null) {
+            observableView.languageCoordinates().forEach(languageCoord -> {
+                languageCoordinateList.add(new ObservableLanguageCoordinateWithOverride(languageCoord));
+            });
+        }
 
         ListProperty<ObservableLanguageCoordinateBase> languageListProperty = new SimpleEqualityBasedListProperty<>(this,
                 "", languageCoordinateList);
