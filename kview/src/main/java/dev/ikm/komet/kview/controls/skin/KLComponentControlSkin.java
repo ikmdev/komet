@@ -49,6 +49,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private final BorderPane doNotDropBorderPane;
     private final StackPane dragHandleIconContainer;
 
+    private AutoCompleteTextField<EntityProxy> typeAheadSearchField;
+
     /**
      * Creates a new KLComponentControlSkin instance, installing the necessary child
      * nodes into the Control {@link javafx.scene.control.Control#getChildrenUnmodifiable() children} list, as
@@ -91,6 +93,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
             if (control.isEmpty()) {
                selectedConceptContainer.getChildren().clear();
                conceptContainer.setVisible(true);
+
+               typeAheadSearchField.clear();
             }
         });
 
@@ -256,13 +260,10 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     }
 
     private HBox createSearchBox() {
-        AutoCompleteTextField<EntityProxy> typeAheadSearchField = new AutoCompleteTextField<>();
+        typeAheadSearchField = new AutoCompleteTextField<>();
 
         StackPane typeAheadSearchFieldContainer = new StackPane();
         typeAheadSearchFieldContainer.getStyleClass().add("search-field-container");
-
-        Label searchPrompt = new Label(getString("textfield.prompt.text"));
-        searchPrompt.getStyleClass().add("search-prompt");
 
         typeAheadSearchField.getStyleClass().add("concept-text-field");
         typeAheadSearchField.textProperty().subscribe(text -> getSkinnable().getProperties().put(SEARCH_TEXT_VALUE, text));
@@ -275,14 +276,19 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         typeAheadSearchField.getPopupStyleClasses().add("component-popup");
         typeAheadSearchField.setSuggestionsNodeHeight(41);
 
-
-        typeAheadSearchFieldContainer.getChildren().addAll(typeAheadSearchField, searchPrompt);
+        // search prompt
+        Label searchPrompt = new Label(getString("textfield.prompt.text"));
+        searchPrompt.getStyleClass().add("search-prompt");
 
         searchPrompt.visibleProperty().bind(
                 typeAheadSearchField.focusedProperty().not()
-                .and
+                        .and
                 (typeAheadSearchField.textProperty().isEmpty())
         );
+
+        searchPrompt.setMouseTransparent(true);
+
+        typeAheadSearchFieldContainer.getChildren().addAll(typeAheadSearchField, searchPrompt);
 
         HBox.setHgrow(typeAheadSearchFieldContainer, Priority.ALWAYS);
 
@@ -375,6 +381,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
             if (getSkinnable().getOnRemoveAction() != null) {
                 getSkinnable().getOnRemoveAction().handle(new ActionEvent());
             }
+            typeAheadSearchField.requestFocus();
         });
         closeButton.setAlignment(Pos.CENTER_RIGHT);
 

@@ -19,7 +19,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Path;
 
 import java.util.BitSet;
-import java.util.List;
+import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem.PS_STATE;
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorControl.MAX_LEVEL;
@@ -146,7 +146,10 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2 && !isEmpty() && !isViewLineage()) {
                 if (treeView.getOnAction() != null) {
-                    treeView.getOnAction().accept(List.of(getItem()));
+                    Consumer<ConceptFacade> consumer = treeView.getOnAction().apply(KLConceptNavigatorControl.CONTEXT_MENU_ACTION.OPEN_IN_WORKSPACE);
+                    if (consumer != null) {
+                        consumer.accept(getItem());
+                    }
                 }
                 e.consume();
             }

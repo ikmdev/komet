@@ -11,6 +11,7 @@
 
 <?import javafx.scene.control.CheckBox?>
 <?import dev.ikm.komet.kview.controls.KLSearchControl?>
+<?import javafx.scene.control.Button?>
 <ScrollPane styleClass="sample-container" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.sampler.controllers.SamplerConceptNavigatorController">
     <VBox>
@@ -30,6 +31,7 @@
                 <Label text="Pick the dataset" styleClass="title"/>
                 <VBox fx:id="datasetBox" styleClass="dataset-box"/>
                 <CheckBox fx:id="showTagsCheckBox" text="Show Tags" styleClass="title"/>
+                <Button fx:id="cleanAreaButton" text="Clear workspace" onAction="#cleanArea" />
             </VBox>
         </SplitPane>
 

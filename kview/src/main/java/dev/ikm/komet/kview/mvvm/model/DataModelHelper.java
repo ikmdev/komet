@@ -21,8 +21,6 @@ import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.DIGRAPH_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.DITREE_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
@@ -33,6 +31,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
+import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
@@ -67,9 +66,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * utitity class for accessing and modifying common data operations
@@ -79,19 +83,21 @@ public class DataModelHelper {
     private static final Logger LOG = LoggerFactory.getLogger(DataModelHelper.class);
 
     /**
-     * data types for field definitions
-     * @return field definitions
+     * Retrieves a set of ConceptEntity objects representing the supported data types for field definitions.
+     *
+     * @return A set of ConceptEntity objects representing available field data types.
+     *         The set may contain fewer elements than expected if some concept entities
+     *         could not be retrieved from the database.
      */
     public static Set<ConceptEntity> fetchFieldDefinitionDataTypes() {
-
         return Set.of(
 // unsupported datatypes are commented out
                 Entity.getFast(STRING.nid()),
                 Entity.getFast(COMPONENT_FIELD.nid()),
                 Entity.getFast(COMPONENT_ID_SET_FIELD.nid()),
                 Entity.getFast(COMPONENT_ID_LIST_FIELD.nid()),
-                Entity.getFast(DITREE_FIELD.nid()),
-                Entity.getFast(DIGRAPH_FIELD.nid()),
+//                Entity.getFast(DITREE_FIELD.nid()),
+//                Entity.getFast(DIGRAPH_FIELD.nid()),
 //                Entity.getFast(CONCEPT_FIELD.nid()),
 //                Entity.getFast(SEMANTIC_FIELD_TYPE.nid()),
                 Entity.getFast(INTEGER_FIELD.nid()),
@@ -111,28 +117,95 @@ public class DataModelHelper {
     }
 
     /**
-     * return description types
-     * @return description types
+     * fetch data types based on the children of the displayFields Concept
+     * @param viewProperties
+     * @return set of allowed data types for a Pattern's field
      */
-    public static Set<ConceptEntity> fetchDescriptionTypes(){
-        return Set.of(
-                Entity.getFast(FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()),
-                Entity.getFast(REGULAR_NAME_DESCRIPTION_TYPE.nid())
-        );
+    public static Set<ConceptEntity> fetchFieldDefinitionDataTypes(ViewProperties viewProperties) {
+        // 4e627b9c-cecb-5563-82fc-cb0ee25113b1 is the publicId for displayFields which is the parent
+        int dataTypeNid = PrimitiveData.nid(UUID.fromString("4e627b9c-cecb-5563-82fc-cb0ee25113b1"));
+        IntIdList intIdList = viewProperties.calculator().navigationCalculator().childrenOf(dataTypeNid);
+
+        Set<ConceptEntity> conceptEntitySet = new TreeSet<>();
+
+        for (int i = 0; i < intIdList.size(); i++) {
+            EntityFacade entity = Entity.getFast(intIdList.get(i));
+            if (isSupportedDataTypes(entity.nid())) {
+                conceptEntitySet.add((ConceptEntity) entity);
+            }
+        }
+        return conceptEntitySet;
+    }
+
+    private static boolean isSupportedDataTypes(int nid) {
+        return (nid == STRING.nid()
+                || nid == COMPONENT_FIELD.nid()
+                || nid == COMPONENT_ID_SET_FIELD.nid()
+                || nid == COMPONENT_ID_LIST_FIELD.nid()
+                || nid == INTEGER_FIELD.nid()
+                || nid == FLOAT_FIELD.nid()
+                || nid == BOOLEAN_FIELD.nid()
+                || nid == BYTE_ARRAY_FIELD.nid()
+                || nid == IMAGE_FIELD.nid());
     }
 
     /**
-     * return distinct collection of the descendants of a concept
-     * @param viewProperties viewProperties
-     * @param publicId public id for a concept
-     * @return distinct collection of the descendants of a concept
+     * Retrieves a set of ConceptEntity objects representing available description types.
+     *
+     * @return A set of ConceptEntity objects representing available description types.
+     *         The set may contain fewer elements than expected if some concept entities
+     *         could not be retrieved from the database.
+     */            
+    public static Set<ConceptEntity> fetchDescriptionTypes() {
+        return Stream.of(
+                        FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid(),
+                        REGULAR_NAME_DESCRIPTION_TYPE.nid()
+                )
+                .map(DataModelHelper::getConceptEntitySafely)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Retrieves a set of ConceptEntity objects representing the descendants of a specified concept.
+     *
+     * @param viewProperties The view properties containing the calculator to determine descendants
+     * @param publicId The public identifier of the concept whose descendants are to be retrieved
+     * @return A set of ConceptEntity objects representing the descendants of the specified concept.
+     *         The set may contain fewer elements than expected if some concept entities
+     *         could not be retrieved from the database.
      */
     public static Set<ConceptEntity> fetchDescendentsOfConcept(ViewProperties viewProperties, PublicId publicId) {
-        IntIdSet decendents = viewProperties.calculator().descendentsOf(EntityService.get().nidForPublicId(publicId));
-        Set<ConceptEntity> allDecendents = decendents.intStream()
-                .mapToObj(decendentNid -> (ConceptEntity) Entity.getFast(decendentNid))
+        Objects.requireNonNull(viewProperties, "View properties cannot be null");
+        Objects.requireNonNull(publicId, "Public ID cannot be null");
+
+        IntIdSet descendants = viewProperties.calculator().descendentsOf(EntityService.get().nidForPublicId(publicId));
+        return descendants.intStream()
+                .mapToObj(DataModelHelper::getConceptEntitySafely)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        return allDecendents;
+    }
+
+    /**
+     * Safely retrieves a ConceptEntity for the given node identifier (nid).
+     *
+     * @param nid The node identifier to retrieve the concept entity for
+     * @return The ConceptEntity if found and of correct type, or null if the entity
+     *         doesn't exist or isn't a ConceptEntity
+     */
+    private static ConceptEntity getConceptEntitySafely(int nid) {
+        Entity<?> entity = Entity.getFast(nid);
+        if (entity instanceof ConceptEntity) {
+            // Using simple raw type cast for consistency
+            return (ConceptEntity) entity;
+        }
+        if (entity == null) {
+            LOG.warn("Entity not found for nid: {}", nid);
+        } else {
+            LOG.warn("Entity is not a ConceptEntity for nid: {}, actual type: {}",
+                    nid, entity.getClass().getName());
+        }
+        return null;
     }
 
     /**

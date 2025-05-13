@@ -265,7 +265,7 @@ public class ConceptNavigatorUtils {
     /**
      * <p>Builds the {@link InvertedTree} for a given {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem},
      * finds the sorted map of lineages, and takes the shorter lineage that matches the nid and child nid of
-     * such item.
+     * such item, unless the nid is -1, in which case, it takes the first route.
      * </p>
      * @param conceptItem a given {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
      * @param navigator the {@link Navigator} that holds the dataset
@@ -277,7 +277,7 @@ public class ConceptNavigatorUtils {
         Map<Integer, List<InvertedTree.ConceptItem>> lineageMap = tree.getLineageMap();
 
         return lineageMap.values().stream()
-                .filter(list -> conceptItem.equals(list.getLast()))
+                .filter(list -> conceptItem.nid() == -1 || conceptItem.equals(list.getLast()))
                 .findFirst()
                 .orElse(List.of());
     }
