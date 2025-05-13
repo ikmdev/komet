@@ -17,11 +17,11 @@ import java.util.ResourceBundle;
  */
 public class MultipleSelectionContextMenu extends ContextMenu {
 
-    private final MenuItem populateMessage;
-    private final MenuItem journalMessage;
-    private final MenuItem chapterMessage;
-    private final MenuItem copyMessage;
-    private final MenuItem saveMessage;
+    private final MenuItem populateMenuItem;
+    private final MenuItem journalMenuItem;
+    private final MenuItem chapterMenuItem;
+    private final MenuItem copyMenuItem;
+    private final MenuItem saveMenuItem;
 
     /**
      * Creates a new MultipleSelectionContextMenu
@@ -30,64 +30,64 @@ public class MultipleSelectionContextMenu extends ContextMenu {
         setAutoHide(true);
         ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.concept-navigator");
 
-        populateMessage = new MenuItem(resources.getString("multi.selection.context.menu.option.populate"), new IconRegion("icon", "populate"));
-        journalMessage = new MenuItem(resources.getString("multi.selection.context.menu.option.journal"), new IconRegion("icon", "send"));
-        chapterMessage = new MenuItem(resources.getString("multi.selection.context.menu.option.chapter"), new IconRegion("icon", "send"));
-        copyMessage = new MenuItem(resources.getString("multi.selection.context.menu.option.copy"), new IconRegion("icon", "duplicate"));
-        saveMessage = new MenuItem(resources.getString("multi.selection.context.menu.option.save"), new IconRegion("icon", "save"));
+        populateMenuItem = new MenuItem(resources.getString("multi.selection.context.menu.option.populate"), new IconRegion("icon", "populate"));
+        journalMenuItem = new MenuItem(resources.getString("multi.selection.context.menu.option.journal"), new IconRegion("icon", "send"));
+        chapterMenuItem = new MenuItem(resources.getString("multi.selection.context.menu.option.chapter"), new IconRegion("icon", "send"));
+        copyMenuItem = new MenuItem(resources.getString("multi.selection.context.menu.option.copy"), new IconRegion("icon", "duplicate"));
+        saveMenuItem = new MenuItem(resources.getString("multi.selection.context.menu.option.save"), new IconRegion("icon", "save"));
 
-        getItems().addAll(populateMessage, journalMessage, chapterMessage, copyMessage, saveMessage);
+        getItems().addAll(populateMenuItem, journalMenuItem, chapterMenuItem, copyMenuItem, saveMenuItem);
         setAnchorLocation(AnchorLocation.CONTENT_TOP_LEFT);
     }
 
     /**
-     * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #populateMessage} menu
+     * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #populateMenuItem} menu
      * item is fired.
      * </p>
      * @param eventHandler a {@link EventHandler<ActionEvent>}
      */
-    public void setPopulateMessageAction(EventHandler<ActionEvent> eventHandler) {
-        populateMessage.setOnAction(eventHandler);
+    public void setPopulateMenuItemAction(EventHandler<ActionEvent> eventHandler) {
+        populateMenuItem.setOnAction(eventHandler);
     }
 
     /**
-     * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #journalMessage} menu
+     * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #journalMenuItem} menu
      * item is fired.
      * </p>
      * @param eventHandler a {@link EventHandler<ActionEvent>}
      */
-    public void setJournalMessageAction(EventHandler<ActionEvent> eventHandler) {
-        journalMessage.setOnAction(eventHandler);
+    public void setJournalMenuItemAction(EventHandler<ActionEvent> eventHandler) {
+        journalMenuItem.setOnAction(eventHandler);
     }
 
     /**
-     * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #chapterMessage} menu
+     * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #chapterMenuItem} menu
      * item is fired.
      * </p>
      * @param eventHandler a {@link EventHandler<ActionEvent>}
      */
-    public void setChapterMessageAction(EventHandler<ActionEvent> eventHandler) {
-        chapterMessage.setOnAction(eventHandler);
+    public void setChapterMenuItemAction(EventHandler<ActionEvent> eventHandler) {
+        chapterMenuItem.setOnAction(eventHandler);
     }
 
     /**
-     * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #copyMessage} menu
+     * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #copyMenuItem} menu
      * item is fired.
      * </p>
      * @param eventHandler a {@link EventHandler<ActionEvent>}
      */
-    public void setCopyMessageAction(EventHandler<ActionEvent> eventHandler) {
-        copyMessage.setOnAction(eventHandler);
+    public void setCopyMenuItemAction(EventHandler<ActionEvent> eventHandler) {
+        copyMenuItem.setOnAction(eventHandler);
     }
 
     /**
-     * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #saveMessage} menu
+     * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #saveMenuItem} menu
      * item is fired.
      * </p>
      * @param eventHandler a {@link EventHandler<ActionEvent>}
      */
-    public void setSaveMessageAction(EventHandler<ActionEvent> eventHandler) {
-        saveMessage.setOnAction(eventHandler);
+    public void setSaveMenuItemAction(EventHandler<ActionEvent> eventHandler) {
+        saveMenuItem.setOnAction(eventHandler);
     }
 
     /**
