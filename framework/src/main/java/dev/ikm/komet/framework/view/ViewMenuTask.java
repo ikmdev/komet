@@ -127,9 +127,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         for (StateSet stateSet : new StateSet[]{StateSet.ACTIVE, StateSet.ACTIVE_AND_INACTIVE, StateSet.ACTIVE_INACTIVE_AND_WITHDRAWN,
                 StateSet.INACTIVE, StateSet.WITHDRAWN}) {
             CheckMenuItem item = new CheckMenuItem(stateSet.toUserString());
-            if (observableView.navigationCoordinate().getOriginalValue().vertexStates() == observableView.stampCoordinate().allowedStates()) {
-                item.setSelected(stateSet.equals(observableView.navigationCoordinate().getOriginalValue().vertexStates()));
-            }
+            item.setSelected(stateSet.equals(observableView.stampCoordinate().allowedStates()));
             item.setOnAction(event -> {
                 Platform.runLater(() -> {
                     observableView.setAllowedStates(stateSet);
