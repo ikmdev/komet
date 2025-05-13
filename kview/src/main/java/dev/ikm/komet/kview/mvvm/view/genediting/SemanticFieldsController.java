@@ -350,9 +350,6 @@ public class SemanticFieldsController {
                // EventBus implementation changes to refresh the details area if commit successful
                EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                        new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
-               // refesh the pattern navigation
-               EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
-                       new PatternSavedEvent(actionEvent.getSource(), PatternSavedEvent.PATTERN_UPDATE_EVENT));
            }, () -> {
                //TODO this is a temp alert / workaround till we figure how to reload transactions across multiple restarts of app.
                LOG.error("Unable to commit: Transaction for the given version does not exist.");

@@ -28,7 +28,7 @@ import javafx.util.StringConverter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AutoCompleteTextFieldSkin<T> extends TextFieldSkin {
+public class AutoCompleteTextFieldSkin<T> extends FXTextFieldSkin {
     private final AutoCompletePopup autoCompletePopup;
 
     private Timeline timeline;
