@@ -15,20 +15,6 @@
  */
 package dev.ikm.komet.framework.view;
 
-import javafx.application.Platform;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.Property;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableSet;
-import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.primitive.ImmutableLongList;
-import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
-import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.tinkar.common.id.IntIdSet;
@@ -51,6 +37,20 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
+import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.primitive.ImmutableLongList;
+import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
+import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -444,20 +444,9 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
     private static void addChangeItemsForLanguage(ViewCalculator viewCalculator, List<MenuItem> menuItems,
                                                   ObservableLanguageCoordinate observableCoordinate) {
 
-        Menu changeTypeOrder = new Menu("Change description preference");
-        menuItems.add(changeTypeOrder);
-        for (ImmutableList<? extends ConceptFacade> typePreferenceList : FxGet.allowedDescriptionTypeOrder()) {
-            CheckMenuItem typeOrderItem = new CheckMenuItem(viewCalculator.toEntityString(typePreferenceList.castToList(), viewCalculator::toEntityStringOrPublicIdAndNid));
-            changeTypeOrder.getItems().add(typeOrderItem);
-            typeOrderItem.setSelected(observableCoordinate.descriptionTypePreferenceListProperty().getValue().equals(typePreferenceList.castToList()));
-            typeOrderItem.setOnAction(event -> {
-                ObservableList<ConceptFacade> prefList = FXCollections.observableArrayList(typePreferenceList.toArray(new ConceptFacade[0]));
-                Platform.runLater(() ->
-                        observableCoordinate.descriptionTypePreferenceListProperty().setValue(prefList)
-                );
-                event.consume();
-            });
-        }
+        // Change description preference menu is also being set in the menu in addChangeItemsForView()
+        // use common method to create the menu items
+        createChangeDescriptionPreferenceMenuItems(viewCalculator, menuItems, observableCoordinate);
 
         Menu changeLanguageMenu = new Menu("Change language");
         menuItems.add(changeLanguageMenu);
@@ -511,26 +500,19 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
 
         changeStates(menuItems, "Change allowed vertex states", observableView.navigationCoordinate().vertexStatesProperty());
 
-        for (int i = 0; i < observableView.languageCoordinates().size(); i++) {
-            ObservableLanguageCoordinate languageCoordinate = observableView.languageCoordinates().get(i);
-            Menu languageCoordinateMenu = new Menu("Change language coordinate " + i);
-            menuItems.add(languageCoordinateMenu);
-            Menu changeDescriptionPreferenceMenu = new Menu("Change description preference");
-            languageCoordinateMenu.getItems().add(changeDescriptionPreferenceMenu);
+        var languageCoordinates = observableView.languageCoordinates();
 
-            for (ImmutableList<? extends ConceptFacade> typePreferenceList : FxGet.allowedDescriptionTypeOrder()) {
-                CheckMenuItem typeOrderItem = new CheckMenuItem(viewCalculator.toEntityString(typePreferenceList.castToList(), viewCalculator::toEntityStringOrPublicIdAndNid));
-                changeDescriptionPreferenceMenu.getItems().add(typeOrderItem);
-                typeOrderItem.setSelected(languageCoordinate.descriptionTypePreferenceListProperty().getValue().equals(typePreferenceList.castToList()));
-                typeOrderItem.setDisable(typeOrderItem.isSelected());
-                typeOrderItem.setOnAction(event -> {
-                    ObservableList<ConceptFacade> prefList = FXCollections.observableArrayList(typePreferenceList.toArray(new ConceptFacade[0]));
-                    Platform.runLater(() ->
-                            languageCoordinate.descriptionTypePreferenceListProperty().setValue(prefList)
-                    );
-                    event.consume();
-                });
-            }
+        for (int i = 0; i < languageCoordinates.size(); i++) {
+            ObservableLanguageCoordinate languageCoordinate = languageCoordinates.get(i);
+            var menuText = "Change language coordinate" +
+                    (languageCoordinates.size() > 1 ? " " + i : "");
+
+            Menu languageCoordinateMenu = new Menu(menuText);
+            menuItems.add(languageCoordinateMenu);
+
+            // Change description preference menu is also being set in the menu in addChangeItemsForLanguage()
+            // use common method to create the menu items
+            createChangeDescriptionPreferenceMenuItems(viewCalculator, languageCoordinateMenu.getItems(), languageCoordinate);
         }
 
         addChangeItemsForNavigation(viewCalculator,
@@ -582,6 +564,29 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             });
         });
 
+    }
+
+    /**
+     * Creates the menu items for the Change description preferenence language selections, which includes the
+     * Fully Qualified Name and Regular Name
+     */
+    private static void createChangeDescriptionPreferenceMenuItems(ViewCalculator viewCalculator, List<MenuItem> menuItems, ObservableLanguageCoordinate languageCoordinate) {
+        Menu changeDescriptionPreferenceMenu = new Menu("Change description preference");
+        menuItems.add(changeDescriptionPreferenceMenu);
+
+        for (ImmutableList<? extends ConceptFacade> typePreferenceList : FxGet.allowedDescriptionTypeOrder()) {
+            CheckMenuItem typeOrderItem = new CheckMenuItem(viewCalculator.toEntityString(typePreferenceList.castToList(), viewCalculator::toEntityStringOrPublicIdAndNid));
+            changeDescriptionPreferenceMenu.getItems().add(typeOrderItem);
+            typeOrderItem.setSelected(languageCoordinate.descriptionTypePreferenceListProperty().getValue().equals(typePreferenceList.castToList()));
+            typeOrderItem.setDisable(typeOrderItem.isSelected());
+            typeOrderItem.setOnAction(event -> {
+                ObservableList<ConceptFacade> prefList = FXCollections.observableArrayList(typePreferenceList.toArray(new ConceptFacade[0]));
+                Platform.runLater(() ->
+                        languageCoordinate.descriptionTypePreferenceListProperty().setValue(prefList)
+                );
+                event.consume();
+            });
+        }
     }
 
     private static boolean makeRecursiveOverrideMenu(ViewCalculator viewCalculator, List<MenuItem> menuItems,
