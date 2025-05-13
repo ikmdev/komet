@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.ConceptTile;
@@ -9,6 +10,7 @@ import dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell;
 import dev.ikm.komet.kview.controls.MultipleSelectionContextMenu;
 import dev.ikm.komet.kview.controls.SingleSelectionContextMenu;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.ProxyFactory;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -225,6 +227,27 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             }
         });
         treeView.setOnDragDone(_ -> resetSelection());
+
+        // External drag and drop
+        treeView.setOnDragOver(event -> {
+            if (event.getDragboard().hasContent(KometClipboard.KOMET_CONCEPT_PROXY)) {
+                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+            }
+            event.consume();
+        });
+
+        treeView.setOnDragDropped(event -> {
+            Dragboard dragboard = event.getDragboard();
+            if (dragboard.hasContent(KometClipboard.KOMET_CONCEPT_PROXY)) {
+                ConceptFacade conceptFacade = ProxyFactory.fromXmlFragment((String) dragboard.getContent(KometClipboard.KOMET_CONCEPT_PROXY));
+                InvertedTree.ConceptItem parentConceptItem = new InvertedTree.ConceptItem(-1, conceptFacade.nid(), "");
+                expandAndHighlightConcept(parentConceptItem);
+                event.setDropCompleted(true);
+                treeView.unhighlightConceptsWithDelay();
+                highlighted.set(false);
+            }
+            event.consume();
+        });
 
         ScrollBar verticalBar = (ScrollBar) treeView.lookup(".scroll-bar:vertical");
         verticalBar.skinProperty().addListener(new InvalidationListener() {

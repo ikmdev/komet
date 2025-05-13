@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import dev.ikm.komet.framework.view.ViewProperties;
 import org.carlfx.axonic.StateMachine;
 
 import java.util.UUID;
@@ -35,5 +36,7 @@ public class PatternPropertiesViewModel extends FormViewModel {
         ;
     }
 
-
+    public ViewProperties getViewProperties() {
+        return getPropertyValue(VIEW_PROPERTIES);
+    }
 }

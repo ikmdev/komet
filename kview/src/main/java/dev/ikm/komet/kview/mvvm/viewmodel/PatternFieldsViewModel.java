@@ -58,11 +58,6 @@ public class PatternFieldsViewModel extends FormViewModel {
                 .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
                 .addProperty(FIELD_ORDER, (Integer) 1) // This has to cast to Integer since the default is Number
                 .addProperty(DISPLAY_NAME, "")
-                .addValidator(DISPLAY_NAME, "Display Name", (ReadOnlyStringProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
-                    if (prop.isEmpty().get()) {
-                        validationResult.error("${%s} is required".formatted(DISPLAY_NAME));
-                    }
-                })
                 .addProperty(DATA_TYPE, (EntityFacade) null)
                 .addValidator(DATA_TYPE, "Data Type", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
                     if (prop.isNull().get()) {
@@ -87,5 +82,9 @@ public class PatternFieldsViewModel extends FormViewModel {
                 .addProperty(FIELD_ORDER_OPTIONS, new ArrayList<Integer>())
                 .addProperty(PREVIOUS_PATTERN_FIELD, (PatternField) null)
         ;
+    }
+
+    public ViewProperties getViewProperties() {
+        return getPropertyValue(VIEW_PROPERTIES);
     }
 }
