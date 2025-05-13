@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.kview.fxutils.window;
 
-import java.util.EnumMap;
-import java.util.Map;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.map.MutableMap;
 
 import static dev.ikm.komet.kview.fxutils.window.CursorMappings.ResizeDirection;
 import static dev.ikm.komet.kview.fxutils.window.CursorMappings.getCornerDirections;
@@ -73,9 +73,8 @@ public class ResizeHandleFactory {
      *
      * @return A map of resize handles indexed by their direction
      */
-    public Map<ResizeDirection, ResizeHandle> createAllHandles() {
-        EnumMap<ResizeDirection, ResizeHandle> handles =
-                new EnumMap<>(ResizeDirection.class);
+    public MutableMap<ResizeDirection, ResizeHandle> createAllHandles() {
+        MutableMap<ResizeDirection, ResizeHandle> handles = Maps.mutable.empty();
 
         // Create edge handles
         for (ResizeDirection direction : getEdgeDirections()) {

@@ -29,14 +29,15 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Subscription;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.function.BiConsumer;
 
 import static dev.ikm.komet.kview.fxutils.window.CursorMappings.ResizeDirection;
@@ -135,10 +136,10 @@ public class WindowSupport implements AutoCloseable {
 
     // Core components
     private final Pane pane;
-    private final List<Node> draggableNodes = new ArrayList<>();
+    private final MutableList<Node> draggableNodes = Lists.mutable.empty();
 
     // Resize handles
-    private Map<ResizeDirection, ResizeHandle> resizeHandles;
+    private MutableMap<ResizeDirection, ResizeHandle> resizeHandles;
 
     // Drag position tracking
     private final SimpleObjectProperty<Point2D> dragAnchorPoint = new SimpleObjectProperty<>(new Point2D(0, 0));
@@ -150,9 +151,9 @@ public class WindowSupport implements AutoCloseable {
     private BiConsumer<MouseEvent, WindowSupport> dragMouseReleaseHandler;
 
     // Subscription management
-    private final List<Subscription> subscriptions = new ArrayList<>();
-    private final Map<Node, Subscription> nodeSubscriptions = new HashMap<>();
-    private final Map<String, Subscription> categorySubscriptions = new HashMap<>();
+    private final MutableList<Subscription> subscriptions = Lists.mutable.empty();
+    private final MutableMap<Node, Subscription> nodeSubscriptions = Maps.mutable.empty();
+    private final MutableMap<String, Subscription> categorySubscriptions = Maps.mutable.empty();
 
     /**
      * Creates a new WindowSupport instance that transforms the specified pane into a window-like component.
@@ -432,8 +433,9 @@ public class WindowSupport implements AutoCloseable {
     }
 
     /**
-     * Removes a node from the list of draggable regions.
+     * Removes a node from the list of draggable regions and cancels its associated event handlers.
      * <p>
+     * This method safely detaches the specified node from acting as a drag handle for the window.
      * After removal, mouse drag operations on this node will no longer move the window.
      *
      * @param draggableNode The node to remove as a draggable region
@@ -443,11 +445,14 @@ public class WindowSupport implements AutoCloseable {
     public void removeDraggableRegion(Node draggableNode) {
         if (draggableNode == null) return;
 
-        Subscription sub = nodeSubscriptions.remove(draggableNode);
-        if (sub != null) {
-            sub.unsubscribe();
+        // Unsubscribe and remove its event handler subscription
+        Subscription eventHandlerSubscription = nodeSubscriptions.remove(draggableNode);
+        if (eventHandlerSubscription != null) {
+            eventHandlerSubscription.unsubscribe();
+            subscriptions.remove(eventHandlerSubscription);
         }
 
+        // Remove the node from the list of draggable nodes
         draggableNodes.remove(draggableNode);
     }
 
@@ -468,7 +473,7 @@ public class WindowSupport implements AutoCloseable {
      * Adds resize handlers to all handles.
      */
     private void addResizeHandlers() {
-        List<Subscription> handleSubscriptions = new ArrayList<>();
+        MutableList<Subscription> handleSubscriptions = Lists.mutable.empty();
 
         // Add handlers for all resize handles
         for (ResizeHandle handle : resizeHandles.values()) {
@@ -553,7 +558,7 @@ public class WindowSupport implements AutoCloseable {
         };
 
         // Create subscriptions for all properties
-        List<Subscription> propertySubscriptions = new ArrayList<>();
+        MutableList<Subscription> propertySubscriptions = Lists.mutable.empty();
 
         propertySubscriptions.add(createPropertySubscription(windowPositionX, updateLayout));
         propertySubscriptions.add(createPropertySubscription(windowPositionY, updateLayout));
@@ -1092,17 +1097,21 @@ public class WindowSupport implements AutoCloseable {
      */
     public void removeSupport() {
         try {
-            // Unsubscribe all registered event handlers and listeners
-            for (Subscription subscription : subscriptions) {
+            // Unsubscribe category-based subscriptions
+            ImmutableList<Subscription> catSubscriptionList = Lists.immutable.withAll(categorySubscriptions.values());
+            for (Subscription catSubscription : catSubscriptionList) {
+                catSubscription.unsubscribe();
+            }
+
+            // Unsubscribe any remaining individual subscriptions
+            ImmutableList<Subscription> subscriptionList = Lists.immutable.withAll(this.subscriptions);
+            for (Subscription subscription : subscriptionList) {
                 subscription.unsubscribe();
             }
+
+            // Clear all subscription collections
             subscriptions.clear();
-
-            // Clear subscription maps
-            nodeSubscriptions.values().forEach(Subscription::unsubscribe);
             nodeSubscriptions.clear();
-
-            categorySubscriptions.values().forEach(Subscription::unsubscribe);
             categorySubscriptions.clear();
 
             // Remove visual elements from the scene
@@ -1149,7 +1158,7 @@ public class WindowSupport implements AutoCloseable {
     }
 
     /**
-     * Adds a subscription to a named category for organization.
+     * Adds a subscription to a named category for logical organization and lifecycle management.
      */
     private void addSubscription(String category, Subscription subscription) {
         Subscription existing = categorySubscriptions.get(category);
@@ -1158,7 +1167,6 @@ public class WindowSupport implements AutoCloseable {
         } else {
             categorySubscriptions.put(category, subscription);
         }
-        subscriptions.add(subscription);
     }
 
     // Getter and setter methods
