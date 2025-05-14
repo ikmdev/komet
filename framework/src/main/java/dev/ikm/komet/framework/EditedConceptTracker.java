@@ -17,17 +17,18 @@ package dev.ikm.komet.framework;
 
 import java.util.ArrayList;
 
-import dev.ikm.tinkar.entity.SemanticVersionRecord;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 
 public class EditedConceptTracker {
 
-	private static ArrayList<SemanticVersionRecord> edits = new ArrayList<>();
+	private static ArrayList<SemanticEntityVersion> edits = new ArrayList<>();
 
-	public static ArrayList<SemanticVersionRecord> getEdits() {
+	public static ArrayList<SemanticEntityVersion> getEdits() {
 		return edits;
 	}
 
-	public static void addEdit(SemanticVersionRecord edit) {
+	public static void addEdit(SemanticEntityVersion edit) {
+		edits.removeIf(ex_edit -> ex_edit.referencedComponentNid() == edit.referencedComponentNid());
 		edits.add(edit);
 	}
 
