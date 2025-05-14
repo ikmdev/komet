@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Objects;
 
@@ -79,9 +80,15 @@ public abstract class ObservableCoordinateAbstract<T extends ImmutableCoordinate
             // call this method setValue().  Within changeBaseCoordinate() listeners are removed then
             // added back.  An ArrayList cannot be modified when the items are being iterated.
             Platform.runLater(() -> {
-                changeBaseCoordinate(this.immutableCoordinate, oldValue, value);
-                for (ChangeListener<? super T> listener : changeListenerList) {
-                    listener.changed(this.immutableCoordinate, oldValue, value);
+                try {
+                    changeBaseCoordinate(this.immutableCoordinate, oldValue, value);
+                    for (ChangeListener<? super T> listener : changeListenerList) {
+                        listener.changed(this.immutableCoordinate, oldValue, value);
+                    }
+                } catch (ConcurrentModificationException e) {
+                    LOG.error("ConcurrentModificationException", e);
+                    
+                    throw e;
                 }
             });
         }
