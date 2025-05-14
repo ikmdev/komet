@@ -129,6 +129,9 @@ public class PatternFieldsController {
 
         dataTypeProp.addListener(fieldsValidationListener);
 
+        purposeProp.addListener(fieldsValidationListener);
+        meaningProp.addListener(fieldsValidationListener);
+
         totalExistingfields.addListener((obs, oldVal, newVal) -> {
             loadFieldOrderOptions(newVal.intValue());
         });
@@ -150,6 +153,8 @@ public class PatternFieldsController {
         meaningComponentControl.entityProperty().bindBidirectional(meaningProp);
 
         purposeAndMeaningContainer.getChildren().addAll(purposeComponentControl, meaningComponentControl);
+
+        doneButton.disableProperty().bind(patternFieldsViewModel.getProperty(IS_INVALID));
     }
 
     private void loadFieldOrderOptions(int totalFields){

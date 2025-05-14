@@ -336,7 +336,8 @@ public class PatternViewModel extends FormViewModel {
         // get the STAMP values from the nested stampViewModel
         StampViewModel stampViewModel = getPropertyValue(STAMP_VIEW_MODEL);
         State state = stampViewModel.getPropertyValue(STATUS);
-        EntityProxy.Concept author = stampViewModel.getPropertyValue(AUTHOR);
+
+        EntityProxy.Concept author = TinkarTerm.USER;
         ConceptEntity module = stampViewModel.getPropertyValue(MODULE);
         ConceptEntity path = stampViewModel.getPropertyValue(PATH);
         Session session = composer.open(state, author, module.toProxy(), path.toProxy());
