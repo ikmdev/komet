@@ -137,11 +137,9 @@ public class DetailsNode extends ExplorationNodeAbstract {
  *
  */
 
-
-            // set up the edit coordinate menu for the concept window in the journal view
-            MenuButton viewPropertiesMenuButton = makeViewMenuButton(viewProperties, activityStreamKeyProperty, optionForActivityStreamKeyProperty);
-
-            detailsViewController.setUpEditCoordinateMenu(viewPropertiesMenuButton);
+            //FIXME this is not working
+            //MenuButton viewPropertiesMenuButton = makeViewMenuButton(viewProperties, activityStreamKeyProperty, optionForActivityStreamKeyProperty);
+            //detailsViewController.setUpEditCoordinateMenu(viewPropertiesMenuButton);
 
             // Load Concept Properties View Panel (FXML & Controller)
             FXMLLoader propsFXMLLoader = new FXMLLoader(PropertiesController.class.getResource(CONCEPT_PROPERTIES_VIEW_FXML_FILE));

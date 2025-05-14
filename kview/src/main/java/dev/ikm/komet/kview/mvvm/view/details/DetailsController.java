@@ -118,6 +118,8 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -163,7 +165,7 @@ public class DetailsController  {
     private Button editCoordinateButton;
 
     @FXML
-    private MenuButton editCoordinateMenuButton;
+    private ContextMenu changeViewCoordinateMenu;
 
     @FXML
     private Button closeConceptButton;
@@ -526,6 +528,8 @@ public class DetailsController  {
                 event.consume();
             }
         });
+
+        setUpEditCoordinateMenu();
 
         // Update the pseudo-class when the viewport or content size changes.
         conceptContentScrollPane.viewportBoundsProperty().addListener((obs) ->
@@ -1520,21 +1524,17 @@ public class DetailsController  {
         this.conceptTopic = conceptTopic;
     }
 
-    public void setUpEditCoordinateMenu(MenuButton viewPropertiesMenuButton) {
-
-        Menu activityStreamMenu = new Menu("Activity stream", Icon.ACTIVITY.makeIcon());
-        viewPropertiesMenuButton.getItems().add(activityStreamMenu);
-
-        editCoordinateMenuButton = viewPropertiesMenuButton;
-
-//        editCoordinateButton.setOnAction(actionEvent -> {
-//            activityStreamMenu.show();
-//        });
+    @FXML
+    private void showChangeViewCoordinateMenu(ActionEvent actionEvent) {
+        MenuHelper.fireContextMenuEvent(actionEvent, Side.BOTTOM, 0, 0);
     }
 
-    //FIXME do I need this???
-//    @FXML
-//    private void showEditCoordinateMenu(ActionEvent actionEvent) {
-//
-//    }
+
+    public void setUpEditCoordinateMenu() {
+        //TODO we need an override able view? that is probably out of scope, we just need to show the menu?
+        // OR is showing the menu something that depends on the current viewProperties... prob does but
+        // can we just use the existing viewProperties
+        //TODO fill out menu programmatically with what is in the existing coordinate menu
+    }
+
 }
