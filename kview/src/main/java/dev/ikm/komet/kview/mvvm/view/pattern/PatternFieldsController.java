@@ -46,6 +46,8 @@ import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -114,7 +116,8 @@ public class PatternFieldsController {
         displayNameTextField.setEditable(false);
         patternFieldsViewModel.getProperty(MEANING_ENTITY).subscribe(meaningObject -> {
             if (meaningObject != null) {
-                displayNameTextField.setText(((ConceptEntity)meaningObject).description());
+                ConceptEntity conceptEntity = Entity.getFast((EntityFacade) meaningObject);
+                displayNameTextField.setText(conceptEntity.description());
             } else {
                 displayNameTextField.setText("");
             }
