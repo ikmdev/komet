@@ -31,6 +31,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Toggle;
@@ -241,8 +242,10 @@ public class PropertiesController {
                 PatternDefinition patternDefinition = evt.getPatternDefinition();
                 Optional<PatternDefinitionViewModel> optionalDefinitionViewModel = patternDefinitionControllerJFXNode.getViewModel("patternDefinitionViewModel");
                 optionalDefinitionViewModel.ifPresent(definitionViewModel -> {
-                    definitionViewModel.setPropertyValue(PURPOSE_ENTITY, patternDefinition.purpose().toProxy());
-                    definitionViewModel.setPropertyValue(MEANING_ENTITY, patternDefinition.meaning().toProxy());
+                    EntityFacade purposeEntityFacade = patternDefinition.purpose();
+                    EntityFacade meaningEntityFacade = patternDefinition.meaning();
+                    definitionViewModel.setPropertyValue(PURPOSE_ENTITY, purposeEntityFacade != null? purposeEntityFacade.toProxy() : null);
+                    definitionViewModel.setPropertyValue(MEANING_ENTITY, meaningEntityFacade != null ? meaningEntityFacade.toProxy() : null);
                 });
             } else if (evt.getEventType() == SHOW_EDIT_FIELDS) {
                 //Set the field values for edit.

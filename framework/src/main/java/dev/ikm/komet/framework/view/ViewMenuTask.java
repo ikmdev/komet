@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.view;
 
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
@@ -187,12 +188,15 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         });
 
         ImmutableLongList times = StampService.get().getTimesInUse().toReversed();
-
         MutableIntObjectMap<Menu> yearMenuMap = IntObjectMaps.mutable.empty();
         for (long time : times.toArray()) {
             LocalDateTime localTime = DateTimeUtil.epochToZonedDateTime(time).toLocalDateTime();
             Menu aYearMenu = yearMenuMap.getIfAbsentPutWithKey(localTime.getYear(), (int year) -> {
-                Menu yearMenu = new Menu(Integer.toString(year));
+                String yearString = Integer.toString(year);
+                if (time == PREMUNDANE_TIME){
+                    yearString = "Premundane";
+                }
+                Menu yearMenu = new Menu(yearString);
                 changePositionMenu.getItems().add(yearMenu);
                 yearMenu.getItems().add(new Menu("Jan"));
                 yearMenu.getItems().add(new Menu("Feb"));
