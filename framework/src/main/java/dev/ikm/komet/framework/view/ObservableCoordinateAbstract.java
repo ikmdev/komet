@@ -81,8 +81,13 @@ public abstract class ObservableCoordinateAbstract<T extends ImmutableCoordinate
             // added back.  An ArrayList cannot be modified when the items are being iterated.
             Platform.runLater(() -> {
                 try {
+                    // Copy change listener list to avoid ConcurrentModificationException
+                    // This was added because addListener() was being called recursively within the listener.changed
+                    // loop below.
+                    List<ChangeListener<? super T>> copiedChangeListenerList = new ArrayList<>(changeListenerList);
+
                     changeBaseCoordinate(this.immutableCoordinate, oldValue, value);
-                    for (ChangeListener<? super T> listener : changeListenerList) {
+                    for (ChangeListener<? super T> listener : copiedChangeListenerList) {
                         listener.changed(this.immutableCoordinate, oldValue, value);
                     }
                 } catch (ConcurrentModificationException e) {
