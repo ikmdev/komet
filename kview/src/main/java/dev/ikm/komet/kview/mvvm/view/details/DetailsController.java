@@ -47,6 +47,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_T
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.AxiomChangeEvent;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -55,6 +56,7 @@ import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
+import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
 import dev.ikm.komet.kview.events.AddFullyQualifiedNameEvent;
@@ -75,6 +77,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
@@ -360,8 +363,9 @@ public class DetailsController  {
     public DetailsController() {
     }
 
-    public DetailsController(UUID conceptTopic) {
+    public DetailsController(UUID conceptTopic, ViewProperties viewProperties) {
         this.conceptTopic = conceptTopic;
+        this.viewProperties = viewProperties;
     }
 
     @FXML
@@ -1530,11 +1534,15 @@ public class DetailsController  {
     }
 
 
+    /**
+     * generate the classic Komet coordinate menu
+     */
     public void setUpEditCoordinateMenu() {
-        //TODO we need an override able view? that is probably out of scope, we just need to show the menu?
-        // OR is showing the menu something that depends on the current viewProperties... prob does but
-        // can we just use the existing viewProperties
-        //TODO fill out menu programmatically with what is in the existing coordinate menu
+        changeViewCoordinateMenu.getItems().clear();
+        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(getViewProperties().calculator(), this.viewProperties.nodeView()),
+                (List<MenuItem> result) -> {
+                    this.changeViewCoordinateMenu.getItems().addAll(result);
+                }));
     }
 
 }

@@ -103,7 +103,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
             // 2) not in fxml view class    - apply(file, view, ...view models)
             // 3) not in fxml view instance - apply(file, view instance, ...view models)
             Config config = new Config(getClass().getResource(CONCEPT_DETAILS_VIEW_FXML_FILE))
-                    .controller(new DetailsController(conceptTopic))
+                    .controller(new DetailsController(conceptTopic, viewProperties))
                     .updateViewModel("conceptViewModel", viewModel ->
                             viewModel.setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalWindowTopic));
             JFXNode<BorderPane, DetailsController> jfxNode = FXMLMvvmLoader.make(config);
@@ -116,9 +116,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
             String styleSheet = defaultStyleSheet();
             this.detailsViewBorderPane.getStylesheets().add(styleSheet);
 
-
             if (!displayOnJournalView) {
-
 
                 // Add the menu drop down for coordinates & activity stream options with Blue Title of concept
                 Node topPanel = TopPanelFactory.make(
@@ -129,17 +127,6 @@ public class DetailsNode extends ExplorationNodeAbstract {
                         false);
                 this.detailsViewBorderPane.setTop(topPanel);
             }
-/**
- * TODO create a new viewProperties that is derived from the navigator
- *      don't use the topPanel component because it is too highly integrated with classic komet elements
- *
- *      1)
- *
- */
-
-            //FIXME this is not working
-            //MenuButton viewPropertiesMenuButton = makeViewMenuButton(viewProperties, activityStreamKeyProperty, optionForActivityStreamKeyProperty);
-            //detailsViewController.setUpEditCoordinateMenu(viewPropertiesMenuButton);
 
             // Load Concept Properties View Panel (FXML & Controller)
             FXMLLoader propsFXMLLoader = new FXMLLoader(PropertiesController.class.getResource(CONCEPT_PROPERTIES_VIEW_FXML_FILE));
