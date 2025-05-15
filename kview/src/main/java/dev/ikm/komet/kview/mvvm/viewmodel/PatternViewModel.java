@@ -42,6 +42,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
@@ -337,10 +338,17 @@ public class PatternViewModel extends FormViewModel {
         StampViewModel stampViewModel = getPropertyValue(STAMP_VIEW_MODEL);
         State state = stampViewModel.getPropertyValue(STATUS);
 
-        EntityProxy.Concept author = TinkarTerm.USER;
+        Object authorObject = stampViewModel.getPropertyValue(AUTHOR);
+        EntityProxy.Concept authorConcept = null;
+        if (authorObject instanceof EntityProxy.Concept) {
+            authorConcept = (EntityProxy.Concept) authorObject;
+        } else if (authorObject instanceof ConceptRecord authorConceptRecord) {
+            authorConcept = EntityProxy.Concept.make(authorConceptRecord.nid());
+        }
+
         ConceptEntity module = stampViewModel.getPropertyValue(MODULE);
         ConceptEntity path = stampViewModel.getPropertyValue(PATH);
-        Session session = composer.open(state, author, module.toProxy(), path.toProxy());
+        Session session = composer.open(state, authorConcept, module.toProxy(), path.toProxy());
 
         // set up pattern with the fully qualified name
         ObservableList<PatternField> fieldsProperty = getObservableList(FIELDS_COLLECTION);
