@@ -364,7 +364,24 @@ public class PatternViewModel extends FormViewModel {
             // add the field definitions
             for (int i = 0; i< fieldsProperty.size(); i++) {
                 PatternField patternField = fieldsProperty.get(i);
-                patternAssembler.fieldDefinition(patternField.meaning().toProxy(), patternField.purpose().toProxy(),
+
+                // make sure we save the correct datatypes for meaning and purpose
+                EntityProxy.Concept purposeConcept;
+                if (!(patternField.purpose().toProxy() instanceof EntityProxy.Concept)) {
+                    EntityProxy purposeProxy = patternField.purpose().toProxy();
+                    purposeConcept = EntityProxy.Concept.make(purposeProxy.nid());
+                } else {
+                    purposeConcept = patternField.purpose().toProxy();
+                }
+
+                EntityProxy.Concept meaningConcept;
+                if (!(patternField.meaning().toProxy() instanceof EntityProxy.Concept)) {
+                    EntityProxy meaningProxy = patternField.meaning().toProxy();
+                    meaningConcept = EntityProxy.Concept.make(meaningProxy.nid());
+                } else {
+                    meaningConcept = patternField.meaning().toProxy();
+                }
+                patternAssembler.fieldDefinition(meaningConcept, purposeConcept,
                         patternField.dataType().toProxy(), i);
             }
         });
