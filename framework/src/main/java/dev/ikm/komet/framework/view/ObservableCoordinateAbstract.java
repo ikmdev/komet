@@ -16,7 +16,6 @@
 package dev.ikm.komet.framework.view;
 
 import dev.ikm.tinkar.coordinate.ImmutableCoordinate;
-import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
@@ -57,6 +56,8 @@ public abstract class ObservableCoordinateAbstract<T extends ImmutableCoordinate
     protected abstract void addListeners();
 
     protected void changeBaseCoordinate(ObservableValue<? extends T> observable, T oldValue, T newValue) {
+        // TODO look into another way to not have to physically remove then add the listeners
+        // the protected instance variable listening
         removeListeners();
         this.immutableCoordinate.setValue(baseCoordinateChangedListenersRemoved(observable, oldValue, newValue));
         addListeners();
@@ -75,15 +76,13 @@ public abstract class ObservableCoordinateAbstract<T extends ImmutableCoordinate
     public void setValue(T value) {
         T oldValue = getValue();
         if (!Objects.equals(oldValue, value)) {
-            // this method is being recursively called.  when listeners are notified, they in turn
-            // call this method setValue().  Within changeBaseCoordinate() listeners are removed then
-            // added back.  An ArrayList cannot be modified when the items are being iterated.
-            Platform.runLater(() -> {
-                changeBaseCoordinate(this.immutableCoordinate, oldValue, value);
-                for (ChangeListener<? super T> listener : changeListenerList) {
-                    listener.changed(this.immutableCoordinate, oldValue, value);
-                }
-            });
+            changeBaseCoordinate(this.immutableCoordinate, oldValue, value);
+
+            // iterate through the listener ArrayList without concurrency issues using the iterator
+            var iterator = changeListenerList.iterator();
+            while (iterator.hasNext()) {
+                iterator.next().changed(immutableCoordinate, oldValue, value);
+            }
         }
     }
 
