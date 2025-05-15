@@ -99,6 +99,7 @@ public class ViewMenuModel {
             this.coordinateMenu.getItems().clear();
             TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, this.viewProperties.nodeView()),
                     (List<MenuItem> result) -> {
+                        this.coordinateMenu.getItems().clear();
                         this.coordinateMenu.getItems().addAll(result);
                     }));
         });
