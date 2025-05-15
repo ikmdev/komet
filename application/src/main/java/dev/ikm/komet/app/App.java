@@ -39,13 +39,18 @@ import dev.ikm.komet.framework.window.KometStageController;
 import dev.ikm.komet.framework.window.MainWindowRecord;
 import dev.ikm.komet.framework.window.WindowComponent;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.controls.GlassPane;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.mvvm.view.changeset.ExportController;
 import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
+import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitHubPreferencesController;
+import dev.ikm.komet.kview.mvvm.view.changeset.exchange.InitTask;
+import dev.ikm.komet.kview.mvvm.view.changeset.exchange.SyncTask;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
+import dev.ikm.komet.kview.mvvm.viewmodel.GitHubPreferencesViewModel;
 import dev.ikm.komet.list.ListNodeFactory;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNodeFactory;
 import dev.ikm.komet.navigator.pattern.PatternNavigatorFactory;
@@ -55,26 +60,15 @@ import dev.ikm.komet.preferences.Preferences;
 import dev.ikm.komet.progress.CompletionNodeFactory;
 import dev.ikm.komet.progress.ProgressNodeFactory;
 import dev.ikm.komet.search.SearchNodeFactory;
-import dev.ikm.komet.sync.AddChangesetsTask;
 import dev.ikm.komet.sync.InfoTask;
-import dev.ikm.komet.sync.InitializeTask;
-import dev.ikm.komet.sync.PullTask;
-import dev.ikm.komet.sync.PushTask;
 import dev.ikm.komet.table.TableNodeFactory;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.binary.Encodable;
-import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.ServiceKeys;
 import dev.ikm.tinkar.common.service.ServiceProperties;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.coordinate.Calculators;
-import dev.ikm.tinkar.entity.EntityCountSummary;
-import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
-import dev.ikm.tinkar.reasoner.service.ClassifierResults;
-import dev.ikm.tinkar.reasoner.service.ReasonerService;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
@@ -87,11 +81,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -112,6 +102,7 @@ import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,20 +110,13 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.management.ManagementFactory;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.time.Year;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 
@@ -150,6 +134,12 @@ import static dev.ikm.komet.framework.window.WindowSettings.Keys.RIGHT_TAB_PREFE
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
+import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_EMAIL;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_PASSWORD;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_URL;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_USERNAME;
+import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.LANDING_PAGE_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
@@ -184,6 +174,7 @@ public class App extends Application {
     // variables specific to resource overlay
     private Stage overlayStage;
     private Timeline resourceUsageTimeline;
+    private LandingPageController landingPageController;
 
     /**
      * An entry point to launch the newer UI panels.
@@ -404,8 +395,8 @@ public class App extends Application {
             tk.setDockIconMenu(createDockMenu());
             tk.autoAddWindowMenuItems(windowMenu);
 
-
-            if (System.getProperty("os.name") != null && System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
+            if (System.getProperty("os.name") != null &&
+                    System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
                 tk.setGlobalMenuBar(bar);
             }
 
@@ -414,7 +405,7 @@ public class App extends Application {
             FXMLLoader sourceLoader = new FXMLLoader(getClass().getResource("SelectDataSource.fxml"));
             BorderPane sourceRoot = sourceLoader.load();
             SelectDataSourceController selectDataSourceController = sourceLoader.getController();
-            selectDataSourceController.getCancelButton().setOnAction(actionEvent -> Platform.exit());
+            selectDataSourceController.getCancelButton().setOnAction(actionEvent -> quit());
             Scene sourceScene = new Scene(sourceRoot);
             addStylesheets(sourceScene, KOMET_CSS, KVIEW_CSS);
 
@@ -432,13 +423,10 @@ public class App extends Application {
             stage.addEventFilter(MouseEvent.DRAG_DETECTED, event -> {
                 ScreenInfo.mouseIsDragging(true);
                 ScreenInfo.mouseWasDragged(true);
-
             });
 
             // Ensure app is shutdown gracefully. Once state changes it calls appStateChangeListener.
-            stage.setOnCloseRequest(windowEvent -> {
-                state.set(SHUTDOWN);
-            });
+            stage.setOnCloseRequest(windowEvent -> state.set(SHUTDOWN));
             stage.show();
             state.set(AppState.SELECT_DATA_SOURCE);
             state.addListener(this::appStateChangeListener);
@@ -469,7 +457,9 @@ public class App extends Application {
             if (System.getProperty("os.name") != null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
                 createMenuOptions(landingPageBorderPane);
             }
-            LandingPageController landingPageController = landingPageLoader.getController();
+            landingPageController = landingPageLoader.getController();
+            landingPageController.setSelectedDatasetTitle(PrimitiveData.get().name());
+            landingPageController.getGithubStatusHyperlink().setOnAction(_ -> connectToGithub());
             Scene sourceScene = new Scene(landingPageBorderPane, 1200, 800);
 
             kViewStage.setScene(sourceScene);
@@ -690,7 +680,6 @@ public class App extends Application {
         try {
             switch (newValue) {
                 case SELECTED_DATA_SOURCE -> {
-
                     Platform.runLater(() -> state.set(LOADING_DATA_SOURCE));
                     TinkExecutor.threadPool().submit(new LoadDataSourceTask(state));
                 }
@@ -826,119 +815,309 @@ public class App extends Application {
         exportStage.show();
     }
 
-    private void gitProcess(Consumer<Git> gitProcess) {
+    /**
+     * Prompts the user for GitHub credentials and repository information if they don't already exist.
+     * <p>
+     * This method checks if valid GitHub preferences (URL, email, username, password) already
+     * exist in user preferences. If all required preferences are present, it immediately returns
+     * a completed CompletableFuture. Otherwise, it displays a dialog allowing the user to enter
+     * their GitHub credentials and repository information.
+     *
+     * @return A CompletableFuture that completes with true if valid GitHub preferences exist
+     *         or were successfully provided by the user, or false if the user canceled the operation
+     */
+    private CompletableFuture<Boolean> promptForGitHubPrefs() {
+        // Create a CompletableFuture that will be completed when the user makes a choice
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+
+        // First check if we already have valid GitHub preferences
+        KometPreferences userPreferences = Preferences.get().getUserPreferences();
+        String gitUrl = userPreferences.get(GIT_URL, null);
+        String gitEmail = userPreferences.get(GIT_EMAIL, null);
+        String gitUsername = userPreferences.get(GIT_USERNAME, null);
+        String gitPassword = userPreferences.get(GIT_PASSWORD, null);
+
+        // If all required preferences exist, complete the future immediately
+        if (gitUrl != null && !gitUrl.isBlank() &&
+                gitEmail != null && !gitEmail.isBlank() &&
+                gitUsername != null && !gitUsername.isBlank() &&
+                gitPassword != null && !gitPassword.isBlank()) {
+            LOG.info("Using existing GitHub preferences");
+            return CompletableFuture.completedFuture(true);
+        }
+
+        // Show dialog on JavaFX thread
+        Platform.runLater(() -> {
+            GlassPane glassPane = new GlassPane(landingPageController.getRoot());
+
+            JFXNode<Pane, GitHubPreferencesController> githubPreferencesNode = FXMLMvvmLoader
+                    .make(GitHubPreferencesController.class.getResource("github-preferences.fxml"));
+            Pane rootPane = githubPreferencesNode.node();
+            GitHubPreferencesController controller = githubPreferencesNode.controller();
+            Optional<GitHubPreferencesViewModel> githubPrefsViewModelOpt = githubPreferencesNode
+                    .getViewModel("githubPreferencesViewModel");
+
+            controller.getConnectButton().setOnAction(actionEvent -> {
+                controller.handleConnectButtonEvent(actionEvent);
+                if (githubPrefsViewModelOpt.isPresent()) {
+                    GitHubPreferencesViewModel githubPrefsViewModel = githubPrefsViewModelOpt.get();
+                    if (githubPrefsViewModel.validProperty().get()) {
+                        glassPane.removeContent(rootPane);
+                        glassPane.hide();
+                        future.complete(true); // Complete with true on successful connection
+                    }
+                }
+            });
+
+            controller.getCancelButton().setOnAction(_ -> {
+                glassPane.removeContent(rootPane);
+                glassPane.hide();
+                future.complete(false); // Complete with false on cancel
+            });
+
+            glassPane.addContent(rootPane);
+            glassPane.show();
+        });
+
+        return future;
+    }
+
+    /**
+     * Sets up the UI to reflect a disconnected GitHub state.
+     * <p>
+     * This method updates the GitHub status hyperlink in the landing page to show that
+     * the application is disconnected from GitHub. When clicked, the hyperlink will
+     * attempt to connect to GitHub by calling the connectToGithub() method.
+     * <p>
+     * The method runs on the JavaFX application thread to ensure thread safety when
+     * updating UI components.
+     */
+    private void setupGitHubDisconnectedState() {
+        runOnFxThread(() -> {
+            if (landingPageController != null) {
+                Hyperlink githubStatusHyperlink = landingPageController.getGithubStatusHyperlink();
+                githubStatusHyperlink.setText("Disconnected, Select to connect");
+                githubStatusHyperlink.setOnAction(event -> connectToGithub());
+            }
+        });
+    }
+
+    /**
+     * Sets up the UI to reflect a connected GitHub state.
+     * <p>
+     * This method updates the GitHub status hyperlink in the landing page to show that
+     * the application is successfully connected to GitHub. When clicked, the hyperlink
+     * will disconnect from GitHub by calling the disconnectFromGithub() method.
+     * <p>
+     * The method runs on the JavaFX application thread to ensure thread safety when
+     * updating UI components.
+     */
+    private void setupGitHubConnectedState() {
+        runOnFxThread(() -> {
+            if (landingPageController != null) {
+                Hyperlink githubStatusHyperlink = landingPageController.getGithubStatusHyperlink();
+                githubStatusHyperlink.setText("Connected");
+                githubStatusHyperlink.setOnAction(event -> disconnectFromGithub());
+            }
+        });
+    }
+
+    /**
+     * Initiates a connection to GitHub.
+     * <p>
+     * This method logs an attempt to connect to GitHub and calls syncAction(true) to
+     * initialize the connection and perform a full synchronization with the remote repository.
+     */
+    private void connectToGithub() {
+        LOG.info("Attempting to connect to GitHub...");
+        syncAction(true);
+    }
+
+    /**
+     * Disconnects from GitHub and cleans up local resources.
+     * <p>
+     * This method performs the following operations:
+     * <ul>
+     *   <li>Logs the disconnection attempt</li>
+     *   <li>Deletes the local changeSet folder if it exists</li>
+     *   <li>Removes all GitHub-related preferences from user preferences</li>
+     *   <li>Updates the UI to reflect the disconnected state</li>
+     * </ul>
+     * If any errors occur during this process, they are logged but do not prevent
+     * the disconnection from completing.
+     */
+    private void disconnectFromGithub() {
+        LOG.info("Disconnecting from GitHub...");
+
+        // Clean up local resources
         Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
         if (optionalDataStoreRoot.isEmpty()) {
-            throw new IllegalStateException("ServiceKeys.DATA_STORE_ROOT not provided.");
+            AlertStreams.getRoot().dispatch(AlertObject.makeError(
+                    new IllegalStateException("ServiceKeys.DATA_STORE_ROOT not provided.")));
+            return;
         }
+
+        File changeSetFolder = new File(optionalDataStoreRoot.get(), "changeSets");
+        if (changeSetFolder.exists()) {
+            try {
+                FileUtils.delete(changeSetFolder, FileUtils.RECURSIVE);
+            } catch (IOException ex) {
+                LOG.error("Failed to delete changeSet folder: {}", changeSetFolder.getAbsolutePath(), ex);
+            }
+        }
+
+        // Delete stored user preferences related to GitHub
+        KometPreferences userPreferences = Preferences.get().getUserPreferences();
+        userPreferences.remove(GIT_URL);
+        userPreferences.remove(GIT_EMAIL);
+        userPreferences.remove(GIT_USERNAME);
+        userPreferences.remove(GIT_PASSWORD);
+        try {
+            userPreferences.sync();
+        } catch (BackingStoreException e) {
+            LOG.error("Failed to remove GitHub data from user preferences");
+        }
+
+        // For now, just update the UI state
+        setupGitHubDisconnectedState();
+    }
+
+    /**
+     * Safely processes Git operations with proper resource management and error handling.
+     * <p>
+     * This method provides a standardized way to perform Git operations by:
+     * <ol>
+     *   <li>Checking for the existence of the data store root</li>
+     *   <li>Creating the changeSet folder if it doesn't exist</li>
+     *   <li>Prompting for GitHub credentials if needed</li>
+     *   <li>Connecting to the Git repository</li>
+     *   <li>Executing the provided Git operation if all previous steps succeed</li>
+     * </ol>
+     * All operations are performed asynchronously to avoid blocking the UI thread.
+     *
+     * @param gitProcessor A consumer that operates on the Git repository
+     */
+    private void gitProcess(Consumer<Git> gitProcessor) {
+        Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
+        if (optionalDataStoreRoot.isEmpty()) {
+            AlertStreams.getRoot().dispatch(AlertObject.makeError(
+                    new IllegalStateException("ServiceKeys.DATA_STORE_ROOT not provided.")));
+            return;
+        }
+
         File changeSetFolder = new File(optionalDataStoreRoot.get(), "changeSets");
         if (!changeSetFolder.exists()) {
-            throw new IllegalStateException("Changeset Writer Service not ready.");
+            // Create directory instead of throwing exception
+            if (!changeSetFolder.mkdirs()) {
+                AlertStreams.getRoot().dispatch(AlertObject.makeError(
+                        new IOException("Unable to create changeSets directory")));
+                return;
+            }
         }
-        gitConnect(changeSetFolder).whenComplete((git, _) -> {
-            gitProcess.accept(git);
+
+        // Get user input from a GitHub preferences dialog asynchronously
+        promptForGitHubPrefs().thenAccept(confirmed -> {
+            if (!confirmed) {
+                LOG.info("User cancelled the operation.");
+                return;
+            }
+
+            // Continue with Git operations if the user confirmed
+            gitConnect(changeSetFolder).whenComplete((git, throwable) -> {
+                if (throwable != null) {
+                    disconnectFromGithub();
+                    return;
+                }
+
+                // Go to connected state
+                setupGitHubConnectedState();
+
+                // Perform the Git operation
+                gitProcessor.accept(git);
+            });
         });
     }
 
+    /**
+     * Connects to a Git repository asynchronously or initializes one if it doesn't exist.
+     * <p>
+     * This method attempts to open an existing Git repository at the specified location.
+     * If the repository doesn't exist, it initializes a new one. The entire operation,
+     * including the initial Git.open, is wrapped in a CompletableFuture to prevent
+     * blocking the calling thread.
+     * <p>
+     * If initialization is required, a progress indicator is displayed to the user.
+     *
+     * @param changeSetFolder The folder where the Git repository is located or should be created
+     * @return CompletableFuture containing the Git instance if successful, or a completed
+     *         exceptionally future if any errors occur
+     */
     private CompletableFuture<Git> gitConnect(File changeSetFolder) {
-        try {
-            Git git = Git.open(changeSetFolder);
-            return CompletableFuture.supplyAsync(() -> git, TinkExecutor.ioThreadPool());
-        } catch (IOException e) {
-            return CompletableFuture.supplyAsync(() -> {
-                try {
-                    TinkExecutor.ioThreadPool().submit(new InitializeTask(changeSetFolder.toPath())).get();
-                    return Git.open(changeSetFolder);
-                } catch (InterruptedException | ExecutionException | IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }, TinkExecutor.ioThreadPool());
-        }
+        return CompletableFuture.supplyAsync(() -> {
+                    try {
+                        // Attempt to open existing repository
+                        return Optional.of(Git.open(changeSetFolder));
+                    } catch (IOException e) {
+                        LOG.info("Git repository not found at {}: {}", changeSetFolder.getAbsolutePath(), e.getMessage());
+                        return Optional.<Git>empty();
+                    }
+                }, TinkExecutor.ioThreadPool())
+                .thenCompose(optionalGit -> optionalGit.map(CompletableFuture::completedFuture)
+                        .orElseGet(() -> ProgressHelper.progress(LANDING_PAGE_TOPIC, new InitTask(changeSetFolder.toPath()))
+                                .thenComposeAsync(result -> {
+                                    if (result) {
+                                        try {
+                                            // Try opening the repository after initialization
+                                            return CompletableFuture.completedFuture(Git.open(changeSetFolder));
+                                        } catch (IOException ex) {
+                                            LOG.error("Failed to open Git repository after initialization", ex);
+                                            return CompletableFuture.failedFuture(ex);
+                                        }
+                                    } else {
+                                        LOG.error("Failed to initialize Git repository");
+                                        return CompletableFuture.failedFuture(new IOException("Failed to initialize Git repository"));
+                                    }
+                                }, TinkExecutor.ioThreadPool())));
     }
 
+    /**
+     * Displays information about the current Git repository.
+     * <p>
+     * This method safely processes a Git operation that creates and runs an InfoTask
+     * to display details about the connected Git repository. The task is run on the
+     * JavaFX application thread to ensure proper UI updates.
+     */
     private void infoAction() {
         gitProcess((git) -> {
-            Task task = new InfoTask(git);
-            Platform.runLater(task);
+            Task<Boolean> infoTask = new InfoTask(git);
+            Platform.runLater(infoTask);
         });
     }
 
+    /**
+     * Synchronizes with the remote repository.
+     * <p>
+     * This method safely processes a Git operation that creates and runs a SyncTask
+     * to synchronize with the remote repository. Depending on the push parameter,
+     * it will either only pull changes from the remote repository or both pull and push.
+     * <p>
+     * A progress indicator is displayed during the operation, and the result is logged
+     * upon completion.
+     *
+     * @param push Whether to push local changes to the remote repository after pulling
+     */
     private void syncAction(boolean push) {
-        gitProcess((git) -> {
+        gitProcess(git -> {
             File changeSetFolder = git.getRepository().getDirectory().getParentFile();
-            //Pull
-            ProgressHelper.progress(new PullTask(changeSetFolder.toPath()))
-                    .whenComplete((_,_) -> {
-                        loadChangesets(changeSetFolder);
-                        runReasoner();
-                        if (push) {
-                            ProgressHelper.progress(new AddChangesetsTask(changeSetFolder.toPath()))
-                                    .whenComplete((_,_) -> ProgressHelper.progress(new PushTask(changeSetFolder.toPath())));
+            ProgressHelper.progress(LANDING_PAGE_TOPIC, new SyncTask(changeSetFolder.toPath(), push))
+                    .whenComplete((_, throwable) -> {
+                        if (throwable != null) {
+                            LOG.error("Error during %s operation".formatted(push ? "sync" : "pull"), throwable);
+                        } else {
+                            LOG.info("Sync operation completed successfully");
                         }
                     });
         });
-    }
-
-    private List<EntityCountSummary> loadChangesets(File changeSetFolder) {
-        File[] pbFiles = changeSetFolder.listFiles((dir, name) -> name.endsWith("ike-cs.zip"));
-        List<EntityCountSummary> loadResults = new ArrayList<>();
-        if (pbFiles == null) {
-            return loadResults;
-        }
-        Arrays.stream(pbFiles)
-                .filter(file -> {
-                    try (FileSystem fs = FileSystems.newFileSystem(file.toPath())) {
-                        // Filter out unfinished exports and non-export zips
-                        return Files.exists(fs.getPath("META-INF", "MANIFEST.MF"));
-                    } catch (IOException e) {
-                        return false;
-                    }
-                })
-                .forEach((protoFile) -> {
-                    try {
-                        EntityCountSummary ecs = TinkExecutor.ioThreadPool().submit(new LoadEntitiesFromProtobufFile(protoFile)).get();
-                        loadResults.add(ecs);
-                    } catch (InterruptedException | ExecutionException e) {
-                        LOG.info("Error:" + e);
-                    }
-                });
-        return loadResults;
-    }
-
-    private List<ClassifierResults> runReasoner() {
-        String reasonerType = "ElkSnomedReasoner";
-        List<ReasonerService> rss = PluggableService.load(ReasonerService.class).stream()
-                .map(ServiceLoader.Provider::get)
-                .filter(reasoner -> reasoner.getName().contains(reasonerType))
-                .sorted(Comparator.comparing(ReasonerService::getName)).toList();
-        LOG.info("Number of reasoners " + rss.size());
-        List<ClassifierResults> resultList = new ArrayList<>();
-        for (ReasonerService rs : rss) {
-            LOG.info("Reasoner service: " + rs);
-            rs.init(Calculators.View.Default(), TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
-            rs.setProgressUpdater(null);
-            try {
-                // Extract
-                rs.extractData();
-                // Load
-                rs.loadData();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            // Compute
-            rs.computeInferences();
-            // Build NNF
-            rs.buildNecessaryNormalForm();
-            // Write inferred results
-            ClassifierResults results = rs.writeInferredResults();
-
-            LOG.info("After Size of ConceptSet: " + rs.getReasonerConceptSet().size());
-            LOG.info("ClassifierResults: inferred changes size " + results.getConceptsWithInferredChanges().size());
-            LOG.info("ClassifierResults: navigation changes size " + results.getConceptsWithNavigationChanges().size());
-            LOG.info("ClassifierResults: classificationconcept size " + results.getClassificationConceptSet().size());
-            resultList.add(results);
-        }
-        return resultList;
     }
 
     private void generateMsWindowsMenu(BorderPane kometRoot, Stage stage) {
@@ -1002,8 +1181,8 @@ public class App extends Application {
         aboutWindow.show();
     }
 
-
     private void quit() {
+        disconnectFromGithub();
         saveJournalWindowsToPreferences();
         PrimitiveData.stop();
         Preferences.stop();

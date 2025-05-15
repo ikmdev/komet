@@ -32,8 +32,11 @@ module dev.ikm.komet.kview {
     requires one.jpro.platform.file;
 
     requires transitive dev.ikm.komet.layout;
+    requires transitive dev.ikm.komet.sync;
     requires jdk.jfr;
     requires org.apache.commons.logging;
+    requires org.eclipse.jgit;
+    requires dev.ikm.tinkar.reasoner.service;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
@@ -110,6 +113,9 @@ module dev.ikm.komet.kview {
 
     opens dev.ikm.komet.kview.mvvm.view.changeset;
     exports dev.ikm.komet.kview.mvvm.view.changeset;
+
+    opens dev.ikm.komet.kview.mvvm.view.changeset.exchange;
+    exports dev.ikm.komet.kview.mvvm.view.changeset.exchange;
 
     opens dev.ikm.komet.kview.mvvm.view.login;
     exports dev.ikm.komet.kview.mvvm.view.login;
