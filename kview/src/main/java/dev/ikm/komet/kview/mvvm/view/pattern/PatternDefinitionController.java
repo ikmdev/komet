@@ -18,6 +18,7 @@ package dev.ikm.komet.kview.mvvm.view.pattern;
 import static dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent.PATTERN_DEFINITION;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.DEFINITION_CONFIRMATION;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
@@ -32,6 +33,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -71,17 +73,24 @@ public class PatternDefinitionController {
 
     @FXML
     private void initialize() {
+        ChangeListener fieldsValidationListener = (obs, oldValue, newValue) -> {
+            patternDefinitionViewModel.validate();
+            patternDefinitionViewModel.setPropertyValue(IS_INVALID, patternDefinitionViewModel.hasErrorMsgs());
+        };
+
         KLComponentControl purposeComponentControl = KLComponentControlFactory.createTypeAheadComponentControl(patternPropertiesViewModel.getViewProperties().calculator());
         KLComponentControl meaningComponentControl = KLComponentControlFactory.createTypeAheadComponentControl(patternPropertiesViewModel.getViewProperties().calculator());
 
         purposeComponentControl.setTitle("Purpose");
         meaningComponentControl.setTitle("Meaning");
 
-        doneButton.disableProperty().bind(purposeComponentControl.entityProperty().isNull()
-                                          .or(meaningComponentControl.entityProperty().isNull()));
+        doneButton.disableProperty().bind(patternDefinitionViewModel.getProperty(IS_INVALID));
 
         ObjectProperty<EntityProxy> purposeProp = patternDefinitionViewModel.getProperty(PURPOSE_ENTITY);
         ObjectProperty<EntityProxy> meaningProp = patternDefinitionViewModel.getProperty(MEANING_ENTITY);
+
+        purposeProp.addListener(fieldsValidationListener);
+        meaningProp.addListener(fieldsValidationListener);
 
         purposeComponentControl.entityProperty().bindBidirectional(purposeProp);
         meaningComponentControl.entityProperty().bindBidirectional(meaningProp);
