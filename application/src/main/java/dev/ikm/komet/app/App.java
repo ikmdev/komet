@@ -374,16 +374,7 @@ public class App extends Application {
                     new SeparatorMenuItem(), tk.createBringAllToFrontItem());
 
             // Exchange Menu
-            Menu exchangeMenu = new Menu("Exchange");
-
-            MenuItem infoMenuItem = new MenuItem("Info");
-            infoMenuItem.setOnAction(actionEvent -> infoAction());
-            MenuItem pullMenuItem = new MenuItem("Pull");
-            pullMenuItem.setOnAction(actionEvent -> syncAction(false));
-            MenuItem pushMenuItem = new MenuItem("Sync");
-            pushMenuItem.setOnAction(actionEvent -> syncAction(true));
-
-            exchangeMenu.getItems().addAll(infoMenuItem, pullMenuItem, pushMenuItem);
+            Menu exchangeMenu = createExchangeMenu();
 
             // Help Menu
             Menu helpMenu = new Menu("Help");
@@ -1167,6 +1158,20 @@ public class App extends Application {
         Platform.runLater(() -> kometRoot.setTop(menuBar));
     }
 
+    private Menu createExchangeMenu() {
+        Menu exchangeMenu = new Menu("Exchange");
+
+        MenuItem infoMenuItem = new MenuItem("Info");
+        infoMenuItem.setOnAction(actionEvent -> infoAction());
+        MenuItem pullMenuItem = new MenuItem("Pull");
+        pullMenuItem.setOnAction(actionEvent -> syncAction(false));
+        MenuItem pushMenuItem = new MenuItem("Sync");
+        pushMenuItem.setOnAction(actionEvent -> syncAction(true));
+
+        exchangeMenu.getItems().addAll(infoMenuItem, pullMenuItem, pushMenuItem);
+        return exchangeMenu;
+    }
+
     private void showWindowsAboutScreen() {
         Stage aboutWindow = new Stage();
         Label kometLabel = new Label("Komet");
@@ -1230,7 +1235,6 @@ public class App extends Application {
         MenuItem resourceUsageMenuItem = createResourceUsageItem();
         viewMenu.getItems().addAll(classicKometMenuItem, resourceUsageMenuItem);
 
-
         Menu windowMenu = new Menu("Window");
         MenuItem minimizeWindow = new MenuItem("Minimize");
         KeyCombination minimizeKeyCombo = new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN);
@@ -1241,10 +1245,14 @@ public class App extends Application {
         minimizeWindow.setAccelerator(minimizeKeyCombo);
         windowMenu.getItems().add(minimizeWindow);
 
+        // Exchange Menu
+        Menu exchangeMenu = createExchangeMenu();
+
         menuBar.getMenus().add(fileMenu);
         menuBar.getMenus().add(viewMenu);
         menuBar.getMenus().add(windowMenu);
-        Platform.runLater(() -> landingPageRoot.setTop(menuBar));
+        menuBar.getMenus().add(exchangeMenu);
+        landingPageRoot.setTop(menuBar);
     }
 
     /**
