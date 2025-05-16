@@ -351,8 +351,8 @@ public class PatternViewModel extends FormViewModel {
         Session session = composer.open(state, authorConcept, module.toProxy(), path.toProxy());
 
         // set up pattern with the fully qualified name
-        EntityProxy.Concept patternPurpose = convertToConcept(((EntityFacade)getPropertyValue(MEANING_ENTITY)).toProxy());
-        EntityProxy.Concept patternMeaning = convertToConcept(((EntityFacade)getPropertyValue(PURPOSE_ENTITY)).toProxy());
+        EntityProxy.Concept patternPurpose = convertToConcept(((EntityFacade)getPropertyValue(PURPOSE_ENTITY)).toProxy());
+        EntityProxy.Concept patternMeaning = convertToConcept(((EntityFacade)getPropertyValue(MEANING_ENTITY)).toProxy());
         ObservableList<PatternField> fieldsProperty = getObservableList(FIELDS_COLLECTION);
         session.compose((PatternAssembler patternAssembler) -> {
             patternAssembler
