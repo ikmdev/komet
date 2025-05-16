@@ -1,47 +1,4 @@
 services:
-  nexus:
-    image: sonatype/nexus3
-    container_name: nexus
-    volumes:
-      - nexus-data:/nexus-data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    networks:
-      - rapidenv
-    restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  gitea:
-    image: gitea/gitea:latest
-    container_name: gitea
-    environment:
-      - USER_UID=1000
-      - USER_GID=1000
-      - GITEA__database__DB_TYPE=sqlite3
-      - GITEA__database__PATH=/data/gitea/gitea.db
-      - GITEA__security__INSTALL_LOCK=true
-      - GITEA__security__SECRET_KEY=your_secret_key
-      - GITEA__server__DOMAIN=localhost
-      - GITEA__server__ROOT_URL=http://localhost/git/
-      - GITEA__admin__USER=admin
-      - GITEA__admin__PASSWORD=admin
-      - GITEA__admin__EMAIL=admin@example.com
-#    ports:
-#      - "3000:3000"
-#      - "2222:22"
-    volumes:
-      - gitea_data:/data
-    networks:
-      - rapidenv
-    restart: always
-
   komet:
     build:
       context: .
@@ -51,7 +8,7 @@ services:
       - ~/Solor:/root/Solor
       - ./docker/komet-data/users.ini:/root/Solor/users.ini:ro
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/status/alive"]
+      test: ["CMD", "curl", "-f", "http://localhost:80/status/alive"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -75,7 +32,6 @@ services:
       - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./docker/nginx-logs:/var/log/nginx
     depends_on:
-      - nexus
       - komet
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${NGINX_PORT:-80}/"]
@@ -92,11 +48,9 @@ services:
         max-file: "3"
 
 volumes:
-  nexus-data:
   komet-data:
   nginx-logs:
-    driver: local
-  gitea_data:
+    driver: bridge
 
 networks:
   rapidenv:
