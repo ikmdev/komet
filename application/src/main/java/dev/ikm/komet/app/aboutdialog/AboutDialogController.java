@@ -21,8 +21,9 @@ public class AboutDialogController implements Initializable {
     @FXML
     private Label publishedDateLabel;
 
+    private BuildInfoProperties buildInfoProperties = new BuildInfoProperties();
+
     public AboutDialogController() {
-        // TODO read properties file to get version and build date
     }
 
     @Override
@@ -30,6 +31,12 @@ public class AboutDialogController implements Initializable {
         LOG.debug("initialize()");
 
         copyrightYearLabel.setText("" + Year.now().getValue());
+
+        var version = buildInfoProperties.getMavenVersion();
+        var buildTime = buildInfoProperties.getBuildTime();
+
+        versionLabel.setText(version);
+        publishedDateLabel.setText(buildTime);
     }
 
 }
