@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.51.0-SNAPSHOT</version>
+        <version>1.51.0-IIA-0000-bump-tinkar-core-version-SNAPSHOT</version>
     </parent>
     <artifactId>search</artifactId>
     <dependencies>
