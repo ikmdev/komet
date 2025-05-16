@@ -64,6 +64,7 @@ public interface ObservableCoordinate<T extends ImmutableCoordinate> extends Pro
                 coordinate.removeOverrides();
             }
         }
+        this.setValue(getOriginalValue());
     }
 
     void setExceptOverrides(T updatedCoordinate);
