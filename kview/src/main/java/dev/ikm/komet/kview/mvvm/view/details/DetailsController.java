@@ -23,10 +23,7 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.DeviceViewModel.DEVICE_ENTITY;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.addToMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.isInMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.removeFromMembershipPattern;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.AXIOM;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CONCEPT_STAMP_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CREATE;
@@ -47,6 +44,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_T
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.AxiomChangeEvent;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -54,6 +52,7 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
+import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
 import dev.ikm.komet.kview.events.AddFullyQualifiedNameEvent;
@@ -74,6 +73,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
@@ -151,8 +151,17 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class DetailsController  {
+
     private static final Logger LOG = LoggerFactory.getLogger(DetailsController.class);
+
     private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
+
+    @FXML
+    private Button editCoordinateButton;
+
+    @FXML
+    private ContextMenu changeViewCoordinateMenu;
+
     @FXML
     private Button closeConceptButton;
 
@@ -346,8 +355,9 @@ public class DetailsController  {
     public DetailsController() {
     }
 
-    public DetailsController(UUID conceptTopic) {
+    public DetailsController(UUID conceptTopic, ViewProperties viewProperties) {
         this.conceptTopic = conceptTopic;
+        this.viewProperties = viewProperties;
     }
 
     @FXML
@@ -514,6 +524,8 @@ public class DetailsController  {
                 event.consume();
             }
         });
+
+        setUpEditCoordinateMenu();
 
         // Update the pseudo-class when the viewport or content size changes.
         conceptContentScrollPane.viewportBoundsProperty().addListener((obs) ->
@@ -783,9 +795,10 @@ public class DetailsController  {
             if (conceptViewModel.getPropertyValue(CONCEPT_STAMP_VIEW_MODEL) == null) {
 
                 // add a new stamp view model to the concept view model
+                //Populate from database
                 stampViewModel.setPropertyValue(MODE, EDIT)
-                        .setPropertyValues(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true)
-                        .setPropertyValues(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true);
+                        .setPropertyValues(MODULES_PROPERTY, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()))
+                        .setPropertyValues(PATHS_PROPERTY, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.PATH.publicId()));
 
                 conceptViewModel.setPropertyValue(CONCEPT_STAMP_VIEW_MODEL,stampViewModel);
             }
@@ -1416,11 +1429,11 @@ public class DetailsController  {
 
             // refresh modules
             stampViewModel.getObservableList(MODULES_PROPERTY).clear();
-            stampViewModel.getObservableList(MODULES_PROPERTY).addAll(stampViewModel.findAllModules(getViewProperties()));
+            stampViewModel.getObservableList(MODULES_PROPERTY).addAll(DataModelHelper.fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()));
 
             // refresh path
             stampViewModel.getObservableList(PATHS_PROPERTY).clear();
-            stampViewModel.getObservableList(PATHS_PROPERTY).addAll(stampViewModel.findAllPaths(getViewProperties()));
+            stampViewModel.getObservableList(PATHS_PROPERTY).addAll(DataModelHelper.fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()));
 
             stampEdit.show((Node) event.getSource());
             stampEditController.selectActiveStatusToggle();
@@ -1430,8 +1443,8 @@ public class DetailsController  {
         StampViewModel stampViewModel = new StampViewModel();
 
         // Populate from database
-        stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(getViewProperties()), true)
-                .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(getViewProperties()), true);
+        stampViewModel.setPropertyValue(PATHS_PROPERTY, DataModelHelper.fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()))
+                .setPropertyValue(MODULES_PROPERTY, DataModelHelper.fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()));
 
         // setup mode
         if (getConceptViewModel().getPropertyValue(CURRENT_ENTITY) != null) {
@@ -1507,4 +1520,22 @@ public class DetailsController  {
     public void setConceptTopic(UUID conceptTopic) {
         this.conceptTopic = conceptTopic;
     }
+
+    @FXML
+    private void showChangeViewCoordinateMenu(ActionEvent actionEvent) {
+        MenuHelper.fireContextMenuEvent(actionEvent, Side.BOTTOM, 0, 0);
+    }
+
+
+    /**
+     * generate the classic Komet coordinate menu
+     */
+    public void setUpEditCoordinateMenu() {
+        changeViewCoordinateMenu.getItems().clear();
+        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(getViewProperties().calculator(), this.viewProperties.nodeView()),
+                (List<MenuItem> result) -> {
+                    this.changeViewCoordinateMenu.getItems().addAll(result);
+                }));
+    }
+
 }

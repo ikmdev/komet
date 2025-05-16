@@ -42,6 +42,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
@@ -336,18 +337,28 @@ public class PatternViewModel extends FormViewModel {
         // get the STAMP values from the nested stampViewModel
         StampViewModel stampViewModel = getPropertyValue(STAMP_VIEW_MODEL);
         State state = stampViewModel.getPropertyValue(STATUS);
-        EntityProxy.Concept author = stampViewModel.getPropertyValue(AUTHOR);
+
+        Object authorObject = stampViewModel.getPropertyValue(AUTHOR);
+        EntityProxy.Concept authorConcept = null;
+        if (authorObject instanceof EntityProxy.Concept) {
+            authorConcept = (EntityProxy.Concept) authorObject;
+        } else if (authorObject instanceof ConceptRecord authorConceptRecord) {
+            authorConcept = EntityProxy.Concept.make(authorConceptRecord.nid());
+        }
+
         ConceptEntity module = stampViewModel.getPropertyValue(MODULE);
         ConceptEntity path = stampViewModel.getPropertyValue(PATH);
-        Session session = composer.open(state, author, module.toProxy(), path.toProxy());
+        Session session = composer.open(state, authorConcept, module.toProxy(), path.toProxy());
 
         // set up pattern with the fully qualified name
+        EntityProxy.Concept patternPurpose = convertToConcept(((EntityFacade)getPropertyValue(MEANING_ENTITY)).toProxy());
+        EntityProxy.Concept patternMeaning = convertToConcept(((EntityFacade)getPropertyValue(PURPOSE_ENTITY)).toProxy());
         ObservableList<PatternField> fieldsProperty = getObservableList(FIELDS_COLLECTION);
         session.compose((PatternAssembler patternAssembler) -> {
             patternAssembler
                         .pattern(pattern)
-                        .meaning(((EntityFacade)getPropertyValue(MEANING_ENTITY)).toProxy())
-                        .purpose(((EntityFacade)getPropertyValue(PURPOSE_ENTITY)).toProxy());
+                        .meaning(patternMeaning)
+                        .purpose(patternPurpose);
             patternAssembler.attach((FullyQualifiedName fqn) -> fqn
                                     .language(((EntityFacade)getPropertyValue(FQN_LANGUAGE)).toProxy())
                                     .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
@@ -355,7 +366,12 @@ public class PatternViewModel extends FormViewModel {
             // add the field definitions
             for (int i = 0; i< fieldsProperty.size(); i++) {
                 PatternField patternField = fieldsProperty.get(i);
-                patternAssembler.fieldDefinition(patternField.meaning().toProxy(), patternField.purpose().toProxy(),
+
+                // make sure we save the correct datatypes for meaning and purpose
+                EntityProxy.Concept purposeConcept = convertToConcept(patternField.purpose().toProxy());
+
+                EntityProxy.Concept meaningConcept = convertToConcept(patternField.meaning().toProxy());
+                patternAssembler.fieldDefinition(meaningConcept, purposeConcept,
                         patternField.dataType().toProxy(), i);
             }
         });
@@ -383,6 +399,17 @@ public class PatternViewModel extends FormViewModel {
         boolean isSuccess = composer.commitSession(session);
         setPropertyValue(PATTERN, pattern);
         return isSuccess;
+    }
+
+    private EntityProxy.Concept convertToConcept(Object object) {
+        EntityProxy.Concept theConcept;
+        if (!(object instanceof EntityProxy.Concept)) {
+            EntityProxy meaningProxy = (EntityProxy) object;
+            theConcept = EntityProxy.Concept.make(meaningProxy.nid());
+        } else {
+            theConcept = (EntityProxy.Concept) object;
+        }
+        return theConcept;
     }
 
     public ViewProperties getViewProperties() {

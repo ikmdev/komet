@@ -1040,6 +1040,9 @@ public class JournalController {
         //       and makes a new view properties.
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
 
+        // copying the observable view
+        viewProperties.nodeView().setValue(navigatorNode.getController().getObservableView().getValue());
+
         AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
                 journalTopic, conceptFacade, viewProperties, preferences);
         setupWorkspaceWindow(chapterKlWindow);
