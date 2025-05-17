@@ -2613,8 +2613,8 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-color: -Secondary-05;
     -fx-text-fill: -Secondary-05;
     -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 600;
+    -fx-font-family: "Noto Sans SemiBold";
     -fx-alignment: center;
     -fx-content-display: center;
 }
@@ -2834,7 +2834,7 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .grey-blue-button {
-    -fx-font-family: "Noto Sans";
+    -fx-font-family: "Noto Sans SemiBold";
     -fx-font-weight: 600;
     -fx-font-size: 14px;
     -fx-border-radius: 4;
@@ -3450,6 +3450,43 @@ Landing page elements.
     /*-fx-border-width: 1px;*/
     /*-fx-border-color: blue;*/
 }
+
+.welcome-container > .status-pane {
+    -fx-padding: 0 16 0 0;
+}
+
+.welcome-container > .status-pane .status-label {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-weight: 600;
+    -fx-font-size: 14px;
+}
+
+.welcome-container > .status-pane .status-label.github {
+    -fx-text-fill: -Grey-Black;
+}
+
+.welcome-container > .status-pane .status-label.dataset {
+    -fx-text-fill: -Secondary-06;
+}
+
+.welcome-container > .status-pane .github-status-link {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-weight: 500;
+    -fx-font-size: 14px;
+    -fx-text-fill: -Grey-Black;
+}
+
+.welcome-container > .status-pane .github-status-link:focused {
+    -fx-border-color: -Secondary-06;
+}
+
+.welcome-container .selected-dataset-title-label {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-weight: 500;
+    -fx-font-size: 14px;
+    -fx-text-fill: -Secondary-06;
+}
+
 /* Welcome, David */
 .welcome-title {
     -fx-text-fill: -Secondary-06;
@@ -4404,12 +4441,6 @@ Styling a context menu for kview ui/ux controls
 * kview Progress bar popup
 *****************************/
 
-.kview-progress-container {
-    -fx-background-insets: 0;
-    -fx-background-radius: 6;
-    -fx-background-color: transparent;
-}
-
 .kview-progress {
     -fx-background-insets: 0;
     -fx-background-radius: 6;
@@ -4417,12 +4448,11 @@ Styling a context menu for kview ui/ux controls
     -fx-border-color: #44495E;
     -fx-border-width: 1px;
     -fx-border-radius: 6;
-    -fx-padding: 14px 20px;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.3), 4, 0, 0, 4);
 }
 
-.kview-progress-container .button.close-button,
-.kview-progress-container .toggle-button {
+.kview-progress .button.close-button,
+.kview-progress .toggle-button {
     /* defaults for buttons */
     -default-width: 21px;
     -default-height: 21px;
@@ -4441,6 +4471,11 @@ Styling a context menu for kview ui/ux controls
     -fx-indeterminate-bar-escape: true;
     -fx-indeterminate-bar-flip: true;
     -fx-indeterminate-bar-animation-time: 2;
+
+    -default-height: 12px;
+    -fx-min-height: -default-height;
+    -fx-pref-height: -default-height;
+    -fx-max-height: -default-height;
 }
 
 .kview-progress .progress-bar > .bar {
@@ -5434,4 +5469,82 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: -Grey-11;
     -fx-font-weight: 500;
     -fx-padding: 0 0 6px 0;
+}
+
+/*****************************
+* GitHub Preferences Dialog
+*****************************/
+.github-preferences-pane {
+    -fx-background-color: -Grey-White;
+    -fx-background-radius: 8;
+    -fx-border-radius: 6;
+    -fx-border-insets: 12;
+    -fx-border-color: -Grey-6;
+    -fx-background-insets: 12;
+    -fx-padding: 24px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 8, 0, 0, 4);
+}
+
+.github-preferences-pane .title-label {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 18px;
+    -fx-font-weight: 500;
+    -fx-text-fill: -Grey-12;
+}
+
+.github-preferences-pane .title-description-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-weight: 400;
+    -fx-text-fill: -Grey-Black;
+}
+
+.github-preferences-pane .text-field {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-text-fill: -Grey-Black;
+    -fx-prompt-text-fill: -Grey-8;
+    -fx-border-radius: 5;
+    -fx-background-color: -Grey-5, -Grey-1;
+    -fx-background-insets: 0, 1;
+    -fx-pref-height: 32px;
+}
+
+.github-preferences-pane .button {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+.github-preferences-pane .button.cancel-button {
+    -fx-background-color: -Grey-2;
+    -fx-border-radius: 4;
+    -fx-border-insets: 0, 1;
+    -fx-border-width: 1;
+    -fx-border-color: -Secondary-05;
+}
+
+.github-preferences-pane .button.connect-button {
+    -fx-background-color: -Secondary-05;
+    -fx-text-fill: -Grey-White;
+}
+
+.github-preferences-pane .error-text-flow .error-text {
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-fill: -Accent-color-red;
+}
+
+.github-preferences-pane .icon-container .help-icon {
+    -fx-background-color: -Secondary-05;
+    -fx-max-height: 20px;
+    -fx-max-width: 20px;
+    -fx-padding: 4px 6px 4px 6px;
+    -fx-background-radius: 2em;
+}
+
+.github-preferences-pane .icon-container .help-icon .question-mark {
+    -fx-shape: "M9.20629 13.0298V12.6733C9.21069 11.9778 9.28771 11.4122 9.43736 10.9765C9.58701 10.5408 9.80708 10.1733 10.0976 9.87395C10.3925 9.57026 10.7578 9.27976 11.1935 9.00248C11.5192 8.79121 11.7921 8.56894 12.0122 8.33566C12.2367 8.09799 12.4061 7.8383 12.5205 7.55661C12.6394 7.27052 12.6988 6.96022 12.6988 6.62572C12.6988 6.15036 12.5866 5.73443 12.3621 5.37792C12.142 5.0214 11.8427 4.74631 11.4642 4.55265C11.0857 4.35459 10.6654 4.25556 10.2032 4.25556C9.76307 4.25556 9.35154 4.35239 8.96861 4.54605C8.59009 4.73531 8.27979 5.017 8.03771 5.39112C7.80004 5.76084 7.6702 6.21859 7.64819 6.76436H6.40039C6.4224 6.03813 6.60286 5.40873 6.94176 4.87616C7.28067 4.34359 7.73402 3.93205 8.3018 3.64156C8.86958 3.34667 9.50338 3.19922 10.2032 3.19922C10.9338 3.19922 11.5764 3.35107 12.131 3.65477C12.6856 3.95406 13.1191 4.36559 13.4316 4.88936C13.7441 5.40873 13.9004 6.00512 13.9004 6.67853C13.9004 7.12307 13.83 7.528 13.6891 7.89332C13.5483 8.25864 13.337 8.59535 13.0553 8.90344C12.778 9.21154 12.4303 9.50204 12.0122 9.77492C11.6161 10.039 11.3014 10.3009 11.0681 10.5606C10.8348 10.8203 10.6676 11.1174 10.5663 11.4519C10.4651 11.782 10.4101 12.1891 10.4013 12.6733V13.0298H9.20629ZM9.84009 17.0042C9.58041 17.0042 9.35594 16.9118 9.16668 16.7269C8.98182 16.5377 8.88939 16.3132 8.88939 16.0535C8.88939 15.7894 8.98182 15.565 9.16668 15.3801C9.35594 15.1953 9.58041 15.1028 9.84009 15.1028C10.0998 15.1028 10.322 15.1953 10.5069 15.3801C10.6962 15.565 10.7908 15.7894 10.7908 16.0535C10.7908 16.2252 10.7468 16.3836 10.6588 16.5289C10.5751 16.6741 10.4607 16.7908 10.3154 16.8788C10.1746 16.9624 10.0161 17.0042 9.84009 17.0042Z";
+    -fx-background-color: white;
 }

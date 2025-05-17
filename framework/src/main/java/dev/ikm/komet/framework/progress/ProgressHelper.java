@@ -46,6 +46,16 @@ public class ProgressHelper {
     }
 
     /**
+     * Wraps TrackingCallable instance to be messaged to the journal window's progress popup with default cancel button text. Note: It will execute on caller's behalf.
+     * @param topic The topic to publish the progress event to.
+     * @param task A TrackingCallable instance
+     * @return A CompletableFuture or an asynchronous call.
+     */
+    public static <T> CompletableFuture<T> progress(Object topic, TrackingCallable<T> task) {
+        return progress(topic, task, "Cancel");
+    }
+
+    /**
      * Wraps TrackingCallable instance to be messaged to the journal window's progress popup. Note: It will execute on caller's behalf.
      * @param task A TrackingCallable instance
      * @param cancelButtonText the cancel button's text
@@ -54,6 +64,18 @@ public class ProgressHelper {
     public static <T> CompletableFuture<T> progress(TrackingCallable<T> task, String cancelButtonText) {
         TaskWrapper<T> javafxTask = TaskWrapper.make(task);
         return progress(javafxTask, cancelButtonText);
+    }
+
+    /**
+     * Wraps TrackingCallable instance to be messaged to the journal window's progress popup. Note: It will execute on caller's behalf.
+     * @param topic The topic to publish the progress event to.
+     * @param task A TrackingCallable instance
+     * @param cancelButtonText the cancel button's text
+     * @return A CompletableFuture or an asynchronous call.
+     */
+    public static <T> CompletableFuture<T> progress(Object topic, TrackingCallable<T> task, String cancelButtonText) {
+        TaskWrapper<T> javafxTask = TaskWrapper.make(task);
+        return progress(topic, javafxTask, cancelButtonText);
     }
 
     /**
@@ -66,6 +88,21 @@ public class ProgressHelper {
         EvtBusFactory
                 .getDefaultEvtBus()
                 .publish(PROGRESS_TOPIC, new ProgressEvent(task, ProgressEvent.SUMMON, task, cancelButtonText));
+        Future future = TinkExecutor.threadPool().submit(task);
+        return wrap(future, TinkExecutor.threadPool());
+    }
+
+    /**
+     * A known JavaFX task to be messaged to the journal window's progress popup. Note: It will execute on caller's behalf.
+     * @param topic The topic to publish the progress event to.
+     * @param task A TrackingCallable instance
+     * @param cancelButtonText the cancel button's text
+     * @return A CompletableFuture or an asynchronous call.
+     */
+    public static <T> CompletableFuture<T> progress(Object topic, Task<T> task, String cancelButtonText) {
+        EvtBusFactory
+                .getDefaultEvtBus()
+                .publish(topic, new ProgressEvent(task, ProgressEvent.SUMMON, task, cancelButtonText));
         Future future = TinkExecutor.threadPool().submit(task);
         return wrap(future, TinkExecutor.threadPool());
     }

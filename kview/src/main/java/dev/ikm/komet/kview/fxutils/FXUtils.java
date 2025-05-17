@@ -30,6 +30,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Window;
+import javafx.util.Duration;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -41,6 +42,11 @@ public abstract class FXUtils {
      * Executor that ensures tasks run on the JavaFX application thread.
      */
     public static final Executor FX_THREAD_EXECUTOR = FXUtils::runOnFxThread;
+
+    /**
+     * Default animation duration for transitions.
+     */
+    public static final Duration DEFAULT_ANIMATION_DURATION = Duration.millis(300);
 
     /**
      * Property key for storing scene synchronization listener in a node's properties map.
@@ -85,7 +91,7 @@ public abstract class FXUtils {
      *
      * @param node     The target node to find out it's bounds relative to a parent up the graph.
      * @param levelsUp How many levels up
-     * @return
+     * @return The bounds of the node relative to the parent.
      */
     public static Bounds localToParent(Node node, int levelsUp) {
         Bounds bounds = node.getBoundsInParent();
