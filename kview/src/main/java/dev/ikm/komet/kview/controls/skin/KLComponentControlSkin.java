@@ -260,6 +260,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     }
 
     private HBox createSearchBox() {
+        KLComponentControl control = getSkinnable();
+
         typeAheadSearchField = new AutoCompleteTextField<>();
 
         StackPane typeAheadSearchFieldContainer = new StackPane();
@@ -269,7 +271,11 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         typeAheadSearchField.textProperty().subscribe(text -> getSkinnable().getProperties().put(SEARCH_TEXT_VALUE, text));
 
         // Type ahead setup
-        typeAheadSearchField.valueProperty().subscribe(() -> getSkinnable().setEntity(typeAheadSearchField.getValue()));
+        typeAheadSearchField.valueProperty().subscribe(() -> {
+            if (control.getComponentAllowedFilter().test(typeAheadSearchField.getValue().publicId())) {
+                control.setEntity(typeAheadSearchField.getValue());
+            }
+        });
         typeAheadSearchField.completerProperty().bind(getSkinnable().completerProperty());
         typeAheadSearchField.converterProperty().bind(getSkinnable().typeAheadStringConverterProperty());
         typeAheadSearchField.suggestionsNodeFactoryProperty().bind(getSkinnable().suggestionsNodeFactoryProperty());
