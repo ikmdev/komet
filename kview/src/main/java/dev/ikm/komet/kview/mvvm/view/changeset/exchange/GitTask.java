@@ -921,6 +921,15 @@ public class GitTask extends TrackingCallable<Boolean> {
             savableChangeSetWriterService.save();
         }
 
+        // TODO: Remove this after having some mechanism to wait for the save to complete
+        try {
+            Thread.sleep(10000); // Simulate some delay for saving
+        } catch (InterruptedException e) {
+            updateMessage("Error while saving changes: " + e.getLocalizedMessage());
+            LOG.error("Error while saving changes", e);
+            return false;
+        }
+
         return true;
     }
 
