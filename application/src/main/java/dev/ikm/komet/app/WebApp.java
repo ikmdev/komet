@@ -46,8 +46,7 @@ import dev.ikm.komet.kview.events.SignInUserEvent;
 import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
 import dev.ikm.komet.kview.mvvm.view.changeset.ExportController;
 import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitHubPreferencesController;
-import dev.ikm.komet.kview.mvvm.view.changeset.exchange.InitTask;
-import dev.ikm.komet.kview.mvvm.view.changeset.exchange.SyncTask;
+import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
@@ -62,7 +61,6 @@ import dev.ikm.komet.preferences.Preferences;
 import dev.ikm.komet.progress.CompletionNodeFactory;
 import dev.ikm.komet.progress.ProgressNodeFactory;
 import dev.ikm.komet.search.SearchNodeFactory;
-import dev.ikm.komet.sync.InfoTask;
 import dev.ikm.komet.table.TableNodeFactory;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
@@ -75,7 +73,6 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -110,6 +107,8 @@ import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,6 +148,9 @@ import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.G
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_PASSWORD;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_URL;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_USERNAME;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.CONNECT;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.PULL;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.SYNC;
 import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.LANDING_PAGE_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
@@ -497,6 +499,8 @@ public class WebApp extends Application {
     public void stop() {
         LOG.info("Stopping application\n\n###############\n\n");
 
+        disconnectFromGithub();
+
         if (IS_DESKTOP) {
             // close all journal windows
             journalControllersList.forEach(JournalController::close);
@@ -654,9 +658,9 @@ public class WebApp extends Application {
         MenuItem infoMenuItem = new MenuItem("Info");
         infoMenuItem.setOnAction(actionEvent -> infoAction());
         MenuItem pullMenuItem = new MenuItem("Pull");
-        pullMenuItem.setOnAction(actionEvent -> syncAction(false));
+        pullMenuItem.setOnAction(actionEvent -> executeGitTask(PULL));
         MenuItem pushMenuItem = new MenuItem("Sync");
-        pushMenuItem.setOnAction(actionEvent -> syncAction(true));
+        pushMenuItem.setOnAction(actionEvent -> executeGitTask(SYNC));
 
         exchangeMenu.getItems().addAll(infoMenuItem, pullMenuItem, pushMenuItem);
         return exchangeMenu;
@@ -1082,38 +1086,22 @@ public class WebApp extends Application {
     }
 
     /**
-     * Prompts the user for GitHub credentials and repository information if they don't already exist.
+     * Prompts the user for GitHub preferences and repository information.
      * <p>
-     * This method checks if valid GitHub preferences (URL, email, username, password) already
-     * exist in user preferences. If all required preferences are present, it immediately returns
-     * a completed CompletableFuture. Otherwise, it displays a dialog allowing the user to enter
-     * their GitHub credentials and repository information.
+     * This method displays a dialog where the user can enter their GitHub credentials
+     * and repository URL. It creates a CompletableFuture that will be resolved with
+     * {@code true} if the user successfully enters valid credentials and connects,
+     * or {@code false} if they cancel the operation.
      *
-     * @return A CompletableFuture that completes with true if valid GitHub preferences exist
-     *         or were successfully provided by the user, or false if the user canceled the operation
+     * @return A CompletableFuture that completes with true if valid GitHub preferences
+     *         were successfully provided by the user, or false if the user canceled the operation
      */
     private CompletableFuture<Boolean> promptForGitHubPrefs() {
         // Create a CompletableFuture that will be completed when the user makes a choice
         CompletableFuture<Boolean> future = new CompletableFuture<>();
 
-        // First check if we already have valid GitHub preferences
-        KometPreferences userPreferences = Preferences.get().getUserPreferences();
-        String gitUrl = userPreferences.get(GIT_URL, null);
-        String gitEmail = userPreferences.get(GIT_EMAIL, null);
-        String gitUsername = userPreferences.get(GIT_USERNAME, null);
-        String gitPassword = userPreferences.get(GIT_PASSWORD, null);
-
-        // If all required preferences exist, complete the future immediately
-        if (gitUrl != null && !gitUrl.isBlank() &&
-                gitEmail != null && !gitEmail.isBlank() &&
-                gitUsername != null && !gitUsername.isBlank() &&
-                gitPassword != null && !gitPassword.isBlank()) {
-            LOG.info("Using existing GitHub preferences");
-            return CompletableFuture.completedFuture(true);
-        }
-
         // Show dialog on JavaFX thread
-        Platform.runLater(() -> {
+        runOnFxThread(() -> {
             GlassPane glassPane = new GlassPane(landingPageController.getRoot());
 
             JFXNode<Pane, GitHubPreferencesController> githubPreferencesNode = FXMLMvvmLoader
@@ -1153,12 +1141,12 @@ public class WebApp extends Application {
      * <p>
      * This method updates the GitHub status hyperlink in the landing page to show that
      * the application is disconnected from GitHub. When clicked, the hyperlink will
-     * attempt to connect to GitHub by calling the connectToGithub() method.
+     * attempt to connect to GitHub by calling the {@link #connectToGithub()} method.
      * <p>
      * The method runs on the JavaFX application thread to ensure thread safety when
      * updating UI components.
      */
-    private void setupGitHubDisconnectedState() {
+    private void gotoGitHubDisconnectedState() {
         runOnFxThread(() -> {
             if (landingPageController != null) {
                 Hyperlink githubStatusHyperlink = landingPageController.getGithubStatusHyperlink();
@@ -1173,12 +1161,12 @@ public class WebApp extends Application {
      * <p>
      * This method updates the GitHub status hyperlink in the landing page to show that
      * the application is successfully connected to GitHub. When clicked, the hyperlink
-     * will disconnect from GitHub by calling the disconnectFromGithub() method.
+     * will disconnect from GitHub by calling the {@link #disconnectFromGithub()} method.
      * <p>
      * The method runs on the JavaFX application thread to ensure thread safety when
      * updating UI components.
      */
-    private void setupGitHubConnectedState() {
+    private void gotoGitHubConnectedState() {
         runOnFxThread(() -> {
             if (landingPageController != null) {
                 Hyperlink githubStatusHyperlink = landingPageController.getGithubStatusHyperlink();
@@ -1189,26 +1177,146 @@ public class WebApp extends Application {
     }
 
     /**
+     * Validates if GitHub preferences are properly configured in user preferences.
+     * <p>
+     * This method checks if all required GitHub configuration parameters are present
+     * in the user preferences store. The required parameters are:
+     * <ul>
+     *   <li>Git repository URL</li>
+     *   <li>Git user email</li>
+     *   <li>Git username</li>
+     *   <li>Git password or PAT</li>
+     * </ul>
+     *
+     * @return {@code true} if all required preferences exist and are not empty,
+     *         {@code false} otherwise
+     */
+    private boolean validateGitHubPreferences() {
+        KometPreferences userPreferences = Preferences.get().getUserPreferences();
+
+        String gitUrl = userPreferences.get(GIT_URL).orElse(null);
+        String gitEmail = userPreferences.get(GIT_EMAIL).orElse(null);
+        String gitUsername = userPreferences.get(GIT_USERNAME).orElse(null);
+        String gitPassword = userPreferences.get(GIT_PASSWORD).orElse(null);
+
+        // Validate required parameters
+        return gitUrl != null && !gitUrl.trim().isEmpty() &&
+                gitEmail != null && !gitEmail.trim().isEmpty() &&
+                gitUsername != null && !gitUsername.trim().isEmpty() &&
+                gitPassword != null && !gitPassword.trim().isEmpty();
+    }
+
+    /**
+     * Executes a Git task, ensuring preferences are valid first.
+     * <p>
+     * This method performs the following operations:
+     * <ol>
+     *   <li>Verifies that the data store root is available</li>
+     *   <li>Creates a changeset folder if it doesn't exist</li>
+     *   <li>Validates GitHub preferences and prompts for them if missing</li>
+     *   <li>Creates and runs the appropriate GitTask based on the operation mode</li>
+     * </ol>
+     * If GitHub preferences are missing or invalid, this method will prompt the user
+     * to enter them before proceeding with the requested operation.
+     *
+     * @param mode The operation mode (CONNECT, PULL, or SYNC) that determines what
+     *             Git operations will be performed
+     */
+    private void executeGitTask(GitTask.OperationMode mode) {
+        Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
+        if (optionalDataStoreRoot.isEmpty()) {
+            LOG.error("ServiceKeys.DATA_STORE_ROOT not provided.");
+            return;
+        }
+
+        final File changeSetFolder = new File(optionalDataStoreRoot.get(), "changeSets");
+        if (!changeSetFolder.exists()) {
+            if (!changeSetFolder.mkdirs()) {
+                LOG.error("Unable to create changeSets directory");
+                return;
+            }
+        }
+
+        // Check if GitHub preferences are valid first
+        if (!validateGitHubPreferences()) {
+            LOG.info("GitHub preferences missing or incomplete. Prompting user...");
+
+            // Prompt for preferences before proceeding
+            promptForGitHubPrefs().thenAccept(confirmed -> {
+                if (confirmed) {
+                    // Preferences entered successfully, now run the GitTask
+                    createAndRunGitTask(mode, changeSetFolder);
+                } else {
+                    LOG.info("User cancelled the GitHub preferences dialog");
+                }
+            });
+        } else {
+            // Preferences already valid, run the GitTask directly
+            createAndRunGitTask(mode, changeSetFolder);
+        }
+    }
+
+    /**
+     * Creates and runs a GitTask with the specified operation mode.
+     * <p>
+     * This helper method is called after GitHub preferences have been validated. It:
+     * <ol>
+     *   <li>Creates a new GitTask with the specified operation mode</li>
+     *   <li>Registers a success callback to update the UI state</li>
+     *   <li>Runs the task with progress tracking</li>
+     *   <li>Handles errors and updates the UI accordingly</li>
+     * </ol>
+     * The task is executed asynchronously through the ProgressHelper service to
+     * provide user feedback during long-running operations.
+     *
+     * @param mode The operation mode specifying which Git operations to perform
+     * @param changeSetFolder The folder where the Git repository is located
+     */
+    private void createAndRunGitTask(GitTask.OperationMode mode, File changeSetFolder) {
+        // Create a GitTask with only the connection success callback
+        GitTask gitTask = new GitTask(mode, changeSetFolder.toPath(), this::gotoGitHubConnectedState);
+
+        // Run the task
+        ProgressHelper.progress(LANDING_PAGE_TOPIC, gitTask)
+                .whenComplete((result, throwable) -> {
+                    if (throwable != null) {
+                        LOG.error("Error during {} operation", mode, throwable);
+                        disconnectFromGithub();
+                    } else if (!result) {
+                        LOG.warn("{} operation did not complete successfully", mode);
+                        // If the operation failed, we might want to update the UI to reflect disconnected state
+                        if (mode == CONNECT) {
+                            disconnectFromGithub();
+                        }
+                    }
+                });
+    }
+
+    /**
      * Initiates a connection to GitHub.
      * <p>
-     * This method logs an attempt to connect to GitHub and calls syncAction(true) to
-     * initialize the connection and perform a full synchronization with the remote repository.
+     * This method establishes a connection to GitHub by executing a GitTask in CONNECT mode.
+     * If successful, the UI will be updated to reflect the connected state, and the local
+     * Git repository will be initialized and configured with the remote origin.
+     * <p>
+     * If GitHub preferences are missing or invalid, the user will be prompted to
+     * enter them before the connection is established.
      */
     private void connectToGithub() {
         LOG.info("Attempting to connect to GitHub...");
-        syncAction(true);
+        executeGitTask(CONNECT);
     }
 
     /**
      * Disconnects from GitHub and cleans up local resources.
      * <p>
-     * This method performs the following operations:
-     * <ul>
+     * This method performs the following cleanup operations:
+     * <ol>
      *   <li>Logs the disconnection attempt</li>
-     *   <li>Deletes the local changeSet folder if it exists</li>
+     *   <li>Deletes the local changeSet folder and all Git repository data</li>
      *   <li>Removes all GitHub-related preferences from user preferences</li>
      *   <li>Updates the UI to reflect the disconnected state</li>
-     * </ul>
+     * </ol>
      * If any errors occur during this process, they are logged but do not prevent
      * the disconnection from completing.
      */
@@ -1218,8 +1326,6 @@ public class WebApp extends Application {
         // Clean up local resources
         Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
         if (optionalDataStoreRoot.isEmpty()) {
-            AlertStreams.getRoot().dispatch(AlertObject.makeError(
-                    new IllegalStateException("ServiceKeys.DATA_STORE_ROOT not provided.")));
             return;
         }
 
@@ -1240,150 +1346,61 @@ public class WebApp extends Application {
         userPreferences.remove(GIT_PASSWORD);
         try {
             userPreferences.sync();
+            LOG.info("Successfully removed GitHub data from user preferences");
         } catch (BackingStoreException e) {
             LOG.error("Failed to remove GitHub data from user preferences");
         }
 
         // For now, just update the UI state
-        setupGitHubDisconnectedState();
-    }
-
-    /**
-     * Safely processes Git operations with proper resource management and error handling.
-     * <p>
-     * This method provides a standardized way to perform Git operations by:
-     * <ol>
-     *   <li>Checking for the existence of the data store root</li>
-     *   <li>Creating the changeSet folder if it doesn't exist</li>
-     *   <li>Prompting for GitHub credentials if needed</li>
-     *   <li>Connecting to the Git repository</li>
-     *   <li>Executing the provided Git operation if all previous steps succeed</li>
-     * </ol>
-     * All operations are performed asynchronously to avoid blocking the UI thread.
-     *
-     * @param gitProcessor A consumer that operates on the Git repository
-     */
-    private void gitProcess(Consumer<Git> gitProcessor) {
-        Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
-        if (optionalDataStoreRoot.isEmpty()) {
-            AlertStreams.getRoot().dispatch(AlertObject.makeError(
-                    new IllegalStateException("ServiceKeys.DATA_STORE_ROOT not provided.")));
-            return;
-        }
-
-        File changeSetFolder = new File(optionalDataStoreRoot.get(), "changeSets");
-        if (!changeSetFolder.exists()) {
-            // Create directory instead of throwing exception
-            if (!changeSetFolder.mkdirs()) {
-                AlertStreams.getRoot().dispatch(AlertObject.makeError(
-                        new IOException("Unable to create changeSets directory")));
-                return;
-            }
-        }
-
-        // Get user input from a GitHub preferences dialog asynchronously
-        promptForGitHubPrefs().thenAccept(confirmed -> {
-            if (!confirmed) {
-                LOG.info("User cancelled the operation.");
-                return;
-            }
-
-            // Continue with Git operations if the user confirmed
-            gitConnect(changeSetFolder).whenComplete((git, throwable) -> {
-                if (throwable != null) {
-                    disconnectFromGithub();
-                    return;
-                }
-
-                // Go to connected state
-                setupGitHubConnectedState();
-
-                // Perform the Git operation
-                gitProcessor.accept(git);
-            });
-        });
-    }
-
-    /**
-     * Connects to a Git repository asynchronously or initializes one if it doesn't exist.
-     * <p>
-     * This method attempts to open an existing Git repository at the specified location.
-     * If the repository doesn't exist, it initializes a new one. The entire operation,
-     * including the initial Git.open, is wrapped in a CompletableFuture to prevent
-     * blocking the calling thread.
-     * <p>
-     * If initialization is required, a progress indicator is displayed to the user.
-     *
-     * @param changeSetFolder The folder where the Git repository is located or should be created
-     * @return CompletableFuture containing the Git instance if successful, or a completed
-     *         exceptionally future if any errors occur
-     */
-    private CompletableFuture<Git> gitConnect(File changeSetFolder) {
-        return CompletableFuture.supplyAsync(() -> {
-                    try {
-                        // Attempt to open existing repository
-                        return Optional.of(Git.open(changeSetFolder));
-                    } catch (IOException e) {
-                        LOG.info("Git repository not found at {}: {}", changeSetFolder.getAbsolutePath(), e.getMessage());
-                        return Optional.<Git>empty();
-                    }
-                }, TinkExecutor.ioThreadPool())
-                .thenCompose(optionalGit -> optionalGit.map(CompletableFuture::completedFuture)
-                        .orElseGet(() -> ProgressHelper.progress(LANDING_PAGE_TOPIC, new InitTask(changeSetFolder.toPath()))
-                                .thenComposeAsync(result -> {
-                                    if (result) {
-                                        try {
-                                            // Try opening the repository after initialization
-                                            return CompletableFuture.completedFuture(Git.open(changeSetFolder));
-                                        } catch (IOException ex) {
-                                            LOG.error("Failed to open Git repository after initialization", ex);
-                                            return CompletableFuture.failedFuture(ex);
-                                        }
-                                    } else {
-                                        LOG.error("Failed to initialize Git repository");
-                                        return CompletableFuture.failedFuture(new IOException("Failed to initialize Git repository"));
-                                    }
-                                }, TinkExecutor.ioThreadPool())));
+        gotoGitHubDisconnectedState();
     }
 
     /**
      * Displays information about the current Git repository.
      * <p>
-     * This method safely processes a Git operation that creates and runs an InfoTask
-     * to display details about the connected Git repository. The task is run on the
-     * JavaFX application thread to ensure proper UI updates.
+     * This method checks if a Git repository exists and displays basic information about it.
      */
     private void infoAction() {
-        gitProcess((git) -> {
-            Task<Boolean> infoTask = new InfoTask(git);
-            Platform.runLater(infoTask);
-        });
-    }
+        Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
+        if (optionalDataStoreRoot.isEmpty()) {
+            LOG.error("ServiceKeys.DATA_STORE_ROOT not provided.");
+            return;
+        }
 
-    /**
-     * Synchronizes with the remote repository.
-     * <p>
-     * This method safely processes a Git operation that creates and runs a SyncTask
-     * to synchronize with the remote repository. Depending on the push parameter,
-     * it will either only pull changes from the remote repository or both pull and push.
-     * <p>
-     * A progress indicator is displayed during the operation, and the result is logged
-     * upon completion.
-     *
-     * @param push Whether to push local changes to the remote repository after pulling
-     */
-    private void syncAction(boolean push) {
-        gitProcess(git -> {
-            File changeSetFolder = git.getRepository().getDirectory().getParentFile();
-            ProgressHelper.progress(LANDING_PAGE_TOPIC, new SyncTask(changeSetFolder.toPath(), push))
-                    .whenComplete((_, throwable) -> {
-                        if (throwable != null) {
-                            LOG.error("Error during %s operation".formatted(push ? "sync" : "pull"), throwable);
-                        } else {
-                            LOG.info("Sync operation completed successfully");
-                        }
+        File changeSetFolder = new File(optionalDataStoreRoot.get(), "changeSets");
+        File gitDir = new File(changeSetFolder, ".git");
+
+        if (!changeSetFolder.exists() || !gitDir.exists()) {
+            LOG.error("Git repository not initialized. Please connect to GitHub first.");
+            gotoGitHubDisconnectedState();
+            return;
+        }
+
+        StringBuilder repoNameText = new StringBuilder("Error: could not retrieve repo name.");
+        String statusText = "Error: could not retrieve status.";
+        try (Git git = Git.open(changeSetFolder)) {
+            git.remoteList().call().stream()
+                    .filter(remoteConfig -> remoteConfig.getName().equals("origin"))
+                    .findFirst()
+                    .ifPresent(remoteConfig -> {
+                        // Get uri to "sniff out" any errors before clearing default text
+                        String pushUri = remoteConfig.getURIs().getFirst().toString();
+                        repoNameText.setLength(0);
+                        repoNameText.append("Repository: ").append(pushUri);
                     });
-        });
+
+            Status status = git.status().call();
+            List<String> statusItems = new ArrayList<>();
+            statusItems.addAll(status.getAdded());
+            statusItems.addAll(status.getUncommittedChanges());
+            statusItems.addAll(status.getUntracked());
+            statusText = "Uncommitted Files:\n\t%s".formatted(String.join("\n\t", statusItems));
+        } catch (GitAPIException | IOException ex) {
+            AlertStreams.dispatchToRoot(ex);
+        }
+
+        LOG.info(repoNameText.toString());
+        LOG.info(statusText);
     }
 
     private void generateMsWindowsMenu(BorderPane kometRoot, Stage stage) {
@@ -1452,7 +1469,6 @@ public class WebApp extends Application {
     }
 
     private void quit() {
-        disconnectFromGithub();
         saveJournalWindowsToPreferences();
         PrimitiveData.stop();
         Preferences.stop();

@@ -1,0 +1,1095 @@
+/*
+ * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package dev.ikm.komet.kview.mvvm.view.changeset.exchange;
+
+import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.komet.preferences.Preferences;
+import dev.ikm.tinkar.common.service.PluggableService;
+import dev.ikm.tinkar.common.service.SaveState;
+import dev.ikm.tinkar.common.service.TrackingCallable;
+import dev.ikm.tinkar.coordinate.Calculators;
+import dev.ikm.tinkar.entity.ChangeSetWriterService;
+import dev.ikm.tinkar.entity.EntityCountSummary;
+import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
+import dev.ikm.tinkar.reasoner.service.ClassifierResults;
+import dev.ikm.tinkar.reasoner.service.ReasonerService;
+import dev.ikm.tinkar.terms.TinkarTerm;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.jgit.api.AddCommand;
+import org.eclipse.jgit.api.CommitCommand;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.InitCommand;
+import org.eclipse.jgit.api.LsRemoteCommand;
+import org.eclipse.jgit.api.PullCommand;
+import org.eclipse.jgit.api.PullResult;
+import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.transport.CredentialItem;
+import org.eclipse.jgit.transport.URIish;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.ServiceLoader;
+import java.util.stream.Stream;
+
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_URL;
+
+/**
+ * A unified task for Git operations involving medical terminology data.
+ * <p>
+ * This class handles three main operations:
+ * <ul>
+ *   <li>CONNECT: Initialize a Git repository and connect to a remote repository</li>
+ *   <li>PULL: Pull changes from remote repository and load them into the system</li>
+ *   <li>SYNC: Pull changes and then push local changes back to the remote repository</li>
+ * </ul>
+ * <p>
+ * Each operation follows a series of phases, with detailed progress tracking throughout.
+ */
+public class GitTask extends TrackingCallable<Boolean> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GitTask.class);
+
+    /**
+     * The operation mode for this Git task.
+     */
+    public enum OperationMode {
+        /**
+         * Initialize and connect to a remote Git repository.
+         */
+        CONNECT,
+
+        /**
+         * Pull changes from the remote repository.
+         */
+        PULL,
+
+        /**
+         * Pull changes from the remote repository and push local changes.
+         */
+        SYNC
+    }
+
+    /**
+     * The total amount of work units for progress tracking.
+     */
+    private static final double TOTAL_WORK = 100.0;
+
+    /**
+     * Git configuration constants
+     */
+    private static final String DEFAULT_BRANCH = "main";
+    private static final String REMOTE_NAME = "origin";
+    private static final String README_FILENAME = "README.md";
+
+    /**
+     * Defines the progress phases for each operation mode with their progress boundaries.
+     * <p>
+     * Each phase has a start and end percentage that defines its portion of the total
+     * work. These percentages are used for progress tracking and reporting.
+     */
+    private enum TaskPhase {
+        // CONNECT phases
+        CONNECT_INITIALIZATION(0.0, 10.0),
+        CONNECT_CONFIGURATION(10.0, 40.0),
+        CONNECT_BRANCH_CHECK(40.0, 70.0),
+        CONNECT_COMPLETION(70.0, 100.0),
+
+        // PULL phases
+        PULL_VALIDATION(0.0, 5.0),
+        PULL_FETCH(5.0, 25.0),
+        PULL_LOAD(25.0, 50.0),
+        PULL_REASONER(50.0, 100.0),
+
+        // SYNC phases (includes PULL phases plus PUSH)
+        SYNC_VALIDATION(0.0, 5.0),
+        SYNC_FETCH(5.0, 20.0),
+        SYNC_LOAD(20.0, 40.0),
+        SYNC_REASONER(40.0, 70.0),
+        SYNC_PUSH(70.0, 100.0);
+
+        private final double start;
+        private final double end;
+
+        /**
+         * Creates a new task phase with the specified progress boundaries.
+         *
+         * @param start The start percentage of this phase (0.0 to 100.0)
+         * @param end The end percentage of this phase (0.0 to 100.0)
+         */
+        TaskPhase(double start, double end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        /**
+         * Gets the start percentage of this phase.
+         *
+         * @return The start percentage (0.0 to 100.0)
+         */
+        public double getStart() {
+            return start;
+        }
+
+        /**
+         * Gets the end percentage of this phase.
+         *
+         * @return The end percentage (0.0 to 100.0)
+         */
+        public double getEnd() {
+            return end;
+        }
+    }
+
+    // Common fields
+    private final OperationMode operationMode;
+    private final Path changeSetFolder;
+    private final Runnable connectionSuccessCallback;
+
+    // CONNECT mode fields
+    private final CredentialItem.StringType gitUrl;
+    private final CredentialItem.StringType gitEmail;
+    private final CredentialItem.Username gitUsername;
+    private final CredentialItem.Password gitPassword;
+
+    /**
+     * Creates a new GitTask with the specified operation mode and changeset folder.
+     *
+     * @param operationMode   The mode of operation (CONNECT, PULL, or SYNC)
+     * @param changeSetFolder The folder containing changesets to work with
+     * @param connectionSuccessCallback Callback to be executed when a successful connection is established
+     */
+    public GitTask(OperationMode operationMode,
+                   Path changeSetFolder,
+                   Runnable connectionSuccessCallback) {
+        this.operationMode = operationMode;
+        this.changeSetFolder = changeSetFolder;
+        this.connectionSuccessCallback = connectionSuccessCallback;
+
+        // Initialize credential items for all modes to avoid null pointers
+        this.gitUrl = new CredentialItem.StringType("Git URL", false);
+        this.gitEmail = new CredentialItem.StringType("Git Email", false);
+        this.gitUsername = new CredentialItem.Username();
+        this.gitPassword = new CredentialItem.Password();
+
+        // Set task title based on operation mode
+        switch (operationMode) {
+            case CONNECT -> updateTitle("Exchange Connection in progress...");
+            case PULL -> updateTitle("Exchange Pull in progress...");
+            case SYNC -> updateTitle("Exchange Sync in progress...");
+        }
+
+        updateProgress(0, TOTAL_WORK);
+    }
+
+    /**
+     * Executes the appropriate operation based on the selected mode.
+     * For PULL and SYNC modes, first checks if the repository is fully
+     * initialized and connected before proceeding.
+     *
+     * @return true if the operation was successful, false otherwise
+     */
+    @Override
+    public Boolean compute() {
+        try {
+            boolean result = switch (operationMode) {
+                case CONNECT -> executeConnect();
+                case PULL, SYNC -> {
+                    // For PULL and SYNC, first check if repository is fully initialized
+                    if (!isRepositoryFullyInitialized()) {
+                        // Repository not properly initialized, connect first
+                        LOG.info("Repository not fully initialized. Connecting first...");
+                        updateMessage("Repository not fully initialized. Establishing connection first...");
+                        if (executeConnect()) {
+                            // Now proceed with pull/sync
+                            yield executeSync(operationMode == OperationMode.SYNC);
+                        } else {
+                            // Connection failed
+                            yield false;
+                        }
+                    } else {
+                        // Repository already initialized, proceed with pull/sync
+                        yield executeSync(operationMode == OperationMode.SYNC);
+                    }
+                }
+            };
+
+            // Ensure we reach 100% at the end if successful
+            if (result) {
+                updateProgress(TOTAL_WORK, TOTAL_WORK);
+            }
+            return result;
+        } catch (Exception ex) {
+            String operationName = switch (operationMode) {
+                case CONNECT -> "Connection";
+                case PULL -> "Pull";
+                case SYNC -> "Synchronization";
+            };
+            handleException("Unexpected error during " + operationName, ex);
+            return false;
+        }
+    }
+
+    /**
+     * Checks if the Git repository is fully initialized and connected.
+     * This includes checking if the repository exists, has a remote configured,
+     * and has the main branch set up.
+     *
+     * @return true if the repository is fully initialized, false otherwise
+     */
+    private boolean isRepositoryFullyInitialized() {
+        // First check basic environment
+        if (!validateEnvironment()) {
+            return false;
+        }
+
+        try (Git git = Git.open(changeSetFolder.toFile())) {
+            // Check if remote is configured
+            if (git.getRepository().getRemoteNames().isEmpty()) {
+                LOG.info("Git repository has no remote repositories configured");
+                return false;
+            }
+
+            // Check if main branch exists and is tracking remote
+            try {
+                LsRemoteCommand lsRemoteCommand = git.lsRemote();
+                lsRemoteCommand.setHeads(true);
+                lsRemoteCommand.setRemote(REMOTE_NAME);
+                lsRemoteCommand.setCredentialsProvider(new GitHubCredentialsProvider());
+
+                Collection<Ref> refs = lsRemoteCommand.call();
+                boolean mainBranchExists = refs.stream()
+                        .anyMatch(ref -> ref.getName().equals("refs/heads/" + DEFAULT_BRANCH));
+
+                if (!mainBranchExists) {
+                    LOG.info("Main branch does not exist on remote repository");
+                    return false;
+                }
+            } catch (GitAPIException ex) {
+                LOG.error("Error checking remote branches", ex);
+                return false;
+            }
+
+            return true;
+        } catch (IOException ex) {
+            LOG.error("Error opening Git repository", ex);
+            return false;
+        }
+    }
+
+    // -------------------- CONNECT Operations --------------------
+
+    /**
+     * Executes the CONNECT operation to initialize a Git repository.
+     *
+     * @return true if the connection was successful, false otherwise
+     */
+    private boolean executeConnect() {
+        try {
+            if (!loadAndValidateConfiguration()) {
+                return false;
+            }
+
+            try (Git git = initializeRepository()) {
+                if (git == null) {
+                    return false;
+                }
+
+                if (!configureRepository(git)) {
+                    return false;
+                }
+
+                if (!checkAndSetupRemoteBranch(git)) {
+                    return false;
+                }
+
+                updateMessage("Connection to remote repository successfully established.");
+                updateProgress(TOTAL_WORK, TOTAL_WORK);
+
+                // Call the connection success callback if provided
+                if (connectionSuccessCallback != null) {
+                    connectionSuccessCallback.run();
+                }
+
+                return true;
+            }
+        } catch (Exception ex) {
+            return handleException("Unexpected error during repository connection", ex);
+        }
+    }
+
+    /**
+     * Loads Git configuration from user preferences and validates required parameters.
+     *
+     * @return true if configuration loaded and validated successfully, false otherwise
+     */
+    private boolean loadAndValidateConfiguration() {
+        updatePhaseProgress(TaskPhase.CONNECT_INITIALIZATION, 0.2);
+        updateMessage("Retrieving connection credentials from preferences...");
+
+        KometPreferences userPreferences = Preferences.get().getUserPreferences();
+        userPreferences.get(GIT_URL).ifPresent(gitUrl::setValue);
+        userPreferences.get(GitPropertyName.GIT_EMAIL).ifPresent(gitEmail::setValue);
+        userPreferences.get(GitPropertyName.GIT_USERNAME).ifPresent(gitUsername::setValue);
+        userPreferences.get(GitPropertyName.GIT_PASSWORD)
+                .ifPresent(value -> gitPassword.setValue(value.toCharArray()));
+
+        updatePhaseProgress(TaskPhase.CONNECT_INITIALIZATION, 0.6);
+        updateMessage("Validating remote connection parameters...");
+
+        // Validate required parameters
+        if (gitUrl.getValue() == null || gitUrl.getValue().trim().isEmpty() ||
+                gitEmail.getValue() == null || gitEmail.getValue().trim().isEmpty() ||
+                gitUsername.getValue() == null || gitUsername.getValue().trim().isEmpty() ||
+                gitPassword.getValue() == null || gitPassword.getValue().length == 0) {
+
+            updateMessage("Error: Git preferences are not configured.");
+            LOG.error("Git preferences are not configured");
+            updatePhaseProgress(TaskPhase.CONNECT_INITIALIZATION, 1.0);
+            return false;
+        }
+
+        updatePhaseProgress(TaskPhase.CONNECT_INITIALIZATION, 1.0);
+        return true;
+    }
+
+    /**
+     * Initializes a Git repository in the changeset folder.
+     *
+     * @return the Git instance if initialization was successful, null otherwise
+     */
+    private Git initializeRepository() {
+        updateMessage("Preparing local repository for connection...");
+        updatePhaseProgress(TaskPhase.CONNECT_CONFIGURATION, 0.2);
+
+        try {
+            InitCommand initCommand = Git.init();
+            initCommand.setDirectory(changeSetFolder.toFile());
+            initCommand.setInitialBranch(DEFAULT_BRANCH);
+            return initCommand.call();
+        } catch (GitAPIException ex) {
+            handleException("Error initializing repository for connection", ex);
+            return null;
+        }
+    }
+
+    /**
+     * Configures the Git repository with remote URL, user settings, and repository settings.
+     *
+     * @param git the Git instance
+     * @return true if configuration was successful, false otherwise
+     */
+    private boolean configureRepository(Git git) {
+        if (!git.getRepository().getRemoteNames().isEmpty()) {
+            updateMessage("Remote connection already established. No changes required.");
+            updatePhaseProgress(TaskPhase.CONNECT_CONFIGURATION, 1.0);
+            return true;
+        }
+
+        updateMessage("Setting up connection to remote repository...");
+        updatePhaseProgress(TaskPhase.CONNECT_CONFIGURATION, 0.6);
+
+        try {
+            // Configure remote repository
+            configureRemote(git);
+            updatePhaseProgress(TaskPhase.CONNECT_CONFIGURATION, 0.7);
+
+            // Configure user and repository settings
+            configureUserSettings(git);
+            configureRepositorySettings(git);
+
+            updatePhaseProgress(TaskPhase.CONNECT_CONFIGURATION, 1.0);
+            return true;
+        } catch (URISyntaxException | IOException | GitAPIException ex) {
+            return handleException("Error configuring repository connection", ex);
+        }
+    }
+
+    /**
+     * Configures the remote repository in the Git configuration.
+     *
+     * @param git the Git instance
+     * @throws URISyntaxException if the Git URL is invalid
+     * @throws GitAPIException    if an error occurs when adding the remote
+     */
+    private void configureRemote(Git git) throws URISyntaxException, GitAPIException {
+        URIish uri = new URIish(gitUrl.getValue().trim());
+        git.remoteAdd().setName(REMOTE_NAME).setUri(uri).call();
+    }
+
+    /**
+     * Configures user settings in the Git configuration.
+     *
+     * @param git the Git instance
+     * @throws IOException if an error occurs when saving the configuration
+     */
+    private void configureUserSettings(Git git) throws IOException {
+        updateMessage("Configuring authentication credentials for access...");
+        final StoredConfig config = git.getRepository().getConfig();
+        config.setString("user", null, "name", gitUsername.getValue().trim());
+        config.setString("user", null, "email", gitEmail.getValue().trim());
+    }
+
+    /**
+     * Configures repository settings in the Git configuration.
+     *
+     * @param git the Git instance
+     * @throws IOException if an error occurs when saving the configuration
+     */
+    private void configureRepositorySettings(Git git) throws IOException {
+        updateMessage("Optimizing connection settings for reliability...");
+        final StoredConfig config = git.getRepository().getConfig();
+
+        // Core settings
+        config.setInt("core", null, "repositoryformatversion", 0);
+        config.setBoolean("core", null, "filemode", false);
+        config.setBoolean("core", null, "bare", false);
+        config.setBoolean("core", null, "logallrefupdates", true);
+        config.setBoolean("core", null, "symlinks", false);
+        config.setBoolean("core", null, "ignorecase", true);
+
+        // Other settings
+        config.setString("submodule", null, "active", ".");
+        config.setBoolean("commit", null, "gpgsign", false);
+        // GPG Format Workaround: https://bugs.eclipse.org/bugs/show_bug.cgi?id=581483
+        config.setString("gpg", null, "format", "x509");
+
+        config.save();
+    }
+
+    /**
+     * Checks for the existence of the main branch on the remote repository
+     * and creates it if it doesn't exist.
+     *
+     * @param git the Git instance
+     * @return true if the check was successful, false otherwise
+     */
+    private boolean checkAndSetupRemoteBranch(Git git) {
+        updateMessage("Verifying connection to remote repository...");
+        updatePhaseProgress(TaskPhase.CONNECT_BRANCH_CHECK, 0.5);
+
+        try {
+            updateMessage("Testing connection with remote repository...");
+
+            LsRemoteCommand lsRemoteCommand = git.lsRemote();
+            lsRemoteCommand.setHeads(true);
+            lsRemoteCommand.setRemote(REMOTE_NAME);
+            lsRemoteCommand.setCredentialsProvider(new GitHubCredentialsProvider());
+
+            Collection<Ref> refs = lsRemoteCommand.call();
+
+            // Check if main branch exists
+            final boolean mainBranchExists = refs.stream()
+                    .anyMatch(ref -> ref.getName().equals("refs/heads/" + DEFAULT_BRANCH));
+
+            if (!mainBranchExists) {
+                updateMessage("Remote branch not found. Establishing new connection point...");
+                updatePhaseProgress(TaskPhase.CONNECT_BRANCH_CHECK, 0.7);
+
+                try {
+                    createAndPushMainBranch(git);
+                } catch (GitAPIException | IOException ex) {
+                    return handleException("Error establishing initial connection", ex);
+                }
+            } else {
+                updateMessage("Connection to remote branch already established.");
+                updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 1.0);
+            }
+
+            return true;
+        } catch (GitAPIException ex) {
+            return handleException("Error verifying connection to remote repository", ex);
+        }
+    }
+
+    /**
+     * Creates a main branch with an initial commit and pushes it to remote.
+     *
+     * @param git the Git instance
+     * @throws GitAPIException if a Git API error occurs
+     * @throws IOException     if an I/O error occurs
+     */
+    private void createAndPushMainBranch(Git git) throws GitAPIException, IOException {
+        // Create a README.md file for the initial commit
+        final File readmeFile = new File(changeSetFolder.toFile(), README_FILENAME);
+        if (!readmeFile.exists()) {
+            updateMessage("Initializing connection with remote repository...");
+            updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 0.3);
+
+            Files.write(
+                    readmeFile.toPath(),
+                    generateReadmeContent().getBytes(),
+                    StandardOpenOption.CREATE
+            );
+
+            // Add and commit the file
+            updateMessage("Preparing initial data for secure transmission...");
+            updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 0.5);
+
+            git.add().addFilepattern(README_FILENAME).call();
+            git.commit()
+                    .setMessage("Initial commit for changeset exchange")
+                    .setAuthor(gitUsername.getValue(), gitEmail.getValue())
+                    .call();
+
+            // Push the commit to remote
+            updateMessage("Establishing first connection with remote repository...");
+            updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 0.7);
+
+            // Use a progress monitor for the push operation
+            final GitProgressMonitor progressMonitor = new GitProgressMonitor(
+                    this,
+                    TaskPhase.CONNECT_BRANCH_CHECK.getEnd(),
+                    TaskPhase.CONNECT_COMPLETION.getEnd(),
+                    TOTAL_WORK);
+
+            git.push()
+                    .setRemote(REMOTE_NAME)
+                    .setCredentialsProvider(new GitHubCredentialsProvider())
+                    .setProgressMonitor(progressMonitor)
+                    .setPushAll()
+                    .call();
+
+            updateMessage("Connection established successfully! Remote repository is now linked.");
+            updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 1.0);
+        }
+    }
+
+    /**
+     * Generates the content for the README.md file.
+     *
+     * @return the content for the README.md file
+     */
+    private String generateReadmeContent() {
+        return "# Changeset Exchange Repository\n\n" +
+                "This repository is used for exchanging changesets with the Komet application.\n\n" +
+                "Created: " + LocalDateTime.now() + "\n";
+    }
+
+    // -------------------- PULL/SYNC Operations --------------------
+
+    /**
+     * Executes the PULL operation, optionally followed by a PUSH if in SYNC mode.
+     *
+     * @param pushChanges whether to push changes after pulling (true for SYNC mode)
+     * @return true if the operation was successful, false otherwise
+     */
+    private boolean executeSync(boolean pushChanges) {
+        TaskPhase validationPhase = pushChanges ? TaskPhase.SYNC_VALIDATION : TaskPhase.PULL_VALIDATION;
+        TaskPhase pullPhase = pushChanges ? TaskPhase.SYNC_FETCH : TaskPhase.PULL_FETCH;
+        TaskPhase loadPhase = pushChanges ? TaskPhase.SYNC_LOAD : TaskPhase.PULL_LOAD;
+        TaskPhase reasonerPhase = pushChanges ? TaskPhase.SYNC_REASONER : TaskPhase.PULL_REASONER;
+        TaskPhase pushPhase = TaskPhase.SYNC_PUSH; // Only used in SYNC mode
+
+        updateMessage("Validating environment...");
+        updateProgress(0, TOTAL_WORK);
+
+        try {
+            if (!validateEnvironment()) {
+                updatePhaseProgress(validationPhase.getStart(), validationPhase.getEnd(), 1.0);
+                cancel();
+                return false;
+            }
+
+            // Validation complete
+            updatePhaseProgress(validationPhase.getStart(), validationPhase.getEnd(), 1.0);
+
+            updateMessage("Starting %s process.".formatted(pushChanges ? "synchronization" : "pulling"));
+
+            // Pull phase
+            pull(validationPhase.getEnd(), pullPhase.getEnd());
+
+            // Load changesets phase
+            loadChangesets(pullPhase.getEnd(), loadPhase.getEnd());
+
+            // Run reasoner phase
+            runReasoner(loadPhase.getEnd(), reasonerPhase.getEnd());
+
+            // Push phase (if enabled)
+            if (pushChanges) {
+                push(reasonerPhase.getEnd(), pushPhase.getEnd());
+            }
+
+            // Ensure we reach 100% at the end
+            updateProgress(TOTAL_WORK, TOTAL_WORK);
+            updateMessage("%s completed successfully.".formatted(pushChanges ? "Synchronization" : "Pulling"));
+            return true;
+        } catch (Exception ex) {
+            // Ensure progress is updated even when an error occurs
+            updateProgress(TOTAL_WORK, TOTAL_WORK);
+            updateMessage("%s failed: ".formatted(pushChanges ? "Synchronization" : "Pulling") + ex.getLocalizedMessage());
+            LOG.error("{} failed", (pushChanges ? "Synchronization" : "Pulling"), ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * Validates that the environment is properly set up for the sync task.
+     * <p>
+     * Checks that the changeset folder exists, is a directory, and is a valid
+     * Git repository.
+     *
+     * @return true if the environment is valid, false otherwise
+     */
+    private boolean validateEnvironment() {
+        if (!Files.exists(changeSetFolder)) {
+            updateMessage("Error: Changeset folder does not exist: " + changeSetFolder);
+            LOG.error("Changeset folder does not exist: {}", changeSetFolder);
+            return false;
+        }
+
+        if (!Files.isDirectory(changeSetFolder)) {
+            updateMessage("Error: Changeset path is not a directory: " + changeSetFolder);
+            LOG.error("Changeset path is not a directory: {}", changeSetFolder);
+            return false;
+        }
+
+        File gitDir = new File(changeSetFolder.toFile(), ".git");
+        if (!gitDir.exists() || !gitDir.isDirectory()) {
+            updateMessage("Error: Not a Git repository: " + changeSetFolder);
+            LOG.error("Not a Git repository: {}", changeSetFolder);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Pulls the latest changes from the remote Git repository.
+     *
+     * @param startPercentage the progress percentage at the start of this phase
+     * @param endPercentage   the progress percentage at the end of this phase
+     */
+    private void pull(double startPercentage, double endPercentage) {
+        if (isCancelled()) {
+            updateMessage("Operation cancelled by user.");
+            return;
+        }
+        // Starting the pull phase
+        updatePhaseProgress(startPercentage, endPercentage, 0.0);
+
+        try (Git git = Git.open(changeSetFolder.toFile())) {
+            updateMessage("Connecting to remote repository...");
+            updatePhaseProgress(startPercentage, endPercentage, 0.2);
+
+            // Create a progress monitor for Git operations
+            GitProgressMonitor progressMonitor = new GitProgressMonitor(
+                    this,
+                    startPercentage,
+                    endPercentage,
+                    TOTAL_WORK);
+
+            PullCommand pullCommand = git.pull();
+            pullCommand.setProgressMonitor(progressMonitor);
+            pullCommand.setRemoteBranchName("main");
+            pullCommand.setCredentialsProvider(new GitHubCredentialsProvider());
+
+            updateMessage("Pulling changes from remote...");
+            updatePhaseProgress(startPercentage, endPercentage, 0.3);
+
+            PullResult pullResult = pullCommand.call();
+
+            if (pullResult.isSuccessful()) {
+                updateMessage("Pull operation completed successfully.");
+                updatePhaseProgress(startPercentage, endPercentage, 1.0);
+            } else {
+                handlePhaseError("Pull", new Exception(pullResult.getMergeResult().getMergeStatus().toString()),
+                        startPercentage, endPercentage);
+            }
+        } catch (Exception ex) {
+            handlePhaseError("Pull", ex, startPercentage, endPercentage);
+        }
+    }
+
+    /**
+     * Loads changesets from files in the changeset folder.
+     *
+     * @param startPercentage the progress percentage at the start of this phase
+     * @param endPercentage   the progress percentage at the end of this phase
+     */
+    private void loadChangesets(double startPercentage, double endPercentage) {
+        if (isCancelled()) {
+            updateMessage("Operation cancelled by user.");
+            return;
+        }
+
+        updatePhaseProgress(startPercentage, endPercentage, 0.0);
+        MutableList<EntityCountSummary> loadResults = Lists.mutable.empty();
+
+        try {
+            // Use filesToAdd to get changeset files (now naturally sorted)
+            ImmutableList<String> relativeFilePaths = filesToAdd(changeSetFolder, "ike-cs.zip");
+
+            if (relativeFilePaths.isEmpty()) {
+                updateMessage("No changeset files found to load.");
+                updatePhaseProgress(startPercentage, endPercentage, 1.0);
+                return;
+            }
+
+            int total = relativeFilePaths.size();
+            int current = 0;
+
+            for (String relativePath : relativeFilePaths) {
+                current++;
+                File file = changeSetFolder.resolve(relativePath).toFile();
+                updateMessage("Loading changeset " + current + " of " + total + ": " + file.getName());
+                // Update progress based on current file's position in the total
+                double loadProgress = (double) current / total;
+                updatePhaseProgress(startPercentage, endPercentage, loadProgress * 0.9); // Reserve 10% for completion
+
+                try {
+                    // isValidChangeset check already done in filesToAdd
+                    EntityCountSummary ecs = new LoadEntitiesFromProtobufFile(file).compute();
+                    loadResults.add(ecs);
+                    LOG.info("Loaded changeset: {}", file.getName());
+                } catch (Exception ex) {
+                    LOG.error("Failed to load changeset: {}", file.getName(), ex);
+                }
+            }
+
+            updateMessage("Successfully loaded " + loadResults.size() + " of " + total + " changesets.");
+            updatePhaseProgress(startPercentage, endPercentage, 1.0);
+        } catch (Exception e) {
+            handlePhaseError("Loading changesets", e, startPercentage, endPercentage);
+        }
+    }
+
+    /**
+     * Runs the reasoning process on the loaded data.
+     *
+     * @param startPercentage the progress percentage at the start of this phase
+     * @param endPercentage   the progress percentage at the end of this phase
+     */
+    private void runReasoner(double startPercentage, double endPercentage) {
+        if (isCancelled()) {
+            updateMessage("Operation cancelled by user.");
+            return;
+        }
+
+        updateMessage("Starting reasoning process...");
+        updatePhaseProgress(startPercentage, endPercentage, 0.0);
+
+        ImmutableList<ReasonerService> reasoners = loadReasonerServices();
+        processWithReasoners(reasoners, startPercentage, endPercentage);
+
+        updateMessage("Reasoning process completed successfully.");
+        updatePhaseProgress(startPercentage, endPercentage, 1.0);
+    }
+
+    /**
+     * Loads available reasoner services of the specified type.
+     *
+     * @return A list of available reasoner services
+     */
+    private ImmutableList<ReasonerService> loadReasonerServices() {
+        final String reasonerType = "ElkSnomedReasoner";
+        ImmutableList<ReasonerService> reasoners = Lists.immutable
+                .ofAll(PluggableService.load(ReasonerService.class).stream()
+                        .map(ServiceLoader.Provider::get)
+                        .filter(reasoner -> reasoner.getName().contains(reasonerType))
+                        .sorted(Comparator.comparing(ReasonerService::getName)).toList());
+
+        LOG.info("Number of reasoners {}", reasoners.size());
+        return reasoners;
+    }
+
+    /**
+     * Processes data with the available reasoners.
+     *
+     * @param reasoners       The list of reasoners to use
+     * @param startPercentage The start percentage for this phase
+     * @param endPercentage   The end percentage for this phase
+     */
+    private void processWithReasoners(ImmutableList<ReasonerService> reasoners, double startPercentage, double endPercentage) {
+        MutableList<ClassifierResults> resultList = Lists.mutable.empty();
+        int reasonerCount = reasoners.size();
+
+        // Give 10% of the reasoning phase to loading reasoners
+        double reasoningWorkStart = startPercentage + ((endPercentage - startPercentage) * 0.1);
+        updatePhaseProgress(startPercentage, endPercentage, 0.1);
+
+        for (int i = 0; i < reasonerCount; i++) {
+            ReasonerService rs = reasoners.get(i);
+            LOG.info("Reasoner service: {}", rs);
+
+            // Each reasoner gets an equal portion of the reasoning phase (after the 10% loading)
+            double remainingReasoning = endPercentage - reasoningWorkStart;
+            double reasonerStartPercent = reasoningWorkStart + ((remainingReasoning / reasonerCount) * i);
+            double reasonerEndPercent = reasoningWorkStart + ((remainingReasoning / reasonerCount) * (i + 1));
+
+            rs.init(Calculators.View.Default(), TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
+
+            // Use this task as the progress updater
+            rs.setProgressUpdater(this);
+
+            try {
+                // Extract
+                updateMessage("Extracting data for reasoning...");
+                rs.extractData();
+                updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 0.25);
+
+                // Load
+                updateMessage("Loading data for reasoning...");
+                rs.loadData();
+                updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 0.5);
+
+                // Compute
+                updateMessage("Computing inferences...");
+                rs.computeInferences();
+                updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 0.75);
+
+                // Build NNF
+                updateMessage("Building necessary normal form...");
+                rs.buildNecessaryNormalForm();
+                updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 0.9);
+
+                // Write inferred results
+                updateMessage("Writing inferred results...");
+                ClassifierResults results = rs.writeInferredResults();
+                updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 1.0);
+
+                LOG.info("After Size of ConceptSet: {}", rs.getReasonerConceptSet().size());
+                LOG.info("ClassifierResults: inferred changes size {}", results.getConceptsWithInferredChanges().size());
+                LOG.info("ClassifierResults: navigation changes size {}", results.getConceptsWithNavigationChanges().size());
+                LOG.info("ClassifierResults: classificationconcept size {}", results.getClassificationConceptSet().size());
+                resultList.add(results);
+            } catch (Exception ex) {
+                LOG.error("Failed to load data for reasoning", ex);
+            }
+        }
+    }
+
+    /**
+     * Pushes changes to the remote Git repository if enabled.
+     *
+     * @param startPercentage the progress percentage at the start of this phase
+     * @param endPercentage   the progress percentage at the end of this phase
+     */
+    private void push(double startPercentage, double endPercentage) {
+        if (isCancelled()) {
+            updateMessage("Operation cancelled by user.");
+            return;
+        }
+
+        updatePhaseProgress(startPercentage, endPercentage, 0.0);
+
+        try {
+            updateMessage("Saving current change set...");
+            updatePhaseProgress(startPercentage, endPercentage, 0.2);
+
+            if (!saveCurrentChangeSet()) {
+                updatePhaseProgress(startPercentage, endPercentage, 1.0);
+                return;
+            }
+
+            updatePhaseProgress(startPercentage, endPercentage, 0.4);
+
+            pushToRemoteRepository(startPercentage, endPercentage);
+        } catch (Exception ex) {
+            handlePhaseError("Push", ex, startPercentage, endPercentage);
+        }
+    }
+
+    /**
+     * Saves the current change set using the ChangeSetWriterService.
+     *
+     * @return true if the save operation was successful, false otherwise
+     */
+    private boolean saveCurrentChangeSet() {
+        ChangeSetWriterService changeSetWriterService = PluggableService.first(ChangeSetWriterService.class);
+        if (changeSetWriterService == null) {
+            updateMessage("No ChangeSetWriterService available. Cannot save changes.");
+            LOG.error("No ChangeSetWriterService found, cannot save changes");
+            return false;
+        }
+
+        if (changeSetWriterService instanceof SaveState savableChangeSetWriterService) {
+            savableChangeSetWriterService.save();
+        }
+
+        return true;
+    }
+
+    /**
+     * Pushes changes to the remote Git repository.
+     *
+     * @param startPercentage the progress percentage at the start of this phase
+     * @param endPercentage   the progress percentage at the end of this phase
+     * @throws Exception if any Git operations fail
+     */
+    private void pushToRemoteRepository(double startPercentage, double endPercentage) throws Exception {
+        try (Git git = Git.open(changeSetFolder.toFile())) {
+            ImmutableList<String> filesToAdd = filesToAdd(changeSetFolder, "ike-cs.zip");
+
+            if (filesToAdd.isEmpty()) {
+                LOG.info("No changeset files found to add");
+                updateMessage("No changeset files found to push.");
+                updatePhaseProgress(startPercentage, endPercentage, 1.0);
+                return;
+            }
+
+            // Create a more descriptive commit message
+            String commitMessage = "Added " + filesToAdd.size() + " changesets on " + new Date();
+
+            // Add files to staging
+            updateMessage("Adding files to Git staging area...");
+            AddCommand addCommand = git.add();
+            addCommand.setUpdate(false);
+            filesToAdd.forEach(addCommand::addFilepattern);
+            addCommand.call();
+            updatePhaseProgress(startPercentage, endPercentage, 0.6);
+
+            // Commit changes
+            updateMessage("Committing changes...");
+            CommitCommand commitCommand = git.commit();
+            commitCommand.setMessage(commitMessage);
+            commitCommand.setAll(true);
+            commitCommand.call();
+            updatePhaseProgress(startPercentage, endPercentage, 0.7);
+
+            // Push changes
+            updateMessage("Pushing changes to remote repository...");
+            PushCommand pushCommand = git.push();
+
+            // Set a progress monitor for Git operations
+            GitProgressMonitor progressMonitor = new GitProgressMonitor(
+                    this,
+                    startPercentage,
+                    endPercentage,
+                    TOTAL_WORK);
+
+            pushCommand.setProgressMonitor(progressMonitor);
+            pushCommand.setCredentialsProvider(new GitHubCredentialsProvider());
+            pushCommand.call();
+            updatePhaseProgress(startPercentage, endPercentage, 0.95);
+
+            updateMessage("Changes successfully pushed to remote repository.");
+            updatePhaseProgress(startPercentage, endPercentage, 1.0);
+        }
+    }
+
+    /**
+     * Identifies files in a directory matching the specified pattern that are valid changesets.
+     *
+     * @param directory The directory to search for files
+     * @param pattern   The file extension pattern to match
+     * @return An immutable list of relative paths to valid changeset files
+     */
+    ImmutableList<String> filesToAdd(Path directory, String pattern) {
+        try (Stream<Path> filesStream = Files.walk(directory)) {
+            return Lists.immutable.ofAll(filesStream
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.toString().endsWith(pattern))
+                    .filter(this::isValidChangeset)
+                    .map(path -> directory.relativize(path).toString())
+                    .sorted() // Add natural sorting by file path
+                    .toList());
+        } catch (IOException e) {
+            LOG.error("Error searching for files", e);
+            return Lists.immutable.empty();
+        }
+    }
+
+    /**
+     * Validates whether a file is a valid changeset archive.
+     *
+     * @param file The path to the file to check
+     * @return true if the file is a valid changeset, false otherwise
+     */
+    private boolean isValidChangeset(Path file) {
+        try (FileSystem fs = FileSystems.newFileSystem(file)) {
+            return Files.exists(fs.getPath("META-INF", "MANIFEST.MF"));
+        } catch (IOException ex) {
+            return false;
+        }
+    }
+
+    // -------------------- Common Helper Methods --------------------
+
+    /**
+     * Updates the current progress within a phase range.
+     *
+     * @param phase         the current task phase
+     * @param phaseProgress fractional progress within phase (0.0 to 1.0)
+     */
+    private void updatePhaseProgress(TaskPhase phase, double phaseProgress) {
+        updatePhaseProgress(phase.getStart(), phase.getEnd(), phaseProgress);
+    }
+
+    /**
+     * Updates the current progress within a phase range.
+     *
+     * @param phaseStart    start percentage of the phase
+     * @param phaseEnd      end percentage of the phase
+     * @param phaseProgress fractional progress within phase (0.0 to 1.0)
+     */
+    private void updatePhaseProgress(double phaseStart, double phaseEnd, double phaseProgress) {
+        // Ensure phaseProgress is between 0 and 1
+        phaseProgress = Math.max(0.0, Math.min(1.0, phaseProgress));
+
+        // Calculate progress within this phase
+        double phaseWidth = phaseEnd - phaseStart;
+        double currentProgress = phaseStart + (phaseWidth * phaseProgress);
+
+        // Update the progress tracker
+        updateProgress(currentProgress, TOTAL_WORK);
+    }
+
+    /**
+     * Handles exceptions by updating the message, logging the error, and updating the progress.
+     *
+     * @param message the error message
+     * @param ex      the exception
+     * @return false to indicate failure
+     */
+    private boolean handleException(String message, Exception ex) {
+        updateMessage(message + ": " + ex.getLocalizedMessage());
+        LOG.error(message, ex);
+        return false;
+    }
+
+    /**
+     * Handles phase errors consistently.
+     *
+     * @param phaseName The name of the phase that encountered an error
+     * @param ex The exception that occurred
+     * @param phaseStart The starting percentage of the phase
+     * @param phaseEnd The ending percentage of the phase
+     */
+    private void handlePhaseError(String phaseName, Exception ex, double phaseStart, double phaseEnd) {
+        String errorMessage = phaseName + " failed: " + ex.getLocalizedMessage();
+        LOG.error(errorMessage, ex);
+        updateMessage(errorMessage);
+        updatePhaseProgress(phaseStart, phaseEnd, 1.0);
+        cancel();
+    }
+}

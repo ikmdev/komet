@@ -109,8 +109,8 @@
             <artifactId>knowledge-layout</artifactId>
         </dependency>
         <dependency>
-            <groupId>dev.ikm.komet</groupId>
-            <artifactId>sync</artifactId>
+            <groupId>dev.ikm.jpms</groupId>
+            <artifactId>jgit</artifactId>
         </dependency>
     </dependencies>
 </project>

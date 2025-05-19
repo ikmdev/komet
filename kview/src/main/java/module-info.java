@@ -32,7 +32,6 @@ module dev.ikm.komet.kview {
     requires one.jpro.platform.file;
 
     requires transitive dev.ikm.komet.layout;
-    requires transitive dev.ikm.komet.sync;
     requires jdk.jfr;
     requires org.apache.commons.logging;
     requires org.eclipse.jgit;
