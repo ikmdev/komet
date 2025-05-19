@@ -223,11 +223,11 @@ public class GenEditingDetailsController {
     @FXML
     private void initialize() {
 
-        EntityFacade refComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
+        ObjectProperty<EntityFacade> refComponent = genEditingViewModel.getObjectProperty(REF_COMPONENT);
         //Enable edit fields button if refComponent is NOT null else disable it.
-        editFieldsButton.setDisable(refComponent == null);
+        editFieldsButton.setDisable(refComponent.isNull().get());
         //Enable reference component edit button if refComponent is NULL else disable it.
-        addReferenceButton.setDisable(refComponent != null);
+        addReferenceButton.setDisable(refComponent.isNotNull().get());
 
         // clear all semantic details.
         semanticDetailsVBox.getChildren().clear();
@@ -306,17 +306,21 @@ public class GenEditingDetailsController {
                     // change the mode from CREATE to EDIT
                     genEditingViewModel.setPropertyValue(MODE, EDIT);
                 }
-                for (int i = 0; i < evt.getList().size(); i++) {
-                    ObservableField observableField = observableFields.get(i);
-                    Object updatedField = evt.getList().get(i);
-                    if (updatedField != null && observableField != null) {
-                        // readonly integer value 1, editable integer value 1 don't update
-                        // readonly integer value 1, editable integer value 5 do update
-                        // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
-                        // Should we check if the value is different before updating? (blindly updating now).
-                        observableField.valueProperty().setValue(updatedField);
+
+                //Platform.runLater(()-> {
+                    for (int i = 0; i < evt.getList().size(); i++) {
+                        ObservableField observableField = observableFields.get(i);
+                        Object updatedField = evt.getList().get(i);
+                        if (updatedField != null && observableField != null) {
+                            // readonly integer value 1, editable integer value 1 don't update
+                            // readonly integer value 1, editable integer value 5 do update
+                            // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
+                            // Should we check if the value is different before updating? (blindly updating now).
+                            observableField.valueProperty().setValue(updatedField);
+                        }
                     }
-                }
+                //});
+
             }
 
             semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
@@ -479,11 +483,11 @@ public class GenEditingDetailsController {
                 ObjectProperty<EntityFacade> newRefComponentProp = genEditingViewModel.getProperty(REF_COMPONENT);
                 updateRefComponentInfo.accept(newRefComponentProp.get());
                 //Enable disable pencil icons
-                editFieldsButton.disableProperty().bind(newRefComponentProp.isNull());
-                addReferenceButton.disableProperty().bind(newRefComponentProp.isNotNull());
+                editFieldsButton.setDisable(newRefComponentProp.isNull().get());
+                addReferenceButton.setDisable(newRefComponentProp.isNotNull().get());
             }
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
                 GenEditingEvent.class, refComponentSubscriber);
     }
 
