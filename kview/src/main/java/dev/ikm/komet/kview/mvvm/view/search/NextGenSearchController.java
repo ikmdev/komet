@@ -462,7 +462,7 @@ public class NextGenSearchController extends AbstractBasicController {
 
             // add the custom descriptions
             controller.getDescriptionsVBox().getChildren().clear();
-            if (latestVersionSearchResults != null && latestVersionSearchResults.size() > 0 ) {
+            if (latestVersionSearchResults != null && latestVersionSearchResults.size() > 0) {
                 latestVersionSearchResults.forEach(latestVersionSearchResult -> {
                     if (latestVersionSearchResult.highlightedString() != null) {
                         Label descrLabel = new Label(formatHighlightedString(latestVersionSearchResult.highlightedString()));
