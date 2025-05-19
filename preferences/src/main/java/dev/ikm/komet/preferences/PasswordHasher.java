@@ -350,7 +350,7 @@ public class PasswordHasher {
         final byte[] result = decrypt(password, Base64.getUrlDecoder().decode(encryptedData.substring(0, splitPoint)),
                 encryptedData.substring((splitPoint + 3), encryptedData.length()));
 
-        LOG.info(String.format("Decrypt Time {} ms", System.currentTimeMillis() - startTime));
+        LOG.info("Decrypt Time {} ms", System.currentTimeMillis() - startTime);
         return result;
     }
 
