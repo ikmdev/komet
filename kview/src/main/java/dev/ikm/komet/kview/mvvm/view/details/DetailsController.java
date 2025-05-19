@@ -1429,7 +1429,7 @@ public class DetailsController  {
 
             // refresh modules
             stampViewModel.getObservableList(MODULES_PROPERTY).clear();
-            stampViewModel.getObservableList(MODULES_PROPERTY).addAll(DataModelHelper.fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()));
+            stampViewModel.getObservableList(MODULES_PROPERTY).addAll(DataModelHelper.fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()));
 
             // refresh path
             stampViewModel.getObservableList(PATHS_PROPERTY).clear();
@@ -1444,7 +1444,7 @@ public class DetailsController  {
 
         // Populate from database
         stampViewModel.setPropertyValue(PATHS_PROPERTY, DataModelHelper.fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()))
-                .setPropertyValue(MODULES_PROPERTY, DataModelHelper.fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()));
+                .setPropertyValue(MODULES_PROPERTY, DataModelHelper.fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()));
 
         // setup mode
         if (getConceptViewModel().getPropertyValue(CURRENT_ENTITY) != null) {
