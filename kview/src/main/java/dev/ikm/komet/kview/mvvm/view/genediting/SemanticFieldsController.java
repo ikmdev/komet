@@ -34,7 +34,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPI
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
 import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
+
 import dev.ikm.komet.framework.events.EntityVersionChangeEvent;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -93,7 +93,7 @@ public class SemanticFieldsController {
     private Button cancelButton;
 
     @FXML
-    private Button clearFormButton;
+    private Button clearOrResetFormButton;
 
     @FXML
     private Button submitButton;
@@ -178,7 +178,6 @@ public class SemanticFieldsController {
         genEditingViewModel.save();
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         reloadPatternNavigator = true;
-        clearFormButton.setDisable(true);
         cancelButton.setDisable(true);
         ObjectProperty<EntityFacade> semanticProperty = genEditingViewModel.getProperty(SEMANTIC);
         // listen if the semantic property is updated during Create mode.
@@ -186,14 +185,14 @@ public class SemanticFieldsController {
 
         if (semantic != null && genEditingViewModel.getPropertyValue(MODE) == EDIT) {
                 //Change the button name to RESET FORM in EDIT MODE
-                clearFormButton.setText("RESET FORM");
+                clearOrResetFormButton.setText("RESET FORM");
             setupEditSemanticDetails();
         }
         genEditingViewModel.getProperty(MODE).subscribe((mode) -> {
             if(mode == EDIT){
-                clearFormButton.setText("RESET FORM");
+                clearOrResetFormButton.setText("RESET FORM");
             }else {
-                clearFormButton.setText("CLEAR FORM");
+                clearOrResetFormButton.setText("CLEAR FORM");
             }
         });
 
@@ -271,6 +270,8 @@ public class SemanticFieldsController {
             // disable calling writeToData method of observable field by setting refresh flag to true.
             FieldRecord<?> fieldRecord = observableField.field();
             nodes.add(generateNode(fieldRecord, observableField, getViewProperties(), true));
+            // Any changes top any observable field should re-enable the clear or reset button
+            observableField.valueProperty().subscribe(() -> clearOrResetFormButton.setDisable(false));
             observableField.autoSaveOn();
           });
 
@@ -302,6 +303,7 @@ public class SemanticFieldsController {
     private void clearOrResetForm(ActionEvent actionEvent) {
         Latest<SemanticEntityVersion>  latestCommitted =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
         latestCommitted.ifPresentOrElse(this::resetFieldValues, this::clearField);
+        clearOrResetFormButton.setDisable(true);
     }
 
     /**
