@@ -143,17 +143,11 @@ public class GitHubPreferencesController implements Initializable {
 
                 if (GIT_URL.name().equals(propName)) {
                     gitUrlErrorMessage = message;
-                }
-
-                if (GIT_EMAIL.name().equals(propName)) {
+                } else if (GIT_EMAIL.name().equals(propName)) {
                     gitEmailErrorMessage = message;
-                }
-
-                if (GIT_USERNAME.name().equals(propName)) {
+                } else if (GIT_USERNAME.name().equals(propName)) {
                     usernameErrorMessage = message;
-                }
-
-                if (GIT_PASSWORD.name().equals(propName)) {
+                } else if (GIT_PASSWORD.name().equals(propName)) {
                     passwordErrorMessage = message;
                 }
             }

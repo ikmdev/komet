@@ -602,8 +602,10 @@ public class GitTask extends TrackingCallable<Boolean> {
      *
      * @param pushChanges whether to push changes after pulling (true for SYNC mode)
      * @return true if the operation was successful, false otherwise
+     * @throws GitAPIException if a Git API error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private boolean executeSync(boolean pushChanges) {
+    private boolean executeSync(boolean pushChanges) throws GitAPIException, IOException {
         TaskPhase validationPhase = pushChanges ? TaskPhase.SYNC_VALIDATION : TaskPhase.PULL_VALIDATION;
         TaskPhase pullPhase = pushChanges ? TaskPhase.SYNC_FETCH : TaskPhase.PULL_FETCH;
         TaskPhase loadPhase = pushChanges ? TaskPhase.SYNC_LOAD : TaskPhase.PULL_LOAD;
@@ -613,43 +615,35 @@ public class GitTask extends TrackingCallable<Boolean> {
         updateMessage("Validating environment...");
         updateProgress(0, TOTAL_WORK);
 
-        try {
-            if (!validateEnvironment()) {
-                updatePhaseProgress(validationPhase.getStart(), validationPhase.getEnd(), 1.0);
-                cancel();
-                return false;
-            }
-
-            // Validation complete
+        if (!validateEnvironment()) {
             updatePhaseProgress(validationPhase.getStart(), validationPhase.getEnd(), 1.0);
-
-            updateMessage("Starting %s process.".formatted(pushChanges ? "synchronization" : "pulling"));
-
-            // Pull phase
-            pull(validationPhase.getEnd(), pullPhase.getEnd());
-
-            // Load changesets phase
-            loadChangesets(pullPhase.getEnd(), loadPhase.getEnd());
-
-            // Run reasoner phase
-            runReasoner(loadPhase.getEnd(), reasonerPhase.getEnd());
-
-            // Push phase (if enabled)
-            if (pushChanges) {
-                push(reasonerPhase.getEnd(), pushPhase.getEnd());
-            }
-
-            // Ensure we reach 100% at the end
-            updateProgress(TOTAL_WORK, TOTAL_WORK);
-            updateMessage("%s completed successfully.".formatted(pushChanges ? "Synchronization" : "Pulling"));
-            return true;
-        } catch (Exception ex) {
-            // Ensure progress is updated even when an error occurs
-            updateProgress(TOTAL_WORK, TOTAL_WORK);
-            updateMessage("%s failed: ".formatted(pushChanges ? "Synchronization" : "Pulling") + ex.getLocalizedMessage());
-            LOG.error("{} failed", (pushChanges ? "Synchronization" : "Pulling"), ex);
-            throw ex;
+            cancel();
+            return false;
         }
+
+        // Validation complete
+        updatePhaseProgress(validationPhase.getStart(), validationPhase.getEnd(), 1.0);
+
+        updateMessage("Starting %s process.".formatted(pushChanges ? "synchronization" : "pulling"));
+
+        // Pull phase
+        pull(validationPhase.getEnd(), pullPhase.getEnd());
+
+        // Load changesets phase
+        loadChangesets(pullPhase.getEnd(), loadPhase.getEnd());
+
+        // Run reasoner phase
+        runReasoner(loadPhase.getEnd(), reasonerPhase.getEnd());
+
+        // Push phase (if enabled)
+        if (pushChanges) {
+            push(reasonerPhase.getEnd(), pushPhase.getEnd());
+        }
+
+        // Ensure we reach 100% at the end
+        updateProgress(TOTAL_WORK, TOTAL_WORK);
+        updateMessage("%s completed successfully.".formatted(pushChanges ? "Synchronization" : "Pulling"));
+        return true;
     }
 
     /**
@@ -688,8 +682,10 @@ public class GitTask extends TrackingCallable<Boolean> {
      *
      * @param startPercentage the progress percentage at the start of this phase
      * @param endPercentage   the progress percentage at the end of this phase
+     * @throws GitAPIException if a Git API error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private void pull(double startPercentage, double endPercentage) {
+    private void pull(double startPercentage, double endPercentage) throws GitAPIException, IOException {
         if (isCancelled()) {
             updateMessage("Operation cancelled by user.");
             return;
@@ -721,12 +717,7 @@ public class GitTask extends TrackingCallable<Boolean> {
             if (pullResult.isSuccessful()) {
                 updateMessage("Pull operation completed successfully.");
                 updatePhaseProgress(startPercentage, endPercentage, 1.0);
-            } else {
-                handlePhaseError("Pull", new Exception(pullResult.getMergeResult().getMergeStatus().toString()),
-                        startPercentage, endPercentage);
             }
-        } catch (Exception ex) {
-            handlePhaseError("Pull", ex, startPercentage, endPercentage);
         }
     }
 
@@ -745,42 +736,38 @@ public class GitTask extends TrackingCallable<Boolean> {
         updatePhaseProgress(startPercentage, endPercentage, 0.0);
         MutableList<EntityCountSummary> loadResults = Lists.mutable.empty();
 
-        try {
-            // Use filesToAdd to get changeset files (now naturally sorted)
-            ImmutableList<String> relativeFilePaths = filesToAdd(changeSetFolder, "ike-cs.zip");
+        // Use filesToAdd to get changeset files (now naturally sorted)
+        ImmutableList<String> relativeFilePaths = filesToAdd(changeSetFolder, "ike-cs.zip");
 
-            if (relativeFilePaths.isEmpty()) {
-                updateMessage("No changeset files found to load.");
-                updatePhaseProgress(startPercentage, endPercentage, 1.0);
-                return;
-            }
-
-            int total = relativeFilePaths.size();
-            int current = 0;
-
-            for (String relativePath : relativeFilePaths) {
-                current++;
-                File file = changeSetFolder.resolve(relativePath).toFile();
-                updateMessage("Loading changeset " + current + " of " + total + ": " + file.getName());
-                // Update progress based on current file's position in the total
-                double loadProgress = (double) current / total;
-                updatePhaseProgress(startPercentage, endPercentage, loadProgress * 0.9); // Reserve 10% for completion
-
-                try {
-                    // isValidChangeset check already done in filesToAdd
-                    EntityCountSummary ecs = new LoadEntitiesFromProtobufFile(file).compute();
-                    loadResults.add(ecs);
-                    LOG.info("Loaded changeset: {}", file.getName());
-                } catch (Exception ex) {
-                    LOG.error("Failed to load changeset: {}", file.getName(), ex);
-                }
-            }
-
-            updateMessage("Successfully loaded " + loadResults.size() + " of " + total + " changesets.");
+        if (relativeFilePaths.isEmpty()) {
+            updateMessage("No changeset files found to load.");
             updatePhaseProgress(startPercentage, endPercentage, 1.0);
-        } catch (Exception e) {
-            handlePhaseError("Loading changesets", e, startPercentage, endPercentage);
+            return;
         }
+
+        int total = relativeFilePaths.size();
+        int current = 0;
+
+        for (String relativePath : relativeFilePaths) {
+            current++;
+            File file = changeSetFolder.resolve(relativePath).toFile();
+            updateMessage("Loading changeset " + current + " of " + total + ": " + file.getName());
+            // Update progress based on current file's position in the total
+            double loadProgress = (double) current / total;
+            updatePhaseProgress(startPercentage, endPercentage, loadProgress * 0.9); // Reserve 10% for completion
+
+            try {
+                // isValidChangeset check already done in filesToAdd
+                EntityCountSummary ecs = new LoadEntitiesFromProtobufFile(file).compute();
+                loadResults.add(ecs);
+                LOG.info("Loaded changeset: {}", file.getName());
+            } catch (Exception ex) {
+                LOG.error("Failed to load changeset: {}", file.getName(), ex);
+            }
+        }
+
+        updateMessage("Successfully loaded " + loadResults.size() + " of " + total + " changesets.");
+        updatePhaseProgress(startPercentage, endPercentage, 1.0);
     }
 
     /**
@@ -893,8 +880,10 @@ public class GitTask extends TrackingCallable<Boolean> {
      *
      * @param startPercentage the progress percentage at the start of this phase
      * @param endPercentage   the progress percentage at the end of this phase
+     * @throws GitAPIException if a Git API error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private void push(double startPercentage, double endPercentage) {
+    private void push(double startPercentage, double endPercentage) throws GitAPIException, IOException {
         if (isCancelled()) {
             updateMessage("Operation cancelled by user.");
             return;
@@ -902,21 +891,17 @@ public class GitTask extends TrackingCallable<Boolean> {
 
         updatePhaseProgress(startPercentage, endPercentage, 0.0);
 
-        try {
-            updateMessage("Saving current change set...");
-            updatePhaseProgress(startPercentage, endPercentage, 0.2);
+        updateMessage("Saving current change set...");
+        updatePhaseProgress(startPercentage, endPercentage, 0.2);
 
-            if (!saveCurrentChangeSet()) {
-                updatePhaseProgress(startPercentage, endPercentage, 1.0);
-                return;
-            }
-
-            updatePhaseProgress(startPercentage, endPercentage, 0.4);
-
-            pushToRemoteRepository(startPercentage, endPercentage);
-        } catch (Exception ex) {
-            handlePhaseError("Push", ex, startPercentage, endPercentage);
+        if (!saveCurrentChangeSet()) {
+            updatePhaseProgress(startPercentage, endPercentage, 1.0);
+            return;
         }
+
+        updatePhaseProgress(startPercentage, endPercentage, 0.4);
+
+        pushToRemoteRepository(startPercentage, endPercentage);
     }
 
     /**
@@ -944,9 +929,11 @@ public class GitTask extends TrackingCallable<Boolean> {
      *
      * @param startPercentage the progress percentage at the start of this phase
      * @param endPercentage   the progress percentage at the end of this phase
-     * @throws Exception if any Git operations fail
+     * @throws GitAPIException if a Git API error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private void pushToRemoteRepository(double startPercentage, double endPercentage) throws Exception {
+    private void pushToRemoteRepository(double startPercentage, double endPercentage)
+            throws GitAPIException, IOException {
         try (Git git = Git.open(changeSetFolder.toFile())) {
             ImmutableList<String> filesToAdd = filesToAdd(changeSetFolder, "ike-cs.zip");
 
@@ -1075,21 +1062,5 @@ public class GitTask extends TrackingCallable<Boolean> {
         updateMessage(message + ": " + ex.getLocalizedMessage());
         LOG.error(message, ex);
         return false;
-    }
-
-    /**
-     * Handles phase errors consistently.
-     *
-     * @param phaseName The name of the phase that encountered an error
-     * @param ex The exception that occurred
-     * @param phaseStart The starting percentage of the phase
-     * @param phaseEnd The ending percentage of the phase
-     */
-    private void handlePhaseError(String phaseName, Exception ex, double phaseStart, double phaseEnd) {
-        String errorMessage = phaseName + " failed: " + ex.getLocalizedMessage();
-        LOG.error(errorMessage, ex);
-        updateMessage(errorMessage);
-        updatePhaseProgress(phaseStart, phaseEnd, 1.0);
-        cancel();
     }
 }
