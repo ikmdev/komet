@@ -14,6 +14,8 @@ public class AboutDialogController implements Initializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(AboutDialogController.class);
 
+    private static final String DEFAULT_BUILD_VERSION_PROP_VALUE = "${build.version}";
+
     @FXML
     private Label copyrightYearLabel;
     @FXML
@@ -32,10 +34,16 @@ public class AboutDialogController implements Initializable {
 
         copyrightYearLabel.setText("" + Year.now().getValue());
 
-        var version = buildInfoProperties.getMavenVersion();
+        var mavenVersion = buildInfoProperties.getMavenVersion();
+        var buildVersion = buildInfoProperties.getBuildVersion();
         var buildTime = buildInfoProperties.getBuildTime();
 
-        versionLabel.setText(version);
+        if (buildVersion.equals(DEFAULT_BUILD_VERSION_PROP_VALUE)) {
+            versionLabel.setText(mavenVersion);
+        } else {
+            versionLabel.setText(buildVersion);
+        }
+
         publishedDateLabel.setText(buildTime);
     }
 

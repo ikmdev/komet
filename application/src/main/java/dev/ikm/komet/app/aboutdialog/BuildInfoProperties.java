@@ -12,6 +12,7 @@ public class BuildInfoProperties extends Properties {
 
     public static final String PROPERTY_FILENMAME = "/buildInfo.properties";
     public static final String MAVERN_VERSION_PROP = "mavenVersion";
+    public static final String BUILD_VERSION_PROP = "buildVersion";
     public static final String BUILD_TIME_PROP = "buildTime";
 
     public BuildInfoProperties() {
@@ -24,6 +25,10 @@ public class BuildInfoProperties extends Properties {
 
     public String getMavenVersion() {
         return getProperty(MAVERN_VERSION_PROP);
+    }
+
+    public String getBuildVersion() {
+        return getProperty(BUILD_VERSION_PROP);
     }
 
     public String getBuildTime() {
