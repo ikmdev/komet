@@ -462,15 +462,18 @@ public class NextGenSearchController extends AbstractBasicController {
 
             // add the custom descriptions
             controller.getDescriptionsVBox().getChildren().clear();
-            latestVersionSearchResults.forEach(latestVersionSearchResult -> {
-                Label descrLabel = new Label(formatHighlightedString(latestVersionSearchResult.highlightedString()));
-                descrLabel.getStyleClass().add("search-entry-description-label");
-                controller.getDescriptionsVBox().getChildren().add(descrLabel);
-                controller.getDescriptionsVBox().getStyleClass().add("search-entry-descr-container");
-                VBox.setMargin(descrLabel, new Insets(0, 7, 7, 7));
-                descrLabel.setPadding(new Insets(8));
-            });
-
+            if(latestVersionSearchResults != null && latestVersionSearchResults.size() > 0) {
+                latestVersionSearchResults.forEach(latestVersionSearchResult -> {
+                    if(latestVersionSearchResult.highlightedString() != null) {
+                        Label descrLabel = new Label(formatHighlightedString(latestVersionSearchResult.highlightedString()));
+                        descrLabel.getStyleClass().add("search-entry-description-label");
+                        controller.getDescriptionsVBox().getChildren().add(descrLabel);
+                        controller.getDescriptionsVBox().getStyleClass().add("search-entry-descr-container");
+                        VBox.setMargin(descrLabel, new Insets(0, 7, 7, 7));
+                        descrLabel.setPadding(new Insets(8));
+                    }
+                });
+            }
             if (entityVersion.active()) {
                 controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
             }
