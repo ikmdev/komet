@@ -109,7 +109,6 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -197,6 +196,7 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
 public class WebApp extends Application {
 
     private static final Logger LOG = LoggerFactory.getLogger(WebApp.class);
+    private static final String CHANGESETS_DIR = "changeSets";
     public static final String ICON_LOCATION = "/icons/Komet.png";
     public static final SimpleObjectProperty<AppState> state = new SimpleObjectProperty<>(STARTING);
     public static final SimpleObjectProperty<User> userProperty = new SimpleObjectProperty<>();
@@ -1229,10 +1229,10 @@ public class WebApp extends Application {
             return;
         }
 
-        final File changeSetFolder = new File(optionalDataStoreRoot.get(), "changeSets");
+        final File changeSetFolder = new File(optionalDataStoreRoot.get(), CHANGESETS_DIR);
         if (!changeSetFolder.exists()) {
             if (!changeSetFolder.mkdirs()) {
-                LOG.error("Unable to create changeSets directory");
+                LOG.error("Unable to create {} directory", CHANGESETS_DIR);
                 return;
             }
         }
@@ -1313,7 +1313,6 @@ public class WebApp extends Application {
      * This method performs the following cleanup operations:
      * <ol>
      *   <li>Logs the disconnection attempt</li>
-     *   <li>Deletes the local changeSet folder and all Git repository data</li>
      *   <li>Removes all GitHub-related preferences from user preferences</li>
      *   <li>Updates the UI to reflect the disconnected state</li>
      * </ol>
@@ -1322,21 +1321,6 @@ public class WebApp extends Application {
      */
     private void disconnectFromGithub() {
         LOG.info("Disconnecting from GitHub...");
-
-        // Clean up local resources
-        Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
-        if (optionalDataStoreRoot.isEmpty()) {
-            return;
-        }
-
-        File changeSetFolder = new File(optionalDataStoreRoot.get(), "changeSets");
-        if (changeSetFolder.exists()) {
-            try {
-                FileUtils.delete(changeSetFolder, FileUtils.RECURSIVE);
-            } catch (IOException ex) {
-                LOG.error("Failed to delete changeSet folder: {}", changeSetFolder.getAbsolutePath(), ex);
-            }
-        }
 
         // Delete stored user preferences related to GitHub
         KometPreferences userPreferences = Preferences.get().getUserPreferences();
@@ -1367,7 +1351,7 @@ public class WebApp extends Application {
             return;
         }
 
-        File changeSetFolder = new File(optionalDataStoreRoot.get(), "changeSets");
+        File changeSetFolder = new File(optionalDataStoreRoot.get(), CHANGESETS_DIR);
         File gitDir = new File(changeSetFolder, ".git");
 
         if (!changeSetFolder.exists() || !gitDir.exists()) {
