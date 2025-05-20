@@ -275,8 +275,6 @@ public class SemanticFieldsController {
             observableField.autoSaveOn();
           });
 
-        // update hash change
-        committedHash = calculteHashValue(observableFields);
         //Set the hascode for the committed values.
         enableDisableSubmitButton();
         loadVBox();
