@@ -43,6 +43,7 @@ import dev.ikm.komet.kview.controls.GlassPane;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.SignInUserEvent;
+import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
 import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
 import dev.ikm.komet.kview.mvvm.view.changeset.ExportController;
 import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitHubPreferencesController;
@@ -143,10 +144,6 @@ import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_EMAIL;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_PASSWORD;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_URL;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_USERNAME;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.CONNECT;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.PULL;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.SYNC;
@@ -214,6 +211,7 @@ public class WebApp extends Application {
     private final StackPane rootPane = createRootPane();
     private Image appIcon;
     private LandingPageController landingPageController;
+    private EvtBus kViewEventBus;
 
     /**
      * An entry point to launch the newer UI panels.
@@ -225,7 +223,10 @@ public class WebApp extends Application {
      */
     private final List<JournalController> journalControllersList = new ArrayList<>();
 
-    private EvtBus kViewEventBus;
+    /**
+     * GitHub preferences data access object.
+     */
+    private final GitHubPreferencesDao gitHubPreferencesDao = new GitHubPreferencesDao();
 
     /**
      * Main method that serves as the entry point for the JavaFX application.
@@ -1106,30 +1107,29 @@ public class WebApp extends Application {
 
             JFXNode<Pane, GitHubPreferencesController> githubPreferencesNode = FXMLMvvmLoader
                     .make(GitHubPreferencesController.class.getResource("github-preferences.fxml"));
-            Pane rootPane = githubPreferencesNode.node();
+            Pane dialogPane = githubPreferencesNode.node();
             GitHubPreferencesController controller = githubPreferencesNode.controller();
             Optional<GitHubPreferencesViewModel> githubPrefsViewModelOpt = githubPreferencesNode
-                    .getViewModel("githubPreferencesViewModel");
+                    .getViewModel("gitHubPreferencesViewModel");
 
             controller.getConnectButton().setOnAction(actionEvent -> {
                 controller.handleConnectButtonEvent(actionEvent);
-                if (githubPrefsViewModelOpt.isPresent()) {
-                    GitHubPreferencesViewModel githubPrefsViewModel = githubPrefsViewModelOpt.get();
+                githubPrefsViewModelOpt.ifPresent(githubPrefsViewModel -> {
                     if (githubPrefsViewModel.validProperty().get()) {
-                        glassPane.removeContent(rootPane);
+                        glassPane.removeContent(dialogPane);
                         glassPane.hide();
                         future.complete(true); // Complete with true on successful connection
                     }
-                }
+                });
             });
 
             controller.getCancelButton().setOnAction(_ -> {
-                glassPane.removeContent(rootPane);
+                glassPane.removeContent(dialogPane);
                 glassPane.hide();
                 future.complete(false); // Complete with false on cancel
             });
 
-            glassPane.addContent(rootPane);
+            glassPane.addContent(dialogPane);
             glassPane.show();
         });
 
@@ -1177,36 +1177,6 @@ public class WebApp extends Application {
     }
 
     /**
-     * Validates if GitHub preferences are properly configured in user preferences.
-     * <p>
-     * This method checks if all required GitHub configuration parameters are present
-     * in the user preferences store. The required parameters are:
-     * <ul>
-     *   <li>Git repository URL</li>
-     *   <li>Git user email</li>
-     *   <li>Git username</li>
-     *   <li>Git password or PAT</li>
-     * </ul>
-     *
-     * @return {@code true} if all required preferences exist and are not empty,
-     *         {@code false} otherwise
-     */
-    private boolean validateGitHubPreferences() {
-        KometPreferences userPreferences = Preferences.get().getUserPreferences();
-
-        String gitUrl = userPreferences.get(GIT_URL).orElse(null);
-        String gitEmail = userPreferences.get(GIT_EMAIL).orElse(null);
-        String gitUsername = userPreferences.get(GIT_USERNAME).orElse(null);
-        String gitPassword = userPreferences.get(GIT_PASSWORD).orElse(null);
-
-        // Validate required parameters
-        return gitUrl != null && !gitUrl.trim().isEmpty() &&
-                gitEmail != null && !gitEmail.trim().isEmpty() &&
-                gitUsername != null && !gitUsername.trim().isEmpty() &&
-                gitPassword != null && !gitPassword.trim().isEmpty();
-    }
-
-    /**
      * Executes a Git task, ensuring preferences are valid first.
      * <p>
      * This method performs the following operations:
@@ -1238,7 +1208,7 @@ public class WebApp extends Application {
         }
 
         // Check if GitHub preferences are valid first
-        if (!validateGitHubPreferences()) {
+        if (!gitHubPreferencesDao.validate()) {
             LOG.info("GitHub preferences missing or incomplete. Prompting user...");
 
             // Prompt for preferences before proceeding
@@ -1323,13 +1293,8 @@ public class WebApp extends Application {
         LOG.info("Disconnecting from GitHub...");
 
         // Delete stored user preferences related to GitHub
-        KometPreferences userPreferences = Preferences.get().getUserPreferences();
-        userPreferences.remove(GIT_URL);
-        userPreferences.remove(GIT_EMAIL);
-        userPreferences.remove(GIT_USERNAME);
-        userPreferences.remove(GIT_PASSWORD);
         try {
-            userPreferences.sync();
+            gitHubPreferencesDao.delete();
             LOG.info("Successfully removed GitHub data from user preferences");
         } catch (BackingStoreException e) {
             LOG.error("Failed to remove GitHub data from user preferences");

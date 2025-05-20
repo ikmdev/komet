@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.kview.mvvm.view.changeset.exchange;
 
-import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.komet.preferences.Preferences;
+import dev.ikm.komet.kview.mvvm.model.GitHubPreferences;
+import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
 import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.transport.CredentialItem;
 import org.eclipse.jgit.transport.CredentialsProvider;
@@ -24,10 +24,22 @@ import org.eclipse.jgit.transport.URIish;
 
 import java.util.Optional;
 
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_PASSWORD;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_USERNAME;
-
+/**
+ * A non-interactive credentials provider for GitHub that retrieves authentication
+ * information from stored preferences.
+ * <p>
+ * This implementation extends JGit's {@link CredentialsProvider} and provides GitHub
+ * credentials by loading them from the application's preference store via
+ * {@link GitHubPreferencesDao}. It supports username and password authentication for
+ * GitHub repositories.
+ *
+ * @see CredentialsProvider
+ * @see GitHubPreferences
+ * @see GitHubPreferencesDao
+ */
 public class GitHubCredentialsProvider extends CredentialsProvider {
+
+    private final GitHubPreferencesDao gitHubPreferencesDao = new GitHubPreferencesDao();
 
     @Override
     public boolean isInteractive() {
@@ -41,38 +53,22 @@ public class GitHubCredentialsProvider extends CredentialsProvider {
 
     @Override
     public boolean get(URIish urIish, CredentialItem... credentialItems) throws UnsupportedCredentialItem {
-        KometPreferences userPreferences = Preferences.get().getUserPreferences();
-        Optional<char[]> optionalPassword = getPassword(userPreferences);
-        Optional<String> optionalUser = getUser(userPreferences);
+        Optional<GitHubPreferences> gitHubPrefsOpt = gitHubPreferencesDao.load();
+        if (gitHubPrefsOpt.isPresent()) {
+            final GitHubPreferences gitHubPreferences = gitHubPrefsOpt.get();
+            final String gitUsername = gitHubPreferences.gitUsername();
+            final char[] gitPassword = gitHubPreferences.gitPassword();
 
-        for (CredentialItem credentialItem : credentialItems) {
-            switch (credentialItem) {
-                case CredentialItem.Username username ->
-                        optionalUser.ifPresentOrElse(username::setValue, () -> username.setValue(urIish.getUser()));
-                case CredentialItem.Password password ->
-                        optionalPassword.ifPresentOrElse(password::setValue, () -> password.setValue(new char[0]));
-                default -> throw new IllegalStateException("Unexpected value: " + credentialItem);
+            for (CredentialItem credentialItem : credentialItems) {
+                switch (credentialItem) {
+                    case CredentialItem.Username username -> username.setValue(gitUsername);
+                    case CredentialItem.Password password -> password.setValue(gitPassword);
+                    default -> throw new IllegalStateException("Unexpected value: " + credentialItem);
+                }
             }
+            return true;
         }
 
-        return optionalUser.isPresent() && optionalPassword.isPresent();
-
-        // Show the GitHub preferences dialog to get the credentials
-    }
-
-    Optional<char[]> getPassword(KometPreferences preferences) {
-        return preferences.getPassword(GIT_PASSWORD);
-    }
-
-    void setPassword(KometPreferences preferences, char[] password) {
-        preferences.putPassword(GIT_PASSWORD, password);
-    }
-
-    Optional<String> getUser(KometPreferences preferences) {
-        return preferences.get(GIT_USERNAME);
-    }
-
-    void setUser(KometPreferences preferences, String username) {
-        preferences.put(GIT_USERNAME, username);
+        return false;
     }
 }

@@ -54,12 +54,6 @@ public class GlassPane extends Pane {
 
     private final FadeTransition showTransition;
     private final FadeTransition hideTransition;
-    
-    // Width subscription for tracking root pane width changes
-    private Subscription widthSubscription;
-
-    // Height subscription for tracking root pane height changes
-    private Subscription heightSubscription;
 
     /**
      * Creates a new glass pane that will overlay the specified root pane.
@@ -188,6 +182,13 @@ public class GlassPane extends Pane {
     private ReadOnlyBooleanWrapper showingPropertyImpl() {
         if (showing == null) {
             showing = new ReadOnlyBooleanWrapper(this, "showing") {
+
+                // Width subscription for tracking root pane width changes
+                private Subscription widthSubscription;
+
+                // Height subscription for tracking root pane height changes
+                private Subscription heightSubscription;
+
                 @Override
                 protected void invalidated() {
                     if (get()) { // showing
@@ -212,24 +213,24 @@ public class GlassPane extends Pane {
                         cleanupSubscriptions();
                     }
                 }
+
+                /**
+                 * Cleans up width and height subscriptions to prevent memory leaks.
+                 */
+                private void cleanupSubscriptions() {
+                    if (widthSubscription != null) {
+                        widthSubscription.unsubscribe();
+                        widthSubscription = null;
+                    }
+
+                    if (heightSubscription != null) {
+                        heightSubscription.unsubscribe();
+                        heightSubscription = null;
+                    }
+                }
             };
         }
         return showing;
-    }
-
-    /**
-     * Cleans up width and height subscriptions to prevent memory leaks.
-     */
-    private void cleanupSubscriptions() {
-        if (widthSubscription != null) {
-            widthSubscription.unsubscribe();
-            widthSubscription = null;
-        }
-
-        if (heightSubscription != null) {
-            heightSubscription.unsubscribe();
-            heightSubscription = null;
-        }
     }
 
     /**

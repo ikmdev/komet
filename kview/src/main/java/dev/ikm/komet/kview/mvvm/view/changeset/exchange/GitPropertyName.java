@@ -43,16 +43,6 @@ public enum GitPropertyName {
     GIT_PASSWORD("Password"),
 
     /**
-     * Property name for the connect button state.
-     */
-    CONNECT_BUTTON_STATE("Connect Button State"),
-
-    /**
-     * Property name indicating whether fields are not populated.
-     */
-    IS_NOT_POPULATED("Is Not Populated"),
-
-    /**
      * Property name for generic error messages.
      */
     ERROR("Error"),

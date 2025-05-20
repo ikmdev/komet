@@ -154,7 +154,7 @@ public class PasswordHasher {
         // store the salt with the password
         final String result = salt.key() + "---" + encrypt(password, salt.value(), data);
 
-        LOG.info(String.format("Encrypt Time {} ms", System.currentTimeMillis() - startTime));
+        LOG.info("Encrypt Time {} ms", System.currentTimeMillis() - startTime);
         return result;
     }
 

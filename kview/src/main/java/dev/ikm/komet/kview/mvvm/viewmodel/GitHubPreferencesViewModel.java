@@ -15,13 +15,14 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
 import javafx.beans.property.ReadOnlyStringProperty;
-import org.carlfx.cognitive.validator.MessageType;
 import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.validator.ValidationResult;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 
+import java.util.prefs.BackingStoreException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +36,7 @@ import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.*
  *   <li>Git repository URL - Must be a valid Git URL format (HTTPS or SSH)</li>
  *   <li>Git email - Optional, but must be a valid email format if provided</li>
  *   <li>GitHub username - Must follow GitHub username conventions</li>
- *   <li>Git password - Must meet security requirements</li>
+ *   <li>GitHub password - Must meet security requirements</li>
  * </ul>
  * <p>
  * The class implements validation rules for each field and manages the state of the connect button
@@ -70,6 +71,8 @@ public class GitHubPreferencesViewModel extends ValidationViewModel {
      */
     private static final Pattern GITHUB_USERNAME_PATTERN =
             Pattern.compile("(?i)^[a-z\\d](?:[a-z\\d]|-(?=[a-z\\d])){0,38}$");
+
+    private final GitHubPreferencesDao gitHubPreferencesDao;
 
     public GitHubPreferencesViewModel() {
         addProperty(GIT_URL, "")
@@ -174,28 +177,26 @@ public class GitHubPreferencesViewModel extends ValidationViewModel {
                     setPropertyValue(CONNECT_ERROR, "");
                 });
 
-        addProperty(CONNECT_BUTTON_STATE, true); // disable connect button by default
-
-        addValidator(IS_NOT_POPULATED, IS_NOT_POPULATED.name(), (Void prop, ViewModel vm) -> {
-            // If any fields are empty, the form is not fully populated (invalid)
-            if (vm.getPropertyValue(GIT_URL).toString().isBlank()
-                    || vm.getPropertyValue(GIT_EMAIL).toString().isBlank()
-                    || vm.getPropertyValue(GIT_USERNAME).toString().isBlank()
-                    || vm.getPropertyValue(GIT_PASSWORD).toString().isBlank()) {
-                // Disable the connect button
-                vm.setPropertyValue(CONNECT_BUTTON_STATE, true);
-                return new ValidationMessage(CONNECT_BUTTON_STATE, MessageType.ERROR,
-                        "Please enter your all you preferences.");
-            }
-
-            // Enable the connect button
-            vm.setPropertyValue(CONNECT_BUTTON_STATE, false);
-            // Clear any previous connection errors
-            setPropertyValue(CONNECT_ERROR, "");
-            return VALID;
-        });
-
         addProperty(CONNECT_ERROR, "");
+
+        gitHubPreferencesDao = new GitHubPreferencesDao();
+    }
+
+    @Override
+    public ValidationViewModel save() {
+        final ValidationViewModel validationViewModel = super.save();
+
+        try {
+            gitHubPreferencesDao.save(getPropertyValue(GIT_URL),
+                    getPropertyValue(GIT_EMAIL),
+                    getPropertyValue(GIT_USERNAME),
+                    getPropertyValue(GIT_PASSWORD).toString().toCharArray());
+            reset();
+        } catch (BackingStoreException ex) {
+            setPropertyValue(CONNECT_ERROR, "Failed to save GitHub preferences: " + ex.getMessage());
+        }
+
+        return validationViewModel;
     }
 
     /**

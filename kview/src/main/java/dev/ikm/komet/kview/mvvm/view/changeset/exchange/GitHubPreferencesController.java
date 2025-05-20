@@ -18,8 +18,6 @@ package dev.ikm.komet.kview.mvvm.view.changeset.exchange;
 import com.jpro.webapi.WebAPI;
 import dev.ikm.komet.kview.mvvm.viewmodel.GitHubPreferencesViewModel;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.komet.preferences.Preferences;
-import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -27,19 +25,19 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.text.Text;
+import javafx.scene.layout.VBox;
 import one.jpro.platform.utils.OpenLink;
 import org.carlfx.cognitive.loader.InjectViewModel;
-import org.carlfx.cognitive.validator.ValidationMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.prefs.BackingStoreException;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.*;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_EMAIL;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_PASSWORD;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_URL;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_USERNAME;
 
 /**
  * Controller class for handling GitHub preferences in the application.
@@ -56,22 +54,29 @@ import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.*
  */
 public class GitHubPreferencesController implements Initializable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GitHubPreferencesController.class);
+    @FXML
+    private VBox gitUrlVBox;
 
     @FXML
     private TextField gitUrlTextField;
 
     @FXML
+    public VBox gitEmailVBox;
+
+    @FXML
     private TextField gitEmailTextField;
+
+    @FXML
+    private VBox gitUsernameVBox;
 
     @FXML
     private TextField gitUsernameTextField;
 
     @FXML
-    private PasswordField gitPasswordField;
+    private VBox gitPasswordVBox;
 
     @FXML
-    private Text errorText;
+    private PasswordField gitPasswordField;
 
     @FXML
     private Hyperlink signUpHyperlink;
@@ -83,7 +88,7 @@ public class GitHubPreferencesController implements Initializable {
     private Button connectButton;
 
     @InjectViewModel
-    private GitHubPreferencesViewModel githubPreferencesViewModel;
+    private GitHubPreferencesViewModel gitHubPreferencesViewModel;
 
     /**
      * Initializes the controller class.
@@ -93,23 +98,57 @@ public class GitHubPreferencesController implements Initializable {
      */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        ChangeListener<String> isNotPopulatedListener = (observable, oldValue, newValue) ->
-                githubPreferencesViewModel.getValidators(IS_NOT_POPULATED).stream()
-                        .findAny()
-                        .ifPresent(validator -> validator.apply(null, githubPreferencesViewModel));
+        // Set up field bindings
+        gitUrlTextField.textProperty().bindBidirectional(gitHubPreferencesViewModel.getProperty(GIT_URL));
+        gitEmailTextField.textProperty().bindBidirectional(gitHubPreferencesViewModel.getProperty(GIT_EMAIL));
+        gitUsernameTextField.textProperty().bindBidirectional(gitHubPreferencesViewModel.getProperty(GIT_USERNAME));
+        gitPasswordField.textProperty().bindBidirectional(gitHubPreferencesViewModel.getProperty(GIT_PASSWORD));
+        connectButton.disableProperty().bind(gitHubPreferencesViewModel.invalidProperty());
 
-        gitUrlTextField.textProperty().addListener(isNotPopulatedListener);
-        gitEmailTextField.textProperty().addListener(isNotPopulatedListener);
-        gitUsernameTextField.textProperty().addListener(isNotPopulatedListener);
-        gitPasswordField.textProperty().addListener(isNotPopulatedListener);
+        // Set up validation change listeners
+        setupValidation();
 
-        gitUrlTextField.textProperty().bindBidirectional(githubPreferencesViewModel.getProperty(GIT_URL));
-        gitEmailTextField.textProperty().bindBidirectional(githubPreferencesViewModel.getProperty(GIT_EMAIL));
-        gitUsernameTextField.textProperty().bindBidirectional(githubPreferencesViewModel.getProperty(GIT_USERNAME));
-        gitPasswordField.textProperty().bindBidirectional(githubPreferencesViewModel.getProperty(GIT_PASSWORD));
-        connectButton.disableProperty().bind(githubPreferencesViewModel.getProperty(CONNECT_BUTTON_STATE));
+        // Set up property change listeners
+        gitHubPreferencesViewModel.doOnChange(() -> gitHubPreferencesViewModel.validate(),
+                GIT_URL, GIT_EMAIL, GIT_USERNAME, GIT_PASSWORD);
+
+        // Trigger initial validation
+        gitHubPreferencesViewModel.validate();
 
         signUpHyperlink.setOnAction(actionEvent -> openURL("https://github.com/signup"));
+    }
+
+    /**
+     * Sets up the validation components for all input fields.
+     * <p>
+     * This method establishes the validation logic for each form field by:
+     * <ul>
+     *   <li>Creating validation components for each input field</li>
+     *   <li>Binding validation error display to the view model's validation results</li>
+     *   <li>Setting up error message interpolation and display in the UI</li>
+     * </ul>
+     * Validation results are automatically updated when field values change.
+     */
+    private void setupValidation() {
+        // Create validation components and set up validation in one step
+        Map.of(GIT_URL, new ValidationComponent(gitUrlVBox),
+                GIT_EMAIL, new ValidationComponent(gitEmailVBox),
+                GIT_USERNAME, new ValidationComponent(gitUsernameVBox),
+                GIT_PASSWORD, new ValidationComponent(gitPasswordVBox)
+        ).forEach((property, component) ->
+                gitHubPreferencesViewModel.validateOnChange(property, messages -> {
+                    // Clear previous error messages
+                    component.clearError();
+
+                    // Show new error messages if any
+                    if (!messages.isEmpty()) {
+                        component.showError(messages.stream()
+                                .peek(gitHubPreferencesViewModel::updateErrors)
+                                .map(msg -> msg.interpolate(gitHubPreferencesViewModel))
+                                .collect(Collectors.joining("\n")));
+                    }
+                })
+        );
     }
 
     /**
@@ -119,56 +158,14 @@ public class GitHubPreferencesController implements Initializable {
      * <ul>
      *   <li>Attempts to save the GitHub configuration</li>
      *   <li>Validates all input fields</li>
-     *   <li>Displays appropriate error messages if validation fails</li>
-     *   <li>Persists valid settings to application user preferences</li>
+     *   <li>Persists valid settings to the DAO layer</li>
      * </ul>
      *
      * @param actionEvent The event that triggered this handler
      */
     @FXML
     public void handleConnectButtonEvent(ActionEvent actionEvent) {
-        githubPreferencesViewModel.save();
-
-        if (githubPreferencesViewModel.hasErrorMsgs()) {
-            String gitUrlErrorMessage = "";
-            String gitEmailErrorMessage = "";
-            String usernameErrorMessage = "";
-            String passwordErrorMessage = "";
-
-            for (ValidationMessage validationMessage : githubPreferencesViewModel.getValidationMessages()) {
-                githubPreferencesViewModel.updateErrors(validationMessage);
-
-                final String propName = validationMessage.propertyName();
-                final String message = validationMessage.interpolate(githubPreferencesViewModel);
-
-                if (GIT_URL.name().equals(propName)) {
-                    gitUrlErrorMessage = message;
-                } else if (GIT_EMAIL.name().equals(propName)) {
-                    gitEmailErrorMessage = message;
-                } else if (GIT_USERNAME.name().equals(propName)) {
-                    usernameErrorMessage = message;
-                } else if (GIT_PASSWORD.name().equals(propName)) {
-                    passwordErrorMessage = message;
-                }
-            }
-
-            // set the error text after processing all validation messages
-            errorText.setText(Stream.of(gitUrlErrorMessage, gitEmailErrorMessage, usernameErrorMessage, passwordErrorMessage)
-                    .filter(error -> !error.isEmpty())
-                    .reduce((first, second) -> first + " " + second)
-                    .orElse("Please fill in all fields."));
-        } else {
-            // Clear the error labels
-            errorText.setText("");
-
-            // Save GitHub preferences
-            saveToPreferences();
-        }
-    }
-
-    @FXML
-    public void handleCancelButtonEvent(ActionEvent actionEvent) {
-
+        gitHubPreferencesViewModel.save();
     }
 
     /**
@@ -207,70 +204,5 @@ public class GitHubPreferencesController implements Initializable {
         } else {
             OpenLink.openURL(url);
         }
-    }
-
-    /**
-     * Saves the current GitHub configuration to user preferences.
-     * <p>
-     * This method persists all GitHub-related settings (URL, email, username, and password)
-     * to the application's user preferences store and synchronizes the preferences to ensure
-     * they are written to the backing store.
-     */
-    void saveToPreferences() {
-        KometPreferences userPreferences = Preferences.get().getUserPreferences();
-        setGitUrl(userPreferences, gitUrlTextField.getText());
-        setGitEmail(userPreferences, gitEmailTextField.getText());
-        setGitUser(userPreferences, gitUsernameTextField.getText());
-        setGitPassword(userPreferences, gitPasswordField.getText().toCharArray());
-        try {
-            userPreferences.sync();
-            LOG.info("GitHub preferences saved successfully.");
-        } catch (BackingStoreException ex) {
-            LOG.error("Error syncing preferences: {}", ex.getMessage());
-            throw new RuntimeException(ex);
-        }
-    }
-
-    /**
-     * Stores the Git repository URL in the specified preferences.
-     *
-     * @param preferences The preferences instance to update
-     * @param gitRepoUrl The Git repository URL to store
-     */
-    void setGitUrl(KometPreferences preferences, String gitRepoUrl) {
-        preferences.put(GIT_URL, gitRepoUrl);
-    }
-
-    /**
-     * Stores the Git user email in the specified preferences.
-     *
-     * @param preferences The preferences instance to update
-     * @param gitEmail The Git user email to store
-     */
-    void setGitEmail(KometPreferences preferences, String gitEmail) {
-        preferences.put(GIT_EMAIL, gitEmail);
-    }
-
-    /**
-     * Stores the Git username in the specified preferences.
-     *
-     * @param preferences The preferences instance to update
-     * @param username The Git username to store
-     */
-    void setGitUser(KometPreferences preferences, String username) {
-        preferences.put(GIT_USERNAME, username);
-    }
-
-    /**
-     * Stores the Git password in the specified preferences.
-     * <p>
-     * The password is stored using the secure password storage mechanism
-     * provided by {@link KometPreferences#putPassword}.
-     *
-     * @param preferences The preferences instance to update
-     * @param password The Git password to store as a character array
-     */
-    void setGitPassword(KometPreferences preferences, char[] password) {
-        preferences.putPassword(GIT_PASSWORD, password);
     }
 }

@@ -9,8 +9,6 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.TextFlow?>
-<?import javafx.scene.text.Text?>
 
 <VBox prefWidth="620.0" spacing="20.0" stylesheets="@../../kview.css" styleClass="github-preferences-pane"
       xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1"
@@ -28,26 +26,34 @@
         <Label maxWidth="Infinity" styleClass="title-description-label" text="Please complete the Github information below to connect to the GitHub repository" />
     </VBox>
     <VBox alignment="CENTER_LEFT" spacing="8.0">
-        <Label text="Git URL" />
-        <TextField fx:id="gitUrlTextField" promptText="Input Git URL" />
-        <Label text="Git Email" />
-        <TextField fx:id="gitEmailTextField" promptText="Input Email" />
-        <Label text="Git User Name" />
-        <TextField fx:id="gitUsernameTextField" promptText="Input Git ID" />
-        <Label text="Git Password" />
-        <PasswordField fx:id="gitPasswordField" promptText="Input Git Password" />
+        <VBox fx:id="gitUrlVBox" alignment="CENTER_LEFT">
+            <Label text="Git URL" />
+            <TextField fx:id="gitUrlTextField" promptText="Input Git URL" />
+        </VBox>
+        <VBox fx:id="gitEmailVBox" alignment="CENTER_LEFT">
+            <Label text="Git Email" />
+            <TextField fx:id="gitEmailTextField" promptText="Input Email" />
+        </VBox>
+        <VBox fx:id="gitUsernameVBox" alignment="CENTER_LEFT">
+            <Label text="Git User Name" />
+            <TextField fx:id="gitUsernameTextField" promptText="Input Git ID" />
+        </VBox>
+        <VBox fx:id="gitPasswordVBox" alignment="CENTER_LEFT">
+            <Label text="Git Password" />
+            <PasswordField fx:id="gitPasswordField" promptText="Input Git Password" />
+        </VBox>
         <HBox alignment="CENTER_LEFT">
             <Label style="-fx-font-size: 14px;" text="Don't have a Github account?" />
             <Hyperlink fx:id="signUpHyperlink" style="-fx-font-size: 14px;" text="Sign up here" />
         </HBox>
-        <TextFlow styleClass="error-text-flow" maxWidth="Infinity">
-            <Text fx:id="errorText" styleClass="error-text"/>
-        </TextFlow>
     </VBox>
     <HBox alignment="BOTTOM_RIGHT" spacing="12.0">
-        <Button fx:id="cancelButton" minHeight="32.0" mnemonicParsing="false" onAction="#handleCancelButtonEvent" prefHeight="32.0" prefWidth="88.0" styleClass="cancel-button" text="CANCEL">
+        <Button fx:id="cancelButton" minHeight="32.0" mnemonicParsing="false"
+                prefHeight="32.0" prefWidth="88.0" styleClass="cancel-button" text="CANCEL">
         </Button>
-        <Button fx:id="connectButton" minHeight="32.0" mnemonicParsing="false" onAction="#handleConnectButtonEvent" prefHeight="32.0" prefWidth="88.0" styleClass="connect-button" text="CONNECT">
+        <Button fx:id="connectButton" minHeight="32.0" mnemonicParsing="false"
+                onAction="#handleConnectButtonEvent" prefHeight="32.0" prefWidth="88.0"
+                styleClass="connect-button" text="CONNECT">
         </Button>
     </HBox>
 </VBox>
