@@ -36,13 +36,15 @@ public class ClosePropertiesController {
     @FXML
     private Label headingText;
 
-
     @FXML
     private Label subtextLine1;
 
     @FXML
     private Label subtextLine2;
 
+    private String headingTextDefault;
+    private String subtextLine1Default;
+    private String subtextLine2Default;
 
     /**
      * action fired by closing the properties bump out
@@ -51,6 +53,13 @@ public class ClosePropertiesController {
     @FXML
     private void closeProperties(ActionEvent event) {
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(event.getSource(), CLOSE_PANEL));
+    }
+
+    @FXML
+    public void initialize() {
+        headingTextDefault = headingText.getText();
+        subtextLine1Default = subtextLine1.getText();
+        subtextLine2Default = subtextLine2.getText();
     }
 
     /**
@@ -76,4 +85,17 @@ public class ClosePropertiesController {
     public void setSubtextLine2(String text) {
         subtextLine2.setText(text);
     }
+
+    public void showNoSelectionMadeToEditSemanticElement() {
+        headingText.setText("No Selection Made");
+        subtextLine1.setText("Make a selection in the view");
+        subtextLine2.setText("to edit the Semantic Element");
+    }
+
+    public void showSemanticDetailsAdded() {
+        headingText.setText(headingTextDefault);
+        subtextLine1.setText(subtextLine1Default);
+        subtextLine2.setText(subtextLine2Default);
+    }
+
 }

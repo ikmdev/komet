@@ -16,10 +16,6 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.*;
-import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
@@ -31,15 +27,14 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-import org.carlfx.cognitive.loader.Config;
-import org.carlfx.cognitive.loader.FXMLMvvmLoader;
-import org.carlfx.cognitive.loader.InjectViewModel;
-import org.carlfx.cognitive.loader.JFXNode;
-import org.carlfx.cognitive.loader.NamedVm;
-import org.carlfx.cognitive.viewmodel.SimpleViewModel;
+import org.carlfx.cognitive.loader.*;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
+import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 
 public class PropertiesController {
 
@@ -72,7 +67,6 @@ public class PropertiesController {
     private Pane currentEditPane;
 
     private Pane closePropsPane;
-
     private ClosePropertiesController closePropertiesController;
 
     @InjectViewModel
@@ -109,15 +103,14 @@ public class PropertiesController {
 
         Config closePropertiesConfig = new Config(this.getClass().getResource("close-properties.fxml"))
                 .addNamedViewModel(new NamedVm("genEditingViewModel", genEditingViewModel));
-
-
         JFXNode<Pane, ClosePropertiesController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
-
         closePropsPane = closePropsJfxNode.node();
         closePropertiesController = closePropsJfxNode.controller();
+
         genEditingEventSubscriber = evt -> {
             LOG.info("Publish event type: " + evt.getEventType());
-            contentBorderPane.setCenter(closePropsJfxNode.node());
+            closePropertiesController.showSemanticDetailsAdded();
+            contentBorderPane.setCenter(closePropsPane);
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, genEditingEventSubscriber);
@@ -140,8 +133,9 @@ public class PropertiesController {
             } else if (evt.getEventType() == PropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
                 // change the heading on the top of the panel
                 genEditingViewModel.setPropertyValue(FIELD_INDEX, -1);
-                closePropertiesController.setHeadingText("No Selection Made");
-                closePropertiesController.setSubtextLine2("to edit the Semantic Element");
+
+                closePropertiesController.showNoSelectionMadeToEditSemanticElement();
+
                 contentBorderPane.setCenter(closePropsPane);
             }
         };
