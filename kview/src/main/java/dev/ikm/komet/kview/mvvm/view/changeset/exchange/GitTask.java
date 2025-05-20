@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.kview.mvvm.view.changeset.exchange;
 
-import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.komet.preferences.Preferences;
+import dev.ikm.komet.kview.mvvm.model.GitHubPreferences;
+import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
 import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.SaveState;
 import dev.ikm.tinkar.common.service.TrackingCallable;
@@ -49,19 +49,10 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.stream.Stream;
-
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_URL;
 
 /**
  * A unified task for Git operations involving medical terminology data.
@@ -174,6 +165,7 @@ public class GitTask extends TrackingCallable<Boolean> {
     private final OperationMode operationMode;
     private final Path changeSetFolder;
     private final Runnable connectionSuccessCallback;
+    private final GitHubPreferencesDao gitHubPreferencesDao;
 
     // CONNECT mode fields
     private final CredentialItem.StringType gitUrl;
@@ -194,6 +186,8 @@ public class GitTask extends TrackingCallable<Boolean> {
         this.operationMode = operationMode;
         this.changeSetFolder = changeSetFolder;
         this.connectionSuccessCallback = connectionSuccessCallback;
+
+        this.gitHubPreferencesDao = new GitHubPreferencesDao();
 
         // Initialize credential items for all modes to avoid null pointers
         this.gitUrl = new CredentialItem.StringType("Git URL", false);
@@ -356,12 +350,18 @@ public class GitTask extends TrackingCallable<Boolean> {
         updatePhaseProgress(TaskPhase.CONNECT_INITIALIZATION, 0.2);
         updateMessage("Retrieving connection credentials from preferences...");
 
-        KometPreferences userPreferences = Preferences.get().getUserPreferences();
-        userPreferences.get(GIT_URL).ifPresent(gitUrl::setValue);
-        userPreferences.get(GitPropertyName.GIT_EMAIL).ifPresent(gitEmail::setValue);
-        userPreferences.get(GitPropertyName.GIT_USERNAME).ifPresent(gitUsername::setValue);
-        userPreferences.get(GitPropertyName.GIT_PASSWORD)
-                .ifPresent(value -> gitPassword.setValue(value.toCharArray()));
+        Optional<GitHubPreferences> gitHubPreferencesOpt = gitHubPreferencesDao.load();
+        if (gitHubPreferencesOpt.isPresent()) {
+            GitHubPreferences gitHubPreferences = gitHubPreferencesOpt.get();
+            gitUrl.setValue(gitHubPreferences.gitUrl());
+            gitEmail.setValue(gitHubPreferences.gitEmail());
+            gitUsername.setValue(gitHubPreferences.gitUsername());
+            gitPassword.setValue(gitHubPreferences.gitPassword());
+        } else {
+            updateMessage("Error: Git preferences not found.");
+            LOG.error("Git preferences not found");
+            return false;
+        }
 
         updatePhaseProgress(TaskPhase.CONNECT_INITIALIZATION, 0.6);
         updateMessage("Validating remote connection parameters...");
@@ -374,7 +374,6 @@ public class GitTask extends TrackingCallable<Boolean> {
 
             updateMessage("Error: Git preferences are not configured.");
             LOG.error("Git preferences are not configured");
-            updatePhaseProgress(TaskPhase.CONNECT_INITIALIZATION, 1.0);
             return false;
         }
 

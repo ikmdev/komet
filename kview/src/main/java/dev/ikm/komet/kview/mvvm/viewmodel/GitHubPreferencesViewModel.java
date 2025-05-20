@@ -26,7 +26,12 @@ import java.util.prefs.BackingStoreException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.*;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.CONNECT_ERROR;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.ERROR;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_EMAIL;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_PASSWORD;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_URL;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_USERNAME;
 
 /**
  * View model for GitHub preferences that handles validation of GitHub credentials and repository information.

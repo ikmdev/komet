@@ -5,10 +5,14 @@ import dev.ikm.komet.preferences.Preferences;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.prefs.BackingStoreException;
 
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.*;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_EMAIL;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_PASSWORD;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_URL;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_USERNAME;
 
 /**
  * Data Access Object for GitHub preferences.
@@ -24,6 +28,8 @@ public class GitHubPreferencesDao {
      * @throws BackingStoreException if there is an error syncing preferences
      */
     public void save(GitHubPreferences gitHubPreferences) throws BackingStoreException {
+        Objects.requireNonNull(gitHubPreferences, "GitHubPreferences cannot be null");
+
         final KometPreferences userPreferences = Preferences.get().getUserPreferences();
         setGitUrl(userPreferences, gitHubPreferences.gitUrl());
         setGitEmail(userPreferences, gitHubPreferences.gitEmail());
