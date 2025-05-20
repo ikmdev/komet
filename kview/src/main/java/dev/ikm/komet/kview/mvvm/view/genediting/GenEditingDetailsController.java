@@ -85,6 +85,7 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -223,11 +224,11 @@ public class GenEditingDetailsController {
     @FXML
     private void initialize() {
 
-        EntityFacade refComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
+        ObjectProperty<EntityFacade> refComponent = genEditingViewModel.getObjectProperty(REF_COMPONENT);
         //Enable edit fields button if refComponent is NOT null else disable it.
-        editFieldsButton.setDisable(refComponent == null);
+        editFieldsButton.setDisable(refComponent.isNull().get());
         //Enable reference component edit button if refComponent is NULL else disable it.
-        addReferenceButton.setDisable(refComponent != null);
+        addReferenceButton.setDisable(refComponent.isNotNull().get());
 
         // clear all semantic details.
         semanticDetailsVBox.getChildren().clear();
@@ -291,7 +292,8 @@ public class GenEditingDetailsController {
         Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
             //Set up the Listener to refresh the details area (After user hits submit button on the right side)
             EntityFacade finalSemantic = genEditingViewModel.getPropertyValue(SEMANTIC);
-            if (evt.getEventType() == GenEditingEvent.PUBLISH && evt.getNid() == finalSemantic.nid()) {
+            if (evt.getEventType() == GenEditingEvent.PUBLISH
+                    && evt.getNid() == finalSemantic.nid()) {
                 if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
                     // get the latest value for the semantic created.
                     observableSemantic = ObservableEntity.get(finalSemantic.nid());
@@ -306,6 +308,8 @@ public class GenEditingDetailsController {
                     // change the mode from CREATE to EDIT
                     genEditingViewModel.setPropertyValue(MODE, EDIT);
                 }
+
+                // Update read-only field values
                 for (int i = 0; i < evt.getList().size(); i++) {
                     ObservableField observableField = observableFields.get(i);
                     Object updatedField = evt.getList().get(i);
@@ -314,9 +318,15 @@ public class GenEditingDetailsController {
                         // readonly integer value 1, editable integer value 5 do update
                         // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
                         // Should we check if the value is different before updating? (blindly updating now).
-                        observableField.valueProperty().setValue(updatedField);
+                        Runnable setValue = () -> observableField.valueProperty().setValue(updatedField);
+                        if (!Platform.isFxApplicationThread()) {
+                            Platform.runLater(setValue);
+                        } else {
+                            setValue.run();
+                        }
                     }
                 }
+
             }
 
             semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
@@ -479,11 +489,11 @@ public class GenEditingDetailsController {
                 ObjectProperty<EntityFacade> newRefComponentProp = genEditingViewModel.getProperty(REF_COMPONENT);
                 updateRefComponentInfo.accept(newRefComponentProp.get());
                 //Enable disable pencil icons
-                editFieldsButton.disableProperty().bind(newRefComponentProp.isNull());
-                addReferenceButton.disableProperty().bind(newRefComponentProp.isNotNull());
+                editFieldsButton.setDisable(newRefComponentProp.isNull().get());
+                addReferenceButton.setDisable(newRefComponentProp.isNotNull().get());
             }
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
                 GenEditingEvent.class, refComponentSubscriber);
     }
 
