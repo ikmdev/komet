@@ -67,7 +67,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         Entity.provider().addSubscriberWithWeakReference(ENTITY_CHANGE_SUBSCRIBER);
     }
 
-    final SimpleMapProperty<PublicId, O> versionProperty = new SimpleMapProperty<>(FXCollections.observableHashMap());//pleListProperty<>(FXCollections.observableArrayList());
+    final SimpleMapProperty<PublicId, O> versionsPropertyMap = new SimpleMapProperty<>(FXCollections.observableHashMap());
 
     final private AtomicReference<Entity<V>> entityReference;
 
@@ -79,8 +79,8 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
      */
     public void saveToDB(Entity<?> analogue, EntityVersion newVersionRecord , EntityVersion oldVersionRecord) {
         Entity.provider().putEntity(analogue);
-        versionProperty.remove(oldVersionRecord.stamp().publicId());
-        versionProperty.put(newVersionRecord.stamp().publicId(), wrap((V)newVersionRecord));
+        versionsPropertyMap.remove(oldVersionRecord.stamp().publicId());
+        versionsPropertyMap.put(newVersionRecord.stamp().publicId(), wrap((V)newVersionRecord));
         EvtBusFactory.getDefaultEvtBus()
                 .publish(VERSION_CHANGED_TOPIC, new EntityVersionChangeEvent(this, VERSION_UPDATED, newVersionRecord));
     }
@@ -100,7 +100,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
 
         this.entityReference = new AtomicReference<>(entityClone);
         for (V version : entity.versions()) {
-            versionProperty.put(version.stamp().publicId(), wrap(version));
+            versionsPropertyMap.put(version.stamp().publicId(), wrap(version));
         }
     }
 
@@ -143,11 +143,11 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
      * @param entity
      * @param observableEntity
      */
-    public synchronized static void updateVersions(Entity<? extends EntityVersion> entity, ObservableEntity observableEntity) {
+    private synchronized static void updateVersions(Entity<? extends EntityVersion> entity, ObservableEntity observableEntity) {
 
         for (EntityVersion version : entity.versions().stream().sorted((v1, v2) ->
                 Long.compare(v1.stamp().time(), v2.stamp().time())).toList()) {
-            boolean versionPresent = observableEntity.versionProperty.get().values().stream().anyMatch( obj -> {
+            boolean versionPresent = observableEntity.versionsPropertyMap.get().values().stream().anyMatch(obj -> {
               if (obj instanceof ObservableVersion<?> observableVersion){
                   return (PublicId.equals(observableVersion.stamp().publicId(), version.stamp().publicId()));
               }
@@ -155,7 +155,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
             });
 
             if(!versionPresent){
-                observableEntity.versionProperty.put(version.stamp().publicId(), observableEntity.wrap(version));
+                observableEntity.versionsPropertyMap.put(version.stamp().publicId(), observableEntity.wrap(version));
                 observableEntity.entityReference.set(entity);
             }
         }
@@ -169,13 +169,13 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         return entityReference.get();
     }
 
-    public SimpleMapProperty<PublicId, O> versionProperty() {
-        return versionProperty;
+    public SimpleMapProperty<PublicId, O> versionPropertyMap() {
+        return versionsPropertyMap;
     }
 
     @Override
     public ImmutableList<O> versions() {
-        return Lists.immutable.ofAll(versionProperty.values());
+        return Lists.immutable.ofAll(versionsPropertyMap.values());
     }
 
     @Override

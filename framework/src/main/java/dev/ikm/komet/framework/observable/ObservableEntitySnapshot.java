@@ -54,7 +54,7 @@ public abstract sealed class ObservableEntitySnapshot<OE extends ObservableEntit
         MutableList<OV> uncommittedVersions = Lists.mutable.empty();
         MutableList<OV> historicVersions = Lists.mutable.empty();
 
-        for (OV version : this.observableEntity.versionProperty().values()) {
+        for (OV version : this.observableEntity.versionPropertyMap().values()) {
             processedVersions.add(version);
             if (version.uncommitted()) {
                 uncommittedVersions.add(version);

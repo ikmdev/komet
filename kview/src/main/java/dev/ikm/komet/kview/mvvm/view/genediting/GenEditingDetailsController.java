@@ -16,7 +16,6 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
-import static dev.ikm.komet.framework.observable.ObservableEntity.updateVersions;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_ADD_REFERENCE_SEMANTIC_FIELD;
@@ -270,7 +269,7 @@ public class GenEditingDetailsController {
         } else {
             genEditingViewModel.setPropertyValue(MODE, EDIT);
             observableSemantic = ObservableEntity.get(semantic.nid());
-            updateVersions(Entity.getFast(observableSemantic.nid()), observableSemantic);
+//            updateVersions(Entity.getFast(observableSemantic.nid()), observableSemantic);
             observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
             //retrieve latest committed semanticVersion
             semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
