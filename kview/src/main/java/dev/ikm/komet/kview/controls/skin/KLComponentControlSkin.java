@@ -1,12 +1,19 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
+import dev.ikm.komet.kview.controls.ConceptTile;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentListControl;
 import dev.ikm.komet.kview.controls.KLComponentSetControl;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
+import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
+import dev.ikm.tinkar.entity.ConceptRecord;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
@@ -16,11 +23,20 @@ import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
+import javafx.scene.control.TreeCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
-import javafx.scene.input.*;
-import javafx.scene.layout.*;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DataFormat;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.transform.Scale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,22 +232,20 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                 }
 
                 try {
+                    int nid = extractNid(event);
                     LOG.info("publicId: {}", dragboard.getString());
-                    if (event.getGestureSource() instanceof Node source &&
-                            source.getUserData() instanceof DragAndDropInfo dropInfo &&
-                            dropInfo.publicId() != null
-                    ) { // TODO: should this be needed? shouldn't we get PublicId from dragboard content?
-                        int nid = EntityService.get().nidForPublicId(dropInfo.publicId());
-                        EntityProxy entity = EntityProxy.make(nid);
+                    if (nid != Integer.MIN_VALUE) {  //
+                        EntityProxy entity = Entity.getFast(nid).toProxy();
                         if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
                                 !componentSetControl.getValue().contains(nid)) {
-                            control.setEntity(entity);
+                            control.setEntity(entity); // TODO: .description() is often null or empty.
                             addConceptNode(entity);
 
                             event.setDropCompleted(true);
                             event.consume();
                         }
                     }
+
                 } catch (Exception e) {
                     LOG.error("exception: ", e);
                 }
@@ -239,11 +253,120 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         });
     }
 
-    private boolean isFilterAllowedWhileDragAndDropping(DragEvent event) {
-        return event.getGestureSource() instanceof Node source // and the gesture source is a Node
-               && source.getUserData() instanceof DragAndDropInfo dropInfo // whose user data is DragAndDropInfoEntityProxy
-               && dropInfo.publicId() != null // with a non-null publicId
-               && getSkinnable().getComponentAllowedFilter().test(dropInfo.publicId()); // and the allowed filter returns true
+
+//    TODO: Refactor code below to detect a drag event and to extract a nid (int) from a ui cell or node. The outside
+//          caller (user of this control) should be able to supply a dictionary to determine if a user is permitted to
+//          drag item into this control. For now the following functions detect if the dnd item is from a source for
+//          backwards compatibility.
+//          e.g., This control should allow a user to drag a concept from classic concept navigator.
+
+    /**
+     * Returns true if the user is allowed to drag and drop an item (source) to this control (destination).
+     * @param dragEvent event A drag event {@link DragEvent} from a JavaFX {@link Node}.
+     * @return Returns true if the user is allowed to drag and drop an item (source) to this control (destination).
+     */
+    private boolean isFilterAllowedWhileDragAndDropping(DragEvent dragEvent) {
+        // Detect classic concept navigator to drag and drop concepts
+        boolean classicConceptNavigatorDnD = isFromClassicConceptNav(dragEvent); // and the allowed filter returns true
+
+        // Detect classic search to drag and drop components (concepts and semantics)
+        boolean classicSearchDnD = isFromClassicSearch(dragEvent);
+
+        // Detect new concept navigator to drag and drop concepts
+        boolean nextGenConceptNavigatorDnD = isFromNexGenConceptNav(dragEvent);
+
+        // Existing checks for next gen search navigator items to drag.
+        boolean nextGenSearchDnD =  isADragAndDropInfo(dragEvent);
+
+        return classicConceptNavigatorDnD || classicSearchDnD || nextGenConceptNavigatorDnD || nextGenSearchDnD;
+    }
+
+    /**
+     * Returns true if user dragged item contains a DragAndDropInfo record. Record will contain a concept from
+     * the next gen search or pattern/semantic navigator, otherwise false.
+     * @param dragEvent A drag event {@link DragEvent} from a JavaFX {@link Node}.
+     * @return Returns true if user dragged a concept from the next gen search or pattern/semantic navigator, otherwise false.
+     */
+    private boolean isADragAndDropInfo(DragEvent dragEvent) {
+        // Existing checks for next gen search navigator and pattern nav items to drag.
+        boolean isValidDnD =  dragEvent.getGestureSource() instanceof Node source // and the gesture source is a Node
+                && source.getUserData() instanceof DragAndDropInfo dropInfo // whose user data is DragAndDropInfoEntityProxy
+                && dropInfo.publicId() != null // with a non-null publicId
+                && getSkinnable().getComponentAllowedFilter().test(dropInfo.publicId()); // and the allowed filter returns true
+        return isValidDnD;
+    }
+
+    /**
+     * TODO: Refactor the allow dnd code and the extract nid code to be outside of this component.
+     * Returns a nid (int) representing a unique database identifier of a given entity. A component's nid is extracted from
+     * the drag event. When return a zero (the entity is invalid).
+     * @param dragEvent A drag event {@link DragEvent} from a JavaFX {@link Node}.
+     * @return Returns a nid (int) representing a unique database identifier of a given entity. A component's nid is extracted from
+     */
+    private int extractNid(DragEvent dragEvent) {
+        if (isADragAndDropInfo(dragEvent)) {
+            DragAndDropInfo dropInfo = (DragAndDropInfo) ((Node)dragEvent.getGestureSource()).getUserData();
+            return EntityService.get().nidForPublicId(dropInfo.publicId());
+        }
+        if (isFromClassicConceptNav(dragEvent)) {
+            TreeCell treeCell = (TreeCell) dragEvent.getGestureSource();  // and the gesture source is a TreeCell Node
+            EntityFacade entityFacade = (EntityFacade) treeCell.getTreeItem().getValue();
+            return entityFacade.nid();
+        }
+        if (isFromClassicSearch(dragEvent)) {
+            SearchResultCell searchResultCell = (SearchResultCell) dragEvent.getGestureSource();
+            Object value = searchResultCell.getTreeItem().getValue();
+            if (value instanceof SearchPanelController.NidTextRecord nidTextRecord) {
+                return nidTextRecord.nid();
+            } else if (value instanceof LatestVersionSearchResult latestVersionSearchResult) {
+                return latestVersionSearchResult.latestVersion().get().nid();
+            }
+        }
+        if (isFromNexGenConceptNav(dragEvent)) {
+            ConceptTile conceptTile = (ConceptTile) dragEvent.getGestureSource();
+            return conceptTile.getConcept().getValue().nid();
+        }
+        return Integer.MIN_VALUE;
+    }
+
+    /**
+     * Returns true if user dragged a concept from the classic concept navigator, otherwise false.
+     * @param dragEvent A drag event {@link DragEvent} from a JavaFX {@link Node}.
+     * @return Returns true if user dragged a concept from the classic concept navigator, otherwise false.
+     */
+    private boolean isFromClassicConceptNav(DragEvent dragEvent) {
+        // Detect classic concept navigator to drag and drop concepts
+        boolean isValidDnD = dragEvent.getGestureSource() instanceof TreeCell source // and the gesture source is a TreeCell Node
+                && source.getTreeItem().getValue() instanceof EntityFacade conceptFacade // whose tree item is an entity facade
+                && getSkinnable().getComponentAllowedFilter().test(conceptFacade.publicId()); // and the allowed filter returns true
+        return isValidDnD;
+    }
+
+    /**
+     * Returns true if user dragged a component from the classic search controller, otherwise false.
+     * @param dragEvent A drag event {@link DragEvent} from a JavaFX {@link Node}.
+     * @return Returns true if user dragged a component from the classic search controller, otherwise false.
+     */
+    private boolean isFromClassicSearch(DragEvent dragEvent) {
+        // Detect classic concept navigator to drag and drop concepts
+        boolean isValidDnD = dragEvent.getGestureSource() instanceof SearchResultCell source // and the gesture source is a TreeCell Node
+                &&
+                (source.getTreeItem().getValue() instanceof SearchPanelController.NidTextRecord ||
+                        source.getTreeItem().getValue()  instanceof LatestVersionSearchResult); // whose tree item is LatestVersionSearchResult
+
+        return isValidDnD;
+    }
+
+    /**
+     * Returns true if user dragged a concept from the new concept navigator, otherwise false.
+     * @param dragEvent A drag event {@link DragEvent} from a JavaFX {@link Node}.
+     * @return Returns true if user dragged a concept from the new concept navigator, otherwise false.
+     */
+    private boolean isFromNexGenConceptNav(DragEvent dragEvent) {
+        boolean isValidDnD = dragEvent.getGestureSource() instanceof ConceptTile source // and the gesture source is a ConceptTile
+                && source.getConcept().getValue() instanceof ConceptRecord conceptRecord // whose value is a concept record
+                && getSkinnable().getComponentAllowedFilter().test(conceptRecord.publicId());
+        return isValidDnD;
     }
 
     private boolean hasAllowedDND(KLComponentControl control) {
