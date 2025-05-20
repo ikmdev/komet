@@ -80,6 +80,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -275,6 +277,8 @@ public class SemanticFieldsController {
             observableField.autoSaveOn();
           });
 
+        // update hash change
+        committedHash = calculteHashValue(observableFields);
         //Set the hascode for the committed values.
         enableDisableSubmitButton();
         loadVBox();
@@ -348,10 +352,24 @@ public class SemanticFieldsController {
            StampRecord stamp = Entity.getStamp(semanticEntityVersion.stampNid());
            SemanticVersionRecord version = Entity.getVersionFast(semantic.nid(), stamp.nid());
            Transaction.forVersion(version).ifPresentOrElse(transaction -> {
-               commitTransactionTask(transaction);
-               // EventBus implementation changes to refresh the details area if commit successful
-               EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
-                       new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
+
+                   try {
+//                       EntityService.get().endLoadPhase();
+                       createSemanticVersionTransactionTask(transaction).get(); // get() will block until transaction is finished (will refresh view calculator caches)
+                       processCommittedValues();
+                       enableDisableSubmitButton();
+                       // EventBus implementation changes to refresh the details area if commit successful
+                       EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                               new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
+//                       EntityService.get().beginLoadPhase();
+
+
+                   } catch (InterruptedException e) {
+                       throw new RuntimeException(e);
+                   } catch (ExecutionException e) {
+                       throw new RuntimeException(e);
+                   }
+
            }, () -> {
                //TODO this is a temp alert / workaround till we figure how to reload transactions across multiple restarts of app.
                LOG.error("Unable to commit: Transaction for the given version does not exist.");
@@ -361,12 +379,11 @@ public class SemanticFieldsController {
            });
        });
 
-       processCommittedValues();
-       enableDisableSubmitButton();
+
     }
 
-    private void commitTransactionTask(Transaction transaction) {
+    private Future<Void> createSemanticVersionTransactionTask(Transaction transaction) {
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        TinkExecutor.threadPool().submit(commitTransactionTask);
+        return TinkExecutor.threadPool().submit(commitTransactionTask);
     }
 }
