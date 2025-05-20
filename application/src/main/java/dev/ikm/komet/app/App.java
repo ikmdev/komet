@@ -955,23 +955,9 @@ public class App extends Application {
     }
 
     private void showWindowsAboutScreen() {
-
         AboutDialog aboutDialog = new AboutDialog();
         aboutDialog.showAndWait();
-
-//        Stage aboutWindow = new Stage();
-//        Label kometLabel = new Label("Komet");
-//        kometLabel.setFont(new Font("Open Sans", 24));
-//        Label copyright = new Label("Copyright \u00a9 " + Year.now().getValue());
-//        copyright.setFont(new Font("Open Sans", 10));
-//        VBox container = new VBox(kometLabel, copyright);
-//        container.setAlignment(Pos.CENTER);
-//        Scene aboutScene = new Scene(container, 250, 100);
-//        aboutWindow.setScene(aboutScene);
-//        aboutWindow.setTitle("About Komet");
-//        aboutWindow.show();
     }
-
 
     private void quit() {
         saveJournalWindowsToPreferences();
