@@ -34,21 +34,21 @@ import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalP
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.shortenUUID;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.DEMO_AUTHOR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_COUNT;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
 import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
@@ -75,9 +75,9 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
+import dev.ikm.komet.kview.controls.KLSearchControl;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.NotificationPopup;
-import dev.ikm.komet.kview.controls.KLSearchControl;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
@@ -180,7 +180,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -425,8 +428,7 @@ public class JournalController {
 
         // Refresh Concept navigator
         refreshCalculatorEventSubscriber = _ -> {
-            // TODO FIXME Must refresh the cache or invalidate cache after a gitsync or import. Below works but will change the UI.
-            // ViewCoordinateHelper.changeViewCalculatorToLatestByTime(getNavigatorNode().getViewProperties(), System.currentTimeMillis() + );
+            // TODO Must refresh the cache or invalidate after a gitsync or import.
             getNavigatorNode().getController().refresh();
         };
 
@@ -1048,7 +1050,7 @@ public class JournalController {
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
 
         // copying the observable view
-        viewProperties.nodeView().setValue(navigatorNode.getController().getObservableView().getValue());
+        viewProperties.nodeView().setValue(navigatorNode.getViewProperties().nodeView().getValue());
 
         AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
                 journalTopic, conceptFacade, viewProperties, preferences);

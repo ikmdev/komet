@@ -560,9 +560,11 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             Platform.runLater(() -> {
                 MenuItem sourceMenu = (MenuItem) event.getSource();
                 Menu parentMenu = sourceMenu.getParentMenu();
-                parentMenu.getItems().clear();
-                TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, observableView),
-                        (List<MenuItem> result) -> parentMenu.getItems().addAll(result)));
+                if (parentMenu != null) {
+                    parentMenu.getItems().clear();
+                    TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, observableView),
+                            (List<MenuItem> result) -> parentMenu.getItems().addAll(result)));
+                }
             });
         });
 
