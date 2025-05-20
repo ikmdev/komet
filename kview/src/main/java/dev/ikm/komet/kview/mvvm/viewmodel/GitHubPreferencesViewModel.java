@@ -39,7 +39,7 @@ import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.G
  * This class manages and validates the following GitHub-related information:
  * <ul>
  *   <li>Git repository URL - Must be a valid Git URL format (HTTPS or SSH)</li>
- *   <li>Git email - Optional, but must be a valid email format if provided</li>
+ *   <li>Git email - Must be a valid email format</li>
  *   <li>GitHub username - Must follow GitHub username conventions</li>
  *   <li>GitHub password - Must meet security requirements</li>
  * </ul>
@@ -57,10 +57,9 @@ public class GitHubPreferencesViewModel extends ValidationViewModel {
 
     /**
      * Regular expression pattern for validating Git repository URLs.
-     * Supports common formats including HTTPS and SSH URLs.
      */
     private static final Pattern URL_PATTERN =
-            Pattern.compile("^(https?://|git@)([\\w.-]+)(:\\d+)?([/:])[\\w.-]+(/[\\w.-]+)+(\\.git)?$");
+            Pattern.compile("((git|ssh|http(s)?)|(git@[\\w.]+))(:(//)?)(([\\w.]|[:/~\\-])+)(\\.git)(/)?+");
 
     /**
      * Regular expression pattern for validating email addresses.
@@ -89,7 +88,7 @@ public class GitHubPreferencesViewModel extends ValidationViewModel {
                     String url = prop.get();
                     Matcher matcher = URL_PATTERN.matcher(url);
                     if (!matcher.matches()) {
-                        vr.error("%s is not a valid Git repository URL.".formatted(url));
+                        vr.error("'%s' is not a valid Git repository URL.".formatted(url));
                     }
 
                     // Clear any previous authentication errors
