@@ -1,7 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
 import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.INSTANCES;
@@ -123,7 +122,8 @@ public class ConceptPatternNavController {
             }
         });
 
-        patternCreationEventSubscriber = (evt) -> {
+        // Refresh the patterns and semantics TODO: FIXME Primitive Data has caches that don't refresh. See reload() method.
+        patternCreationEventSubscriber = _ -> {
             LOG.info("A New Pattern has been added/created. Reloading all the Patterns.");
             patternsVBox.getChildren().clear();
             patternNavViewModel.reload();
@@ -131,8 +131,6 @@ public class ConceptPatternNavController {
         EvtBusFactory.getDefaultEvtBus().subscribe(SAVE_PATTERN_TOPIC, PatternSavedEvent.class, patternCreationEventSubscriber);
 
         ViewProperties viewProperties = patternNavViewModel.getPropertyValue(VIEW_PROPERTIES);
-
-        EvtBusFactory.getDefaultEvtBus().subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
 
         // callback when all patterns are loaded. For each build up children instances.
         patternNavViewModel.setOnReload(stream -> {

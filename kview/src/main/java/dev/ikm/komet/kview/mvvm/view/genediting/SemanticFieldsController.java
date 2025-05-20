@@ -50,7 +50,6 @@ import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
@@ -342,7 +341,6 @@ public class SemanticFieldsController {
        List<Object> list = new ArrayList<>(observableFields.size());
        observableFields.forEach(observableField -> list.add(observableField.value()));
 
-
        //Get the semantic need to pass along with event for loading values across Opened Semantics.
        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
 
@@ -353,14 +351,14 @@ public class SemanticFieldsController {
            Transaction.forVersion(version).ifPresentOrElse(transaction -> {
 
                    try {
-                       EntityService.get().endLoadPhase();
-                       createSemanticVersionTransactionTask(transaction).get();
+//                       EntityService.get().endLoadPhase();
+                       createSemanticVersionTransactionTask(transaction).get(); // get() will block until transaction is finished (will refresh view calculator caches)
                        processCommittedValues();
                        enableDisableSubmitButton();
                        // EventBus implementation changes to refresh the details area if commit successful
                        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                                new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
-                       EntityService.get().beginLoadPhase();
+//                       EntityService.get().beginLoadPhase();
 
 
                    } catch (InterruptedException e) {

@@ -85,6 +85,7 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -291,7 +292,8 @@ public class GenEditingDetailsController {
         Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
             //Set up the Listener to refresh the details area (After user hits submit button on the right side)
             EntityFacade finalSemantic = genEditingViewModel.getPropertyValue(SEMANTIC);
-            if (evt.getEventType() == GenEditingEvent.PUBLISH && evt.getNid() == finalSemantic.nid()) {
+            if (evt.getEventType() == GenEditingEvent.PUBLISH
+                    && evt.getNid() == finalSemantic.nid()) {
                 if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
                     // get the latest value for the semantic created.
                     observableSemantic = ObservableEntity.get(finalSemantic.nid());
@@ -307,19 +309,23 @@ public class GenEditingDetailsController {
                     genEditingViewModel.setPropertyValue(MODE, EDIT);
                 }
 
-                //Platform.runLater(()-> {
-                    for (int i = 0; i < evt.getList().size(); i++) {
-                        ObservableField observableField = observableFields.get(i);
-                        Object updatedField = evt.getList().get(i);
-                        if (updatedField != null && observableField != null) {
-                            // readonly integer value 1, editable integer value 1 don't update
-                            // readonly integer value 1, editable integer value 5 do update
-                            // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
-                            // Should we check if the value is different before updating? (blindly updating now).
-                            observableField.valueProperty().setValue(updatedField);
+                // Update read-only field values
+                for (int i = 0; i < evt.getList().size(); i++) {
+                    ObservableField observableField = observableFields.get(i);
+                    Object updatedField = evt.getList().get(i);
+                    if (updatedField != null && observableField != null) {
+                        // readonly integer value 1, editable integer value 1 don't update
+                        // readonly integer value 1, editable integer value 5 do update
+                        // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
+                        // Should we check if the value is different before updating? (blindly updating now).
+                        Runnable setValue = () -> observableField.valueProperty().setValue(updatedField);
+                        if (!Platform.isFxApplicationThread()) {
+                            Platform.runLater(setValue);
+                        } else {
+                            setValue.run();
                         }
                     }
-                //});
+                }
 
             }
 

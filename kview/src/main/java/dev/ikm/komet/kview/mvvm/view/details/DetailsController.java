@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.details;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.komet.framework.events.FrameworkTopics.RULES_TOPIC;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
@@ -52,6 +53,7 @@ import dev.ikm.komet.framework.events.AxiomChangeEvent;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
@@ -95,6 +97,7 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableList;
@@ -339,6 +342,8 @@ public class DetailsController  {
 
     private Subscriber<AxiomChangeEvent> changeSetTypeEventSubscriber;
 
+    private Subscriber<RefreshCalculatorCacheEvent> refreshCalculatorEventSubscriber;
+
 
     private PublicId fqnPublicId;
 
@@ -536,6 +541,24 @@ public class DetailsController  {
                 conceptContentScrollPane.pseudoClassStateChanged(V_SCROLLBAR_NEEDED, isVerticalScrollbarVisible(conceptContentScrollPane)));
         conceptContentScrollPane.getContent().layoutBoundsProperty().addListener((obs) ->
                 conceptContentScrollPane.pseudoClassStateChanged(V_SCROLLBAR_NEEDED, isVerticalScrollbarVisible(conceptContentScrollPane)));
+
+        // TODO: When event bus is more universally used the database can emit events. For now we listen for a refresh calculator events
+        // Refresh Concept window
+        refreshCalculatorEventSubscriber = _ -> {
+            LOG.info("Refresh concept window details");
+            Runnable code = () -> {
+                clearView();
+                updateView();
+            };
+            if (Platform.isFxApplicationThread()) {
+                code.run();
+            } else {
+                Platform.runLater(code);
+            }
+        };
+
+        eventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
+
     }
 
     /**
@@ -782,6 +805,18 @@ public class DetailsController  {
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
+        LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierText.getText(), fqnTitleText.getText()));
+        // unsubscribe listeners
+        eventBus.unsubscribe(editConceptFullyQualifiedNameEventSubscriber,
+                addFullyQualifiedNameEventSubscriber,
+                editOtherNameConceptEventSubscriber,
+                editConceptEventSubscriber,
+                addOtherNameToConceptEventSubscriber,
+                closePropertiesPanelEventSubscriber,
+                createConceptEventSubscriber,
+                changeSetTypeEventSubscriber,
+                refreshCalculatorEventSubscriber
+        );
     }
     public Pane getPropertiesSlideoutTrayPane() {
         return propertiesSlideoutTrayPane;
@@ -1134,17 +1169,6 @@ public class DetailsController  {
 
     private void updateFQNSemantics(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
         DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("MMM dd, yyyy");
-//        // Latest FQN
-//        ViewCalculator viewCalculator = getViewProperties().calculator();
-//        EntityFacade entityFacade = getConceptViewModel().getPropertyValue(DEVICE_ENTITY);
-//        Latest<EntityVersion> latestEntityVersion = viewCalculator.latest(entityFacade);
-//        if (latestEntityVersion.isPresent()) {
-//            // obtain the latest entity's version (concept version)
-//            EntityVersion entityVersion = latestEntityVersion.get();
-//            String fullyQualifiedName = viewCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(entityVersion.nid());
-//            latestFqnText.setText(fullyQualifiedName);
-//        }
-
         String fqnTextDescr = getFieldValueByMeaning(semanticEntityVersion, TinkarTerm.TEXT_FOR_DESCRIPTION);
         // obtain the fqn description
         latestFqnText.setText(fqnTextDescr);
@@ -1216,15 +1240,10 @@ public class DetailsController  {
         ViewCalculator viewCalculator = getViewProperties().calculator(); /* returns committed latest from db */
         viewCalculator.getDescriptionsForComponent(conceptFacade).stream()
                 .filter(semanticEntity -> {
-                    // semantic -> semantic version -> pattern version(index meaning field from DESCR_Type)
-                    // ((SemanticEntityVersion)viewCalculator.latest(semanticEntity.nid()).get()).fieldValues().get(1) // Hello Status
-                    // viewCalculator.latest(semanticEntity).get() semanticVersion.get().fieldValues().get(1)    // Status
-
                     // TODO FIXME - the latest() methods should be relative to the
                     //              concept navigator's view coordinates based on stamp (date time).
                     //              This will always return the latest record from the database not the
                     //              latest from the view coordinate position data time range.
-//                    Entity entity = Entity.getFast(semanticEntity.nid());
                     Latest<SemanticEntityVersion> semanticVersion = viewCalculator.latest(semanticEntity.nid());
 
                     // Filter (include) semantics where they contain descr type having FQN, Regular name, Definition Descr.
@@ -1244,7 +1263,6 @@ public class DetailsController  {
                     //              concept navigator's view coordinates based on stamp (date time).
                     //              This will always return the latest record from the database not the
                     //              latest from the view coordinate position data time range.
-//                    Entity entity = Entity.getFast(semanticEntity.nid());
                     Latest<SemanticEntityVersion> semanticVersion = viewCalculator.latest(semanticEntity.nid());
 
                     PatternEntity<PatternEntityVersion> patternEntity = semanticEntity.pattern();

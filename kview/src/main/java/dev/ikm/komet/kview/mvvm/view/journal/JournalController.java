@@ -428,8 +428,7 @@ public class JournalController {
 
         // Refresh Concept navigator
         refreshCalculatorEventSubscriber = _ -> {
-            // TODO FIXME Must refresh the cache or invalidate cache after a gitsync or import. Below works but will change the UI.
-            // ViewCoordinateHelper.changeViewCalculatorToLatestByTime(getNavigatorNode().getViewProperties(), System.currentTimeMillis() + );
+            // TODO Must refresh the cache or invalidate after a gitsync or import.
             getNavigatorNode().getController().refresh();
         };
 
