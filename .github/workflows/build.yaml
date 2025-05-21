@@ -33,7 +33,7 @@ jobs:
       - name: Get Build Number
         id: getBuildNumber
         run: |
-          IFS='.' read -r major minor <<< "$POM_VERSION"
+          IFS='.' read -r major minor patch <<< "$POM_VERSION"
           echo "BUILD_NUMBER=$major.$minor.${{github.run_number}}" >> $GITHUB_OUTPUT
         env:
           POM_VERSION: ${{steps.getPOMVERSSION.outputs.POM_VERSION}}
