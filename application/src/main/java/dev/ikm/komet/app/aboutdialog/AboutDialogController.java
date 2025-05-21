@@ -1,16 +1,13 @@
 package dev.ikm.komet.app.aboutdialog;
 
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URL;
 import java.time.Year;
-import java.util.ResourceBundle;
 
-public class AboutDialogController implements Initializable {
+public class AboutDialogController {
 
     private static final Logger LOG = LoggerFactory.getLogger(AboutDialogController.class);
 
@@ -25,14 +22,9 @@ public class AboutDialogController implements Initializable {
 
     private BuildInfoProperties buildInfoProperties = new BuildInfoProperties();
 
-    public AboutDialogController() {
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        LOG.debug("initialize()");
-
-        copyrightYearLabel.setText("" + Year.now().getValue());
+    @FXML
+    public void initialize() {
+        copyrightYearLabel.setText(Integer.toString(Year.now().getValue()));
 
         var mavenVersion = buildInfoProperties.getMavenVersion();
         var buildVersion = buildInfoProperties.getBuildVersion();
