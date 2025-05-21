@@ -109,6 +109,8 @@ public class PropertiesController {
 
         genEditingEventSubscriber = evt -> {
             LOG.info("Publish event type: " + evt.getEventType());
+
+            // "Semantic Details Added" is displayed when form values are Submitted
             closePropertiesController.showSemanticDetailsAdded();
             contentBorderPane.setCenter(closePropsPane);
         };
@@ -134,8 +136,8 @@ public class PropertiesController {
                 // change the heading on the top of the panel
                 genEditingViewModel.setPropertyValue(FIELD_INDEX, -1);
 
+                // "No Selection Made" is displayed on initial creation of Semantic
                 closePropertiesController.showNoSelectionMadeToEditSemanticElement();
-
                 contentBorderPane.setCenter(closePropsPane);
             }
         };
