@@ -19,14 +19,37 @@ jobs:
       - name: Pull Request Version Validation
         uses: ikmdev/maven-pull-request-version-validation-action@v2
 
+  get-args:
+    name: Get Arguments
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Get POM Version
+        id: getPOMVERSSION
+        run: echo "POM_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
+
+      - name: Get Build Number
+        id: getBuildNumber
+        run: |
+          IFS='.' -r major minor <<< "$POM_VERSION"
+          echo "BUILD_NUMBER=$major.$minor.${{github.run_number}}" >> $GITHUB_OUTPUT
+        env:
+          POM_VERSION: ${{steps.getPOMVERSSION.outputs.POM_VERSION}}
+
+      - name: Print Build Number
+        run: |
+          echo ${{steps.getBuildNumber.outputs.BUILD_NUMBER}}
+          exit 1
+  
+
   build-job:
     name: Build Job
     runs-on: ubuntu-24.04
-    steps:  
+    steps: 
       - name: Build IKMDEV Code
-        uses: ikmdev/maven-clean-install-build-action@v3
+        uses: ikmdev/maven-clean-install-build-action@v3.4.0
         with:
           branch_name: ${{env.BRANCH_NAME}}
+          mvn_additional_args: '-Dbuild.version='
      
 
   generate_build_installers:
