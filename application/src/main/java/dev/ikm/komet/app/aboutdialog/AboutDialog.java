@@ -3,7 +3,7 @@ package dev.ikm.komet.app.aboutdialog;
 import javafx.scene.control.Dialog;
 import javafx.stage.Modality;
 
-public class AboutDialog extends Dialog {
+public class AboutDialog extends Dialog<Void> {
 
     private AboutDialogPane dialogPane;
 
