@@ -20,8 +20,11 @@ jobs:
         uses: ikmdev/maven-pull-request-version-validation-action@v2
 
   get-args:
-    name: Get Arguments
+    name: Get Build Arguments
     runs-on: ubuntu-24.04
+    outputs:
+      BUILD_NUMBER: ${{steps.getBuildNumberAndDate.outputs.BUILD_NUMBER}}
+      DATE: ${{steps.getBuildNumberAndDate.outputs.DATE}}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -30,8 +33,8 @@ jobs:
         id: getPOMVERSSION
         run: echo "POM_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
 
-      - name: Get Build Number
-        id: getBuildNumber
+      - name: Get Build Number And Date
+        id: getBuildNumberAndDate
         run: |
           IFS='.' read -r major minor patch <<< "$POM_VERSION"
           echo "BUILD_NUMBER=$major.$minor.${{github.run_number}}" >> $GITHUB_OUTPUT
@@ -39,22 +42,16 @@ jobs:
         env:
           POM_VERSION: ${{steps.getPOMVERSSION.outputs.POM_VERSION}}
 
-      - name: Print Build Number
-        run: |
-          echo ${{steps.getBuildNumber.outputs.BUILD_NUMBER}}
-          echo ${{steps.getBuildNumber.outputs.DATE}}
-          exit 1
-  
-
   build-job:
     name: Build Job
     runs-on: ubuntu-24.04
+    needs: get-args
     steps: 
       - name: Build IKMDEV Code
         uses: ikmdev/maven-clean-install-build-action@v3.4.0
         with:
           branch_name: ${{env.BRANCH_NAME}}
-          mvn_additional_args: '-Dbuild.version='
+          mvn_additional_args: '-Dbuild.version=${{needs.get-args.outputs.BUILD_NUMBER}} -Dbuild.time=${{needs.get-args.outputs.DATE}}'
      
 
   generate_build_installers:
