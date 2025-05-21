@@ -35,12 +35,14 @@ jobs:
         run: |
           IFS='.' read -r major minor patch <<< "$POM_VERSION"
           echo "BUILD_NUMBER=$major.$minor.${{github.run_number}}" >> $GITHUB_OUTPUT
+          echo "DATE=$(date +'%B %d %Y')" >> $GITHUB_OUTPUT
         env:
           POM_VERSION: ${{steps.getPOMVERSSION.outputs.POM_VERSION}}
 
       - name: Print Build Number
         run: |
           echo ${{steps.getBuildNumber.outputs.BUILD_NUMBER}}
+          echo ${{steps.getBuildNumber.outputs.DATE}}
           exit 1
   
 
