@@ -116,22 +116,24 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
     public abstract ObservableEntitySnapshot<?,?,?> getSnapshot(ViewCalculator calculator);
 
     public static <OE extends ObservableEntity> OE get(Entity<? extends EntityVersion> entity) {
-        if (entity instanceof ObservableEntity) {
-            ObservableEntity observableEntity = (ObservableEntity) entity;
-            updateVersions(observableEntity.entity(), observableEntity);
-            return (OE) entity;
+
+        ObservableEntity observableEntity = null;
+        if (!(entity instanceof ObservableEntity)) {
+            observableEntity = SINGLETONS.computeIfAbsent(entity.nid(), publicId ->
+                    switch (entity) {
+                        case ConceptEntity conceptEntity -> new ObservableConcept(conceptEntity);
+                        case PatternEntity patternEntity -> new ObservablePattern(patternEntity);
+                        case SemanticEntity semanticEntity -> new ObservableSemantic(semanticEntity);
+                        case StampEntity stampEntity -> new ObservableStamp(stampEntity);
+                        default -> throw new UnsupportedOperationException("Can't handle: " + entity);
+                    });
+        } else {
+            observableEntity = (ObservableEntity) entity;
         }
 
-        ObservableEntity observableEntity = SINGLETONS.computeIfAbsent(entity.nid(), publicId ->
-                switch (entity) {
-                    case ConceptEntity conceptEntity -> new ObservableConcept(conceptEntity);
-                    case PatternEntity patternEntity -> new ObservablePattern(patternEntity);
-                    case SemanticEntity semanticEntity -> new ObservableSemantic(semanticEntity);
-                    case StampEntity stampEntity -> new ObservableStamp(stampEntity);
-                    default -> throw new UnsupportedOperationException("Can't handle: " + entity);
-                });
         if (!Platform.isFxApplicationThread()) {
-            Platform.runLater(() -> updateVersions(entity, observableEntity));
+            ObservableEntity finalObservableEntity = observableEntity;
+            Platform.runLater(() -> updateVersions(entity, finalObservableEntity));
         } else {
             updateVersions(entity, observableEntity);
         }
