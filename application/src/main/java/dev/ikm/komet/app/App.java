@@ -45,9 +45,12 @@ import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
 import dev.ikm.komet.kview.mvvm.view.changeset.ExportController;
 import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
+import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitHubInfoController;
 import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitHubPreferencesController;
+import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName;
 import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask;
 import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode;
+import dev.ikm.komet.kview.mvvm.view.changeset.exchange.InfoTask;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
@@ -80,7 +83,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -100,10 +108,6 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.Status;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.StoredConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,6 +118,7 @@ import java.lang.management.ManagementFactory;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -136,16 +141,20 @@ import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_EMAIL;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_STATUS;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_URL;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_USERNAME;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.CONNECT;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.PULL;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.SYNC;
 import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.LANDING_PAGE_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_IDS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_HEIGHT;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_IDS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
 import static dev.ikm.komet.preferences.JournalWindowSettings.CAN_DELETE;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
@@ -832,10 +841,10 @@ public class App extends Application {
         runOnFxThread(() -> {
             GlassPane glassPane = new GlassPane(landingPageController.getRoot());
 
-            JFXNode<Pane, GitHubPreferencesController> githubPreferencesNode = FXMLMvvmLoader
+            final JFXNode<Pane, GitHubPreferencesController> githubPreferencesNode = FXMLMvvmLoader
                     .make(GitHubPreferencesController.class.getResource("github-preferences.fxml"));
-            Pane dialogPane = githubPreferencesNode.node();
-            GitHubPreferencesController controller = githubPreferencesNode.controller();
+            final Pane dialogPane = githubPreferencesNode.node();
+            final GitHubPreferencesController controller = githubPreferencesNode.controller();
             Optional<GitHubPreferencesViewModel> githubPrefsViewModelOpt = githubPreferencesNode
                     .getViewModel("gitHubPreferencesViewModel");
 
@@ -966,25 +975,24 @@ public class App extends Application {
      * The task is executed asynchronously through the ProgressHelper service to
      * provide user feedback during long-running operations.
      *
-     * @param mode The operation mode specifying which Git operations to perform
+     * @param operationMode The operation mode specifying which Git operations to perform
      * @param changeSetFolder The folder where the Git repository is located
+     * @return A CompletableFuture that completes with true if the operation was successful,
+     *         or false if it failed or was cancelled
      */
-    private void createAndRunGitTask(OperationMode mode, File changeSetFolder) {
+    private CompletableFuture<Boolean> createAndRunGitTask(OperationMode operationMode, File changeSetFolder) {
         // Create a GitTask with only the connection success callback
-        GitTask gitTask = new GitTask(mode, changeSetFolder.toPath(), this::gotoGitHubConnectedState);
+        GitTask gitTask = new GitTask(operationMode, changeSetFolder.toPath(), this::gotoGitHubConnectedState);
 
         // Run the task
-        ProgressHelper.progress(LANDING_PAGE_TOPIC, gitTask)
+        return ProgressHelper.progress(LANDING_PAGE_TOPIC, gitTask)
                 .whenComplete((result, throwable) -> {
                     if (throwable != null) {
-                        LOG.error("Error during {} operation", mode, throwable);
+                        LOG.error("Error during {} operation", operationMode, throwable);
                         disconnectFromGithub();
                     } else if (!result) {
-                        LOG.warn("{} operation did not complete successfully", mode);
-                        // If the operation failed, we might want to update the UI to reflect disconnected state
-                        if (mode == CONNECT) {
-                            disconnectFromGithub();
-                        }
+                        LOG.warn("{} operation did not complete successfully", operationMode);
+                        disconnectFromGithub();
                     }
                 });
     }
@@ -1035,6 +1043,17 @@ public class App extends Application {
      * Displays information about the current Git repository.
      * <p>
      * This method checks if a Git repository exists and displays basic information about it.
+     * If no repository exists or is not properly configured, the user will be prompted to
+     * enter GitHub preferences before proceeding. Upon successful connection to GitHub,
+     * repository information will be fetched and displayed in a dialog.
+     * <p>
+     * The method performs the following operations:
+     * <ol>
+     *   <li>Verifies that the data store root is available</li>
+     *   <li>Checks if a Git repository exists in the changeset folder</li>
+     *   <li>If no repository exists, prompts for GitHub preferences and initiates connection</li>
+     *   <li>Fetches and displays repository information</li>
+     * </ol>
      */
     private void infoAction() {
         Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
@@ -1043,43 +1062,97 @@ public class App extends Application {
             return;
         }
 
-        File changeSetFolder = new File(optionalDataStoreRoot.get(), CHANGESETS_DIR);
-        File gitDir = new File(changeSetFolder, ".git");
+        final File changeSetFolder = new File(optionalDataStoreRoot.get(), CHANGESETS_DIR);
+        final File gitDir = new File(changeSetFolder, ".git");
 
-        if (!changeSetFolder.exists() || !gitDir.exists()) {
-            LOG.error("Git repository not initialized. Please connect to GitHub first.");
-            gotoGitHubDisconnectedState();
-            return;
+        if (gitDir.exists()) {
+            fetchAndShowRepositoryInfo(changeSetFolder);
+        } else {
+            // Prompt for preferences before proceeding
+            promptForGitHubPrefs().thenCompose(confirmed -> {
+                if (confirmed) {
+                    // Preferences entered successfully, now run the GitTask
+                    return createAndRunGitTask(CONNECT, changeSetFolder);
+                } else {
+                    return CompletableFuture.completedFuture(false);
+                }
+            }).thenAccept(confirmed -> {
+                if (confirmed) {
+                    fetchAndShowRepositoryInfo(changeSetFolder);
+                }
+            });
         }
+    }
 
-        StringBuilder repoNameText = new StringBuilder("Error: could not retrieve repo name.");
-        String statusText = "Error: could not retrieve status.";
-        try (Git git = Git.open(changeSetFolder)) {
-            git.remoteList().call().stream()
-                    .filter(remoteConfig -> remoteConfig.getName().equals("origin"))
-                    .findFirst()
-                    .ifPresent(remoteConfig -> {
-                        // Get uri to "sniff out" any errors before clearing default text
-                        String pushUri = remoteConfig.getURIs().getFirst().toString();
-                        repoNameText.setLength(0);
-                        repoNameText.append("Repository: ").append(pushUri);
-                    });
+    /**
+     * Fetches repository information and displays it in a dialog.
+     * <p>
+     * This method asynchronously retrieves information about the Git repository
+     * located in the specified folder using an {@code InfoTask}, then displays
+     * the results in a dialog. The operation is performed on a background thread
+     * to avoid blocking the UI.
+     *
+     * @param changeSetFolder The repository folder to fetch information from
+     */
+    private void fetchAndShowRepositoryInfo(File changeSetFolder) {
+        CompletableFuture.supplyAsync(() -> {
+                    try {
+                        InfoTask task = new InfoTask(changeSetFolder.toPath());
+                        return task.call();
+                    } catch (Exception ex) {
+                        throw new RuntimeException("Failed to fetch repository information", ex);
+                    }
+                }, TinkExecutor.threadPool())
+                .thenCompose(repoInfo -> showRepositoryInfoDialog(repoInfo)
+                        .thenAccept(confirmed -> {
+                            if (confirmed) {
+                                LOG.info("User closed the repository info dialog");
+                            }
+                        }));
+    }
 
-            StoredConfig storedConfig = git.getRepository().getConfig();
-            LOG.info("Git repository config: \n{}", storedConfig.toText());
+    /**
+     * Displays the repository information dialog.
+     * <p>
+     * This method creates and displays a dialog showing Git repository information
+     * including URL, username, email, and status. The dialog is displayed using a
+     * glass pane overlay on top of the landing page.
+     * <p>
+     * The method returns a CompletableFuture that will be completed when the user
+     * closes the dialog.
+     *
+     * @param repoInfo Map containing repository information with keys defined in {@code GitPropertyName}
+     * @return A CompletableFuture that completes with {@code true} when the user closes the dialog
+     */
+    private CompletableFuture<Boolean> showRepositoryInfoDialog(Map<GitPropertyName, String> repoInfo) {
+        // Create a CompletableFuture that will be completed when the user makes a choice
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
 
-            Status status = git.status().call();
-            List<String> statusItems = new ArrayList<>();
-            statusItems.addAll(status.getAdded());
-            statusItems.addAll(status.getUncommittedChanges());
-            statusItems.addAll(status.getUntracked());
-            statusText = "Uncommitted Files:\n\t%s".formatted(String.join("\n\t", statusItems));
-        } catch (GitAPIException | IOException ex) {
-            AlertStreams.dispatchToRoot(ex);
-        }
+        // Show dialog on JavaFX thread
+        runOnFxThread(() -> {
+            GlassPane glassPane = new GlassPane(landingPageController.getRoot());
 
-        LOG.info(repoNameText.toString());
-        LOG.info(statusText);
+            final JFXNode<Pane, GitHubInfoController> githubInfoNode = FXMLMvvmLoader
+                    .make(GitHubInfoController.class.getResource("github-info.fxml"));
+            final Pane dialogPane = githubInfoNode.node();
+            final GitHubInfoController controller = githubInfoNode.controller();
+
+            controller.getGitUrlTextField().setText(repoInfo.get(GIT_URL));
+            controller.getGitUsernameTextField().setText(repoInfo.get(GIT_USERNAME));
+            controller.getGitEmailTextField().setText(repoInfo.get(GIT_EMAIL));
+            controller.getStatusTextArea().setText(repoInfo.get(GIT_STATUS));
+
+            controller.getCloseButton().setOnAction(_ -> {
+                glassPane.removeContent(dialogPane);
+                glassPane.hide();
+                future.complete(true); // Complete with true on close
+            });
+
+            glassPane.addContent(dialogPane);
+            glassPane.show();
+        });
+
+        return future;
     }
 
     private void generateMsWindowsMenu(BorderPane kometRoot, Stage stage) {

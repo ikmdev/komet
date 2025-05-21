@@ -43,6 +43,11 @@ public enum GitPropertyName {
     GIT_PASSWORD("Password"),
 
     /**
+     * Property name for the Git status field.
+     */
+    GIT_STATUS("Status"),
+
+    /**
      * Property name for generic error messages.
      */
     ERROR("Error"),

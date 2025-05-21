@@ -53,9 +53,9 @@ public class GitProgressMonitor implements ProgressMonitor {
      * Creates a new GitProgressMonitor that reports progress to a TrackingCallable.
      *
      * @param trackingCallable The callable that will receive progress updates
-     * @param rangeStart The start percentage in the overall task (0-100)
-     * @param rangeEnd The end percentage in the overall task (0-100)
-     * @param totalWorkUnits The total work units for the entire tracked process
+     * @param rangeStart       The start percentage in the overall task (0-100)
+     * @param rangeEnd         The end percentage in the overall task (0-100)
+     * @param totalWorkUnits   The total work units for the entire tracked process
      */
     public GitProgressMonitor(
             TrackingCallable<?> trackingCallable,
@@ -73,7 +73,7 @@ public class GitProgressMonitor implements ProgressMonitor {
      * using the default range of 0-100%.
      *
      * @param trackingCallable The callable that will receive progress updates
-     * @param totalWorkUnits The total work units for the entire tracked process
+     * @param totalWorkUnits   The total work units for the entire tracked process
      */
     public GitProgressMonitor(TrackingCallable<?> trackingCallable, double totalWorkUnits) {
         this(trackingCallable, 0, 100, totalWorkUnits);
@@ -121,7 +121,7 @@ public class GitProgressMonitor implements ProgressMonitor {
 
         // Update if enough time has passed OR if this single update represents a significant portion (>=5%) of the total work
         if (trackingCallable.updateIntervalElapsed() ||
-                (taskTotalWork > 0 && ((double)completed / taskTotalWork) >= 0.05)) {
+                (taskTotalWork > 0 && ((double) completed / taskTotalWork) >= 0.05)) {
             // Log at info level to avoid flooding logs
             LOG.info("Git progress update: {} of {} units completed for '{}'",
                     taskCompletedWork, taskTotalWork, taskTitle);

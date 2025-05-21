@@ -49,9 +49,17 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.*;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
 /**
@@ -87,7 +95,13 @@ public class GitTask extends TrackingCallable<Boolean> {
         /**
          * Pull changes from the remote repository and push local changes.
          */
-        SYNC
+        SYNC;
+
+        @Override
+        public String toString() {
+            String name = name();
+            return name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
+        }
     }
 
     /**
@@ -218,21 +232,12 @@ public class GitTask extends TrackingCallable<Boolean> {
             boolean result = switch (operationMode) {
                 case CONNECT -> executeConnect();
                 case PULL, SYNC -> {
-                    // For PULL and SYNC, first check if repository is fully initialized
-                    if (!isRepositoryFullyInitialized()) {
-                        // Repository not properly initialized, connect first
-                        LOG.info("Repository not fully initialized. Connecting first...");
-                        updateMessage("Repository not fully initialized. Establishing connection first...");
-                        if (executeConnect()) {
-                            // Now proceed with pull/sync
-                            yield executeSync(operationMode == OperationMode.SYNC);
-                        } else {
-                            // Connection failed
-                            yield false;
-                        }
-                    } else {
-                        // Repository already initialized, proceed with pull/sync
+                    if (executeConnect()) {
+                        // Now proceed with pull/sync
                         yield executeSync(operationMode == OperationMode.SYNC);
+                    } else {
+                        // Connection failed
+                        yield false;
                     }
                 }
             };
@@ -243,12 +248,7 @@ public class GitTask extends TrackingCallable<Boolean> {
             }
             return result;
         } catch (Exception ex) {
-            String operationName = switch (operationMode) {
-                case CONNECT -> "Connection";
-                case PULL -> "Pull";
-                case SYNC -> "Synchronization";
-            };
-            handleException("Unexpected error during " + operationName, ex);
+            handleException("Unexpected error during " + operationMode, ex);
             return false;
         }
     }
@@ -261,11 +261,6 @@ public class GitTask extends TrackingCallable<Boolean> {
      * @return true if the repository is fully initialized, false otherwise
      */
     private boolean isRepositoryFullyInitialized() {
-        // First check basic environment
-        if (!validateEnvironment()) {
-            return false;
-        }
-
         try (Git git = Git.open(changeSetFolder.toFile())) {
             // Check if remote is configured
             if (git.getRepository().getRemoteNames().isEmpty()) {
@@ -295,7 +290,6 @@ public class GitTask extends TrackingCallable<Boolean> {
 
             return true;
         } catch (IOException ex) {
-            LOG.error("Error opening Git repository", ex);
             return false;
         }
     }
@@ -303,41 +297,49 @@ public class GitTask extends TrackingCallable<Boolean> {
     // -------------------- CONNECT Operations --------------------
 
     /**
-     * Executes the CONNECT operation to initialize a Git repository.
+     * Executes the CONNECT operation and initializes the Git repository if needed.
      *
      * @return true if the connection was successful, false otherwise
+     * @throws IOException if an I/O error occurs
      */
-    private boolean executeConnect() {
-        try {
-            if (!loadAndValidateConfiguration()) {
-                return false;
-            }
+    private boolean executeConnect() throws IOException {
+        if (!loadAndValidateConfiguration()) {
+            return false;
+        }
 
+        if (!isRepositoryFullyInitialized()) {
+            updateMessage("Repository is not fully initialized. Preparing for initialization...");
             try (Git git = initializeRepository()) {
                 if (git == null) {
+                    updateMessage("Error: Could not initialize Git repository");
                     return false;
                 }
 
+                // Configure the repository
                 if (!configureRepository(git)) {
+                    updateMessage("Error: Failed to configure the repository.");
                     return false;
                 }
 
+                // Check and set up the remote branch
                 if (!checkAndSetupRemoteBranch(git)) {
+                    updateMessage("Error: Failed to set up the remote branch.");
                     return false;
                 }
 
-                updateMessage("Connection to remote repository successfully established.");
-                updateProgress(TOTAL_WORK, TOTAL_WORK);
-
-                // Call the connection success callback if provided
-                if (connectionSuccessCallback != null) {
-                    connectionSuccessCallback.run();
-                }
-
-                return true;
+                updateMessage("Repository initialized successfully.");
             }
-        } catch (Exception ex) {
-            return handleException("Unexpected error during repository connection", ex);
+        }
+
+        try (Git git = Git.open(changeSetFolder.toFile())) {
+            updateMessage("Connection to remote repository successfully established.");
+
+            // Call the connection success callback if provided
+            if (connectionSuccessCallback != null) {
+                connectionSuccessCallback.run();
+            }
+
+            return true;
         }
     }
 
@@ -614,12 +616,6 @@ public class GitTask extends TrackingCallable<Boolean> {
         updateMessage("Validating environment...");
         updateProgress(0, TOTAL_WORK);
 
-        if (!validateEnvironment()) {
-            updatePhaseProgress(validationPhase.getStart(), validationPhase.getEnd(), 1.0);
-            cancel();
-            return false;
-        }
-
         // Validation complete
         updatePhaseProgress(validationPhase.getStart(), validationPhase.getEnd(), 1.0);
 
@@ -639,40 +635,7 @@ public class GitTask extends TrackingCallable<Boolean> {
             push(reasonerPhase.getEnd(), pushPhase.getEnd());
         }
 
-        // Ensure we reach 100% at the end
-        updateProgress(TOTAL_WORK, TOTAL_WORK);
         updateMessage("%s completed successfully.".formatted(pushChanges ? "Synchronization" : "Pulling"));
-        return true;
-    }
-
-    /**
-     * Validates that the environment is properly set up for the sync task.
-     * <p>
-     * Checks that the changeset folder exists, is a directory, and is a valid
-     * Git repository.
-     *
-     * @return true if the environment is valid, false otherwise
-     */
-    private boolean validateEnvironment() {
-        if (!Files.exists(changeSetFolder)) {
-            updateMessage("Error: Changeset folder does not exist: " + changeSetFolder);
-            LOG.error("Changeset folder does not exist: {}", changeSetFolder);
-            return false;
-        }
-
-        if (!Files.isDirectory(changeSetFolder)) {
-            updateMessage("Error: Changeset path is not a directory: " + changeSetFolder);
-            LOG.error("Changeset path is not a directory: {}", changeSetFolder);
-            return false;
-        }
-
-        File gitDir = new File(changeSetFolder.toFile(), ".git");
-        if (!gitDir.exists() || !gitDir.isDirectory()) {
-            updateMessage("Error: Not a Git repository: " + changeSetFolder);
-            LOG.error("Not a Git repository: {}", changeSetFolder);
-            return false;
-        }
-
         return true;
     }
 
