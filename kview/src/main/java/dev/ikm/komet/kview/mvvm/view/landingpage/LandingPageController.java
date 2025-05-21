@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.landingpage;
 
+import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.mvvm.model.JournalCounter;
@@ -28,6 +29,7 @@ import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -53,6 +55,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.IMPORT_TOPIC;
 import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalDirName;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
@@ -426,22 +429,7 @@ public class LandingPageController implements BasicController {
      * Handles the import button event by initiating the import process if the ViewModel is valid.
      * */
     @FXML
-    private void openImport() {
-        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
-        WindowSettings windowSettings = new WindowSettings(windowPreferences);
-        Stage importStage = new Stage(StageStyle.TRANSPARENT);
-        importStage.initOwner(getFocusedWindow());
-        //set up ImportViewModel
-        Config importConfig = new Config(ImportController.class.getResource("import.fxml"))
-                .updateViewModel("importViewModel", importViewModel ->
-                        importViewModel.setPropertyValue(VIEW_PROPERTIES,
-                                windowSettings.getView().makeOverridableViewProperties()));
-        JFXNode<Pane, ImportController> importJFXNode = FXMLMvvmLoader.make(importConfig);
-
-        Pane importPane = importJFXNode.node();
-        Scene importScene = new Scene(importPane, Color.TRANSPARENT);
-        importStage.setScene(importScene);
-        importStage.show();
+    private void openImport(ActionEvent event) {
+        EvtBusFactory.getDefaultEvtBus().publish(IMPORT_TOPIC, new Evt(event.getSource(), Evt.ANY));
     }
 }
