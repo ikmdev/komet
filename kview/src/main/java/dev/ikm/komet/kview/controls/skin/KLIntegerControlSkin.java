@@ -1,7 +1,9 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLIntegerControl;
+import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
+import javafx.animation.Timeline;
 import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -32,7 +34,7 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
     private final Label errorLabel;
 
     private Subscription subscription;
-    private boolean textChangedViaKeyEvent;
+//    private boolean textChangedViaKeyEvent;
 
     /**
      * Creates a new KLIntegerControlSkin instance, installing the necessary child
@@ -104,19 +106,21 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
 
         // value was set externally
         subscription = control.valueProperty().subscribe(nv -> {
-            if (!textChangedViaKeyEvent) {
+          //  if (!textChangedViaKeyEvent) {
                 textField.setText(nv == null ? null : nv.toString());
-            }
+         //   }
         });
-        subscription = subscription.and(textField.textProperty().subscribe(nv -> {
-            textChangedViaKeyEvent = true;
-            if (nv == null || nv.isEmpty() || "-".equals(nv)) {
-                control.setValue(null);
-            } else {
-                control.setValue(Integer.parseInt(nv));
-            }
-            textChangedViaKeyEvent = false;
-        }));
+//        subscription = subscription.and(textField.textProperty().subscribe(nv -> {
+//            textChangedViaKeyEvent = true;
+//            if (nv == null || nv.isEmpty() || "-".equals(nv)) {
+//                control.setValue(null);
+//            } else {
+//                control.setValue(Integer.parseInt(nv));
+//            }
+//            textChangedViaKeyEvent = false;
+//        }));
+
+
 
         final PauseTransition pauseTransition = new PauseTransition(ERROR_DURATION);
         pauseTransition.setOnFinished(f -> {
@@ -132,6 +136,33 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
                 pauseTransition.stop();
             }
         }));
+
+        Timeline timeline = new Timeline();
+        KeyFrame keyFrame1 = new KeyFrame(Duration.millis(3000), (evt) -> {});
+        timeline.getKeyFrames().addAll(keyFrame1);
+
+        timeline.setOnFinished((evt) -> {
+            updateValueProperty();
+        });
+        textField.setOnKeyPressed( _ -> {
+            timeline.playFromStart();
+        });
+        textField.focusedProperty().subscribe( () -> {
+            if (!textField.isFocused()) {
+                timeline.stop();
+                updateValueProperty();
+            }
+        });
+    }
+
+    private void updateValueProperty() {
+        String nv = textField.getText();
+        KLIntegerControl control = getSkinnable();
+        if (nv == null || nv.isEmpty() || "-".equals(nv)) {
+            control.setValue(null);
+        } else {
+            control.setValue(Integer.parseInt(nv));
+        }
     }
 
     /** {@inheritDoc} */

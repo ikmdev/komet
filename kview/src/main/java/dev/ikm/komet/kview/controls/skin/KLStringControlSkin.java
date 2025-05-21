@@ -1,10 +1,13 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLStringControl;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
 import javafx.scene.control.TextField;
+import javafx.util.Duration;
 
 /**
  * Default skin implementation for the {@link KLStringControl} control
@@ -34,7 +37,32 @@ public class KLStringControlSkin extends SkinBase<KLStringControl> {
 
         getChildren().addAll(titleLabel, textField);
 
-        textField.textProperty().bindBidirectional(control.textProperty());
+       // textField.textProperty().bindBidirectional(control.textProperty());
+
+        control.textProperty().subscribe(textField::setText);
+
+        Timeline timeline = new Timeline();
+        KeyFrame keyFrame1 = new KeyFrame(Duration.millis(3000), (evt) -> {});
+        timeline.getKeyFrames().addAll(keyFrame1);
+
+        timeline.setOnFinished((evt) -> {
+            updateTextProperty();
+        });
+
+        textField.setOnKeyPressed( _ -> {
+            timeline.playFromStart();
+        });
+
+        textField.focusedProperty().subscribe( () -> {
+           if (!textField.isFocused()) {
+               timeline.stop();
+               updateTextProperty();
+           }
+        });
+    }
+
+    private void updateTextProperty(){
+        getSkinnable().setText(textField.getText());
     }
 
     /** {@inheritDoc} */

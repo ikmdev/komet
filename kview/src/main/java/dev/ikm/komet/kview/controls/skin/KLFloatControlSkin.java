@@ -1,12 +1,16 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLFloatControl;
+import dev.ikm.komet.kview.controls.KLIntegerControl;
+import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
+import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.util.Duration;
 import javafx.util.Subscription;
 
 import java.util.ResourceBundle;
@@ -25,7 +29,7 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
     private final Label errorLabel;
 
     private Subscription subscription;
-    private boolean textChangedViaKeyEvent;
+ //   private boolean textChangedViaKeyEvent;
 
     /**
      * Creates a new KLFloatControlSkin instance, installing the necessary child
@@ -128,26 +132,26 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
 
         // value was set externally
         subscription = control.valueProperty().subscribe(nv -> {
-            if (!textChangedViaKeyEvent) {
+//            if (!textChangedViaKeyEvent) {
                 textField.setText(nv == null ? null : nv.toString());
-            }
+//            }
         });
-        subscription = subscription.and(textField.textProperty().subscribe(nv -> {
-            textChangedViaKeyEvent = true;
-            if (nv == null || nv.isEmpty()) {
-                // When new text is null or empty, reset control's value
-                control.setValue(null);
-            } else if (!("-".equals(nv) || "+".equals(nv) || endsWithExponent(nv) || endsWithSignedExponent(nv))) {
-                try {
-                    // only set control's value when it is a valid number
-                    float value = Float.parseFloat(nv);
-                    control.setValue(value);
-                } catch (NumberFormatException e) {
-                    // ignore, and keep control with its old value
-                }
-            }
-            textChangedViaKeyEvent = false;
-        }));
+//        subscription = subscription.and(textField.textProperty().subscribe(nv -> {
+//            textChangedViaKeyEvent = true;
+//            if (nv == null || nv.isEmpty()) {
+//                // When new text is null or empty, reset control's value
+//                control.setValue(null);
+//            } else if (!("-".equals(nv) || "+".equals(nv) || endsWithExponent(nv) || endsWithSignedExponent(nv))) {
+//                try {
+//                    // only set control's value when it is a valid number
+//                    float value = Float.parseFloat(nv);
+//                    control.setValue(value);
+//                } catch (NumberFormatException e) {
+//                    // ignore, and keep control with its old value
+//                }
+//            }
+//            textChangedViaKeyEvent = false;
+//        }));
 
         final PauseTransition pauseTransition = new PauseTransition(KLIntegerControlSkin.ERROR_DURATION);
         pauseTransition.setOnFinished(f -> {
@@ -163,6 +167,40 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
                 pauseTransition.stop();
             }
         }));
+
+        Timeline timeline = new Timeline();
+        KeyFrame keyFrame1 = new KeyFrame(Duration.millis(3000), (evt) -> {});
+        timeline.getKeyFrames().addAll(keyFrame1);
+
+        timeline.setOnFinished((evt) -> {
+            updateValueProperty();
+        });
+        textField.setOnKeyPressed( _ -> {
+            timeline.playFromStart();
+        });
+        textField.focusedProperty().subscribe( () -> {
+            if (!textField.isFocused()) {
+                timeline.stop();
+                updateValueProperty();
+            }
+        });
+    }
+
+    private void updateValueProperty() {
+        String nv = textField.getText();
+        KLFloatControl control = getSkinnable();
+        if (nv == null || nv.isEmpty()) {
+            // When new text is null or empty, reset control's value
+            control.setValue(null);
+        } else if (!("-".equals(nv) || "+".equals(nv) || endsWithExponent(nv) || endsWithSignedExponent(nv))) {
+            try {
+                // only set control's value when it is a valid number
+                float value = Float.parseFloat(nv);
+                control.setValue(value);
+            } catch (NumberFormatException e) {
+                // ignore, and keep control with its old value
+            }
+        }
     }
 
     /** {@inheritDoc} */
