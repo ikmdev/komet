@@ -1,13 +1,8 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLStringControl;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
-import javafx.scene.control.SkinBase;
-import javafx.scene.control.TextField;
-import javafx.util.Duration;
 
 /**
  * Default skin implementation for the {@link KLStringControl} control

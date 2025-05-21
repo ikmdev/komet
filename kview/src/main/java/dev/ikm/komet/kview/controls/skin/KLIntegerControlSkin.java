@@ -1,15 +1,10 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import dev.ikm.komet.kview.controls.KLFloatControl;
 import dev.ikm.komet.kview.controls.KLIntegerControl;
-import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
-import javafx.animation.Timeline;
 import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
-import javafx.scene.control.SkinBase;
-import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.util.Duration;
 import javafx.util.Subscription;
