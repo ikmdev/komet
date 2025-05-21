@@ -1,5 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import dev.ikm.komet.kview.controls.FilterOptions;
+import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.InvertedTree;
 import dev.ikm.komet.kview.controls.KLSearchControl;
@@ -27,6 +29,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Path;
 import javafx.scene.text.Text;
@@ -58,6 +61,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
     private Subscription subscription;
 
     private final ListView<KLSearchControl.SearchResult> resultsPane;
+    private final FilterOptionsPopup filterOptionsPopup;
 
     /**
      * <p>Creates a {@link KLSearchControlSkin} instance.
@@ -142,13 +146,26 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
             }
         });
 
+        filterOptionsPopup = new FilterOptionsPopup();
+        getSkinnable().parentProperty().subscribe(parent -> {
+            if (parent instanceof Region region) {
+                region.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h));
+            }
+        });
         filterPane = new StackPane(new IconRegion("icon", "filter"));
         filterPane.getStyleClass().add("filter-region");
         filterPane.setOnMouseClicked(e -> {
             if (e.getButton() == MouseButton.PRIMARY && control.getOnFilterAction() != null) {
+                if (filterOptionsPopup.isShowing()) {
+                    filterOptionsPopup.hide();
+                } else {
+                    Bounds bounds = control.localToScreen(control.getLayoutBounds());
+                    filterOptionsPopup.show(control.getScene().getWindow(), bounds.getMaxX(), bounds.getMinY());
+                }
                 control.getOnFilterAction().handle(new ActionEvent());
             }
         });
+        filterOptionsPopup.setFilterOptions(new FilterOptions());
         subscription = control.filterSetProperty().subscribe(isSet -> {
             if (isSet) {
                 filterPane.getChildren().setAll(new IconRegion("icon", "filter-dot"), new IconRegion("icon", "dot"));
