@@ -23,6 +23,9 @@ jobs:
     name: Get Arguments
     runs-on: ubuntu-24.04
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
       - name: Get POM Version
         id: getPOMVERSSION
         run: echo "POM_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
