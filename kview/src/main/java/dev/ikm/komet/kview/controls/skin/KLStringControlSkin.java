@@ -12,10 +12,9 @@ import javafx.util.Duration;
 /**
  * Default skin implementation for the {@link KLStringControl} control
  */
-public class KLStringControlSkin extends SkinBase<KLStringControl> {
+public class KLStringControlSkin extends KLDebounceControlSkin<KLStringControl> {
 
     private final Label titleLabel;
-    private final TextField textField;
 
     /**
      * Creates a new KLStringControlSkin instance, installing the necessary child
@@ -31,37 +30,16 @@ public class KLStringControlSkin extends SkinBase<KLStringControl> {
         titleLabel.textProperty().bind(control.titleProperty());
         titleLabel.getStyleClass().add("editable-title-label");
 
-        textField = new TextField();
         textField.promptTextProperty().bind(control.promptTextProperty());
         textField.getStyleClass().add("text-field");
 
         getChildren().addAll(titleLabel, textField);
-
-       // textField.textProperty().bindBidirectional(control.textProperty());
-
         control.textProperty().subscribe(textField::setText);
 
-        Timeline timeline = new Timeline();
-        KeyFrame keyFrame1 = new KeyFrame(Duration.millis(3000), (evt) -> {});
-        timeline.getKeyFrames().addAll(keyFrame1);
-
-        timeline.setOnFinished((evt) -> {
-            updateTextProperty();
-        });
-
-        textField.setOnKeyPressed( _ -> {
-            timeline.playFromStart();
-        });
-
-        textField.focusedProperty().subscribe( () -> {
-           if (!textField.isFocused()) {
-               timeline.stop();
-               updateTextProperty();
-           }
-        });
     }
 
-    private void updateTextProperty(){
+    @Override
+    protected void updateValueProperty() {
         getSkinnable().setText(textField.getText());
     }
 
