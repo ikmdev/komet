@@ -180,13 +180,19 @@ public class PatternNavEntryController {
         Function<EntityFacade, String> fetchDescriptionByFacade = (facade -> viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(facade));
         // set the cell factory for each pattern's instances list
         patternInstancesListView.setCellFactory(p -> new ListCell<>() {
+
             private final Label label;
+            private Tooltip tooltip;
+
             {
                 setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
 
                 label = new Label();
                 label.setMaxWidth(Double.MAX_VALUE);
                 HBox.setHgrow(label, Priority.ALWAYS);
+
+                tooltip = new Tooltip();
+                Tooltip.install(label, tooltip);
             }
 
             @Override
@@ -246,7 +252,7 @@ public class PatternNavEntryController {
 
                         setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
                         label.setText(entityDescriptionText);
-                        Tooltip.install(label, new Tooltip(entityDescriptionText));
+                        tooltip.setText(entityDescriptionText);
 
                         if (!entityDescriptionText.isEmpty()) {
                             Image identicon = Identicon.generateIdenticonImage(entity.publicId());
