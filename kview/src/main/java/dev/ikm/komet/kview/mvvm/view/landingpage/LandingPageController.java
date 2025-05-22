@@ -415,8 +415,8 @@ public class LandingPageController implements BasicController {
     }
 
     /**
-     * Handles the import button event by initiating the import process if the ViewModel is valid.
-     * */
+     * Handles the import button press to pop up the import dialog window
+     */
     @FXML
     private void openImport(ActionEvent event) {
         EvtBusFactory.getDefaultEvtBus().publish(IMPORT_TOPIC, new Evt(event.getSource(), Evt.ANY));

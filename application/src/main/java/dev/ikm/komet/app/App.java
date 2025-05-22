@@ -446,9 +446,7 @@ public class App extends Application {
             state.addListener(this::appStateChangeListener);
 
             Subscriber<Evt> importSubscriber = _ -> {
-                /**
-                 * Handles the import button event by initiating the import process if the ViewModel is valid.
-                 * */
+                //Pops up the import dialog window on any events received on the IMPORT_TOPIC
                 openImport();
             };
             kViewEventBus.subscribe(IMPORT_TOPIC, Evt.class, importSubscriber);

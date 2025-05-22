@@ -381,9 +381,7 @@ public class WebApp extends Application {
         kViewEventBus.subscribe(USER_TOPIC, SignInUserEvent.class, signInUserEventSubscriber);
 
         Subscriber<Evt> importSubscriber = _ -> {
-            /**
-             * Handles the import button event by initiating the import process if the ViewModel is valid.
-             * */
+            //Pops up the import dialog window on any events received on the IMPORT_TOPIC
             openImport(primaryStage);
         };
         kViewEventBus.subscribe(IMPORT_TOPIC, Evt.class, importSubscriber);
