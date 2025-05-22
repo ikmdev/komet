@@ -3,6 +3,7 @@ package dev.ikm.komet.kview.controls;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.tinkar.common.id.IntIdCollection;
 import dev.ikm.tinkar.coordinate.navigation.calculator.NavigationCalculator;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -29,11 +30,15 @@ public class KLComponentControlFactory {
      *                                                                         *
      **************************************************************************/
 
-    public static KLComponentControl createTypeAheadComponentControl(NavigationCalculator calculator) {
+    public static KLComponentControl createTypeAheadComponentControl(ViewCalculator viewCalculator) {
         KLComponentControl componentControl = new KLComponentControl();
-        componentControl.setTypeAheadCompleter(createGenericTypeAheadFunction(calculator));
+        NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
+        componentControl.setTypeAheadCompleter(createGenericTypeAheadFunction(navigationCalculator));
 
-        StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(calculator);
+        //
+        componentControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator, componentControl));
+
+        StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(navigationCalculator);
         componentControl.setTypeAheadStringConverter(stringToEntityProxyConverter);
 
         componentControl.setSuggestionsNodeFactory(entityProxy -> createComponentSuggestionNode(entityProxy, stringToEntityProxyConverter));
@@ -70,6 +75,10 @@ public class KLComponentControlFactory {
             typeaheadItems.forEach(conceptFacade -> conceptFacadeToEntityProxys.add(conceptFacade.toProxy()));
             return conceptFacadeToEntityProxys;
         };
+    }
+
+    private static Function<EntityProxy, String> createComponentNameRenderer(ViewCalculator viewCalculator, KLComponentControl componentControl) {
+        return theEntityProxy -> viewCalculator.languageCalculator().getDescriptionText(componentControl.getEntity().nid()).get();
     }
 
     private static StringConverter<EntityProxy> createStringToEntityProxyConverter(NavigationCalculator navigationCalculator) {

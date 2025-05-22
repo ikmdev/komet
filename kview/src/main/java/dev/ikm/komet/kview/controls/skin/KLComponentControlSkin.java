@@ -15,6 +15,7 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -42,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ResourceBundle;
+import java.util.function.Function;
 
 /**
  * Default skin implementation for the {@link KLComponentControl} control
@@ -116,12 +118,16 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         control.entityProperty().addListener((observable, oldValue, newValue) -> {
             if (!control.isEmpty()) {
-                addConceptNode(getSkinnable().getEntity());
+                control.getComponentNameRenderer().apply(control.getEntity());
+                addConceptNode(getSkinnable().getEntity(), control.getComponentNameRenderer());
             }
         });
         if (!control.isEmpty()) {
-            addConceptNode(control.getEntity());
+            control.getComponentNameRenderer().apply(control.getEntity());
+            addConceptNode(control.getEntity(), control.getComponentNameRenderer());
         }
+
+
     }
 
     /** {@inheritDoc} */
@@ -239,7 +245,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                         if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
                                 !componentSetControl.getValue().contains(nid)) {
                             control.setEntity(entity); // TODO: .description() is often null or empty.
-                            addConceptNode(entity);
+                            addConceptNode(entity, control.getComponentNameRenderer());
 
                             event.setDropCompleted(true);
                             event.consume();
@@ -481,7 +487,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     }
 
 
-    private void addConceptNode(EntityProxy entity) {
+    private void addConceptNode(EntityProxy entity, Function<EntityProxy, String> functionObject) {
         Image identicon = Identicon.generateIdenticonImage(entity.publicId());
         ImageView imageView = new ImageView();
         imageView.setFitWidth(16);
@@ -492,8 +498,12 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         imageViewWrapper.getChildren().add(imageView);
         imageViewWrapper.getStyleClass().add("image-view-container");
 
-        Label conceptNameLabel = new Label(entity.description());
-        conceptNameLabel.getStyleClass().add("selected-concept-description");
+        //Label conceptNameLabel = new Label(entity.description()); //FIXME description is not always present
+        // getComponentNameRenderer... how do I get this?
+
+        Label componentNameLabel = new Label(""); //FIXME ??? how do I get the function's result here???
+
+        componentNameLabel.getStyleClass().add("selected-concept-description");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -514,7 +524,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         });
         closeButton.setAlignment(Pos.CENTER_RIGHT);
 
-        HBox selectedConcept = new HBox(imageViewWrapper, conceptNameLabel, spacer, dragHandleIconContainer, closeButton);
+        HBox selectedConcept = new HBox(imageViewWrapper, componentNameLabel, spacer, dragHandleIconContainer, closeButton);
         selectedConcept.getStyleClass().add("concept-selected-entity-box");
         selectedConcept.setAlignment(Pos.CENTER_LEFT);
         HBox.setMargin(selectedConceptContainer, new Insets(8));

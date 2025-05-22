@@ -21,7 +21,7 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
         Parent node;
         if (isEditable) {
             KLComponentControl componentControl = KLComponentControlFactory.createTypeAheadComponentControl(
-                    observableView.calculator().navigationCalculator());
+                    observableView.calculator());
             // title
             componentControl.setTitle(field().meaning().description());
            // entity
