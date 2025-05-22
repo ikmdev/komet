@@ -67,7 +67,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         Entity.provider().addSubscriberWithWeakReference(ENTITY_CHANGE_SUBSCRIBER);
     }
 
-    final SimpleMapProperty<PublicId, O> versionPropertyMap = new SimpleMapProperty<>(FXCollections.observableHashMap());
+    final SimpleMapProperty<Integer, O> versionPropertyMap = new SimpleMapProperty<>(FXCollections.observableHashMap());
 
     final private AtomicReference<Entity<V>> entityReference;
 
@@ -79,8 +79,8 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
      */
     public void saveToDB(Entity<?> analogue, EntityVersion newVersionRecord , EntityVersion oldVersionRecord) {
         Entity.provider().putEntity(analogue);
-        versionPropertyMap.remove(oldVersionRecord.stamp().publicId());
-        versionPropertyMap.put(newVersionRecord.stamp().publicId(), wrap((V)newVersionRecord));
+        versionPropertyMap.remove(oldVersionRecord.stamp().nid());
+        versionPropertyMap.put(newVersionRecord.stamp().nid(), wrap((V)newVersionRecord));
         EvtBusFactory.getDefaultEvtBus()
                 .publish(VERSION_CHANGED_TOPIC, new EntityVersionChangeEvent(this, VERSION_UPDATED, newVersionRecord));
     }
@@ -100,7 +100,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
 
         this.entityReference = new AtomicReference<>(entityClone);
         for (V version : entity.versions()) {
-            versionPropertyMap.put(version.stamp().publicId(), wrap(version));
+            versionPropertyMap.put(version.stamp().nid(), wrap(version));
         }
     }
 
@@ -151,13 +151,13 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
                 Long.compare(v1.stamp().time(), v2.stamp().time())).toList()) {
             boolean versionPresent = observableEntity.versionPropertyMap.get().values().stream().anyMatch(obj -> {
               if (obj instanceof ObservableVersion<?> observableVersion){
-                  return (PublicId.equals(observableVersion.stamp().publicId(), version.stamp().publicId()));
+                  return observableVersion.stamp().nid() == version.stamp().nid();
               }
               return false;
             });
 
             if(!versionPresent){
-                observableEntity.versionPropertyMap.put(version.stamp().publicId(), observableEntity.wrap(version));
+                observableEntity.versionPropertyMap.put(version.stamp().nid(), observableEntity.wrap(version));
                 updateEntityReference = true;
             }
         }
@@ -174,7 +174,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         return entityReference.get();
     }
 
-    public SimpleMapProperty<PublicId, O> versionPropertyMap() {
+    public SimpleMapProperty<Integer, O> versionPropertyMap() {
         return versionPropertyMap;
     }
 
