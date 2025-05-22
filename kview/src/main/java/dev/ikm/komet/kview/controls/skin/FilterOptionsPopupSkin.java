@@ -4,6 +4,8 @@ import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.FilterTitledPane;
 import dev.ikm.komet.kview.controls.IconRegion;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
@@ -26,9 +28,30 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
     private final VBox root;
 
     private final Accordion accordion;
+    private final Button revertButton;
+    private final Button applyButton;
 
     private final Subscription subscription;
     private Subscription filterSubscription;
+
+    private final FilterOptions defaultOptions = FilterOptions.defaultOptions();
+    private final ObjectProperty<FilterOptions> controlFilterOptionsProperty = new SimpleObjectProperty<>() {
+        @Override
+        protected void invalidated() {
+            if (get() != null) {
+                applyButton.setDisable(control.getFilterOptions().equals(get()));
+            }
+        }
+    };
+
+    private final ObjectProperty<FilterOptions> currentFilterOptionsProperty = new SimpleObjectProperty<>() {
+        @Override
+        protected void invalidated() {
+            if (get() != null) {
+                revertButton.setDisable(defaultOptions.equals(get()));
+            }
+        }
+    };
 
     public FilterOptionsPopupSkin(FilterOptionsPopup control) {
         this.control = control;
@@ -63,7 +86,8 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        Button applyButton = new Button(resources.getString("button.apply"));
+        applyButton = new Button(resources.getString("button.apply"));
+        applyButton.getStyleClass().add("apply");
         applyButton.setOnAction(_ -> {
             accordion.setExpandedPane(null);
             FilterOptions currentFilterOptions = new FilterOptions();
@@ -76,16 +100,21 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                         }
                     });
             control.setFilterOptions(currentFilterOptions);
+            updateInstantFilterOptions();
         });
         StackPane region = new StackPane(new IconRegion("icon", "filter"));
         region.getStyleClass().add("region");
+
         Button saveButton = new Button(resources.getString("button.save"), region);
         saveButton.setOnAction(_ -> System.out.println("Save"));
-        Button revertButton = new Button(resources.getString("button.revert"));
+
+        revertButton = new Button(resources.getString("button.revert"));
         revertButton.setOnAction(_ -> {
             accordion.setExpandedPane(null);
-            control.setFilterOptions(FilterOptions.defaultOptions());
+            control.setFilterOptions(defaultOptions);
+            updateInstantFilterOptions();
         });
+
         VBox bottomBox = new VBox(applyButton, saveButton, revertButton);
         bottomBox.getStyleClass().add("bottom-box");
 
@@ -105,6 +134,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                     filterSubscription = filterSubscription.and(pane.optionProperty().subscribe(s -> {
                         if (s != null && pane.getUserData() instanceof FilterOptions.Option option) {
                             option.selectedOptions().setAll(FilterOptions.fromString(s));
+                            updateInstantFilterOptions();
                         }
                     }));
                 });
@@ -150,4 +180,19 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         titledPane.setExpanded(false);
         return titledPane;
     }
+
+    private void updateInstantFilterOptions() {
+        FilterOptions currentFilterOptions = new FilterOptions();
+        accordion.getPanes().stream()
+                .map(FilterTitledPane.class::cast)
+                .forEach(pane -> {
+                    if (pane.getUserData() instanceof FilterOptions.Option option) {
+                        currentFilterOptions.getOptionForItem(option.item())
+                                .selectedOptions().setAll(FilterOptions.fromString(pane.getOption()));
+                    }
+                });
+        currentFilterOptionsProperty.set(currentFilterOptions);
+        controlFilterOptionsProperty.set(currentFilterOptions);
+    }
+
 }

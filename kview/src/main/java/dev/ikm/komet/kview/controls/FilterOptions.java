@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -107,7 +108,27 @@ public class FilterOptions {
     }
 
     public static List<String> fromString(String options) {
+        if (options == null) {
+            return List.of();
+        }
         return Arrays.asList(options.split(", "));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FilterOptions that = (FilterOptions) o;
+        return Objects.equals(status, that.status) &&
+                Objects.equals(path, that.path) &&
+                Objects.equals(language, that.language) &&
+                Objects.equals(descriptionType, that.descriptionType) &&
+                Objects.equals(options, that.options);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(status, path, language, descriptionType, options);
     }
 
     @Override

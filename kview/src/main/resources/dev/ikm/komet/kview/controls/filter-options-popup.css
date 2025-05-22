@@ -65,14 +65,29 @@
     -fx-min-width: 256;
 }
 
-.filter-options-popup > .bottom-box > .button:hover {
+.filter-options-popup > .bottom-box > .button.apply {
     -fx-text-fill: white;
     -fx-background-color: #4A7AD2, #4A7AD2;
 }
 
-.filter-options-popup > .bottom-box > .button:pressed {
+.filter-options-popup > .bottom-box > .button:hover {
+    -fx-text-fill: #9DC4FF;
+    -fx-background-color: #4A7AD2, #44495E;
+}
+
+.filter-options-popup > .bottom-box > .button.apply:hover {
     -fx-text-fill: white;
-    -fx-background-color: #4A7AD2, #4A7AD2;
+    -fx-background-color: #5896F6, #5896F6;
+}
+
+.filter-options-popup > .bottom-box > .button:disabled {
+    -fx-text-fill: #6E7989;
+    -fx-background-color: #6E7989, #2E3240;
+}
+
+.filter-options-popup > .bottom-box > .button.apply:disabled {
+    -fx-text-fill: #CFD8E4;
+    -fx-background-color: #6E7989, #6E7989;
 }
 
 .filter-options-popup > .bottom-box > .button > .region {
@@ -92,9 +107,12 @@
     -fx-shape: "M10.8555 15.6768H0.416992V14.0371H10.8555V15.6768ZM10.8555 12.3965H0.416992V10.7559H10.8555V12.3965ZM6.91699 9.11621H0.416992V7.47559H6.91699V9.11621ZM12.4395 0.487305C13.6372 0.487305 14.583 1.42904 14.583 2.63086C14.5829 3.36127 14.2511 4.00246 13.7295 4.64062C13.2124 5.27317 12.4782 5.93838 11.623 6.71387L11.6172 6.71973L10.9297 7.3457L10.2432 6.71973L10.2363 6.71387C9.38113 5.93838 8.64691 5.27317 8.12988 4.64062C7.60826 4.00246 7.27643 3.36127 7.27637 2.63086C7.27637 1.42905 8.22218 0.487328 9.41992 0.487305C9.98214 0.487305 10.5221 0.704244 10.9297 1.06055C11.3372 0.704215 11.8772 0.487354 12.4395 0.487305ZM12.4395 1.75488C12.0388 1.75497 11.6502 2.02109 11.5195 2.35645L11.4453 2.54688H10.4141L10.3398 2.35645C10.2091 2.02104 9.82067 1.75488 9.41992 1.75488C8.91362 1.7549 8.54395 2.12455 8.54395 2.63086C8.54402 3.00558 8.7479 3.41765 9.19824 3.94434C9.61465 4.43133 10.2028 4.97258 10.9287 5.63184C11.6559 4.97267 12.2444 4.43126 12.6611 3.94434C13.1118 3.4177 13.3154 3.00554 13.3154 2.63086C13.3154 2.12453 12.9458 1.75488 12.4395 1.75488Z";
 }
 
-.filter-options-popup > .bottom-box > .button:hover > .region > .icon.filter,
-.filter-options-popup > .bottom-box > .button:pressed > .region > .icon.filter {
-    -fx-background-color: white;
+.filter-options-popup > .bottom-box > .button:hover > .region > .icon.filter {
+    -fx-background-color: #9DC4FF;
+}
+
+.filter-options-popup > .bottom-box > .button:disabled > .region > .icon.filter {
+    -fx-background-color: #6E7989;
 }
 
 .filter-options-popup > .accordion {
