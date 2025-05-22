@@ -317,6 +317,9 @@ public class App extends Application {
             MenuItem appleQuit = kometAppMenu.getItems().getLast();
             appleQuit.setOnAction(event -> quit());
 
+            MenuItem appleAbout = kometAppMenu.getItems().getFirst();
+            appleAbout.setOnAction(event -> showAboutDialog());
+
             tk.setApplicationMenu(kometAppMenu);
 
             // File Menu
@@ -912,7 +915,7 @@ public class App extends Application {
         Menu fileMenu = new Menu("File");
 
         MenuItem about = new MenuItem("About");
-        about.setOnAction(actionEvent -> showWindowsAboutScreen());
+        about.setOnAction(actionEvent -> showAboutDialog());
         fileMenu.getItems().add(about);
 
         MenuItem importMenuItem = new MenuItem("Import Dataset");
@@ -954,7 +957,7 @@ public class App extends Application {
         Platform.runLater(() -> kometRoot.setTop(menuBar));
     }
 
-    private void showWindowsAboutScreen() {
+    private void showAboutDialog() {
         AboutDialog aboutDialog = new AboutDialog();
         aboutDialog.showAndWait();
     }
@@ -993,7 +996,7 @@ public class App extends Application {
 
         Menu fileMenu = new Menu("File");
         MenuItem about = new MenuItem("About");
-        about.setOnAction(actionEvent -> showWindowsAboutScreen());
+        about.setOnAction(actionEvent -> showAboutDialog());
         fileMenu.getItems().add(about);
 
         MenuItem menuItemQuit = new MenuItem("Quit");
