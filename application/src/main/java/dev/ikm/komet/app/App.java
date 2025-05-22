@@ -445,8 +445,8 @@ public class App extends Application {
             state.set(AppState.SELECT_DATA_SOURCE);
             state.addListener(this::appStateChangeListener);
 
+            //Pops up the import dialog window on any events received on the IMPORT_TOPIC
             Subscriber<Evt> importSubscriber = _ -> {
-                //Pops up the import dialog window on any events received on the IMPORT_TOPIC
                 openImport();
             };
             kViewEventBus.subscribe(IMPORT_TOPIC, Evt.class, importSubscriber);

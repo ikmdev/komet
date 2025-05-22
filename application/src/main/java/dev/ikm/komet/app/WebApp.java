@@ -380,8 +380,8 @@ public class WebApp extends Application {
         // Subscribe the subscriber to the USER_TOPIC
         kViewEventBus.subscribe(USER_TOPIC, SignInUserEvent.class, signInUserEventSubscriber);
 
+        //Pops up the import dialog window on any events received on the IMPORT_TOPIC
         Subscriber<Evt> importSubscriber = _ -> {
-            //Pops up the import dialog window on any events received on the IMPORT_TOPIC
             openImport(primaryStage);
         };
         kViewEventBus.subscribe(IMPORT_TOPIC, Evt.class, importSubscriber);
