@@ -302,7 +302,7 @@ public class GitTask extends TrackingCallable<Boolean> {
      * @return true if the connection was successful, false otherwise
      * @throws IOException if an I/O error occurs
      */
-    private boolean executeConnect() throws IOException {
+    private boolean executeConnect() throws GitAPIException, IOException {
         if (!loadAndValidateConfiguration()) {
             return false;
         }
@@ -311,19 +311,19 @@ public class GitTask extends TrackingCallable<Boolean> {
             updateMessage("Repository is not fully initialized. Preparing for initialization...");
             try (Git git = initializeRepository()) {
                 if (git == null) {
-                    updateMessage("Error: Could not initialize Git repository");
+                    updateMessage("Failed to initialize the Git repository");
                     return false;
                 }
 
                 // Configure the repository
                 if (!configureRepository(git)) {
-                    updateMessage("Error: Failed to configure the repository.");
+                    updateMessage("Failed to configure the Git repository.");
                     return false;
                 }
 
                 // Check and set up the remote branch
                 if (!checkAndSetupRemoteBranch(git)) {
-                    updateMessage("Error: Failed to set up the remote branch.");
+                    updateMessage("Failed to set up the remote branch in the Git repository.");
                     return false;
                 }
 
@@ -360,7 +360,7 @@ public class GitTask extends TrackingCallable<Boolean> {
             gitUsername.setValue(gitHubPreferences.gitUsername());
             gitPassword.setValue(gitHubPreferences.gitPassword());
         } else {
-            updateMessage("Error: Git preferences not found.");
+            updateMessage("Git preferences not found.");
             LOG.error("Git preferences not found");
             return false;
         }
@@ -374,7 +374,7 @@ public class GitTask extends TrackingCallable<Boolean> {
                 gitUsername.getValue() == null || gitUsername.getValue().trim().isEmpty() ||
                 gitPassword.getValue() == null || gitPassword.getValue().length == 0) {
 
-            updateMessage("Error: Git preferences are not configured.");
+            updateMessage("Git preferences are not configured.");
             LOG.error("Git preferences are not configured");
             return false;
         }
@@ -506,7 +506,7 @@ public class GitTask extends TrackingCallable<Boolean> {
             lsRemoteCommand.setRemote(REMOTE_NAME);
             lsRemoteCommand.setCredentialsProvider(new GitHubCredentialsProvider());
 
-            Collection<Ref> refs = lsRemoteCommand.call();
+            final Collection<Ref> refs = lsRemoteCommand.call();
 
             // Check if main branch exists
             final boolean mainBranchExists = refs.stream()
@@ -519,17 +519,22 @@ public class GitTask extends TrackingCallable<Boolean> {
                 try {
                     createAndPushMainBranch(git);
                 } catch (GitAPIException | IOException ex) {
-                    return handleException("Error establishing initial connection", ex);
+                    return handleException("Failed to establish initial connection to remote repository", ex);
                 }
             } else {
                 updateMessage("Connection to remote branch already established.");
                 updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 1.0);
             }
-
-            return true;
         } catch (GitAPIException ex) {
-            return handleException("Error verifying connection to remote repository", ex);
+            try {
+                // Create and push the main branch to an empty remote repository
+                createAndPushMainBranch(git);
+            } catch (GitAPIException | IOException createEx) {
+                return handleException("Failed to establish initial connection to remote repository", createEx);
+            }
         }
+
+        return true;
     }
 
     /**
@@ -540,49 +545,48 @@ public class GitTask extends TrackingCallable<Boolean> {
      * @throws IOException     if an I/O error occurs
      */
     private void createAndPushMainBranch(Git git) throws GitAPIException, IOException {
-        // Create a README.md file for the initial commit
+        updateMessage("Initializing connection with remote repository...");
+        updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 0.3);
+
+        // Always create or update the README file for the initial commit
         final File readmeFile = new File(changeSetFolder.toFile(), README_FILENAME);
-        if (!readmeFile.exists()) {
-            updateMessage("Initializing connection with remote repository...");
-            updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 0.3);
+        Files.write(
+                readmeFile.toPath(),
+                generateReadmeContent().getBytes(),
+                StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING  // This will overwrite if it exists
+        );
 
-            Files.write(
-                    readmeFile.toPath(),
-                    generateReadmeContent().getBytes(),
-                    StandardOpenOption.CREATE
-            );
+        // Add and commit the file
+        updateMessage("Preparing initial data for secure transmission...");
+        updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 0.5);
 
-            // Add and commit the file
-            updateMessage("Preparing initial data for secure transmission...");
-            updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 0.5);
+        git.add().addFilepattern(README_FILENAME).call();
+        git.commit()
+                .setMessage("Initial commit for changeset exchange")
+                .setAuthor(gitUsername.getValue(), gitEmail.getValue())
+                .call();
 
-            git.add().addFilepattern(README_FILENAME).call();
-            git.commit()
-                    .setMessage("Initial commit for changeset exchange")
-                    .setAuthor(gitUsername.getValue(), gitEmail.getValue())
-                    .call();
+        // Push the commit to remote
+        updateMessage("Establishing first connection with remote repository...");
+        updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 0.7);
 
-            // Push the commit to remote
-            updateMessage("Establishing first connection with remote repository...");
-            updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 0.7);
+        // Use a progress monitor for the push operation
+        final GitProgressMonitor progressMonitor = new GitProgressMonitor(
+                this,
+                TaskPhase.CONNECT_BRANCH_CHECK.getEnd(),
+                TaskPhase.CONNECT_COMPLETION.getEnd(),
+                TOTAL_WORK);
 
-            // Use a progress monitor for the push operation
-            final GitProgressMonitor progressMonitor = new GitProgressMonitor(
-                    this,
-                    TaskPhase.CONNECT_BRANCH_CHECK.getEnd(),
-                    TaskPhase.CONNECT_COMPLETION.getEnd(),
-                    TOTAL_WORK);
+        git.push()
+                .setRemote(REMOTE_NAME)
+                .setCredentialsProvider(new GitHubCredentialsProvider())
+                .setProgressMonitor(progressMonitor)
+                .setPushAll()
+                .call();
 
-            git.push()
-                    .setRemote(REMOTE_NAME)
-                    .setCredentialsProvider(new GitHubCredentialsProvider())
-                    .setProgressMonitor(progressMonitor)
-                    .setPushAll()
-                    .call();
-
-            updateMessage("Connection established successfully! Remote repository is now linked.");
-            updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 1.0);
-        }
+        updateMessage("Connection established successfully! Remote repository is now linked.");
+        updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 1.0);
     }
 
     /**
