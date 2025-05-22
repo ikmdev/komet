@@ -18,6 +18,7 @@ package dev.ikm.komet.app;
 import com.jpro.webapi.WebAPI;
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
+import dev.ikm.komet.app.aboutdialog.AboutDialog;
 import dev.ikm.komet.details.DetailsNodeFactory;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
@@ -45,13 +46,9 @@ import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.SignInUserEvent;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
-import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
 import dev.ikm.komet.kview.mvvm.view.changeset.ExportController;
-import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitHubInfoController;
-import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitHubPreferencesController;
-import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName;
-import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask;
-import dev.ikm.komet.kview.mvvm.view.changeset.exchange.InfoTask;
+import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
+import dev.ikm.komet.kview.mvvm.view.changeset.exchange.*;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
@@ -80,15 +77,9 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
@@ -97,9 +88,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
@@ -117,59 +106,31 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.time.Year;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 
-import static dev.ikm.komet.app.AppState.SELECT_DATA_SOURCE;
-import static dev.ikm.komet.app.AppState.LOADING_DATA_SOURCE;
-import static dev.ikm.komet.app.AppState.STARTING;
-import static dev.ikm.komet.app.AppState.LOGIN;
-import static dev.ikm.komet.app.AppState.RUNNING;
-import static dev.ikm.komet.app.AppState.SHUTDOWN;
+import static dev.ikm.komet.app.AppState.*;
 import static dev.ikm.komet.app.LoginFeatureFlag.ENABLED_WEB_ONLY;
 import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
 import static dev.ikm.komet.framework.events.FrameworkTopics.IMPORT_TOPIC;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.CENTER_TAB_PREFERENCES;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.LEFT_TAB_PREFERENCES;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.RIGHT_TAB_PREFERENCES;
+import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_EMAIL;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_STATUS;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_URL;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_USERNAME;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.CONNECT;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.PULL;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.SYNC;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.*;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.*;
 import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.LANDING_PAGE_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_IDS;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_HEIGHT;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_WIDTH;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CAN_DELETE;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
+import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
 /**
  * Main application class for the Komet application, extending JavaFX {@link Application}.
@@ -1437,7 +1398,7 @@ public class WebApp extends Application {
         Menu fileMenu = new Menu("File");
 
         MenuItem about = new MenuItem("About");
-        about.setOnAction(actionEvent -> showWindowsAboutScreen(stage));
+        about.setOnAction(_ -> showAboutDialog());
         fileMenu.getItems().add(about);
 
         // Importing data
@@ -1482,19 +1443,9 @@ public class WebApp extends Application {
         Platform.runLater(() -> kometRoot.setTop(menuBar));
     }
 
-    private void showWindowsAboutScreen(Window owner) {
-        Stage aboutWindow = new Stage();
-        aboutWindow.initOwner(owner);
-        Label kometLabel = new Label("Komet");
-        kometLabel.setFont(new Font("Open Sans", 24));
-        Label copyright = new Label("Copyright \u00a9 " + Year.now().getValue());
-        copyright.setFont(new Font("Open Sans", 10));
-        VBox container = new VBox(kometLabel, copyright);
-        container.setAlignment(Pos.CENTER);
-        Scene aboutScene = new Scene(container, 250, 100);
-        aboutWindow.setScene(aboutScene);
-        aboutWindow.setTitle("About Komet");
-        aboutWindow.show();
+    private void showAboutDialog() {
+        AboutDialog aboutDialog = new AboutDialog();
+        aboutDialog.showAndWait();
     }
 
     private void quit() {
@@ -1565,7 +1516,7 @@ public class WebApp extends Application {
 
         Menu fileMenu = new Menu("File");
         MenuItem about = new MenuItem("About");
-        about.setOnAction(actionEvent -> showWindowsAboutScreen(primaryStage));
+        about.setOnAction(_ -> showAboutDialog());
         fileMenu.getItems().add(about);
 
         MenuItem menuItemQuit = new MenuItem("Quit");
