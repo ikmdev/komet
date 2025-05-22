@@ -3913,14 +3913,14 @@ Styling a context menu for kview ui/ux controls
     -fx-font-weight: 500;
 }
 .card-info-container .validation-counts {
-    -fx-fill: -Accent-color-red;
+    -fx-text-fill: -Accent-color-red;
     -fx-font-family: Noto Sans;
     -fx-font-size: 32px;
     -fx-font-style: normal;
     -fx-font-weight: 500;
 }
 .card-info-container .validation-message {
-    -fx-fill: -Grey-12;
+    -fx-text-fill: -Grey-12;
     -fx-font-family: Noto Sans;
     -fx-font-size: 13px;
     -fx-font-style: normal;
@@ -3939,7 +3939,6 @@ Styling a context menu for kview ui/ux controls
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: -Grey-11;
-    -fx-fill: -Grey-8;
 }
 
 .card-info-container .edit-time {
@@ -3948,7 +3947,6 @@ Styling a context menu for kview ui/ux controls
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: -Grey-8;
-    -fx-fill: -Grey-8;
 }
 
 .landing-container .titled-pane > .title {
