@@ -1023,7 +1023,7 @@ public class WebApp extends Application {
         Menu fileMenu = new Menu("File");
 
         MenuItem about = new MenuItem("About");
-        about.setOnAction(actionEvent -> showWindowsAboutScreen(stage));
+        about.setOnAction(_ -> showAboutDialog());
         fileMenu.getItems().add(about);
 
         // Importing data
@@ -1068,9 +1068,8 @@ public class WebApp extends Application {
         Platform.runLater(() -> kometRoot.setTop(menuBar));
     }
 
-    private void showWindowsAboutScreen(Window owner) {
+    private void showAboutDialog() {
         AboutDialog aboutDialog = new AboutDialog();
-        aboutDialog.initOwner(primaryStage);
         aboutDialog.showAndWait();
     }
 
@@ -1142,7 +1141,7 @@ public class WebApp extends Application {
 
         Menu fileMenu = new Menu("File");
         MenuItem about = new MenuItem("About");
-        about.setOnAction(actionEvent -> showWindowsAboutScreen(primaryStage));
+        about.setOnAction(_ -> showAboutDialog());
         fileMenu.getItems().add(about);
 
         MenuItem menuItemQuit = new MenuItem("Quit");

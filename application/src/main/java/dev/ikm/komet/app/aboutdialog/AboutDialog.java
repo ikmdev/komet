@@ -19,7 +19,7 @@ public class AboutDialog extends Dialog<Void> {
         // set the owner to the focused window so the Windows task bar doesn't show
         // two windows which are the main application and the dialog window
         initOwner(getFocusedWindow());
-        
+
         setResizable(false);
         initModality(Modality.APPLICATION_MODAL);
 
