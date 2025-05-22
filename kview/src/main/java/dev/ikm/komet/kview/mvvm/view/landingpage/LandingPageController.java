@@ -24,38 +24,82 @@ import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.events.appevents.ProgressEvent;
 import dev.ikm.komet.framework.preferences.PrefX;
+import dev.ikm.komet.framework.progress.ProgressHelper;
+import dev.ikm.komet.kview.controls.NotificationPopup;
+import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.*;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import org.carlfx.cognitive.loader.Config;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.JFXNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.prefs.BackingStoreException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static dev.ikm.komet.framework.controls.TimeAgoCalculatorUtil.calculateTimeAgoWithPeriodAndDuration;
+import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
+import static dev.ikm.komet.kview.events.CreateJournalEvent.CREATE_JOURNAL;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.JournalTileEvent.CREATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
 import static dev.ikm.komet.framework.events.FrameworkTopics.IMPORT_TOPIC;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalDirName;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
 import static dev.ikm.komet.kview.mvvm.model.Constants.JOURNAL_NAME_PREFIX;
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.events.CreateJournalEvent.CREATE_JOURNAL;
-import static dev.ikm.komet.kview.events.JournalTileEvent.CREATE_JOURNAL_TILE;
-import static dev.ikm.komet.framework.controls.TimeAgoCalculatorUtil.calculateTimeAgoWithPeriodAndDuration;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
-import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_HEIGHT;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_XPOS;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_YPOS;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_IDS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
+import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
 
 /**
  * Controller for the application's landing page that manages journal cards and their interactions.
@@ -80,10 +124,19 @@ public class LandingPageController implements BasicController {
     private Label welcomeTitleLabel;
 
     @FXML
+    private Hyperlink githubStatusHyperlink;
+
+    @FXML
+    private Label selectedDatasetTitleLabel;
+
+    @FXML
     private ScrollPane journalProjectCardScrollPane;
 
     @FXML
     private FlowPane gridViewFlowPane;
+
+    @FXML
+    private ToggleButton progressToggleButton;
 
     @FXML
     ToggleButton settingsToggleButton;
@@ -101,21 +154,15 @@ public class LandingPageController implements BasicController {
     ComboBox<String> notificationTypeFilterComboBox;
 
     public static final String DEMO_AUTHOR = "David";
-    private EvtBus kViewEventBus;
-
-    private Subscriber<JournalTileEvent> createJournalTileSubscriber;
-
-    private Subscriber<DeleteJournalEvent> deleteJournalSubscriber;
-
+    public static final String LANDING_PAGE_TOPIC = "landingPageTopic";
+    private final EvtBus landingPageEventBus = EvtBusFactory.getDefaultEvtBus();
     private final Map<UUID, JournalCardController> journalCardControllerMap = new HashMap<>();
 
-    public ToggleButton getSettingsToggleButton() {
-        return settingsToggleButton;
-    }
+    private Subscriber<JournalTileEvent> createJournalTileSubscriber;
+    private Subscriber<DeleteJournalEvent> deleteJournalSubscriber;
 
-    public void setSettingsToggleButton(ToggleButton settingsToggleButton) {
-        this.settingsToggleButton = settingsToggleButton;
-    }
+    private final VBox progressPopupPane = new VBox();
+    private NotificationPopup progressNotificationPopup;
 
     @FXML
     @Override
@@ -125,9 +172,9 @@ public class LandingPageController implements BasicController {
         notificationTypeFilterComboBox.getItems().addAll("All types");
         notificationTypeFilterComboBox.getSelectionModel().selectFirst();
 
-        // get the instance of the event bus
-        kViewEventBus = EvtBusFactory.getDefaultEvtBus();
-        LOG.debug("Event bus instance %s, %s".formatted(this.getClass().getSimpleName(), kViewEventBus));
+        progressPopupPane.getStyleClass().add("progress-popup-pane");
+
+        LOG.debug("Event bus instance %s, %s".formatted(this.getClass().getSimpleName(), landingPageEventBus));
         createJournalTileSubscriber = evt -> {
 
             // If NOT a CREATE_JOURNAL_TILE type do not execute code below!
@@ -185,14 +232,14 @@ public class LandingPageController implements BasicController {
                     prefX = journalSettingsFinal;
                 }
                 // fire create journal event... AND this should be the ONLY place it comes from besides the menu
-                kViewEventBus.publish(JOURNAL_TOPIC, new CreateJournalEvent(this, CREATE_JOURNAL, prefX));
+                landingPageEventBus.publish(JOURNAL_TOPIC, new CreateJournalEvent(this, CREATE_JOURNAL, prefX));
             });
             journalCardControllerMap.put(journalTopic, journalCardController);
             journalCard.setUserData(journalSettingsFinal);
             gridViewFlowPane.getChildren().addFirst(journalCard);
         };
 
-        kViewEventBus.subscribe(JOURNAL_TOPIC, JournalTileEvent.class, createJournalTileSubscriber);
+        landingPageEventBus.subscribe(JOURNAL_TOPIC, JournalTileEvent.class, createJournalTileSubscriber);
 
         deleteJournalSubscriber = evt -> {
             // remove the tile by finding its journal name
@@ -238,14 +285,146 @@ public class LandingPageController implements BasicController {
                     .orElse(0);
             JournalCounter.getInstance().set(maxJournalNumber);
         };
-        kViewEventBus.subscribe(JOURNAL_TOPIC, DeleteJournalEvent.class, deleteJournalSubscriber);
+        landingPageEventBus.subscribe(JOURNAL_TOPIC, DeleteJournalEvent.class, deleteJournalSubscriber);
 
         journalProjectCardScrollPane.viewportBoundsProperty().addListener((ov, oldBounds, bounds) -> {
             gridViewFlowPane.setPrefWidth(bounds.getWidth());
             gridViewFlowPane.setPrefHeight(bounds.getHeight());
         });
 
+        // Setup the progress listener for task progress events
+        setupProgressListener();
+
+        // Load the preferences for the landing page
         loadPreferencesForLandingPage();
+    }
+
+    /**
+     * Sets up a listener for progress events and configures the progress notification system.
+     * <p>
+     * This method subscribes to {@link ProgressEvent} instances on the landing page event bus
+     * and configures the UI components needed to display task progress information to users.
+     */
+    private void setupProgressListener() {
+        // Subscribe to progress events on the event bus
+        Subscriber<ProgressEvent> progressPopupSubscriber = evt -> {
+            // if SUMMON event type, load stuff and reference task to progress popup
+            if (evt.getEventType() == SUMMON) {
+                runOnFxThread(() -> {
+                    // Make the toggle button visible so users can open the popover
+                    progressToggleButton.setVisible(true);
+
+                    Task<Void> task = evt.getTask();
+
+                    // Build the UI (Pane + Controller) for the progress popup
+                    JFXNode<Pane, ProgressController> progressJFXNode = createProgressBox(task, evt.getCancelButtonText());
+                    ProgressController progressController = progressJFXNode.controller();
+                    Pane progressPane = progressJFXNode.node();
+
+                    // Create a new NotificationPopup to show the progress pane
+                    progressNotificationPopup = new NotificationPopup(progressPopupPane);
+                    progressNotificationPopup.setAnchorLocation(WINDOW_BOTTOM_LEFT);
+
+                    // Hide popup when clicking on the progressPopupPane background (if autoHide is enabled)
+                    progressPopupPane.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
+                        if (e.getPickResult().getIntersectedNode() == progressPopupPane
+                                && progressNotificationPopup.isAutoHide()) {
+                            progressNotificationPopup.hide();
+                        }
+                    });
+
+                    // Close button handler in the progress pane
+                    progressController.getCloseProgressButton().setOnAction(actionEvent -> {
+                        // Cancel the task
+                        ProgressHelper.cancel(task);
+
+                        // Remove the progress pane from the popup
+                        progressPopupPane.getChildren().remove(progressPane);
+                        if (progressPopupPane.getChildren().isEmpty()) {
+                            progressToggleButton.setSelected(false);
+                            progressToggleButton.setVisible(false);
+                        }
+                    });
+
+                    progressNotificationPopup.setOnShown(windowEvent -> {
+                        // Select the toggle button when the popup is shown
+                        progressToggleButton.setSelected(true);
+                    });
+
+                    progressNotificationPopup.setOnHidden(windowEvent -> {
+                        // Deselect the toggle button when the popup is hidden
+                        progressToggleButton.setSelected(false);
+                    });
+
+                    progressToggleButton.setOnAction(actionEvent -> {
+                        // Toggle button logic to show/hide the popup
+                        if (progressToggleButton.isSelected()) {
+                            if (progressNotificationPopup.isShowing()) {
+                                progressNotificationPopup.hide();
+                            } else {
+                                progressNotificationPopup.show(progressToggleButton, this::supplyProgressPopupAnchorPoint);
+                            }
+                        } else {
+                            progressNotificationPopup.hide();
+                        }
+                    });
+
+                    // Before adding the progress UI to the popup's vertical container
+                    // Check if we already have 4 progress panes and remove the oldest one if needed
+                    if (progressPopupPane.getChildren().size() >= 4) {
+                        // Remove the oldest progress pane (first child)
+                        Node oldestPane = progressPopupPane.getChildren().getFirst();
+                        progressPopupPane.getChildren().remove(oldestPane);
+                    }
+
+                    // Add the progress UI to the popup's vertical container
+                    progressPopupPane.getChildren().add(progressPane);
+
+                    // Show the progress popup immediately for this new task
+                    progressNotificationPopup.show(progressToggleButton, this::supplyProgressPopupAnchorPoint);
+                });
+            }
+        };
+        landingPageEventBus.subscribe(LANDING_PAGE_TOPIC, ProgressEvent.class, progressPopupSubscriber);
+    }
+
+    @SuppressWarnings("unchecked")
+    private JFXNode<Pane, ProgressController> createProgressBox(Task<Void> task, String cancelButtonText) {
+        Config config = new Config(ProgressController.class.getResource("progress.fxml"))
+                .updateViewModel("progressViewModel", (viewModel -> viewModel
+                        .setPropertyValue(TASK_PROPERTY, task)
+                        .setPropertyValue(CANCEL_BUTTON_TEXT_PROP, cancelButtonText))
+                );
+
+        return (JFXNode<Pane, ProgressController>) FXMLMvvmLoader.make(config);
+    }
+
+    /**
+     * Computes and returns the coordinates at which the progress popup
+     * ({@link #progressNotificationPopup}) should be anchored, ensuring it appears to
+     * the right of the {@code progressToggleButton} and near the lower edge of
+     * the workspace.
+     * <p>
+     * The resulting anchor point is used by {@link NotificationPopup#show(Node, Supplier)}
+     * or similar popup methods to place the popup on the screen.
+     *
+     * @return a {@code Point2D} representing the (X, Y) coordinates where the progress
+     * popup should be anchored
+     */
+    private Point2D supplyProgressPopupAnchorPoint() {
+        final Bounds progressToggleButtonScreenBounds =
+                progressToggleButton.localToScreen(progressToggleButton.getBoundsInLocal());
+        final Bounds landingPageScreenBounds = landingPageBorderPane.localToScreen(landingPageBorderPane.getBoundsInLocal());
+        final double progressListVBoxPadding = 12.0;  // Padding around the progress list VBox
+
+        // Adjust the progress popup’s height to fit within the workspace bounds.
+        progressPopupPane.setPrefHeight(landingPageScreenBounds.getHeight() - (4 * progressListVBoxPadding - 4.0));
+
+        // Position the popup to the right of the toggle button, near the bottom of the workspace.
+        final double popupAnchorX = progressToggleButtonScreenBounds.getMinX()
+                + progressToggleButton.getWidth() + progressListVBoxPadding;
+        final double popupAnchorY = landingPageScreenBounds.getMaxY() - 2 * progressListVBoxPadding;
+        return new Point2D(popupAnchorX, popupAnchorY);
     }
 
     /**
@@ -323,21 +502,21 @@ public class LandingPageController implements BasicController {
                     journalSubWindowPreferences.enumToGeneralKey(WINDOW_NAMES));
 
             PrefX prefX = PrefX.create()
-                .setValue(JOURNAL_DIR_NAME, journalDirName)
-                .setValue(JOURNAL_TOPIC, journalTopicOptional.get())
-                .setValue(JOURNAL_TITLE, journalTitleOptional.get())
-                .setValue(JOURNAL_HEIGHT, height)
-                .setValue(JOURNAL_WIDTH, width)
-                .setValue(JOURNAL_XPOS, xpos)
-                .setValue(JOURNAL_YPOS, ypos)
-                .setValue(WINDOW_NAMES, windowNames)
-                .setValue(JOURNAL_AUTHOR, journalAuthor)
-                .setValue(JOURNAL_LAST_EDIT, journalLastEditOpt.isPresent() ?
-                    journalLastEditOpt.getAsLong() : null);
+                    .setValue(JOURNAL_DIR_NAME, journalDirName)
+                    .setValue(JOURNAL_TOPIC, journalTopicOptional.get())
+                    .setValue(JOURNAL_TITLE, journalTitleOptional.get())
+                    .setValue(JOURNAL_HEIGHT, height)
+                    .setValue(JOURNAL_WIDTH, width)
+                    .setValue(JOURNAL_XPOS, xpos)
+                    .setValue(JOURNAL_YPOS, ypos)
+                    .setValue(WINDOW_NAMES, windowNames)
+                    .setValue(JOURNAL_AUTHOR, journalAuthor)
+                    .setValue(JOURNAL_LAST_EDIT, journalLastEditOpt.isPresent() ?
+                            journalLastEditOpt.getAsLong() : null);
 
             // keep track of latest journal number when reloading from preferences
             JournalCounter.getInstance().set(parseJournalNumber(journalTitleOptional.get()));
-            kViewEventBus.publish(JOURNAL_TOPIC,
+            landingPageEventBus.publish(JOURNAL_TOPIC,
                     new JournalTileEvent(newProjectJournalButton,
                             CREATE_JOURNAL_TILE, prefX));
         }
@@ -371,8 +550,8 @@ public class LandingPageController implements BasicController {
 
     @Override
     public void cleanup() {
-        kViewEventBus.unsubscribe(JOURNAL_TOPIC, JournalTileEvent.class, createJournalTileSubscriber);
-        kViewEventBus.unsubscribe(JOURNAL_TOPIC, DeleteJournalEvent.class, deleteJournalSubscriber);
+        landingPageEventBus.unsubscribe(JOURNAL_TOPIC, JournalTileEvent.class, createJournalTileSubscriber);
+        landingPageEventBus.unsubscribe(JOURNAL_TOPIC, DeleteJournalEvent.class, deleteJournalSubscriber);
     }
 
     /**
@@ -401,17 +580,29 @@ public class LandingPageController implements BasicController {
         journalWindowSettingsObjectMap.setValue(JOURNAL_DIR_NAME, journalDirName);
 
         // publish an event to create the tile on the landing page
-        kViewEventBus.publish(JOURNAL_TOPIC,
+        landingPageEventBus.publish(JOURNAL_TOPIC,
                 new JournalTileEvent(newProjectJournalButton, CREATE_JOURNAL_TILE, journalWindowSettingsObjectMap));
 
-        kViewEventBus.publish(JOURNAL_TOPIC,
+        landingPageEventBus.publish(JOURNAL_TOPIC,
                 new CreateJournalEvent(this, CREATE_JOURNAL, journalWindowSettingsObjectMap));
 
         LOG.info("CARD LAUNCHED");
     }
 
+    public BorderPane getRoot() {
+        return landingPageBorderPane;
+    }
+
     public Label getWelcomeTitleLabel() {
         return welcomeTitleLabel;
+    }
+
+    public Hyperlink getGithubStatusHyperlink() {
+        return githubStatusHyperlink;
+    }
+
+    public void setSelectedDatasetTitle(String value) {
+        selectedDatasetTitleLabel.setText(value);
     }
 
     /**
