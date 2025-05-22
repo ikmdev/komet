@@ -1,21 +1,5 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
-import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
-import static dev.ikm.komet.kview.controls.KometIcon.IconValue.TRASH;
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.IDENTIFIER_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.INFERRED_DEFINITION_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.INFERRED_NAVIGATION_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.PATH_MEMBERSHIP_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.STATED_DEFINITION_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.STATED_NAVIGATION_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.UK_DIALECT_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.US_DIALECT_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.VERSION_CONTROL_PATH_ORIGIN_PATTERN_PROXY;
-import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.INSTANCES;
-import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.PATTERN_FACADE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
@@ -38,7 +22,6 @@ import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -59,6 +42,14 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+
+import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
+import static dev.ikm.komet.kview.controls.KometIcon.IconValue.TRASH;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.*;
+import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.INSTANCES;
+import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.PATTERN_FACADE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 public class PatternNavEntryController {
     private static final Logger LOG = LoggerFactory.getLogger(PatternNavEntryController.class);
@@ -189,13 +180,19 @@ public class PatternNavEntryController {
         Function<EntityFacade, String> fetchDescriptionByFacade = (facade -> viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(facade));
         // set the cell factory for each pattern's instances list
         patternInstancesListView.setCellFactory(p -> new ListCell<>() {
+
             private final Label label;
+            private Tooltip tooltip;
+
             {
                 setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
 
                 label = new Label();
                 label.setMaxWidth(Double.MAX_VALUE);
                 HBox.setHgrow(label, Priority.ALWAYS);
+
+                tooltip = new Tooltip();
+                Tooltip.install(label, tooltip);
             }
 
             @Override
@@ -255,6 +252,7 @@ public class PatternNavEntryController {
 
                         setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
                         label.setText(entityDescriptionText);
+                        tooltip.setText(entityDescriptionText);
 
                         if (!entityDescriptionText.isEmpty()) {
                             Image identicon = Identicon.generateIdenticonImage(entity.publicId());
