@@ -25,6 +25,7 @@ import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.ScreenInfo;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
+import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -33,21 +34,26 @@ import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.KometPreferencesStage;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.preferences.Reconstructor;
+import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.tabs.DetachableTab;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.KometStageController;
 import dev.ikm.komet.framework.window.MainWindowRecord;
 import dev.ikm.komet.framework.window.WindowComponent;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.controls.GlassPane;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.SignInUserEvent;
+import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
 import dev.ikm.komet.kview.mvvm.view.changeset.ExportController;
 import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
+import dev.ikm.komet.kview.mvvm.view.changeset.exchange.*;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
 import dev.ikm.komet.kview.mvvm.view.login.LoginPageController;
+import dev.ikm.komet.kview.mvvm.viewmodel.GitHubPreferencesViewModel;
 import dev.ikm.komet.list.ListNodeFactory;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNodeFactory;
 import dev.ikm.komet.navigator.pattern.PatternNavigatorFactory;
@@ -62,6 +68,8 @@ import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.service.ServiceKeys;
+import dev.ikm.tinkar.common.service.ServiceProperties;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -71,10 +79,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
@@ -101,10 +106,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 
@@ -114,10 +117,15 @@ import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
+import static dev.ikm.komet.framework.events.FrameworkTopics.IMPORT_TOPIC;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.*;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.*;
+import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.LANDING_PAGE_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
@@ -153,6 +161,7 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 public class WebApp extends Application {
 
     private static final Logger LOG = LoggerFactory.getLogger(WebApp.class);
+    private static final String CHANGESETS_DIR = "changeSets";
     public static final String ICON_LOCATION = "/icons/Komet.png";
     public static final SimpleObjectProperty<AppState> state = new SimpleObjectProperty<>(STARTING);
     public static final SimpleObjectProperty<User> userProperty = new SimpleObjectProperty<>();
@@ -169,6 +178,8 @@ public class WebApp extends Application {
     private static final boolean IS_MAC_AND_NOT_TESTFX_TEST = IS_MAC && !isTestFXTest();
     private final StackPane rootPane = createRootPane();
     private Image appIcon;
+    private LandingPageController landingPageController;
+    private EvtBus kViewEventBus;
 
     /**
      * An entry point to launch the newer UI panels.
@@ -180,7 +191,10 @@ public class WebApp extends Application {
      */
     private final List<JournalController> journalControllersList = new ArrayList<>();
 
-    private EvtBus kViewEventBus;
+    /**
+     * GitHub preferences data access object.
+     */
+    private final GitHubPreferencesDao gitHubPreferencesDao = new GitHubPreferencesDao();
 
     /**
      * Main method that serves as the entry point for the JavaFX application.
@@ -362,6 +376,12 @@ public class WebApp extends Application {
 
         // Subscribe the subscriber to the USER_TOPIC
         kViewEventBus.subscribe(USER_TOPIC, SignInUserEvent.class, signInUserEventSubscriber);
+
+        //Pops up the import dialog window on any events received on the IMPORT_TOPIC
+        Subscriber<Evt> importSubscriber = _ -> {
+            openImport(primaryStage);
+        };
+        kViewEventBus.subscribe(IMPORT_TOPIC, Evt.class, importSubscriber);
     }
 
     @Override
@@ -454,6 +474,8 @@ public class WebApp extends Application {
     public void stop() {
         LOG.info("Stopping application\n\n###############\n\n");
 
+        disconnectFromGithub();
+
         if (IS_DESKTOP) {
             // close all journal windows
             journalControllersList.forEach(JournalController::close);
@@ -532,6 +554,10 @@ public class WebApp extends Application {
             menuBar.getMenus().add(windowMenu);
         }
 
+        // Create and add the exchange menu to the menu bar
+        Menu exchangeMenu = createExchangeMenu();
+        menuBar.getMenus().add(exchangeMenu);
+
         // Create and add the help menu to the menu bar
         Menu helpMenu = createHelpMenu();
         menuBar.getMenus().add(helpMenu);
@@ -601,6 +627,20 @@ public class WebApp extends Application {
         return windowMenu;
     }
 
+    private Menu createExchangeMenu() {
+        Menu exchangeMenu = new Menu("Exchange");
+
+        MenuItem infoMenuItem = new MenuItem("Info");
+        infoMenuItem.setOnAction(actionEvent -> infoAction());
+        MenuItem pullMenuItem = new MenuItem("Pull");
+        pullMenuItem.setOnAction(actionEvent -> executeGitTask(PULL));
+        MenuItem pushMenuItem = new MenuItem("Sync");
+        pushMenuItem.setOnAction(actionEvent -> executeGitTask(SYNC));
+
+        exchangeMenu.getItems().addAll(infoMenuItem, pullMenuItem, pushMenuItem);
+        return exchangeMenu;
+    }
+
     private Menu createHelpMenu() {
         Menu helpMenu = new Menu("Help");
         helpMenu.getItems().add(new MenuItem("Getting started"));
@@ -666,8 +706,10 @@ public class WebApp extends Application {
                 createMenuOptions(landingPageBorderPane);
             }
 
-            LandingPageController landingPageController = landingPageLoader.getController();
+            landingPageController = landingPageLoader.getController();
             landingPageController.getWelcomeTitleLabel().setText("Welcome " + user.getName());
+            landingPageController.setSelectedDatasetTitle(PrimitiveData.get().name());
+            landingPageController.getGithubStatusHyperlink().setOnAction(_ -> connectToGithub());
 
             stage.setTitle("Landing Page");
             stage.setMaximized(true);
@@ -1018,6 +1060,339 @@ public class WebApp extends Application {
         exportStage.show();
     }
 
+    /**
+     * Prompts the user for GitHub preferences and repository information.
+     * <p>
+     * This method displays a dialog where the user can enter their GitHub credentials
+     * and repository URL. It creates a CompletableFuture that will be resolved with
+     * {@code true} if the user successfully enters valid credentials and connects,
+     * or {@code false} if they cancel the operation.
+     *
+     * @return A CompletableFuture that completes with true if valid GitHub preferences
+     *         were successfully provided by the user, or false if the user canceled the operation
+     */
+    private CompletableFuture<Boolean> promptForGitHubPrefs() {
+        // Create a CompletableFuture that will be completed when the user makes a choice
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+
+        // Show dialog on JavaFX thread
+        runOnFxThread(() -> {
+            GlassPane glassPane = new GlassPane(landingPageController.getRoot());
+
+            final JFXNode<Pane, GitHubPreferencesController> githubPreferencesNode = FXMLMvvmLoader
+                    .make(GitHubPreferencesController.class.getResource("github-preferences.fxml"));
+            final Pane dialogPane = githubPreferencesNode.node();
+            final GitHubPreferencesController controller = githubPreferencesNode.controller();
+            Optional<GitHubPreferencesViewModel> githubPrefsViewModelOpt = githubPreferencesNode
+                    .getViewModel("gitHubPreferencesViewModel");
+
+            controller.getConnectButton().setOnAction(actionEvent -> {
+                controller.handleConnectButtonEvent(actionEvent);
+                githubPrefsViewModelOpt.ifPresent(githubPrefsViewModel -> {
+                    if (githubPrefsViewModel.validProperty().get()) {
+                        glassPane.removeContent(dialogPane);
+                        glassPane.hide();
+                        future.complete(true); // Complete with true on successful connection
+                    }
+                });
+            });
+
+            controller.getCancelButton().setOnAction(_ -> {
+                glassPane.removeContent(dialogPane);
+                glassPane.hide();
+                future.complete(false); // Complete with false on cancel
+            });
+
+            glassPane.addContent(dialogPane);
+            glassPane.show();
+        });
+
+        return future;
+    }
+
+    /**
+     * Sets up the UI to reflect a disconnected GitHub state.
+     * <p>
+     * This method updates the GitHub status hyperlink in the landing page to show that
+     * the application is disconnected from GitHub. When clicked, the hyperlink will
+     * attempt to connect to GitHub by calling the {@link #connectToGithub()} method.
+     * <p>
+     * The method runs on the JavaFX application thread to ensure thread safety when
+     * updating UI components.
+     */
+    private void gotoGitHubDisconnectedState() {
+        runOnFxThread(() -> {
+            if (landingPageController != null) {
+                Hyperlink githubStatusHyperlink = landingPageController.getGithubStatusHyperlink();
+                githubStatusHyperlink.setText("Disconnected, Select to connect");
+                githubStatusHyperlink.setOnAction(event -> connectToGithub());
+            }
+        });
+    }
+
+    /**
+     * Sets up the UI to reflect a connected GitHub state.
+     * <p>
+     * This method updates the GitHub status hyperlink in the landing page to show that
+     * the application is successfully connected to GitHub. When clicked, the hyperlink
+     * will disconnect from GitHub by calling the {@link #disconnectFromGithub()} method.
+     * <p>
+     * The method runs on the JavaFX application thread to ensure thread safety when
+     * updating UI components.
+     */
+    private void gotoGitHubConnectedState() {
+        runOnFxThread(() -> {
+            if (landingPageController != null) {
+                Hyperlink githubStatusHyperlink = landingPageController.getGithubStatusHyperlink();
+                githubStatusHyperlink.setText("Connected");
+                githubStatusHyperlink.setOnAction(event -> disconnectFromGithub());
+            }
+        });
+    }
+
+    /**
+     * Executes a Git task, ensuring preferences are valid first.
+     * <p>
+     * This method performs the following operations:
+     * <ol>
+     *   <li>Verifies that the data store root is available</li>
+     *   <li>Creates a changeset folder if it doesn't exist</li>
+     *   <li>Validates GitHub preferences and prompts for them if missing</li>
+     *   <li>Creates and runs the appropriate GitTask based on the operation mode</li>
+     * </ol>
+     * If GitHub preferences are missing or invalid, this method will prompt the user
+     * to enter them before proceeding with the requested operation.
+     *
+     * @param mode The operation mode (CONNECT, PULL, or SYNC) that determines what
+     *             Git operations will be performed
+     */
+    private void executeGitTask(GitTask.OperationMode mode) {
+        Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
+        if (optionalDataStoreRoot.isEmpty()) {
+            LOG.error("ServiceKeys.DATA_STORE_ROOT not provided.");
+            return;
+        }
+
+        final File changeSetFolder = new File(optionalDataStoreRoot.get(), CHANGESETS_DIR);
+        if (!changeSetFolder.exists()) {
+            if (!changeSetFolder.mkdirs()) {
+                LOG.error("Unable to create {} directory", CHANGESETS_DIR);
+                return;
+            }
+        }
+
+        // Check if GitHub preferences are valid first
+        if (!gitHubPreferencesDao.validate()) {
+            LOG.info("GitHub preferences missing or incomplete. Prompting user...");
+
+            // Prompt for preferences before proceeding
+            promptForGitHubPrefs().thenAccept(confirmed -> {
+                if (confirmed) {
+                    // Preferences entered successfully, now run the GitTask
+                    createAndRunGitTask(mode, changeSetFolder);
+                } else {
+                    LOG.info("User cancelled the GitHub preferences dialog");
+                }
+            });
+        } else {
+            // Preferences already valid, run the GitTask directly
+            createAndRunGitTask(mode, changeSetFolder);
+        }
+    }
+
+    /**
+     * Creates and runs a GitTask with the specified operation mode.
+     * <p>
+     * This helper method is called after GitHub preferences have been validated. It:
+     * <ol>
+     *   <li>Creates a new GitTask with the specified operation mode</li>
+     *   <li>Registers a success callback to update the UI state</li>
+     *   <li>Runs the task with progress tracking</li>
+     *   <li>Handles errors and updates the UI accordingly</li>
+     * </ol>
+     * The task is executed asynchronously through the ProgressHelper service to
+     * provide user feedback during long-running operations.
+     *
+     * @param operationMode The operation mode specifying which Git operations to perform
+     * @param changeSetFolder The folder where the Git repository is located
+     * @return A CompletableFuture that completes with true if the operation was successful,
+     *         or false if it failed or was cancelled
+     */
+    private CompletableFuture<Boolean> createAndRunGitTask(GitTask.OperationMode operationMode, File changeSetFolder) {
+        // Create a GitTask with only the connection success callback
+        GitTask gitTask = new GitTask(operationMode, changeSetFolder.toPath(), this::gotoGitHubConnectedState);
+
+        // Run the task
+        return ProgressHelper.progress(LANDING_PAGE_TOPIC, gitTask)
+                .whenComplete((result, throwable) -> {
+                    if (throwable != null) {
+                        LOG.error("Error during {} operation", operationMode, throwable);
+                        disconnectFromGithub();
+                    } else if (!result) {
+                        LOG.warn("{} operation did not complete successfully", operationMode);
+                        disconnectFromGithub();
+                    }
+                });
+    }
+
+    /**
+     * Initiates a connection to GitHub.
+     * <p>
+     * This method establishes a connection to GitHub by executing a GitTask in CONNECT mode.
+     * If successful, the UI will be updated to reflect the connected state, and the local
+     * Git repository will be initialized and configured with the remote origin.
+     * <p>
+     * If GitHub preferences are missing or invalid, the user will be prompted to
+     * enter them before the connection is established.
+     */
+    private void connectToGithub() {
+        LOG.info("Attempting to connect to GitHub...");
+        executeGitTask(CONNECT);
+    }
+
+    /**
+     * Disconnects from GitHub and cleans up local resources.
+     * <p>
+     * This method performs the following cleanup operations:
+     * <ol>
+     *   <li>Logs the disconnection attempt</li>
+     *   <li>Removes all GitHub-related preferences from user preferences</li>
+     *   <li>Updates the UI to reflect the disconnected state</li>
+     * </ol>
+     * If any errors occur during this process, they are logged but do not prevent
+     * the disconnection from completing.
+     */
+    private void disconnectFromGithub() {
+        LOG.info("Disconnecting from GitHub...");
+
+        // Delete stored user preferences related to GitHub
+        try {
+            gitHubPreferencesDao.delete();
+            LOG.info("Successfully removed GitHub data from user preferences");
+        } catch (BackingStoreException e) {
+            LOG.error("Failed to remove GitHub data from user preferences");
+        }
+
+        // For now, just update the UI state
+        gotoGitHubDisconnectedState();
+    }
+
+    /**
+     * Displays information about the current Git repository.
+     * <p>
+     * This method checks if a Git repository exists and displays basic information about it.
+     * If no repository exists or is not properly configured, the user will be prompted to
+     * enter GitHub preferences before proceeding. Upon successful connection to GitHub,
+     * repository information will be fetched and displayed in a dialog.
+     * <p>
+     * The method performs the following operations:
+     * <ol>
+     *   <li>Verifies that the data store root is available</li>
+     *   <li>Checks if a Git repository exists in the changeset folder</li>
+     *   <li>If no repository exists, prompts for GitHub preferences and initiates connection</li>
+     *   <li>Fetches and displays repository information</li>
+     * </ol>
+     */
+    private void infoAction() {
+        Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
+        if (optionalDataStoreRoot.isEmpty()) {
+            LOG.error("ServiceKeys.DATA_STORE_ROOT not provided.");
+            return;
+        }
+
+        final File changeSetFolder = new File(optionalDataStoreRoot.get(), CHANGESETS_DIR);
+        final File gitDir = new File(changeSetFolder, ".git");
+
+        if (gitDir.exists()) {
+            fetchAndShowRepositoryInfo(changeSetFolder);
+        } else {
+            // Prompt for preferences before proceeding
+            promptForGitHubPrefs().thenCompose(confirmed -> {
+                if (confirmed) {
+                    // Preferences entered successfully, now run the GitTask
+                    return createAndRunGitTask(CONNECT, changeSetFolder);
+                } else {
+                    return CompletableFuture.completedFuture(false);
+                }
+            }).thenAccept(confirmed -> {
+                if (confirmed) {
+                    fetchAndShowRepositoryInfo(changeSetFolder);
+                }
+            });
+        }
+    }
+
+    /**
+     * Fetches repository information and displays it in a dialog.
+     * <p>
+     * This method asynchronously retrieves information about the Git repository
+     * located in the specified folder using an {@code InfoTask}, then displays
+     * the results in a dialog. The operation is performed on a background thread
+     * to avoid blocking the UI.
+     *
+     * @param changeSetFolder The repository folder to fetch information from
+     */
+    private void fetchAndShowRepositoryInfo(File changeSetFolder) {
+        CompletableFuture.supplyAsync(() -> {
+                    try {
+                        InfoTask task = new InfoTask(changeSetFolder.toPath());
+                        return task.call();
+                    } catch (Exception ex) {
+                        throw new RuntimeException("Failed to fetch repository information", ex);
+                    }
+                }, TinkExecutor.threadPool())
+                .thenCompose(repoInfo -> showRepositoryInfoDialog(repoInfo)
+                        .thenAccept(confirmed -> {
+                            if (confirmed) {
+                                LOG.info("User closed the repository info dialog");
+                            }
+                        }));
+    }
+
+    /**
+     * Displays the repository information dialog.
+     * <p>
+     * This method creates and displays a dialog showing Git repository information
+     * including URL, username, email, and status. The dialog is displayed using a
+     * glass pane overlay on top of the landing page.
+     * <p>
+     * The method returns a CompletableFuture that will be completed when the user
+     * closes the dialog.
+     *
+     * @param repoInfo Map containing repository information with keys defined in {@code GitPropertyName}
+     * @return A CompletableFuture that completes with {@code true} when the user closes the dialog
+     */
+    private CompletableFuture<Boolean> showRepositoryInfoDialog(Map<GitPropertyName, String> repoInfo) {
+        // Create a CompletableFuture that will be completed when the user makes a choice
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+
+        // Show dialog on JavaFX thread
+        runOnFxThread(() -> {
+            GlassPane glassPane = new GlassPane(landingPageController.getRoot());
+
+            final JFXNode<Pane, GitHubInfoController> githubInfoNode = FXMLMvvmLoader
+                    .make(GitHubInfoController.class.getResource("github-info.fxml"));
+            final Pane dialogPane = githubInfoNode.node();
+            final GitHubInfoController controller = githubInfoNode.controller();
+
+            controller.getGitUrlTextField().setText(repoInfo.get(GIT_URL));
+            controller.getGitUsernameTextField().setText(repoInfo.get(GIT_USERNAME));
+            controller.getGitEmailTextField().setText(repoInfo.get(GIT_EMAIL));
+            controller.getStatusTextArea().setText(repoInfo.get(GIT_STATUS));
+
+            controller.getCloseButton().setOnAction(_ -> {
+                glassPane.removeContent(dialogPane);
+                glassPane.hide();
+                future.complete(true); // Complete with true on close
+            });
+
+            glassPane.addContent(dialogPane);
+            glassPane.show();
+        });
+
+        return future;
+    }
+
     private void generateMsWindowsMenu(BorderPane kometRoot, Stage stage) {
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("File");
@@ -1165,10 +1540,13 @@ public class WebApp extends Application {
         minimizeWindow.setDisable(IS_BROWSER);
         windowMenu.getItems().add(minimizeWindow);
 
+        Menu exchangeMenu = createExchangeMenu();
+
         menuBar.getMenus().add(fileMenu);
         menuBar.getMenus().add(viewMenu);
         menuBar.getMenus().add(windowMenu);
-        Platform.runLater(() -> landingPageRoot.setTop(menuBar));
+        menuBar.getMenus().add(exchangeMenu);
+        landingPageRoot.setTop(menuBar);
     }
 
     private MenuItem createClassicKometMenuItem() {
