@@ -4,8 +4,6 @@ import dev.ikm.komet.kview.controls.KLFloatControl;
 import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
-import javafx.scene.control.SkinBase;
-import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.util.Subscription;
 
@@ -15,17 +13,16 @@ import java.util.regex.Pattern;
 /**
  * Default skin implementation for the {@link KLFloatControl} control
  */
-public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
+public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
 
     private static final Pattern NUMERICAL_PATTERN = Pattern.compile("^[+-]?(\\d+([.]\\d*)?([eE][+-]?\\d+)?|[.]\\d+([eE][+-]?\\d+)?)$");
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.float-control");
 
     private final Label titleLabel;
-    private final TextField textField;
+
     private final Label errorLabel;
 
     private Subscription subscription;
-    private boolean textChangedViaKeyEvent;
 
     /**
      * Creates a new KLFloatControlSkin instance, installing the necessary child
@@ -41,7 +38,6 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
         titleLabel.textProperty().bind(control.titleProperty());
         titleLabel.getStyleClass().add("editable-title-label");
 
-        textField = new TextField();
         textField.promptTextProperty().bind(control.promptTextProperty());
         textField.getStyleClass().add("text-field");
 
@@ -127,27 +123,7 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
         }));
 
         // value was set externally
-        subscription = control.valueProperty().subscribe(nv -> {
-            if (!textChangedViaKeyEvent) {
-                textField.setText(nv == null ? null : nv.toString());
-            }
-        });
-        subscription = subscription.and(textField.textProperty().subscribe(nv -> {
-            textChangedViaKeyEvent = true;
-            if (nv == null || nv.isEmpty()) {
-                // When new text is null or empty, reset control's value
-                control.setValue(null);
-            } else if (!("-".equals(nv) || "+".equals(nv) || endsWithExponent(nv) || endsWithSignedExponent(nv))) {
-                try {
-                    // only set control's value when it is a valid number
-                    float value = Float.parseFloat(nv);
-                    control.setValue(value);
-                } catch (NumberFormatException e) {
-                    // ignore, and keep control with its old value
-                }
-            }
-            textChangedViaKeyEvent = false;
-        }));
+        subscription = control.valueProperty().subscribe(nv -> textField.setText(nv == null ? null : nv.toString()));
 
         final PauseTransition pauseTransition = new PauseTransition(KLIntegerControlSkin.ERROR_DURATION);
         pauseTransition.setOnFinished(f -> {
@@ -163,6 +139,24 @@ public class KLFloatControlSkin extends SkinBase<KLFloatControl> {
                 pauseTransition.stop();
             }
         }));
+    }
+
+    @Override
+    protected void updateValueProperty() {
+        String nv = textField.getText();
+        KLFloatControl control = getSkinnable();
+        if (nv == null || nv.isEmpty()) {
+            // When new text is null or empty, reset control's value
+            control.setValue(null);
+        } else if (!("-".equals(nv) || "+".equals(nv) || endsWithExponent(nv) || endsWithSignedExponent(nv))) {
+            try {
+                // only set control's value when it is a valid number
+                float value = Float.parseFloat(nv);
+                control.setValue(value);
+            } catch (NumberFormatException e) {
+                // ignore, and keep control with its old value
+            }
+        }
     }
 
     /** {@inheritDoc} */
