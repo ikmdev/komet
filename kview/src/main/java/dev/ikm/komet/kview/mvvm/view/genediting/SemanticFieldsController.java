@@ -34,7 +34,6 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPI
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
 import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
-
 import dev.ikm.komet.framework.events.EntityVersionChangeEvent;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -163,7 +162,7 @@ public class SemanticFieldsController {
                });
            }
         });
-        if (immutableList.get() !=null) {
+        if (immutableList.get() != null) {
             List<ObservableField<?>> observableFieldsList = new ArrayList<>((Collection) immutableList.get());
             committedHash = calculateHashValue(observableFieldsList);  // and calculate the hashValue for commited data.
         }
@@ -274,8 +273,6 @@ public class SemanticFieldsController {
             observableField.autoSaveOn();
           });
 
-        // update hash change
-        committedHash = calculateHashValue(observableFields);
         //Set the hascode for the committed values.
         enableDisableButtons();
         loadVBox();

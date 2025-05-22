@@ -111,18 +111,10 @@ public class KLComponentControl extends Control {
     private final ObjectProperty<EntityProxy> entityProperty = new SimpleObjectProperty<>(this, "entity", null);
     public final ObjectProperty<EntityProxy> entityProperty() { return entityProperty; }
     public final EntityProxy getEntity() {
-        if (((Object)entityProperty.get()) instanceof ConceptRecord) {
-            ConceptRecord conceptRecord = (ConceptRecord) (Object) entityProperty.get();
-            entityProperty.set(Entity.getFast(conceptRecord.nid()).toProxy());
-        }
-        return entityProperty.get();
+        return entityProperty.get() == null ? null : EntityProxy.make(entityProperty.get().nid());
     }
     public final void setEntity(EntityProxy value) {
-        if (((Object)value) instanceof ConceptRecord) {
-            ConceptRecord conceptRecord = (ConceptRecord) (Object) value;
-            entityProperty.set(Entity.getFast(conceptRecord.nid()).toProxy());
-        }
-        entityProperty.set(value);
+        entityProperty.set(value == null ? null : EntityProxy.make(value.nid()));
     }
 
     // -- type ahead completer
