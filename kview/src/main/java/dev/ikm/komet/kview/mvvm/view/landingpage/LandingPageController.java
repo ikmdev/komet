@@ -28,11 +28,6 @@ import dev.ikm.komet.framework.events.appevents.ProgressEvent;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.kview.controls.NotificationPopup;
-import dev.ikm.komet.kview.events.CreateJournalEvent;
-import dev.ikm.komet.kview.events.DeleteJournalEvent;
-import dev.ikm.komet.kview.events.JournalTileEvent;
-import dev.ikm.komet.kview.mvvm.model.JournalCounter;
-import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
@@ -608,6 +603,8 @@ public class LandingPageController implements BasicController {
 
     public void setSelectedDatasetTitle(String value) {
         selectedDatasetTitleLabel.setText(value);
+    }
+
     /**
      * Handles the import button press to pop up the import dialog window
      *
