@@ -20,7 +20,7 @@ import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOP
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculteHashValue;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculateHashValue;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateNode;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
@@ -162,7 +162,7 @@ public class SemanticFieldsController {
                });
            }
         });
-        if (immutableList.get() !=null) {
+        if (immutableList.get() != null) {
             List<ObservableField<?>> observableFieldsList = new ArrayList<>((Collection) immutableList.get());
             committedHash = calculateHashValue(observableFieldsList);  // and calculate the hashValue for commited data.
         }
@@ -273,8 +273,6 @@ public class SemanticFieldsController {
             observableField.autoSaveOn();
           });
 
-        // update hash change
-        committedHash = calculateHashValue(observableFields);
         //Set the hascode for the committed values.
         enableDisableButtons();
         loadVBox();
