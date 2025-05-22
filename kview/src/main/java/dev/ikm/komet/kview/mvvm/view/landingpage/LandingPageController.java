@@ -416,6 +416,8 @@ public class LandingPageController implements BasicController {
 
     /**
      * Handles the import button press to pop up the import dialog window
+     *
+     * @param event
      */
     @FXML
     private void openImport(ActionEvent event) {
