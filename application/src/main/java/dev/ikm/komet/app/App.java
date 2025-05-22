@@ -24,6 +24,7 @@ import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.ScreenInfo;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
+import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -144,6 +145,7 @@ import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.framework.KometNode.PreferenceKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
+import static dev.ikm.komet.framework.events.FrameworkTopics.IMPORT_TOPIC;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.CENTER_TAB_PREFERENCES;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.LEFT_TAB_PREFERENCES;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.RIGHT_TAB_PREFERENCES;
@@ -442,6 +444,13 @@ public class App extends Application {
             stage.show();
             state.set(AppState.SELECT_DATA_SOURCE);
             state.addListener(this::appStateChangeListener);
+
+            //Pops up the import dialog window on any events received on the IMPORT_TOPIC
+            Subscriber<Evt> importSubscriber = _ -> {
+                openImport();
+            };
+            kViewEventBus.subscribe(IMPORT_TOPIC, Evt.class, importSubscriber);
+
         } catch (IOException e) {
             LOG.error(e.getLocalizedMessage(), e);
             Platform.exit();

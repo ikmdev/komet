@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.landingpage;
 
+import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.mvvm.model.JournalCounter;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
@@ -26,6 +27,7 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -44,6 +46,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.IMPORT_TOPIC;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalDirName;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
 import static dev.ikm.komet.kview.mvvm.model.Constants.JOURNAL_NAME_PREFIX;
@@ -409,5 +412,15 @@ public class LandingPageController implements BasicController {
 
     public Label getWelcomeTitleLabel() {
         return welcomeTitleLabel;
+    }
+
+    /**
+     * Handles the import button press to pop up the import dialog window
+     *
+     * @param event
+     */
+    @FXML
+    private void openImport(ActionEvent event) {
+        EvtBusFactory.getDefaultEvtBus().publish(IMPORT_TOPIC, new Evt(event.getSource(), Evt.ANY));
     }
 }
