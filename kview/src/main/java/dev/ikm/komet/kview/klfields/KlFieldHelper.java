@@ -189,7 +189,7 @@ public class KlFieldHelper {
      *  During create (new Semantic) the user can change the reference component.
      *  the hash is stating any change. By default a reference component during created would be TinkarTerms.ANONOUMOUS_CONCEPT (I can't remember).
      */
-    public static int calculteHashValue(List<ObservableField<?>> observableFieldsList ) {
+    public static int calculateHashValue(List<ObservableField<?>> observableFieldsList ) {
         StringBuilder stringBuilder = new StringBuilder();
         observableFieldsList.forEach(observableField -> {
             if (observableField.dataTypeNid() == IMAGE_FIELD.nid() || observableField.dataTypeNid() == BYTE_ARRAY_FIELD.nid()) {
