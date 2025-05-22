@@ -956,6 +956,7 @@ public class App extends Application {
 
     private void showWindowsAboutScreen() {
         AboutDialog aboutDialog = new AboutDialog();
+        aboutDialog.initOwner(primaryStage);
         aboutDialog.showAndWait();
     }
 
