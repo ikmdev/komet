@@ -32,7 +32,11 @@ import org.carlfx.cognitive.loader.InjectViewModel;
 
 import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.CANCEL;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.IS_CANCELLED_PROP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.SHOW_CANCEL_BUTTON_PROP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.SHOW_CLOSE_BUTTON_PROP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
 
 /**
  * <p>Controller for the FXML-based progress view. This class manages UI bindings to a
@@ -62,6 +66,12 @@ public class ProgressController {
     private Button closeProgressButton;
 
     /**
+     * Displays the title of the running task.
+     */
+    @FXML
+    private Text titleText;
+
+    /**
      * Displays the message associated with the current state of the task.
      */
     @FXML
@@ -72,12 +82,6 @@ public class ProgressController {
      */
     @FXML
     private ProgressBar progressBar;
-
-    /**
-     * Displays the title of the running task.
-     */
-    @FXML
-    private Text titleText;
 
     /**
      * Displays the percentage of progress for the running task.
