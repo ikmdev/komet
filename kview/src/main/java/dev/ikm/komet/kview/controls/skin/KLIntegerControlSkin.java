@@ -123,7 +123,11 @@ public class KLIntegerControlSkin extends KLDebounceControlSkin<KLIntegerControl
         if (nv == null || nv.isEmpty() || "-".equals(nv)) {
             control.setValue(null);
         } else {
-            control.setValue(Integer.parseInt(nv));
+            try{
+                control.setValue(Integer.parseInt(nv));
+            } catch (NumberFormatException e) {
+            // ignore, and keep control with its old value
+            }
         }
     }
 
