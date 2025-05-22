@@ -39,10 +39,17 @@ import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.CredentialItem;
 import org.eclipse.jgit.transport.URIish;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +65,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.stream.Stream;
@@ -625,11 +633,11 @@ public class GitTask extends TrackingCallable<Boolean> {
 
         updateMessage("Starting %s process.".formatted(pushChanges ? "synchronization" : "pulling"));
 
-        // Pull phase
-        pull(validationPhase.getEnd(), pullPhase.getEnd());
+        // Pull phase - now returns a list of added files
+        ImmutableList<String> addedFiles = pull(validationPhase.getEnd(), pullPhase.getEnd());
 
-        // Load changesets phase
-        loadChangesets(pullPhase.getEnd(), loadPhase.getEnd());
+        // Load changesets phase - pass the list of added files
+        loadChangesets(pullPhase.getEnd(), loadPhase.getEnd(), addedFiles);
 
         // Run reasoner phase
         runReasoner(loadPhase.getEnd(), reasonerPhase.getEnd());
@@ -644,17 +652,18 @@ public class GitTask extends TrackingCallable<Boolean> {
     }
 
     /**
-     * Pulls the latest changes from the remote Git repository.
+     * Pulls the latest changes from the remote Git repository and returns a list of added files.
      *
      * @param startPercentage the progress percentage at the start of this phase
      * @param endPercentage   the progress percentage at the end of this phase
+     * @return a list of relative paths to files that were added during the pull operation
      * @throws GitAPIException if a Git API error occurs
      * @throws IOException if an I/O error occurs
      */
-    private void pull(double startPercentage, double endPercentage) throws GitAPIException, IOException {
+    private ImmutableList<String> pull(double startPercentage, double endPercentage) throws GitAPIException, IOException {
         if (isCancelled()) {
             updateMessage("Operation cancelled by user.");
-            return;
+            return Lists.immutable.empty();
         }
         // Starting the pull phase
         updatePhaseProgress(startPercentage, endPercentage, 0.0);
@@ -662,6 +671,9 @@ public class GitTask extends TrackingCallable<Boolean> {
         try (Git git = Git.open(changeSetFolder.toFile())) {
             updateMessage("Connecting to remote repository...");
             updatePhaseProgress(startPercentage, endPercentage, 0.2);
+
+            // Store the current HEAD commit before pull
+            ObjectId oldHead = git.getRepository().resolve("HEAD");
 
             // Create a progress monitor for Git operations
             GitProgressMonitor progressMonitor = new GitProgressMonitor(
@@ -681,19 +693,140 @@ public class GitTask extends TrackingCallable<Boolean> {
             PullResult pullResult = pullCommand.call();
 
             if (pullResult.isSuccessful()) {
-                updateMessage("Pull operation completed successfully.");
+                // Get the new HEAD after pull
+                ObjectId newHead = git.getRepository().resolve("HEAD");
+
+                // Default to empty list
+                ImmutableList<String> addedFiles = Lists.immutable.empty();
+
+                // Get list of changed files only if there were actually changes
+                if (!newHead.equals(oldHead)) {
+                    List<DiffEntry> changedFiles = getChangedFiles(git.getRepository(), oldHead, newHead);
+
+                    // Filter for only ADD changes and files ending with ike-cs.zip
+                    MutableList<String> newFiles = Lists.mutable.empty();
+                    for (DiffEntry diff : changedFiles) {
+                        if (diff.getChangeType() == DiffEntry.ChangeType.ADD &&
+                                diff.getNewPath().endsWith("ike-cs.zip")) {
+
+                            Path filePath = changeSetFolder.resolve(diff.getNewPath());
+                            if (isValidChangeset(filePath)) {
+                                // Add this to our list of files to load
+                                newFiles.add(diff.getNewPath());
+                            }
+                        }
+                    }
+
+                    // Sort the files to ensure consistent loading order
+                    newFiles.sort(String::compareTo);
+                    addedFiles = newFiles.toImmutable();
+
+                    updateMessage("Pull completed. " + addedFiles.size() + " new changeset files found.");
+
+                    if (LOG.isInfoEnabled() && !addedFiles.isEmpty()) {
+                        LOG.info("New changeset files to load:");
+                        for (String file : addedFiles) {
+                            LOG.info(file);
+                        }
+                    }
+                } else {
+                    updateMessage("Pull completed. No changes found.");
+                }
+
                 updatePhaseProgress(startPercentage, endPercentage, 1.0);
+                return addedFiles;
+            } else {
+                updateMessage("Pull failed: " + pullResult.getMergeResult().getMergeStatus());
+                return Lists.immutable.empty();
             }
         }
     }
 
     /**
-     * Loads changesets from files in the changeset folder.
+     * Gets the list of files that changed between two commits.
+     *
+     * @param repository the Git repository
+     * @param oldHead    the object ID of the old commit
+     * @param newHead    the object ID of the new commit
+     * @return a list of file differences between the two commits
+     * @throws IOException     if an I/O error occurs
+     * @throws GitAPIException if a Git API error occurs
+     */
+    private List<DiffEntry> getChangedFiles(Repository repository,
+                                            ObjectId oldHead,
+                                            ObjectId newHead) throws IOException, GitAPIException {
+        // Handle case where oldHead might be null (new repository)
+        if (oldHead == null) {
+            LOG.info("No previous HEAD found, considering all files as new");
+            try (RevWalk walk = new RevWalk(repository)) {
+                RevCommit commit = walk.parseCommit(newHead);
+                try (ObjectReader reader = repository.newObjectReader()) {
+                    CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
+                    newTreeIter.reset(reader, commit.getTree());
+
+                    // Empty tree for comparison
+                    CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
+
+                    return new Git(repository).diff()
+                            .setOldTree(oldTreeIter)
+                            .setNewTree(newTreeIter)
+                            .call();
+                }
+            }
+        }
+
+        // Normal case: compare old and new HEAD
+        try (RevWalk walk = new RevWalk(repository)) {
+            RevCommit oldCommit = walk.parseCommit(oldHead);
+            RevCommit newCommit = walk.parseCommit(newHead);
+
+            // For merge commits, we need additional handling
+            if (newCommit.getParentCount() > 1 && newCommit.getParent(0).equals(oldCommit)) {
+                // This is a merge commit where our old HEAD is the first parent
+                LOG.info("Detected merge commit, comparing with second parent");
+
+                // Get the second parent (the one we merged from)
+                RevCommit mergedCommit = walk.parseCommit(newCommit.getParent(1));
+
+                try (ObjectReader reader = repository.newObjectReader()) {
+                    CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
+                    oldTreeIter.reset(reader, oldCommit.getTree());
+
+                    CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
+                    newTreeIter.reset(reader, mergedCommit.getTree());
+
+                    return new Git(repository).diff()
+                            .setOldTree(oldTreeIter)
+                            .setNewTree(newTreeIter)
+                            .call();
+                }
+            }
+
+            // Standard comparison between commits
+            try (ObjectReader reader = repository.newObjectReader()) {
+                CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
+                oldTreeIter.reset(reader, oldCommit.getTree());
+
+                CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
+                newTreeIter.reset(reader, newCommit.getTree());
+
+                return new Git(repository).diff()
+                        .setOldTree(oldTreeIter)
+                        .setNewTree(newTreeIter)
+                        .call();
+            }
+        }
+    }
+
+    /**
+     * Loads changesets from the specified list of files.
      *
      * @param startPercentage the progress percentage at the start of this phase
      * @param endPercentage   the progress percentage at the end of this phase
+     * @param relativeFilePaths list of relative paths to changeset files to load
      */
-    private void loadChangesets(double startPercentage, double endPercentage) {
+    private void loadChangesets(double startPercentage, double endPercentage,
+                                ImmutableList<String> relativeFilePaths) {
         if (isCancelled()) {
             updateMessage("Operation cancelled by user.");
             return;
@@ -701,9 +834,6 @@ public class GitTask extends TrackingCallable<Boolean> {
 
         updatePhaseProgress(startPercentage, endPercentage, 0.0);
         MutableList<EntityCountSummary> loadResults = Lists.mutable.empty();
-
-        // Use filesToAdd to get changeset files (now naturally sorted)
-        ImmutableList<String> relativeFilePaths = filesToAdd(changeSetFolder, "ike-cs.zip");
 
         if (relativeFilePaths.isEmpty()) {
             updateMessage("No changeset files found to load.");
@@ -723,7 +853,7 @@ public class GitTask extends TrackingCallable<Boolean> {
             updatePhaseProgress(startPercentage, endPercentage, loadProgress * 0.9); // Reserve 10% for completion
 
             try {
-                // isValidChangeset check already done in filesToAdd
+                // isValidChangeset check already done when filtering files
                 EntityCountSummary ecs = new LoadEntitiesFromProtobufFile(file).compute();
                 loadResults.add(ecs);
                 LOG.info("Loaded changeset: {}", file.getName());
