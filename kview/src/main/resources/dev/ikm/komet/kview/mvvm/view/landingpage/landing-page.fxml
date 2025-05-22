@@ -395,7 +395,7 @@
                                  </styleClass></Region>
                            </graphic>
                         </Button>
-                        <Button minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" styleClass="import-button" text="IMPORT">
+                        <Button fx:id="importButton" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" styleClass="import-button" onAction="#openImport" text="IMPORT">
                            <graphic>
                               <Region prefHeight="200.0" prefWidth="200.0" styleClass="import-symbol" />
                            </graphic>

@@ -24,6 +24,7 @@ import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.ScreenInfo;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
+import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -138,6 +139,7 @@ import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
+import static dev.ikm.komet.framework.events.FrameworkTopics.IMPORT_TOPIC;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.CENTER_TAB_PREFERENCES;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.LEFT_TAB_PREFERENCES;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.RIGHT_TAB_PREFERENCES;
@@ -413,6 +415,12 @@ public class WebApp extends Application {
 
         // Subscribe the subscriber to the USER_TOPIC
         kViewEventBus.subscribe(USER_TOPIC, SignInUserEvent.class, signInUserEventSubscriber);
+
+        //Pops up the import dialog window on any events received on the IMPORT_TOPIC
+        Subscriber<Evt> importSubscriber = _ -> {
+            openImport(primaryStage);
+        };
+        kViewEventBus.subscribe(IMPORT_TOPIC, Evt.class, importSubscriber);
     }
 
     @Override
