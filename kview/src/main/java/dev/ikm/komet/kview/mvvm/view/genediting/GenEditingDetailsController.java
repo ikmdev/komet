@@ -269,7 +269,6 @@ public class GenEditingDetailsController {
         } else {
             genEditingViewModel.setPropertyValue(MODE, EDIT);
             observableSemantic = ObservableEntity.get(semantic.nid());
-//            updateVersions(Entity.getFast(observableSemantic.nid()), observableSemantic);
             observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
             //retrieve latest committed semanticVersion
             semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
