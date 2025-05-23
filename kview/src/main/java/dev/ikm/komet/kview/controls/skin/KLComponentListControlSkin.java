@@ -178,13 +178,17 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         KLComponentControl componentControl = (KLComponentControl) dragEvent.getGestureSource();
         KLComponentListControl<T> control = getSkinnable();
         int componentNid = componentControl.getEntity().nid();
+        int indexOfSourceComponent = componentControls.indexOf(componentControl);
 
         if (currentDropLine != null) {
             currentDropLine.setVisible(false);
         }
 
-        MutableIntList mutableList = createMutableIntListCopy(control.getValue());
+        if (currentDropIndex > indexOfSourceComponent) {
+            currentDropIndex = currentDropIndex - 1;
+        }
 
+        MutableIntList mutableList = createMutableIntListCopy(control.getValue());
         mutableList.remove(componentNid);
         mutableList.addAtIndex(currentDropIndex, componentNid);
         setValueFromIntList(mutableList);
