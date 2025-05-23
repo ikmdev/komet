@@ -2,16 +2,13 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.FilterTitledPaneSkin;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TitledPane;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class FilterTitledPane extends TitledPane {
 
@@ -67,14 +64,10 @@ public class FilterTitledPane extends TitledPane {
         multiSelectProperty.set(value);
     }
 
-    // options
-    private final List<String> options = new ArrayList<>();
-    public final List<String> getOptions() {
-        return options;
-    }
-    public final void setOptions(List<String> value) {
-        options.clear();
-        options.addAll(value);
+    // availableOptionsProperty
+    private final ObservableList<String> availableOptionsProperty = FXCollections.observableArrayList();
+    public final ObservableList<String> getAvailableOptions() {
+       return availableOptionsProperty;
     }
 
     @Override

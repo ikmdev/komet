@@ -147,6 +147,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         });
 
         filterOptionsPopup = new FilterOptionsPopup();
+        filterOptionsPopup.navigatorProperty().bind(control.navigatorProperty());
         getSkinnable().parentProperty().subscribe(parent -> {
             if (parent instanceof Region region) {
                 region.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h));
@@ -233,6 +234,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         textField.onActionProperty().unbind();
         closePane.visibleProperty().unbind();
         closePane.managedProperty().unbind();
+        filterOptionsPopup.navigatorProperty().unbind();
         super.dispose();
     }
 

@@ -3,6 +3,8 @@ package dev.ikm.komet.kview.controls.skin;
 import dev.ikm.komet.kview.controls.FilterTitledPane;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.TruncatedTextFlow;
+import javafx.beans.binding.Bindings;
+import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
@@ -66,7 +68,7 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
 
         contentBox = new VBox(separatorRegion);
         contentBox.getStyleClass().add("content-box");
-        control.getOptions().forEach(o -> {
+        control.getAvailableOptions().forEach(o -> {
             ToggleButton toggle = new ToggleButton(o, new IconRegion("check"));
             toggle.getStyleClass().add("option-toggle");
             if (!control.isMultiSelect()) {
@@ -74,7 +76,27 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
             }
             contentBox.getChildren().add(toggle);
         });
+
+        control.getAvailableOptions().addListener((ListChangeListener<String>) c -> {
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    c.getAddedSubList().forEach(o -> {
+                        ToggleButton toggle = new ToggleButton(o, new IconRegion("check"));
+                        toggle.getStyleClass().add("option-toggle");
+                        if (!control.isMultiSelect()) {
+                            toggle.setToggleGroup(toggleGroup);
+                        }
+                        contentBox.getChildren().add(toggle);
+                    });
+                } else if (c.wasRemoved()) {
+                    c.getRemoved().forEach(o ->
+                            contentBox.getChildren().removeIf(t -> t instanceof ToggleButton toggle &&
+                                    toggle.getText().equals(o.toString())));
+                }
+            }
+        });
         control.setContent(contentBox);
+        allToggle.disableProperty().bind(Bindings.size(contentBox.getChildren()).lessThanOrEqualTo(1));
 
         setupTitledPane();
     }

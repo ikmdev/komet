@@ -911,6 +911,7 @@ public class JournalController {
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
         Navigator navigator = new ViewNavigator(viewProperties.nodeView());
         KLSearchControl searchControl = new KLSearchControl();
+        searchControl.setNavigator(navigator);
         searchControl.setOnAction(_ -> {
             ViewCalculator calculator = viewProperties.calculator();
             searchControl.setResultsPlaceholder("Searching..."); // DUMMY, resources?

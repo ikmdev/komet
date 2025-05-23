@@ -4,6 +4,9 @@ import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.FilterTitledPane;
 import dev.ikm.komet.kview.controls.IconRegion;
+import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
+import dev.ikm.tinkar.entity.Entity;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
@@ -18,6 +21,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Subscription;
 
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
@@ -31,7 +35,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
     private final Button revertButton;
     private final Button applyButton;
 
-    private final Subscription subscription;
+    private Subscription subscription;
     private Subscription filterSubscription;
 
     private final FilterOptions defaultOptions = FilterOptions.defaultOptions();
@@ -71,17 +75,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         HBox headerBox = new HBox(closePane, title, filterPane);
         headerBox.getStyleClass().add("header-box");
 
-        FilterOptions filterOptions = new FilterOptions();
-        FilterTitledPane statusFilterTitledPane = setupTitledPane(filterOptions.getStatus());
-        FilterTitledPane pathFilterTitledPane = setupTitledPane(filterOptions.getPath());
-        FilterTitledPane languageFilterTitledPane = setupTitledPane(filterOptions.getLanguage());
-        FilterTitledPane descriptionFilterTitledPane = setupTitledPane(filterOptions.getDescription());
-
-        accordion = new Accordion(
-                statusFilterTitledPane,
-                pathFilterTitledPane,
-                languageFilterTitledPane,
-                descriptionFilterTitledPane);
+        accordion = new Accordion();
 
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
@@ -123,6 +117,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         root.getStylesheets().add(FilterOptionsPopup.class.getResource("filter-options-popup.css").toExternalForm());
 
         subscription = control.filterOptionsProperty().subscribe(this::setupFilter);
+        subscription = subscription.and(control.navigatorProperty().subscribe(this::setOptionsFromNavigator));
     }
 
     private void setupFilter(FilterOptions filterOptions) {
@@ -176,7 +171,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         titledPane.setTitle(option.title());
         titledPane.setDefaultOption(option.defaultOption());
         titledPane.setMultiSelect(option.isMultiSelectionAllowed());
-        titledPane.setOptions(option.availableOptions());
+        titledPane.getAvailableOptions().setAll(option.availableOptions());
         titledPane.setExpanded(false);
         return titledPane;
     }
@@ -195,4 +190,62 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         controlFilterOptionsProperty.set(currentFilterOptions);
     }
 
+    private void setOptionsFromNavigator(Navigator navigator) {
+        FilterOptions filterOptions = new FilterOptions();
+        if (navigator == null || navigator.getRootNids() == null || navigator.getRootNids().length == 0) {
+            return;
+        }
+        int rootNid = navigator.getRootNids()[0];
+
+        // sort by:  All first children of root
+        List<String> sortByList = navigator.getChildEdges(rootNid).stream()
+                .map(edge -> Entity.getFast(edge.destinationNid()).description())
+                .toList();
+        filterOptions.getSortBy().availableOptions().setAll(sortByList);
+        FilterTitledPane sortByFilterTitledPane = setupTitledPane(filterOptions.getSortBy());
+
+        // status: all descendents of Status
+        filterOptions.getStatus().availableOptions().setAll(getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.STATUS.getPath()));
+        FilterTitledPane statusFilterTitledPane = setupTitledPane(filterOptions.getStatus());
+
+        // module: all descendents of Module
+        filterOptions.getModule().availableOptions().setAll(getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.MODULE.getPath()));
+        FilterTitledPane moduleFilterTitledPane = setupTitledPane(filterOptions.getModule());
+
+        // path: all descendents of Path
+        filterOptions.getPath().availableOptions().setAll(getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.PATH.getPath()));
+        FilterTitledPane pathFilterTitledPane = setupTitledPane(filterOptions.getPath());
+
+        // language: all descendents of Model concept->Tinkar Model concept->Language
+        filterOptions.getLanguage().availableOptions().setAll(getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.LANGUAGE.getPath()));
+        FilterTitledPane languageFilterTitledPane = setupTitledPane(filterOptions.getLanguage());
+
+        FilterTitledPane descriptionFilterTitledPane = setupTitledPane(filterOptions.getDescription());
+
+        accordion.getPanes().setAll(sortByFilterTitledPane,
+                statusFilterTitledPane,
+                moduleFilterTitledPane,
+                pathFilterTitledPane,
+                languageFilterTitledPane,
+                descriptionFilterTitledPane);
+    }
+
+    private static int findNidForDescription(Navigator navigator, int nid, String description) {
+        return navigator.getChildEdges(nid).stream()
+                .filter(edge -> Entity.getFast(edge.destinationNid()).description().equals(description))
+                .findFirst()
+                .map(Edge::destinationNid)
+                .orElseThrow();
+    }
+
+    private static List<String> getDescendentsList(Navigator navigator, int parentNid, String description) {
+        int nid = parentNid;
+        for (String s : description.split(", ")) {
+            nid = findNidForDescription(navigator, nid, s);
+        }
+        return navigator.getViewCalculator().descendentsOf(nid).intStream().boxed()
+                .map(i -> Entity.getFast(i).description())
+                .sorted()
+                .toList();
+    }
 }
