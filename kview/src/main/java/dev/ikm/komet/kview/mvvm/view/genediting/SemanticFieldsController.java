@@ -24,6 +24,7 @@ import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculateHashValue;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateNode;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
+import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
@@ -43,6 +44,7 @@ import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
@@ -356,6 +358,14 @@ public class SemanticFieldsController {
                                new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
 //                       EntityService.get().beginLoadPhase();
 
+                       toast()
+                           .withUndoAction(
+                                   toastUndoEvent -> System.out.println("Undo")
+                           )
+                           .show(
+                                   Toast.Status.SUCCESS,
+                                   "Semantic created!"
+                           );
 
                    } catch (InterruptedException e) {
                        throw new RuntimeException(e);
