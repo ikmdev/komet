@@ -3,7 +3,6 @@ package dev.ikm.komet.kview.controls;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -20,7 +19,9 @@ public class FilterOptions {
         MODULE("Module"),
         PATH("Path"),
         LANGUAGE("Model concept, Tinkar Model concept, Language"),
-        DESCRIPTION_TYPE("");
+        DESCRIPTION_TYPE(""),
+        KIND_OF(""),
+        MEMBERSHIP("");
 
         private final String path;
 
@@ -34,7 +35,7 @@ public class FilterOptions {
     }
 
     public record Option(OPTION_ITEM item, String title, String defaultOption, ObservableList<String> availableOptions,
-                         ObservableList<String> selectedOptions) {
+                         ObservableList<String> selectedOptions, ObservableList<String> excludedOptions) {
 
         @Override
         public String title() {
@@ -48,7 +49,8 @@ public class FilterOptions {
 
         @Override
         public String toString() {
-            return item + ": " + selectedOptions;
+            return item + ": " + selectedOptions +
+                    (excludedOptions == null || excludedOptions.isEmpty() ? "" : " - " + excludedOptions);
         }
 
         public boolean isMultiSelectionAllowed() {
@@ -60,36 +62,41 @@ public class FilterOptions {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Option option = (Option) o;
-            return Objects.equals(title, option.title) &&
-                    item == option.item &&
-                    Objects.equals(selectedOptions, option.selectedOptions);
+            if (!Objects.equals(item, option.item)) return false;
+            if (!Objects.equals(title, option.title)) return false;
+            if (selectedOptions == null && option.selectedOptions != null) return false;
+            if (selectedOptions != null && (option.selectedOptions == null ||
+                    (selectedOptions.size() != option.selectedOptions.size()))) return false;
+            if (excludedOptions == null && option.excludedOptions != null) return false;
+            return excludedOptions == null || (option.excludedOptions != null &&
+                    (excludedOptions.size() == option.excludedOptions.size()));
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(item, title, selectedOptions);
+            return Objects.hash(item, title, selectedOptions, excludedOptions);
         }
     }
 
     private final Option sortBy = new Option(OPTION_ITEM.SORT_BY, "sortby.title", "sortby.option.all",
             FXCollections.observableArrayList(),
-            FXCollections.observableArrayList());
+            FXCollections.observableArrayList(), null);
 
     private final Option status = new Option(OPTION_ITEM.STATUS, "status.title", "status.option.all",
                 FXCollections.observableArrayList(),
-                FXCollections.observableArrayList());
+                FXCollections.observableArrayList(), null);
 
     private final Option module = new Option(OPTION_ITEM.MODULE, "module.title", "module.option.all",
                 FXCollections.observableArrayList(),
-                FXCollections.observableArrayList());
+                FXCollections.observableArrayList(), null);
 
     private final Option path = new Option(OPTION_ITEM.PATH, "path.title", "path.option.all",
             FXCollections.observableArrayList(),
-            FXCollections.observableArrayList());
+            FXCollections.observableArrayList(), null);
 
     private final Option language = new Option(OPTION_ITEM.LANGUAGE, "language.title", "language.option.all",
                 FXCollections.observableArrayList(),
-                FXCollections.observableArrayList());
+                FXCollections.observableArrayList(), null);
 
     private final Option descriptionType;
     {
@@ -100,13 +107,39 @@ public class FilterOptions {
                 .toList();
         descriptionType = new Option(OPTION_ITEM.DESCRIPTION_TYPE, "description.title", "description.option.all",
                 FXCollections.observableArrayList(descriptionTypeOptions),
+                FXCollections.observableArrayList(), null);
+    }
+
+    private final Option kindOf;
+    {
+        List<String> kindOfOptions = Stream.of(
+                "kindof.option.item1", "kindof.option.item2", "kindof.option.item3", "kindof.option.item4",
+                        "kindof.option.item5", "kindof.option.item6", "kindof.option.item7", "kindof.option.item8",
+                        "kindof.option.item9", "kindof.option.item10", "kindof.option.item11")
+                .map(resources::getString)
+                .toList();
+        kindOf = new Option(OPTION_ITEM.KIND_OF, "kindof.title", "kindof.option.all",
+                FXCollections.observableArrayList(kindOfOptions),
+                FXCollections.observableArrayList(),
                 FXCollections.observableArrayList());
+    }
+
+    private final Option membership;
+    {
+        List<String> membershipOptions = Stream.of(
+                "membership.option.member1", "membership.option.member2", "membership.option.member3",
+                        "membership.option.member4", "membership.option.member5")
+                .map(resources::getString)
+                .toList();
+        membership = new Option(OPTION_ITEM.MEMBERSHIP, "membership.title", "membership.option.all",
+                FXCollections.observableArrayList(membershipOptions),
+                FXCollections.observableArrayList(), null);
     }
 
     private final List<Option> options;
 
     public FilterOptions() {
-        options = List.of(sortBy, status, module, path, language, descriptionType);
+        options = List.of(sortBy, status, module, path, language, descriptionType, kindOf, membership);
     }
 
     public Option getSortBy() {
@@ -133,6 +166,14 @@ public class FilterOptions {
         return descriptionType;
     }
 
+    public Option getKindOf() {
+        return kindOf;
+    }
+
+    public Option getMembership() {
+        return membership;
+    }
+
     public List<Option> getOptions() {
         return options;
     }
@@ -142,19 +183,6 @@ public class FilterOptions {
                 .filter(o -> o.item() == item)
                 .findFirst()
                 .orElseThrow();
-    }
-
-    public static FilterOptions defaultOptions() {
-        FilterOptions filterOptions = new FilterOptions();
-        filterOptions.getOptions().forEach(o -> o.selectedOptions().setAll(o.defaultOption()));
-        return filterOptions;
-    }
-
-    public static List<String> fromString(String options) {
-        if (options == null) {
-            return List.of();
-        }
-        return Arrays.asList(options.split(", "));
     }
 
     @Override
@@ -167,12 +195,14 @@ public class FilterOptions {
                 Objects.equals(path, that.path) &&
                 Objects.equals(language, that.language) &&
                 Objects.equals(descriptionType, that.descriptionType) &&
+                Objects.equals(kindOf, that.kindOf) &&
+                Objects.equals(membership, that.membership) &&
                 Objects.equals(options, that.options);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(sortBy, status, path, language, descriptionType, options);
+        return Objects.hash(sortBy, status, path, language, descriptionType, kindOf, membership, options);
     }
 
     @Override

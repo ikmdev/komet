@@ -64,10 +64,34 @@ public class FilterTitledPane extends TitledPane {
         multiSelectProperty.set(value);
     }
 
+    // excludingProperty
+    private final BooleanProperty excludingProperty = new SimpleBooleanProperty(this, "excluding");
+    public final BooleanProperty excludingProperty() {
+       return excludingProperty;
+    }
+    public final boolean isExcluding() {
+       return excludingProperty.get();
+    }
+    public final void setExcluding(boolean value) {
+        excludingProperty.set(value);
+    }
+
     // availableOptionsProperty
     private final ObservableList<String> availableOptionsProperty = FXCollections.observableArrayList();
     public final ObservableList<String> getAvailableOptions() {
        return availableOptionsProperty;
+    }
+
+    // selectedOptionsProperty
+    private final ObservableList<String> selectedOptionsProperty = FXCollections.observableArrayList();
+    public final ObservableList<String> getSelectedOptions() {
+        return selectedOptionsProperty;
+    }
+
+    // excludedOptionsProperty
+    private final ObservableList<String> excludedOptionsProperty = FXCollections.observableArrayList();
+    public final ObservableList<String> getExcludedOptions() {
+        return excludedOptionsProperty;
     }
 
     @Override

@@ -1,6 +1,6 @@
 .filter-options-popup {
     -fx-background-color: #2E3240;
-    -fx-pref-width: 272;
+    -fx-pref-width: 280;
     -fx-pref-height: -popup-pref-height;
     -fx-padding: 12 8 12 8;
     -fx-spacing: 8;
@@ -115,11 +115,75 @@
     -fx-background-color: #6E7989;
 }
 
-.filter-options-popup > .accordion {
+.filter-options-popup > .scroll-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.filter-options-popup > .scroll-pane > .scroll-bar:vertical,
+.filter-options-popup > .scroll-pane > .scroll-bar:horizontal {
+    -fx-padding: 2;
+}
+
+.filter-options-popup > .scroll-pane > .viewport,
+.filter-options-popup > .scroll-pane > .scroll-bar:horizontal,
+.filter-options-popup > .scroll-pane > .scroll-bar:horizontal:focused,
+.filter-options-popup > .scroll-pane > .scroll-bar:vertical,
+.filter-options-popup > .scroll-pane > .scroll-bar:vertical:focused {
+    -fx-background-color: transparent;
+}
+
+.filter-options-popup > .scroll-pane > .scroll-bar:vertical > .track,
+.filter-options-popup > .scroll-pane > .scroll-bar:horizontal > .track {
+    fx-background-insets: 0;
+}
+
+.filter-options-popup > .scroll-pane > .corner {
+    -fx-background-insets: 0;
+    -fx-background-color: transparent;
+}
+
+.filter-options-popup > .scroll-pane > .scroll-bar:horizontal .track,
+.filter-options-popup > .scroll-pane > .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 0em;
+    -fx-border-radius: 0;
+    -fx-background-insets: 0;
+}
+
+.filter-options-popup > .scroll-pane > .scroll-bar:horizontal .increment-button,
+.filter-options-popup > .scroll-pane > .scroll-bar:horizontal .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0;
+}
+
+.filter-options-popup > .scroll-pane > .scroll-bar:vertical .increment-button,
+.filter-options-popup > .scroll-pane > .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0 4 0 0;
+}
+
+.filter-options-popup > .scroll-pane > .scroll-bar .increment-arrow,
+.filter-options-popup > .scroll-pane > .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
+.filter-options-popup > .scroll-pane > .scroll-bar:horizontal .thumb,
+.filter-options-popup > .scroll-pane > .scroll-bar:vertical .thumb {
+    -fx-background-color: transparent, -Grey-9;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 2, 2;
+}
+
+.filter-options-popup > .scroll-pane .accordion {
     -fx-padding: 0 0 10 0;
 }
 
-.filter-options-popup > .accordion > .titled-pane {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane {
     -fx-content-display: graphic-only;
     -fx-background-color: #2E3240, #545D72, #2E3240;
     -fx-background-insets: 0, 0 0 6 0, 1 1 7 1;
@@ -129,20 +193,20 @@
     -fx-padding: 4;
 }
 
-.filter-options-popup > .accordion > .titled-pane:hover {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:hover {
     -fx-background-color: #2E3240, #4A7AD2, #44495E;
 }
 
-.filter-options-popup > .accordion > .titled-pane:expanded {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded {
     -fx-padding: 4 4 6 4;
     -fx-background-color: #2E3240, #545D72, #44495E;
 }
 
-.filter-options-popup > .accordion > .titled-pane:focused {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:focused {
     -fx-color: transparent;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .title {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-background-radius: 0;
@@ -151,30 +215,30 @@
     -fx-pref-height: 56;
 }
 
-.filter-options-popup > .accordion > .titled-pane:taller > .title {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:taller > .title {
     -fx-padding: 4 -16 11 8;
     -fx-pref-height: 72;
 }
 
-.filter-options-popup > .accordion > .titled-pane:taller:expanded > .title,
-.filter-options-popup > .accordion > .titled-pane:expanded > .title {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:taller:expanded > .title,
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title {
     -fx-padding: 4 -16 0 8;
     -fx-pref-height: 64;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .title > .title-box {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box {
     -fx-alignment: top-left;
     -fx-spacing: 4;
     -fx-padding: 0;
     -fx-pref-height: 52;
 }
 
-.filter-options-popup > .accordion > .titled-pane:expanded > .title > .title-box {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box {
     -fx-spacing: 6;
     -fx-pref-height: 60;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .title > .title-box > .title-label {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .title-label {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 13px;
     -fx-font-style: normal;
@@ -186,11 +250,11 @@
     -fx-alignment: center-left;
 }
 
-.filter-options-popup > .accordion > .titled-pane:expanded > .title > .title-box > .title-label {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box > .title-label {
     -fx-text-fill: #E1E8F1;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .title > .title-box > .title-label > .circle {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .title-label > .circle {
     -fx-pref-width: 4;
     -fx-pref-height: 4;
     -fx-background-radius: 4;
@@ -198,25 +262,35 @@
     -fx-translate-y: -6;
 }
 
-.filter-options-popup > .accordion > .titled-pane:modified > .title > .title-box > .title-label > .circle {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:modified > .title > .title-box > .title-label > .circle {
     -fx-background-color: #F3BE00;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .title > .title-box > .option.truncated-text-flow {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .option.truncated-text-flow {
     -fx-managed: true;
     visibility: visible;
 }
 
-.filter-options-popup > .accordion > .titled-pane:expanded > .title > .title-box > .option.truncated-text-flow {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box > .option.truncated-text-flow {
     -fx-managed: false;
     visibility: hidden;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .title > .title-box > .option.truncated-text-flow > .text {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .option.truncated-text-flow > .text {
     -fx-fill: white;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .title > .title-box > .all-toggle {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .toggles-box {
+    -fx-managed: false;
+    visibility: hidden;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box > .toggles-box {
+    -fx-managed: true;
+    visibility: visible;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .toggles-box > .toggle-button {
     -fx-background-color: #4A7AD2, white;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 12, 12;
@@ -227,21 +301,29 @@
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: #4A7AD2;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .toggles-box > .toggle-button:disabled {
+    -fx-background-color: #9CAABF, #9CAABF;
+    -fx-text-fill: black;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .toggles-box > .exclude-toggle.toggle-button {
     -fx-managed: false;
     visibility: hidden;
 }
 
-.filter-options-popup > .accordion > .titled-pane:expanded > .title > .title-box > .all-toggle {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .toggles-box:excluding > .exclude-toggle.toggle-button {
     -fx-managed: true;
     visibility: visible;
 }
 
-.filter-options-popup > .accordion > .titled-pane:expanded > .title > .title-box > .all-toggle:selected {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box > .toggles-box > .toggle-button:selected {
     -fx-background-color: #5DCF16, #5DCF16;
     -fx-text-fill: black;
 }
 
-.filter-options-popup > .accordion > .titled-pane:expanded > .title > .title-box > .all-toggle > .check {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box > .toggles-box > .toggle-button > .check {
     /* 0, 0.08 10x7.83 */
     -fx-pref-width: 10;
     -fx-pref-height: 7.83;
@@ -251,19 +333,19 @@
     visibility: hidden;
 }
 
-.filter-options-popup > .accordion > .titled-pane:expanded > .title > .title-box > .all-toggle:selected > .check {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box > > .toggles-box > .toggle-button:selected > .check {
     -fx-managed: true;
     visibility: visible;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .title > .arrow-button {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .arrow-button {
     -fx-padding: 0;
     -fx-rotate: 90;
     -fx-pref-width: 20;
     -fx-pref-height: 20;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .title > .arrow-button > .arrow {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .arrow-button > .arrow {
     -fx-background-color: #5896F6;
     -fx-background-insets: 0;
     -fx-shape: "M8.0876 5L6.9126 6.175L10.7293 10L6.9126 13.825L8.0876 15L13.0876 10L8.0876 5Z";
@@ -271,28 +353,34 @@
     -fx-effect: null;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .content {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content {
     -fx-background-color: #44495E;
     -fx-padding: 2;
     -fx-border-color: transparent transparent #545D72 transparent;
     -fx-border-insets: 0;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .content > .content-box {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box {
     -fx-spacing: 6;
     -fx-alignment: center-left;
     -fx-padding: 0 6 1 6;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .content > .content-box > .separator-region {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .separator-region {
     -fx-pref-height: 1;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .content > .content-box > .separator-region > .line {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .separator-region > .line {
     -fx-background-color: #545D72;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .content > .content-box > .option-toggle {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box {
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+    -fx-cursor: hand;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box > .option-toggle {
     -fx-background-color: #4A7AD2, white;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 12, 12;
@@ -304,12 +392,17 @@
     -fx-text-fill: #4A7AD2;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .content > .content-box > .option-toggle:selected {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box > .option-toggle:selected {
     -fx-background-color: #5DCF16, #5DCF16;
     -fx-text-fill: black;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .content > .content-box > .option-toggle > .check {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box > .option-toggle:disabled {
+    -fx-background-color: #9CAABF, #9CAABF;
+    -fx-text-fill: black;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box > .option-toggle > .check {
     /* 0, 0.08 10x7.83 */
     -fx-pref-width: 10;
     -fx-pref-height: 7.83;
@@ -319,8 +412,32 @@
     visibility: hidden;
 }
 
-.filter-options-popup > .accordion > .titled-pane > .content > .content-box > .option-toggle:selected > .check {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box > .option-toggle:selected > .check {
     -fx-managed: true;
     visibility: visible;
 }
 
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box > .option-check {
+    -fx-background-color: #F1F3F8, #44495E;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 2, 0;
+    -fx-min-width: 18;
+    -fx-pref-width: 18;
+    -fx-max-width: 18;
+    -fx-min-height: 18;
+    -fx-pref-height: 18;
+    -fx-max-height: 18;
+    -fx-managed: false;
+    visibility: hidden;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box:excluded > .option-check {
+    -fx-managed: true;
+    visibility: visible;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box > .option-check > .cross {
+    -fx-background-color: #5DCF16;
+    -fx-scale-shape: false;
+    -fx-shape: "M10.361 9 14.354 12.993 12.993 14.354 9 10.361 5.007 14.354 3.646 12.993 7.639 9 3.646 5.007 5.007 3.646 9 7.639 12.993 3.646 14.354 5.007 10.361 9Z";
+}

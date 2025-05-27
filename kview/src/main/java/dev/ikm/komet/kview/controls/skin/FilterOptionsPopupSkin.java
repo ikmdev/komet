@@ -13,6 +13,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Skin;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -38,7 +39,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
     private Subscription subscription;
     private Subscription filterSubscription;
 
-    private final FilterOptions defaultOptions = FilterOptions.defaultOptions();
+    private final FilterOptions defaultFilterOptions = new FilterOptions();
     private final ObjectProperty<FilterOptions> controlFilterOptionsProperty = new SimpleObjectProperty<>() {
         @Override
         protected void invalidated() {
@@ -52,7 +53,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         @Override
         protected void invalidated() {
             if (get() != null) {
-                revertButton.setDisable(defaultOptions.equals(get()));
+                revertButton.setDisable(defaultFilterOptions.equals(get()));
             }
         }
     };
@@ -76,6 +77,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         headerBox.getStyleClass().add("header-box");
 
         accordion = new Accordion();
+        ScrollPane scrollPane = new ScrollPane(accordion);
 
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
@@ -89,8 +91,11 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                     .map(FilterTitledPane.class::cast)
                     .forEach(pane -> {
                         if (pane.getUserData() instanceof FilterOptions.Option option) {
-                            currentFilterOptions.getOptionForItem(option.item())
-                                    .selectedOptions().setAll(FilterOptions.fromString(pane.getOption()));
+                            FilterOptions.Option optionForItem = currentFilterOptions.getOptionForItem(option.item());
+                            optionForItem.selectedOptions().setAll(pane.getSelectedOptions());
+                            if (pane.isExcluding()) {
+                                optionForItem.excludedOptions().setAll(pane.getExcludedOptions());
+                            }
                         }
                     });
             control.setFilterOptions(currentFilterOptions);
@@ -105,14 +110,15 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         revertButton = new Button(resources.getString("button.revert"));
         revertButton.setOnAction(_ -> {
             accordion.setExpandedPane(null);
-            control.setFilterOptions(defaultOptions);
+            control.setFilterOptions(null);
+            setOptionsFromNavigator(control.getNavigator());
             updateInstantFilterOptions();
         });
 
         VBox bottomBox = new VBox(applyButton, saveButton, revertButton);
         bottomBox.getStyleClass().add("bottom-box");
 
-        root = new VBox(headerBox, accordion, spacer, bottomBox);
+        root = new VBox(headerBox, scrollPane, spacer, bottomBox);
         root.getStyleClass().add("filter-options-popup");
         root.getStylesheets().add(FilterOptionsPopup.class.getResource("filter-options-popup.css").toExternalForm());
 
@@ -121,14 +127,23 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
     }
 
     private void setupFilter(FilterOptions filterOptions) {
+        if (filterSubscription != null) {
+            filterSubscription.unsubscribe();
+        }
+        if (filterOptions == null) {
+            return;
+        }
         // changes from titledPane control:
         filterSubscription = Subscription.EMPTY;
         accordion.getPanes().stream()
                 .map(FilterTitledPane.class::cast)
                 .forEach(pane -> {
-                    filterSubscription = filterSubscription.and(pane.optionProperty().subscribe(s -> {
+                    filterSubscription = filterSubscription.and(pane.optionProperty().subscribe((o, s) -> {
                         if (s != null && pane.getUserData() instanceof FilterOptions.Option option) {
-                            option.selectedOptions().setAll(FilterOptions.fromString(s));
+                            option.selectedOptions().setAll(pane.getSelectedOptions());
+                            if (pane.isExcluding()) {
+                                option.excludedOptions().setAll(pane.getExcludedOptions());
+                            }
                             updateInstantFilterOptions();
                         }
                     }));
@@ -139,8 +154,11 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                 .map(FilterTitledPane.class::cast)
                 .forEach(pane -> {
                     if (pane.getUserData() instanceof FilterOptions.Option option) {
-                        pane.setOption(String.join(", ",
-                                filterOptions.getOptionForItem(option.item()).selectedOptions()));
+                        FilterOptions.Option optionForItem = filterOptions.getOptionForItem(option.item());
+                        pane.getSelectedOptions().setAll(optionForItem.selectedOptions());
+                        if (optionForItem.excludedOptions() != null) {
+                            pane.getExcludedOptions().setAll(optionForItem.excludedOptions());
+                        }
                     }
                 });
     }
@@ -165,25 +183,17 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         }
     }
 
-    private FilterTitledPane setupTitledPane(FilterOptions.Option option) {
-        FilterTitledPane titledPane = new FilterTitledPane();
-        titledPane.setUserData(option);
-        titledPane.setTitle(option.title());
-        titledPane.setDefaultOption(option.defaultOption());
-        titledPane.setMultiSelect(option.isMultiSelectionAllowed());
-        titledPane.getAvailableOptions().setAll(option.availableOptions());
-        titledPane.setExpanded(false);
-        return titledPane;
-    }
-
     private void updateInstantFilterOptions() {
         FilterOptions currentFilterOptions = new FilterOptions();
         accordion.getPanes().stream()
                 .map(FilterTitledPane.class::cast)
                 .forEach(pane -> {
                     if (pane.getUserData() instanceof FilterOptions.Option option) {
-                        currentFilterOptions.getOptionForItem(option.item())
-                                .selectedOptions().setAll(FilterOptions.fromString(pane.getOption()));
+                        FilterOptions.Option optionForItem = currentFilterOptions.getOptionForItem(option.item());
+                        optionForItem.selectedOptions().setAll(pane.getSelectedOptions());
+                        if (pane.isExcluding()) {
+                            optionForItem.excludedOptions().setAll(pane.getExcludedOptions());
+                        }
                     }
                 });
         currentFilterOptionsProperty.set(currentFilterOptions);
@@ -201,33 +211,78 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         List<String> sortByList = navigator.getChildEdges(rootNid).stream()
                 .map(edge -> Entity.getFast(edge.destinationNid()).description())
                 .toList();
-        filterOptions.getSortBy().availableOptions().setAll(sortByList);
-        FilterTitledPane sortByFilterTitledPane = setupTitledPane(filterOptions.getSortBy());
+        FilterOptions.Option option = filterOptions.getSortBy();
+        option.availableOptions().setAll(sortByList);
+        FilterTitledPane sortByFilterTitledPane = setupTitledPane(option);
+        defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().setAll(option.availableOptions());
 
         // status: all descendents of Status
-        filterOptions.getStatus().availableOptions().setAll(getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.STATUS.getPath()));
-        FilterTitledPane statusFilterTitledPane = setupTitledPane(filterOptions.getStatus());
+        option = filterOptions.getStatus();
+        option.availableOptions().setAll(getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.STATUS.getPath()));
+        FilterTitledPane statusFilterTitledPane = setupTitledPane(option);
+        defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().setAll(option.availableOptions());
 
         // module: all descendents of Module
-        filterOptions.getModule().availableOptions().setAll(getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.MODULE.getPath()));
-        FilterTitledPane moduleFilterTitledPane = setupTitledPane(filterOptions.getModule());
+        option = filterOptions.getModule();
+        option.availableOptions().setAll(getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.MODULE.getPath()));
+        FilterTitledPane moduleFilterTitledPane = setupTitledPane(option);
+        defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().setAll(option.availableOptions());
 
         // path: all descendents of Path
-        filterOptions.getPath().availableOptions().setAll(getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.PATH.getPath()));
-        FilterTitledPane pathFilterTitledPane = setupTitledPane(filterOptions.getPath());
+        option = filterOptions.getPath();
+        option.availableOptions().setAll(getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.PATH.getPath()));
+        FilterTitledPane pathFilterTitledPane = setupTitledPane(option);
+        defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().setAll(option.availableOptions());
 
         // language: all descendents of Model concept->Tinkar Model concept->Language
-        filterOptions.getLanguage().availableOptions().setAll(getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.LANGUAGE.getPath()));
-        FilterTitledPane languageFilterTitledPane = setupTitledPane(filterOptions.getLanguage());
+        option = filterOptions.getLanguage();
+        option.availableOptions().setAll(getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.LANGUAGE.getPath()));
+        FilterTitledPane languageFilterTitledPane = setupTitledPane(option);
+        defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().setAll(option.availableOptions());
 
-        FilterTitledPane descriptionFilterTitledPane = setupTitledPane(filterOptions.getDescription());
+        option = filterOptions.getDescription();
+        FilterTitledPane descriptionFilterTitledPane = setupTitledPane(option);
+        defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().setAll(option.availableOptions());
 
-        accordion.getPanes().setAll(sortByFilterTitledPane,
+        option = filterOptions.getKindOf();
+        FilterTitledPane kindOfFilterTitledPane = setupTitledPane(option);
+        defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().setAll(option.availableOptions());
+
+        option = filterOptions.getMembership();
+        FilterTitledPane membershipFilterTitledPane = setupTitledPane(option);
+        defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().setAll(option.availableOptions());
+
+        accordion.getPanes().setAll(
+                sortByFilterTitledPane,
                 statusFilterTitledPane,
                 moduleFilterTitledPane,
                 pathFilterTitledPane,
                 languageFilterTitledPane,
-                descriptionFilterTitledPane);
+                descriptionFilterTitledPane,
+                kindOfFilterTitledPane,
+                membershipFilterTitledPane);
+
+        // set default options
+        control.setFilterOptions(defaultFilterOptions);
+    }
+
+    private FilterTitledPane setupTitledPane(FilterOptions.Option option) {
+        FilterTitledPane titledPane = new FilterTitledPane();
+        titledPane.setUserData(option);
+        titledPane.setTitle(option.title());
+        titledPane.setDefaultOption(option.defaultOption());
+        titledPane.setMultiSelect(option.isMultiSelectionAllowed());
+        titledPane.getAvailableOptions().setAll(option.availableOptions());
+        titledPane.getSelectedOptions().setAll(option.selectedOptions());
+        if (option.excludedOptions() != null) {
+            titledPane.getExcludedOptions().setAll(option.excludedOptions());
+            titledPane.setExcluding(true);
+        } else {
+            titledPane.getExcludedOptions().clear();
+            titledPane.setExcluding(false);
+        }
+        titledPane.setExpanded(false);
+        return titledPane;
     }
 
     private static int findNidForDescription(Navigator navigator, int nid, String description) {
