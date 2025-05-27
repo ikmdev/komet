@@ -1,6 +1,5 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import static dev.ikm.komet.kview.controls.KLComponentControlFactory.createComponentNameRenderer;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.search.SearchResultCell;
