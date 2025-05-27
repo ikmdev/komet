@@ -29,7 +29,7 @@ public class DefaultKlComponentSetField extends BaseDefaultKlField<IntIdSet> imp
         Parent node;
         if (isEditable) {
             KLComponentListControl<IntIdSet> klComponentListControl = KLComponentControlFactory
-                    .createTypeAheadComponentListControl(observableView.calculator().navigationCalculator());
+                    .createTypeAheadComponentListControl(observableView.calculator());
 
             klComponentListControl.setTitle(getTitle());
             klComponentListControl.valueProperty().bindBidirectional(observableComponentSetField.valueProperty());

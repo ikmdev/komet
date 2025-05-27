@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import static dev.ikm.komet.kview.controls.KLComponentControlFactory.createComponentNameRenderer;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.search.SearchResultCell;
@@ -494,7 +495,13 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         imageViewWrapper.getChildren().add(imageView);
         imageViewWrapper.getStyleClass().add("image-view-container");
 
-        Label componentNameLabel = new Label(componentNameLabelFunction.apply(entity));
+        Label componentNameLabel;
+        if (componentNameLabelFunction != null) {
+            // function isn't defined for the list and set, semantic can still be applied to cSet and cList
+            componentNameLabel = new Label(componentNameLabelFunction.apply(entity));
+        } else {
+            componentNameLabel = new Label(entity.description());
+        }
 
         componentNameLabel.getStyleClass().add("selected-concept-description");
 

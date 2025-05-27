@@ -17,6 +17,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,11 +47,12 @@ public class KLComponentControlFactory {
         return componentControl;
     }
 
-    public static <T extends IntIdCollection> KLComponentListControl createTypeAheadComponentListControl(NavigationCalculator calculator) {
+    public static <T extends IntIdCollection> KLComponentListControl createTypeAheadComponentListControl(ViewCalculator viewCalculator) {
         KLComponentListControl<T> componentListControl = new KLComponentListControl<>();
-        componentListControl.setTypeAheadCompleter(createGenericTypeAheadFunction(calculator));
+        NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
+        componentListControl.setTypeAheadCompleter(createGenericTypeAheadFunction(navigationCalculator));
 
-        StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(calculator);
+        StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(navigationCalculator);
         componentListControl.setTypeAheadStringConverter(stringToEntityProxyConverter);
 
         componentListControl.setSuggestionsNodeFactory(entityProxy -> createComponentSuggestionNode(entityProxy, stringToEntityProxyConverter));
@@ -77,10 +80,12 @@ public class KLComponentControlFactory {
         };
     }
 
-    private static Function<EntityProxy, String> createComponentNameRenderer(ViewCalculator viewCalculator,
+
+    public static Function<EntityProxy, String> createComponentNameRenderer(ViewCalculator viewCalculator,
                                                                              KLComponentControl componentControl) {
-        return (entityProxy) -> viewCalculator.languageCalculator()
-                .getDescriptionText(componentControl.getEntity().nid()).get();
+        return (entityProxy) ->
+            viewCalculator.languageCalculator()
+                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(componentControl.getEntity().nid());
     }
 
     private static StringConverter<EntityProxy> createStringToEntityProxyConverter(NavigationCalculator navigationCalculator) {
