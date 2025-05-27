@@ -20,7 +20,7 @@ import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOP
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculteHashValue;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculateHashValue;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateNode;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
@@ -94,7 +94,7 @@ public class SemanticFieldsController {
     private Button cancelButton;
 
     @FXML
-    private Button clearFormButton;
+    private Button clearOrResetFormButton;
 
     @FXML
     private Button submitButton;
@@ -116,14 +116,13 @@ public class SemanticFieldsController {
 
     private boolean reloadPatternNavigator;
 
-    private void enableDisableSubmitButton(){
-        //Disable submit button if any of the fields are blank.
-        boolean disabled = checkForEmptyFields();
-        if (!disabled) {
-            int uncommittedHash = calculteHashValue(observableFields);
-            disabled = (committedHash == uncommittedHash);
-        }
-        submitButton.setDisable(disabled);
+    private void enableDisableButtons() {
+        boolean emptyFields = checkForEmptyFields();
+        int uncommittedHash = calculateHashValue(observableFields);
+        boolean fieldsHaveNotChanged = committedHash == uncommittedHash;
+
+        submitButton.setDisable(emptyFields || fieldsHaveNotChanged);
+        clearOrResetFormButton.setDisable(fieldsHaveNotChanged);
     }
 
     /**
@@ -163,9 +162,9 @@ public class SemanticFieldsController {
                });
            }
         });
-        if (immutableList.get() !=null) {
+        if (immutableList.get() != null) {
             List<ObservableField<?>> observableFieldsList = new ArrayList<>((Collection) immutableList.get());
-            committedHash = calculteHashValue(observableFieldsList);  // and calculate the hashValue for commited data.
+            committedHash = calculateHashValue(observableFieldsList);  // and calculate the hashValue for commited data.
         }
 
     }
@@ -179,22 +178,20 @@ public class SemanticFieldsController {
         genEditingViewModel.save();
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         reloadPatternNavigator = true;
-        clearFormButton.setDisable(true);
-        cancelButton.setDisable(true);
         ObjectProperty<EntityFacade> semanticProperty = genEditingViewModel.getProperty(SEMANTIC);
         // listen if the semantic property is updated during Create mode.
         semanticProperty.addListener( _ -> setupEditSemanticDetails());
 
         if (semantic != null && genEditingViewModel.getPropertyValue(MODE) == EDIT) {
                 //Change the button name to RESET FORM in EDIT MODE
-                clearFormButton.setText("RESET FORM");
+                clearOrResetFormButton.setText("RESET FORM");
             setupEditSemanticDetails();
         }
         genEditingViewModel.getProperty(MODE).subscribe((mode) -> {
             if(mode == EDIT){
-                clearFormButton.setText("RESET FORM");
+                clearOrResetFormButton.setText("RESET FORM");
             }else {
-                clearFormButton.setText("CLEAR FORM");
+                clearOrResetFormButton.setText("CLEAR FORM");
             }
         });
 
@@ -225,7 +222,7 @@ public class SemanticFieldsController {
                         new PatternSavedEvent(this, PatternSavedEvent.PATTERN_CREATION_EVENT));
                 reloadPatternNavigator = false;
             }
-            enableDisableSubmitButton();
+            enableDisableButtons();
         };
 
         EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
@@ -272,13 +269,12 @@ public class SemanticFieldsController {
             // disable calling writeToData method of observable field by setting refresh flag to true.
             FieldRecord<?> fieldRecord = observableField.field();
             nodes.add(generateNode(fieldRecord, observableField, getViewProperties(), true));
+            // Any changes top any observable field should re-enable the clear or reset button
             observableField.autoSaveOn();
           });
 
-        // update hash change
-        committedHash = calculteHashValue(observableFields);
         //Set the hascode for the committed values.
-        enableDisableSubmitButton();
+        enableDisableButtons();
         loadVBox();
     }
 
@@ -296,7 +292,6 @@ public class SemanticFieldsController {
     private void cancel(ActionEvent actionEvent) {
         clearOrResetForm(actionEvent);
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
-        actionEvent.consume();
         // if previous state was closed cancel will close properties bump out.
         // else show
     }
@@ -305,6 +300,7 @@ public class SemanticFieldsController {
     private void clearOrResetForm(ActionEvent actionEvent) {
         Latest<SemanticEntityVersion>  latestCommitted =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
         latestCommitted.ifPresentOrElse(this::resetFieldValues, this::clearField);
+        clearOrResetFormButton.setDisable(true);
     }
 
     /**
@@ -354,7 +350,7 @@ public class SemanticFieldsController {
 //                       EntityService.get().endLoadPhase();
                        createSemanticVersionTransactionTask(transaction).get(); // get() will block until transaction is finished (will refresh view calculator caches)
                        processCommittedValues();
-                       enableDisableSubmitButton();
+                       enableDisableButtons();
                        // EventBus implementation changes to refresh the details area if commit successful
                        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                                new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));

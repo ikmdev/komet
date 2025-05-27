@@ -25,6 +25,7 @@ import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
 import static dev.ikm.komet.kview.fxutils.FXUtils.FX_THREAD_EXECUTOR;
+import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createWindow;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.restoreWindow;
@@ -292,7 +293,6 @@ public class JournalController {
     private final EvtBus journalEventBus = EvtBusFactory.getDefaultEvtBus();
     private volatile boolean isSlideOutOpen = false;
 
-    private final Executor IO_TASK_EXECUTOR = TinkExecutor.threadPool();
     private final Executor VIRTUAL_TASK_EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
     private final List<PublicIdStringKey<ActivityStream>> activityStreams = new ArrayList<>();
 
@@ -594,7 +594,7 @@ public class JournalController {
         Subscriber<ProgressEvent> progressPopupSubscriber = evt -> {
             // if SUMMON event type, load stuff and reference task to progress popup
             if (evt.getEventType() == SUMMON) {
-                Platform.runLater(() -> {
+                runOnFxThread(() -> {
                     // Make the toggle button visible so users can open the popover
                     progressToggleButton.setVisible(true);
 
@@ -653,6 +653,14 @@ public class JournalController {
                         }
                     });
 
+                    // Before adding the progress UI to the popup's vertical container
+                    // Check if we already have 4 progress panes and remove the oldest one if needed
+                    if (progressPopupPane.getChildren().size() >= 4) {
+                        // Remove the oldest progress pane (first child)
+                        Node oldestPane = progressPopupPane.getChildren().getFirst();
+                        progressPopupPane.getChildren().remove(oldestPane);
+                    }
+
                     // Add the progress UI to the popup's vertical container
                     progressPopupPane.getChildren().add(progressPane);
 
@@ -692,6 +700,7 @@ public class JournalController {
         return new Point2D(popupAnchorX, popupAnchorY);
     }
 
+    @SuppressWarnings("unchecked")
     private JFXNode<Pane, ProgressController> createProgressBox(Task<Void> task, String cancelButtonText) {
         // Create one inside the list for bump out
         // Inject Stamp view model into form.
@@ -701,8 +710,7 @@ public class JournalController {
                         .setPropertyValue(CANCEL_BUTTON_TEXT_PROP, cancelButtonText))
                 );
 
-        JFXNode<Pane, ProgressController> progressJFXNode = FXMLMvvmLoader.make(config);
-        return progressJFXNode;
+        return (JFXNode<Pane, ProgressController>) FXMLMvvmLoader.make(config);
     }
 
     public ToggleButton getSettingsToggleButton() {
@@ -1497,7 +1505,7 @@ public class JournalController {
                 LOG.error("Error in asynchronous window save operation for journal '{}'", getTitle(), e);
                 throw new CompletionException(e);
             }
-        }, IO_TASK_EXECUTOR);
+        }, TinkExecutor.ioThreadPool());
     }
 
     /**
@@ -1520,7 +1528,7 @@ public class JournalController {
                         journalWindowSettings.getValue(JOURNAL_TITLE), e);
                 throw new CompletionException(e);
             }
-        }, IO_TASK_EXECUTOR);
+        }, TinkExecutor.ioThreadPool());
     }
 
     /**

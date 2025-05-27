@@ -5,8 +5,6 @@ import javafx.animation.PauseTransition;
 import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
-import javafx.scene.control.SkinBase;
-import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.util.Duration;
 import javafx.util.Subscription;
@@ -18,7 +16,7 @@ import java.util.regex.Pattern;
 /**
  * Default skin implementation for the {@link KLIntegerControl} control
  */
-public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
+public class KLIntegerControlSkin extends KLDebounceControlSkin<KLIntegerControl> {
 
     private static final Pattern NUMERICAL_PATTERN = Pattern.compile("^-?(0|[1-9][0-9]*)$"); // allow '-', don't start with 0, but allow a zero by itself
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.integer-control");
@@ -28,11 +26,9 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
     public static final Duration ERROR_DURATION = Duration.seconds(5);
 
     private final Label titleLabel;
-    private final TextField textField;
     private final Label errorLabel;
 
     private Subscription subscription;
-    private boolean textChangedViaKeyEvent;
 
     /**
      * Creates a new KLIntegerControlSkin instance, installing the necessary child
@@ -48,7 +44,6 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
         titleLabel.textProperty().bind(control.titleProperty());
         titleLabel.getStyleClass().add("editable-title-label");
 
-        textField = new TextField();
         textField.promptTextProperty().bind(control.promptTextProperty());
         textField.getStyleClass().add("value-text-field");
 
@@ -103,20 +98,7 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
         }));
 
         // value was set externally
-        subscription = control.valueProperty().subscribe(nv -> {
-            if (!textChangedViaKeyEvent) {
-                textField.setText(nv == null ? null : nv.toString());
-            }
-        });
-        subscription = subscription.and(textField.textProperty().subscribe(nv -> {
-            textChangedViaKeyEvent = true;
-            if (nv == null || nv.isEmpty() || "-".equals(nv)) {
-                control.setValue(null);
-            } else {
-                control.setValue(Integer.parseInt(nv));
-            }
-            textChangedViaKeyEvent = false;
-        }));
+        subscription = control.valueProperty().subscribe(nv -> textField.setText(nv == null ? null : nv.toString()));
 
         final PauseTransition pauseTransition = new PauseTransition(ERROR_DURATION);
         pauseTransition.setOnFinished(f -> {
@@ -132,6 +114,21 @@ public class KLIntegerControlSkin extends SkinBase<KLIntegerControl> {
                 pauseTransition.stop();
             }
         }));
+    }
+
+    @Override
+    protected void updateValueProperty() {
+        String nv = textField.getText();
+        KLIntegerControl control = getSkinnable();
+        if (nv == null || nv.isEmpty() || "-".equals(nv)) {
+            control.setValue(null);
+        } else {
+            try{
+                control.setValue(Integer.parseInt(nv));
+            } catch (NumberFormatException e) {
+            // ignore, and keep control with its old value
+            }
+        }
     }
 
     /** {@inheritDoc} */
