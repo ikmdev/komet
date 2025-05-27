@@ -267,12 +267,6 @@
                                           <Hyperlink text="Attachment" />
                                           <Hyperlink text="Comment" />
                                        </ResponsiveTextFlow>
-
-                                       <AnchorPane fx:id="imageContainer" maxWidth="248.0" minWidth="206.0">
-                                          <ImageView fitWidth="${imageContainer.width}" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="6.0">
-                                             <Image url="@placeholder-concept-image.png" />
-                                          </ImageView>
-                                       </AnchorPane>
                                     </VBox>
 
                                     <!-- RIGHT COLUMN: Other Names area -->
