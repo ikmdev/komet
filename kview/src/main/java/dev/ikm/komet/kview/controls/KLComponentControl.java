@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.kview.controls.skin.KLComponentControlSkin;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.ConceptRecord;
@@ -19,9 +20,11 @@ import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
+import javafx.util.Pair;
 import javafx.util.StringConverter;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -128,11 +131,11 @@ public class KLComponentControl extends Control {
     public final ObjectProperty<Function<String, List<EntityProxy>>> completerProperty() { return completer; }
 
     // -- function to render the component's name and avoid entity.description()
-    private Function<EntityProxy, String> componentNameRenderer = null;
+    private final ObjectProperty<Function<EntityProxy, String>> componentNameRenderer = new SimpleObjectProperty<>();
     public final void setComponentNameRenderer(Function<EntityProxy, String> nameHandler) {
-        componentNameRenderer = nameHandler;
+        componentNameRenderer.set(nameHandler);
     }
-    public final Function<EntityProxy, String> getComponentNameRenderer() {
+    public final ObjectProperty<Function<EntityProxy, String>> getComponentNameRenderer() {
         return componentNameRenderer;
     }
 

@@ -20,6 +20,7 @@ import javafx.util.StringConverter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class KLComponentControlFactory {
@@ -35,7 +36,7 @@ public class KLComponentControlFactory {
         NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
         componentControl.setTypeAheadCompleter(createGenericTypeAheadFunction(navigationCalculator));
 
-        //
+        // add the function to render the component name
         componentControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator, componentControl));
 
         StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(navigationCalculator);
@@ -77,8 +78,10 @@ public class KLComponentControlFactory {
         };
     }
 
-    private static Function<EntityProxy, String> createComponentNameRenderer(ViewCalculator viewCalculator, KLComponentControl componentControl) {
-        return theEntityProxy -> viewCalculator.languageCalculator().getDescriptionText(componentControl.getEntity().nid()).get();
+    private static Function<EntityProxy, String> createComponentNameRenderer(ViewCalculator viewCalculator,
+                                                                             KLComponentControl componentControl) {
+        return (entityProxy) -> viewCalculator.languageCalculator()
+                .getDescriptionText(componentControl.getEntity().nid()).get();
     }
 
     private static StringConverter<EntityProxy> createStringToEntityProxyConverter(NavigationCalculator navigationCalculator) {

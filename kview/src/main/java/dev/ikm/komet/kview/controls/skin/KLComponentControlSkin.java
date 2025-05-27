@@ -118,15 +118,12 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         control.entityProperty().addListener((observable, oldValue, newValue) -> {
             if (!control.isEmpty()) {
-                control.getComponentNameRenderer().apply(control.getEntity());
-                addConceptNode(getSkinnable().getEntity(), control.getComponentNameRenderer());
+                addConceptNode(control.getEntity(), control.getComponentNameRenderer().getValue());
             }
         });
         if (!control.isEmpty()) {
-            control.getComponentNameRenderer().apply(control.getEntity());
-            addConceptNode(control.getEntity(), control.getComponentNameRenderer());
+            addConceptNode(control.getEntity(), control.getComponentNameRenderer().getValue());
         }
-
 
     }
 
@@ -245,7 +242,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                         if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
                                 !componentSetControl.getValue().contains(nid)) {
                             control.setEntity(entity); // TODO: .description() is often null or empty.
-                            addConceptNode(entity, control.getComponentNameRenderer());
+                            addConceptNode(entity, control.getComponentNameRenderer().getValue());
 
                             event.setDropCompleted(true);
                             event.consume();
@@ -487,7 +484,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     }
 
 
-    private void addConceptNode(EntityProxy entity, Function<EntityProxy, String> functionObject) {
+    private void addConceptNode(EntityProxy entity, Function<EntityProxy, String> componentNameLabelFunction) {
         Image identicon = Identicon.generateIdenticonImage(entity.publicId());
         ImageView imageView = new ImageView();
         imageView.setFitWidth(16);
@@ -498,10 +495,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         imageViewWrapper.getChildren().add(imageView);
         imageViewWrapper.getStyleClass().add("image-view-container");
 
-        //Label conceptNameLabel = new Label(entity.description()); //FIXME description is not always present
-        // getComponentNameRenderer... how do I get this?
-
-        Label componentNameLabel = new Label(""); //FIXME ??? how do I get the function's result here???
+        Label componentNameLabel = new Label(componentNameLabelFunction.apply(entity));
 
         componentNameLabel.getStyleClass().add("selected-concept-description");
 
