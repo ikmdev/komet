@@ -1,9 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
-import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.kview.controls.skin.KLComponentControlSkin;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.BooleanProperty;
@@ -20,11 +18,9 @@ import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
-import javafx.util.Pair;
 import javafx.util.StringConverter;
 
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
