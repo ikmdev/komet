@@ -349,6 +349,9 @@ public class SemanticFieldsController {
                    try {
 //                       EntityService.get().endLoadPhase();
                        createSemanticVersionTransactionTask(transaction).get(); // get() will block until transaction is finished (will refresh view calculator caches)
+                       //update the observableSemantic version and observableSemanticSnapShot
+                       observableSemantic = ObservableEntity.get(semantic.nid());
+                       observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
                        processCommittedValues();
                        enableDisableButtons();
                        // EventBus implementation changes to refresh the details area if commit successful
