@@ -358,8 +358,8 @@ public class SemanticFieldsController {
                                new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
 //                       EntityService.get().beginLoadPhase();
                        toast()
-                               .withUndoAction(
-                                       toastUndoEvent -> System.out.println("Undo")
+                               .withUndoAction(undoActionEvent ->
+                                       LOG.info("undo called")
                                )
                                .show(
                                        Toast.Status.SUCCESS,
