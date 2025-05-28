@@ -218,6 +218,9 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         componentControl.setTypeAheadStringConverter(control.getTypeAheadStringConverter());
         componentControl.setSuggestionsNodeFactory(control.getSuggestionsNodeFactory());
 
+        // Setup name renderer
+        componentControl.setComponentNameRenderer(control.getComponentNameRenderer());
+
         componentControls.add(componentControl);
 
         Subscription subscription = componentControl.entityProperty().subscribe(entity -> {

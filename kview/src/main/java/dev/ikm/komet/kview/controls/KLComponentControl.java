@@ -128,10 +128,11 @@ public class KLComponentControl extends Control {
 
     // -- function to render the component's name and avoid entity.description()
     private final ObjectProperty<Function<EntityProxy, String>> componentNameRenderer = new SimpleObjectProperty<>();
+    public final Function<EntityProxy, String> getComponentNameRenderer() { return componentNameRenderer.get(); }
     public final void setComponentNameRenderer(Function<EntityProxy, String> nameHandler) {
         componentNameRenderer.set(nameHandler);
     }
-    public final ObjectProperty<Function<EntityProxy, String>> getComponentNameRenderer() {
+    public final ObjectProperty<Function<EntityProxy, String>> getComponentNameRendererProperty() {
         return componentNameRenderer;
     }
 

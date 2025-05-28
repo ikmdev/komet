@@ -117,11 +117,11 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         control.entityProperty().addListener((observable, oldValue, newValue) -> {
             if (!control.isEmpty()) {
-                addConceptNode(control.getEntity(), control.getComponentNameRenderer().getValue());
+                addConceptNode(control.getEntity(), control.getComponentNameRenderer());
             }
         });
         if (!control.isEmpty()) {
-            addConceptNode(control.getEntity(), control.getComponentNameRenderer().getValue());
+            addConceptNode(control.getEntity(), control.getComponentNameRenderer());
         }
 
     }
@@ -240,8 +240,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                         EntityProxy entity = Entity.getFast(nid).toProxy();
                         if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
                                 !componentSetControl.getValue().contains(nid)) {
-                            control.setEntity(entity); // TODO: .description() is often null or empty.
-                            addConceptNode(entity, control.getComponentNameRenderer().getValue());
+                            control.setEntity(entity);
+                            addConceptNode(entity, control.getComponentNameRenderer());
 
                             event.setDropCompleted(true);
                             event.consume();
@@ -494,13 +494,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         imageViewWrapper.getChildren().add(imageView);
         imageViewWrapper.getStyleClass().add("image-view-container");
 
-        Label componentNameLabel;
-        if (componentNameLabelFunction != null) {
-            // function isn't defined for the list and set, semantic can still be applied to cSet and cList
-            componentNameLabel = new Label(componentNameLabelFunction.apply(entity));
-        } else {
-            componentNameLabel = new Label(entity.description());
-        }
+        Label componentNameLabel = new Label(componentNameLabelFunction.apply(entity));
 
         componentNameLabel.getStyleClass().add("selected-concept-description");
 

@@ -38,7 +38,7 @@ public class KLComponentControlFactory {
         componentControl.setTypeAheadCompleter(createGenericTypeAheadFunction(navigationCalculator));
 
         // add the function to render the component name
-        componentControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator, componentControl));
+        componentControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator));
 
         StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(navigationCalculator);
         componentControl.setTypeAheadStringConverter(stringToEntityProxyConverter);
@@ -51,6 +51,9 @@ public class KLComponentControlFactory {
         KLComponentListControl<T> componentListControl = new KLComponentListControl<>();
         NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
         componentListControl.setTypeAheadCompleter(createGenericTypeAheadFunction(navigationCalculator));
+
+        // add the function to render the component name
+        componentListControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator));
 
         StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(navigationCalculator);
         componentListControl.setTypeAheadStringConverter(stringToEntityProxyConverter);
@@ -81,11 +84,10 @@ public class KLComponentControlFactory {
     }
 
 
-    public static Function<EntityProxy, String> createComponentNameRenderer(ViewCalculator viewCalculator,
-                                                                             KLComponentControl componentControl) {
+    private static Function<EntityProxy, String> createComponentNameRenderer(ViewCalculator viewCalculator) {
         return (entityProxy) ->
             viewCalculator.languageCalculator()
-                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(componentControl.getEntity().nid());
+                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
     }
 
     private static StringConverter<EntityProxy> createStringToEntityProxyConverter(NavigationCalculator navigationCalculator) {

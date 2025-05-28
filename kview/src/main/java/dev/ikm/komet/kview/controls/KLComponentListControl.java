@@ -98,6 +98,16 @@ public class KLComponentListControl<T extends IntIdCollection> extends Control {
     public final Function<EntityProxy, Node> getSuggestionsNodeFactory() { return suggestionsNodeFactory.get(); }
     public final ObjectProperty<Function<EntityProxy, Node>> suggestionsNodeFactoryProperty() { return suggestionsNodeFactory; }
 
+    // -- function to render the component's name and avoid entity.description()
+    private final ObjectProperty<Function<EntityProxy, String>> componentNameRenderer = new SimpleObjectProperty<>();
+    public final void setComponentNameRenderer(Function<EntityProxy, String> nameHandler) {
+        componentNameRenderer.set(nameHandler);
+    }
+    public final Function<EntityProxy, String> getComponentNameRenderer() { return componentNameRenderer.get(); }
+    public final ObjectProperty<Function<EntityProxy, String>> getComponentNameRendererProperty() {
+        return componentNameRenderer;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected Skin<?> createDefaultSkin() {
