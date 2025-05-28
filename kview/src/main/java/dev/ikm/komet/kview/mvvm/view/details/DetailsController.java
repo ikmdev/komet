@@ -1010,9 +1010,9 @@ public class DetailsController  {
             PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
 
             int descFieldType = getFieldIndexByMeaning(semanticEntityVersion, TinkarTerm.DESCRIPTION_TYPE);
-            ConceptFacade fldTypeValue = (ConceptFacade) semanticEntityVersion.fieldValues().get(descFieldType);
-            boolean isFQN = FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() == fldTypeValue.nid();
-            boolean isOtherName = REGULAR_NAME_DESCRIPTION_TYPE.nid() == fldTypeValue.nid();
+            ConceptFacade fieldTypeValue = (ConceptFacade) semanticEntityVersion.fieldValues().get(descFieldType);
+            boolean isFQN = FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
+            boolean isOtherName = REGULAR_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
 
             if (isFQN) {
                 // Latest FQN
