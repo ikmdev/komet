@@ -349,6 +349,9 @@ public class SemanticFieldsController {
                createSemanticVersionTransactionTask(transaction, () -> {
                    // This runs after the first transaction parameter runs
                    Platform.runLater(() -> {
+                       //update the observableSemantic version and observableSemanticSnapShot
+                       observableSemantic = ObservableEntity.get(semantic.nid());
+                       observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
                        processCommittedValues();
                        enableDisableButtons();
                        // EventBus implementation changes to refresh the details area if commit successful
