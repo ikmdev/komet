@@ -24,6 +24,7 @@ import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculateHashValue;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateNode;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
+import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
@@ -43,6 +44,7 @@ import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
@@ -349,12 +351,23 @@ public class SemanticFieldsController {
                createSemanticVersionTransactionTask(transaction, () -> {
                    // This runs after the first transaction parameter runs
                    Platform.runLater(() -> {
+                       //update the observableSemantic version and observableSemanticSnapShot
+                       observableSemantic = ObservableEntity.get(semantic.nid());
+                       observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
                        processCommittedValues();
                        enableDisableButtons();
                        // EventBus implementation changes to refresh the details area if commit successful
                        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                                new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
 //                       EntityService.get().beginLoadPhase();
+                       toast()
+                               .withUndoAction(undoActionEvent ->
+                                       LOG.info("undo called")
+                               )
+                               .show(
+                                       Toast.Status.SUCCESS,
+                                       "Semantic Details Added Successfully!"
+                               );
                    });
                });
            }, () -> {
