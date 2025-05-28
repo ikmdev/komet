@@ -24,6 +24,7 @@ import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculateHashValue;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateNode;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
+import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
@@ -43,6 +44,7 @@ import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
@@ -61,6 +63,7 @@ import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -79,7 +82,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -345,24 +347,29 @@ public class SemanticFieldsController {
            StampRecord stamp = Entity.getStamp(semanticEntityVersion.stampNid());
            SemanticVersionRecord version = Entity.getVersionFast(semantic.nid(), stamp.nid());
            Transaction.forVersion(version).ifPresentOrElse(transaction -> {
-
-                   try {
-//                       EntityService.get().endLoadPhase();
-                       createSemanticVersionTransactionTask(transaction).get(); // get() will block until transaction is finished (will refresh view calculator caches)
+               //                       EntityService.get().endLoadPhase();
+               createSemanticVersionTransactionTask(transaction, () -> {
+                   // This runs after the first transaction parameter runs
+                   Platform.runLater(() -> {
+                       //update the observableSemantic version and observableSemanticSnapShot
+                       observableSemantic = ObservableEntity.get(semantic.nid());
+                       observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
                        processCommittedValues();
                        enableDisableButtons();
                        // EventBus implementation changes to refresh the details area if commit successful
                        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                                new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
 //                       EntityService.get().beginLoadPhase();
-
-
-                   } catch (InterruptedException e) {
-                       throw new RuntimeException(e);
-                   } catch (ExecutionException e) {
-                       throw new RuntimeException(e);
-                   }
-
+                       toast()
+                               .withUndoAction(undoActionEvent ->
+                                       LOG.info("undo called")
+                               )
+                               .show(
+                                       Toast.Status.SUCCESS,
+                                       "Semantic Details Added Successfully!"
+                               );
+                   });
+               });
            }, () -> {
                //TODO this is a temp alert / workaround till we figure how to reload transactions across multiple restarts of app.
                LOG.error("Unable to commit: Transaction for the given version does not exist.");
@@ -371,12 +378,14 @@ public class SemanticFieldsController {
                alert.showAndWait();
            });
        });
-
-
     }
 
-    private Future<Void> createSemanticVersionTransactionTask(Transaction transaction) {
+    private Future<Void> createSemanticVersionTransactionTask(Transaction transaction, Runnable runAfterTransactionCompletes) {
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        return TinkExecutor.threadPool().submit(commitTransactionTask);
+        return TinkExecutor.threadPool().submit(() -> {
+            commitTransactionTask.call();
+            runAfterTransactionCompletes.run();
+            return null;
+        });
     }
 }

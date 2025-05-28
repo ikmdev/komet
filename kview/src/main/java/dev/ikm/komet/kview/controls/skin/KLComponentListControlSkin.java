@@ -39,7 +39,6 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
     private final static double SPACE_BETWEEN_NUMBER_AND_CONTROL = 5;
 
     private final Label titleLabel;
-    private final Line topDropLine;
     private final Button addEntryButton;
 
     /**
@@ -49,6 +48,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
      */
     private final List<KLComponentControl> componentControls = new ArrayList<>();
 
+    private final HashMap<KLComponentControl, Subscription> componentControlToSubscription = new HashMap<>();
     private final HashMap<KLComponentControl, Label> componentControlToNumberGraphic = new HashMap<>();
 
     private final HashMap<KLComponentControl, Line> componentToDropLine = new HashMap<>();
@@ -73,15 +73,11 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         titleLabel.getStyleClass().add("editable-title-label");
         titleLabel.textProperty().bind(control.titleProperty());
 
-        topDropLine = createDropLine(null);
+        createDropLine(null);
 
-        // Create component controls based on this control's values
-        control.getValue().forEach(nid -> {
-            if (nid != 0) {
-                EntityProxy entityProxy = EntityProxy.make(nid);
-                createComponentUI(entityProxy.nid());
-            }
-        });
+        // Init Components in Component List and wire up listener
+        resetUI();
+        control.valueProperty().subscribe(this::resetUI);
 
         // Add entry button
         addEntryButton = new Button(getString("add.entry.button.text"));
@@ -91,14 +87,32 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
         getChildren().addAll(titleLabel, addEntryButton);
 
-        createComponentUI(0);
-
         getSkinnable().setOnMouseDragReleased(Event::consume);
 
         // Drag and Drop
         control.addEventFilter(DragEvent.DRAG_OVER, this::onDragOver);
         control.addEventHandler(DragEvent.DRAG_DROPPED, this::onDragDropped);
         control.addEventHandler(DragEvent.DRAG_EXITED, this::onDragExited);
+    }
+
+    private void clearComponents() {
+        for (KLComponentControl componentControl : componentControls) {
+            removeComponentControl(componentControl, componentControlToSubscription.get(componentControl));
+        }
+
+        componentControls.clear();
+    }
+
+    private void resetUI() {
+        clearComponents();
+        getSkinnable().getValue().forEach(nid -> {
+            if (nid != 0) {
+                EntityProxy entityProxy = EntityProxy.make(nid);
+                createComponentUI(entityProxy.nid());
+            }
+        });
+
+        createComponentUI(0);
     }
 
     private void onDragExited(DragEvent dragEvent) {
@@ -164,25 +178,20 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         KLComponentControl componentControl = (KLComponentControl) dragEvent.getGestureSource();
         KLComponentListControl<T> control = getSkinnable();
         int componentNid = componentControl.getEntity().nid();
-
-        IntIdCollection intIdList = control.getValue();
-        MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
-
-        mutableList.remove(componentNid);
-        mutableList.addAtIndex(currentDropIndex, componentNid);
-
-        LOG.info("onDragDropped() currentDropIndex: {}", currentDropIndex);
-
-        componentControls.remove(componentControl);
-        componentControls.add(currentDropIndex, componentControl);
-
-        setValueFromIntList(mutableList);
+        int indexOfSourceComponent = componentControls.indexOf(componentControl);
 
         if (currentDropLine != null) {
             currentDropLine.setVisible(false);
         }
 
-        control.requestLayout();
+        if (currentDropIndex > indexOfSourceComponent) {
+            currentDropIndex = currentDropIndex - 1;
+        }
+
+        MutableIntList mutableList = createMutableIntListCopy(control.getValue());
+        mutableList.remove(componentNid);
+        mutableList.addAtIndex(currentDropIndex, componentNid);
+        setValueFromIntList(mutableList);
 
         dragEvent.setDropCompleted(true);
         dragEvent.consume();
@@ -223,32 +232,26 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
         componentControls.add(componentControl);
 
-        Subscription subscription = componentControl.entityProperty().subscribe(entity -> {
+        Subscription subscription = componentControl.entityProperty().subscribe(() -> {
             if (!componentControl.isEmpty()) {
                 int oldNidIndex = componentControls.indexOf(componentControl);
-                int newNid = entity.nid();
+                int newNid = componentControl.getEntity().nid();
 
                 if (oldNidIndex >= getSkinnable().getValue().size()) { // we're adding a new nid
-                    IntIdCollection intIdCollection = control.getValue();
-                    MutableIntList mutableList = IntLists.mutable.of(intIdCollection.toArray());
+                    MutableIntList mutableList = createMutableIntListCopy(control.getValue());
                     mutableList.add(newNid);
                     setValueFromIntList(mutableList);
-
-                    // Component Control was empty so had no drop line we need to create one now
-                    createDropLine(componentControl);
-
-                    // Create new empty component at the bottom
-                    createComponentUI(0);
                 } else { // we're setting the control's valid nid to another nid
-                    IntIdCollection intIdCollection = control.getValue();
-                    MutableIntList mutableList = IntLists.mutable.of(intIdCollection.toArray());
+                    MutableIntList mutableList = createMutableIntListCopy(control.getValue());
                     mutableList.set(oldNidIndex, newNid);
                     setValueFromIntList(mutableList);
                 }
             }
         });
 
-        componentControl.setOnRemoveAction(ev -> removeComponentControl(componentControl, subscription));
+        componentControlToSubscription.put(componentControl, subscription);
+
+        componentControl.setOnRemoveAction(ev -> removeNid(nid));
 
         if (control.getValue() instanceof IntIdSet) {
             componentControl.setComponentAllowedFilter(componentPublicId
@@ -273,8 +276,10 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
         getChildren().add(componentControl);
         getChildren().add(numberLabel);
+    }
 
-        getSkinnable().requestLayout();
+    private static MutableIntList createMutableIntListCopy(IntIdCollection intIdCollection) {
+        return IntLists.mutable.wrapCopy(intIdCollection.toArray());
     }
 
     private Line createDropLine(KLComponentControl componentControl) {
@@ -295,20 +300,8 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         return numberLabel;
     }
 
-    private void removeComponentControl(KLComponentControl componentControl, Subscription subscription) {
+    private void removeNid(int nidToRemove) {
         KLComponentListControl<T> control = getSkinnable();
-        int nidToRemove = componentControl.getEntity().nid();
-
-        subscription.unsubscribe();
-
-        componentControls.remove(componentControl);
-
-        getChildren().remove(componentControl);
-        getChildren().remove(componentToDropLine.get(componentControl));
-        getChildren().remove(componentControlToNumberGraphic.get(componentControl));
-
-        componentToDropLine.remove(componentControl);
-        componentControlToNumberGraphic.remove(componentControl);
 
         IntIdCollection intIdList = control.getValue();
         MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
@@ -316,10 +309,16 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         setValueFromIntList(mutableList);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void dispose() {
-        super.dispose();
+    private void removeComponentControl(KLComponentControl componentControl, Subscription subscription) {
+        subscription.unsubscribe();
+
+        getChildren().remove(componentToDropLine.get(componentControl));
+        componentToDropLine.remove(componentControl);
+
+        getChildren().remove(componentControlToNumberGraphic.get(componentControl));
+        componentControlToNumberGraphic.remove(componentControl);
+
+        getChildren().remove(componentControl);
     }
 
     /** {@inheritDoc} */

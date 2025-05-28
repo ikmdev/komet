@@ -1,0 +1,74 @@
+.toast {
+    -fx-background-color: #2e2e2e;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 10px 10px 10px 14px;
+    -fx-spacing: 8px;
+
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 6, 0.3, 0, 1);
+
+    -fx-alignment: center_left;
+}
+
+.toast .message {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+}
+
+.toast .icon {
+    size: 16px;
+    -fx-min-width: size;
+    -fx-min-height: size;
+    -fx-pref-width: size;
+    -fx-pref-height: size;
+    -fx-max-width: size;
+    -fx-max-height: size;
+}
+
+/* Success Icon */
+.toast .icon.icon-success {
+    -fx-shape: "M9.50016 16.1698L5.33016 11.9998L3.91016 13.4098L9.50016 18.9998L21.5002 6.99984L20.0902 5.58984L9.50016 16.1698Z";
+    -fx-background-color: #00bc62;
+
+    -fx-scale-shape: false;
+}
+
+/* Failure Icon */
+.toast .icon.icon-failure {
+    -fx-shape: "M1 1l18 18M1 19L19 1"; /* Replace with better X icon if needed */
+    -fx-background-color: red;
+}
+
+.toast .undo {
+    background_color: #4a7ad2;
+    -fx-background-color: background_color;
+    -fx-background-radius: 3px;
+
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-border-color: transparent;
+}
+
+.toast .undo:hover {
+    -fx-background-color: derive(background_color, 7%);
+}
+
+.toast .close-container {
+    -fx-background-color: transparent;
+    -fx-background-radius: 3px;
+
+    -fx-padding: 0 3 0 3;
+}
+
+.toast .close-container:hover {
+    -fx-background-color: rgba(250, 250, 250, 0.1);
+}
+
+.toast .close {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-border-color: transparent;
+
+    -fx-padding: 0;
+}
