@@ -13,8 +13,10 @@ import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.component.version.field.KlComponentSetField;
 import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.scene.image.Image;
@@ -40,8 +42,8 @@ public class DefaultKlComponentSetField extends BaseDefaultKlField<IntIdSet> imp
             klReadOnlyComponentSetControl.setTitle(getTitle());
 
             observableComponentSetField.valueProperty().addListener(observable ->
-                    updateReadOnlyIntIdSet(klReadOnlyComponentSetControl, observableComponentSetField.valueProperty().get()));
-            updateReadOnlyIntIdSet(klReadOnlyComponentSetControl, observableComponentSetField.valueProperty().get());
+                    updateReadOnlyIntIdSet(klReadOnlyComponentSetControl, observableComponentSetField.valueProperty().get(), observableView.calculator()));
+            updateReadOnlyIntIdSet(klReadOnlyComponentSetControl, observableComponentSetField.valueProperty().get(), observableView.calculator());
             Consumer<Integer> itemConsumer= (nid) -> {
                 EntityFacade entityFacade = EntityService.get().getEntityFast(nid);
                 if (entityFacade instanceof ConceptEntity conceptEntity) {
@@ -57,13 +59,17 @@ public class DefaultKlComponentSetField extends BaseDefaultKlField<IntIdSet> imp
         setKlWidget(node);
     }
 
-    private void updateReadOnlyIntIdSet(KLReadOnlyComponentSetControl klReadOnlyComponentSetControl, IntIdSet newIntIdSet) {
+    private void updateReadOnlyIntIdSet(KLReadOnlyComponentSetControl klReadOnlyComponentSetControl, IntIdSet newIntIdSet,
+                                        ViewCalculator viewCalculator) {
         klReadOnlyComponentSetControl.getItems().clear();
         newIntIdSet.forEach(nid -> {
             EntityProxy entityProxy = EntityProxy.make(nid);
             Image icon = Identicon.generateIdenticonImage(entityProxy.publicId());
 
-            ComponentItem componentItem = new ComponentItem(entityProxy.description(), icon, nid);
+            String description = viewCalculator.languageCalculator()
+                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
+
+            ComponentItem componentItem = new ComponentItem(description, icon, nid);
             klReadOnlyComponentSetControl.getItems().add(componentItem);
         });
     }

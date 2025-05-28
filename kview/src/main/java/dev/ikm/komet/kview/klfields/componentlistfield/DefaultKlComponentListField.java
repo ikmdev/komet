@@ -15,6 +15,7 @@ import dev.ikm.komet.layout.component.version.field.KlComponentListField;
 import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.ObjectProperty;
@@ -48,7 +49,10 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
                         EntityProxy entityProxy = EntityProxy.make(nid);
                         Image icon = Identicon.generateIdenticonImage(entityProxy.publicId());
 
-                        ComponentItem componentItem = new ComponentItem(entityProxy.description(), icon, nid);
+                        String description = observableView.calculator().languageCalculator()
+                                .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
+
+                        ComponentItem componentItem = new ComponentItem(description, icon, nid);
                         klReadOnlyComponentListControl.getItems().add(componentItem);
                     }
                 });
