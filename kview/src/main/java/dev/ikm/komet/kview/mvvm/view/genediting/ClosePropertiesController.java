@@ -98,4 +98,10 @@ public class ClosePropertiesController {
         subtextLine2.setText(subtextLine2Default);
     }
 
+    public void showSemanticDetailsChanged() {
+        headingText.setText("Semantic Details Changed");
+        subtextLine1.setText(subtextLine1Default);
+        subtextLine2.setText(subtextLine2Default);
+    }
+
 }
