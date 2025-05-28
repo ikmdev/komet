@@ -3,6 +3,7 @@ package dev.ikm.komet.kview.controls;
 import javafx.animation.*;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -11,8 +12,32 @@ import javafx.stage.Popup;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
+/**
+ * A lightweight, animated Toast notification component for displaying transient feedback messages
+ * in JavaFX applications. Toasts are non-blocking, visually prominent, and automatically dismiss
+ * after a configurable duration.
+ *
+ * <p>This implementation supports:
+ * <ul>
+ *   <li>Success and failure status icons</li>
+ *   <li>Custom message text</li>
+ *   <li>Optional "UNDO" action button</li>
+ *   <li>A close (✕) button to dismiss manually</li>
+ * </ul>
+ *
+ * <p>Usage example:
+ * <pre>{@code
+ * toast
+ *     .withUndoAction(event -> handleUndo());
+ *     .show(Toast.Status.SUCCESS, "Data saved successfully!");
+ * }</pre>
+ *
+ */
 public class Toast {
 
+    /**
+     * Status enum indicating the type of message to display.
+     */
     public enum Status {
         SUCCESS, FAILURE
     }
@@ -29,6 +54,12 @@ public class Toast {
     private final StackPane closeContainer;
     private final Button closeButton;
 
+    /**
+     * Creates a new {@code Toast} bound to the given parent {@link Node}.
+     * The Toast will appear slightly above the bottom center of this node’s window.
+     *
+     * @param parent the JavaFX node over which the toast will display
+     */
     public Toast(Node parent) {
         this.parent = parent;
 
@@ -69,15 +100,36 @@ public class Toast {
         closeButton.setOnAction(e -> popup.hide());
     }
 
+    /**
+     * Adds an {@link EventHandler} for the undo button.
+     * If set, the undo button will be shown in the Toast.
+     *
+     * @param undoAction the handler to invoke when the undo button is clicked
+     * @return this {@code Toast} instance for method chaining
+     */
     public Toast withUndoAction(EventHandler<ActionEvent> undoAction) {
         undoButton.setOnAction(undoAction);
         return this;
     }
 
+    /**
+     * Displays the Toast with the given status and message.
+     * The Toast will auto-dismiss after the default duration (10 seconds).
+     *
+     * @param status  the status icon to display (success or failure)
+     * @param message the message text to show in the toast
+     */
     public void show(Status status, String message) {
         show(status, message, DEFAULT_AUTO_DISMISS_MILLIS);
     }
 
+    /**
+     * Displays the Toast with the given status, message, and auto-dismiss duration.
+     *
+     * @param status            the status icon to display (success or failure)
+     * @param message           the message text to show in the toast
+     * @param autoDismissMillis the time in milliseconds after which the toast auto-dismisses
+     */
     public void show(Status status, String message, int autoDismissMillis) {
         // Update content and style
         iconRegion.getStyleClass().setAll("icon");
@@ -95,8 +147,14 @@ public class Toast {
 
         // Position relative to parent node
         Window window = parent.getScene().getWindow();
-        double centerX = window.getX() + parent.getScene().getWidth() / 2 - toastContainer.getWidth() / 2;
-        double bottomY = window.getY() + parent.getScene().getHeight() - 80;
+
+        Point2D parentScreenPos = parent.localToScreen(parent.getBoundsInLocal().getMinX(), parent.getBoundsInLocal().getMaxY());
+        // force layout pass to calculate dimensions
+        toastContainer.applyCss();
+        toastContainer.layout();
+
+        double centerX = parentScreenPos.getX() + parent.getBoundsInParent().getWidth() / 2 - toastContainer.prefWidth(-1) / 2;
+        double bottomY = parentScreenPos.getY() + parent.getBoundsInParent().getHeight() - 80;
         popup.show(window, centerX, bottomY);
 
         // Reset position and opacity for animation

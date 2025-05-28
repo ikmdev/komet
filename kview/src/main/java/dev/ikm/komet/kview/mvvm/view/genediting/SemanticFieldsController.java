@@ -363,7 +363,7 @@ public class SemanticFieldsController {
                                )
                                .show(
                                        Toast.Status.SUCCESS,
-                                       "Semantic created!"
+                                       "Semantic Details Added Successfully!"
                                );
                    });
                });
