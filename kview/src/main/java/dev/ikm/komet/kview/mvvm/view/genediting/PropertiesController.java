@@ -32,7 +32,7 @@ import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 
@@ -113,11 +113,13 @@ public class PropertiesController {
             // "Semantic Details Added" is displayed when form values are Submitted when in CREATE mode
             // "Semantic Details Changed" is displayed when form values are Submitted when in EDIT mode
 
-            if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
+            // TODO Changed is future, waiting for Figma wireframe
+
+//            if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
                 closePropertiesController.showSemanticDetailsAdded();
-            } else {
-                closePropertiesController.showSemanticDetailsChanged();
-            }
+//            } else {
+//                closePropertiesController.showSemanticDetailsChanged();
+//            }
 
             contentBorderPane.setCenter(closePropsPane);
         };
