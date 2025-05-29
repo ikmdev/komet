@@ -15,7 +15,6 @@ import dev.ikm.komet.layout.component.version.field.KlComponentListField;
 import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.ObjectProperty;

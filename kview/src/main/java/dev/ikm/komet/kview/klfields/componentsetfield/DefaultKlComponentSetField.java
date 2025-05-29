@@ -16,11 +16,10 @@ import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.scene.image.Image;
 import javafx.scene.Parent;
+import javafx.scene.image.Image;
 
 import java.util.function.Consumer;
 
