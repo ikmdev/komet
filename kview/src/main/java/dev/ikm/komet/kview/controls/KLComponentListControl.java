@@ -104,7 +104,7 @@ public class KLComponentListControl<T extends IntIdCollection> extends Control {
         componentNameRenderer.set(nameHandler);
     }
     public final Function<EntityProxy, String> getComponentNameRenderer() { return componentNameRenderer.get(); }
-    public final ObjectProperty<Function<EntityProxy, String>> getComponentNameRendererProperty() {
+    public final ObjectProperty<Function<EntityProxy, String>> componentNameRendererProperty() {
         return componentNameRenderer;
     }
 

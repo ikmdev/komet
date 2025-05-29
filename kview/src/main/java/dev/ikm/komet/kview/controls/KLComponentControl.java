@@ -132,7 +132,7 @@ public class KLComponentControl extends Control {
     public final void setComponentNameRenderer(Function<EntityProxy, String> nameHandler) {
         componentNameRenderer.set(nameHandler);
     }
-    public final ObjectProperty<Function<EntityProxy, String>> getComponentNameRendererProperty() {
+    public final ObjectProperty<Function<EntityProxy, String>> componentNameRendererProperty() {
         return componentNameRenderer;
     }
 
