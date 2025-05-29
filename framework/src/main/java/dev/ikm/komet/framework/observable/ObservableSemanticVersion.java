@@ -104,11 +104,10 @@ public final class ObservableSemanticVersion
                  && (observableField.fieldProperty.getValue().value() != null)) {
                     // Check if the previous value is different from the changed value.
                     // This check is required for C-List C-Set
-                    if (observableField.value() instanceof IntIdSet || observableField.value() instanceof IntIdList) {
-                        IntIdCollection valueList = (IntIdCollection) observableField.value();
-                        IntIdCollection fileValueList = (IntIdCollection) observableField.fieldProperty.getValue().value();
+                    if (observableField.value() instanceof IntIdCollection valueList) {
+                        IntIdCollection fieldValueList = (IntIdCollection) observableField.fieldProperty.getValue().value();
 
-                        if (!Arrays.equals(valueList.toArray(), fileValueList.toArray())) {
+                        if (!Arrays.equals(valueList.toArray(), fieldValueList.toArray())) {
                             // Creating uncommitted version records. e.g., (c)hello, (u)hello1, (u)hello12, (u)hello123
                             autoSaveSematicVersion(observableField.value(), index);
                         }
