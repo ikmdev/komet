@@ -1,6 +1,5 @@
 package dev.ikm.komet.kview.klfields;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
 import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
@@ -11,6 +10,7 @@ import dev.ikm.komet.framework.observable.ObservablePatternVersion;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
@@ -33,6 +33,7 @@ import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.Node;
 import javafx.scene.control.Tooltip;
@@ -110,7 +111,7 @@ public class KlFieldHelper {
         MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(patternVersion.fieldDefinitions().size());
         patternVersion.fieldDefinitions().forEach(f -> {
             if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
-                fieldsValues.add(ANONYMOUS_CONCEPT);
+                fieldsValues.add(EntityProxy.make(KLComponentControl.EMPTY_NID));
             } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
                     || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
                 fieldsValues.add("");
@@ -199,7 +200,11 @@ public class KlFieldHelper {
                 stringBuilder.append(str);
             } else if (observableField.valueProperty().get() != null) {
                 // TODO re-evaluate if toString is the right approach for complex datatypes.
-                stringBuilder.append(observableField.valueProperty().get().toString());
+                if (observableField.value() instanceof EntityProxy entityProxy) {
+                    stringBuilder.append(entityProxy.nid());
+                } else {
+                    stringBuilder.append(observableField.valueProperty().get().toString());
+                }
             }
 
             stringBuilder.append("|");

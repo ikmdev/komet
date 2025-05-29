@@ -15,6 +15,9 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import dev.ikm.tinkar.common.id.IntIdCollection;
+import dev.ikm.tinkar.common.id.IntIdList;
+import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -40,7 +43,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 
-import java.util.Objects;
+import java.util.Arrays;
 
 public final class ObservableSemanticVersion
         extends ObservableVersion<SemanticVersionRecord>
@@ -98,13 +101,21 @@ public final class ObservableSemanticVersion
                 // ObservableSemanticVersion and the SemanticVersion (record).
                 // ObservableSemanticVersion owns the versionProperty<SemanticVersion>
                 if (observableField.value() != null // Create a version only when new value is not null.
-                 && (observableField.fieldProperty.getValue().value() != null &&
-                 // Check if the previous value is different from the changed value.
-                 // This check is required for C-List C-Set
-                 !Objects.equals(observableField.value().toString(), observableField.fieldProperty.getValue().value().toString()))
-                ) {
-                    // Creating uncommitted version records. e.g., (c)hello, (u)hello1, (u)hello12, (u)hello123
-                    autoSaveSematicVersion(observableField.value(), index);
+                 && (observableField.fieldProperty.getValue().value() != null)) {
+                    // Check if the previous value is different from the changed value.
+                    // This check is required for C-List C-Set
+                    if (observableField.value() instanceof IntIdSet || observableField.value() instanceof IntIdList) {
+                        IntIdCollection valueList = (IntIdCollection) observableField.value();
+                        IntIdCollection fileValueList = (IntIdCollection) observableField.fieldProperty.getValue().value();
+
+                        if (!Arrays.equals(valueList.toArray(), fileValueList.toArray())) {
+                            // Creating uncommitted version records. e.g., (c)hello, (u)hello1, (u)hello12, (u)hello123
+                            autoSaveSematicVersion(observableField.value(), index);
+                        }
+                    } else {
+                        // Creating uncommitted version records. e.g., (c)hello, (u)hello1, (u)hello12, (u)hello123
+                        autoSaveSematicVersion(observableField.value(), index);
+                    }
                 }
             };
             observableField.setAutoSaveChangeListener(autoSave);
