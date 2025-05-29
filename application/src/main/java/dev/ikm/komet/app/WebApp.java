@@ -977,7 +977,7 @@ public class WebApp extends Application {
 
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
         boolean mainWindowInitialized = windowPreferences.getBoolean(KometStageController.WindowKeys.WINDOW_INITIALIZED, false);
-        controller.setup(windowPreferences);
+        controller.setup(windowPreferences, classicKometStage);
         classicKometStage.setTitle("Komet");
 
         if (!mainWindowInitialized) {
