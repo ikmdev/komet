@@ -265,9 +265,9 @@ public class KometStageController implements SaveState {
         return windowSettings;
     }
 
-    public void setup(KometPreferences nodePreferences) {
+    public void setup(KometPreferences nodePreferences, Window window) {
         this.nodePreferences = nodePreferences;
-        this.window = topGridPane.getScene().getWindow();
+        this.window = window;
         this.windowSettings = new WindowSettings(nodePreferences);
         boolean windowInitialized = nodePreferences.getBoolean(WindowKeys.WINDOW_INITIALIZED, false);
 
