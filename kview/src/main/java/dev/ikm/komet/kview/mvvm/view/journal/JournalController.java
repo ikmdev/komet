@@ -499,9 +499,19 @@ public class JournalController {
             Dragboard dragboard = event.getDragboard();
             boolean success = false;
             if (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)) {
-                List<List<UUID[]>> uuids = (List<List<UUID[]>>) dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
-                uuids.forEach(this::populateWorkspaceWithSelection);
-                success = true;
+                Object uuidsContent = dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
+                if (uuidsContent instanceof List list) {
+                    if (!list.isEmpty() && list.get(0) instanceof UUID[]) {
+                        populateWorkspaceWithSelection(list);
+                        success = true;
+                    } else if (uuidsContent instanceof List<?>) {
+                        List<List<UUID[]>> uuids = (List<List<UUID[]>>) dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
+                        uuids.forEach(this::populateWorkspaceWithSelection);
+                        success = true;
+                    } else {
+                        success = false;
+                    }
+                }
             } else if (dragboard.hasString()) {
                 try {
                     LOG.info("publicId: {}", dragboard.getString());
