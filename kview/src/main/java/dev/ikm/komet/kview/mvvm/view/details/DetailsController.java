@@ -20,6 +20,7 @@ import static dev.ikm.komet.framework.events.FrameworkTopics.RULES_TOPIC;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
 import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
@@ -70,9 +71,11 @@ import dev.ikm.komet.kview.events.EditOtherNameConceptEvent;
 import dev.ikm.komet.kview.events.OpenPropertiesPanelEvent;
 import dev.ikm.komet.kview.fxutils.IconsHelper;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
+import dev.ikm.komet.kview.fxutils.window.DraggableSupport;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
+import dev.ikm.komet.kview.mvvm.view.properties.PropertiesController;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -129,6 +132,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.util.Subscription;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -320,6 +324,8 @@ public class DetailsController  {
 
     private ViewProperties viewProperties;
 
+    private PropertiesController propertiesController;
+
     @InjectViewModel
     private ConceptViewModel conceptViewModel;
     private EvtBus eventBus;
@@ -360,6 +366,8 @@ public class DetailsController  {
      *  TODO: View Calculator will need to be refreshed.
      */
     private ViewCalculatorWithCache viewCalculatorWithCache;
+
+    private Subscription draggableWindowSubscription;
 
     public DetailsController() {
     }
@@ -559,6 +567,14 @@ public class DetailsController  {
 
         eventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
 
+        // Setup window support with explicit draggable regions
+        draggableWindowSubscription = DraggableSupport.setupDraggableWindow(
+                detailsOuterBorderPane, conceptHeaderControlToolBarHbox);
+
+        // Check if properties panel is initially open and add draggable region if needed
+        if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
+            updateDraggableRegionsForPropertiesPanel(true);
+        }
     }
 
     /**
@@ -778,9 +794,12 @@ public class DetailsController  {
         }
     }
 
-    public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
+    public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane,
+                                                 PropertiesController propertiesController) {
+        this.propertiesController = propertiesController;
         addPaneToTray(propertiesViewBorderPane, propertiesSlideoutTrayPane);
     }
+
     public void attachTimelineViewSlideoutTray(Pane timelineViewBorderPane) {
         addPaneToTray(timelineViewBorderPane, timelineSlideoutTrayPane);
     }
@@ -802,6 +821,12 @@ public class DetailsController  {
     @FXML
     void closeConceptWindow(ActionEvent event) {
         LOG.info("Cleanup occurring: Closing Window with concept: " + fqnTitleText.getText());
+
+        if (draggableWindowSubscription != null) {
+            draggableWindowSubscription.unsubscribe();
+            draggableWindowSubscription = null;
+        }
+
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
@@ -1392,6 +1417,8 @@ public class DetailsController  {
             LOG.info("Opening slideout of properties");
             slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
 
+            updateDraggableRegionsForPropertiesPanel(true);
+
             if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
                 // show the Add FQN
                 eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(propertyToggle,
@@ -1404,6 +1431,22 @@ public class DetailsController  {
         } else {
             LOG.info("Close Properties slideout");
             slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
+
+            updateDraggableRegionsForPropertiesPanel(false);
+        }
+    }
+
+    private void updateDraggableRegionsForPropertiesPanel(boolean isOpen) {
+        if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
+            if (isOpen) {
+                DraggableSupport.addDraggableRegion(detailsOuterBorderPane,
+                        propertiesController.getPropertiesTabsPane());
+                LOG.debug("Added properties tabs as draggable region");
+            } else {
+                DraggableSupport.removeDraggableRegion(detailsOuterBorderPane,
+                        propertiesController.getPropertiesTabsPane());
+                LOG.debug("Removed properties tabs from draggable regions");
+            }
         }
     }
 

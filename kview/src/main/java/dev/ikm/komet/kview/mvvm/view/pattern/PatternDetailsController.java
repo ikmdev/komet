@@ -25,6 +25,7 @@ import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.*;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
+import dev.ikm.komet.kview.fxutils.window.DraggableSupport;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
@@ -54,6 +55,7 @@ import javafx.scene.shape.FillRule;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.util.Subscription;
 import org.carlfx.axonic.StateMachine;
 import org.carlfx.cognitive.loader.*;
 import org.controlsfx.control.PopOver;
@@ -199,6 +201,12 @@ public class PatternDetailsController {
     @FXML
     private ContextMenu contextMenu;
 
+    @FXML
+    private HBox tabHeader;
+
+    @FXML
+    private HBox conceptHeaderControlToolBarHbox;
+
     /**
      * Stamp Edit
      */
@@ -218,6 +226,8 @@ public class PatternDetailsController {
     private Subscriber<PatternDescriptionEvent> patternDescriptionEventSubscriber;
 
     private Subscriber<PatternFieldsPanelEvent> patternFieldsPanelEventSubscriber;
+
+    private Subscription draggableWindowSubscription;
 
     public PatternDetailsController() {}
 
@@ -240,12 +250,16 @@ public class PatternDetailsController {
                 if (isOpen(propertiesSlideoutTrayPane)) {
                     slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
+
+                updateDraggableRegionsForPropertiesPanel(false);
             } else if (evt.getEventType() == OPEN_PANEL) {
                 LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
                 propertiesToggleButton.setSelected(true);
                 if (isClosed(propertiesSlideoutTrayPane)) {
                     slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
+
+                updateDraggableRegionsForPropertiesPanel(true);
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PropertyPanelEvent.class, patternPropertiesEventSubscriber);
@@ -428,6 +442,14 @@ public class PatternDetailsController {
 
         // Setup Properties
         setupProperties();
+
+        // Setup window support with explicit draggable regions
+        draggableWindowSubscription = DraggableSupport.setupDraggableWindow(
+                detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
+
+        if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
+            updateDraggableRegionsForPropertiesPanel(true);
+        }
     }
 
     private void setUpAddSemanticMenu() {
@@ -661,6 +683,13 @@ public class PatternDetailsController {
     @FXML
     void closeConceptWindow(ActionEvent event) {
         LOG.info("Cleanup occurring: Closing Window with pattern: " + patternTitleText.getText());
+
+        // Clean up window support before closing the window
+        if (draggableWindowSubscription != null) {
+            draggableWindowSubscription.unsubscribe();
+            draggableWindowSubscription = null;
+        }
+
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
@@ -820,6 +849,9 @@ public class PatternDetailsController {
     private void openPropertiesPanel(ActionEvent event) {
         ToggleButton propertyToggle = (ToggleButton) event.getSource();
         EvtType<PropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? OPEN_PANEL : CLOSE_PANEL;
+
+        updateDraggableRegionsForPropertiesPanel(propertyToggle.isSelected());
+
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType));
     }
 
@@ -862,4 +894,21 @@ public class PatternDetailsController {
         }
     }
 
+    private void updateDraggableRegionsForPropertiesPanel(boolean isOpen) {
+        if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
+            if (isOpen) {
+                DraggableSupport.addDraggableRegion(
+                        detailsOuterBorderPane,
+                        propertiesController.getPropertiesTabsPane()
+                );
+                LOG.debug("Added properties tabs as draggable region");
+            } else {
+                DraggableSupport.removeDraggableRegion(
+                        detailsOuterBorderPane,
+                        propertiesController.getPropertiesTabsPane()
+                );
+                LOG.debug("Removed properties tabs from draggable regions");
+            }
+        }
+    }
 }
