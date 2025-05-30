@@ -86,6 +86,8 @@ public class PatternNavEntryController {
     @InjectViewModel
     private SimpleViewModel instancesViewModel;
 
+    private String displayName;
+
     @FXML
     private void initialize() {
 
@@ -128,13 +130,14 @@ public class PatternNavEntryController {
         Image identiconImage = Identicon.generateIdenticonImage(patternFacade.publicId());
         identicon.setImage(identiconImage);
 
-        // set the pattern's name
-        var displayName = retriveDisplayName((PatternFacade)patternFacade);
+        // save the displayName for the Pattern name label tooltip
+        displayName = retriveDisplayName((PatternFacade)patternFacade);
+                //+ " adding a really long name to demo the Pattern name tooltip";  // for testing
+
         patternName.setText(displayName);
 
-        if (patternName.isTextTruncated()) {
-            Tooltip.install(patternName, new Tooltip(displayName));
-        }
+        // TODO need to get the creation of the tooltip working by using Label.isTextTruncated()
+        Tooltip.install(patternName, new Tooltip(displayName));
 
         // add listener for double click to summon the pattern into the journal view
         patternEntryHBox.setOnMouseClicked(mouseEvent -> {
@@ -148,6 +151,14 @@ public class PatternNavEntryController {
             }
         });
         setupListView();
+    }
+
+    void initializeTooltip() {
+        Platform.runLater(() -> {
+            if (patternName.isTextTruncated()) {
+                Tooltip.install(patternName, new Tooltip(displayName));
+            }
+        });
     }
 
     private String retriveDisplayName(PatternFacade patternFacade) {
@@ -197,7 +208,6 @@ public class PatternNavEntryController {
                 HBox.setHgrow(label, Priority.ALWAYS);
 
                 tooltip = new Tooltip();
-                Tooltip.install(label, tooltip);
             }
 
             @Override
@@ -257,7 +267,20 @@ public class PatternNavEntryController {
 
                         setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
                         label.setText(entityDescriptionText);
-                        tooltip.setText(entityDescriptionText);
+
+                        final String finalEntityDescriptionText = entityDescriptionText;
+
+                        // run later on the application thread to allow rendering to complete
+                        // which is needed to know if the label text is truncated
+                        Platform.runLater(() -> {
+                            if (label.isTextTruncated()) {
+                                tooltip.setText(finalEntityDescriptionText);
+                                Tooltip.install(label, tooltip);
+                            } else {
+                                tooltip.setText("");
+                                Tooltip.uninstall(label, tooltip);
+                            }
+                        });
 
                         if (!entityDescriptionText.isEmpty()) {
                             Image identicon = Identicon.generateIdenticonImage(entity.publicId());

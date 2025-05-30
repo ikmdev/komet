@@ -1,12 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
 
-import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
-import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
-import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.INSTANCES;
-import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.PATTERN_FACADE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -43,8 +37,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
+import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.INSTANCES;
+import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.PATTERN_FACADE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 public class ConceptPatternNavController {
     private static final Logger LOG = LoggerFactory.getLogger(ConceptPatternNavController.class);
@@ -134,6 +137,8 @@ public class ConceptPatternNavController {
 
         // callback when all patterns are loaded. For each build up children instances.
         patternNavViewModel.setOnReload(stream -> {
+            List<PatternNavEntryController> patternNavEntryControllers = new ArrayList<>();
+
             stream.forEach(patternItem -> {
                 int patternNid = patternItem.nid();
                 // load the pattern instances into an observable list
@@ -164,6 +169,8 @@ public class ConceptPatternNavController {
 
                     JFXNode<Pane, PatternNavEntryController> patternNavEntryJFXNode = FXMLMvvmLoader.make(patternInstanceConfig);
 
+                    patternNavEntryControllers.add(patternNavEntryJFXNode.controller());
+
                     HBox patternHBox = (HBox) patternNavEntryJFXNode.node();
                     patternHBox.getStyleClass().add("pattern-instance-container");
 
@@ -171,6 +178,27 @@ public class ConceptPatternNavController {
 
                     patternsVBox.getChildren().add(patternHBox);
                 });
+            });
+
+            // when all of the patterns are created in the VBox, sleep for some time
+            // to allow layout to complete, then tell each of the ConceptPatternNavControllers
+            // to initialize the tooltip for the Pattern name label.
+            // runLater is used to put the tooltip initialization at the back of the application thread queue.
+            // TODO there HAS to be a better way!!!!!!
+            // This is not reliable!!!!!!!!!
+            Platform.runLater(() -> {
+                new Thread(() -> {
+                    try {
+                        // magic number of ??? seconds delay
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        LOG.error("InterruptedException while sleeping to delay the Pattern name tooltip initialization", e);
+                    } finally {
+                        for (var controller : patternNavEntryControllers) {
+                            controller.initializeTooltip();
+                        }
+                    }
+                }); // .start();
             });
         });
 
