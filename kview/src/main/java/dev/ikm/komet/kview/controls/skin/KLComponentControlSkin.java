@@ -403,7 +403,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         });
         typeAheadSearchField.completerProperty().bind(getSkinnable().completerProperty());
         typeAheadSearchField.converterProperty().bind(getSkinnable().typeAheadStringConverterProperty());
-        typeAheadSearchField.suggestionsNodeFactoryProperty().bind(getSkinnable().suggestionsNodeFactoryProperty());
+        typeAheadSearchField.suggestionsCellFactoryProperty().bind(getSkinnable().suggestionsCellFactoryProperty());
         typeAheadSearchField.getPopupStyleClasses().add("component-popup");
         typeAheadSearchField.setSuggestionsNodeHeight(41);
 

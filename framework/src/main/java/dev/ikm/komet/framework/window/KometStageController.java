@@ -312,6 +312,8 @@ public class KometStageController implements SaveState {
                     (List<MenuItem> result) -> windowCoordinates.getItems().addAll(result)));
         });
 
+        // allow the Classic Komet window to save its preferences on close.
+        window.setOnCloseRequest(_ -> save());
         PrimitiveData.getStatesToSave().add(this);
     }
 
