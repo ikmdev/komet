@@ -13,7 +13,7 @@
    <center>
       <BorderPane prefWidth="518.0" styleClass="properties-tab-container">
          <top>
-            <FlowPane alignment="CENTER" BorderPane.alignment="CENTER">
+            <FlowPane fx:id="propertiesTabsPane" alignment="CENTER" BorderPane.alignment="CENTER">
                <children>
                   <HBox alignment="CENTER" prefWidth="515.0">
                      <children>
@@ -48,7 +48,6 @@
                </children>
                <styleClass>
                   <String fx:value="properties-tabs" />
-                  <String fx:value="draggable-region" />
                </styleClass>
             </FlowPane>
          </top>

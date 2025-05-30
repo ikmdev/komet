@@ -65,6 +65,7 @@ import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
+import dev.ikm.komet.kview.fxutils.window.DraggableSupport;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
@@ -95,10 +96,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.util.Subscription;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -194,6 +197,12 @@ public class GenEditingDetailsController {
     @FXML
     private Button saveButton;
 
+    @FXML
+    private HBox tabHeader;
+
+    @FXML
+    private HBox conceptHeaderControlToolBarHbox;
+
     @InjectViewModel
     private StampViewModel stampViewModel;
 
@@ -217,6 +226,8 @@ public class GenEditingDetailsController {
     ObservableSemantic observableSemantic;
 
     ObservableSemanticSnapshot observableSemanticSnapshot;
+
+    private Subscription draggableWindowSubscription;
 
     public GenEditingDetailsController() {
     }
@@ -244,6 +255,14 @@ public class GenEditingDetailsController {
         setupSemanticDetails();
         // update stamp UI
         updateUIStamp(getStampViewModel());
+
+        // Setup window dragging support with explicit draggable regions
+        draggableWindowSubscription = DraggableSupport.setupDraggableWindow(
+                detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
+
+        if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
+            updateDraggableRegionsForPropertiesPanel(true);
+        }
     }
 
     private void setupSemanticDetails() {
@@ -538,6 +557,8 @@ public class GenEditingDetailsController {
                     slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
 
+                updateDraggableRegionsForPropertiesPanel(false);
+
                 // Turn off edit mode for all read only controls
                 for (Node node : nodes) {
                     KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) node;
@@ -550,6 +571,8 @@ public class GenEditingDetailsController {
                 if (isClosed(propertiesSlideoutTrayPane)) {
                     slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
+
+                updateDraggableRegionsForPropertiesPanel(true);
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), PropertyPanelEvent.class, propertiesEventSubscriber);
@@ -601,6 +624,12 @@ public class GenEditingDetailsController {
 
     @FXML
     void closeConceptWindow(ActionEvent event) {
+        // Clean up draggable support before closing the window
+        if (draggableWindowSubscription != null) {
+            draggableWindowSubscription.unsubscribe();
+            draggableWindowSubscription = null;
+        }
+
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
@@ -722,7 +751,28 @@ public class GenEditingDetailsController {
     private void openPropertiesPanel(ActionEvent event) {
         ToggleButton propertyToggle = (ToggleButton) event.getSource();
         EvtType<PropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? OPEN_PANEL : CLOSE_PANEL;
+
+        updateDraggableRegionsForPropertiesPanel(propertyToggle.isSelected());
+
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType));
+    }
+
+    private void updateDraggableRegionsForPropertiesPanel(boolean isOpen) {
+        if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
+            if (isOpen) {
+                DraggableSupport.addDraggableRegion(
+                        detailsOuterBorderPane,
+                        propertiesController.getPropertiesTabsPane()
+                );
+                LOG.debug("Added properties tabs as draggable region");
+            } else {
+                DraggableSupport.removeDraggableRegion(
+                        detailsOuterBorderPane,
+                        propertiesController.getPropertiesTabsPane()
+                );
+                LOG.debug("Removed properties tabs from draggable regions");
+            }
+        }
     }
 
     @FXML

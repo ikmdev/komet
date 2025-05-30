@@ -134,7 +134,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
             this.propertiesViewController.updateModel(viewProperties, null);
 
             // setup view and view into details view
-            detailsViewController.attachPropertiesViewSlideoutTray(this.propertiesViewBorderPane);
+            detailsViewController.attachPropertiesViewSlideoutTray(this.propertiesViewBorderPane, this.propertiesViewController);
 
             // Load Timeline View Panel (FXML & Controller)
             FXMLLoader timelineFXMLLoader = new FXMLLoader(TimelineController.class.getResource(CONCEPT_TIMELINE_VIEW_FXML_FILE));

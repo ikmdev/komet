@@ -30,6 +30,7 @@ import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.SVGPath;
@@ -83,6 +84,9 @@ public class PropertiesController implements Serializable {
 
     @FXML
     private BorderPane contentBorderPane;
+
+    @FXML
+    private FlowPane propertiesTabsPane;
 
     private Pane historyTabsBorderPane;
     private HistoryChangeController historyChangeController;
@@ -410,5 +414,11 @@ public class PropertiesController implements Serializable {
     public void clearView() {
     }
 
-
+    /**
+     * Returns the propertiesTabsPane to be used as a draggable region.
+     * @return The FlowPane containing the property tabs
+     */
+    public FlowPane getPropertiesTabsPane() {
+        return propertiesTabsPane;
+    }
 }
