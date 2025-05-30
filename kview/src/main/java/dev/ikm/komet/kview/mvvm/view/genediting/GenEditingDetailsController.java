@@ -71,6 +71,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
@@ -467,13 +468,31 @@ public class GenEditingDetailsController {
         Consumer<EntityFacade> updateRefComponentInfo = (refComponent2) -> {
             Entity<? extends EntityVersion> entity = Entity.getFast(refComponent2.nid());
             // update items
-            String refType = switch (entity) {
-                case ConceptEntity ignored -> "Concept";
-                case SemanticEntity ignored -> "Semantic";
-                case PatternEntity ignored -> "Pattern";
-                default -> "Unknown";
+
+            String refType = "Unknown";
+            String description = null;
+            switch (entity) {
+                case SemanticEntity semanticEntity -> {
+                    refType = "Semantic";
+                    ViewCalculator viewCalculator = getViewProperties().calculator();
+                    description = viewCalculator.languageCalculator()
+                            .getFullyQualifiedDescriptionTextWithFallbackOrNid(semanticEntity.nid());
+                }
+                case ConceptEntity ignored -> {
+                    refType = "Concept";
+                    description = refComponent2.description();
+                }
+                case PatternEntity ignored -> {
+                    refType= "Pattern";
+                    description = refComponent2.description();
+                }
+                default ->  {
+                    refType = "Unknown";
+                    description = refComponent2.description();
+                }
             };
-            ComponentItem componentItem = new ComponentItem(refComponent2.description(),
+
+            ComponentItem componentItem = new ComponentItem(description,
                     Identicon.generateIdenticonImage(refComponent2.publicId()), refComponent2.nid());
 
             referenceComponent.setTitle(refType);

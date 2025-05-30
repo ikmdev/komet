@@ -100,6 +100,16 @@ public class KLComponentListControl<T extends IntIdCollection> extends Control {
     public final Callback<ListView<EntityProxy>, ListCell<EntityProxy>> getSuggestionsCellFactory() { return suggestionsCellFactory.get(); }
     public final ObjectProperty<Callback<ListView<EntityProxy>, ListCell<EntityProxy>>> suggestionsCellFactoryProperty() { return suggestionsCellFactory; }
 
+    // -- function to render the component's name and avoid entity.description()
+    private final ObjectProperty<Function<EntityProxy, String>> componentNameRenderer = new SimpleObjectProperty<>();
+    public final void setComponentNameRenderer(Function<EntityProxy, String> nameHandler) {
+        componentNameRenderer.set(nameHandler);
+    }
+    public final Function<EntityProxy, String> getComponentNameRenderer() { return componentNameRenderer.get(); }
+    public final ObjectProperty<Function<EntityProxy, String>> componentNameRendererProperty() {
+        return componentNameRenderer;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected Skin<?> createDefaultSkin() {
