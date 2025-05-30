@@ -43,11 +43,8 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
-import static dev.ikm.tinkar.terms.TinkarTerm.DEFINITION_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
-import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.*;
+
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.AxiomChangeEvent;
@@ -1029,22 +1026,21 @@ public class DetailsController  {
         // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
         Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(entityFacade);
         otherNamesNodeListControl.getItems().clear();
+
+        //Obtain the index field of DESCRIPTION_TYPE
+        PatternEntityVersion patternEntityVersion = (PatternEntityVersion)viewCalculator.latest(DESCRIPTION_PATTERN.nid()).get();
+        int descriptionTypeIndex = patternEntityVersion.indexForMeaning(DESCRIPTION_TYPE.nid());
+
         descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
+            EntityFacade fieldTypeValue = (EntityFacade) semanticEntityVersion.fieldValues().get(descriptionTypeIndex);
+            boolean isFQN = FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
+            boolean isOtherName = REGULAR_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
 
-            PatternEntity<PatternEntityVersion> patternEntity = semanticEntityVersion.pattern();
-            PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
-
-            boolean isFQN = semanticEntityVersion
-                    .fieldValues()
-                    .stream()
-                    .anyMatch( fieldValue ->
-                            (fieldValue instanceof ConceptFacade facade) &&
-                                    facade.nid() == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid());
             if (isFQN) {
                 // Latest FQN
                 updateFQNSemantics(semanticEntityVersion, fieldDescriptions);
                 LOG.debug("FQN Name = " + semanticEntityVersion + " " + fieldDescriptions);
-            } else {
+            } else if (isOtherName) {
                 // start adding a row
                 VBox otherNameBox = generateOtherNameRow(semanticEntityVersion, fieldDescriptions);
                 PublicId otherNamePublicId = (PublicId) otherNameBox.getChildren().getFirst().getUserData();
@@ -1603,7 +1599,7 @@ public class DetailsController  {
                 .withZone(ZoneId.of("UTC"));
     }
 
-    private <T> T getFieldValueByMeaning(SemanticEntityVersion entityVersion, EntityFacade ...meaning) {
+    private int getFieldIndexByMeaning(SemanticEntityVersion entityVersion, EntityFacade ...meaning) {
         PatternEntity<PatternEntityVersion> patternEntity = entityVersion.entity().pattern();
         PatternEntityVersion patternEntityVersion = getViewProperties().calculator().latest(patternEntity).get();
         int index = -1;
@@ -1615,12 +1611,17 @@ public class DetailsController  {
                 }
             }
         }
+        return  index;
+    }
 
-        if (index == -1){
+    private <T> T getFieldValueByMeaning(SemanticEntityVersion entityVersion, EntityFacade ...meaning) {
+        int index = getFieldIndexByMeaning(entityVersion, meaning);
+        if (index == -1) {
             return null;
         }
         return (T) entityVersion.fieldValues().get(index);
     }
+
     private <T> T getFieldValueByPurpose(SemanticEntityVersion entityVersion, EntityFacade ...purpose) {
         PatternEntity<PatternEntityVersion> patternEntity = entityVersion.entity().pattern();
         PatternEntityVersion patternEntityVersion = getViewProperties().calculator().latest(patternEntity).get();
