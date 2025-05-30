@@ -2,7 +2,6 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLComponentControlSkin;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.BooleanProperty;
@@ -16,9 +15,11 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.Node;
 import javafx.scene.control.Control;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.Skin;
+import javafx.util.Callback;
 import javafx.util.StringConverter;
 
 import java.util.List;
@@ -139,13 +140,13 @@ public class KLComponentControl extends Control {
 
     // -- suggestions node factory
     /**
-     * This will return a node to be shown in the auto-complete popup for each result returned
+     * This will return a Cell to be shown in the auto-complete popup for each result returned
      * by the 'completer'.
      */
-    private final ObjectProperty<Function<EntityProxy, Node>> suggestionsNodeFactory = new SimpleObjectProperty<>();
-    public final void setSuggestionsNodeFactory(Function<EntityProxy, Node> factory) { suggestionsNodeFactory.set(factory); }
-    public final Function<EntityProxy, Node> getSuggestionsNodeFactory() { return suggestionsNodeFactory.get(); }
-    public final ObjectProperty<Function<EntityProxy, Node>> suggestionsNodeFactoryProperty() { return suggestionsNodeFactory; }
+    private final ObjectProperty<Callback<ListView<EntityProxy>, ListCell<EntityProxy>>> suggestionsCellFactory = new SimpleObjectProperty<>();
+    public final void setSuggestionsCellFactory(Callback<ListView<EntityProxy>, ListCell<EntityProxy>> factory) { suggestionsCellFactory.set(factory); }
+    public final Callback<ListView<EntityProxy>, ListCell<EntityProxy>> getSuggestionsCellFactory() { return suggestionsCellFactory.get(); }
+    public final ObjectProperty<Callback<ListView<EntityProxy>, ListCell<EntityProxy>>> suggestionsCellFactoryProperty() { return suggestionsCellFactory; }
 
     // -- search text
     /**
