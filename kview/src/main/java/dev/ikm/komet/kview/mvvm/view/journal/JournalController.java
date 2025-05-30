@@ -78,6 +78,7 @@ import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLSearchControl;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.NotificationPopup;
+import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
@@ -271,6 +272,8 @@ public class JournalController {
     @FXML
     private ContextMenu addContextMenu;
 
+    private static Toast toast;
+
 
     /////////////////////////////////////////////////////////////////
     // Private Data
@@ -434,6 +437,7 @@ public class JournalController {
 
         journalEventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
 
+        toast = new Toast(workspace);
     }
 
     private void onMouseClickedOnDesktopSurfacePane(MouseEvent mouseEvent) {
@@ -495,9 +499,19 @@ public class JournalController {
             Dragboard dragboard = event.getDragboard();
             boolean success = false;
             if (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)) {
-                List<List<UUID[]>> uuids = (List<List<UUID[]>>) dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
-                uuids.forEach(this::populateWorkspaceWithSelection);
-                success = true;
+                Object uuidsContent = dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
+                if (uuidsContent instanceof List list) {
+                    if (!list.isEmpty() && list.get(0) instanceof UUID[]) {
+                        populateWorkspaceWithSelection(list);
+                        success = true;
+                    } else if (uuidsContent instanceof List<?>) {
+                        List<List<UUID[]>> uuids = (List<List<UUID[]>>) dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
+                        uuids.forEach(this::populateWorkspaceWithSelection);
+                        success = true;
+                    } else {
+                        success = false;
+                    }
+                }
             } else if (dragboard.hasString()) {
                 try {
                     LOG.info("publicId: {}", dragboard.getString());
@@ -1596,4 +1610,7 @@ public class JournalController {
     public void newCreatePatternWindow(ActionEvent actionEvent) {
         createPatternWindow(null, windowView.makeOverridableViewProperties());
     }
+
+    public static Toast toast() { return toast; }
+
 }

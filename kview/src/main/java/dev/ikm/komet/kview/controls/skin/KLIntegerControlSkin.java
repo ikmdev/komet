@@ -92,7 +92,7 @@ public class KLIntegerControlSkin extends KLDebounceControlSkin<KLIntegerControl
                     control.setShowError(true);
                     // want to still return the value. If the value is 1 and then the user enters "-1" then tries
                     // start hitting backspace from the right of "-1" the text will get stuck and not take the deletion
-                    return change;
+                    return null;
                 }
             }
         }));

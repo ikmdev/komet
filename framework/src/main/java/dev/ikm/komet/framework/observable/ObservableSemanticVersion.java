@@ -101,7 +101,7 @@ public final class ObservableSemanticVersion
                  && (observableField.fieldProperty.getValue().value() != null &&
                  // Check if the previous value is different from the changed value.
                  // This check is required for C-List C-Set
-                 !Objects.equals(observableField.value(), observableField.fieldProperty.getValue().value()))
+                 !Objects.equals(observableField.value().toString(), observableField.fieldProperty.getValue().value().toString()))
                 ) {
                     // Creating uncommitted version records. e.g., (c)hello, (u)hello1, (u)hello12, (u)hello123
                     autoSaveSematicVersion(observableField.value(), index);
