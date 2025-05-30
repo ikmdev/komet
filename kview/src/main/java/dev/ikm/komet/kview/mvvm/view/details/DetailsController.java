@@ -1004,13 +1004,13 @@ public class DetailsController  {
         // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
         Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(entityFacade);
         otherNamesNodeListControl.getItems().clear();
+
+        PatternEntityVersion patternEntityVersion = (PatternEntityVersion)viewCalculator.latest(TinkarTerm.DESCRIPTION_PATTERN.nid()).get();
+        int descriptionTypeIndex = patternEntityVersion.indexForMeaning(TinkarTerm.DESCRIPTION_TYPE.nid());
+
         descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
 
-            PatternEntity<PatternEntityVersion> patternEntity = semanticEntityVersion.pattern();
-            PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
-
-            int descFieldType = getFieldIndexByMeaning(semanticEntityVersion, TinkarTerm.DESCRIPTION_TYPE);
-            ConceptFacade fieldTypeValue = (ConceptFacade) semanticEntityVersion.fieldValues().get(descFieldType);
+            ConceptFacade fieldTypeValue = (ConceptFacade) semanticEntityVersion.fieldValues().get(descriptionTypeIndex);
             boolean isFQN = FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
             boolean isOtherName = REGULAR_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
 
