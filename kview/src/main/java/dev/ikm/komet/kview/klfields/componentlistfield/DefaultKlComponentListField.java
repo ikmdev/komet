@@ -30,7 +30,7 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
         Parent node;
         ObjectProperty<IntIdList> observableProperty = observableComponentListField.valueProperty();
         if (isEditable) {
-            KLComponentListControl<IntIdList> klComponentListControl = createTypeAheadComponentListControl(observableView.calculator().navigationCalculator());
+            KLComponentListControl<IntIdList> klComponentListControl = createTypeAheadComponentListControl(observableView.calculator());
 
             klComponentListControl.setTitle(getTitle());
             klComponentListControl.valueProperty().bindBidirectional(observableProperty);
@@ -48,7 +48,10 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
                         EntityProxy entityProxy = EntityProxy.make(nid);
                         Image icon = Identicon.generateIdenticonImage(entityProxy.publicId());
 
-                        ComponentItem componentItem = new ComponentItem(entityProxy.description(), icon, nid);
+                        String description = observableView.calculator().languageCalculator()
+                                .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
+
+                        ComponentItem componentItem = new ComponentItem(description, icon, nid);
                         klReadOnlyComponentListControl.getItems().add(componentItem);
                     }
                 });
