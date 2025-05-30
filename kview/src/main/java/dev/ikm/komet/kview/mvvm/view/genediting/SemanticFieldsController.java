@@ -33,7 +33,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
-import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
+import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
 import dev.ikm.komet.framework.events.EntityVersionChangeEvent;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -44,6 +44,7 @@ import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
@@ -136,6 +137,10 @@ public class SemanticFieldsController {
         observableFields.forEach(observableField -> {
             if (observableField.dataTypeNid() == IMAGE_FIELD.nid()) {
                 invalid.set(observableField.valueProperty().get() == null || (((byte[]) observableField.valueProperty().get()).length == 0));
+            }
+            if (observableField.dataTypeNid() == COMPONENT_FIELD.nid()) {
+                EntityProxy entityProxy = (EntityProxy) observableField.value();
+                invalid.set(entityProxy == null || entityProxy.nid()  == KLComponentControl.EMPTY_NID);
             }
             if (!invalid.get()) {
                 invalid.set((observableField.value() == null || observableField.value().toString().isEmpty()));
@@ -264,7 +269,7 @@ public class SemanticFieldsController {
         }
         observableFields.forEach(observableField -> {
             if (genEditingViewModel.getPropertyValue(MODE) == CREATE && observableField.value() instanceof EntityProxy entityProxy){
-                if(entityProxy.nid() == ANONYMOUS_CONCEPT.nid()){
+                if(entityProxy.nid() == KLComponentControl.EMPTY_NID){
                     observableField.valueProperty().setValue(null);
                 }
             }
