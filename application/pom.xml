@@ -370,6 +370,7 @@
                             <runtimeImage>target/kometRuntimeImage</runtimeImage>
                             <module>dev.ikm.komet.application/dev.ikm.komet.app.App</module>
                             <javaOptions>
+                                <option>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=6006</option>
                                 <option>-Xmx8g</option>
                                 <option>--add-opens</option>
                                 <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
