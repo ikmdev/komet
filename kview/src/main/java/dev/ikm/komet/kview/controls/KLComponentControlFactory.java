@@ -8,8 +8,9 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.Separator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -36,7 +37,7 @@ public class KLComponentControlFactory {
         StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(calculator);
         componentControl.setTypeAheadStringConverter(stringToEntityProxyConverter);
 
-        componentControl.setSuggestionsNodeFactory(entityProxy -> createComponentSuggestionNode(entityProxy, stringToEntityProxyConverter));
+        componentControl.setSuggestionsCellFactory(_ -> createComponentSuggestionNode(stringToEntityProxyConverter));
         return componentControl;
     }
 
@@ -47,7 +48,7 @@ public class KLComponentControlFactory {
         StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(calculator);
         componentListControl.setTypeAheadStringConverter(stringToEntityProxyConverter);
 
-        componentListControl.setSuggestionsNodeFactory(entityProxy -> createComponentSuggestionNode(entityProxy, stringToEntityProxyConverter));
+        componentListControl.setSuggestionsCellFactory(_ -> createComponentSuggestionNode(stringToEntityProxyConverter));
         return componentListControl;
     }
 
@@ -86,27 +87,50 @@ public class KLComponentControlFactory {
         };
     }
 
-    private static Node createComponentSuggestionNode(EntityProxy entity, StringConverter<EntityProxy> stringConverter) {
-        StackPane stackPane = new StackPane();
-        VBox suggestionContainer = new VBox();
+    private static ListCell<EntityProxy> createComponentSuggestionNode(StringConverter<EntityProxy> stringConverter) {
+        return new ListCell<>() {
+            StackPane stackPane;
+            Label label;
+            ImageView imageView;
 
-        String text = stringConverter != null ? stringConverter.toString(entity) : entity.toString();
-        Label label = new Label(text);
+            {
+                stackPane = new StackPane();
+                VBox suggestionContainer = new VBox();
 
-        Image identiconImage = Identicon.generateIdenticonImage(entity.publicId());
-        ImageView imageView = new ImageView(identiconImage);
-        imageView.setFitHeight(16);
-        imageView.setFitWidth(16);
+                label = new Label();
 
-        label.setGraphic(imageView);
+                imageView = new ImageView();
+                imageView.setFitHeight(16);
+                imageView.setFitWidth(16);
 
-        Separator separator = new Separator(Orientation.HORIZONTAL);
+                label.setGraphic(imageView);
 
-        suggestionContainer.getChildren().setAll(label, separator);
+                Separator separator = new Separator(Orientation.HORIZONTAL);
 
-        stackPane.setAlignment(Pos.CENTER_LEFT);
-        stackPane.getChildren().add(suggestionContainer);
+                suggestionContainer.getChildren().setAll(label, separator);
 
-        return stackPane;
+                stackPane.setAlignment(Pos.CENTER_LEFT);
+                stackPane.getChildren().add(suggestionContainer);
+
+                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+            }
+
+            @Override
+            protected void updateItem(EntityProxy item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (item == null) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(stackPane);
+
+                    String text = stringConverter != null ? stringConverter.toString(item) : item.toString();
+                    label.setText(text);
+
+                    Image identiconImage = Identicon.generateIdenticonImage(item.publicId());
+                    imageView.setImage(identiconImage);
+                }
+            }
+        };
     }
 }

@@ -16,16 +16,16 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.PopupControl;
 import javafx.scene.control.Skin;
-import javafx.scene.control.skin.TextFieldSkin;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.util.Callback;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AutoCompleteTextFieldSkin<T> extends FXTextFieldSkin {
@@ -201,9 +201,7 @@ public class AutoCompleteTextFieldSkin<T> extends FXTextFieldSkin {
         private final AutoCompleteTextField<T> autoCompleteTextField;
         private final AutoCompletePopup<T> control;
 
-        protected final ListView autoCompleteListView;
-
-        private final List<Node> nodes = new ArrayList<>();
+        protected final ListView<T> autoCompleteListView;
 
         /**
          * Constructor for AutoCompletePopup Skin instances.
@@ -217,6 +215,22 @@ public class AutoCompleteTextFieldSkin<T> extends FXTextFieldSkin {
             autoCompleteListView = new ListView<>();
 
             autoCompleteListView.getStylesheets().add(DEFAULT_STYLE_SHEET);
+
+            autoCompleteListView.setCellFactory((Callback<ListView<T>, ListCell<T>>) listView -> {
+                ListCell<T> listCell = autoCompleteTextField.getSuggestionsCellFactory().call(listView);
+                listCell.setOnMousePressed(event -> {
+                    T result = listCell.getItem();
+
+                    setTextFieldText(convertSuggestedObjectToString(result));
+
+                    control.setSelectedItemIndex(control.getItems().indexOf(result));
+
+                    autoCompleteTextField.fireEvent(new ActionEvent());
+                });
+
+                listCell.getStyleClass().add("auto-suggest-node");
+                return listCell;
+            });
 
             autoCompleteListView.prefWidthProperty().bind(control.prefWidthProperty());
 
@@ -238,8 +252,7 @@ public class AutoCompleteTextFieldSkin<T> extends FXTextFieldSkin {
 
             autoCompleteListView.setFocusTraversable(false);
 
-            control.getItems().addListener(((ListChangeListener.Change<? extends T> _) -> updateItems()));
-            updateItems();
+            Bindings.bindContent(autoCompleteListView.getItems(), control.getItems());
 
             autoCompleteTextField.addEventFilter(KeyEvent.KEY_PRESSED, this::onKeyPressed);
 
@@ -249,7 +262,7 @@ public class AutoCompleteTextFieldSkin<T> extends FXTextFieldSkin {
         private void onSelectedItemChanged(Observable observable, Number oldValue, Number newValue) {
             AutoCompleteTextFieldSkin<?> textFieldSkin = ((AutoCompleteTextFieldSkin)autoCompleteTextField.getSkin());
 
-            String newText = null;
+            String newText;
             if (newValue.intValue() >= 0) {
                 autoCompleteListView.getSelectionModel().select(control.getSelectedItemIndex());
                 T selectedPopupObject = control.getItems().get(newValue.intValue());
@@ -282,26 +295,6 @@ public class AutoCompleteTextFieldSkin<T> extends FXTextFieldSkin {
                     keyEvent.consume();
                 }
                 case ESCAPE -> control.hide();
-            }
-        }
-
-        private void updateItems() {
-            autoCompleteListView.getItems().clear();
-
-            for (T result: control.getItems()) {
-                Node node = autoCompleteTextField.getSuggestionsNodeFactory().apply(result);
-                node.getStyleClass().add("auto-suggest-node");
-                nodes.add(node);
-
-                node.setOnMousePressed(event -> {
-                    setTextFieldText(convertSuggestedObjectToString(result));
-
-                    AutoCompletePopup<T> control = getSkinnable();
-                    control.setSelectedItemIndex(control.getItems().indexOf(result));
-
-                    autoCompleteTextField.fireEvent(new ActionEvent());
-                });
-                autoCompleteListView.getItems().add(node);
             }
         }
 
