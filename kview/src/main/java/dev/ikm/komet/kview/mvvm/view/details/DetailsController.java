@@ -130,7 +130,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import javafx.util.Subscription;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -365,10 +364,6 @@ public class DetailsController  {
      */
     private ViewCalculatorWithCache viewCalculatorWithCache;
 
-    private Subscription draggableWindowSubscription;
-
-    private Subscription draggablePropertiesSubscription;
-
     public DetailsController() {
     }
 
@@ -568,7 +563,7 @@ public class DetailsController  {
         eventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
 
         // Setup window support with explicit draggable nodes
-        draggableWindowSubscription = addDraggableNodes(detailsOuterBorderPane, conceptHeaderControlToolBarHbox);
+        addDraggableNodes(detailsOuterBorderPane, conceptHeaderControlToolBarHbox);
 
         // Check if the properties panel is initially open and add draggable nodes if needed
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
@@ -822,8 +817,10 @@ public class DetailsController  {
     void closeConceptWindow(ActionEvent event) {
         LOG.info("Cleanup occurring: Closing Window with concept: " + fqnTitleText.getText());
 
-        // Clean up the draggable nodes and subscriptions
-        removeDraggableNodes(draggableWindowSubscription, draggablePropertiesSubscription);
+        // Clean up the draggable nodes
+        removeDraggableNodes(detailsOuterBorderPane,
+                conceptHeaderControlToolBarHbox,
+                propertiesController != null ? propertiesController.getPropertiesTabsPane() : null);
 
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
@@ -1444,11 +1441,10 @@ public class DetailsController  {
     private void updateDraggableRegionsForPropertiesPanel(boolean isOpen) {
         if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
             if (isOpen) {
-                draggablePropertiesSubscription = addDraggableNodes(
-                        detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
                 LOG.debug("Added properties nodes as draggable");
             } else {
-                draggablePropertiesSubscription = removeDraggableNodes(draggablePropertiesSubscription);
+                removeDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
                 LOG.debug("Removed properties nodes from draggable");
             }
         }

@@ -54,7 +54,6 @@ import javafx.scene.shape.FillRule;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import javafx.util.Subscription;
 import org.carlfx.axonic.StateMachine;
 import org.carlfx.cognitive.loader.*;
 import org.controlsfx.control.PopOver;
@@ -227,10 +226,6 @@ public class PatternDetailsController {
     private Subscriber<PatternDescriptionEvent> patternDescriptionEventSubscriber;
 
     private Subscriber<PatternFieldsPanelEvent> patternFieldsPanelEventSubscriber;
-
-    private Subscription draggableWindowSubscription;
-
-    private Subscription draggablePropertiesSubscription;
 
     public PatternDetailsController() {}
 
@@ -447,8 +442,7 @@ public class PatternDetailsController {
         setupProperties();
 
         // Setup window support with explicit draggable nodes
-        draggableWindowSubscription = addDraggableNodes(
-                detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
+        addDraggableNodes(detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
 
         // Check if the properties panel is initially open and add draggable nodes if needed
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
@@ -688,8 +682,11 @@ public class PatternDetailsController {
     void closeConceptWindow(ActionEvent event) {
         LOG.info("Cleanup occurring: Closing Window with pattern: " + patternTitleText.getText());
 
-        // Clean up the draggable nodes and subscriptions
-        removeDraggableNodes(draggableWindowSubscription, draggablePropertiesSubscription);
+        // Clean up the draggable nodes
+        removeDraggableNodes(detailsOuterBorderPane,
+                tabHeader,
+                conceptHeaderControlToolBarHbox,
+                propertiesController != null ? propertiesController.getPropertiesTabsPane() : null);
 
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
@@ -906,11 +903,10 @@ public class PatternDetailsController {
     private void updateDraggableRegionsForPropertiesPanel(boolean isOpen) {
         if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
             if (isOpen) {
-                draggablePropertiesSubscription = addDraggableNodes(
-                        detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
                 LOG.debug("Added properties nodes as draggable");
             } else {
-                draggablePropertiesSubscription = removeDraggableNodes(draggablePropertiesSubscription);
+                removeDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
                 LOG.debug("Removed properties nodes from draggable");
             }
         }

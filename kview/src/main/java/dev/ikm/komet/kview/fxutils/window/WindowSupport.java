@@ -68,14 +68,13 @@ import static javafx.scene.paint.Color.TRANSPARENT;
  * <ul>
  *   <li>Uses the {@link Subscription} pattern for clean, deterministic cleanup of resources</li>
  *   <li>Categorizes subscriptions for better organization and lifecycle management</li>
- *   <li>Implements {@link AutoCloseable} to support the try-with-resources pattern</li>
  * </ul>
  *
  * @see DraggableSupport For a higher-level utility API
  * @see ResizeHandle For the individual resize handles
  * @see Subscription For the resource management pattern
  */
-public class WindowSupport implements AutoCloseable {
+public class WindowSupport {
 
     private static final Logger LOG = LoggerFactory.getLogger(WindowSupport.class);
 
@@ -155,7 +154,6 @@ public class WindowSupport implements AutoCloseable {
     private BiConsumer<MouseEvent, WindowSupport> dragMouseReleaseHandler;
 
     // Subscription management
-    private final MutableList<Subscription> subscriptions = Lists.mutable.empty();
     private final MutableMap<Node, Subscription> nodeSubscriptions = Maps.mutable.empty();
     private final MutableMap<String, Subscription> categorySubscriptions = Maps.mutable.empty();
 
@@ -376,14 +374,15 @@ public class WindowSupport implements AutoCloseable {
     }
 
     /**
-     * Registers a node as a draggable node for window movement.
+     * Adds a node as a draggable region for the window.
      * <p>
-     * This method configures the specified node to act as a drag handle for the window.
-     * When the user performs a mouse drag operation on this node, the entire window will
-     * move accordingly.
+     * This method registers mouse event handlers for the specified node to allow
+     * dragging the window by clicking and dragging that specific element. If a node
+     * is already draggable, its existing handlers will be replaced with new ones.
      *
-     * @param draggableNode The node to register as a draggable node
-     * @return A subscription that unregisters the region when unsubscribed
+     * @param draggableNode The node to make draggable; must not be null
+     * @return A subscription that can be used to remove this draggable node;
+     * returns {@link Subscription#EMPTY} if the node is null
      */
     public Subscription addDraggableNode(Node draggableNode) {
         if (draggableNode == null) {
@@ -396,7 +395,6 @@ public class WindowSupport implements AutoCloseable {
             Subscription oldSubscription = nodeSubscriptions.get(draggableNode);
             if (oldSubscription != null) {
                 oldSubscription.unsubscribe();
-                subscriptions.remove(oldSubscription);
             }
         }
 
@@ -417,17 +415,44 @@ public class WindowSupport implements AutoCloseable {
 
         // Store for later access and cleanup
         nodeSubscriptions.put(draggableNode, dragSubscription);
-        addSubscription(dragSubscription);
 
         // Return cleanup subscription
-        return () -> {
-            draggableNodes.remove(draggableNode);
-            Subscription sub = nodeSubscriptions.remove(draggableNode);
-            if (sub != null) {
-                sub.unsubscribe();
-                subscriptions.remove(sub);
+        return () -> removeDraggableNode(draggableNode);
+    }
+
+    /**
+     * Removes a draggable node from the window.
+     * <p>
+     * This method unregisters the mouse event handlers for the specified node and
+     * removes it from the list of draggable nodes. If the node was not previously
+     * registered, no action is taken.
+     *
+     * @param draggableNode The node to remove; must not be null
+     * @return true if the node was successfully removed, false if it was not found
+     */
+    public boolean removeDraggableNode(Node draggableNode) {
+        if (draggableNode == null) {
+            return false;
+        }
+
+        // Cleanup subscription - this handles the event handlers
+        final Subscription eventHandlerSubscription = nodeSubscriptions.remove(draggableNode);
+        if (eventHandlerSubscription != null) {
+            try {
+                eventHandlerSubscription.unsubscribe();
+            } catch (Exception e) {
+                LOG.error("Error during draggable node cleanup", e);
             }
-        };
+        }
+
+        // Remove from a tracking list
+        final boolean wasRemoved = draggableNodes.remove(draggableNode);
+
+        if (wasRemoved) {
+            LOG.debug("Removed draggable node: {}", draggableNode.getClass().getSimpleName());
+        }
+
+        return wasRemoved;
     }
 
     /**
@@ -1068,19 +1093,16 @@ public class WindowSupport implements AutoCloseable {
      *   <li>Resets internal state</li>
      *   <li>Releases all resources held by this WindowSupport instance</li>
      * </ul>
-     *
-     * @see #close() Alternative method through AutoCloseable interface
      */
     public void removeSupport() {
         try {
+            // Unsubscribe node-based subscriptions
+            Lists.immutable.ofAll(nodeSubscriptions.values()).forEach(Subscription::unsubscribe);
+
             // Unsubscribe category-based subscriptions
             Lists.immutable.ofAll(categorySubscriptions.values()).forEach(Subscription::unsubscribe);
 
-            // Unsubscribe any remaining individual subscriptions
-            Lists.immutable.ofAll(subscriptions).forEach(Subscription::unsubscribe);
-
             // Clear all subscription collections
-            subscriptions.clear();
             nodeSubscriptions.clear();
             categorySubscriptions.clear();
 
@@ -1121,13 +1143,6 @@ public class WindowSupport implements AutoCloseable {
     }
 
     /**
-     * Adds a subscription to the list of subscriptions.
-     */
-    private void addSubscription(Subscription subscription) {
-        subscriptions.add(subscription);
-    }
-
-    /**
      * Adds a subscription to a named category for logical organization and lifecycle management.
      */
     private void addSubscription(String category, Subscription subscription) {
@@ -1137,6 +1152,28 @@ public class WindowSupport implements AutoCloseable {
         } else {
             categorySubscriptions.put(category, subscription);
         }
+    }
+
+    /**
+     * Gets existing WindowSupport for a container or creates a new one if it doesn't exist.
+     *
+     * @param container The container to get or create WindowSupport for must not be null
+     * @return The WindowSupport instance, never null
+     * @throws IllegalArgumentException if the container is null
+     */
+    public static WindowSupport setupWindowSupport(Pane container) {
+        if (container == null) {
+            throw new IllegalArgumentException("Container cannot be null");
+        }
+
+        WindowSupport support = container.getProperties().get(WINDOW_SUPPORT_KEY) instanceof WindowSupport ws ? ws : null;
+
+        if (support == null) {
+            support = new WindowSupport(container);
+            container.getProperties().put(WINDOW_SUPPORT_KEY, support);
+        }
+
+        return support;
     }
 
     // Getter and setter methods
@@ -1178,10 +1215,5 @@ public class WindowSupport implements AutoCloseable {
      */
     public boolean isWindowActive() {
         return windowState != WindowState.IDLE;
-    }
-
-    @Override
-    public void close() {
-        removeSupport();
     }
 }
