@@ -173,7 +173,7 @@ public class WindowSupport implements AutoCloseable {
      * @param parentNode     The pane to transform into a window-like component
      * @param draggableNodes Nodes that can be used to drag the window (e.g., titlebar, header)
      * @throws IllegalArgumentException if parentNode is null
-     * @see #addDraggableRegion(Node) To add additional draggable regions later
+     * @see #addDraggableNode(Node) To add additional draggable regions later
      * @see #setupPositionConstraints(InvalidationListener) To constrain the window within its parent
      */
     public WindowSupport(final Pane parentNode, Node... draggableNodes) {
@@ -368,7 +368,7 @@ public class WindowSupport implements AutoCloseable {
         Subscription nodesSubscription = Subscription.EMPTY;
 
         for (Node draggableNode : this.draggableNodes) {
-            Subscription nodeSubscription = addDraggableRegion(draggableNode);
+            Subscription nodeSubscription = addDraggableNode(draggableNode);
             nodesSubscription = nodesSubscription.and(nodeSubscription);
         }
 
@@ -376,17 +376,16 @@ public class WindowSupport implements AutoCloseable {
     }
 
     /**
-     * Registers a node as a draggable region for window movement.
+     * Registers a node as a draggable node for window movement.
      * <p>
      * This method configures the specified node to act as a drag handle for the window.
      * When the user performs a mouse drag operation on this node, the entire window will
      * move accordingly.
      *
-     * @param draggableNode The node to register as a draggable region
+     * @param draggableNode The node to register as a draggable node
      * @return A subscription that unregisters the region when unsubscribed
-     * @see #removeDraggableRegion(Node) To remove a draggable region
      */
-    public Subscription addDraggableRegion(Node draggableNode) {
+    public Subscription addDraggableNode(Node draggableNode) {
         if (draggableNode == null) {
             LOG.warn("Cannot add null as draggable region");
             return Subscription.EMPTY;
@@ -429,29 +428,6 @@ public class WindowSupport implements AutoCloseable {
                 subscriptions.remove(sub);
             }
         };
-    }
-
-    /**
-     * Removes a node from the list of draggable regions and cancels its associated event handlers.
-     * <p>
-     * This method safely detaches the specified node from acting as a drag handle for the window.
-     * After removal, mouse drag operations on this node will no longer move the window.
-     *
-     * @param draggableNode The node to remove as a draggable region
-     * @see #addDraggableRegion(Node) To add a draggable region
-     */
-    public void removeDraggableRegion(Node draggableNode) {
-        if (draggableNode == null) return;
-
-        // Unsubscribe and remove its event handler subscription
-        Subscription eventHandlerSubscription = nodeSubscriptions.remove(draggableNode);
-        if (eventHandlerSubscription != null) {
-            eventHandlerSubscription.unsubscribe();
-            subscriptions.remove(eventHandlerSubscription);
-        }
-
-        // Remove the node from the list of draggable nodes
-        draggableNodes.remove(draggableNode);
     }
 
     /**

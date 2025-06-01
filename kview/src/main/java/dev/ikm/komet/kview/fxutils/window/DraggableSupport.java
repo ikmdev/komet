@@ -21,6 +21,10 @@ import javafx.util.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.Objects;
+
+import static dev.ikm.komet.kview.fxutils.window.SubscriptionUtils.safeUnsubscribe;
 import static dev.ikm.komet.kview.fxutils.window.WindowSupport.WINDOW_SUPPORT_KEY;
 
 /**
@@ -38,7 +42,7 @@ import static dev.ikm.komet.kview.fxutils.window.WindowSupport.WINDOW_SUPPORT_KE
  * // Create a draggable window with a header as the drag handle
  * Pane window = new VBox();
  * Label header = new Label("Window Title");
- * Subscription windowSub = DraggableSupport.setupDraggableWindow(window, header);
+ * Subscription windowSub = DraggableSupport.addDraggableNodes(window, header);
  *
  * // Later, when the window is no longer needed:
  * windowSub.unsubscribe();
@@ -52,138 +56,77 @@ public interface DraggableSupport {
     Logger LOG = LoggerFactory.getLogger(DraggableSupport.class);
 
     /**
-     * Sets up window dragging support with explicitly defined draggable regions.
+     * Adds one or more draggable nodes to a container.
      * <p>
-     * This method creates a {@link WindowSupport} instance that enables dragging the container
-     * by the specified draggable elements. When the user performs a mouse drag operation on
-     * any of these elements, the entire container will move accordingly.
+     * Creates WindowSupport if it doesn't exist. This method can be used for both
+     * initial setup and incremental additions of drag handles when the window
+     * structure changes dynamically.
      * <p>
-     * This method automatically cleans up any existing window support for the container
-     * before setting up new support, making it safe to call multiple times.
+     * Each draggable node allows users to drag the entire window by clicking
+     * and dragging that specific element.
      *
-     * @param container         The main container pane that represents the window to be made draggable
-     * @param draggableElements Elements (such as headers or title bars) that should serve as
-     *                          drag handles for the window. The user must click and drag these
-     *                          elements to move the window.
-     * @return A subscription that can be used to clean up resources when the window is no longer
-     * needed. Call {@code unsubscribe()} on this object to remove all dragging behavior.
+     * @param container      The container pane must not be null
+     * @param draggableNodes One or more nodes that should act as draggable handles
+     * @return A subscription to remove these specific draggable nodes, or
+     * {@link Subscription#EMPTY} if the operation couldn't be completed
      * @throws IllegalArgumentException if the container is null
-     * @see #addDraggableRegion(Pane, Node) For adding additional draggable regions after setup
      */
-    static Subscription setupDraggableWindow(Pane container, Node... draggableElements) {
+    static Subscription addDraggableNodes(Pane container, Node... draggableNodes) {
         if (container == null) {
             throw new IllegalArgumentException("Container cannot be null");
         }
 
-        if (draggableElements == null || draggableElements.length == 0) {
-            LOG.warn("No draggable elements specified for container: {}", container);
+        if (draggableNodes == null || draggableNodes.length == 0) {
+            LOG.warn("No draggable elements specified for container");
+            return Subscription.EMPTY;
         }
 
-        // Clean up any existing support for this container
-        cleanupExistingSupport(container);
+        // Get or create WindowSupport
+        WindowSupport support = getOrCreateWindowSupport(container);
 
-        WindowSupport support = new WindowSupport(container, draggableElements);
-        container.getProperties().put(WINDOW_SUPPORT_KEY, support);
+        // Add all nodes and collect their subscriptions
+        Subscription[] subscriptions = Arrays.stream(draggableNodes)
+                .filter(Objects::nonNull)
+                .map(support::addDraggableNode)
+                .toArray(Subscription[]::new);
 
-        // Return a subscription that cleans up when unsubscribed
-        return () -> {
-            support.removeSupport();
-            container.getProperties().remove(WINDOW_SUPPORT_KEY);
-        };
+        return subscriptions.length > 0 ? Subscription.combine(subscriptions) : Subscription.EMPTY;
     }
 
     /**
-     * Adds a new draggable region to a window after initial setup.
+     * Removes draggable nodes by safely unsubscribing their subscriptions.
      * <p>
-     * This method allows incrementally adding more drag handles to an existing
-     * draggable window. This is useful when the window structure changes dynamically
-     * or when building composite UIs where drag handles are added as components are
-     * created.
-     * <p>
-     * The container must have been previously configured with {@link #setupDraggableWindow}.
+     * This method provides a domain-specific way to clean up draggable nodes,
+     * handling null subscriptions gracefully and returning null for convenient
+     * assignment back to subscription fields.
      *
-     * @param container     The window container that has already been set up with draggable support
-     * @param draggableNode The node to add as an additional draggable region
-     * @return A subscription that can be used to remove just this draggable region when needed,
-     * or {@link Subscription#EMPTY} if the operation couldn't be completed
-     * @see #setupDraggableWindow(Pane, Node...) To initialize draggable support
-     * @see #removeDraggableRegion(Pane, Node) To remove a specific draggable region
+     * @param subscriptions The draggable node subscriptions to remove
+     * @param <T>           Generic type for assignment convenience
+     * @return Always null (for convenient assignment)
      */
-    static Subscription addDraggableRegion(Pane container, Node draggableNode) {
+    static <T> T removeDraggableNodes(Subscription... subscriptions) {
+        return safeUnsubscribe(subscriptions);
+    }
+
+    /**
+     * Gets existing WindowSupport for a container or creates a new one if it doesn't exist.
+     *
+     * @param container The container to get or create WindowSupport for must not be null
+     * @return The WindowSupport instance, never null
+     * @throws IllegalArgumentException if the container is null
+     */
+    static WindowSupport getOrCreateWindowSupport(Pane container) {
         if (container == null) {
-            LOG.warn("Cannot add draggable region - container is null");
-            return Subscription.EMPTY;
+            throw new IllegalArgumentException("Container cannot be null");
         }
 
-        if (draggableNode == null) {
-            LOG.warn("Cannot add draggable region - node is null");
-            return Subscription.EMPTY;
+        WindowSupport support = container.getProperties().get(WINDOW_SUPPORT_KEY) instanceof WindowSupport ws ? ws : null;
+
+        if (support == null) {
+            support = new WindowSupport(container);
+            container.getProperties().put(WINDOW_SUPPORT_KEY, support);
         }
 
-        WindowSupport support = getWindowSupport(container);
-        if (support != null) {
-            return support.addDraggableRegion(draggableNode);
-        } else {
-            LOG.warn("Cannot add draggable region - no window support found for container");
-            return Subscription.EMPTY;
-        }
-    }
-
-    /**
-     * Removes a node from the list of draggable regions.
-     * <p>
-     * This method removes a specific node from being a drag handle for the container
-     * while maintaining any other existing drag handles. This is useful when UI elements
-     * that previously acted as drag handles need to be repurposed or removed.
-     *
-     * @param container     The window container that has draggable support
-     * @param draggableNode The node to remove from the draggable regions
-     * @see #addDraggableRegion(Pane, Node) To add a specific draggable region
-     */
-    static void removeDraggableRegion(Pane container, Node draggableNode) {
-        if (container == null) {
-            LOG.warn("Cannot remove draggable region - container is null");
-            return;
-        }
-
-        if (draggableNode == null) {
-            LOG.warn("Cannot remove draggable region - node is null");
-            return;
-        }
-
-        WindowSupport support = getWindowSupport(container);
-        if (support != null) {
-            support.removeDraggableRegion(draggableNode);
-        } else {
-            LOG.warn("Cannot remove draggable region - no window support found for container");
-        }
-    }
-
-    /**
-     * Retrieves the WindowSupport instance from the container's properties.
-     *
-     * @param container The container to get support for
-     * @return The WindowSupport instance, or null if not found or if the container is null
-     */
-    static WindowSupport getWindowSupport(Pane container) {
-        if (container == null) return null;
-
-        Object support = container.getProperties().get(WINDOW_SUPPORT_KEY);
-        return (support instanceof WindowSupport windowSupport) ? windowSupport : null;
-    }
-
-    /**
-     * Cleans up any existing window support for the container.
-     *
-     * @param container The container to clean up
-     */
-    private static void cleanupExistingSupport(Pane container) {
-        if (container == null) return;
-
-        WindowSupport support = getWindowSupport(container);
-        if (support != null) {
-            support.removeSupport();
-            container.getProperties().remove(WINDOW_SUPPORT_KEY);
-        }
+        return support;
     }
 }

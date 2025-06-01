@@ -140,4 +140,21 @@ public interface SubscriptionUtils {
         }
         return Subscription.combine(subscriptions.toArray(Subscription[]::new));
     }
+
+    /**
+     * Safely unsubscribes subscriptions and returns null for assignment.
+     *
+     * @param subscriptions The subscriptions to unsubscribe
+     * @return Always null (for convenient assignment)
+     */
+    static <T> T safeUnsubscribe(Subscription... subscriptions) {
+        if (subscriptions != null) {
+            for (Subscription subscription : subscriptions) {
+                if (subscription != null) {
+                    subscription.unsubscribe();
+                }
+            }
+        }
+        return null;
+    }
 }

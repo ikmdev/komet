@@ -21,6 +21,8 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.lidr.events.LidrPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.lidr.events.LidrPropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.lidr.events.ShowPanelEvent.SHOW_ADD_ANALYTE_GROUP;
@@ -52,7 +54,6 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.data.schema.STAMPDetail;
 import dev.ikm.komet.kview.events.StampModifiedEvent;
-import dev.ikm.komet.kview.fxutils.window.DraggableSupport;
 import dev.ikm.komet.kview.lidr.events.AddDeviceEvent;
 import dev.ikm.komet.kview.lidr.events.AddResultInterpretationEvent;
 import dev.ikm.komet.kview.lidr.events.LidrPropertyPanelEvent;
@@ -258,6 +259,8 @@ public class LidrDetailsController {
 
     private Subscription draggableWindowSubscription;
 
+    private Subscription draggablePropertiesSubscription;
+
     public LidrDetailsController() {
     }
 
@@ -346,10 +349,11 @@ public class LidrDetailsController {
         setupProperties();
         setupTimelineBumpOut();
 
-        // Setup window dragging support with explicit draggable regions
-        draggableWindowSubscription = DraggableSupport.setupDraggableWindow(
+        // Setup window dragging support with explicit draggable nodes
+        draggableWindowSubscription = addDraggableNodes(
                 detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
 
+        // Check if the properties panel is initially open and add draggable nodes if needed
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
             updateDraggableRegionsForPropertiesPanel(true);
         }
@@ -489,11 +493,8 @@ public class LidrDetailsController {
     void closeConceptWindow(ActionEvent event) {
         LOG.info("Cleanup occurring: Closing Window with concept: " + deviceTitleText.getText());
 
-        // Clean up draggable support before closing the window
-        if (draggableWindowSubscription != null) {
-            draggableWindowSubscription.unsubscribe();
-            draggableWindowSubscription = null;
-        }
+        // Clean up the draggable nodes and subscriptions
+        removeDraggableNodes(draggableWindowSubscription, draggablePropertiesSubscription);
 
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
@@ -703,16 +704,23 @@ public class LidrDetailsController {
         eventBus.publish(conceptTopic, new LidrPropertyPanelEvent(propertyToggle, eventEvtType));
     }
 
+    /**
+     * Updates draggable behavior for the properties panel based on its open/closed state.
+     * <p>
+     * When opened, adds the properties tabs pane as a draggable node. When closed,
+     * safely removes the draggable behavior to prevent memory leaks.
+     *
+     * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
+     */
     private void updateDraggableRegionsForPropertiesPanel(boolean isOpen) {
         if (propertiesViewController != null && propertiesViewController.getPropertiesTabsPane() != null) {
             if (isOpen) {
-                DraggableSupport.addDraggableRegion(detailsOuterBorderPane,
-                        propertiesViewController.getPropertiesTabsPane());
-                LOG.debug("Added properties tabs as draggable region");
-            } else {
-                DraggableSupport.removeDraggableRegion(detailsOuterBorderPane,
-                        propertiesViewController.getPropertiesTabsPane());
-                LOG.debug("Removed properties tabs from draggable regions");
+                draggablePropertiesSubscription = addDraggableNodes(
+                        detailsOuterBorderPane, propertiesViewController.getPropertiesTabsPane());
+                LOG.debug("Added properties nodes as draggable");
+            }  else {
+                draggablePropertiesSubscription = removeDraggableNodes(draggablePropertiesSubscription);
+                LOG.debug("Removed properties nodes from draggable");
             }
         }
     }

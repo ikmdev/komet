@@ -26,6 +26,8 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
@@ -65,7 +67,6 @@ import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
-import dev.ikm.komet.kview.fxutils.window.DraggableSupport;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
@@ -229,6 +230,8 @@ public class GenEditingDetailsController {
 
     private Subscription draggableWindowSubscription;
 
+    private Subscription draggablePropertiesSubscription;
+
     public GenEditingDetailsController() {
     }
 
@@ -256,10 +259,11 @@ public class GenEditingDetailsController {
         // update stamp UI
         updateUIStamp(getStampViewModel());
 
-        // Setup window dragging support with explicit draggable regions
-        draggableWindowSubscription = DraggableSupport.setupDraggableWindow(
+        // Setup window dragging support with explicit draggable nodes
+        draggableWindowSubscription = addDraggableNodes(
                 detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
 
+        // Check if the properties panel is initially open and add draggable nodes if needed
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
             updateDraggableRegionsForPropertiesPanel(true);
         }
@@ -624,11 +628,8 @@ public class GenEditingDetailsController {
 
     @FXML
     void closeConceptWindow(ActionEvent event) {
-        // Clean up draggable support before closing the window
-        if (draggableWindowSubscription != null) {
-            draggableWindowSubscription.unsubscribe();
-            draggableWindowSubscription = null;
-        }
+        // Clean up the draggable nodes and subscriptions
+        removeDraggableNodes(draggableWindowSubscription, draggablePropertiesSubscription);
 
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
@@ -757,20 +758,24 @@ public class GenEditingDetailsController {
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType));
     }
 
+
+    /**
+     * Updates draggable behavior for the properties panel based on its open/closed state.
+     * <p>
+     * When opened, adds the properties tabs pane as a draggable node. When closed,
+     * safely removes the draggable behavior to prevent memory leaks.
+     *
+     * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
+     */
     private void updateDraggableRegionsForPropertiesPanel(boolean isOpen) {
         if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
             if (isOpen) {
-                DraggableSupport.addDraggableRegion(
-                        detailsOuterBorderPane,
-                        propertiesController.getPropertiesTabsPane()
-                );
-                LOG.debug("Added properties tabs as draggable region");
+                draggablePropertiesSubscription = addDraggableNodes(
+                        detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                LOG.debug("Added properties nodes as draggable");
             } else {
-                DraggableSupport.removeDraggableRegion(
-                        detailsOuterBorderPane,
-                        propertiesController.getPropertiesTabsPane()
-                );
-                LOG.debug("Removed properties tabs from draggable regions");
+                draggablePropertiesSubscription = removeDraggableNodes(draggablePropertiesSubscription);
+                LOG.debug("Removed properties nodes from draggable");
             }
         }
     }
