@@ -68,9 +68,11 @@ public class Toast {
         toastContainer.setOpacity(0);
 
         iconRegion = new Region();
+        iconRegion.getStyleClass().add("icon");
 
         iconContainer = new StackPane();
         iconContainer.getChildren().setAll(iconRegion);
+        iconContainer.getStyleClass().add("icon-container");
 
         messageLabel = new Label();
         messageLabel.getStyleClass().add("message");
@@ -132,11 +134,11 @@ public class Toast {
      */
     public void show(Status status, String message, int autoDismissMillis) {
         // Update content and style
-        iconRegion.getStyleClass().setAll("icon");
+        iconContainer.getStyleClass().setAll("icon-container");
         if (status == Status.SUCCESS) {
-            iconRegion.getStyleClass().add("icon-success");
+            iconContainer.getStyleClass().add("icon-success");
         } else {
-            iconRegion.getStyleClass().add("icon-failure");
+            iconContainer.getStyleClass().add("icon-failure");
         }
 
         messageLabel.setText(message);
