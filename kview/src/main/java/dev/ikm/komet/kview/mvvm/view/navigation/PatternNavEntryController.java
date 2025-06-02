@@ -128,8 +128,13 @@ public class PatternNavEntryController {
         Image identiconImage = Identicon.generateIdenticonImage(patternFacade.publicId());
         identicon.setImage(identiconImage);
 
+        var patternNameText = retriveDisplayName((PatternFacade)patternFacade);
+
         // set the pattern's name
-        patternName.setText(retriveDisplayName((PatternFacade)patternFacade));
+        patternName.setText(patternNameText);
+
+        // set the pattern name label Tooltip
+        Tooltip.install(patternName, new Tooltip(patternNameText));
 
         // add listener for double click to summon the pattern into the journal view
         patternEntryHBox.setOnMouseClicked(mouseEvent -> {
