@@ -134,9 +134,9 @@ public class PatternNavEntryController {
         var displayName = retriveDisplayName((PatternFacade)patternFacade);
 
         // for testing
-        if (displayName.equals("Comment Pattern")) {
-            displayName += " adding a really long name to demo the Pattern name tooltip";
-        }
+//        if (displayName.equals("Comment Pattern")) {
+//            displayName += " adding a really long name to demo the Pattern name tooltip";
+//        }
 
         patternName.setText(displayName);
 
