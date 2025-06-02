@@ -26,7 +26,7 @@
 }
 
 /* Success Icon */
-.toast .icon.icon-success {
+.toast .icon-container.icon-success > .icon {
     -fx-shape: "M9.50016 16.1698L5.33016 11.9998L3.91016 13.4098L9.50016 18.9998L21.5002 6.99984L20.0902 5.58984L9.50016 16.1698Z";
     -fx-background-color: #00bc62;
 
@@ -34,11 +34,18 @@
 }
 
 /* Failure Icon */
-.toast .icon.icon-failure {
-    -fx-shape: "M1 1l18 18M1 19L19 1"; /* Replace with better X icon if needed */
-    -fx-background-color: red;
+.toast .icon-container.icon-failure > .icon {
+    -fx-shape: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm1-10v7h-2V6h2z";
+    -fx-background-color: #F3BE00;
+
+    -fx-scale-shape: false;
 }
 
+.toast .icon-container.icon-failure {
+    -fx-padding: 0 2px 0 0;
+}
+
+/* Undo button */
 .toast .undo {
     background_color: #4a7ad2;
     -fx-background-color: background_color;
