@@ -132,12 +132,16 @@ public class PatternNavEntryController {
 
         // save the displayName for the Pattern name label tooltip
         displayName = retriveDisplayName((PatternFacade)patternFacade);
-                //+ " adding a really long name to demo the Pattern name tooltip";  // for testing
+
+        // for testing
+        if (displayName.equals("Comment Pattern")) {
+            displayName += " adding a really long name to demo the Pattern name tooltip";
+        }
 
         patternName.setText(displayName);
 
         // TODO need to get the creation of the tooltip working by using Label.isTextTruncated()
-        Tooltip.install(patternName, new Tooltip(displayName));
+//        Tooltip.install(patternName, new Tooltip(displayName));
 
         // add listener for double click to summon the pattern into the journal view
         patternEntryHBox.setOnMouseClicked(mouseEvent -> {
@@ -151,6 +155,9 @@ public class PatternNavEntryController {
             }
         });
         setupListView();
+
+        patternEntryHBox.layout();
+        patternEntryHBox.applyCss();
     }
 
     void initializeTooltip() {

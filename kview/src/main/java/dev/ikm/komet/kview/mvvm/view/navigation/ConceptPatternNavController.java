@@ -187,18 +187,18 @@ public class ConceptPatternNavController {
             // TODO there HAS to be a better way!!!!!!
             // This is not reliable!!!!!!!!!
             Platform.runLater(() -> {
-                new Thread(() -> {
-                    try {
-                        // magic number of ??? seconds delay
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        LOG.error("InterruptedException while sleeping to delay the Pattern name tooltip initialization", e);
-                    } finally {
+//                new Thread(() -> {
+//                    try {
+//                        // magic number of ??? seconds delay
+//                        Thread.sleep(3000);
+//                    } catch (InterruptedException e) {
+//                        LOG.error("InterruptedException while sleeping to delay the Pattern name tooltip initialization", e);
+//                    } finally {
                         for (var controller : patternNavEntryControllers) {
                             controller.initializeTooltip();
                         }
-                    }
-                }); // .start();
+//                    }
+//                }).start();
             });
         });
 
