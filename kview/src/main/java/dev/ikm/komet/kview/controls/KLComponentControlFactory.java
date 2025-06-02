@@ -3,13 +3,15 @@ package dev.ikm.komet.kview.controls;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.tinkar.common.id.IntIdCollection;
 import dev.ikm.tinkar.coordinate.navigation.calculator.NavigationCalculator;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.Separator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -29,25 +31,33 @@ public class KLComponentControlFactory {
      *                                                                         *
      **************************************************************************/
 
-    public static KLComponentControl createTypeAheadComponentControl(NavigationCalculator calculator) {
+    public static KLComponentControl createTypeAheadComponentControl(ViewCalculator viewCalculator) {
         KLComponentControl componentControl = new KLComponentControl();
-        componentControl.setTypeAheadCompleter(createGenericTypeAheadFunction(calculator));
+        NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
+        componentControl.setTypeAheadCompleter(createGenericTypeAheadFunction(navigationCalculator));
 
-        StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(calculator);
+        // add the function to render the component name
+        componentControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator));
+
+        StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(navigationCalculator);
         componentControl.setTypeAheadStringConverter(stringToEntityProxyConverter);
 
-        componentControl.setSuggestionsNodeFactory(entityProxy -> createComponentSuggestionNode(entityProxy, stringToEntityProxyConverter));
+        componentControl.setSuggestionsCellFactory(_ -> createComponentSuggestionNode(stringToEntityProxyConverter));
         return componentControl;
     }
 
-    public static <T extends IntIdCollection> KLComponentListControl createTypeAheadComponentListControl(NavigationCalculator calculator) {
+    public static <T extends IntIdCollection> KLComponentListControl createTypeAheadComponentListControl(ViewCalculator viewCalculator) {
         KLComponentListControl<T> componentListControl = new KLComponentListControl<>();
-        componentListControl.setTypeAheadCompleter(createGenericTypeAheadFunction(calculator));
+        NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
+        componentListControl.setTypeAheadCompleter(createGenericTypeAheadFunction(navigationCalculator));
 
-        StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(calculator);
+        // add the function to render the component name
+        componentListControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator));
+
+        StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(navigationCalculator);
         componentListControl.setTypeAheadStringConverter(stringToEntityProxyConverter);
 
-        componentListControl.setSuggestionsNodeFactory(entityProxy -> createComponentSuggestionNode(entityProxy, stringToEntityProxyConverter));
+        componentListControl.setSuggestionsCellFactory(_ -> createComponentSuggestionNode(stringToEntityProxyConverter));
         return componentListControl;
     }
 
@@ -72,6 +82,13 @@ public class KLComponentControlFactory {
         };
     }
 
+
+    private static Function<EntityProxy, String> createComponentNameRenderer(ViewCalculator viewCalculator) {
+        return (entityProxy) ->
+            viewCalculator.languageCalculator()
+                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
+    }
+
     private static StringConverter<EntityProxy> createStringToEntityProxyConverter(NavigationCalculator navigationCalculator) {
         return new StringConverter<>() {
             @Override
@@ -86,27 +103,50 @@ public class KLComponentControlFactory {
         };
     }
 
-    private static Node createComponentSuggestionNode(EntityProxy entity, StringConverter<EntityProxy> stringConverter) {
-        StackPane stackPane = new StackPane();
-        VBox suggestionContainer = new VBox();
+    private static ListCell<EntityProxy> createComponentSuggestionNode(StringConverter<EntityProxy> stringConverter) {
+        return new ListCell<>() {
+            StackPane stackPane;
+            Label label;
+            ImageView imageView;
 
-        String text = stringConverter != null ? stringConverter.toString(entity) : entity.toString();
-        Label label = new Label(text);
+            {
+                stackPane = new StackPane();
+                VBox suggestionContainer = new VBox();
 
-        Image identiconImage = Identicon.generateIdenticonImage(entity.publicId());
-        ImageView imageView = new ImageView(identiconImage);
-        imageView.setFitHeight(16);
-        imageView.setFitWidth(16);
+                label = new Label();
 
-        label.setGraphic(imageView);
+                imageView = new ImageView();
+                imageView.setFitHeight(16);
+                imageView.setFitWidth(16);
 
-        Separator separator = new Separator(Orientation.HORIZONTAL);
+                label.setGraphic(imageView);
 
-        suggestionContainer.getChildren().setAll(label, separator);
+                Separator separator = new Separator(Orientation.HORIZONTAL);
 
-        stackPane.setAlignment(Pos.CENTER_LEFT);
-        stackPane.getChildren().add(suggestionContainer);
+                suggestionContainer.getChildren().setAll(label, separator);
 
-        return stackPane;
+                stackPane.setAlignment(Pos.CENTER_LEFT);
+                stackPane.getChildren().add(suggestionContainer);
+
+                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+            }
+
+            @Override
+            protected void updateItem(EntityProxy item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (item == null) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(stackPane);
+
+                    String text = stringConverter != null ? stringConverter.toString(item) : item.toString();
+                    label.setText(text);
+
+                    Image identiconImage = Identicon.generateIdenticonImage(item.publicId());
+                    imageView.setImage(identiconImage);
+                }
+            }
+        };
     }
 }
