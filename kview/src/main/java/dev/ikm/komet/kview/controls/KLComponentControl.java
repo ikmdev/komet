@@ -128,6 +128,16 @@ public class KLComponentControl extends Control {
     public final Function<String, List<EntityProxy>> getCompleter() { return completer.get(); }
     public final ObjectProperty<Function<String, List<EntityProxy>>> completerProperty() { return completer; }
 
+    // -- function to render the component's name and avoid entity.description()
+    private final ObjectProperty<Function<EntityProxy, String>> componentNameRenderer = new SimpleObjectProperty<>();
+    public final Function<EntityProxy, String> getComponentNameRenderer() { return componentNameRenderer.get(); }
+    public final void setComponentNameRenderer(Function<EntityProxy, String> nameHandler) {
+        componentNameRenderer.set(nameHandler);
+    }
+    public final ObjectProperty<Function<EntityProxy, String>> componentNameRendererProperty() {
+        return componentNameRenderer;
+    }
+
     // -- type ahead string converter
     /**
      * Converts the user-typed input to an object of type T, or the object of type T to a String.
