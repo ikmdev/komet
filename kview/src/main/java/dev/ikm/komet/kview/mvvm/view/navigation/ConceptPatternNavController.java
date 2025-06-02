@@ -176,6 +176,11 @@ public class ConceptPatternNavController {
 
                     setUpDraggable(patternHBox, patternItem, PATTERN);
 
+                    // try to force the css to be applied and the layout to be done
+                    // so the tooltip can be set
+                    patternHBox.applyCss();
+                    patternHBox.layout();
+
                     patternsVBox.getChildren().add(patternHBox);
                 });
             });
@@ -185,20 +190,20 @@ public class ConceptPatternNavController {
             // to initialize the tooltip for the Pattern name label.
             // runLater is used to put the tooltip initialization at the back of the application thread queue.
             // TODO there HAS to be a better way!!!!!!
-            // This is not reliable!!!!!!!!!
+            // Attempted to force the layout and
             Platform.runLater(() -> {
-//                new Thread(() -> {
-//                    try {
-//                        // magic number of ??? seconds delay
-//                        Thread.sleep(3000);
-//                    } catch (InterruptedException e) {
-//                        LOG.error("InterruptedException while sleeping to delay the Pattern name tooltip initialization", e);
-//                    } finally {
+                new Thread(() -> {
+                    try {
+                        // magic number of ??? seconds delay
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        LOG.error("InterruptedException while sleeping to delay the Pattern name tooltip initialization", e);
+                    } finally {
                         for (var controller : patternNavEntryControllers) {
                             controller.initializeTooltip();
                         }
-//                    }
-//                }).start();
+                    }
+                }).start();
             });
         });
 

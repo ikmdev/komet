@@ -86,7 +86,7 @@ public class PatternNavEntryController {
     @InjectViewModel
     private SimpleViewModel instancesViewModel;
 
-    private String displayName;
+    private Tooltip displayNameTooltip;
 
     @FXML
     private void initialize() {
@@ -131,7 +131,7 @@ public class PatternNavEntryController {
         identicon.setImage(identiconImage);
 
         // save the displayName for the Pattern name label tooltip
-        displayName = retriveDisplayName((PatternFacade)patternFacade);
+        var displayName = retriveDisplayName((PatternFacade)patternFacade);
 
         // for testing
         if (displayName.equals("Comment Pattern")) {
@@ -140,8 +140,12 @@ public class PatternNavEntryController {
 
         patternName.setText(displayName);
 
+        displayNameTooltip = new Tooltip(displayName);
+
         // TODO need to get the creation of the tooltip working by using Label.isTextTruncated()
-//        Tooltip.install(patternName, new Tooltip(displayName));
+        // install a tooltip now, and after a delay determine if the the tooltip is needed by calling
+        // Label.isTextTruncated()
+        Tooltip.install(patternName, displayNameTooltip);
 
         // add listener for double click to summon the pattern into the journal view
         patternEntryHBox.setOnMouseClicked(mouseEvent -> {
@@ -155,15 +159,12 @@ public class PatternNavEntryController {
             }
         });
         setupListView();
-
-        patternEntryHBox.layout();
-        patternEntryHBox.applyCss();
     }
 
     void initializeTooltip() {
         Platform.runLater(() -> {
-            if (patternName.isTextTruncated()) {
-                Tooltip.install(patternName, new Tooltip(displayName));
+            if (!patternName.isTextTruncated()) {
+                Tooltip.uninstall(patternName, displayNameTooltip);
             }
         });
     }
