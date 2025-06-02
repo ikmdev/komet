@@ -29,6 +29,7 @@ import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
@@ -87,6 +88,7 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
@@ -437,8 +439,8 @@ public class GenEditingDetailsController {
      */
     private void setupStampPopupOptions() {
         //initialize stampsViewModel with basic data.
-        stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(getViewProperties()), true)
-                .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(getViewProperties()), true);
+        stampViewModel.setPropertyValue(PATHS_PROPERTY, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.PATH.publicId()), true)
+                .setPropertyValue(MODULES_PROPERTY, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()), true);
     }
 
     private void updateUIStamp(ViewModel stampViewModel) {
@@ -682,11 +684,11 @@ public class GenEditingDetailsController {
         if (stampEdit != null && stampEditController != null) {
             // refresh modules
             stampViewModel.getObservableList(StampViewModel.MODULES_PROPERTY).clear();
-            stampViewModel.getObservableList(StampViewModel.MODULES_PROPERTY).addAll(stampViewModel.findAllModules(getViewProperties()));
+            stampViewModel.getObservableList(StampViewModel.MODULES_PROPERTY).addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
 
             // refresh path
             stampViewModel.getObservableList(PATHS_PROPERTY).clear();
-            stampViewModel.getObservableList(PATHS_PROPERTY).addAll(stampViewModel.findAllPaths(getViewProperties()));
+            stampViewModel.getObservableList(PATHS_PROPERTY).addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.PATH.publicId()));
 
             stampEdit.show((Node) event.getSource());
             stampEditController.selectActiveStatusToggle();
