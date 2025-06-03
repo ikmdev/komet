@@ -58,7 +58,7 @@ import static javafx.scene.paint.Color.TRANSPARENT;
  * following capabilities:
  * <ul>
  *   <li><b>Resizing</b>: Allows resizing from any edge or corner with appropriate cursor feedback</li>
- *   <li><b>Dragging</b>: Enables moving the window by dragging designated regions (like a titlebar)</li>
+ *   <li><b>Dragging</b>: Enables moving the window by dragging designated regions (like a title bar)</li>
  *   <li><b>Visual Feedback</b>: Shows highlights when hovering and during interactions</li>
  *   <li><b>Parent Bounds Constraints</b>: Optionally constrains the window within its parent bounds</li>
  *   <li><b>Auto-height</b>: Optional configuration for automatic height adjustment based on content</li>
@@ -169,20 +169,17 @@ public class WindowSupport {
      * <p>
      * Note: This constructor is private. Use {@link #setupWindowSupport(Pane)} to get WindowSupport instances.
      *
-     * @param parentNode The pane to transform into a window-like component; must not be null
-     * @throws IllegalArgumentException if parentNode is null
+     * @param container The pane to transform into a window-like component; must not be null
+     * @throws IllegalArgumentException if the container is null
      * @see #setupWindowSupport(Pane) for the preferred way to create WindowSupport instances
      * @see DraggableSupport#addDraggableNodes(Pane, Node...) for adding drag behavior
      */
-    private WindowSupport(final Pane parentNode) {
-        if (parentNode == null) {
-            throw new IllegalArgumentException("Parent node cannot be null");
-        }
-        this.pane = parentNode;
+    private WindowSupport(final Pane container) {
+        this.pane = container;
 
         initializePrimaryFields();
         initializeDefaultHandlersAndPaneEvents();
-        initializeVisualElements(parentNode);
+        initializeVisualElements(container);
         initializeResizeHandles();
         bindPaneProperties();
         initializeEventHandlers();
@@ -215,18 +212,18 @@ public class WindowSupport {
         // Initialize drag handlers to defaults
         this.dragMousePressHandler = (mouseEvent, support) -> {
             support.dragAnchorPoint.set(new Point2D(mouseEvent.getSceneX(), mouseEvent.getSceneY()));
-            support.dragPreviousLocation.set(new Point2D(support.getPane().getLayoutX(), support.getPane().getLayoutY()));
+            support.dragPreviousLocation.set(new Point2D(pane.getLayoutX(), pane.getLayoutY()));
         };
 
         this.dragMouseDragHandler = (mouseEvent, support) -> {
             if (support.dragAnchorPoint.isNotNull().get() && support.dragPreviousLocation.isNotNull().get()) {
-                support.getPane().setLayoutX(support.dragPreviousLocation.get().getX() + mouseEvent.getSceneX() - support.dragAnchorPoint.get().getX());
-                support.getPane().setLayoutY(support.dragPreviousLocation.get().getY() + mouseEvent.getSceneY() - support.dragAnchorPoint.get().getY());
+                pane.setLayoutX(support.dragPreviousLocation.get().getX() + mouseEvent.getSceneX() - support.dragAnchorPoint.get().getX());
+                pane.setLayoutY(support.dragPreviousLocation.get().getY() + mouseEvent.getSceneY() - support.dragAnchorPoint.get().getY());
             }
         };
 
         this.dragMouseReleaseHandler = (_, support) ->
-                support.dragPreviousLocation.set(new Point2D(support.getPane().getLayoutX(), support.getPane().getLayoutY()));
+                support.dragPreviousLocation.set(new Point2D(pane.getLayoutX(), pane.getLayoutY()));
     }
 
     /**
@@ -245,15 +242,15 @@ public class WindowSupport {
      * @see #constrainToParentBounds(double, double) For the underlying constraint implementation
      */
     public Subscription setupPositionConstraints(InvalidationListener afterConstraintCallback) {
-        // Create the constraints listener
-        InvalidationListener constraintsListener = obs -> {
+        // Create constraints listener
+        final InvalidationListener constraintsListener = obs -> {
             // Constrain position
-            double parentWidth = getPane().getParent() != null ?
-                    getPane().getParent().getLayoutBounds().getWidth() :
+            final double parentWidth = pane.getParent() != null ?
+                    pane.getParent().getLayoutBounds().getWidth() :
                     Double.MAX_VALUE;
 
-            double parentHeight = getPane().getParent() != null ?
-                    getPane().getParent().getLayoutBounds().getHeight() :
+            final double parentHeight = pane.getParent() != null ?
+                    pane.getParent().getLayoutBounds().getHeight() :
                     Double.MAX_VALUE;
 
             constrainToParentBounds(parentWidth, parentHeight);
@@ -264,11 +261,8 @@ public class WindowSupport {
             }
         };
 
-        // Register the listener
-        final Pane pane = getPane();
-
         // Create subscriptions for all properties
-        Subscription combined = createMultiPropertySubscription(
+        final Subscription combined = createMultiPropertySubscription(
                 constraintsListener,
                 pane.layoutXProperty(),
                 pane.layoutYProperty(),
@@ -285,9 +279,9 @@ public class WindowSupport {
     /**
      * Initializes the visual elements for the window.
      *
-     * @param parentNode The pane to which visual elements will be added
+     * @param container The pane to which visual elements will be added
      */
-    private void initializeVisualElements(Pane parentNode) {
+    private void initializeVisualElements(Pane container) {
         // Configure the outline rectangle for highlighting
         outlineRect.setStroke(TRANSPARENT);
         outlineRect.setStrokeWidth(HIGHLIGHT_WIDTH);
@@ -295,11 +289,11 @@ public class WindowSupport {
         outlineRect.setMouseTransparent(true);
 
         // Add outline rectangle to parent
-        parentNode.getChildren().add(outlineRect);
+        container.getChildren().add(outlineRect);
 
         // Apply minimum width to ensure highlight borders have enough space
-        double contentMinWidth = Math.max(0, parentNode.minWidth(USE_COMPUTED_SIZE)) + HIGHLIGHT_PADDING;
-        parentNode.setMinWidth(contentMinWidth);
+        final double contentMinWidth = Math.max(0, container.minWidth(USE_COMPUTED_SIZE)) + HIGHLIGHT_PADDING;
+        container.setMinWidth(contentMinWidth);
     }
 
     /**
@@ -370,7 +364,7 @@ public class WindowSupport {
             }
         }
 
-        // Add to tracked nodes list if not already present
+        // Add to the tracked nodes list if not already present
         if (!draggableNodes.contains(draggableNode)) {
             draggableNodes.add(draggableNode);
         }
@@ -517,10 +511,10 @@ public class WindowSupport {
     }
 
     /**
-     * Binds window properties to synchronize window state with visual representation.
+     * Binds window properties to synchronize the window state with visual representation.
      */
     private void bindPaneProperties() {
-        // Set up unified property listener for all layout updates
+        // Set up a unified property listener for all layout updates
         InvalidationListener updateLayout = _ -> {
             pane.setLayoutX(windowPositionX.get());
             pane.setLayoutY(windowPositionY.get());
@@ -535,7 +529,7 @@ public class WindowSupport {
         propertySubscriptions.add(createPropertySubscription(windowPositionY, updateLayout));
         propertySubscriptions.add(createPropertySubscription(currentWidth, updateLayout));
         propertySubscriptions.add(createPropertySubscription(currentHeight, updateLayout));
-        // Create subscription for cleanup
+        // Create a subscription for cleanup
         addSubscription("properties", Subscription.combine(propertySubscriptions.toArray(Subscription[]::new)));
     }
 
@@ -720,9 +714,9 @@ public class WindowSupport {
     }
 
     /**
-     * Gets resize direction from a node's userData.
+     * Gets resize the direction from a node's userData.
      *
-     * @param node The node to check for direction
+     * @param node The node to check for a direction
      * @return The resize direction associated with the node's cursor, or NONE if not found
      */
     private ResizeDirection getResizeDirectionFromNode(Node node) {
@@ -790,12 +784,12 @@ public class WindowSupport {
             return;
         }
 
-        // Convert mouse Y-coordinate from local (handle) to parent container's coordinate system.
+        // Convert mouse Y-coordinate from local (handle) to the parent container's coordinate system.
         final Point2D desktopPoint = pane.localToParent(mouseEvent.getX(), mouseEvent.getY());
         final double currentMouseYInParent = desktopPoint.getY();
         final double initialPaneYInParent = anchorPaneXY.getY();
 
-        // Calculate distance moved from initial mouse press position.
+        // Calculate distance moved from the initial mouse press position.
         // A positive distance means the mouse moved upwards relative to the initial pane top.
         double distance = initialPaneYInParent - currentMouseYInParent;
 
@@ -809,7 +803,7 @@ public class WindowSupport {
             // The pane hits the top of the parent.
             // The distance it can move is limited by its initial Y position.
             distance = initialPaneYInParent;
-            newY = 0; // Pin to top boundary.
+            newY = 0; // Pin to the top boundary.
             newHeight = this.anchorHeight.get() + distance; // Recalculate height based on pinned position.
         }
 
@@ -847,7 +841,7 @@ public class WindowSupport {
         final double initialPaneHeight = this.anchorHeight.get();
         final double initialPaneY = anchorPaneXY.getY();
 
-        // Calculate new height: original height + change in mouse Y position.
+        // Calculate new height: original height plus change in mouse Y position.
         double newHeight = initialPaneHeight + (currentMouseY - initialMouseY);
 
         // Boundary check: Adjust if the new height would make the pane exceed the parent's bottom boundary.
@@ -891,7 +885,7 @@ public class WindowSupport {
         final double initialPaneWidth = this.anchorWidth.get();
         final double initialPaneX = anchorPaneXY.getX();
 
-        // Calculate new width: original width + change in mouse X position.
+        // Calculate new width: original width plus change in mouse X position.
         double newWidth = initialPaneWidth + (currentMouseX - initialMouseX);
 
         // Boundary check: Adjust if the new width would make the pane exceed the parent's right boundary.
@@ -926,16 +920,16 @@ public class WindowSupport {
             return;
         }
 
-        // Convert mouse X-coordinate from local (handle) to parent container's coordinate system.
+        // Convert mouse X-coordinate from local (handle) to the parent container's coordinate system.
         final Point2D desktopPoint = pane.localToParent(mouseEvent.getX(), mouseEvent.getY());
         final double currentMouseXInParent = desktopPoint.getX();
         final double initialPaneXInParent = anchorPaneXY.getX();
 
-        // Calculate distance moved from initial mouse press position.
-        // A positive distance means the mouse moved leftwards relative to the initial pane left edge.
+        // Calculate distance moved from the initial mouse press position.
+        // A positive distance means the mouse moved leftwards relative to the initial pane's left edge.
         double distance = initialPaneXInParent - currentMouseXInParent;
 
-        // Calculate new potential X position and width.
+        // Calculate the new potential X position and width.
         // Moving leftwards decreases X and increases width.
         double newX = initialPaneXInParent - distance;
         double newWidth = this.anchorWidth.get() + distance;
@@ -945,7 +939,7 @@ public class WindowSupport {
             // The pane hits the left of the parent.
             // The distance it can move is limited by its initial X position.
             distance = initialPaneXInParent;
-            newX = 0; // Pin to left boundary.
+            newX = 0; // Pin to the left boundary.
             newWidth = this.anchorWidth.get() + distance; // Recalculate width based on pinned position.
         }
 
@@ -999,7 +993,7 @@ public class WindowSupport {
     /**
      * Configures the window pane to automatically adjust its height based on content.
      * <p>
-     * When enabled, the window will dynamically resize its height to fit its content,
+     * When enabled, the window will dynamically resize its height to fit its content
      * up to the specified maximum height.
      *
      * @param useComputedHeight When true, the window's minimum height will be set to
@@ -1017,7 +1011,7 @@ public class WindowSupport {
         }
 
         // Add a layout listener to adjust height when content changes
-        InvalidationListener heightListener = obs -> {
+        InvalidationListener heightListener = _ -> {
             if (pane.getMinHeight() == USE_COMPUTED_SIZE) {
                 pane.requestLayout();
             }
@@ -1136,7 +1130,7 @@ public class WindowSupport {
      * @return The WindowSupport instance, never null
      * @throws IllegalArgumentException if the container is null
      */
-    public static WindowSupport setupWindowSupport(Pane container) {
+    public static WindowSupport setupWindowSupport(final Pane container) {
         if (container == null) {
             throw new IllegalArgumentException("Container cannot be null");
         }
@@ -1152,7 +1146,7 @@ public class WindowSupport {
     }
 
     /**
-     * Removes the WindowSupport from a container.
+     * Clean up the WindowSupport from a container.
      * <p>
      * This method will remove the WindowSupport instance from the container's properties
      * and clean up any resources associated with it. If no support exists, no action is taken.
@@ -1160,7 +1154,7 @@ public class WindowSupport {
      * @param container The container to remove support from; must not be null
      * @throws IllegalArgumentException if the container is null
      */
-    public static void cleanupWindowSupport(Pane container) {
+    public static void cleanupWindowSupport(final Pane container) {
         if (container == null) {
             throw new IllegalArgumentException("Container cannot be null");
         }
