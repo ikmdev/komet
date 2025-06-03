@@ -17,6 +17,8 @@ package dev.ikm.komet.kview.mvvm.view.changeset.exchange;
 
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferences;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.transport.CredentialItem;
 import org.eclipse.jgit.transport.CredentialsProvider;
@@ -47,28 +49,52 @@ public class GitHubCredentialsProvider extends CredentialsProvider {
     }
 
     @Override
-    public boolean supports(CredentialItem... credentialItems) {
-        return true;
+    public boolean supports(CredentialItem... items) {
+        final MutableList<CredentialItem> unprocessedItems = Lists.mutable.empty();
+
+        for (CredentialItem item : items) {
+            if (item instanceof CredentialItem.InformationalMessage) {
+                continue;
+            }
+            if (item instanceof CredentialItem.Username) {
+                continue;
+            }
+            if (item instanceof CredentialItem.Password) {
+                continue;
+            }
+            if (item instanceof CredentialItem.StringType) {
+                if (item.getPromptText().equals("Password: ")) {
+                    continue;
+                }
+            }
+
+            unprocessedItems.add(item);
+        }
+
+        return unprocessedItems.isEmpty();
     }
 
     @Override
-    public boolean get(URIish urIish, CredentialItem... credentialItems) throws UnsupportedCredentialItem {
-        Optional<GitHubPreferences> gitHubPrefsOpt = gitHubPreferencesDao.load();
-        if (gitHubPrefsOpt.isPresent()) {
-            final GitHubPreferences gitHubPreferences = gitHubPrefsOpt.get();
-            final String gitUsername = gitHubPreferences.gitUsername();
-            final char[] gitPassword = gitHubPreferences.gitPassword();
+    public boolean get(URIish uri, CredentialItem... items) throws UnsupportedCredentialItem {
+        final MutableList<CredentialItem> unprocessedItems = Lists.mutable.empty();
+        final Optional<GitHubPreferences> gitHubPrefsOpt = gitHubPreferencesDao.load();
 
-            for (CredentialItem credentialItem : credentialItems) {
-                switch (credentialItem) {
-                    case CredentialItem.Username username -> username.setValue(gitUsername);
-                    case CredentialItem.Password password -> password.setValue(gitPassword);
-                    default -> throw new IllegalStateException("Unexpected value: " + credentialItem);
-                }
+        for (CredentialItem item : items) {
+            if (item instanceof CredentialItem.Username username) {
+                gitHubPrefsOpt.ifPresent(gitHubPreferences ->
+                        username.setValue(gitHubPreferences.gitUsername()));
+            } else if (item instanceof CredentialItem.Password password) {
+                gitHubPrefsOpt.ifPresent(gitHubPreferences ->
+                        password.setValue(gitHubPreferences.gitPassword()));
+            } else {
+                unprocessedItems.add(item);
             }
+        }
+
+        if (unprocessedItems.isEmpty()) {
             return true;
         }
 
-        return false;
+        throw new UnsupportedCredentialItem(uri, unprocessedItems.size() + " credential items not supported");
     }
 }

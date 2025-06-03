@@ -47,6 +47,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.transport.ChainingCredentialsProvider;
 import org.eclipse.jgit.transport.CredentialItem;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
@@ -120,9 +121,9 @@ public class GitTask extends TrackingCallable<Boolean> {
     /**
      * Git configuration constants
      */
-    private static final String DEFAULT_BRANCH = "main";
-    private static final String REMOTE_NAME = "origin";
-    private static final String README_FILENAME = "README.md";
+    public static final String DEFAULT_BRANCH = "main";
+    public static final String REMOTE_NAME = "origin";
+    public static final String README_FILENAME = "README.md";
 
     /**
      * Defines the progress phases for each operation mode with their progress boundaries.
@@ -157,7 +158,7 @@ public class GitTask extends TrackingCallable<Boolean> {
          * Creates a new task phase with the specified progress boundaries.
          *
          * @param start The start percentage of this phase (0.0 to 100.0)
-         * @param end The end percentage of this phase (0.0 to 100.0)
+         * @param end   The end percentage of this phase (0.0 to 100.0)
          */
         TaskPhase(double start, double end) {
             this.start = start;
@@ -195,11 +196,13 @@ public class GitTask extends TrackingCallable<Boolean> {
     private final CredentialItem.Username gitUsername;
     private final CredentialItem.Password gitPassword;
 
+    private final ChainingCredentialsProvider chainingCredentialsProvider;
+
     /**
      * Creates a new GitTask with the specified operation mode and changeset folder.
      *
-     * @param operationMode   The mode of operation (CONNECT, PULL, or SYNC)
-     * @param changeSetFolder The folder containing changesets to work with
+     * @param operationMode             The mode of operation (CONNECT, PULL, or SYNC)
+     * @param changeSetFolder           The folder containing changesets to work with
      * @param connectionSuccessCallback Callback to be executed when a successful connection is established
      */
     public GitTask(OperationMode operationMode,
@@ -223,6 +226,11 @@ public class GitTask extends TrackingCallable<Boolean> {
             case PULL -> updateTitle("Exchange Pull in progress...");
             case SYNC -> updateTitle("Exchange Sync in progress...");
         }
+
+        this.chainingCredentialsProvider = new ChainingCredentialsProvider(
+                new GitHubCredentialsProvider(),
+                new GitSkipSslValidationCredentialsProvider()
+        );
 
         updateProgress(0, TOTAL_WORK);
     }
@@ -281,7 +289,7 @@ public class GitTask extends TrackingCallable<Boolean> {
                 LsRemoteCommand lsRemoteCommand = git.lsRemote();
                 lsRemoteCommand.setHeads(true);
                 lsRemoteCommand.setRemote(REMOTE_NAME);
-                lsRemoteCommand.setCredentialsProvider(new GitHubCredentialsProvider());
+                lsRemoteCommand.setCredentialsProvider(chainingCredentialsProvider);
 
                 Collection<Ref> refs = lsRemoteCommand.call();
                 boolean mainBranchExists = refs.stream()
@@ -306,11 +314,12 @@ public class GitTask extends TrackingCallable<Boolean> {
 
     /**
      * Executes the CONNECT operation and initializes the Git repository if needed.
+     * Always validates and updates configuration, even for existing repositories.
      *
      * @return true if the connection was successful, false otherwise
      * @throws IOException if an I/O error occurs
      */
-    private boolean executeConnect() throws GitAPIException, IOException {
+    private boolean executeConnect() throws IOException {
         if (!loadAndValidateConfiguration()) {
             return false;
         }
@@ -413,6 +422,7 @@ public class GitTask extends TrackingCallable<Boolean> {
 
     /**
      * Configures the Git repository with remote URL, user settings, and repository settings.
+     * Always checks and updates configuration, even for existing repositories.
      *
      * @param git the Git instance
      * @return true if configuration was successful, false otherwise
@@ -448,7 +458,7 @@ public class GitTask extends TrackingCallable<Boolean> {
      *
      * @param git the Git instance
      * @throws URISyntaxException if the Git URL is invalid
-     * @throws GitAPIException    if an error occurs when adding the remote
+     * @throws GitAPIException    if an error occurs when adding/updating the remote
      */
     private void configureRemote(Git git) throws URISyntaxException, GitAPIException {
         URIish uri = new URIish(gitUrl.getValue().trim());
@@ -466,6 +476,7 @@ public class GitTask extends TrackingCallable<Boolean> {
         final StoredConfig config = git.getRepository().getConfig();
         config.setString("user", null, "name", gitUsername.getValue().trim());
         config.setString("user", null, "email", gitEmail.getValue().trim());
+        config.save();
     }
 
     /**
@@ -485,6 +496,9 @@ public class GitTask extends TrackingCallable<Boolean> {
         config.setBoolean("core", null, "logallrefupdates", true);
         config.setBoolean("core", null, "symlinks", false);
         config.setBoolean("core", null, "ignorecase", true);
+
+        // Http settings
+//        config.setBoolean("http", null, "sslVerify", false);
 
         // Other settings
         config.setString("submodule", null, "active", ".");
@@ -512,7 +526,7 @@ public class GitTask extends TrackingCallable<Boolean> {
             LsRemoteCommand lsRemoteCommand = git.lsRemote();
             lsRemoteCommand.setHeads(true);
             lsRemoteCommand.setRemote(REMOTE_NAME);
-            lsRemoteCommand.setCredentialsProvider(new GitHubCredentialsProvider());
+            lsRemoteCommand.setCredentialsProvider(chainingCredentialsProvider);
 
             final Collection<Ref> refs = lsRemoteCommand.call();
 
@@ -588,7 +602,7 @@ public class GitTask extends TrackingCallable<Boolean> {
 
         git.push()
                 .setRemote(REMOTE_NAME)
-                .setCredentialsProvider(new GitHubCredentialsProvider())
+                .setCredentialsProvider(chainingCredentialsProvider)
                 .setProgressMonitor(progressMonitor)
                 .setPushAll()
                 .call();
@@ -616,7 +630,7 @@ public class GitTask extends TrackingCallable<Boolean> {
      * @param pushChanges whether to push changes after pulling (true for SYNC mode)
      * @return true if the operation was successful, false otherwise
      * @throws GitAPIException if a Git API error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException     if an I/O error occurs
      */
     private boolean executeSync(boolean pushChanges) throws GitAPIException, IOException {
         TaskPhase validationPhase = pushChanges ? TaskPhase.SYNC_VALIDATION : TaskPhase.PULL_VALIDATION;
@@ -658,7 +672,7 @@ public class GitTask extends TrackingCallable<Boolean> {
      * @param endPercentage   the progress percentage at the end of this phase
      * @return a list of relative paths to files that were added during the pull operation
      * @throws GitAPIException if a Git API error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException     if an I/O error occurs
      */
     private ImmutableList<String> pull(double startPercentage, double endPercentage) throws GitAPIException, IOException {
         if (isCancelled()) {
@@ -684,8 +698,8 @@ public class GitTask extends TrackingCallable<Boolean> {
 
             PullCommand pullCommand = git.pull();
             pullCommand.setProgressMonitor(progressMonitor);
-            pullCommand.setRemoteBranchName("main");
-            pullCommand.setCredentialsProvider(new GitHubCredentialsProvider());
+            pullCommand.setRemoteBranchName(DEFAULT_BRANCH);
+            pullCommand.setCredentialsProvider(chainingCredentialsProvider);
 
             updateMessage("Pulling changes from remote...");
             updatePhaseProgress(startPercentage, endPercentage, 0.3);
@@ -821,8 +835,8 @@ public class GitTask extends TrackingCallable<Boolean> {
     /**
      * Loads changesets from the specified list of files.
      *
-     * @param startPercentage the progress percentage at the start of this phase
-     * @param endPercentage   the progress percentage at the end of this phase
+     * @param startPercentage   the progress percentage at the start of this phase
+     * @param endPercentage     the progress percentage at the end of this phase
      * @param relativeFilePaths list of relative paths to changeset files to load
      */
     private void loadChangesets(double startPercentage, double endPercentage,
@@ -977,7 +991,7 @@ public class GitTask extends TrackingCallable<Boolean> {
      * @param startPercentage the progress percentage at the start of this phase
      * @param endPercentage   the progress percentage at the end of this phase
      * @throws GitAPIException if a Git API error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException     if an I/O error occurs
      */
     private void push(double startPercentage, double endPercentage) throws GitAPIException, IOException {
         if (isCancelled()) {
@@ -1035,7 +1049,7 @@ public class GitTask extends TrackingCallable<Boolean> {
      * @param startPercentage the progress percentage at the start of this phase
      * @param endPercentage   the progress percentage at the end of this phase
      * @throws GitAPIException if a Git API error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException     if an I/O error occurs
      */
     private void pushToRemoteRepository(double startPercentage, double endPercentage)
             throws GitAPIException, IOException {
@@ -1080,7 +1094,7 @@ public class GitTask extends TrackingCallable<Boolean> {
                     TOTAL_WORK);
 
             pushCommand.setProgressMonitor(progressMonitor);
-            pushCommand.setCredentialsProvider(new GitHubCredentialsProvider());
+            pushCommand.setCredentialsProvider(chainingCredentialsProvider);
             pushCommand.call();
             updatePhaseProgress(startPercentage, endPercentage, 0.95);
 
