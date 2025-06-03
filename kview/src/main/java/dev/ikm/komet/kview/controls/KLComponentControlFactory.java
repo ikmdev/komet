@@ -9,6 +9,7 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -39,10 +40,16 @@ public class KLComponentControlFactory {
         // add the function to render the component name
         componentControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator));
 
+        // String converter
         StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(navigationCalculator);
         componentControl.setTypeAheadStringConverter(stringToEntityProxyConverter);
 
+        // suggestions cell factory
         componentControl.setSuggestionsCellFactory(_ -> createComponentSuggestionNode(stringToEntityProxyConverter));
+
+        // header node
+        componentControl.setTypeAheadHeaderPane(createTypeAheadHeaderPane());
+
         return componentControl;
     }
 
@@ -58,6 +65,10 @@ public class KLComponentControlFactory {
         componentListControl.setTypeAheadStringConverter(stringToEntityProxyConverter);
 
         componentListControl.setSuggestionsCellFactory(_ -> createComponentSuggestionNode(stringToEntityProxyConverter));
+
+        // header node
+        componentListControl.setTypeAheadHeaderPane(createTypeAheadHeaderPane());
+
         return componentListControl;
     }
 
@@ -146,6 +157,25 @@ public class KLComponentControlFactory {
                     Image identiconImage = Identicon.generateIdenticonImage(item.publicId());
                     imageView.setImage(identiconImage);
                 }
+            }
+        };
+    }
+
+    private static AutoCompleteTextField.HeaderPane createTypeAheadHeaderPane() {
+        return new AutoCompleteTextField.HeaderPane<EntityProxy>() {
+            Label headerLabel = new Label();
+            {
+                headerLabel.getStyleClass().add("header");
+            }
+
+            @Override
+            public Node createContent() {
+                return headerLabel;
+            }
+
+            @Override
+            public void updateContent(List<EntityProxy> suggestions) {
+                headerLabel.setText(suggestions.size() + " results");
             }
         };
     }
