@@ -160,30 +160,28 @@ public class WindowSupport {
     /**
      * Creates a new WindowSupport instance that transforms the specified pane into a window-like component.
      * <p>
-     * This constructor:
-     * <ul>
-     *   <li>Initializes the internal state and visual elements</li>
-     *   <li>Creates and positions resize handles for all edges and corners</li>
-     *   <li>Sets up event handlers for window interactions</li>
-     *   <li>Configures the specified nodes as draggable regions</li>
-     * </ul>
+     * This constructor initializes all necessary parts for window functionality, including
+     * resize handles for all edges and corners, visual feedback elements, event handlers for
+     * resize operations, and property bindings for synchronized layout updates.
+     * <p>
+     * After construction, the pane will support resizing with visual feedback and be ready for
+     * dragging behavior addition via {@link DraggableSupport}.
+     * <p>
+     * Note: This constructor is private. Use {@link #setupWindowSupport(Pane)} to get WindowSupport instances.
      *
-     * @param parentNode     The pane to transform into a window-like component
-     * @param draggableNodes Nodes that can be used to drag the window (e.g., titlebar, header)
+     * @param parentNode The pane to transform into a window-like component; must not be null
      * @throws IllegalArgumentException if parentNode is null
-     * @see #addDraggableNode(Node) To add additional draggable regions later
-     * @see #setupPositionConstraints(InvalidationListener) To constrain the window within its parent
+     * @see #setupWindowSupport(Pane) for the preferred way to create WindowSupport instances
+     * @see DraggableSupport#addDraggableNodes(Pane, Node...) for adding drag behavior
      */
-    public WindowSupport(final Pane parentNode, Node... draggableNodes) {
+    private WindowSupport(final Pane parentNode) {
         if (parentNode == null) {
             throw new IllegalArgumentException("Parent node cannot be null");
         }
         this.pane = parentNode;
 
-        initializePrimaryFields(draggableNodes);
+        initializePrimaryFields();
         initializeDefaultHandlersAndPaneEvents();
-
-        // Proceed with the rest of the initialization
         initializeVisualElements(parentNode);
         initializeResizeHandles();
         bindPaneProperties();
@@ -192,24 +190,13 @@ public class WindowSupport {
 
     /**
      * Initializes primary fields of the WindowSupport instance.
-     *
-     * @param draggableNodes Nodes that can be used to drag the window
      */
-    private void initializePrimaryFields(Node... draggableNodes) {
+    private void initializePrimaryFields() {
         this.outlineRect = new Rectangle();
 
         // Resize handle management
         ResizeHandleFactory handleFactory = new ResizeHandleFactory(RESIZE_HIT_AREA, CORNER_HIT_AREA, DEBUG_MODE);
         this.resizeHandles = handleFactory.createAllHandles();
-
-        // Add the provided draggable nodes to our list
-        if (draggableNodes != null) {
-            for (Node node : draggableNodes) {
-                if (node != null) {
-                    this.draggableNodes.add(node);
-                }
-            }
-        }
 
         // Initialize resize values with current dimensions
         currentWidth.set(Math.max(MIN_DIMENSION, pane.getWidth()));
@@ -334,7 +321,6 @@ public class WindowSupport {
     private void initializeEventHandlers() {
         try {
             addSubscription("handlers", createWindowBaseSubscriptions());
-            addDraggableNodeHandlers();
             addLayoutListener();
             addResizeHandlers();
         } catch (Exception e) {
@@ -357,20 +343,6 @@ public class WindowSupport {
                     }
                 })
         );
-    }
-
-    /**
-     * Adds dragging handlers to the specified draggable nodes.
-     */
-    private void addDraggableNodeHandlers() {
-        Subscription nodesSubscription = Subscription.EMPTY;
-
-        for (Node draggableNode : this.draggableNodes) {
-            Subscription nodeSubscription = addDraggableNode(draggableNode);
-            nodesSubscription = nodesSubscription.and(nodeSubscription);
-        }
-
-        addSubscription("dragNodes", nodesSubscription);
     }
 
     /**
@@ -1114,6 +1086,9 @@ public class WindowSupport {
 
             // Clear property values
             clearPropertyValues();
+
+            // Remove this WindowSupport from the pane's properties
+            pane.getProperties().remove(WINDOW_SUPPORT_KEY);
         } catch (Exception e) {
             LOG.error("Error removing window support", e);
         }
@@ -1174,6 +1149,28 @@ public class WindowSupport {
         }
 
         return support;
+    }
+
+    /**
+     * Removes the WindowSupport from a container.
+     * <p>
+     * This method will remove the WindowSupport instance from the container's properties
+     * and clean up any resources associated with it. If no support exists, no action is taken.
+     *
+     * @param container The container to remove support from; must not be null
+     * @throws IllegalArgumentException if the container is null
+     */
+    public static void removeWindowSupport(Pane container) {
+        if (container == null) {
+            throw new IllegalArgumentException("Container cannot be null");
+        }
+
+        WindowSupport support = container.getProperties().get(WINDOW_SUPPORT_KEY) instanceof WindowSupport ws ? ws : null;
+
+        if (support != null) {
+            support.removeSupport();
+        }
+
     }
 
     // Getter and setter methods

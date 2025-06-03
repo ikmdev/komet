@@ -67,6 +67,8 @@ import static dev.ikm.komet.kview.controls.KLWorkspace.STANDARD_WIDTH;
 import static dev.ikm.komet.kview.controls.KLWorkspace.USE_COMPUTED_SIZE;
 import static dev.ikm.komet.kview.fxutils.FXUtils.DEFAULT_ANIMATION_DURATION;
 import static dev.ikm.komet.kview.fxutils.window.WindowSupport.WINDOW_SUPPORT_KEY;
+import static dev.ikm.komet.kview.fxutils.window.WindowSupport.setupWindowSupport;
+import static dev.ikm.komet.kview.fxutils.window.WindowSupport.removeWindowSupport;
 
 /**
  * A custom skin implementation for the {@link KLWorkspace} control that provides a scrollable
@@ -670,12 +672,11 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
         // Create subscriptions list for all window-related subscriptions
         MutableList<Subscription> windowSubscriptions = Lists.mutable.empty();
-        WindowSupport windowSupport = null;
+        WindowSupport windowSupport;
 
         try {
             // Create WindowSupport with proper configuration
-            windowSupport = new WindowSupport(windowPanel);
-            windowPanel.getProperties().put(WINDOW_SUPPORT_KEY, windowSupport);
+            windowSupport = setupWindowSupport(windowPanel);
 
             // Configure auto height with subscription
             windowSubscriptions.add(windowSupport.configureAutoHeight(true, MAX_WINDOW_HEIGHT));
@@ -684,9 +685,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             windowSubscriptions.add(windowSupport.setupPositionConstraints(obs -> window.save()));
         } catch (Exception ex) {
             // Clean up WindowSupport if it was created
-            if (windowSupport != null) {
-                windowSupport.removeSupport();
-            }
+            removeWindowSupport(windowPanel);
             LOG.error(ex.getMessage(), ex);
             return;
         } finally {
@@ -839,12 +838,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         desktopPane.getChildren().remove(windowPanel);
 
         // Clean up WindowSupport and its subscriptions
-        final WindowSupport windowSupport = (WindowSupport) windowPanel.getProperties().get(WINDOW_SUPPORT_KEY);
-        if (windowSupport != null) {
-            windowSupport.removeSupport();
-        }
+        removeWindowSupport(windowPanel);
 
-        // Clean up resources using subscription
+        // Clean up resources using a subscription
         if (windowPanel.getProperties().containsKey(WINDOW_SUBSCRIPTION_KEY)) {
             Subscription subscription = (Subscription) windowPanel.getProperties().get(WINDOW_SUBSCRIPTION_KEY);
             subscription.unsubscribe();
