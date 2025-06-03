@@ -163,7 +163,7 @@ public class PropertiesController {
 
         Config confirmationPanelConfig = new Config(CONFIRMATION_FXML_URL)
                 .addNamedViewModel(new NamedVm("viewModel", confirmationViewModel));
-        JFXNode<Pane, ConfirmationController> confirmationPanelJFXNode = FXMLMvvmLoader.make(confirmationPanelConfig);
+        JFXNode<Pane, ConfirmationPaneCommonController> confirmationPanelJFXNode = FXMLMvvmLoader.make(confirmationPanelConfig);
         confirmationPane = confirmationPanelJFXNode.node();
 
         confirmationViewModel.setNotificationTopic(patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC));

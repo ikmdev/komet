@@ -20,6 +20,7 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
+import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneCommonController;
 import dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneCommonViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import javafx.event.ActionEvent;
@@ -105,7 +106,7 @@ public class PropertiesController {
 
         Config closePropertiesConfig = new Config(this.getClass().getResource("/dev/ikm/komet/kview/mvvm/view/confirmation/confirmation-pane-common.fxml"))
                 .addNamedViewModel(new NamedVm("viewModel", confirmationViewModel));
-        JFXNode<Pane, ClosePropertiesController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
+        JFXNode<Pane, ConfirmationPaneCommonController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
         closePropsPane = closePropsJfxNode.node();
 
         confirmationViewModel.setNotificationTopic(genEditingViewModel.getPropertyValue(WINDOW_TOPIC));
