@@ -251,7 +251,7 @@ public class PatternDetailsController {
                     slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
 
-                updateDraggableRegionsForPropertiesPanel(false);
+                updateDraggableNodesForPropertiesPanel(false);
             } else if (evt.getEventType() == OPEN_PANEL) {
                 LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
                 propertiesToggleButton.setSelected(true);
@@ -259,7 +259,7 @@ public class PatternDetailsController {
                     slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
 
-                updateDraggableRegionsForPropertiesPanel(true);
+                updateDraggableNodesForPropertiesPanel(true);
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PropertyPanelEvent.class, patternPropertiesEventSubscriber);
@@ -448,7 +448,7 @@ public class PatternDetailsController {
 
         // Check if the properties panel is initially open and add draggable nodes if needed
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
-            updateDraggableRegionsForPropertiesPanel(true);
+            updateDraggableNodesForPropertiesPanel(true);
         }
     }
 
@@ -850,7 +850,7 @@ public class PatternDetailsController {
         ToggleButton propertyToggle = (ToggleButton) event.getSource();
         EvtType<PropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? OPEN_PANEL : CLOSE_PANEL;
 
-        updateDraggableRegionsForPropertiesPanel(propertyToggle.isSelected());
+        updateDraggableNodesForPropertiesPanel(propertyToggle.isSelected());
 
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType));
     }
@@ -902,7 +902,7 @@ public class PatternDetailsController {
      *
      * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
      */
-    private void updateDraggableRegionsForPropertiesPanel(boolean isOpen) {
+    private void updateDraggableNodesForPropertiesPanel(boolean isOpen) {
         if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
             if (isOpen) {
                 addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());

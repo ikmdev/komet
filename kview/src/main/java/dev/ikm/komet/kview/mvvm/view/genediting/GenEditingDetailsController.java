@@ -261,7 +261,7 @@ public class GenEditingDetailsController {
 
         // Check if the properties panel is initially open and add draggable nodes if needed
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
-            updateDraggableRegionsForPropertiesPanel(true);
+            updateDraggableNodesForPropertiesPanel(true);
         }
     }
 
@@ -557,7 +557,7 @@ public class GenEditingDetailsController {
                     slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
 
-                updateDraggableRegionsForPropertiesPanel(false);
+                updateDraggableNodesForPropertiesPanel(false);
 
                 // Turn off edit mode for all read only controls
                 for (Node node : nodes) {
@@ -572,7 +572,7 @@ public class GenEditingDetailsController {
                     slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
 
-                updateDraggableRegionsForPropertiesPanel(true);
+                updateDraggableNodesForPropertiesPanel(true);
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), PropertyPanelEvent.class, propertiesEventSubscriber);
@@ -752,7 +752,7 @@ public class GenEditingDetailsController {
         ToggleButton propertyToggle = (ToggleButton) event.getSource();
         EvtType<PropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? OPEN_PANEL : CLOSE_PANEL;
 
-        updateDraggableRegionsForPropertiesPanel(propertyToggle.isSelected());
+        updateDraggableNodesForPropertiesPanel(propertyToggle.isSelected());
 
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType));
     }
@@ -766,7 +766,7 @@ public class GenEditingDetailsController {
      *
      * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
      */
-    private void updateDraggableRegionsForPropertiesPanel(boolean isOpen) {
+    private void updateDraggableNodesForPropertiesPanel(boolean isOpen) {
         if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
             if (isOpen) {
                 addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());

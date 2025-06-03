@@ -1115,12 +1115,7 @@ public class WindowSupport {
      * Adds a subscription to a named category for logical organization and lifecycle management.
      */
     private void addSubscription(String category, Subscription subscription) {
-        Subscription existing = categorySubscriptions.get(category);
-        if (existing != null) {
-            categorySubscriptions.put(category, existing.and(subscription));
-        } else {
-            categorySubscriptions.put(category, subscription);
-        }
+        categorySubscriptions.merge(category, subscription, Subscription::combine);
     }
 
     /**

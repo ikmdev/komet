@@ -567,7 +567,7 @@ public class DetailsController  {
 
         // Check if the properties panel is initially open and add draggable nodes if needed
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
-            updateDraggableRegionsForPropertiesPanel(true);
+            updateDraggableNodesForPropertiesPanel(true);
         }
     }
 
@@ -1411,7 +1411,7 @@ public class DetailsController  {
             LOG.info("Opening slideout of properties");
             slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
 
-            updateDraggableRegionsForPropertiesPanel(true);
+            updateDraggableNodesForPropertiesPanel(true);
 
             if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
                 // show the Add FQN
@@ -1426,7 +1426,7 @@ public class DetailsController  {
             LOG.info("Close Properties slideout");
             slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
 
-            updateDraggableRegionsForPropertiesPanel(false);
+            updateDraggableNodesForPropertiesPanel(false);
         }
     }
 
@@ -1438,7 +1438,7 @@ public class DetailsController  {
      *
      * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
      */
-    private void updateDraggableRegionsForPropertiesPanel(boolean isOpen) {
+    private void updateDraggableNodesForPropertiesPanel(boolean isOpen) {
         if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
             if (isOpen) {
                 addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
