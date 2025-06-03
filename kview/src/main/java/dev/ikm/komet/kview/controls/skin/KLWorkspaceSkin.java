@@ -68,7 +68,7 @@ import static dev.ikm.komet.kview.controls.KLWorkspace.USE_COMPUTED_SIZE;
 import static dev.ikm.komet.kview.fxutils.FXUtils.DEFAULT_ANIMATION_DURATION;
 import static dev.ikm.komet.kview.fxutils.window.WindowSupport.WINDOW_SUPPORT_KEY;
 import static dev.ikm.komet.kview.fxutils.window.WindowSupport.setupWindowSupport;
-import static dev.ikm.komet.kview.fxutils.window.WindowSupport.removeWindowSupport;
+import static dev.ikm.komet.kview.fxutils.window.WindowSupport.cleanupWindowSupport;
 
 /**
  * A custom skin implementation for the {@link KLWorkspace} control that provides a scrollable
@@ -685,7 +685,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             windowSubscriptions.add(windowSupport.setupPositionConstraints(obs -> window.save()));
         } catch (Exception ex) {
             // Clean up WindowSupport if it was created
-            removeWindowSupport(windowPanel);
+            cleanupWindowSupport(windowPanel);
             LOG.error(ex.getMessage(), ex);
             return;
         } finally {
@@ -838,7 +838,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         desktopPane.getChildren().remove(windowPanel);
 
         // Clean up WindowSupport and its subscriptions
-        removeWindowSupport(windowPanel);
+        cleanupWindowSupport(windowPanel);
 
         // Clean up resources using a subscription
         if (windowPanel.getProperties().containsKey(WINDOW_SUBSCRIPTION_KEY)) {

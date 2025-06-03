@@ -1160,7 +1160,7 @@ public class WindowSupport {
      * @param container The container to remove support from; must not be null
      * @throws IllegalArgumentException if the container is null
      */
-    public static void removeWindowSupport(Pane container) {
+    public static void cleanupWindowSupport(Pane container) {
         if (container == null) {
             throw new IllegalArgumentException("Container cannot be null");
         }
