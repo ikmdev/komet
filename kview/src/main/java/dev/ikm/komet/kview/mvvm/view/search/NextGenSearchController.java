@@ -482,13 +482,6 @@ public class NextGenSearchController extends AbstractBasicController {
         return entry.get();
     }
 
-//
-//    private String formatHighlightedString(String highlightedString) {
-//        return highlightedString.replaceAll("<B>", "")
-//                .replaceAll("</B>", "")
-//                .replaceAll("\\s+", " ");
-//    }
-
     private String formatHighlightedString(String highlightedString) {
         String string = (highlightedString == null) ? "" : highlightedString;
         return string.replaceAll("<B>", "")
