@@ -35,6 +35,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
@@ -77,6 +78,7 @@ import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
 import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
@@ -755,11 +757,11 @@ public class PatternDetailsController {
         if (stampEdit != null && stampEditController != null) {
             // refresh modules
             getStampViewModel().getObservableList(MODULES_PROPERTY).clear();
-            getStampViewModel().getObservableList(MODULES_PROPERTY).addAll(getStampViewModel().findAllModules(getViewProperties()));
+            getStampViewModel().getObservableList(MODULES_PROPERTY).addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
 
             // refresh path
             getStampViewModel().getObservableList(PATHS_PROPERTY).clear();
-            getStampViewModel().getObservableList(PATHS_PROPERTY).addAll(getStampViewModel().findAllPaths(getViewProperties()));
+            getStampViewModel().getObservableList(PATHS_PROPERTY).addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.PATH.publicId()));
 
             stampEdit.show((Node) event.getSource());
             stampEditController.selectActiveStatusToggle();
