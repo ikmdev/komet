@@ -1,5 +1,7 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import dev.ikm.komet.framework.events.Evt;
+import dev.ikm.komet.framework.events.EvtBusFactory;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
@@ -10,6 +12,7 @@ public class ConfirmationViewModel extends SimpleViewModel {
 
     // properties
     public static final String NOTIFICATION_TOPIC = "notificationTopic";
+    public static final String NOTIFICATION_EVENT = "notificationEvent";
 
     private StringProperty title = new SimpleStringProperty();
     private StringProperty message = new SimpleStringProperty();
@@ -17,6 +20,7 @@ public class ConfirmationViewModel extends SimpleViewModel {
 
     public ConfirmationViewModel() {
         addProperty(NOTIFICATION_TOPIC, (UUID) null);
+        addProperty(NOTIFICATION_EVENT, (Evt) null);
     }
 
     public StringProperty titleProperty() {
@@ -35,8 +39,16 @@ public class ConfirmationViewModel extends SimpleViewModel {
         setPropertyValue(NOTIFICATION_TOPIC, notifiicationTopic);
     }
 
-    public void sendNotification() {
+    public Evt getNotificationEvent() {
+        return getPropertyValue(NOTIFICATION_EVENT);
+    }
 
+    public void setNotificationEvent(Evt notifiationEvent) {
+        setPropertyValue(NOTIFICATION_EVENT, notifiationEvent);
+    }
+
+    public void sendNotification() {
+        EvtBusFactory.getDefaultEvtBus().publish(getNotifiicationTopic(), getNotificationEvent());
     }
 
     public void setConfirmationMessage(ConfirmationMessages confirmationMessage) {

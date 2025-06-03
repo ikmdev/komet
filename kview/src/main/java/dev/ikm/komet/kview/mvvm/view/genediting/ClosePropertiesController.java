@@ -1,7 +1,5 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.ClosePropertiesViewModel;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -9,19 +7,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import org.carlfx.cognitive.loader.InjectViewModel;
 
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
-
 /**
  * controller for the confirmation screen post save on the
  * general editing/authoring bump out screen
  */
 public class ClosePropertiesController {
-
-    /**
-     * view model to store the event topic
-     */
-//    @InjectViewModel
-//    private SimpleViewModel genEditingViewModel;
 
     /**
      * button to close the properties bump out
@@ -38,6 +28,9 @@ public class ClosePropertiesController {
     @FXML
     private Label messageText;
 
+    /**
+     * View model for display text and notification topic and event
+     */
     @InjectViewModel
     private ClosePropertiesViewModel viewModel;
 
@@ -47,7 +40,7 @@ public class ClosePropertiesController {
      */
     @FXML
     private void closeProperties(ActionEvent event) {
-        EvtBusFactory.getDefaultEvtBus().publish(viewModel.getNotifiicationTopic(), new PropertyPanelEvent(event.getSource(), CLOSE_PANEL));
+        viewModel.sendNotification();
     }
 
     @FXML

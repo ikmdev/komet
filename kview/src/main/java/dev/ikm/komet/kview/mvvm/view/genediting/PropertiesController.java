@@ -32,6 +32,7 @@ import org.carlfx.cognitive.loader.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
@@ -102,13 +103,15 @@ public class PropertiesController {
         editFieldsJfxNode = FXMLMvvmLoader.make(config);
 
         ClosePropertiesViewModel closePropertiesViewModel = new ClosePropertiesViewModel();
-        closePropertiesViewModel.setNotificationTopic(genEditingViewModel.getPropertyValue(WINDOW_TOPIC));
 
         Config closePropertiesConfig = new Config(this.getClass().getResource("close-properties.fxml"))
                 .addNamedViewModel(new NamedVm("viewModel", closePropertiesViewModel));
         JFXNode<Pane, ClosePropertiesController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
         closePropsPane = closePropsJfxNode.node();
         closePropertiesController = closePropsJfxNode.controller();
+
+        closePropertiesViewModel.setNotificationTopic(genEditingViewModel.getPropertyValue(WINDOW_TOPIC));
+        closePropertiesViewModel.setNotificationEvent(new PropertyPanelEvent(closePropsPane, CLOSE_PANEL));
 
         genEditingEventSubscriber = evt -> {
             LOG.info("Publish event type: " + evt.getEventType());

@@ -47,8 +47,7 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.UUID;
 
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.DEFINITION_CONFIRMATION;
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.*;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CREATE;
@@ -162,13 +161,15 @@ public class PropertiesController {
         // ! confirmation panel reused by several forms
         // +-----------------------------------------------------------------------
         ConfirmationViewModel confirmationViewModel = new ConfirmationViewModel();
-        confirmationViewModel.setNotificationTopic(patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC));
 
         Config confirmationPanelConfig = new Config(CONFIRMATION_FXML_URL)
                 .addNamedViewModel(new NamedVm("viewModel", confirmationViewModel));
         JFXNode<Pane, ConfirmationController> confirmationPanelJFXNode = FXMLMvvmLoader.make(confirmationPanelConfig);
         confirmationController = confirmationPanelJFXNode.controller();
         confirmationPane = confirmationPanelJFXNode.node();
+
+        confirmationViewModel.setNotificationTopic(patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC));
+        confirmationViewModel.setNotificationEvent(new PropertyPanelEvent(confirmationPane, CLOSE_PANEL));
 
         // +-----------------------------------------------------------------------
         // ! continue fields confirmation panel
