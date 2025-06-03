@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.51.0-SNAPSHOT</version>
+        <version>1.51.0-jpro-149-allow-user-to-skip-ssl-verification-to-allow-github-connection-SNAPSHOT</version>
     </parent>
     <artifactId>kview</artifactId>
     <dependencies>
