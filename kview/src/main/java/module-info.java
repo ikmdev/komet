@@ -145,6 +145,9 @@ module dev.ikm.komet.kview {
 
     provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory, dev.ikm.komet.kview.mvvm.view.properties.PropertiesNodeFactory;
 
+    exports dev.ikm.komet.kview.mvvm.view.confirmation;
+    opens dev.ikm.komet.kview.mvvm.view.confirmation;
+
     provides EntityKlWindowFactory with
             dev.ikm.komet.kview.klwindows.concept.ConceptKlWindowFactory,
             dev.ikm.komet.kview.klwindows.pattern.PatternKlWindowFactory,
