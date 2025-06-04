@@ -29,6 +29,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import org.carlfx.cognitive.loader.*;
 import org.slf4j.Logger;
@@ -59,6 +60,9 @@ public class PropertiesController {
 
     @FXML
     private BorderPane contentBorderPane;
+
+    @FXML
+    private FlowPane propertiesTabsPane;
 
     /////////// Private variables
     /**
@@ -180,4 +184,11 @@ public class PropertiesController {
     public void clearView() {
     }
 
+    /**
+     * Returns the propertiesTabsPane to be used as a draggable region.
+     * @return The FlowPane containing the property tabs
+     */
+    public FlowPane getPropertiesTabsPane() {
+        return propertiesTabsPane;
+    }
 }

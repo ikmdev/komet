@@ -20,9 +20,12 @@ import static dev.ikm.komet.framework.events.FrameworkTopics.RULES_TOPIC;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
 import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.addToMembershipPattern;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
@@ -70,6 +73,7 @@ import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
+import dev.ikm.komet.kview.mvvm.view.properties.PropertiesController;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -317,6 +321,8 @@ public class DetailsController  {
 
     private ViewProperties viewProperties;
 
+    private PropertiesController propertiesController;
+
     @InjectViewModel
     private ConceptViewModel conceptViewModel;
     private EvtBus eventBus;
@@ -556,6 +562,13 @@ public class DetailsController  {
 
         eventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
 
+        // Setup window support with explicit draggable nodes
+        addDraggableNodes(detailsOuterBorderPane, conceptHeaderControlToolBarHbox);
+
+        // Check if the properties panel is initially open and add draggable nodes if needed
+        if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
+            updateDraggableNodesForPropertiesPanel(true);
+        }
     }
 
     /**
@@ -775,9 +788,12 @@ public class DetailsController  {
         }
     }
 
-    public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
+    public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane,
+                                                 PropertiesController propertiesController) {
+        this.propertiesController = propertiesController;
         addPaneToTray(propertiesViewBorderPane, propertiesSlideoutTrayPane);
     }
+
     public void attachTimelineViewSlideoutTray(Pane timelineViewBorderPane) {
         addPaneToTray(timelineViewBorderPane, timelineSlideoutTrayPane);
     }
@@ -796,9 +812,16 @@ public class DetailsController  {
     public void setOnCloseConceptWindow(Consumer<DetailsController> onClose) {
         this.onCloseConceptWindow = onClose;
     }
+
     @FXML
     void closeConceptWindow(ActionEvent event) {
         LOG.info("Cleanup occurring: Closing Window with concept: " + fqnTitleText.getText());
+
+        // Clean up the draggable nodes
+        removeDraggableNodes(detailsOuterBorderPane,
+                conceptHeaderControlToolBarHbox,
+                propertiesController != null ? propertiesController.getPropertiesTabsPane() : null);
+
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
@@ -1388,6 +1411,8 @@ public class DetailsController  {
             LOG.info("Opening slideout of properties");
             slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
 
+            updateDraggableNodesForPropertiesPanel(true);
+
             if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
                 // show the Add FQN
                 eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(propertyToggle,
@@ -1400,6 +1425,28 @@ public class DetailsController  {
         } else {
             LOG.info("Close Properties slideout");
             slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
+
+            updateDraggableNodesForPropertiesPanel(false);
+        }
+    }
+
+    /**
+     * Updates draggable behavior for the properties panel based on its open/closed state.
+     * <p>
+     * When opened, adds the properties tabs pane as a draggable node. When closed,
+     * safely removes the draggable behavior to prevent memory leaks.
+     *
+     * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
+     */
+    private void updateDraggableNodesForPropertiesPanel(boolean isOpen) {
+        if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
+            if (isOpen) {
+                addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                LOG.debug("Added properties nodes as draggable");
+            } else {
+                removeDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                LOG.debug("Removed properties nodes from draggable");
+            }
         }
     }
 
