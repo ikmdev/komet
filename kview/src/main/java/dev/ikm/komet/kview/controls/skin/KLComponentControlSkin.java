@@ -7,11 +7,9 @@ import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.kview.controls.ConceptTile;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentListControl;
-import dev.ikm.komet.kview.controls.KLComponentSetControl;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.ConceptRecord;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -151,8 +149,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     /**
      * There are two type of DND operations:
      * - Drop a concept over an empty KLComponentControl (dragboard string is publicId)
-     * - Rearrange non-empty KLComponentControls that belong to a KLComponentSetControl or a
-     *   KLComponentListControl (dragboard string is CONTROL_DRAG_KEY)
+     * - Rearrange non-empty KLComponentControls that belong to a KLComponentListControl
+     * (dragboard string is CONTROL_DRAG_KEY)
      */
     private void setupDragNDrop() {
         KLComponentControl control = getSkinnable();
@@ -212,44 +210,14 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         control.setOnDragDropped(event -> {
             Dragboard dragboard = event.getDragboard();
-            if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT) &&
-                    event.getGestureSource() instanceof KLComponentControl cc && haveAllowedDND(control, cc)) {
-                // reorder components
-                if (control.getParent() instanceof KLComponentSetControl componentSetControl) {
-                    KLComponentSetControlSkin skin = (KLComponentSetControlSkin) componentSetControl.getSkin();
-                    int sourceIndex = skin.getChildren().indexOf(cc);
-                    int targetIndex = skin.getChildren().indexOf(control);
-                    final Node node = skin.getChildren().remove(sourceIndex);
-                    skin.getChildren().add(targetIndex, node);
-
-                    event.setDropCompleted(true);
-                    event.consume();
-                }
-            } else if (dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
-                // drop concept
-                if (!isFilterAllowedWhileDragAndDropping(event)) {
-                    event.setDropCompleted(false);
-                    event.consume();
-                    return;
-                }
-
-                try {
-                    int nid = extractNid(event);
-                    LOG.info("publicId: {}", dragboard.getString());
-                    if (nid != Integer.MIN_VALUE) {  //
-                        EntityProxy entity = Entity.getFast(nid).toProxy();
-                        if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
-                                !componentSetControl.getValue().contains(nid)) {
-                            control.setEntity(entity);
-                            addConceptNode(entity, control.getComponentNameRenderer());
-
-                            event.setDropCompleted(true);
-                            event.consume();
-                        }
+            if (!event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT) ||
+                    !(event.getGestureSource() instanceof KLComponentControl cc) || !haveAllowedDND(control, cc)) {
+                if (dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
+                    // drop concept
+                    if (!isFilterAllowedWhileDragAndDropping(event)) {
+                        event.setDropCompleted(false);
+                        event.consume();
                     }
-
-                } catch (Exception e) {
-                    LOG.error("exception: ", e);
                 }
             }
         });
@@ -373,15 +341,12 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
     private boolean hasAllowedDND(KLComponentControl control) {
         return control != null && control.getEntity() != null &&
-                ((control.getParent() instanceof KLComponentSetControl cs && cs.getValue().size() > 1)
-                    ||  (control.getParent() instanceof KLComponentListControl cl && cl.getValue().size() > 1)
-                );
+                (control.getParent() instanceof KLComponentListControl cl && cl.getValue().size() > 1);
     }
 
     private boolean haveAllowedDND(KLComponentControl source, KLComponentControl target) {
         // only allowed if both source and target have the same parent
-        return hasAllowedDND(source) && hasAllowedDND(target) &&
-                ((source.getParent() instanceof KLComponentSetControl cs1 && target.getParent() instanceof KLComponentSetControl cs2 && cs1 == cs2));
+        return hasAllowedDND(source) && hasAllowedDND(target);
     }
 
     private HBox createSearchBox() {
