@@ -45,7 +45,6 @@ import java.util.function.Predicate;
  * componentControl.entityProperty().subscribe(entity -> System.out.println("Entity = " + entity));
  * </code></pre>
  *
- * @see KLComponentSetControl
  * @see KLComponentListControl
  */
 public class KLComponentControl extends Control {

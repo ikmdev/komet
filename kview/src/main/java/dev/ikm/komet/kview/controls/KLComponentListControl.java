@@ -35,7 +35,6 @@ import java.util.function.Function;
  * </code></pre>
  *
  * @see KLComponentControl
- * @see KLComponentSetControl
  */
 public class KLComponentListControl<T extends IntIdCollection> extends Control {
 
