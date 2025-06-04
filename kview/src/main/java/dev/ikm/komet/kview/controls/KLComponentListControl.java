@@ -102,13 +102,15 @@ public class KLComponentListControl<T extends IntIdCollection> extends Control {
 
     // -- function to render the component's name and avoid entity.description()
     private final ObjectProperty<Function<EntityProxy, String>> componentNameRenderer = new SimpleObjectProperty<>();
-    public final void setComponentNameRenderer(Function<EntityProxy, String> nameHandler) {
-        componentNameRenderer.set(nameHandler);
-    }
+    public final void setComponentNameRenderer(Function<EntityProxy, String> nameHandler) { componentNameRenderer.set(nameHandler); }
     public final Function<EntityProxy, String> getComponentNameRenderer() { return componentNameRenderer.get(); }
-    public final ObjectProperty<Function<EntityProxy, String>> componentNameRendererProperty() {
-        return componentNameRenderer;
-    }
+    public final ObjectProperty<Function<EntityProxy, String>> componentNameRendererProperty() { return componentNameRenderer; }
+
+    // -- typeahead header pane
+    private final ObjectProperty<AutoCompleteTextField.HeaderPane> typeAheadHeaderPane = new SimpleObjectProperty<>();
+    public AutoCompleteTextField.HeaderPane getTypeAheadHeaderPane() { return typeAheadHeaderPane.get(); }
+    public ObjectProperty<AutoCompleteTextField.HeaderPane> typeAheadHeaderPaneProperty() { return typeAheadHeaderPane; }
+    public void setTypeAheadHeaderPane(AutoCompleteTextField.HeaderPane typeAheadHeaderPane) { this.typeAheadHeaderPane.set(typeAheadHeaderPane); }
 
     /** {@inheritDoc} */
     @Override

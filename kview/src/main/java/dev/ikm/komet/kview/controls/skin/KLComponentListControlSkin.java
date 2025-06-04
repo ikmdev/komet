@@ -226,6 +226,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         componentControl.setTypeAheadCompleter(control.getTypeAheadCompleter());
         componentControl.setTypeAheadStringConverter(control.getTypeAheadStringConverter());
         componentControl.setSuggestionsCellFactory(control.getSuggestionsCellFactory());
+        componentControl.setTypeAheadHeaderPane(control.getTypeAheadHeaderPane());
 
         // Setup name renderer
         componentControl.setComponentNameRenderer(control.getComponentNameRenderer());
