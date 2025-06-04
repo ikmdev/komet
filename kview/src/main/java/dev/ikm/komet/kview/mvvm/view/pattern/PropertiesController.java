@@ -28,7 +28,12 @@ import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneCommonController;
 import dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController;
-import dev.ikm.komet.kview.mvvm.viewmodel.*;
+import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.confirmation.ConfirmationMessages;
+import dev.ikm.komet.kview.mvvm.viewmodel.confirmation.ConfirmationPaneCommonViewModel;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -279,7 +284,7 @@ public class PropertiesController {
                 );
                 currentEditPane = continueAddFieldsPane;
             } else if (evt.getEventType() == SHOW_CONTINUE_EDIT_FIELDS) {
-                confirmationViewModel.setConfirmationMessage(ConfirmationPaneCommonViewModel.ConfirmationMessages.CONTINUE_EDITING_FIELDS);
+                confirmationViewModel.setConfirmationMessage(ConfirmationMessages.CONTINUE_EDITING_FIELDS);
                 currentEditPane = confirmationPane;
             }
             this.addEditButton.setSelected(true);
@@ -299,7 +304,7 @@ public class PropertiesController {
                 contentBorderPane.setCenter(currentEditPane);
                 StateMachine patternSM = getStateMachine();
                 patternSM.t("addDefinitions");
-                confirmationViewModel.setConfirmationMessage(ConfirmationPaneCommonViewModel.ConfirmationMessages.DEFINITION_ADDED);
+                confirmationViewModel.setConfirmationMessage(ConfirmationMessages.DEFINITION_ADDED);
             }
             patternViewModel.save();
         };
@@ -307,9 +312,9 @@ public class PropertiesController {
 
         patternDescriptionEventSubscriber = evt -> {
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_FQN) {
-                confirmationViewModel.setConfirmationMessage(ConfirmationPaneCommonViewModel.ConfirmationMessages.FULLY_QUALIFIED_NAME_ADDED);
+                confirmationViewModel.setConfirmationMessage(ConfirmationMessages.FULLY_QUALIFIED_NAME_ADDED);
             } else if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
-                confirmationViewModel.setConfirmationMessage(ConfirmationPaneCommonViewModel.ConfirmationMessages.OTHER_NAME_ADDED);
+                confirmationViewModel.setConfirmationMessage(ConfirmationMessages.OTHER_NAME_ADDED);
             }
             currentEditPane = confirmationPane;
             contentBorderPane.setCenter(currentEditPane);

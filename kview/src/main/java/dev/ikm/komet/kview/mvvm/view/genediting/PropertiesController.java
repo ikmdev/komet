@@ -21,8 +21,9 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneCommonController;
-import dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneCommonViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.confirmation.ConfirmationMessages;
+import dev.ikm.komet.kview.mvvm.viewmodel.confirmation.ConfirmationPaneCommonViewModel;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ToggleButton;
@@ -118,7 +119,7 @@ public class PropertiesController {
             // "Semantic Details Added" is displayed when form values are Submitted when in CREATE mode
             // "Semantic Details Changed" is displayed when form values are Submitted when in EDIT mode
 
-            confirmationViewModel.setConfirmationMessage(ConfirmationPaneCommonViewModel.ConfirmationMessages.SEMANTIC_DETAILS_ADDED);
+            confirmationViewModel.setConfirmationMessage(ConfirmationMessages.SEMANTIC_DETAILS_ADDED);
 
             contentBorderPane.setCenter(closePropsPane);
         };
@@ -143,7 +144,7 @@ public class PropertiesController {
                 genEditingViewModel.setPropertyValue(FIELD_INDEX, -1);
 
                 // "No Selection Made" is displayed on initial creation of Semantic
-                confirmationViewModel.setConfirmationMessage(ConfirmationPaneCommonViewModel.ConfirmationMessages.NO_SELECTION_MADE_SEMANTIC);
+                confirmationViewModel.setConfirmationMessage(ConfirmationMessages.NO_SELECTION_MADE_SEMANTIC);
 
                 contentBorderPane.setCenter(closePropsPane);
             }

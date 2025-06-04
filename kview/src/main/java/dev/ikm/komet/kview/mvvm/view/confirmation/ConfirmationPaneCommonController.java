@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.confirmation;
 
-import dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneCommonViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.confirmation.ConfirmationPaneCommonViewModel;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;

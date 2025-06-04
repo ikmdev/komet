@@ -1,4 +1,4 @@
-package dev.ikm.komet.kview.mvvm.viewmodel;
+package dev.ikm.komet.kview.mvvm.viewmodel.confirmation;
 
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -8,6 +8,11 @@ import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 
 import java.util.UUID;
 
+/**
+ * The view model for the confirmation pane.  This view model manages the text that is displayed
+ * on the confirmation pane, and the notification topic and event that is sent when the close
+ * button is pressed.
+ */
 public class ConfirmationPaneCommonViewModel extends SimpleViewModel {
 
     // properties
@@ -47,10 +52,22 @@ public class ConfirmationPaneCommonViewModel extends SimpleViewModel {
         setPropertyValue(NOTIFICATION_EVENT, notifiationEvent);
     }
 
+    /**
+     * Send the notification to the provided topic using the provided event.
+     */
     public void sendNotification() {
-        EvtBusFactory.getDefaultEvtBus().publish(getNotifiicationTopic(), getNotificationEvent());
+        var topic = getNotifiicationTopic();
+        var event = getNotificationEvent();
+
+        if (topic != null && event != null) {
+            EvtBusFactory.getDefaultEvtBus().publish(topic, event);
+        }
     }
 
+    /**
+     * Set the confirmation message to display in the title and message labels.
+     * @param confirmationMessage The message to display
+     */
     public void setConfirmationMessage(ConfirmationMessages confirmationMessage) {
         if (confirmationMessage != null) {
             this.confirmationMessage = confirmationMessage;
@@ -58,35 +75,6 @@ public class ConfirmationPaneCommonViewModel extends SimpleViewModel {
             title.setValue(confirmationMessage.getConfirmationText().title());
             message.setValue(confirmationMessage.getConfirmationText().message());
         }
-    }
-
-    public record ConfirmationText(String title, String message) {}
-
-    private static final String SEMANTIC_DEFAULT_MESSAGE = "Make a selection in the view to edit the Semantic.";
-    private static final String PATTERN_DEFAULT_MESSAGE = "Make a selection in the view to edit the Pattern.";
-
-    public enum ConfirmationMessages {
-
-        NO_SELECTION_MADE_SEMANTIC(new ConfirmationText("No Selection Made", SEMANTIC_DEFAULT_MESSAGE)),
-        SEMANTIC_DETAILS_ADDED(new ConfirmationText("Semantic Details Added", SEMANTIC_DEFAULT_MESSAGE)),
-
-        NO_SELECTION_MADE_PATTERN(new ConfirmationText("No Selection Made", PATTERN_DEFAULT_MESSAGE)),
-        PATTERN_DEFINITION_ADDED(new ConfirmationText("Pattern Definition Added", "")),
-        FULLY_QUALIFIED_NAME_ADDED(new ConfirmationText("Fully Qualified Name Added", "")),
-        OTHER_NAME_ADDED(new ConfirmationText("Other Name Added", "")),
-        DEFINITION_ADDED(new ConfirmationText("Definition Added", "")),
-        CONTINUE_EDITING_FIELDS(new ConfirmationText("Continue Editing Fields?", ""));
-
-        private ConfirmationText confirmationText;
-
-        private ConfirmationMessages(ConfirmationText confirmationText) {
-            this.confirmationText = confirmationText;
-        }
-
-        ConfirmationText getConfirmationText() {
-            return confirmationText;
-        }
-
     }
 
 }
