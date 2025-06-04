@@ -95,8 +95,8 @@ public final class ObservableSemanticVersion
 
             // create a change listener
             InvalidationListener autoSave = (observableValue) -> {
-                if (observableField.value() != null // Create a version only when new value is not null.
-                ) {
+                if (observableField.value() != null) {
+                    // Create a version only when new value is not null.
                     // Creating uncommitted version records. e.g., (c)hello, (u)hello1, (u)hello12, (u)hello123
                     autoSaveSematicVersion(observableField.value(), index);
                 }
