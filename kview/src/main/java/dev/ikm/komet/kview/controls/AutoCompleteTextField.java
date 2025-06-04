@@ -9,6 +9,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Skin;
@@ -110,6 +111,12 @@ public class AutoCompleteTextField<T> extends TextField {
     private final ObservableList<String> popupStyleClasses = FXCollections.observableArrayList();
     public ObservableList<String> getPopupStyleClasses() { return popupStyleClasses; }
 
+    // -- popup header pane
+    private final ObjectProperty<HeaderPane> popupHeaderPane = new SimpleObjectProperty<>();
+    public HeaderPane getPopupHeaderPane() { return popupHeaderPane.get(); }
+    public ObjectProperty<HeaderPane> popupHeaderPaneProperty() { return popupHeaderPane; }
+    public void setPopupHeaderPane(HeaderPane popupHeaderPane) { this.popupHeaderPane.set(popupHeaderPane); }
+
     /***************************************************************************
      *                                                                         *
      * Public API                                                              *
@@ -156,5 +163,31 @@ public class AutoCompleteTextField<T> extends TextField {
                 return (T) string;
             }
         };
+    }
+
+    /***************************************************************************
+     *                                                                         *
+     * Support Classes                                                         *
+     *                                                                         *
+     **************************************************************************/
+
+    /**
+     * A header that can be shown at the top of the suggestions popup
+     * @param <T> the type of each suggestion
+     */
+    public interface HeaderPane<T> {
+        /**
+         * This method should create and return the Node that will go into the header.
+         *
+         * @return the Node that goes into the header
+         */
+        Node createContent();
+
+        /**
+         * Whenever the suggestion's list is changed this method gets called so that the header can update itself.
+         *
+         * @param items the current list of suggestions.
+         */
+        void updateContent(List<T> items);
     }
 }
