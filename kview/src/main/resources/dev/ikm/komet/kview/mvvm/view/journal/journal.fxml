@@ -1,26 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.String?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.Group?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.ContextMenu?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.control.ToggleGroup?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.shape.Arc?>
-<?import javafx.scene.shape.Circle?>
-<?import javafx.scene.shape.Rectangle?>
-<?import javafx.scene.shape.SVGPath?>
 <?import dev.ikm.komet.kview.controls.KLWorkspace?>
-
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import java.lang.*?>
 <BorderPane fx:id="journalBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.journal.JournalController">
    <center>
       <BorderPane prefHeight="485.0" prefWidth="544.0" BorderPane.alignment="CENTER">
@@ -36,6 +22,7 @@
                            </styleClass>
                         </Region>
                      </graphic>
+                     <tooltip><Tooltip text="Coordinates" /></tooltip>
                   </Button>
                   <Button fx:id="addButton" mnemonicParsing="false" onAction="#popupAddContextMenu" text="Button">
                      <graphic>
@@ -46,6 +33,7 @@
                            </styleClass>
                         </Region>
                      </graphic>
+                     <tooltip><Tooltip text="Create" /></tooltip>
                      <contextMenu>
                         <ContextMenu fx:id="addContextMenu" opacity="0.99" styleClass="kview-context-menu">
                           <items>
@@ -77,7 +65,8 @@
                   <ComboBox prefWidth="150.0" promptText="Project Journal #1" styleClass="combo-box-drop">
                      <opaqueInsets>
                         <Insets />
-                     </opaqueInsets></ComboBox>
+                     </opaqueInsets>
+                  </ComboBox>
                   <Rectangle fill="DODGERBLUE" height="32.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
                   <Button mnemonicParsing="false" text="Button">
                      <graphic>
@@ -88,6 +77,7 @@
                            </styleClass>
                         </Region>
                      </graphic>
+                     <tooltip><Tooltip text="Journal Notes" /></tooltip>
                   </Button>
                   <Button mnemonicParsing="false" text="Button">
                      <graphic>
@@ -98,6 +88,7 @@
                            </styleClass>
                         </Region>
                      </graphic>
+                     <tooltip><Tooltip text="Journal Comments" /></tooltip>
                   </Button>
                </children>
             </HBox>
@@ -168,6 +159,7 @@
                      </styleClass>
                   </Region>
                </graphic>
+               <tooltip><Tooltip text="Home" /></tooltip>
             </Button>
             <Rectangle fill="DODGERBLUE" height="1.0" stroke="BLACK" strokeType="INSIDE" styleClass="divider" width="36.0" />
             <ToggleButton fx:id="searchToggleButton" mnemonicParsing="false" text="ToggleButton">
@@ -182,6 +174,7 @@
                <toggleGroup>
                   <ToggleGroup fx:id="sidebarToggleGroup" />
                </toggleGroup>
+               <tooltip><Tooltip text="Search" /></tooltip>
             </ToggleButton>
             <ToggleButton fx:id="navigatorToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
@@ -192,6 +185,7 @@
                      </styleClass>
                   </Region>
                </graphic>
+               <tooltip><Tooltip text="Navigator" /></tooltip>
             </ToggleButton>
             <ToggleButton fx:id="reasonerToggleButton" mnemonicParsing="false" styleClass="reasoner" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
@@ -202,6 +196,7 @@
                      </styleClass>
                   </Region>
                </graphic>
+               <tooltip><Tooltip text="Reasoner" /></tooltip>
             </ToggleButton>
             <Rectangle fill="DODGERBLUE" height="1.0" stroke="BLACK" strokeType="INSIDE" styleClass="divider" width="36.0" />
             <ToggleButton fx:id="conceptNavigatorToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
@@ -213,6 +208,7 @@
                      </styleClass>
                   </Region>
                </graphic>
+               <tooltip><Tooltip text="NextGen Navigator" /></tooltip>
             </ToggleButton>
             <Rectangle fill="DODGERBLUE" height="1.0" stroke="BLACK" strokeType="INSIDE" styleClass="divider" width="36.0" />
             <ToggleButton fx:id="nextGenSearchToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
@@ -224,6 +220,7 @@
                      </styleClass>
                   </Region>
                </graphic>
+               <tooltip><Tooltip text="NextGen Search" /></tooltip>
             </ToggleButton>
             <ToggleButton fx:id="nextGenReasonerToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
@@ -234,6 +231,7 @@
                      </styleClass>
                   </Region>
                </graphic>
+               <tooltip><Tooltip text="NextGen Reasoner" /></tooltip>
             </ToggleButton>
             <Region styleClass="flex-space" VBox.vgrow="ALWAYS" />
             <ToggleButton fx:id="progressToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
@@ -259,6 +257,7 @@
                      </styleClass>
                   </Region>
                </graphic>
+               <tooltip><Tooltip text="Settings" /></tooltip>
             </ToggleButton>
             <ToggleButton mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
@@ -269,6 +268,7 @@
                      </styleClass>
                   </Region>
                </graphic>
+               <tooltip><Tooltip text="Profile" /></tooltip>
             </ToggleButton>
          </children>
       </VBox>
