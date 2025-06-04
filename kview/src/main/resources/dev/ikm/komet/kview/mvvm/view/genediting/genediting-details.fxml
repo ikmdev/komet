@@ -41,9 +41,8 @@
                <children>
                   <FlowPane styleClass="rounded-top">
                      <children>
-                        <HBox prefHeight="18.0" spacing="4.0" style="-fx-background-color: -Natural-Grey-Main;">
+                        <HBox fx:id="tabHeader" prefHeight="18.0" spacing="4.0" style="-fx-background-color: -Natural-Grey-Main;">
                            <styleClass>
-                              <String fx:value="draggable-region" />
                               <String fx:value="lidr-rounded-tab" />
                            </styleClass>
                            <children>
@@ -147,7 +146,6 @@
                      </padding>
                      <styleClass>
                         <String fx:value="concept-header-control" />
-                        <String fx:value="draggable-region" />
                         <String fx:value="rounded-upper-right-only" />
                      </styleClass>
                   </HBox>

@@ -78,6 +78,8 @@ import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
 import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
@@ -201,6 +203,12 @@ public class PatternDetailsController {
     @FXML
     private ContextMenu contextMenu;
 
+    @FXML
+    private HBox tabHeader;
+
+    @FXML
+    private HBox conceptHeaderControlToolBarHbox;
+
     /**
      * Stamp Edit
      */
@@ -242,12 +250,16 @@ public class PatternDetailsController {
                 if (isOpen(propertiesSlideoutTrayPane)) {
                     slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
+
+                updateDraggableNodesForPropertiesPanel(false);
             } else if (evt.getEventType() == OPEN_PANEL) {
                 LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
                 propertiesToggleButton.setSelected(true);
                 if (isClosed(propertiesSlideoutTrayPane)) {
                     slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
+
+                updateDraggableNodesForPropertiesPanel(true);
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PropertyPanelEvent.class, patternPropertiesEventSubscriber);
@@ -430,6 +442,14 @@ public class PatternDetailsController {
 
         // Setup Properties
         setupProperties();
+
+        // Setup window support with explicit draggable nodes
+        addDraggableNodes(detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
+
+        // Check if the properties panel is initially open and add draggable nodes if needed
+        if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
+            updateDraggableNodesForPropertiesPanel(true);
+        }
     }
 
     private void setUpAddSemanticMenu() {
@@ -663,6 +683,13 @@ public class PatternDetailsController {
     @FXML
     void closeConceptWindow(ActionEvent event) {
         LOG.info("Cleanup occurring: Closing Window with pattern: " + patternTitleText.getText());
+
+        // Clean up the draggable nodes
+        removeDraggableNodes(detailsOuterBorderPane,
+                tabHeader,
+                conceptHeaderControlToolBarHbox,
+                propertiesController != null ? propertiesController.getPropertiesTabsPane() : null);
+
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
@@ -822,6 +849,9 @@ public class PatternDetailsController {
     private void openPropertiesPanel(ActionEvent event) {
         ToggleButton propertyToggle = (ToggleButton) event.getSource();
         EvtType<PropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? OPEN_PANEL : CLOSE_PANEL;
+
+        updateDraggableNodesForPropertiesPanel(propertyToggle.isSelected());
+
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType));
     }
 
@@ -864,4 +894,23 @@ public class PatternDetailsController {
         }
     }
 
+    /**
+     * Updates draggable behavior for the properties panel based on its open/closed state.
+     * <p>
+     * When opened, adds the properties tabs pane as a draggable node. When closed,
+     * safely removes the draggable behavior to prevent memory leaks.
+     *
+     * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
+     */
+    private void updateDraggableNodesForPropertiesPanel(boolean isOpen) {
+        if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
+            if (isOpen) {
+                addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                LOG.debug("Added properties nodes as draggable");
+            } else {
+                removeDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                LOG.debug("Removed properties nodes from draggable");
+            }
+        }
+    }
 }
