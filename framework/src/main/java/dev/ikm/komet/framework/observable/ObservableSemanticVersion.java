@@ -95,13 +95,7 @@ public final class ObservableSemanticVersion
 
             // create a change listener
             InvalidationListener autoSave = (observableValue) -> {
-                // ObservableSemanticVersion and the SemanticVersion (record).
-                // ObservableSemanticVersion owns the versionProperty<SemanticVersion>
                 if (observableField.value() != null // Create a version only when new value is not null.
-                 && (observableField.fieldProperty.getValue().value() != null &&
-                 // Check if the previous value is different from the changed value.
-                 // This check is required for C-List C-Set
-                 !Objects.equals(observableField.value().toString(), observableField.fieldProperty.getValue().value().toString()))
                 ) {
                     // Creating uncommitted version records. e.g., (c)hello, (u)hello1, (u)hello12, (u)hello123
                     autoSaveSematicVersion(observableField.value(), index);
