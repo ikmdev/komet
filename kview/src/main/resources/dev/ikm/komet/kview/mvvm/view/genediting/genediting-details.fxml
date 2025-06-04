@@ -345,7 +345,7 @@
                                     <Insets left="8.0" top="8.0" />
                                  </padding>
                               </VBox>
-                              <Button contentDisplay="GRAPHIC_ONLY" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#popupStampEdit" prefHeight="11.0" prefWidth="30.0" styleClass="mini-options-button" text="Button" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="4.0">
+                              <Button fx:id="popupStampButton" contentDisplay="GRAPHIC_ONLY" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#popupStampEdit" prefHeight="11.0" prefWidth="30.0" styleClass="mini-options-button" text="Button" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="4.0">
                                  <graphic>
                                     <Region styleClass="hamburger" />
                                  </graphic>

@@ -111,6 +111,9 @@ public class PatternDetailsController {
     private VerticallyFilledPane propertiesSlideoutTrayPane;
 
     @FXML
+    private Button popupStampButton;
+
+    @FXML
     private VerticallyFilledPane timelineSlideoutTrayPane;
 
     @FXML
@@ -450,6 +453,8 @@ public class PatternDetailsController {
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
             updateDraggableNodesForPropertiesPanel(true);
         }
+
+        popupStampButton.disableProperty().set(patternViewModel.getPropertyValue(MODE) == EDIT);
     }
 
     private void setUpAddSemanticMenu() {

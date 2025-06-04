@@ -139,6 +139,9 @@ public class GenEditingDetailsController {
     private KLReadOnlyComponentControl referenceComponent;
 
     @FXML
+    private Button popupStampButton;
+
+    @FXML
     private BorderPane detailsOuterBorderPane;
 
     @FXML
@@ -263,6 +266,9 @@ public class GenEditingDetailsController {
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
             updateDraggableNodesForPropertiesPanel(true);
         }
+
+        popupStampButton.disableProperty().set(genEditingViewModel.getPropertyValue(MODE) == EDIT);
+
     }
 
     private void setupSemanticDetails() {
