@@ -222,14 +222,13 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         throw new UnsupportedOperationException();
     }
 
-    private class EntityChangeSubscriber implements Subscriber<Integer> {
+    private static class EntityChangeSubscriber implements Subscriber<Integer> {
+
         @Override
         public void onNext(Integer nid) {
             // Do nothing with item, but request another...
-            if (SINGLETONS.containsKey(PrimitiveData.publicId(nid))) {
-                Platform.runLater(() -> {
-                    get(Entity.getFast(nid));
-                });
+            if (SINGLETONS.containsKey(nid)) {
+                get(nid);
             }
         }
     }
