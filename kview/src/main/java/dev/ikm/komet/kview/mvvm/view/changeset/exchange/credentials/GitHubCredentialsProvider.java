@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.mvvm.view.changeset.exchange;
+package dev.ikm.komet.kview.mvvm.view.changeset.exchange.credentials;
 
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferences;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;

@@ -17,6 +17,8 @@ package dev.ikm.komet.kview.mvvm.view.changeset.exchange;
 
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferences;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
+import dev.ikm.komet.kview.mvvm.view.changeset.exchange.credentials.GitHubCredentialsProvider;
+import dev.ikm.komet.kview.mvvm.view.changeset.exchange.credentials.GitSkipSslValidationCredentialsProvider;
 import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.SaveState;
 import dev.ikm.tinkar.common.service.TrackingCallable;
@@ -314,7 +316,6 @@ public class GitTask extends TrackingCallable<Boolean> {
 
     /**
      * Executes the CONNECT operation and initializes the Git repository if needed.
-     * Always validates and updates configuration, even for existing repositories.
      *
      * @return true if the connection was successful, false otherwise
      * @throws IOException if an I/O error occurs
@@ -458,7 +459,7 @@ public class GitTask extends TrackingCallable<Boolean> {
      *
      * @param git the Git instance
      * @throws URISyntaxException if the Git URL is invalid
-     * @throws GitAPIException    if an error occurs when adding/updating the remote
+     * @throws GitAPIException    if an error occurs when adding the remote
      */
     private void configureRemote(Git git) throws URISyntaxException, GitAPIException {
         URIish uri = new URIish(gitUrl.getValue().trim());
@@ -496,9 +497,6 @@ public class GitTask extends TrackingCallable<Boolean> {
         config.setBoolean("core", null, "logallrefupdates", true);
         config.setBoolean("core", null, "symlinks", false);
         config.setBoolean("core", null, "ignorecase", true);
-
-        // Http settings
-//        config.setBoolean("http", null, "sslVerify", false);
 
         // Other settings
         config.setString("submodule", null, "active", ".");
