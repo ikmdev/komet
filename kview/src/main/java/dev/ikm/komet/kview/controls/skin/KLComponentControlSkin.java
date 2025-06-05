@@ -10,6 +10,7 @@ import dev.ikm.komet.kview.controls.KLComponentListControl;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.ConceptRecord;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -210,15 +211,34 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         control.setOnDragDropped(event -> {
             Dragboard dragboard = event.getDragboard();
-            if (!event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT) ||
-                    !(event.getGestureSource() instanceof KLComponentControl cc) || !haveAllowedDND(control, cc)) {
-                if (dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
-                    // drop concept
-                    if (!isFilterAllowedWhileDragAndDropping(event)) {
-                        event.setDropCompleted(false);
-                        event.consume();
-                    }
+
+            if (!(event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT) &&
+                    event.getGestureSource() instanceof KLComponentControl cc && haveAllowedDND(control, cc)) &&
+                dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
+                // drop concept
+                if (!isFilterAllowedWhileDragAndDropping(event)) {
+                    event.setDropCompleted(false);
+                    event.consume();
+                    return;
                 }
+            }
+
+            try {
+                int nid = extractNid(event);
+                LOG.info("publicId: {}", dragboard.getString());
+                if (nid != Integer.MIN_VALUE) {  //
+                    EntityProxy entity = Entity.getFast(nid).toProxy();
+
+                        control.setEntity(entity);
+                        addConceptNode(entity, control.getComponentNameRenderer());
+
+                        event.setDropCompleted(true);
+                        event.consume();
+
+                }
+
+            } catch (Exception e) {
+                LOG.error("exception: ", e);
             }
         });
     }
