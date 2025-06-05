@@ -107,13 +107,11 @@ public class PropertiesController {
 
         editFieldsJfxNode = FXMLMvvmLoader.make(config);
 
-        ConfirmationPaneCommonViewModel confirmationViewModel = new ConfirmationPaneCommonViewModel();
-
-        Config closePropertiesConfig = new Config(this.getClass().getResource("/dev/ikm/komet/kview/mvvm/view/confirmation/confirmation-pane-common.fxml"))
-                .addNamedViewModel(new NamedVm("viewModel", confirmationViewModel));
+        Config closePropertiesConfig = new Config(this.getClass().getResource("/dev/ikm/komet/kview/mvvm/view/confirmation/confirmation-pane-common.fxml"));
         JFXNode<Pane, ConfirmationPaneCommonController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
         closePropsPane = closePropsJfxNode.node();
 
+        ConfirmationPaneCommonViewModel confirmationViewModel = (ConfirmationPaneCommonViewModel) closePropsJfxNode.getViewModel("viewModel").get();
         confirmationViewModel.setNotificationTopic(genEditingViewModel.getPropertyValue(WINDOW_TOPIC));
         confirmationViewModel.setNotificationEvent(new PropertyPanelEvent(closePropsPane, CLOSE_PANEL));
 
