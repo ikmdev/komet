@@ -26,7 +26,10 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
@@ -71,6 +74,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
@@ -84,6 +88,7 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
@@ -94,6 +99,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -193,6 +199,12 @@ public class GenEditingDetailsController {
     @FXML
     private Button saveButton;
 
+    @FXML
+    private HBox tabHeader;
+
+    @FXML
+    private HBox conceptHeaderControlToolBarHbox;
+
     @InjectViewModel
     private StampViewModel stampViewModel;
 
@@ -243,6 +255,14 @@ public class GenEditingDetailsController {
         setupSemanticDetails();
         // update stamp UI
         updateUIStamp(getStampViewModel());
+
+        // Setup window dragging support with explicit draggable nodes
+        addDraggableNodes(detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
+
+        // Check if the properties panel is initially open and add draggable nodes if needed
+        if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
+            updateDraggableNodesForPropertiesPanel(true);
+        }
     }
 
     private void setupSemanticDetails() {
@@ -419,8 +439,8 @@ public class GenEditingDetailsController {
      */
     private void setupStampPopupOptions() {
         //initialize stampsViewModel with basic data.
-        stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(getViewProperties()), true)
-                .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(getViewProperties()), true);
+        stampViewModel.setPropertyValue(PATHS_PROPERTY, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.PATH.publicId()), true)
+                .setPropertyValue(MODULES_PROPERTY, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()), true);
     }
 
     private void updateUIStamp(ViewModel stampViewModel) {
@@ -467,13 +487,31 @@ public class GenEditingDetailsController {
         Consumer<EntityFacade> updateRefComponentInfo = (refComponent2) -> {
             Entity<? extends EntityVersion> entity = Entity.getFast(refComponent2.nid());
             // update items
-            String refType = switch (entity) {
-                case ConceptEntity ignored -> "Concept";
-                case SemanticEntity ignored -> "Semantic";
-                case PatternEntity ignored -> "Pattern";
-                default -> "Unknown";
+
+            String refType = "Unknown";
+            String description = null;
+            switch (entity) {
+                case SemanticEntity semanticEntity -> {
+                    refType = "Semantic";
+                    ViewCalculator viewCalculator = getViewProperties().calculator();
+                    description = viewCalculator.languageCalculator()
+                            .getFullyQualifiedDescriptionTextWithFallbackOrNid(semanticEntity.nid());
+                }
+                case ConceptEntity ignored -> {
+                    refType = "Concept";
+                    description = refComponent2.description();
+                }
+                case PatternEntity ignored -> {
+                    refType= "Pattern";
+                    description = refComponent2.description();
+                }
+                default ->  {
+                    refType = "Unknown";
+                    description = refComponent2.description();
+                }
             };
-            ComponentItem componentItem = new ComponentItem(refComponent2.description(),
+
+            ComponentItem componentItem = new ComponentItem(description,
                     Identicon.generateIdenticonImage(refComponent2.publicId()), refComponent2.nid());
 
             referenceComponent.setTitle(refType);
@@ -519,6 +557,8 @@ public class GenEditingDetailsController {
                     slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
 
+                updateDraggableNodesForPropertiesPanel(false);
+
                 // Turn off edit mode for all read only controls
                 for (Node node : nodes) {
                     KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) node;
@@ -531,6 +571,8 @@ public class GenEditingDetailsController {
                 if (isClosed(propertiesSlideoutTrayPane)) {
                     slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
+
+                updateDraggableNodesForPropertiesPanel(true);
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), PropertyPanelEvent.class, propertiesEventSubscriber);
@@ -582,6 +624,12 @@ public class GenEditingDetailsController {
 
     @FXML
     void closeConceptWindow(ActionEvent event) {
+        // Clean up the draggable nodes
+        removeDraggableNodes(detailsOuterBorderPane,
+                tabHeader,
+                conceptHeaderControlToolBarHbox,
+                propertiesController != null ? propertiesController.getPropertiesTabsPane() : null);
+
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
@@ -636,11 +684,11 @@ public class GenEditingDetailsController {
         if (stampEdit != null && stampEditController != null) {
             // refresh modules
             stampViewModel.getObservableList(StampViewModel.MODULES_PROPERTY).clear();
-            stampViewModel.getObservableList(StampViewModel.MODULES_PROPERTY).addAll(stampViewModel.findAllModules(getViewProperties()));
+            stampViewModel.getObservableList(StampViewModel.MODULES_PROPERTY).addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
 
             // refresh path
             stampViewModel.getObservableList(PATHS_PROPERTY).clear();
-            stampViewModel.getObservableList(PATHS_PROPERTY).addAll(stampViewModel.findAllPaths(getViewProperties()));
+            stampViewModel.getObservableList(PATHS_PROPERTY).addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.PATH.publicId()));
 
             stampEdit.show((Node) event.getSource());
             stampEditController.selectActiveStatusToggle();
@@ -703,7 +751,31 @@ public class GenEditingDetailsController {
     private void openPropertiesPanel(ActionEvent event) {
         ToggleButton propertyToggle = (ToggleButton) event.getSource();
         EvtType<PropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? OPEN_PANEL : CLOSE_PANEL;
+
+        updateDraggableNodesForPropertiesPanel(propertyToggle.isSelected());
+
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType));
+    }
+
+
+    /**
+     * Updates draggable behavior for the properties panel based on its open/closed state.
+     * <p>
+     * When opened, adds the properties tabs pane as a draggable node. When closed,
+     * safely removes the draggable behavior to prevent memory leaks.
+     *
+     * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
+     */
+    private void updateDraggableNodesForPropertiesPanel(boolean isOpen) {
+        if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
+            if (isOpen) {
+                addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                LOG.debug("Added properties nodes as draggable");
+            } else {
+                removeDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                LOG.debug("Removed properties nodes from draggable");
+            }
+        }
     }
 
     @FXML

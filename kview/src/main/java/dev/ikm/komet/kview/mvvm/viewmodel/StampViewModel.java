@@ -67,20 +67,4 @@ public class StampViewModel extends FormViewModel {
         return (StampViewModel) super.save(force);
     }
 
-    public List<ConceptEntity> findAllModules(ViewProperties viewProperties) {
-        try {
-            return DataModelHelper.fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()).stream().toList();
-        } catch (Throwable th) {
-            addValidator(MODULES_PROPERTY, "Module Entities", (Void prop, ViewModel vm) -> new ValidationMessage(MessageType.ERROR, "PrimitiveData services are not up. Attempting to retrieve ${%s}. Must call start().".formatted(MODULES_PROPERTY), th));
-            return List.of();
-        }
-    }
-    public List<ConceptEntity> findAllPaths(ViewProperties viewProperties) {
-        try {
-            return DataModelHelper.fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()).stream().toList();
-        } catch (Throwable th) {
-            addValidator(PATHS_PROPERTY, "Path Entities", (Void prop, ViewModel vm) -> new ValidationMessage(MessageType.ERROR, "PrimitiveData services are not up. Attempting to retrieve ${%s}. Must call start().".formatted(PATHS_PROPERTY), th));
-            return List.of();
-        }
-    }
 }

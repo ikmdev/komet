@@ -7,11 +7,9 @@ import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.kview.controls.ConceptTile;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentListControl;
-import dev.ikm.komet.kview.controls.KLComponentSetControl;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.ConceptRecord;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -42,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ResourceBundle;
+import java.util.function.Function;
 
 /**
  * Default skin implementation for the {@link KLComponentControl} control
@@ -116,12 +115,13 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         control.entityProperty().addListener((observable, oldValue, newValue) -> {
             if (!control.isEmpty()) {
-                addConceptNode(getSkinnable().getEntity());
+                addConceptNode(control.getEntity(), control.getComponentNameRenderer());
             }
         });
         if (!control.isEmpty()) {
-            addConceptNode(control.getEntity());
+            addConceptNode(control.getEntity(), control.getComponentNameRenderer());
         }
+
     }
 
     /** {@inheritDoc} */
@@ -149,8 +149,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     /**
      * There are two type of DND operations:
      * - Drop a concept over an empty KLComponentControl (dragboard string is publicId)
-     * - Rearrange non-empty KLComponentControls that belong to a KLComponentSetControl or a
-     *   KLComponentListControl (dragboard string is CONTROL_DRAG_KEY)
+     * - Rearrange non-empty KLComponentControls that belong to a KLComponentListControl
+     * (dragboard string is CONTROL_DRAG_KEY)
      */
     private void setupDragNDrop() {
         KLComponentControl control = getSkinnable();
@@ -210,44 +210,14 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         control.setOnDragDropped(event -> {
             Dragboard dragboard = event.getDragboard();
-            if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT) &&
-                    event.getGestureSource() instanceof KLComponentControl cc && haveAllowedDND(control, cc)) {
-                // reorder components
-                if (control.getParent() instanceof KLComponentSetControl componentSetControl) {
-                    KLComponentSetControlSkin skin = (KLComponentSetControlSkin) componentSetControl.getSkin();
-                    int sourceIndex = skin.getChildren().indexOf(cc);
-                    int targetIndex = skin.getChildren().indexOf(control);
-                    final Node node = skin.getChildren().remove(sourceIndex);
-                    skin.getChildren().add(targetIndex, node);
-
-                    event.setDropCompleted(true);
-                    event.consume();
-                }
-            } else if (dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
-                // drop concept
-                if (!isFilterAllowedWhileDragAndDropping(event)) {
-                    event.setDropCompleted(false);
-                    event.consume();
-                    return;
-                }
-
-                try {
-                    int nid = extractNid(event);
-                    LOG.info("publicId: {}", dragboard.getString());
-                    if (nid != Integer.MIN_VALUE) {  //
-                        EntityProxy entity = Entity.getFast(nid).toProxy();
-                        if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
-                                !componentSetControl.getValue().contains(nid)) {
-                            control.setEntity(entity); // TODO: .description() is often null or empty.
-                            addConceptNode(entity);
-
-                            event.setDropCompleted(true);
-                            event.consume();
-                        }
+            if (!event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT) ||
+                    !(event.getGestureSource() instanceof KLComponentControl cc) || !haveAllowedDND(control, cc)) {
+                if (dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
+                    // drop concept
+                    if (!isFilterAllowedWhileDragAndDropping(event)) {
+                        event.setDropCompleted(false);
+                        event.consume();
                     }
-
-                } catch (Exception e) {
-                    LOG.error("exception: ", e);
                 }
             }
         });
@@ -371,15 +341,12 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
     private boolean hasAllowedDND(KLComponentControl control) {
         return control != null && control.getEntity() != null &&
-                ((control.getParent() instanceof KLComponentSetControl cs && cs.getValue().size() > 1)
-                    ||  (control.getParent() instanceof KLComponentListControl cl && cl.getValue().size() > 1)
-                );
+                (control.getParent() instanceof KLComponentListControl cl && cl.getValue().size() > 1);
     }
 
     private boolean haveAllowedDND(KLComponentControl source, KLComponentControl target) {
         // only allowed if both source and target have the same parent
-        return hasAllowedDND(source) && hasAllowedDND(target) &&
-                ((source.getParent() instanceof KLComponentSetControl cs1 && target.getParent() instanceof KLComponentSetControl cs2 && cs1 == cs2));
+        return hasAllowedDND(source) && hasAllowedDND(target);
     }
 
     private HBox createSearchBox() {
@@ -401,7 +368,9 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         });
         typeAheadSearchField.completerProperty().bind(getSkinnable().completerProperty());
         typeAheadSearchField.converterProperty().bind(getSkinnable().typeAheadStringConverterProperty());
-        typeAheadSearchField.suggestionsNodeFactoryProperty().bind(getSkinnable().suggestionsNodeFactoryProperty());
+        typeAheadSearchField.suggestionsCellFactoryProperty().bind(getSkinnable().suggestionsCellFactoryProperty());
+        typeAheadSearchField.popupHeaderPaneProperty().bind(getSkinnable().typeAheadHeaderPaneProperty());
+
         typeAheadSearchField.getPopupStyleClasses().add("component-popup");
         typeAheadSearchField.setSuggestionsNodeHeight(41);
 
@@ -433,7 +402,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
             @Override
             protected double getPopupWidth() {
-                return searchBox.getWidth() - searchBox.getInsets().getLeft() - searchBox.getInsets().getRight() - 1;
+                return searchBox.getWidth() - searchBox.getInsets().getLeft() - searchBox.getInsets().getRight() - 1.5;
             }
         });
 
@@ -481,7 +450,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     }
 
 
-    private void addConceptNode(EntityProxy entity) {
+    private void addConceptNode(EntityProxy entity, Function<EntityProxy, String> componentNameLabelFunction) {
         Image identicon = Identicon.generateIdenticonImage(entity.publicId());
         ImageView imageView = new ImageView();
         imageView.setFitWidth(16);
@@ -492,8 +461,9 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         imageViewWrapper.getChildren().add(imageView);
         imageViewWrapper.getStyleClass().add("image-view-container");
 
-        Label conceptNameLabel = new Label(entity.description());
-        conceptNameLabel.getStyleClass().add("selected-concept-description");
+        Label componentNameLabel = new Label(componentNameLabelFunction.apply(entity));
+
+        componentNameLabel.getStyleClass().add("selected-concept-description");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -514,7 +484,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         });
         closeButton.setAlignment(Pos.CENTER_RIGHT);
 
-        HBox selectedConcept = new HBox(imageViewWrapper, conceptNameLabel, spacer, dragHandleIconContainer, closeButton);
+        HBox selectedConcept = new HBox(imageViewWrapper, componentNameLabel, spacer, dragHandleIconContainer, closeButton);
         selectedConcept.getStyleClass().add("concept-selected-entity-box");
         selectedConcept.setAlignment(Pos.CENTER_LEFT);
         HBox.setMargin(selectedConceptContainer, new Insets(8));

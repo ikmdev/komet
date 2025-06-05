@@ -21,7 +21,7 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
         Parent node;
         if (isEditable) {
             KLComponentControl componentControl = KLComponentControlFactory.createTypeAheadComponentControl(
-                    observableView.calculator().navigationCalculator());
+                    observableView.calculator());
             // title
             componentControl.setTitle(field().meaning().description());
            // entity
@@ -49,7 +49,9 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
         if (entityProxy == null) {
             componentItem = null;
         } else {
-            String description = entityProxy.description();
+
+            String description = observableView.calculator().languageCalculator()
+                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
             Image identicon = Identicon.generateIdenticonImage(observableField.valueProperty().get().publicId());
             componentItem = new ComponentItem(description, identicon, entityProxy.nid());
         }
