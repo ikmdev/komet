@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import dev.ikm.komet.kview.controls.DateFilterTitledPane;
 import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.FilterTitledPane;
@@ -136,6 +137,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         // changes from titledPane control:
         filterSubscription = Subscription.EMPTY;
         accordion.getPanes().stream()
+                .filter(FilterTitledPane.class::isInstance)
                 .map(FilterTitledPane.class::cast)
                 .forEach(pane -> {
                     filterSubscription = filterSubscription.and(pane.optionProperty().subscribe((o, s) -> {
@@ -151,6 +153,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
         // pass popup control options to titledPane controls
         accordion.getPanes().stream()
+                .filter(FilterTitledPane.class::isInstance)
                 .map(FilterTitledPane.class::cast)
                 .forEach(pane -> {
                     if (pane.getUserData() instanceof FilterOptions.Option option) {
@@ -186,6 +189,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
     private void updateInstantFilterOptions() {
         FilterOptions currentFilterOptions = new FilterOptions();
         accordion.getPanes().stream()
+                .filter(FilterTitledPane.class::isInstance)
                 .map(FilterTitledPane.class::cast)
                 .forEach(pane -> {
                     if (pane.getUserData() instanceof FilterOptions.Option option) {
@@ -252,6 +256,9 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         FilterTitledPane membershipFilterTitledPane = setupTitledPane(option);
         defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().setAll(option.availableOptions());
 
+        DateFilterTitledPane dateFilterTitledPane = new DateFilterTitledPane();
+        dateFilterTitledPane.setTitle(resources.getString("date.title"));
+
         accordion.getPanes().setAll(
                 sortByFilterTitledPane,
                 statusFilterTitledPane,
@@ -260,7 +267,8 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                 languageFilterTitledPane,
                 descriptionFilterTitledPane,
                 kindOfFilterTitledPane,
-                membershipFilterTitledPane);
+                membershipFilterTitledPane,
+                dateFilterTitledPane);
 
         // set default options
         control.setFilterOptions(defaultFilterOptions);

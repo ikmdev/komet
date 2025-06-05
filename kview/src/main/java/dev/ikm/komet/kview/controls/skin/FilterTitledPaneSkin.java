@@ -258,10 +258,10 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
             }
         };
         public final BooleanProperty selectedProperty() {
-           return selectedProperty;
+            return selectedProperty;
         }
         public final boolean isSelected() {
-           return selectedProperty.get();
+            return selectedProperty.get();
         }
         public final void setSelected(boolean value) {
             selectedProperty.set(value);
@@ -270,10 +270,10 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         // textProperty
         private final ReadOnlyStringWrapper textProperty = new ReadOnlyStringWrapper(this, "text");
         public final ReadOnlyStringProperty textProperty() {
-           return textProperty.getReadOnlyProperty();
+            return textProperty.getReadOnlyProperty();
         }
         public final String getText() {
-           return textProperty.get();
+            return textProperty.get();
         }
 
         // excludedProperty
@@ -285,10 +285,10 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
             }
         };
         public final BooleanProperty excludedProperty() {
-           return excludedProperty;
+            return excludedProperty;
         }
         public final boolean isExcluded() {
-           return excludedProperty.get();
+            return excludedProperty.get();
         }
         public final void setExcluded(boolean value) {
             excludedProperty.set(value);

@@ -18,10 +18,10 @@ public class FilterOptionsPopup extends PopupControl {
     // filterOptionsProperty
     private final ObjectProperty<FilterOptions> filterOptionsProperty = new SimpleObjectProperty<>(this, "filterOptions", new FilterOptions());
     public final ObjectProperty<FilterOptions> filterOptionsProperty() {
-       return filterOptionsProperty;
+        return filterOptionsProperty;
     }
     public final FilterOptions getFilterOptions() {
-       return filterOptionsProperty.get();
+        return filterOptionsProperty.get();
     }
     public final void setFilterOptions(FilterOptions value) {
         filterOptionsProperty.set(value);

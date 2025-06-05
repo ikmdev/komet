@@ -99,6 +99,8 @@ public class TruncatedTextFlow extends TextFlow {
         }
         getChildren().setAll(textFlow.getChildren());
         Tooltip tooltip = new Tooltip(getText());
+        tooltip.setPrefWidth(300);
+        tooltip.setWrapText(true);
         if (!textNode.getText().equals(getText())) {
             Tooltip.install(this, tooltip);
         } else {

@@ -1,0 +1,271 @@
+.range-calendar {
+    -fx-alignment: top-center;
+    -fx-spacing: 8;
+}
+
+.range-calendar > .calendar-box {
+    -fx-background-color: white;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-border-color: white;
+    -fx-pref-width: 233;
+    -fx-pref-height: 238;
+    -fx-padding: 0 2 0 2;
+}
+
+.range-calendar > .date-box {
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+}
+
+.range-calendar > .date-box > .date-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: 400;
+    -fx-text-fill: white;
+}
+
+.range-calendar > .date-box > .date-label.range {
+    -fx-font-size: 11px;
+}
+
+.range-calendar > .date-box > .date-field {
+    -fx-background-color: #C3CDDC, #FBFBFC;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4px, 4px;
+    -fx-pref-height: 32;
+    -fx-padding: 4 4 4 8;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-text-fill: black;
+}
+
+.range-calendar > .date-box > .date-field.range {
+    -fx-pref-width: 84;
+    -fx-font-size: 13px;
+}
+
+.range-calendar > .date-box > .date-field:selected {
+    -fx-background-color: #67BA3F, #FBFBFC;
+}
+
+.range-calendar > .date-box.excluding > .date-field:selected {
+    -fx-background-color: #4A7AD2, #FBFBFC;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup {
+    -fx-background-color: #FBFBFC;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-alignment: CENTER;
+    -fx-spacing: 0;
+    -fx-padding: 1 2 1 1;
+    -fx-effect: null;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-text-fill: #212430;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane {
+    -fx-padding: 3 6 3 6;
+    -fx-background-color: #FBFBFC;
+    -fx-background-insets: 0;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner {
+    -fx-spacing: 0;
+    -fx-alignment: center;
+    -fx-fill-height: false;
+    -fx-background-color: transparent;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-color: #212430;
+    -fx-background-radius: 0;
+    -fx-pref-width: 16;
+    -fx-pref-height: 16;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:focused {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .left-button {
+    -fx-padding: 0 4 0 3;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .right-button {
+    -fx-padding: 0 3 0 4;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button > .most-left-arrow-calendar,
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button > .left-arrow-calendar,
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button > .right-arrow-calendar,
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button > .most-right-arrow-calendar {
+    -fx-background-color: #212430;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-effect: null;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:hover > .most-left-arrow-calendar,
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:hover > .left-arrow-calendar,
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:hover > .right-arrow-calendar,
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:hover > .most-right-arrow-calendar {
+    -fx-background-color: #44495E;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:pressed > .most-left-arrow-calendar,
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:pressed > .left-arrow-calendar,
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:pressed > .right-arrow-calendar,
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:pressed > .most-right-arrow-calendar {
+    -fx-background-color: #212430;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button > .most-left-arrow-calendar {
+    -fx-padding: 6 5 6 5;
+    -fx-shape: "M7.997 5.072 7.995 6.501l-2.998-4 2.998-4 .002 1.43-1.976 2.57L7.997 5.072z M5.997,5.072L5.995,6.501l-2.998-4l2.998-4l0.002,1.43l-1.976,2.57L5.997,5.072z";
+    -fx-scale-shape: true;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button > .left-arrow-calendar {
+    -fx-padding: 6 3 6 3;
+    -fx-shape: "M5.997,5.072L5.995,6.501l-2.998-4l2.998-4l0.002,1.43l-1.976,2.57L5.997,5.072z";
+    -fx-scale-shape: true;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button > .right-arrow-calendar {
+    -fx-padding: 6 3 6 3;
+    -fx-shape: "M2.998-0.07L3-1.499l2.998,4L3,6.501l-0.002-1.43l1.976-2.57L2.998-0.07z";
+    -fx-scale-shape: true;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button > .most-right-arrow-calendar {
+    -fx-padding: 6 5 6 5;
+    -fx-shape: "M4.998-.07 5-1.499l2.998 4L5 6.501l-.002-1.43 1.976-2.57L4.998-.07z M2.998-0.07L3-1.499l2.998,4L3,6.501l-0.002-1.43l1.976-2.57L2.998-0.07z";
+    -fx-scale-shape: true;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .label.month-year-label {
+    -fx-alignment: center;
+    -fx-min-width: 140;
+    -fx-pref-width: 140;
+    -fx-max-width: 140;
+    -fx-min-height: 23;
+    -fx-pref-height: 23;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-color: #212430;
+    -fx-background-radius: 0;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-hgap: 0;
+    -fx-vgap: 1;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .date-cell {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-alignment: BASELINE_CENTER;
+    -fx-opacity: 1.0;
+    -fx-min-width: 32;
+    -fx-pref-width: 32;
+    -fx-max-width: 32;
+    -fx-min-height: 32;
+    -fx-pref-height: 32;
+    -fx-max-height: 32;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-name-cell {
+    -fx-font-size: 10;
+    -fx-text-fill: #111827;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell {
+    -fx-padding: 4 7 4 7;
+    -fx-border-width: 0;
+    -fx-font-size: 11;
+    -fx-background: white;
+    -fx-background-color: white;
+    -fx-border-color: null;
+    -fx-text-fill: #2E3240;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell:selected:start {
+    -fx-background-color: linear-gradient(to left, #E5FADA 0%, #E5FADA 50%, white 51%, white 100%)
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell:selected:start:excluded {
+    -fx-background-color: linear-gradient(to left, #F4F9FF 0%, #F4F9FF 50%, white 51%, white 100%)
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell:intermediate {
+    -fx-background-color: #E5FADA;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell:intermediate:excluded {
+    -fx-background-color: #F4F9FF;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell:selected:end {
+    -fx-background-color: linear-gradient(to right, #E5FADA 0%, #E5FADA 50%, white 51%, white 100%)
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell:selected:end:excluded {
+    -fx-background-color: linear-gradient(to right, #F4F9FF 0%, #F4F9FF 50%, white 51%, white 100%)
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell > .calendar-cell-circle {
+    -fx-background-radius: 16;
+    -fx-pref-width: 32;
+    -fx-pref-height: 32;
+    -fx-background-color: transparent;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell:selected > .calendar-cell-circle {
+    -fx-background-color: #5DCF16;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell:selected:excluded > .calendar-cell-circle {
+    -fx-background-color: #5896F6;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .today {
+    -fx-text-fill: #4A7AD2;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .previous-month,
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .next-month {
+    -fx-text-fill: #6E7989;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell:hover {
+    -fx-background-color: #E5FADA;
+    -fx-background-radius: 16;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell:hover:excluded {
+    -fx-background-color: #F4F9FF;
+    -fx-background-radius: 16;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .selected,
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .selected:hover,
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .today.selected,
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .previous-month.selected,
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .next-month.selected {
+    /*-fx-background-color: #5DCF16;*/
+}
