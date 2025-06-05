@@ -209,10 +209,11 @@ public class GitSkipSslValidationCredentialsProvider extends CredentialsProvider
         messageLabel.setFont(Font.font("Noto Sans", FontWeight.NORMAL, 13));
 
         Label explanationLabel = new Label(
-                "• Trust Now: Accept certificate for this session only\n" +
-                     "• Trust for Repo: Accept certificate for this repository\n" +
-                     "• Trust Always: Accept certificate permanently");
-        explanationLabel.setFont(Font.font("Noto Sans", FontWeight.NORMAL, 10));
+                """
+                        • Trust Now: Accept certificate for this session only
+                        • Trust for Repo: Accept certificate for this repository
+                        • Trust Always: Accept certificate permanently""");
+        explanationLabel.setFont(Font.font("Noto Sans", FontWeight.NORMAL, 11));
         explanationLabel.setStyle("-fx-text-fill: #666666;");
 
         content.getChildren().addAll(uriLabel, messageLabel, explanationLabel);
