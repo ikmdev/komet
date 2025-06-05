@@ -84,6 +84,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
@@ -166,7 +167,6 @@ public class DetailsController  {
 
     @FXML
     private Button popupStampButton;
-
 
     @FXML
     private Button editCoordinateButton;
@@ -573,7 +573,6 @@ public class DetailsController  {
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
             updateDraggableNodesForPropertiesPanel(true);
         }
-
     }
 
     public Button getPopupStampButton() {
@@ -951,14 +950,17 @@ public class DetailsController  {
         // Status
         String status = stamp.state() != null && State.ACTIVE == stamp.state() ? "Active" : "Inactive";
         statusLabel.setText(status);
+        getStampViewModel().setPropertyValue(STATUS,  stamp.state());
 
         // Module
         String module = stamp.module().description();
         moduleLabel.setText(module);
+        getStampViewModel().setPropertyValue(MODULE, Entity.getFast(stamp.module()));
 
         // Path
         String path = stamp.path().description();
         pathLabel.setText(path);
+        getStampViewModel().setPropertyValue(PATH, Entity.getFast(stamp.path()));
 
         // Latest update time
         DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("yyyy-MMM-dd HH:mm:ss");
@@ -1521,6 +1523,10 @@ public class DetailsController  {
         } else {
             stampViewModel.setPropertyValue(MODE, CREATE);
         }
+        ValidationViewModel currentStampViewModel = getStampViewModel();
+        stampViewModel.setPropertyValue(STATUS, currentStampViewModel.getPropertyValue(STATUS));
+        stampViewModel.setPropertyValue(PATH, currentStampViewModel.getPropertyValue(PATH));
+        stampViewModel.setPropertyValue(MODULE, currentStampViewModel.getPropertyValue(MODULE));
 
         // IMPORTANT: Must set inside of concept view model
         getConceptViewModel().setPropertyValue(CONCEPT_STAMP_VIEW_MODEL, stampViewModel);
