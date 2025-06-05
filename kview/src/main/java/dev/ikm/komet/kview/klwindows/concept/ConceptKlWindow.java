@@ -37,6 +37,7 @@ import org.eclipse.collections.api.factory.Lists;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 
 /**
@@ -91,6 +92,8 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
             detailsNode.getDetailsViewController().updateModel(viewProperties);
             detailsNode.getDetailsViewController().updateView();
         }
+
+        detailsNode.getDetailsViewController().getPopupStampButton().disableProperty().set(!isCreateMode);
 
         // This will refresh the Concept details, history, timeline
         detailsNode.handleActivity(Lists.immutable.of(entityFacade));

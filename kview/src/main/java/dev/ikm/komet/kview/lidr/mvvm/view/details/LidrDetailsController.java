@@ -236,6 +236,9 @@ public class LidrDetailsController {
     @FXML
     private HBox tabHeader;
 
+    @FXML
+    private Button popupStampButton;
+
     /**
      * A function from the caller. This class passes a boolean true if classifier button is pressed invoke caller's function to be returned a view.
      */
@@ -353,6 +356,7 @@ public class LidrDetailsController {
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
             updateDraggableNodesForPropertiesPanel(true);
         }
+        popupStampButton.disableProperty().set(lidrViewModel.getPropertyValue(MODE) == EDIT);
     }
 
     /**

@@ -206,7 +206,7 @@
                                  <Label fx:id="originationLabel" styleClass="stamp-label" />
                               </HBox>
                            </VBox>
-                           <Button contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#popupStampEdit" prefHeight="11.0" prefWidth="30.0" styleClass="mini-options-button" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0">
+                           <Button  fx:id="popupStampButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#popupStampEdit" prefHeight="11.0" prefWidth="30.0" styleClass="mini-options-button" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0">
                               <graphic>
                                  <Region styleClass="hamburger" />
                               </graphic>

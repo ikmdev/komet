@@ -165,6 +165,10 @@ public class DetailsController  {
     private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
 
     @FXML
+    private Button popupStampButton;
+
+
+    @FXML
     private Button editCoordinateButton;
 
     @FXML
@@ -569,6 +573,11 @@ public class DetailsController  {
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
             updateDraggableNodesForPropertiesPanel(true);
         }
+
+    }
+
+    public Button getPopupStampButton() {
+        return popupStampButton;
     }
 
     /**
