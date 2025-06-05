@@ -35,6 +35,7 @@
     -fx-background-color: #C3CDDC, #FBFBFC;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 4px, 4px;
+    -fx-border-width: 0;
     -fx-pref-height: 32;
     -fx-padding: 4 4 4 8;
     -fx-font-family: "Noto Sans";
@@ -47,6 +48,7 @@
 .range-calendar > .date-box > .date-field.range {
     -fx-pref-width: 84;
     -fx-font-size: 13px;
+    -fx-padding: 4 4 4 6;
 }
 
 .range-calendar > .date-box > .date-field:selected {
