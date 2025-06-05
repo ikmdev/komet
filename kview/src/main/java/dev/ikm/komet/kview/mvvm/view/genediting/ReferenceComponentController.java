@@ -3,7 +3,6 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.CONFIRM_REFERENCE_COMPONENT;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
@@ -81,9 +80,12 @@ public class ReferenceComponentController {
         ObjectProperty<EntityProxy> refComponentProperty = genEditingViewModel.getProperty(REF_COMPONENT);
         klComponentControl.entityProperty().bindBidirectional(refComponentProperty);
         referenceComponentVBox.getChildren().add(klComponentControl);
-        confirmButton.disableProperty().bind(klComponentControl.entityProperty().isNull());
+        confirmButton.disableProperty().bind(refComponentProperty.isNull());
         //TODO Confirm if its necessary to show a message to end-user about restrictions on reference component.
-        Label label = new Label(" Note: Reference component cannot be changed once confirmed. \\n If you confirm and then decide to change the reference component,\\n you will have to recreate a new semantic.");
+        Label label = new Label(" Note: Reference component cannot be changed once confirmed. If you confirm and then " +
+                "decide to change the reference component, you will have to recreate a new semantic.");
+        label.setWrapText(true);
+        label.maxWidthProperty().bind(referenceComponentVBox.widthProperty());
         referenceComponentVBox.getChildren().add(label);
     }
 
@@ -109,9 +111,9 @@ public class ReferenceComponentController {
     @FXML
     public void confirm(ActionEvent actionEvent) {
         EntityFacade semantic = createUncommitedSemanticRecord();
-        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), CONFIRM_REFERENCE_COMPONENT));
-        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         genEditingViewModel.setPropertyValue(SEMANTIC, semantic);
+        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), CONFIRM_REFERENCE_COMPONENT));
+        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         actionEvent.consume();
     }
 
@@ -119,7 +121,7 @@ public class ReferenceComponentController {
         RecordListBuilder<SemanticVersionRecord> versions = RecordListBuilder.make();
         UUID semanticUUID = UUID.randomUUID();
         EntityFacade patternFacade = genEditingViewModel.getPropertyValue(PATTERN);
-        EntityProxy referencedComponent = klComponentControl.entityProperty().get();
+        EntityProxy referencedComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
 
         SemanticRecord semanticRecord = SemanticRecordBuilder.builder()
                 .nid(EntityService.get().nidForUuids(semanticUUID))

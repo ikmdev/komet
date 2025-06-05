@@ -16,24 +16,42 @@ import java.io.IOException;
 
 public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
 
+    private boolean isUpdatingImageControl = false;
+    private boolean isUpdatingObservableField = false;
+
     public DefaultKlImageField(ObservableField<byte[]> observableImageField, ObservableView observableView, boolean isEditable) {
         super(observableImageField, observableView, isEditable);
         Parent node;
         if (isEditable) {
             KLImageControl imageControl = new KLImageControl();
-            byte[] imageBytes = observableImageField.value();
             imageControl.setTitle(getTitle());
             // Sync ObservableField and ImageControl
-            imageControl.setImage(newImageFromByteArray(imageBytes));
+            observableImageField.valueProperty().subscribe(newByteArray -> {
+                if (isUpdatingObservableField) {
+                    return;
+                }
+
+                isUpdatingImageControl = true;
+                imageControl.setImage(newImageFromByteArray(newByteArray));
+                isUpdatingImageControl = false;
+            });
             imageControl.imageProperty().subscribe(newImage -> {
+                if (isUpdatingImageControl) {
+                    return;
+                }
+
+                isUpdatingObservableField = true;
                 if (newImage == null) {
                     //set the field value to empty byte array since we cannot save null value to database.
                     field().valueProperty().set(new ByteArrayOutputStream().toByteArray());
-                    return;
+                } else {
+                    byte[] newByteArray = newByteArrayFromImage(newImage);
+                    field().valueProperty().set(newByteArray);
                 }
-                byte[] newByteArray = newByteArrayFromImage(newImage);
-                field().valueProperty().set(newByteArray);
+                isUpdatingObservableField = false;
             });
+
+            // Set Editable Control to be the node
             node = imageControl;
         } else {
             KLReadOnlyImageControl readOnlyImageControl = new KLReadOnlyImageControl();

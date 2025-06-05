@@ -21,6 +21,8 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.lidr.events.LidrPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.lidr.events.LidrPropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.lidr.events.ShowPanelEvent.SHOW_ADD_ANALYTE_GROUP;
@@ -36,6 +38,7 @@ import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ViewModelHelper.addNewLidrRecord;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ViewModelHelper.toStampDetail;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
@@ -76,6 +79,7 @@ import dev.ikm.tinkar.provider.search.Searcher;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -229,6 +233,9 @@ public class LidrDetailsController {
     @FXML
     private VerticallyFilledPane timelineSlideoutTrayPane;
 
+    @FXML
+    private HBox tabHeader;
+
     /**
      * A function from the caller. This class passes a boolean true if classifier button is pressed invoke caller's function to be returned a view.
      */
@@ -250,7 +257,6 @@ public class LidrDetailsController {
     private BorderPane propertiesViewBorderPane;
     private BorderPane timelineViewBorderPane;
     private TimelineController timelineViewController;
-    // style the same as the details view
 
     public LidrDetailsController() {
     }
@@ -279,12 +285,16 @@ public class LidrDetailsController {
                     if (isOpen(propertiesSlideoutTrayPane)) {
                         slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                     }
+
+                    updateDraggableNodesForPropertiesPanel(false);
                 } else if (evt.getEventType() == OPEN_PANEL) {
                     LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
                     propertiesToggleButton.setSelected(true);
                     if (isClosed(propertiesSlideoutTrayPane)) {
                         slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                     }
+
+                    updateDraggableNodesForPropertiesPanel(true);
                 }
         };
         eventBus.subscribe(conceptTopic, LidrPropertyPanelEvent.class, propBumpOutListener);
@@ -335,6 +345,14 @@ public class LidrDetailsController {
         // Setup Properties
         setupProperties();
         setupTimelineBumpOut();
+
+        // Setup window dragging support with explicit draggable nodes
+        addDraggableNodes(detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
+
+        // Check if the properties panel is initially open and add draggable nodes if needed
+        if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
+            updateDraggableNodesForPropertiesPanel(true);
+        }
     }
 
     /**
@@ -470,6 +488,13 @@ public class LidrDetailsController {
     @FXML
     void closeConceptWindow(ActionEvent event) {
         LOG.info("Cleanup occurring: Closing Window with concept: " + deviceTitleText.getText());
+
+        // Clean up the draggable nodes
+        removeDraggableNodes(detailsOuterBorderPane,
+                tabHeader,
+                conceptHeaderControlToolBarHbox,
+                propertiesViewController != null ? propertiesViewController.getPropertiesTabsPane() : null);
+
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
@@ -494,8 +519,8 @@ public class LidrDetailsController {
                         .setPropertyValue(AUTHOR, stamp.author())
                         .setPropertyValue(MODULE, stamp.module())
                         .setPropertyValue(PATH, stamp.path())
-                        .setPropertyValues(MODULES_PROPERTY, stampViewModel.findAllModules(getViewProperties()), true)
-                        .setPropertyValues(PATHS_PROPERTY, stampViewModel.findAllPaths(getViewProperties()), true);
+                        .setPropertyValues(MODULES_PROPERTY, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()), true)
+                        .setPropertyValues(PATHS_PROPERTY, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.PATH.publicId()), true);
 
                 getLidrViewModel().setPropertyValue(STAMP_VIEW_MODEL,stampViewModel);
             } else {
@@ -672,7 +697,30 @@ public class LidrDetailsController {
     private void openPropertiesPanel(ActionEvent event) {
         ToggleButton propertyToggle = (ToggleButton) event.getSource();
         EvtType<LidrPropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? OPEN_PANEL : CLOSE_PANEL;
+
+        updateDraggableNodesForPropertiesPanel(propertyToggle.isSelected());
+
         eventBus.publish(conceptTopic, new LidrPropertyPanelEvent(propertyToggle, eventEvtType));
+    }
+
+    /**
+     * Updates draggable behavior for the properties panel based on its open/closed state.
+     * <p>
+     * When opened, adds the properties tabs pane as a draggable node. When closed,
+     * safely removes the draggable behavior to prevent memory leaks.
+     *
+     * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
+     */
+    private void updateDraggableNodesForPropertiesPanel(boolean isOpen) {
+        if (propertiesViewController != null && propertiesViewController.getPropertiesTabsPane() != null) {
+            if (isOpen) {
+                addDraggableNodes(detailsOuterBorderPane, propertiesViewController.getPropertiesTabsPane());
+                LOG.debug("Added properties nodes as draggable");
+            }  else {
+                removeDraggableNodes(detailsOuterBorderPane, propertiesViewController.getPropertiesTabsPane());
+                LOG.debug("Removed properties nodes from draggable");
+            }
+        }
     }
 
     @FXML
@@ -703,11 +751,11 @@ public class LidrDetailsController {
         if (stampEdit !=null && stampEditController != null) {
             // refresh modules
             getStampViewModel().getObservableList(MODULES_PROPERTY).clear();
-            getStampViewModel().getObservableList(MODULES_PROPERTY).addAll(getStampViewModel().findAllModules(getViewProperties()));
+            getStampViewModel().getObservableList(MODULES_PROPERTY).addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
 
             // refresh path
             getStampViewModel().getObservableList(PATHS_PROPERTY).clear();
-            getStampViewModel().getObservableList(PATHS_PROPERTY).addAll(getStampViewModel().findAllPaths(getViewProperties()));
+            getStampViewModel().getObservableList(PATHS_PROPERTY).addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.PATH.publicId()));
 
             stampEdit.show((Node) event.getSource());
             stampEditController.selectActiveStatusToggle();

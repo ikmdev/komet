@@ -21,14 +21,8 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.ConceptEntityVersion;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -36,7 +30,6 @@ import org.carlfx.cognitive.validator.MessageType;
 import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -74,38 +67,4 @@ public class StampViewModel extends FormViewModel {
         return (StampViewModel) super.save(force);
     }
 
-    public List<ConceptEntity> findAllModules(ViewProperties viewProperties) {
-        try {
-            Entity<? extends EntityVersion> moduleEntity = EntityService.get().getEntityFast(TinkarTerm.MODULE);
-            IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(moduleEntity.nid());
-
-            // get all descendant modules
-            List<ConceptEntity> allModules =
-                    moduleDescendents.intStream()
-                            .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
-                            .toList();
-            return allModules;
-        } catch (Throwable th) {
-            addValidator(MODULES_PROPERTY, "Module Entities", (Void prop, ViewModel vm) -> new ValidationMessage(MessageType.ERROR, "PrimitiveData services are not up. Attempting to retrieve ${%s}. Must call start().".formatted(MODULES_PROPERTY), th));
-            return List.of();
-        }
-    }
-    public List<ConceptEntity<ConceptEntityVersion>> findAllPaths(ViewProperties viewProperties) {
-        try {
-            //List of Concepts that represent available Paths in the data
-            List<ConceptEntity<ConceptEntityVersion>> paths = new ArrayList<>();
-            //Get all Path semantics from the Paths Pattern
-            int[] pathSemanticNids = EntityService.get().semanticNidsOfPattern(TinkarTerm.PATHS_PATTERN.nid());
-            //For each Path semantic get the concept that the semantic is referencing
-            for (int pathSemanticNid : pathSemanticNids) {
-                SemanticEntity<SemanticEntityVersion> semanticEntity = Entity.getFast(pathSemanticNid);
-                int pathConceptNid = semanticEntity.referencedComponentNid();
-                paths.add(EntityService.get().getEntityFast(pathConceptNid));
-            }
-            return paths;
-        } catch (Throwable th) {
-            addValidator(PATHS_PROPERTY, "Path Entities", (Void prop, ViewModel vm) -> new ValidationMessage(MessageType.ERROR, "PrimitiveData services are not up. Attempting to retrieve ${%s}. Must call start().".formatted(PATHS_PROPERTY), th));
-            return List.of();
-        }
-    }
 }

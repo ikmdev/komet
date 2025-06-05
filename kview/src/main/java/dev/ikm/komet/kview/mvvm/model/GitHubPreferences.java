@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.fxutils.window;
+package dev.ikm.komet.kview.mvvm.model;
 
-import javafx.scene.input.MouseEvent;
-
-interface PaneMouseReleased {
-    void released(MouseEvent mouseEvent, WindowSupport windowSupport);
-}
+/**
+ * Immutable data class to hold GitHub preferences information for a given repository.
+ */
+public record GitHubPreferences(String gitUrl, String gitEmail, String gitUsername, char[] gitPassword) {}

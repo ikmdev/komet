@@ -1,12 +1,17 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
+import dev.ikm.komet.kview.controls.ConceptTile;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentListControl;
-import dev.ikm.komet.kview.controls.KLComponentSetControl;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
+import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
+import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
@@ -16,16 +21,26 @@ import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
+import javafx.scene.control.TreeCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
-import javafx.scene.input.*;
-import javafx.scene.layout.*;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DataFormat;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.transform.Scale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ResourceBundle;
+import java.util.function.Function;
 
 /**
  * Default skin implementation for the {@link KLComponentControl} control
@@ -100,12 +115,13 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         control.entityProperty().addListener((observable, oldValue, newValue) -> {
             if (!control.isEmpty()) {
-                addConceptNode(getSkinnable().getEntity());
+                addConceptNode(control.getEntity(), control.getComponentNameRenderer());
             }
         });
         if (!control.isEmpty()) {
-            addConceptNode(control.getEntity());
+            addConceptNode(control.getEntity(), control.getComponentNameRenderer());
         }
+
     }
 
     /** {@inheritDoc} */
@@ -133,8 +149,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     /**
      * There are two type of DND operations:
      * - Drop a concept over an empty KLComponentControl (dragboard string is publicId)
-     * - Rearrange non-empty KLComponentControls that belong to a KLComponentSetControl or a
-     *   KLComponentListControl (dragboard string is CONTROL_DRAG_KEY)
+     * - Rearrange non-empty KLComponentControls that belong to a KLComponentListControl
+     * (dragboard string is CONTROL_DRAG_KEY)
      */
     private void setupDragNDrop() {
         KLComponentControl control = getSkinnable();
@@ -194,72 +210,148 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         control.setOnDragDropped(event -> {
             Dragboard dragboard = event.getDragboard();
-            if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT) &&
-                    event.getGestureSource() instanceof KLComponentControl cc && haveAllowedDND(control, cc)) {
-                // reorder components
-                if (control.getParent() instanceof KLComponentSetControl componentSetControl) {
-                    KLComponentSetControlSkin skin = (KLComponentSetControlSkin) componentSetControl.getSkin();
-                    int sourceIndex = skin.getChildren().indexOf(cc);
-                    int targetIndex = skin.getChildren().indexOf(control);
-                    final Node node = skin.getChildren().remove(sourceIndex);
-                    skin.getChildren().add(targetIndex, node);
-
-                    event.setDropCompleted(true);
-                    event.consume();
-                }
-            } else if (dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
-                // drop concept
-                if (!isFilterAllowedWhileDragAndDropping(event)) {
-                    event.setDropCompleted(false);
-                    event.consume();
-                    return;
-                }
-
-                try {
-                    LOG.info("publicId: {}", dragboard.getString());
-                    if (event.getGestureSource() instanceof Node source &&
-                            source.getUserData() instanceof DragAndDropInfo dropInfo &&
-                            dropInfo.publicId() != null
-                    ) { // TODO: should this be needed? shouldn't we get PublicId from dragboard content?
-                        int nid = EntityService.get().nidForPublicId(dropInfo.publicId());
-                        EntityProxy entity = EntityProxy.make(nid);
-                        if (!(control.getParent() instanceof KLComponentSetControl componentSetControl) ||
-                                !componentSetControl.getValue().contains(nid)) {
-                            control.setEntity(entity);
-                            addConceptNode(entity);
-
-                            event.setDropCompleted(true);
-                            event.consume();
-                        }
+            if (!event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT) ||
+                    !(event.getGestureSource() instanceof KLComponentControl cc) || !haveAllowedDND(control, cc)) {
+                if (dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
+                    // drop concept
+                    if (!isFilterAllowedWhileDragAndDropping(event)) {
+                        event.setDropCompleted(false);
+                        event.consume();
                     }
-                } catch (Exception e) {
-                    LOG.error("exception: ", e);
                 }
             }
         });
     }
 
-    private boolean isFilterAllowedWhileDragAndDropping(DragEvent event) {
-        return event.getGestureSource() instanceof Node source // and the gesture source is a Node
-               && source.getUserData() instanceof DragAndDropInfo dropInfo // whose user data is DragAndDropInfoEntityProxy
-               && dropInfo.publicId() != null // with a non-null publicId
-               && getSkinnable().getComponentAllowedFilter().test(dropInfo.publicId()); // and the allowed filter returns true
+
+//    TODO: Refactor code below to detect a drag event and to extract a nid (int) from a ui cell or node. The outside
+//          caller (user of this control) should be able to supply a dictionary to determine if a user is permitted to
+//          drag item into this control. For now the following functions detect if the dnd item is from a source for
+//          backwards compatibility.
+//          e.g., This control should allow a user to drag a concept from classic concept navigator.
+
+    /**
+     * Returns true if the user is allowed to drag and drop an item (source) to this control (destination).
+     * @param dragEvent event A drag event {@link DragEvent} from a JavaFX {@link Node}.
+     * @return Returns true if the user is allowed to drag and drop an item (source) to this control (destination).
+     */
+    private boolean isFilterAllowedWhileDragAndDropping(DragEvent dragEvent) {
+        // Detect classic concept navigator to drag and drop concepts
+        boolean classicConceptNavigatorDnD = isFromClassicConceptNav(dragEvent); // and the allowed filter returns true
+
+        // Detect classic search to drag and drop components (concepts and semantics)
+        boolean classicSearchDnD = isFromClassicSearch(dragEvent);
+
+        // Detect new concept navigator to drag and drop concepts
+        boolean nextGenConceptNavigatorDnD = isFromNexGenConceptNav(dragEvent);
+
+        // Existing checks for next gen search navigator items to drag.
+        boolean nextGenSearchDnD =  isADragAndDropInfo(dragEvent);
+
+        return classicConceptNavigatorDnD || classicSearchDnD || nextGenConceptNavigatorDnD || nextGenSearchDnD;
+    }
+
+    /**
+     * Returns true if user dragged item contains a DragAndDropInfo record. Record will contain a concept from
+     * the next gen search or pattern/semantic navigator, otherwise false.
+     * @param dragEvent A drag event {@link DragEvent} from a JavaFX {@link Node}.
+     * @return Returns true if user dragged a concept from the next gen search or pattern/semantic navigator, otherwise false.
+     */
+    private boolean isADragAndDropInfo(DragEvent dragEvent) {
+        // Existing checks for next gen search navigator and pattern nav items to drag.
+        boolean isValidDnD =  dragEvent.getGestureSource() instanceof Node source // and the gesture source is a Node
+                && source.getUserData() instanceof DragAndDropInfo dropInfo // whose user data is DragAndDropInfoEntityProxy
+                && dropInfo.publicId() != null // with a non-null publicId
+                && getSkinnable().getComponentAllowedFilter().test(dropInfo.publicId()); // and the allowed filter returns true
+        return isValidDnD;
+    }
+
+    /**
+     * TODO: Refactor the allow dnd code and the extract nid code to be outside of this component.
+     * Returns a nid (int) representing a unique database identifier of a given entity. A component's nid is extracted from
+     * the drag event. When return a zero (the entity is invalid).
+     * @param dragEvent A drag event {@link DragEvent} from a JavaFX {@link Node}.
+     * @return Returns a nid (int) representing a unique database identifier of a given entity. A component's nid is extracted from
+     */
+    private int extractNid(DragEvent dragEvent) {
+        if (isADragAndDropInfo(dragEvent)) {
+            DragAndDropInfo dropInfo = (DragAndDropInfo) ((Node)dragEvent.getGestureSource()).getUserData();
+            return EntityService.get().nidForPublicId(dropInfo.publicId());
+        }
+        if (isFromClassicConceptNav(dragEvent)) {
+            TreeCell treeCell = (TreeCell) dragEvent.getGestureSource();  // and the gesture source is a TreeCell Node
+            EntityFacade entityFacade = (EntityFacade) treeCell.getTreeItem().getValue();
+            return entityFacade.nid();
+        }
+        if (isFromClassicSearch(dragEvent)) {
+            SearchResultCell searchResultCell = (SearchResultCell) dragEvent.getGestureSource();
+            Object value = searchResultCell.getTreeItem().getValue();
+            if (value instanceof SearchPanelController.NidTextRecord nidTextRecord) {
+                return nidTextRecord.nid();
+            } else if (value instanceof LatestVersionSearchResult latestVersionSearchResult) {
+                return latestVersionSearchResult.latestVersion().get().nid();
+            }
+        }
+        if (isFromNexGenConceptNav(dragEvent)) {
+            ConceptTile conceptTile = (ConceptTile) dragEvent.getGestureSource();
+            return conceptTile.getConcept().getValue().nid();
+        }
+        return Integer.MIN_VALUE;
+    }
+
+    /**
+     * Returns true if user dragged a concept from the classic concept navigator, otherwise false.
+     * @param dragEvent A drag event {@link DragEvent} from a JavaFX {@link Node}.
+     * @return Returns true if user dragged a concept from the classic concept navigator, otherwise false.
+     */
+    private boolean isFromClassicConceptNav(DragEvent dragEvent) {
+        // Detect classic concept navigator to drag and drop concepts
+        boolean isValidDnD = dragEvent.getGestureSource() instanceof TreeCell source // and the gesture source is a TreeCell Node
+                && source.getTreeItem().getValue() instanceof EntityFacade conceptFacade // whose tree item is an entity facade
+                && getSkinnable().getComponentAllowedFilter().test(conceptFacade.publicId()); // and the allowed filter returns true
+        return isValidDnD;
+    }
+
+    /**
+     * Returns true if user dragged a component from the classic search controller, otherwise false.
+     * @param dragEvent A drag event {@link DragEvent} from a JavaFX {@link Node}.
+     * @return Returns true if user dragged a component from the classic search controller, otherwise false.
+     */
+    private boolean isFromClassicSearch(DragEvent dragEvent) {
+        // Detect classic concept navigator to drag and drop concepts
+        boolean isValidDnD = dragEvent.getGestureSource() instanceof SearchResultCell source // and the gesture source is a TreeCell Node
+                &&
+                (source.getTreeItem().getValue() instanceof SearchPanelController.NidTextRecord ||
+                        source.getTreeItem().getValue()  instanceof LatestVersionSearchResult); // whose tree item is LatestVersionSearchResult
+
+        return isValidDnD;
+    }
+
+    /**
+     * Returns true if user dragged a concept from the new concept navigator, otherwise false.
+     * @param dragEvent A drag event {@link DragEvent} from a JavaFX {@link Node}.
+     * @return Returns true if user dragged a concept from the new concept navigator, otherwise false.
+     */
+    private boolean isFromNexGenConceptNav(DragEvent dragEvent) {
+        boolean isValidDnD = dragEvent.getGestureSource() instanceof ConceptTile source // and the gesture source is a ConceptTile
+                && source.getConcept().getValue() instanceof ConceptRecord conceptRecord // whose value is a concept record
+                && getSkinnable().getComponentAllowedFilter().test(conceptRecord.publicId());
+        return isValidDnD;
     }
 
     private boolean hasAllowedDND(KLComponentControl control) {
         return control != null && control.getEntity() != null &&
-                ((control.getParent() instanceof KLComponentSetControl cs && cs.getValue().size() > 1)
-                    ||  (control.getParent() instanceof KLComponentListControl cl && cl.getValue().size() > 1)
-                );
+                (control.getParent() instanceof KLComponentListControl cl && cl.getValue().size() > 1);
     }
 
     private boolean haveAllowedDND(KLComponentControl source, KLComponentControl target) {
         // only allowed if both source and target have the same parent
-        return hasAllowedDND(source) && hasAllowedDND(target) &&
-                ((source.getParent() instanceof KLComponentSetControl cs1 && target.getParent() instanceof KLComponentSetControl cs2 && cs1 == cs2));
+        return hasAllowedDND(source) && hasAllowedDND(target);
     }
 
     private HBox createSearchBox() {
+        KLComponentControl control = getSkinnable();
+
         typeAheadSearchField = new AutoCompleteTextField<>();
 
         StackPane typeAheadSearchFieldContainer = new StackPane();
@@ -269,10 +361,16 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         typeAheadSearchField.textProperty().subscribe(text -> getSkinnable().getProperties().put(SEARCH_TEXT_VALUE, text));
 
         // Type ahead setup
-        typeAheadSearchField.valueProperty().subscribe(() -> getSkinnable().setEntity(typeAheadSearchField.getValue()));
+        typeAheadSearchField.valueProperty().subscribe(() -> {
+            if (control.getComponentAllowedFilter().test(typeAheadSearchField.getValue().publicId())) {
+                control.setEntity(typeAheadSearchField.getValue());
+            }
+        });
         typeAheadSearchField.completerProperty().bind(getSkinnable().completerProperty());
         typeAheadSearchField.converterProperty().bind(getSkinnable().typeAheadStringConverterProperty());
-        typeAheadSearchField.suggestionsNodeFactoryProperty().bind(getSkinnable().suggestionsNodeFactoryProperty());
+        typeAheadSearchField.suggestionsCellFactoryProperty().bind(getSkinnable().suggestionsCellFactoryProperty());
+        typeAheadSearchField.popupHeaderPaneProperty().bind(getSkinnable().typeAheadHeaderPaneProperty());
+
         typeAheadSearchField.getPopupStyleClasses().add("component-popup");
         typeAheadSearchField.setSuggestionsNodeHeight(41);
 
@@ -304,7 +402,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
             @Override
             protected double getPopupWidth() {
-                return searchBox.getWidth() - searchBox.getInsets().getLeft() - searchBox.getInsets().getRight() - 1;
+                return searchBox.getWidth() - searchBox.getInsets().getLeft() - searchBox.getInsets().getRight() - 1.5;
             }
         });
 
@@ -352,7 +450,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     }
 
 
-    private void addConceptNode(EntityProxy entity) {
+    private void addConceptNode(EntityProxy entity, Function<EntityProxy, String> componentNameLabelFunction) {
         Image identicon = Identicon.generateIdenticonImage(entity.publicId());
         ImageView imageView = new ImageView();
         imageView.setFitWidth(16);
@@ -363,8 +461,9 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         imageViewWrapper.getChildren().add(imageView);
         imageViewWrapper.getStyleClass().add("image-view-container");
 
-        Label conceptNameLabel = new Label(entity.description());
-        conceptNameLabel.getStyleClass().add("selected-concept-description");
+        Label componentNameLabel = new Label(componentNameLabelFunction.apply(entity));
+
+        componentNameLabel.getStyleClass().add("selected-concept-description");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -385,7 +484,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         });
         closeButton.setAlignment(Pos.CENTER_RIGHT);
 
-        HBox selectedConcept = new HBox(imageViewWrapper, conceptNameLabel, spacer, dragHandleIconContainer, closeButton);
+        HBox selectedConcept = new HBox(imageViewWrapper, componentNameLabel, spacer, dragHandleIconContainer, closeButton);
         selectedConcept.getStyleClass().add("concept-selected-entity-box");
         selectedConcept.setAlignment(Pos.CENTER_LEFT);
         HBox.setMargin(selectedConceptContainer, new Insets(8));

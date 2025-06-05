@@ -24,5 +24,7 @@ public enum FrameworkTopics {
 
     VERSION_CHANGED_TOPIC,
 
-    CALCULATOR_CACHE_TOPIC
+    CALCULATOR_CACHE_TOPIC,
+
+    IMPORT_TOPIC
 }

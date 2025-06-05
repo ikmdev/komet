@@ -31,12 +31,14 @@ import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.SVGPath;
 import org.carlfx.axonic.StateMachine;
@@ -114,6 +116,9 @@ public class PropertiesController {
 
     @FXML
     private BorderPane contentBorderPane;
+
+    @FXML
+    private FlowPane propertiesTabsPane;
 
     private Pane currentEditPane;
 
@@ -241,8 +246,10 @@ public class PropertiesController {
                 PatternDefinition patternDefinition = evt.getPatternDefinition();
                 Optional<PatternDefinitionViewModel> optionalDefinitionViewModel = patternDefinitionControllerJFXNode.getViewModel("patternDefinitionViewModel");
                 optionalDefinitionViewModel.ifPresent(definitionViewModel -> {
-                    definitionViewModel.setPropertyValue(PURPOSE_ENTITY, patternDefinition.purpose().toProxy());
-                    definitionViewModel.setPropertyValue(MEANING_ENTITY, patternDefinition.meaning().toProxy());
+                    EntityFacade purposeEntityFacade = patternDefinition.purpose();
+                    EntityFacade meaningEntityFacade = patternDefinition.meaning();
+                    definitionViewModel.setPropertyValue(PURPOSE_ENTITY, purposeEntityFacade != null? purposeEntityFacade.toProxy() : null);
+                    definitionViewModel.setPropertyValue(MEANING_ENTITY, meaningEntityFacade != null ? meaningEntityFacade.toProxy() : null);
                 });
             } else if (evt.getEventType() == SHOW_EDIT_FIELDS) {
                 //Set the field values for edit.
@@ -425,4 +432,11 @@ public class PropertiesController {
     public void clearView() {
     }
 
+    /**
+     * Returns the propertiesTabsPane to be used as a draggable region.
+     * @return The FlowPane containing the property tabs
+     */
+    public FlowPane getPropertiesTabsPane() {
+        return propertiesTabsPane;
+    }
 }
