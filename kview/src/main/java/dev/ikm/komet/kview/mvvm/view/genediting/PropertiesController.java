@@ -107,13 +107,31 @@ public class PropertiesController {
 
         editFieldsJfxNode = FXMLMvvmLoader.make(config);
 
-        Config closePropertiesConfig = new Config(this.getClass().getResource("/dev/ikm/komet/kview/mvvm/view/confirmation/confirmation-pane-common.fxml"));
+        Config closePropertiesConfig = new Config(this.getClass().getResource(ConfirmationPaneCommonController.FXML_FILE));
         JFXNode<Pane, ConfirmationPaneCommonController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
         closePropsPane = closePropsJfxNode.node();
 
-        ConfirmationPaneCommonViewModel confirmationViewModel = (ConfirmationPaneCommonViewModel) closePropsJfxNode.getViewModel("viewModel").get();
+        ConfirmationPaneCommonViewModel confirmationViewModel = (ConfirmationPaneCommonViewModel) closePropsJfxNode
+                .getViewModel(ConfirmationPaneCommonController.VIEW_MODEL_NAME).get();
+
+        // ********************************************************************************************************
+        // ***********  Usage comparisons
+        // ********************************************************************************************************
+
+        confirmationViewModel.setNotificationTopicAndEvent(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                new PropertyPanelEvent(closePropsPane, CLOSE_PANEL));
+
+        // or
         confirmationViewModel.setNotificationTopic(genEditingViewModel.getPropertyValue(WINDOW_TOPIC));
         confirmationViewModel.setNotificationEvent(new PropertyPanelEvent(closePropsPane, CLOSE_PANEL));
+
+        // or
+        confirmationViewModel.setPropertyValue(ConfirmationPaneCommonViewModel.Properties.NOTIFICATION_TOPIC,
+                genEditingViewModel.getPropertyValue(WINDOW_TOPIC));
+        confirmationViewModel.setPropertyValue(ConfirmationPaneCommonViewModel.Properties.NOTIFICATION_EVENT,
+                new PropertyPanelEvent(closePropsPane, CLOSE_PANEL));
+
+        // ********************************************************************************************************
 
         genEditingEventSubscriber = evt -> {
             LOG.info("Publish event type: " + evt.getEventType());
@@ -121,7 +139,25 @@ public class PropertiesController {
             // "Semantic Details Added" is displayed when form values are Submitted when in CREATE mode
             // "Semantic Details Changed" is displayed when form values are Submitted when in EDIT mode
 
+            // ********************************************************************************************************
+            // ***********  Usage comparisons
+            // ********************************************************************************************************
+
             confirmationViewModel.setConfirmationMessage(ConfirmationMessages.SEMANTIC_DETAILS_ADDED);
+
+            // or
+            confirmationViewModel.setConfirmationText("Semantic Details Added",
+                    "Make a selection in the view to edit the Semantic.");
+
+            // or
+            confirmationViewModel.setTitle("Semantic Details Added");
+            confirmationViewModel.setMessage("Make a selection in the view to edit the Semantic.");
+
+            // or
+            confirmationViewModel.setPropertyValue(ConfirmationPaneCommonViewModel.Properties.CONFIRMATION_TITLE, "Semantic Details Added");
+            confirmationViewModel.setPropertyValue(ConfirmationPaneCommonViewModel.Properties.CONFIRMATION_MESSAGE, "Make a selection in the view to edit the Semantic.");
+
+            // ********************************************************************************************************
 
             contentBorderPane.setCenter(closePropsPane);
         };
@@ -145,8 +181,26 @@ public class PropertiesController {
                 // change the heading on the top of the panel
                 genEditingViewModel.setPropertyValue(FIELD_INDEX, -1);
 
+                // ********************************************************************************************************
+                // ***********  Usage comparisons
+                // ********************************************************************************************************
+
                 // "No Selection Made" is displayed on initial creation of Semantic
                 confirmationViewModel.setConfirmationMessage(ConfirmationMessages.NO_SELECTION_MADE_SEMANTIC);
+
+                // or
+                confirmationViewModel.setConfirmationText("No Selection Made",
+                        "Make a selection in the view to edit the Semantic.");
+
+                // or
+                confirmationViewModel.setTitle("No Selection Made");
+                confirmationViewModel.setMessage("Make a selection in the view to edit the Semantic.");
+
+                // or
+                confirmationViewModel.setPropertyValue(ConfirmationPaneCommonViewModel.Properties.CONFIRMATION_TITLE, "No Selection Made");
+                confirmationViewModel.setPropertyValue(ConfirmationPaneCommonViewModel.Properties.CONFIRMATION_MESSAGE, "Make a selection in the view to edit the Semantic.");
+
+                // ********************************************************************************************************
 
                 contentBorderPane.setCenter(closePropsPane);
             }
