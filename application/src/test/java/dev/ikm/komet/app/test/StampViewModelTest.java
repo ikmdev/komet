@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.app.test;
 
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
@@ -28,6 +29,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import org.carlfx.cognitive.validator.ValidationMessage;
 
 public class StampViewModelTest {
@@ -45,8 +47,8 @@ public class StampViewModelTest {
                 .setPropertyValue(TIME, System.currentTimeMillis())
                 .setPropertyValue(MODULE, 0)
                 .setPropertyValue(PATH, 0)
-                .addProperty(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true)
-                .addProperty(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true);
+                .addProperty(MODULES_PROPERTY, fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()), true)
+                .addProperty(PATHS_PROPERTY, fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()), true);
         log("--------------");
         log("Creation stampViewModel \n" + stampViewModel);
         log("--------------");

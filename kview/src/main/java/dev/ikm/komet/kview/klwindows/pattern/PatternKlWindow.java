@@ -24,6 +24,7 @@ import org.carlfx.cognitive.loader.JFXNode;
 import java.util.Optional;
 import java.util.UUID;
 
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
@@ -52,8 +53,8 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
 
         // Initialize stampsViewModel with basic data.
         StampViewModel stampViewModel = new StampViewModel();
-        stampViewModel.setPropertyValue(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true)
-                .setPropertyValue(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true);
+        stampViewModel.setPropertyValue(PATHS_PROPERTY, fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()), true)
+                .setPropertyValue(MODULES_PROPERTY, fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()), true);
 
         String mode;
         if (entityFacade != null) {
