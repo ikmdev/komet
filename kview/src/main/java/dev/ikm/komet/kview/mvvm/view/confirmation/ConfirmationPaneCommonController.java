@@ -41,8 +41,8 @@ public class ConfirmationPaneCommonController {
 
     @FXML
     public void initialize() {
-        confirmationTitle.textProperty().bind(viewModel.titleProperty());
-        confirmationMessage.textProperty().bind(viewModel.messageProperty());
+        confirmationTitle.textProperty().bind(viewModel.getTitleProperty());
+        confirmationMessage.textProperty().bind(viewModel.getMessageProperty());
     }
 
 }

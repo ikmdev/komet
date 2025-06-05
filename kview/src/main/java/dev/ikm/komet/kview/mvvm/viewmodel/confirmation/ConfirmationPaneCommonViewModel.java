@@ -2,9 +2,9 @@ package dev.ikm.komet.kview.mvvm.viewmodel.confirmation;
 
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtBusFactory;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
+import org.eclipse.jgit.util.StringUtils;
 
 import java.util.UUID;
 
@@ -15,41 +15,67 @@ import java.util.UUID;
  */
 public class ConfirmationPaneCommonViewModel extends SimpleViewModel {
 
-    // properties
-    public static final String NOTIFICATION_TOPIC = "notificationTopic";
-    public static final String NOTIFICATION_EVENT = "notificationEvent";
-
-    private StringProperty title = new SimpleStringProperty();
-    private StringProperty message = new SimpleStringProperty();
-    private ConfirmationMessages confirmationMessage;
+    public enum Properties {
+        NOTIFICATION_TOPIC,
+        NOTIFICATION_EVENT,
+        CONFIRMATION_TITLE,
+        CONFIRMATION_MESSAGE
+    }
 
     public ConfirmationPaneCommonViewModel() {
-        addProperty(NOTIFICATION_TOPIC, (UUID) null);
-        addProperty(NOTIFICATION_EVENT, (Evt) null);
+        addProperty(Properties.NOTIFICATION_TOPIC, (UUID) null);
+        addProperty(Properties.NOTIFICATION_EVENT, (Evt) null);
+        addProperty(Properties.CONFIRMATION_TITLE, (String) null);
+        addProperty(Properties.CONFIRMATION_MESSAGE, (String) null);
     }
 
-    public StringProperty titleProperty() {
-        return title;
+    public StringProperty getTitleProperty() {
+        return getProperty(Properties.CONFIRMATION_TITLE);
     }
 
-    public StringProperty messageProperty() {
-        return message;
+    public StringProperty getMessageProperty() {
+        return getProperty(Properties.CONFIRMATION_MESSAGE);
+    }
+
+    public String getTitle() {
+        return getPropertyValue(Properties.CONFIRMATION_TITLE);
+    }
+
+    public void setTitle(String title) {
+        if (!StringUtils.isEmptyOrNull(title)) {
+            setPropertyValue(Properties.CONFIRMATION_TITLE, title);
+        }
+    }
+
+    public String getMessage() {
+        return getPropertyValue(Properties.CONFIRMATION_MESSAGE);
+    }
+
+    public void setMessage(String message) {
+        setPropertyValue(Properties.CONFIRMATION_MESSAGE, message);
+    }
+
+    public void setConfirmationText(String title, String message) {
+        if (!StringUtils.isEmptyOrNull(title)) {
+            setTitle(title);
+            setMessage(message);
+        }
     }
 
     public UUID getNotifiicationTopic() {
-        return getPropertyValue(NOTIFICATION_TOPIC);
+        return getPropertyValue(Properties.NOTIFICATION_TOPIC);
     }
 
     public void setNotificationTopic(UUID notifiicationTopic) {
-        setPropertyValue(NOTIFICATION_TOPIC, notifiicationTopic);
+        setPropertyValue(Properties.NOTIFICATION_TOPIC, notifiicationTopic);
     }
 
     public Evt getNotificationEvent() {
-        return getPropertyValue(NOTIFICATION_EVENT);
+        return getPropertyValue(Properties.NOTIFICATION_EVENT);
     }
 
     public void setNotificationEvent(Evt notifiationEvent) {
-        setPropertyValue(NOTIFICATION_EVENT, notifiationEvent);
+        setPropertyValue(Properties.NOTIFICATION_EVENT, notifiationEvent);
     }
 
     /**
@@ -70,10 +96,8 @@ public class ConfirmationPaneCommonViewModel extends SimpleViewModel {
      */
     public void setConfirmationMessage(ConfirmationMessages confirmationMessage) {
         if (confirmationMessage != null) {
-            this.confirmationMessage = confirmationMessage;
-
-            title.setValue(confirmationMessage.getConfirmationText().title());
-            message.setValue(confirmationMessage.getConfirmationText().message());
+            setPropertyValue(Properties.CONFIRMATION_TITLE, confirmationMessage.getConfirmationText().title());
+            setPropertyValue(Properties.CONFIRMATION_MESSAGE, confirmationMessage.getConfirmationText().message());
         }
     }
 
