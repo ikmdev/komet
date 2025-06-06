@@ -20,9 +20,12 @@ import static dev.ikm.komet.framework.events.FrameworkTopics.RULES_TOPIC;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
 import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.addToMembershipPattern;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
@@ -42,11 +45,8 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
-import static dev.ikm.tinkar.terms.TinkarTerm.DEFINITION_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
-import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.*;
+
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.AxiomChangeEvent;
@@ -73,6 +73,7 @@ import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
+import dev.ikm.komet.kview.mvvm.view.properties.PropertiesController;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -320,6 +321,8 @@ public class DetailsController  {
 
     private ViewProperties viewProperties;
 
+    private PropertiesController propertiesController;
+
     @InjectViewModel
     private ConceptViewModel conceptViewModel;
     private EvtBus eventBus;
@@ -559,6 +562,13 @@ public class DetailsController  {
 
         eventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
 
+        // Setup window support with explicit draggable nodes
+        addDraggableNodes(detailsOuterBorderPane, conceptHeaderControlToolBarHbox);
+
+        // Check if the properties panel is initially open and add draggable nodes if needed
+        if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
+            updateDraggableNodesForPropertiesPanel(true);
+        }
     }
 
     /**
@@ -778,9 +788,12 @@ public class DetailsController  {
         }
     }
 
-    public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
+    public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane,
+                                                 PropertiesController propertiesController) {
+        this.propertiesController = propertiesController;
         addPaneToTray(propertiesViewBorderPane, propertiesSlideoutTrayPane);
     }
+
     public void attachTimelineViewSlideoutTray(Pane timelineViewBorderPane) {
         addPaneToTray(timelineViewBorderPane, timelineSlideoutTrayPane);
     }
@@ -799,9 +812,16 @@ public class DetailsController  {
     public void setOnCloseConceptWindow(Consumer<DetailsController> onClose) {
         this.onCloseConceptWindow = onClose;
     }
+
     @FXML
     void closeConceptWindow(ActionEvent event) {
         LOG.info("Cleanup occurring: Closing Window with concept: " + fqnTitleText.getText());
+
+        // Clean up the draggable nodes
+        removeDraggableNodes(detailsOuterBorderPane,
+                conceptHeaderControlToolBarHbox,
+                propertiesController != null ? propertiesController.getPropertiesTabsPane() : null);
+
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
@@ -1004,22 +1024,21 @@ public class DetailsController  {
         // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
         Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(entityFacade);
         otherNamesNodeListControl.getItems().clear();
+
+        //Obtain the index field of DESCRIPTION_TYPE
+        PatternEntityVersion patternEntityVersion = (PatternEntityVersion)viewCalculator.latest(DESCRIPTION_PATTERN.nid()).get();
+        int descriptionTypeIndex = patternEntityVersion.indexForMeaning(DESCRIPTION_TYPE.nid());
+
         descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
+            EntityFacade fieldTypeValue = (EntityFacade) semanticEntityVersion.fieldValues().get(descriptionTypeIndex);
+            boolean isFQN = FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
+            boolean isOtherName = REGULAR_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
 
-            PatternEntity<PatternEntityVersion> patternEntity = semanticEntityVersion.pattern();
-            PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
-
-            boolean isFQN = semanticEntityVersion
-                    .fieldValues()
-                    .stream()
-                    .anyMatch( fieldValue ->
-                            (fieldValue instanceof ConceptFacade facade) &&
-                                    facade.nid() == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid());
             if (isFQN) {
                 // Latest FQN
                 updateFQNSemantics(semanticEntityVersion, fieldDescriptions);
                 LOG.debug("FQN Name = " + semanticEntityVersion + " " + fieldDescriptions);
-            } else {
+            } else if (isOtherName) {
                 // start adding a row
                 VBox otherNameBox = generateOtherNameRow(semanticEntityVersion, fieldDescriptions);
                 PublicId otherNamePublicId = (PublicId) otherNameBox.getChildren().getFirst().getUserData();
@@ -1392,6 +1411,8 @@ public class DetailsController  {
             LOG.info("Opening slideout of properties");
             slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
 
+            updateDraggableNodesForPropertiesPanel(true);
+
             if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
                 // show the Add FQN
                 eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(propertyToggle,
@@ -1404,6 +1425,28 @@ public class DetailsController  {
         } else {
             LOG.info("Close Properties slideout");
             slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
+
+            updateDraggableNodesForPropertiesPanel(false);
+        }
+    }
+
+    /**
+     * Updates draggable behavior for the properties panel based on its open/closed state.
+     * <p>
+     * When opened, adds the properties tabs pane as a draggable node. When closed,
+     * safely removes the draggable behavior to prevent memory leaks.
+     *
+     * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
+     */
+    private void updateDraggableNodesForPropertiesPanel(boolean isOpen) {
+        if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
+            if (isOpen) {
+                addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                LOG.debug("Added properties nodes as draggable");
+            } else {
+                removeDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                LOG.debug("Removed properties nodes from draggable");
+            }
         }
     }
 
@@ -1560,7 +1603,7 @@ public class DetailsController  {
                 .withZone(ZoneId.of("UTC"));
     }
 
-    private <T> T getFieldValueByMeaning(SemanticEntityVersion entityVersion, EntityFacade ...meaning) {
+    private int getFieldIndexByMeaning(SemanticEntityVersion entityVersion, EntityFacade ...meaning) {
         PatternEntity<PatternEntityVersion> patternEntity = entityVersion.entity().pattern();
         PatternEntityVersion patternEntityVersion = getViewProperties().calculator().latest(patternEntity).get();
         int index = -1;
@@ -1572,12 +1615,17 @@ public class DetailsController  {
                 }
             }
         }
+        return  index;
+    }
 
-        if (index == -1){
+    private <T> T getFieldValueByMeaning(SemanticEntityVersion entityVersion, EntityFacade ...meaning) {
+        int index = getFieldIndexByMeaning(entityVersion, meaning);
+        if (index == -1) {
             return null;
         }
         return (T) entityVersion.fieldValues().get(index);
     }
+
     private <T> T getFieldValueByPurpose(SemanticEntityVersion entityVersion, EntityFacade ...purpose) {
         PatternEntity<PatternEntityVersion> patternEntity = entityVersion.entity().pattern();
         PatternEntityVersion patternEntityVersion = getViewProperties().calculator().latest(patternEntity).get();

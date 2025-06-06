@@ -225,7 +225,11 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         // Setup Typeahead
         componentControl.setTypeAheadCompleter(control.getTypeAheadCompleter());
         componentControl.setTypeAheadStringConverter(control.getTypeAheadStringConverter());
-        componentControl.setSuggestionsNodeFactory(control.getSuggestionsNodeFactory());
+        componentControl.setSuggestionsCellFactory(control.getSuggestionsCellFactory());
+        componentControl.setTypeAheadHeaderPane(control.getTypeAheadHeaderPane());
+
+        // Setup name renderer
+        componentControl.setComponentNameRenderer(control.getComponentNameRenderer());
 
         componentControls.add(componentControl);
 
@@ -301,7 +305,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         KLComponentListControl<T> control = getSkinnable();
 
         IntIdCollection intIdList = control.getValue();
-        MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
+        MutableIntList mutableList = createMutableIntListCopy(intIdList);
         mutableList.remove(nidToRemove);
         setValueFromIntList(mutableList);
     }

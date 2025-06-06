@@ -23,8 +23,10 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.coordinate.stamp.StampFields;
 import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODE;
@@ -52,8 +54,8 @@ public class ConceptViewModelTest {
                 .setPropertyValue(TIME, System.currentTimeMillis())
                 .setPropertyValue(StampFields.MODULE, 0)
                 .setPropertyValue(PATH, 0)
-                .addProperty(MODULES_PROPERTY, stampViewModel.findAllModules(viewProperties), true)
-                .addProperty(PATHS_PROPERTY, stampViewModel.findAllPaths(viewProperties), true);
+                .addProperty(MODULES_PROPERTY, fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()), true)
+                .addProperty(PATHS_PROPERTY, fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()), true);
         log("--------------");
         log("Creation stampViewModel \n" + stampViewModel);
         log("--------------");

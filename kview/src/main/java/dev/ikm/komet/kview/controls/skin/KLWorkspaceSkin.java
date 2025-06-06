@@ -28,6 +28,7 @@ import javafx.beans.InvalidationListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
+import javafx.event.EventHandler;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
@@ -42,16 +43,32 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
+import javafx.util.Subscription;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
+import java.util.Objects;
 
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 import static dev.ikm.komet.kview.controls.KLDropRegion.Type.BOX;
 import static dev.ikm.komet.kview.controls.KLDropRegion.Type.LINE;
-import static dev.ikm.komet.kview.controls.KLWorkspace.*;
-import static dev.ikm.komet.kview.fxutils.FXUtils.synchronizeHeightWithSceneAwareness;
+import static dev.ikm.komet.kview.controls.KLWorkspace.COLUMNS;
+import static dev.ikm.komet.kview.controls.KLWorkspace.DEFAULT_WINDOW_HEIGHT;
+import static dev.ikm.komet.kview.controls.KLWorkspace.DEFAULT_WINDOW_WIDTH;
+import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
+import static dev.ikm.komet.kview.controls.KLWorkspace.MAX_WINDOW_HEIGHT;
+import static dev.ikm.komet.kview.controls.KLWorkspace.ROWS;
+import static dev.ikm.komet.kview.controls.KLWorkspace.STANDARD_HEIGHT;
+import static dev.ikm.komet.kview.controls.KLWorkspace.STANDARD_WIDTH;
+import static dev.ikm.komet.kview.controls.KLWorkspace.USE_COMPUTED_SIZE;
+import static dev.ikm.komet.kview.fxutils.FXUtils.DEFAULT_ANIMATION_DURATION;
+import static dev.ikm.komet.kview.fxutils.window.WindowSupport.WINDOW_SUPPORT_KEY;
+import static dev.ikm.komet.kview.fxutils.window.WindowSupport.setupWindowSupport;
+import static dev.ikm.komet.kview.fxutils.window.WindowSupport.cleanupWindowSupport;
 
 /**
  * A custom skin implementation for the {@link KLWorkspace} control that provides a scrollable
@@ -70,32 +87,28 @@ import static dev.ikm.komet.kview.fxutils.FXUtils.synchronizeHeightWithSceneAwar
  *       {@link ChapterKlWindow} objects in the workspace and updates the desktop pane accordingly.</li>
  *   <li><strong>Window Support:</strong> Integrates {@link WindowSupport} to make each
  *       {@code ChapterKlWindow} resizable and draggable within the desktop pane.</li>
+ *   <li><strong>Smooth Window Shifting:</strong> When dropping windows in LINE regions, existing windows
+ *       smoothly animate to new positions rather than being removed and re-added.</li>
  * </ul>
  *
- * <p>The skin also implements advanced behaviors for drop-region placement:
+ * <p>The skin also implements advanced behaviors for drop-region placement.
+ * <p><strong>Line vs. Box Drop Region:</strong>
  * <ul>
- *   <li>
- *     <strong>Line vs. Box Drop Region:</strong>
- *     <ul>
- *       <li>If there is sufficient horizontal space in a gap to fit a default-size window, a <strong>BOX</strong>
- *           drop region is shown, indicating that the new window can fully occupy that gap.</li>
- *       <li>If the gap is too narrow for a default-size window but at least as wide as the default horizontal gap,
- *           a <strong>LINE</strong> drop region is displayed. In this case, the line is anchored at
- *           <code>occupantRight + (horizontalGap - lineWidth) / 2.0</code> to center it within the available space.</li>
- *       <li>No drop region is shown on rows without any windows or when the gap is smaller than the default horizontal gap.</li>
- *       <li>Additionally, if the mouse is to the right of the last occupant in a row (but still within the row’s right boundary),
- *           the skin checks if a BOX or LINE region can be placed at that location.</li>
- *     </ul>
- *   </li>
- *   <li>
- *     <strong>Three-Row Placement Enhancement:</strong>
- *     <ul>
- *       <li>The three-row placement strategy can start from either the top-left corner of the workspace
- *           (the original behavior) or from a specified window boundary (a given X/Y location within a row).</li>
- *       <li>This enhancement allows windows removed during a LINE drop insertion to be re-laid out starting immediately
- *           after the insertion point, rather than always beginning at the top-left.</li>
- *     </ul>
- *   </li>
+ *   <li>If there is sufficient horizontal space in a gap to fit a default-size window, a <strong>BOX</strong>
+ *       drop region is shown, indicating that the new window can fully occupy that gap.</li>
+ *   <li>If the gap is too narrow for a default-size window but at least as wide as the default horizontal gap,
+ *       a <strong>LINE</strong> drop region is displayed. In this case, the line is anchored at
+ *       <code>occupantRight + (hgap - lineWidth) / 2.0</code> to center it within the available space.</li>
+ *   <li>No drop region is shown on rows without any windows or when the gap is smaller than the default horizontal gap.</li>
+ *   <li>Additionally, if the mouse is to the right of the last occupant in a row (but still within the row's right boundary),
+ *       the skin checks if a BOX or LINE region can be placed at that location.</li>
+ * </ul>
+ * <p></p><strong>Three-Row Placement Enhancement:</strong>
+ * <ul>
+ *   <li>The three-row placement strategy can start from either the top-left corner of the workspace
+ *       (the original behavior) or from a specified window boundary (a given X/Y location within a row).</li>
+ *   <li>This enhancement allows windows to be re-laid out starting immediately
+ *       after the insertion point, rather than always beginning at the top-left.</li>
  * </ul>
  *
  * @see KLWorkspace
@@ -104,10 +117,22 @@ import static dev.ikm.komet.kview.fxutils.FXUtils.synchronizeHeightWithSceneAwar
  */
 public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
+    private static final Logger LOG = LoggerFactory.getLogger(KLWorkspaceSkin.class);
+
     /**
-     * Internal property key for storing the window state in each window’s properties map.
+     * Internal property key for storing window Subscription in the window's properties map.
      */
-    private static final String WINDOW_STATE_LISTENER = "windowStateListener";
+    private static final String WINDOW_SUBSCRIPTION_KEY = "windowSubscription";
+
+    /**
+     * Internal property key for storing the desktop pane's resize subscription in the window's properties map.
+     */
+    private static final String DESKTOP_RESIZE_SUBSCRIPTION_KEY = "desktopResizeSubscription";
+
+    /**
+     * Internal property key for storing the panning subscription in the window's properties map.
+     */
+    private static final String PANNING_SUBSCRIPTION_KEY = "panningSubscription";
 
     /**
      * The pane that holds all {@link ChapterKlWindow} nodes within the workspace.
@@ -139,6 +164,11 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * The timeline used to animate auto-scrolling when newly creating or re-laying out windows.
      */
     private Timeline autoScrollTimeline;
+
+    /**
+     * The timeline used to shift existing windows when a new window is added in a LINE drop region.
+     */
+    private Timeline shiftTimeline;
 
     /**
      * The flag to indicate whether this is the first time the skin is being initialized.
@@ -201,17 +231,20 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         // --------------------------------------------------------------------
         // 4) Configure user interactions (panning and drag-drop)
         // --------------------------------------------------------------------
-        configurePanningHandlers(workspace);
+        // Setup panning handlers and store subscription for cleanup
+        Subscription panningSubscription = configurePanningHandlers(workspace);
+        workspace.getProperties().put(PANNING_SUBSCRIPTION_KEY, panningSubscription);
+
         configureDragDropHandlers(workspace);
 
         // --------------------------------------------------------------------
         // 5) Listen for property changes that affect layout
         // --------------------------------------------------------------------
-        registerChangeListener(workspace.windowsProperty(), o -> updateWorkspaceWindows());
-        registerChangeListener(desktopPane.widthProperty(), o ->
-                workspaceWindows.forEach(win -> clampWindowPosition(win.fxGadget())));
-        registerChangeListener(desktopPane.heightProperty(), o ->
-                workspaceWindows.forEach(win -> clampWindowPosition(win.fxGadget())));
+        registerChangeListener(workspace.windowsProperty(), _ -> updateWorkspaceWindows());
+
+        // Setup desktop resize subscription for window constraints
+        Subscription desktopResizeSubscription = createDesktopResizeSubscription();
+        workspace.getProperties().put(DESKTOP_RESIZE_SUBSCRIPTION_KEY, desktopResizeSubscription);
     }
 
     /**
@@ -232,6 +265,40 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         desktopPane.requestLayout();
     }
 
+    /**
+     * Creates a subscription that ensures windows remain within the desktop pane's boundaries when its size changes.
+     * <p>
+     * This method establishes listeners on the desktop pane's width and height properties that, when invalidated,
+     * adjust all workspace windows to ensure they remain fully visible within the resized desktop. This prevents
+     * windows from becoming inaccessible by being positioned outside the viewable area after a desktop resize.
+     *
+     * @return A {@link Subscription} that, when unsubscribed, detaches the resize listeners from the desktop pane
+     * @see WindowSupport#constrainToParentBounds(double, double) For the underlying constraint implementation
+     * @see Subscription The resource management pattern used for cleanup
+     */
+    private Subscription createDesktopResizeSubscription() {
+        InvalidationListener resizeListener = obs -> {
+            double width = desktopPane.getWidth();
+            double height = desktopPane.getHeight();
+
+            workspaceWindows.forEach(win -> {
+                Pane windowPanel = win.fxGadget();
+                WindowSupport support = (WindowSupport) windowPanel.getProperties().get(WINDOW_SUPPORT_KEY);
+                if (support != null) {
+                    support.constrainToParentBounds(width, height);
+                }
+            });
+        };
+
+        desktopPane.widthProperty().addListener(resizeListener);
+        desktopPane.heightProperty().addListener(resizeListener);
+
+        return () -> {
+            desktopPane.widthProperty().removeListener(resizeListener);
+            desktopPane.heightProperty().removeListener(resizeListener);
+        };
+    }
+
     // =========================================================================
     //                                PANNING
     // =========================================================================
@@ -249,40 +316,59 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * accordingly (e.g., open hand, closed hand) during these interactions.
      *
      * @param workspace the {@link KLWorkspace} to be configured for panning
+     * @return A subscription that can be used to clean up the panning handlers
      */
-    private void configurePanningHandlers(KLWorkspace workspace) {
-        // Activate panning when Ctrl is pressed
-        workspace.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
-            // Enable panning when the Control key is pressed.
+    private Subscription configurePanningHandlers(KLWorkspace workspace) {
+        MutableList<Subscription> panningSubscriptions = Lists.mutable.empty();
+
+        // Ctrl key handlers
+        final EventHandler<KeyEvent> keyPressHandler = keyEvent -> {
             if (keyEvent.getCode() == KeyCode.CONTROL) {
                 desktopPane.setMouseTransparent(true);
                 desktopScrollPane.setPannable(true);
-                changeViewportCursor(Cursor.OPEN_HAND); // Indicate dragging with an open hand
+                changeViewportCursor(Cursor.OPEN_HAND);
                 desktopScrollPane.requestFocus();
             }
-        });
+        };
 
-        workspace.addEventHandler(KeyEvent.KEY_RELEASED, keyEvent -> {
-            // Disable panning and restore cursor when the Control key is released.
+        final EventHandler<KeyEvent> keyReleaseHandler = keyEvent -> {
             if (keyEvent.getCode() == KeyCode.CONTROL) {
                 desktopPane.setMouseTransparent(false);
                 desktopScrollPane.setPannable(false);
-                changeViewportCursor(Cursor.DEFAULT); // Revert to default cursor
+                changeViewportCursor(Cursor.DEFAULT);
             }
+        };
+
+        workspace.addEventHandler(KeyEvent.KEY_PRESSED, keyPressHandler);
+        workspace.addEventHandler(KeyEvent.KEY_RELEASED, keyReleaseHandler);
+
+        panningSubscriptions.add(() -> {
+            workspace.removeEventHandler(KeyEvent.KEY_PRESSED, keyPressHandler);
+            workspace.removeEventHandler(KeyEvent.KEY_RELEASED, keyReleaseHandler);
         });
 
-        // Register mouse event handlers on the scroll pane to provide visual cues during panning.
-        desktopScrollPane.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
+        // Mouse handlers for visual feedback
+        final EventHandler<MouseEvent> mousePressHandler = mouseEvent -> {
             if (mouseEvent.isPrimaryButtonDown() && desktopScrollPane.isPannable()) {
-                changeViewportCursor(Cursor.CLOSED_HAND); // Indicate active dragging
+                changeViewportCursor(Cursor.CLOSED_HAND);
             }
+        };
+
+        final EventHandler<MouseEvent> mouseReleaseHandler = mouseEvent -> {
+            if (desktopScrollPane.isPannable()) {
+                changeViewportCursor(Cursor.OPEN_HAND);
+            }
+        };
+
+        desktopScrollPane.addEventHandler(MouseEvent.MOUSE_PRESSED, mousePressHandler);
+        desktopScrollPane.addEventHandler(MouseEvent.MOUSE_RELEASED, mouseReleaseHandler);
+
+        panningSubscriptions.add(() -> {
+            desktopScrollPane.removeEventHandler(MouseEvent.MOUSE_PRESSED, mousePressHandler);
+            desktopScrollPane.removeEventHandler(MouseEvent.MOUSE_RELEASED, mouseReleaseHandler);
         });
 
-        desktopScrollPane.addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
-            if (desktopScrollPane.isPannable()) {
-                changeViewportCursor(Cursor.OPEN_HAND); // Revert to open hand after drag
-            }
-        });
+        return Subscription.combine(panningSubscriptions.toArray(Subscription[]::new));
     }
 
     // =========================================================================
@@ -297,12 +383,11 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * Specifically:
      * <ul>
      *   <li>When an item is dragged over the workspace, this method checks if it is a valid draggable
-     *       item and then determines whether the drop region should be shown or hidden based on mouse
-     *       position and collision with existing windows.</li>
-     *   <li>If the mouse is over an existing window within the desktop pane, the drop region is hidden
-     *       and no drop placement is shown.</li>
-     *   <li>If the mouse is over an empty area of the desktop pane, the method calculates and displays
-     *       the appropriate drop region (bounds and type).</li>
+     *       item and then delegates to {@link #findDropRegionPlacement(double, double)} to determine
+     *       the appropriate drop region placement based on mouse position.</li>
+     *   <li>If a valid drop placement is found, the drop region is displayed with the calculated
+     *       bounds and type.</li>
+     *   <li>If no valid placement is available, the drop region is hidden.</li>
      *   <li>When the drag exits the workspace, the drop region is hidden.</li>
      * </ul>
      *
@@ -317,17 +402,6 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                 final Point2D localCoords = desktopPane.screenToLocal(event.getScreenX(), event.getScreenY());
                 final double mouseX = localCoords.getX();
                 final double mouseY = localCoords.getY();
-
-                final Node intersectedNode = event.getPickResult().getIntersectedNode();
-                final boolean mouseOverWindow = intersectedNode != null &&
-                        intersectedNode != desktopPane && intersectedNode != desktopPane.getDropRegion();
-
-                if (mouseOverWindow) {
-                    // If the mouse is over an existing window, hide any drop region and skip drop placement
-                    desktopPane.hideDropRegion();
-                    event.consume();
-                    return;
-                }
 
                 // Determine the appropriate drop region placement
                 final DropResult dropResult = findDropRegionPlacement(mouseX, mouseY);
@@ -351,6 +425,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     /**
      * A small record to hold both the drop region bounds and the chosen type
      * (LINE vs. BOX).
+     *
+     * @param bounds The bounding box for the drop region
+     * @param type The type of drop region (LINE or BOX)
      */
     private record DropResult(Bounds bounds, KLDropRegion.Type type) {
     }
@@ -388,17 +465,18 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         final double desktopWidth = (desktopPane.getWidth() > 0)
                 ? desktopPane.getWidth()
                 : desktopPane.getPrefWidth();
+
         final double desktopHeight = (desktopPane.getHeight() > 0)
                 ? desktopPane.getHeight()
                 : desktopPane.getPrefHeight();
 
-        // 1) If there are no windows, place in top-left as BOX:
+        // 1) If there are no windows, place first window at standard position with gaps for visual consistency
         if (workspace.getWindows().isEmpty()) {
             final double x = workspace.getHorizontalGap();
             final double y = workspace.getVerticalGap();
             // Ensure it fits in the desktop:
             if (canPlace(x, y, width, height, desktopWidth, desktopHeight)) {
-                Bounds bounds = new BoundingBox(x, y, width, height);
+                final Bounds bounds = new BoundingBox(x, y, width, height);
                 return new DropResult(bounds, BOX);
             }
             return null;
@@ -406,21 +484,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
         // 2) If there are windows, check if the mouse is hovering in a suitable "gap"
         //    that can show a BOX or LINE region.
-        final DropResult gapResult = findHorizontalGapForDrag(mouseX, mouseY);
+        final DropResult gapResult = findHorizontalGapForDrag(mouseX, mouseY, desktopWidth, desktopHeight);
         if (gapResult != null && gapResult.bounds() != null) {
             return gapResult;
-        }
-
-        // 3) Otherwise, fallback to a BOX indicator near the top-left of
-        //    the next free three-row placement (if any).
-        final Point2D placement = findThreeRowPlacement(width, height,
-                0, 0, desktopWidth, desktopHeight,
-                workspace.getHorizontalGap(),
-                workspace.getVerticalGap());
-
-        if (placement != null) {
-            final Bounds bounds = new BoundingBox(placement.getX(), placement.getY(), width, height);
-            return new DropResult(bounds, BOX);
         }
 
         return null;
@@ -433,114 +499,133 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * <p>
      * <strong>Key Details:</strong>
      * <ul>
-     *   <li>If the gap is at least {@link KLWorkspace#DEFAULT_WINDOW_WIDTH} + 2 * horizontalGap,
-     *       a {@code BOX} drop region is placed at {@code occupantRight + horizontalGap} (or at
-     *       the row’s left boundary if the occupant is "synthetic").</li>
-     *   <li>If the gap is smaller than the default window width but is at least {@code horizontalGap},
+     *   <li>If the gap is at least {@link KLWorkspace#DEFAULT_WINDOW_WIDTH} + 2 * hgap,
+     *       a {@code BOX} drop region is placed at {@code occupantRight + hgap} (or at
+     *       the row's left boundary if the occupant is "synthetic").</li>
+     *   <li>If the gap is smaller than the default window width but is at least {@code hgap},
      *       we show a {@code LINE} region. The line is anchored at
-     *       {@code occupantRight + (horizontalGap - lineWidth)/2.0}.</li>
-     *   <li>If the gap is smaller than {@code horizontalGap}, we do not show any drop region.</li>
+     *       {@code occupantRight + (hgap - lineWidth)/2.0}.</li>
+     *   <li>If the gap is smaller than {@code hgap}, we do not show any drop region.</li>
      *   <li>If the mouse is to the right of the last occupant in that row but still within the row,
      *       this logic similarly checks for BOX or LINE placement in that "right boundary" gap.</li>
      * </ul>
      *
      * @param mouseX the x-coordinate of the mouse in desktop-pane coordinates
      * @param mouseY the y-coordinate of the mouse in desktop-pane coordinates
+     * @param desktopWidth the total width of the desktop pane
+     * @param desktopHeight the total height of the desktop pane
      * @return a {@link DropResult} or {@code null} if none found
      */
-    private DropResult findHorizontalGapForDrag(double mouseX, double mouseY) {
+    private DropResult findHorizontalGapForDrag(double mouseX, double mouseY,
+                                                double desktopWidth, double desktopHeight) {
         final KLWorkspace workspace = getSkinnable();
-        final double rowTolerance = DEFAULT_VERTICAL_GAP;
         final double defaultWinWidth = DEFAULT_WINDOW_WIDTH;
         final double defaultWinHeight = DEFAULT_WINDOW_HEIGHT;
         final double hgap = workspace.getHorizontalGap();
+        final double vgap = workspace.getVerticalGap();
+        final double lineWidth = hgap / 2.0;
 
-        // Identify which row occupant(s) might be relevant by checking vertical overlap
-        final List<Node> visibleWindows = desktopPane.getChildren().stream()
-                .filter(n -> n != desktopPane.getDropRegion() && n.isVisible())
-                .toList();
+        // Calculate row height and determine which row the mouse is in
+        final double rowHeight = desktopHeight / ROWS;
+        int currentRowIndex = (int) Math.floor(mouseY / rowHeight);
+        currentRowIndex = Math.max(0, Math.min(ROWS - 1, currentRowIndex));
+        final double rowTop = currentRowIndex * rowHeight;
+        final double rowBottom = rowTop + rowHeight;
+        final double positionY = rowTop + vgap;
 
-        final List<Bounds> candidateRow = new ArrayList<>();
-        for (Node node : visibleWindows) {
-            Bounds b = node.getBoundsInParent();
-            // If the mouse's Y is within the vertical span of this occupant (with tolerance),
-            // consider it a candidate for gap checks in that row.
-            if (mouseY >= b.getMinY() - rowTolerance && mouseY <= b.getMaxY() + rowTolerance) {
-                candidateRow.add(b);
+        // Get windows in the current row only
+        final MutableList<Bounds> rowWindows = Lists.mutable.empty();
+        for (Node node : desktopPane.getChildrenUnmodifiable()) {
+            if (node == desktopPane.getDropRegion() || !node.isVisible()) {
+                continue;
+            }
+            final Bounds windowBounds = getWindowBounds(node);
+            // Check if window is in the current row
+            if (windowBounds.getMinY() < rowBottom && windowBounds.getMaxY() > rowTop) {
+                rowWindows.add(windowBounds);
             }
         }
 
-        // Sort these by minX
-        candidateRow.sort(Comparator.comparingDouble(Bounds::getMinX));
+        // Sort windows by X position
+        rowWindows.sort(Comparator.comparingDouble(Bounds::getMinX));
 
         // If the row is empty, no occupant-based gap (we return null).
         // We only want to show a drop region between or around occupants.
         // (This will be handled by the fallback three-row placement if no occupant is found.)
-        if (candidateRow.isEmpty()) {
+        if (rowWindows.isEmpty()) {
             return null;
         }
 
         // Determine the row boundaries: minY and maxY among row occupants
-        double rowMinY = candidateRow.stream().mapToDouble(Bounds::getMinY).min().orElse(mouseY - rowTolerance);
-        double rowMaxY = candidateRow.stream().mapToDouble(Bounds::getMaxY).max().orElse(mouseY + rowTolerance);
+        final double rowMinY = rowWindows.stream().mapToDouble(Bounds::getMinY).min().orElse(mouseY - vgap);
+        final double rowMaxY = rowWindows.stream().mapToDouble(Bounds::getMaxY).max().orElse(mouseY + vgap);
 
         // We'll treat the row as having a synthetic "left boundary occupant" at x=0
-        // and a synthetic "right boundary occupant" at x=some large number
-        // (e.g., the desktop width).
-        final Bounds leftBoundary = new BoundingBox(0, rowMinY,
-                0, rowMaxY - rowMinY);
-        // We assume the row extends to the full width of the desktop.
-        final Bounds rightBoundary = new BoundingBox(desktopPane.getWidth(), rowMinY,
-                0, rowMaxY - rowMinY);
+        // and a synthetic "right boundary occupant" at x=desktop width
+        final Bounds leftBoundary = new BoundingBox(0, rowMinY, 0, rowMaxY - rowMinY);
+        final Bounds rightBoundary = new BoundingBox(desktopWidth, rowMinY, 0, rowMaxY - rowMinY);
 
         // Insert them as "occupants" at the start/end of this row occupant list
-        candidateRow.addFirst(leftBoundary);
-        candidateRow.add(rightBoundary);
+        rowWindows.addFirst(leftBoundary);
+        rowWindows.add(rightBoundary);
 
         // Re-sort after adding boundaries
-        candidateRow.sort(Comparator.comparingDouble(Bounds::getMinX));
+        rowWindows.sort(Comparator.comparingDouble(Bounds::getMinX));
 
         // Now examine each gap between occupant i and occupant i+1
-        for (int i = 0; i < candidateRow.size() - 1; i++) {
-            final Bounds left = candidateRow.get(i);
-            final Bounds right = candidateRow.get(i + 1);
+        for (int i = 0; i < rowWindows.size() - 1; i++) {
+            final Bounds left = rowWindows.get(i);
+            final Bounds right = rowWindows.get(i + 1);
 
-            double gapStartX = left.getMaxX();
-            double gapEndX = right.getMinX();
+            final double gapStartX = left.getMaxX();
+            final double gapEndX = right.getMinX();
+
             if (gapEndX <= gapStartX) {
                 // No actual gap if occupant i overlaps occupant i+1
                 continue;
             }
 
-            // The user’s pointer must be within [gapStartX, gapEndX].
+            // The user's pointer must be within [gapStartX, gapEndX].
             if (mouseX >= gapStartX && mouseX <= gapEndX) {
                 final double gapSize = gapEndX - gapStartX;
-
-                // We'll define a vertical position for the drop region.
-                double occupantRight = left.getMaxX();
-                double yTop = Math.min(left.getMinY(), right.getMinY());
+                final double occupantRight = left.getMaxX();
 
                 // 1) If enough space for the default-size window -> BOX
                 if (gapSize >= (defaultWinWidth + 2 * hgap)) {
                     final double boxX = occupantRight + hgap;
                     // Ensure the BOX does not exceed the gap
                     if (boxX + defaultWinWidth <= gapEndX) {
-                        double boxY = yTop + 5.0; // Offset from the top due to window borders
+                        // Use the properly calculated Y position with vertical gap
+                        final double boxY = positionY;
                         double boxHeight = defaultWinHeight;
 
-                        BoundingBox boxBounds = new BoundingBox(boxX, boxY, defaultWinWidth, boxHeight);
-                        return new DropResult(boxBounds, BOX);
+                        // Ensure the box fits within the row height
+                        if (boxY + boxHeight > rowTop + rowHeight - vgap) {
+                            boxHeight = rowTop + rowHeight - vgap - boxY;
+                        }
+
+                        final BoundingBox boxBounds = new BoundingBox(boxX, boxY, defaultWinWidth, boxHeight);
+                        if (canPlace(boxBounds.getMinX(), boxBounds.getMinY(),
+                                boxBounds.getWidth(), boxBounds.getHeight(),
+                                desktopWidth, desktopHeight)) {
+                            return new DropResult(boxBounds, BOX);
+                        }
                     }
                 }
 
                 // 2) Otherwise, check if the gap is at least hgap to show a LINE
-                else if (gapSize >= hgap - LINE.getWidth() / 2.0) {
+                else if (gapSize >= hgap) {
                     // Position line region so that it is centered in the sub-gap of hgap
-                    final double lineWidth = DEFAULT_HORIZONTAL_GAP / 2.0;
-                    final double lineX = occupantRight + (hgap - lineWidth) / 2.0 - lineWidth / 4.0;
+                    final double lineX = occupantRight + (hgap - lineWidth) / 2.0;
 
-                    final double lineY = Math.max(0, yTop + 5.0); // Offset from the top due to window borders
-                    final double lineHeight = defaultWinHeight;
+                    // Use the properly calculated Y position with vertical gap
+                    final double lineY = positionY;
+                    double lineHeight = defaultWinHeight;
+
+                    // Ensure the line fits within the row height
+                    if (lineY + lineHeight > rowTop + rowHeight - vgap) {
+                        lineHeight = rowTop + rowHeight - vgap - lineY;
+                    }
 
                     final BoundingBox lineBounds = new BoundingBox(lineX, lineY, lineWidth, lineHeight);
                     return new DropResult(lineBounds, LINE);
@@ -563,11 +648,11 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * The logic for determining the initial placement of the new window is as follows:
      * <ol>
      *     <li>If the drop region is visible and is of type {@code BOX}, place the window at the drop region
-     *     coordinates (top-left) with the drop region’s dimensions.</li>
-     *     <li>If the drop region is visible and is of type {@code LINE}, remove all windows to the right of
-     *     {@code dropX} (in that same row and in subsequent rows), place the new window at a position that respects
-     *     horizontal gaps from the left occupant, and then re-add the removed windows in sorted order. The re-added
-     *     windows are placed in a <em>continuous three-row flow</em>, but ignoring windows on the left and in earlier rows.</li>
+     *     coordinates (top-left) with the drop region's dimensions.</li>
+     *     <li>If the drop region is visible and is of type {@code LINE}, shift existing windows to the right
+     *     (in the same row and in subsequent rows) to make room, place the new window at a position that respects
+     *     horizontal gaps from the left occupant. The shifted windows smoothly animate to their new positions
+     *     in a continuous three-row flow.</li>
      *     <li>If the window has a saved position that fits within the desktop and does not overlap
      *         existing windows, use that saved position.</li>
      *     <li>Otherwise, fall back on the three-row placement strategy from the top-left.</li>
@@ -576,31 +661,40 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * Note: We only manipulate {@code desktopPane.getChildren()} here, not {@code workspace.getWindows()}.
      *
      * @param window The {@link ChapterKlWindow} to be added.
+     * @throws NullPointerException if window or window.fxGadget() is null
+     * @see #removeWindow(ChapterKlWindow) for the inverse operation
+     * @see #findThreeRowPlacement for the placement algorithm details
      */
     private void addWindow(ChapterKlWindow<Pane> window) {
+        Objects.requireNonNull(window, "Window cannot be null");
         final Pane windowPanel = window.fxGadget();
-        // Make the window draggable/resizable
-        new WindowSupport(windowPanel);
+        Objects.requireNonNull(windowPanel, "Window panel cannot be null");
 
-        // Add listeners to keep the window in bounds and save its state
-        final InvalidationListener windowStateListener = obs -> {
-            clampWindowPosition(windowPanel);
-            window.save();
-        };
-        windowPanel.layoutXProperty().addListener(windowStateListener);
-        windowPanel.layoutYProperty().addListener(windowStateListener);
-        windowPanel.widthProperty().addListener(windowStateListener);
-        windowPanel.heightProperty().addListener(windowStateListener);
-        windowPanel.getProperties().put(WINDOW_STATE_LISTENER, windowStateListener);
+        // Create subscriptions list for all window-related subscriptions
+        MutableList<Subscription> windowSubscriptions = Lists.mutable.empty();
+        WindowSupport windowSupport;
 
-        // Apply a minimum width constraint
-        windowPanel.setMinWidth(MIN_WINDOW_WIDTH);
+        try {
+            // Create WindowSupport with proper configuration
+            windowSupport = setupWindowSupport(windowPanel);
 
-        // Apply a maximum height constraint
-        windowPanel.setMaxHeight(MAX_WINDOW_HEIGHT);
+            // Configure auto height with subscription
+            windowSubscriptions.add(windowSupport.configureAutoHeight(true, MAX_WINDOW_HEIGHT));
 
-        // Synchronize the window panel's preferred height with its actual height
-        synchronizeHeightWithSceneAwareness(windowPanel);
+            // Add position constraints with state saving callback
+            windowSubscriptions.add(windowSupport.setupPositionConstraints(obs -> window.save()));
+        } catch (Exception ex) {
+            // Clean up WindowSupport if it was created
+            cleanupWindowSupport(windowPanel);
+            LOG.error(ex.getMessage(), ex);
+            return;
+        } finally {
+            // Store the combined subscription for cleanup
+            Subscription combinedSubscription = Subscription.combine(windowSubscriptions.toArray(Subscription[]::new));
+            windowPanel.getProperties().put(WINDOW_SUBSCRIPTION_KEY, combinedSubscription);
+        }
+
+        windowPanel.setMinWidth(USE_COMPUTED_SIZE);
 
         final KLDropRegion dropRegion = desktopPane.getDropRegion();
         final KLWorkspace workspace = getSkinnable();
@@ -643,32 +737,44 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                 }
 
                 case LINE -> {
-                    // -------------------------------------------------------------
-                    // 1) Remove windows in the SAME ROW (to the right of dropX)
-                    //    AND in subsequent rows, in sorted order.
-                    // -------------------------------------------------------------
-                    final List<Pane> removedWindows = removeWindowsRightOfLine(dropX);
+                    // --------------------------------------------------------------------
+                    // 1) Identify windows that need to be shifted
+                    // --------------------------------------------------------------------
+                    final ImmutableList<WindowShiftInfo> windowsToShift = identifyWindowsToShift(dropX, dropY);
 
-                    // -------------------------------------------------------------
-                    // 2) Place the new window at a position that respects horizontal gap from occupant on the left
-                    //
-                    // Before placing the window, check if the dropX + windowWidth exceeds the available width.
-                    // If so, and if we are not in the last row, move the window to the start of the next row.
-                    // Determine the row based on dropY.
+                    // --------------------------------------------------------------------
+                    // 2) Calculate the new position for the dropped window
+                    // --------------------------------------------------------------------
                     final double rowHeight = desktopHeight / ROWS;
                     int currentRow = (int) Math.floor(dropY / rowHeight);
                     final double occupantRight = findRightmostOccupantBefore(dropX);
                     double newX = occupantRight + workspace.getHorizontalGap();
                     double newY = dropY;
+
+                    // Check if window needs to wrap to next row
                     if (newX + windowWidth > desktopWidth) {
                         if (currentRow < ROWS - 1) {
-                            // Move to the beginning of the next row
                             currentRow++;
                             newX = workspace.getHorizontalGap();
                             newY = currentRow * rowHeight + workspace.getVerticalGap();
                         }
                     }
 
+                    // --------------------------------------------------------------------
+                    // 3) Calculate shift positions for existing windows
+                    // --------------------------------------------------------------------
+                    final ImmutableList<WindowShiftInfo> updatedShifts = calculateShiftPositions(
+                            windowsToShift, newX + windowWidth + workspace.getHorizontalGap(),
+                            newY, desktopWidth, desktopHeight, workspace);
+
+                    // --------------------------------------------------------------------
+                    // 4) Animate the shift of existing windows
+                    // --------------------------------------------------------------------
+                    animateWindowShifts(updatedShifts);
+
+                    // --------------------------------------------------------------------
+                    // 5) Place the new window
+                    // --------------------------------------------------------------------
                     windowPanel.setLayoutX(newX);
                     windowPanel.setLayoutY(newY);
                     windowPanel.setPrefWidth(windowWidth);
@@ -676,15 +782,6 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
                     // Auto-scroll the workspace to reveal the newly dropped window
                     autoScrollToTopEdge(windowPanel, desktopWidth, desktopHeight);
-
-                    // -------------------------------------------------------------
-                    // 3) Re-add previously removed windows (in the order they
-                    //    were sorted), placing them continuously to the right of
-                    //    the newly placed window and in subsequent rows if needed.
-                    // -------------------------------------------------------------
-                    final double nextStartX = newX + workspace.getHorizontalGap();
-                    final double nextStartY = newY;
-                    reLayoutRemovedWindows(removedWindows, nextStartX, nextStartY, desktopWidth, desktopHeight);
                     return;
                 }
             }
@@ -732,7 +829,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
     /**
      * Removes a {@link ChapterKlWindow} from the desktop pane and detaches any
-     * associated clamp listeners.
+     * associated subscriptions.
      *
      * @param window the window to remove
      */
@@ -740,15 +837,14 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         final Pane windowPanel = window.fxGadget();
         desktopPane.getChildren().remove(windowPanel);
 
-        // Remove clamp listeners stored in the window's properties
-        if (windowPanel.getProperties().containsKey(WINDOW_STATE_LISTENER)) {
-            final InvalidationListener clampListener =
-                    (InvalidationListener) windowPanel.getProperties().get(WINDOW_STATE_LISTENER);
-            windowPanel.layoutXProperty().removeListener(clampListener);
-            windowPanel.layoutYProperty().removeListener(clampListener);
-            windowPanel.widthProperty().removeListener(clampListener);
-            windowPanel.heightProperty().removeListener(clampListener);
-            windowPanel.getProperties().remove(WINDOW_STATE_LISTENER);
+        // Clean up WindowSupport and its subscriptions
+        cleanupWindowSupport(windowPanel);
+
+        // Clean up resources using a subscription
+        if (windowPanel.getProperties().containsKey(WINDOW_SUBSCRIPTION_KEY)) {
+            Subscription subscription = (Subscription) windowPanel.getProperties().get(WINDOW_SUBSCRIPTION_KEY);
+            subscription.unsubscribe();
+            windowPanel.getProperties().remove(WINDOW_SUBSCRIPTION_KEY);
         }
     }
 
@@ -764,198 +860,215 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      */
     private double findRightmostOccupantBefore(double dropX) {
         double occupantRight = 0;
-        for (Node child : desktopPane.getChildren()) {
-            if (child == desktopPane.getDropRegion()) {
+        for (Node child : desktopPane.getChildrenUnmodifiable()) {
+            if (child == desktopPane.getDropRegion() || !child.isVisible()) {
                 continue;
             }
-            Bounds b = child.getBoundsInParent();
-            if (b.getMaxX() < dropX && b.getMaxX() > occupantRight) {
-                occupantRight = b.getMaxX();
+            Bounds bounds = getWindowBounds(child);
+            if (bounds.getMaxX() < dropX && bounds.getMaxX() > occupantRight) {
+                occupantRight = bounds.getMaxX();
             }
         }
         return occupantRight;
     }
 
-    /**
-     * Removes and returns a list of windows that must be re-laid out due to a LINE drop insertion:
-     * <ul>
-     *   <li>All windows in the same row whose {@code minX >= lineX}</li>
-     *   <li>All windows in subsequent rows (row index greater than the row of the drop line)</li>
-     * </ul>
-     * <p>
-     * The returned list is sorted in ascending order by row index, then by {@code minX}. This
-     * ensures that when these windows are re-laid out
-     * (in {@link #reLayoutRemovedWindows(List, double, double, double, double)}),
-     * they appear in a left-to-right flow for each row, beginning with the row of the drop line,
-     * followed by subsequent rows.
-     *
-     * @param lineX the x-coordinate marking the drop line
-     * @return a list of windows to remove in row-based ascending order
-     */
-    private List<Pane> removeWindowsRightOfLine(double lineX) {
-        List<Pane> removedWindows = new ArrayList<>();
-        final KLDropRegion dropRegion = desktopPane.getDropRegion();
+    // =========================================================================
+    //                          WINDOW SHIFTING
+    // =========================================================================
 
-        // If we don't have a drop region or cannot calculate rows, fallback to a simpler approach
-        if (dropRegion == null || desktopPane.getHeight() <= 0) {
-            for (Node child : new ArrayList<>(desktopPane.getChildren())) {
-                if (child == dropRegion) {
-                    continue;
-                }
-                Bounds b = child.getBoundsInParent();
-                if (b.getMinX() >= lineX) {
-                    removedWindows.add((Pane) child);
-                    desktopPane.getChildren().remove(child);
-                }
-            }
-            return removedWindows;
+    /**
+     * Container record for window shift information.
+     * Immutable data structure holding a window reference along with its current and target positions.
+     *
+     * @param window The window pane to be shifted
+     * @param currentX Current X position of the window
+     * @param currentY Current Y position of the window
+     * @param targetX Target X position for the window after shifting
+     * @param targetY Target Y position for the window after shifting
+     */
+    private record WindowShiftInfo(Pane window, double currentX, double currentY, double targetX, double targetY) {
+
+        /**
+         * Creates a WindowShiftInfo with target positions initialized to current positions.
+         *
+         * @param window The window pane
+         * @param currentX Current X position
+         * @param currentY Current Y position
+         * @return A new WindowShiftInfo with target positions equal to current positions
+         */
+        static WindowShiftInfo fromCurrentPosition(Pane window, double currentX, double currentY) {
+            return new WindowShiftInfo(window, currentX, currentY, currentX, currentY);
         }
 
-        // Identify which row the line is in by dividing the desktopPane into three rows
+        /**
+         * Returns a new WindowShiftInfo with updated target positions.
+         *
+         * @param newTargetX New target X position
+         * @param newTargetY New target Y position
+         * @return A new WindowShiftInfo instance with updated target positions
+         */
+        WindowShiftInfo withTargetPosition(double newTargetX, double newTargetY) {
+            return new WindowShiftInfo(window, currentX, currentY, newTargetX, newTargetY);
+        }
+    }
+
+    /**
+     * Identifies windows that need to be shifted due to a LINE drop insertion.
+     * These are windows in the same row whose minX >= lineX, and all windows in subsequent rows.
+     * <p>
+     * The returned list is sorted in ascending order by row index, then by minX. This
+     * ensures that when these windows are shifted, they maintain their relative positions
+     * and flow naturally from one row to the next.
+     *
+     * @param lineX the x-coordinate marking the drop line
+     * @param lineY the y-coordinate of the drop line (used to determine the row)
+     * @return a list of WindowShiftInfo objects for windows that need shifting
+     */
+    private ImmutableList<WindowShiftInfo> identifyWindowsToShift(double lineX, double lineY) {
+        MutableList<WindowShiftInfo> windowsToShift = Lists.mutable.empty();
+        final KLDropRegion dropRegion = desktopPane.getDropRegion();
+
+        if (dropRegion == null || desktopPane.getHeight() <= 0) {
+            return windowsToShift.toImmutable();
+        }
+
         final double rowHeight = desktopPane.getHeight() / ROWS;
-        final double lineMiddleY = dropRegion.getLayoutY() + (dropRegion.getHeight() / 2.0);
+        final double lineMiddleY = lineY + (dropRegion.getHeight() / 2.0);
         final int lineRowIndex = (int) Math.floor(lineMiddleY / rowHeight);
 
-        // We'll gather windows that are:
-        // (1) in the same row (== lineRowIndex) and minX >= lineX, or
-        // (2) in rows below (> lineRowIndex).
-        List<Node> toRemove = new ArrayList<>();
-        for (Node child : new ArrayList<>(desktopPane.getChildren())) {
-            if (child == dropRegion) {
+        for (Node child : desktopPane.getChildrenUnmodifiable()) {
+            if (child == dropRegion || !child.isVisible() || !(child instanceof Pane)) {
                 continue;
             }
-            Bounds b = child.getBoundsInParent();
+
+            Pane pane = (Pane) child;
+            Bounds b = getWindowBounds(child);
             double occupantMiddleY = (b.getMinY() + b.getMaxY()) / 2.0;
             int occupantRowIndex = (int) Math.floor(occupantMiddleY / rowHeight);
 
-            if ((occupantRowIndex == lineRowIndex && b.getMinX() >= lineX)
-                    || occupantRowIndex > lineRowIndex) {
-                toRemove.add(child);
+            if ((occupantRowIndex == lineRowIndex && b.getMinX() >= lineX) || occupantRowIndex > lineRowIndex) {
+                // Use the factory method to create WindowShiftInfo
+                windowsToShift.add(WindowShiftInfo.fromCurrentPosition(pane, b.getMinX(), b.getMinY()));
             }
         }
 
         // Sort by row first, then by minX
-        toRemove.sort((n1, n2) -> {
-            Bounds b1 = n1.getBoundsInParent();
-            Bounds b2 = n2.getBoundsInParent();
-
-            double midY1 = (b1.getMinY() + b1.getMaxY()) / 2.0;
-            double midY2 = (b2.getMinY() + b2.getMaxY()) / 2.0;
-            int r1 = (int) Math.floor(midY1 / rowHeight);
-            int r2 = (int) Math.floor(midY2 / rowHeight);
+        windowsToShift.sort((w1, w2) -> {
+            int r1 = (int) Math.floor(w1.currentY() / rowHeight);
+            int r2 = (int) Math.floor(w2.currentY() / rowHeight);
 
             if (r1 != r2) {
                 return Integer.compare(r1, r2);
             }
-            return Double.compare(b1.getMinX(), b2.getMinX());
+            return Double.compare(w1.currentX(), w2.currentX());
         });
 
-        // Now remove them from the pane
-        for (Node child : toRemove) {
-            removedWindows.add((Pane) child);
-            desktopPane.getChildren().remove(child);
-        }
-        return removedWindows;
+        return windowsToShift.toImmutable();
     }
 
     /**
-     * Re-lays the specified list of windows (removed due to a LINE drop) <strong>to the right of
-     * the newly placed window and in subsequent rows</strong>, preserving the sorted order
-     * (row first, then left-to-right).
+     * Calculates the target positions for windows that need to be shifted.
+     * Windows flow continuously from one row to the next as needed, maintaining
+     * proper spacing and wrapping to subsequent rows when necessary.
      * <p>
-     * Specifically:
-     * <ul>
-     *   <li>We place each window in turn using a refined three-row approach, starting from the
-     *       current row of the newly placed window ({@code startY}) onward.</li>
-     *   <li>We skip occupant windows that are to the left or in earlier rows, so they remain
-     *       untouched in their previous location. Thus, only the windows in the {@code removedWindows}
-     *       list are re-laid out here.</li>
-     *   <li>Each placed window is added to the occupant list, so subsequent windows do not overlap
-     *       it.</li>
-     * </ul>
+     * The algorithm starts placing windows from the specified (startX, startY) position
+     * and continues in a left-to-right, top-to-bottom flow, respecting the horizontal
+     * and vertical gaps between windows.
      *
-     * @param windowsToReLayout the windows to re-layout, already sorted
-     * @param startX            the horizontal coordinate from which to begin placing the windows
-     * @param startY            the vertical coordinate that determines which row the first insertion
-     *                          should occupy (the row of the dropped window)
-     * @param desktopWidth  the total width of the desktop pane
-     * @param desktopHeight the total height of the desktop pane
+     * @param windowsToShift the list of windows to shift with their current positions
+     * @param startX the x-coordinate from which to start placing shifted windows
+     * @param startY the y-coordinate of the row where shifting starts
+     * @param desktopWidth the total width of the desktop
+     * @param desktopHeight the total height of the desktop
+     * @param workspace the workspace for gap values
+     * @return a new list of WindowShiftInfo with calculated target positions
      */
-    private void reLayoutRemovedWindows(List<Pane> windowsToReLayout, double startX, double startY,
-                                        double desktopWidth, double desktopHeight) {
-        if (windowsToReLayout.isEmpty()) {
+    private ImmutableList<WindowShiftInfo> calculateShiftPositions(
+            ImmutableList<WindowShiftInfo> windowsToShift,
+            double startX, double startY,
+            double desktopWidth, double desktopHeight,
+            KLWorkspace workspace) {
+
+        if (windowsToShift.isEmpty()) {
+            return windowsToShift;
+        }
+
+        final double hgap = workspace.getHorizontalGap();
+        final double vgap = workspace.getVerticalGap();
+        final double rowHeight = desktopHeight / ROWS;
+
+        double currentX = startX;
+        double currentY = startY;
+        int currentRow = (int) Math.floor(currentY / rowHeight);
+
+        MutableList<WindowShiftInfo> updatedShifts = Lists.mutable.empty();
+
+        for (WindowShiftInfo shiftInfo : windowsToShift) {
+            final double windowWidth = shiftInfo.window().getWidth();
+            final double windowHeight = shiftInfo.window().getHeight();
+
+            // Check if window fits in current position
+            if (currentX + windowWidth > desktopWidth) {
+                // Move to next row
+                currentRow++;
+                if (currentRow >= ROWS) {
+                    // No more rows available, keep at current position
+                    updatedShifts.add(shiftInfo); // Keep original positions
+                    continue;
+                }
+                currentX = hgap;
+                currentY = currentRow * rowHeight + vgap;
+            }
+
+            // Create new WindowShiftInfo with calculated target position
+            WindowShiftInfo updatedShift = shiftInfo.withTargetPosition(currentX, currentY);
+            updatedShifts.add(updatedShift);
+
+            // Prepare position for next window
+            currentX = currentX + windowWidth + hgap;
+        }
+
+        return updatedShifts.toImmutable();
+    }
+
+    /**
+     * Animates the shifting of windows to their new positions.
+     * Uses a smooth animation with easing for better user experience.
+     * All windows are animated simultaneously in a single timeline for
+     * coordinated movement.
+     *
+     * @param windowsToShift the list of windows with their target positions
+     */
+    private void animateWindowShifts(ImmutableList<WindowShiftInfo> windowsToShift) {
+        if (windowsToShift.isEmpty()) {
             return;
         }
 
-        final KLWorkspace workspace = getSkinnable();
-
-        // Ensure layout is current
-        desktopPane.layout();
-
-        // Collect occupant windows relevant for re-laying out
-        List<Bounds> occupantBounds = collectRelevantOccupants(startX, startY, desktopHeight);
-
-        // Place each removed window in sorted order
-        for (Pane pane : windowsToReLayout) {
-            final double wWidth = pane.getWidth();
-            final double wHeight = pane.getHeight();
-
-            final Point2D pos = doThreeRowPlacement(wWidth, wHeight,
-                    startX, startY, desktopWidth, desktopHeight,
-                    workspace.getHorizontalGap(), workspace.getVerticalGap(),
-                    occupantBounds);
-
-            if (pos != null) {
-                pane.setLayoutX(pos.getX());
-                pane.setLayoutY(pos.getY());
-            }
-
-            desktopPane.getChildren().add(pane);
-
-            // Add newly placed window to occupant bounds
-            Bounds newOccupant = pane.getBoundsInParent();
-            occupantBounds.add(newOccupant);
+        // Stop any existing shift animation
+        if (shiftTimeline != null) {
+            shiftTimeline.stop();
+            shiftTimeline = null;
         }
-    }
 
-    /**
-     * Collects occupant bounds relevant for re-laying out windows to the right of (startX,startY).
-     * <p>
-     * Specifically, we skip occupant windows that are in earlier rows, or whose entire bounding
-     * box is to the left in the same row (i.e., {@code maxX < startX}).
-     *
-     * @param startX the horizontal boundary from which windows to the left are ignored in that row
-     * @param startY used to determine the start row so earlier rows can be ignored
-     * @param desktopHeight the total height of the desktop pane
-     * @return a list of occupant {@link Bounds} that affect the layout
-     */
-    private List<Bounds> collectRelevantOccupants(double startX, double startY, double desktopHeight) {
-        List<Bounds> occupantBounds = new ArrayList<>();
-        final KLDropRegion dropRegion = desktopPane.getDropRegion();
-        final double rowHeight = desktopHeight / ROWS;
-        final int startRowIndex = Math.max(0, Math.min(ROWS - 1, (int) Math.floor(startY / rowHeight)));
+        // Create a single timeline for all window shifts
+        shiftTimeline = new Timeline();
 
-        for (Node node : desktopPane.getChildren()) {
-            if (node == dropRegion || !node.isVisible()) {
-                continue;
+        for (WindowShiftInfo shiftInfo : windowsToShift) {
+            if (shiftInfo.targetX != shiftInfo.currentX || shiftInfo.targetY != shiftInfo.currentY) {
+                KeyFrame startFrame = new KeyFrame(Duration.ZERO,
+                        new KeyValue(shiftInfo.window.layoutXProperty(), shiftInfo.currentX),
+                        new KeyValue(shiftInfo.window.layoutYProperty(), shiftInfo.currentY)
+                );
+
+                KeyFrame endFrame = new KeyFrame(DEFAULT_ANIMATION_DURATION,
+                        new KeyValue(shiftInfo.window.layoutXProperty(), shiftInfo.targetX, Interpolator.EASE_BOTH),
+                        new KeyValue(shiftInfo.window.layoutYProperty(), shiftInfo.targetY, Interpolator.EASE_BOTH));
+
+                shiftTimeline.getKeyFrames().addAll(startFrame, endFrame);
             }
-            Bounds b = node.getBoundsInParent();
-
-            final double occupantMidY = (b.getMinY() + b.getMaxY()) / 2.0;
-            final int occupantRow = (int) Math.floor(occupantMidY / rowHeight);
-
-            // Skip occupant in earlier row
-            if (occupantRow < startRowIndex) {
-                continue;
-            }
-
-            // Skip occupant if fully to the left in the same row
-            if (occupantRow == startRowIndex && b.getMaxX() < startX) {
-                continue;
-            }
-            occupantBounds.add(b);
         }
-        return occupantBounds;
+
+        shiftTimeline.play();
     }
 
     // =========================================================================
@@ -998,10 +1111,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         desktopPane.layout();
 
         // Collect occupant bounds once, excluding the drop region
-        final List<Bounds> occupantBounds = desktopPane.getChildren().stream()
+        final ImmutableList<Bounds> occupantBounds = Lists.immutable.fromStream(desktopPane.getChildrenUnmodifiable().stream()
                 .filter(n -> n != desktopPane.getDropRegion() && n.isVisible())
-                .map(Node::getBoundsInParent)
-                .toList();
+                .map(this::getWindowBounds));
 
         return doThreeRowPlacement(width, height, startX, startY, desktopWidth, desktopHeight,
                 hgap, vgap, occupantBounds);
@@ -1009,9 +1121,21 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
     /**
      * Core internal method for scanning up to three rows for a valid placement that does not overlap
-     * occupant windows. Used by both the general {@code findThreeRowPlacement} and the specialized
-     * {@code reLayoutRemovedWindows}.
+     * occupant windows. Used by the general {@code findThreeRowPlacement}.
+     * <p>
+     * The algorithm attempts to place the window in each row, starting from the row containing
+     * {@code startY} and continuing through subsequent rows. Within each row, it tries multiple
+     * candidate X positions based on the edges of existing windows and attempts to find a Y position
+     * that avoids overlaps.
      *
+     * @param width The width of the window to place
+     * @param height The height of the window to place
+     * @param startX The initial X coordinate to start searching from
+     * @param startY The initial Y coordinate used to determine the starting row
+     * @param desktopWidth The total width of the desktop
+     * @param desktopHeight The total height of the desktop
+     * @param hgap The horizontal gap between windows
+     * @param vgap The vertical gap between windows
      * @param occupantBounds the bounding boxes of windows to be considered for overlap checks
      * @return a {@link Point2D} representing the top-left corner for the new window,
      *         or {@code null} if no valid placement is found
@@ -1020,7 +1144,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                                         double startX, double startY,
                                         double desktopWidth, double desktopHeight,
                                         double hgap, double vgap,
-                                        List<Bounds> occupantBounds) {
+                                        ImmutableList<Bounds> occupantBounds) {
 
         final double rowHeight = desktopHeight / ROWS;
 
@@ -1029,7 +1153,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         startRowIndex = Math.max(0, Math.min(ROWS - 1, startRowIndex));
 
         // Generate row order based on startRowIndex
-        List<Integer> rowOrder = new ArrayList<>();
+        MutableList<Integer> rowOrder = Lists.mutable.empty();
         for (int i = startRowIndex; i < ROWS; i++) {
             rowOrder.add(i);
         }
@@ -1044,10 +1168,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             }
 
             // Identify occupant bounding boxes in this row
-            final List<Bounds> rowOccupants = occupantBounds.stream()
+            final ImmutableList<Bounds> rowOccupants = Lists.immutable.fromStream(occupantBounds.stream()
                     .filter(b -> b.getMaxY() > rowTop && b.getMinY() < rowBottom)
-                    .sorted(Comparator.comparingDouble(Bounds::getMinX))
-                    .toList();
+                    .sorted(Comparator.comparingDouble(Bounds::getMinX)));
 
             final double rowLeft = 0;
             final double rowRight = desktopWidth;
@@ -1055,7 +1178,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                     ? Math.max(startX, rowLeft + hgap) : (rowLeft + hgap);
 
             // Build candidate X positions from occupant edges
-            List<Double> xCandidates = new ArrayList<>();
+            MutableList<Double> xCandidates = Lists.mutable.empty();
             xCandidates.add(initialX);
             for (Bounds occ : rowOccupants) {
                 double candidateX = occ.getMaxX() + hgap;
@@ -1093,6 +1216,21 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         return null;
     }
 
+    /**
+     * Retrieves the bounds of a given node, handling both Pane nodes (which have
+     * layout coordinates and actual dimensions) and other nodes (which use
+     * preferred dimensions).
+     *
+     * @param node The node to get bounds for
+     * @return A BoundingBox representing the node's position and dimensions
+     */
+    private Bounds getWindowBounds(Node node) {
+        if (node instanceof Pane pane) {
+            return new BoundingBox(pane.getLayoutX(), pane.getLayoutY(),
+                    pane.getWidth(), pane.getHeight());
+        } else return node.getLayoutBounds();
+    }
+
     // =========================================================================
     //                             SCROLLING UTILS
     // =========================================================================
@@ -1100,6 +1238,10 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     /**
      * Smoothly scrolls the {@link ScrollPane} so that the top edge of the specified node
      * is visible. Uses a brief animation for a user-friendly experience.
+     * <p>
+     * The scroll animation centers the viewport horizontally on the node while positioning
+     * the top of the node (minus the vertical gap) at the top of the viewport. This ensures
+     * the newly placed window is fully visible with appropriate spacing.
      *
      * @param nodeToView The node to bring into view (toward the top).
      * @param desktopWidth  the total width of the desktop pane
@@ -1118,7 +1260,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         final Bounds viewportBounds = desktopScrollPane.getViewportBounds();
 
         // Calculate node's top relative to the desktop
-        final double nodeTopY = nodeBounds.getMinY() - desktopBounds.getMinY() - DEFAULT_VERTICAL_GAP;
+        final double nodeTopY = nodeBounds.getMinY() - desktopBounds.getMinY() - getSkinnable().getVerticalGap();
         // Center horizontally on the node
         final double nodeCenterX = nodeBounds.getMinX() + (nodeBounds.getWidth() / 2.0) - desktopBounds.getMinX();
 
@@ -1146,7 +1288,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                 new KeyFrame(Duration.ZERO,
                         new KeyValue(desktopScrollPane.hvalueProperty(), startH),
                         new KeyValue(desktopScrollPane.vvalueProperty(), startV)),
-                new KeyFrame(Duration.millis(250),
+                new KeyFrame(DEFAULT_ANIMATION_DURATION,
                         new KeyValue(desktopScrollPane.hvalueProperty(), newH, Interpolator.EASE_OUT),
                         new KeyValue(desktopScrollPane.vvalueProperty(), newV, Interpolator.EASE_OUT))
         );
@@ -1161,8 +1303,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * Determines whether the specified rectangle can be placed on the desktop without
      * exceeding its boundaries or overlapping any existing windows (excluding the drop region).
      *
-     * @param x             the x-coordinate of the rectangle’s top-left corner
-     * @param y             the y-coordinate of the rectangle’s top-left corner
+     * @param x             the x-coordinate of the rectangle's top-left corner
+     * @param y             the y-coordinate of the rectangle's top-left corner
      * @param width         the width of the rectangle
      * @param height        the height of the rectangle
      * @param desktopWidth  the total width of the desktop
@@ -1180,8 +1322,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * Checks if the specified rectangle (x, y, width, height) falls completely within
      * the boundaries of the desktop area.
      *
-     * @param x             the x-coordinate of the rectangle’s top-left corner
-     * @param y             the y-coordinate of the rectangle’s top-left corner
+     * @param x             the x-coordinate of the rectangle's top-left corner
+     * @param y             the y-coordinate of the rectangle's top-left corner
      * @param width         the width of the rectangle
      * @param height        the height of the rectangle
      * @param desktopWidth  the width of the desktop area
@@ -1198,8 +1340,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * Determines whether a rectangle at the given coordinates overlaps any
      * existing window in the desktop. The drop region is excluded from this check.
      *
-     * @param x      the x-coordinate of the rectangle’s top-left corner
-     * @param y      the y-coordinate of the rectangle’s top-left corner
+     * @param x      the x-coordinate of the rectangle's top-left corner
+     * @param y      the y-coordinate of the rectangle's top-left corner
      * @param width  the width of the rectangle
      * @param height the height of the rectangle
      * @return {@code true} if the rectangle intersects at least one existing window;
@@ -1207,9 +1349,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      */
     private boolean overlapsWithExistingWindows(double x, double y, double width, double height) {
         final Bounds newWindowBounds = new BoundingBox(x, y, width, height);
-        return desktopPane.getChildren().stream()
+        return desktopPane.getChildrenUnmodifiable().stream()
                 .filter(n -> n != desktopPane.getDropRegion() && n.isVisible())
-                .map(Node::getBoundsInParent)
+                .map(this::getWindowBounds)
                 .anyMatch(newWindowBounds::intersects);
     }
 
@@ -1236,15 +1378,16 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * returns the first occupant's bounding box that collides; otherwise, it returns
      * {@code null}.
      *
-     * @param x              the x-coordinate of the rectangle’s top-left corner
-     * @param y              the y-coordinate of the rectangle’s top-left corner
+     * @param x              the x-coordinate of the rectangle's top-left corner
+     * @param y              the y-coordinate of the rectangle's top-left corner
      * @param width          the width of the rectangle
      * @param height         the height of the rectangle
      * @param occupantBounds the bounding boxes of existing occupants to check against
      * @return the first occupant {@link Bounds} that intersects the rectangle, or
      *         {@code null} if no intersection occurs
      */
-    private Bounds occupantIntersect(double x, double y, double width, double height, List<Bounds> occupantBounds) {
+    private Bounds occupantIntersect(double x, double y, double width, double height,
+                                     ImmutableList<Bounds> occupantBounds) {
         final BoundingBox candidate = new BoundingBox(x, y, width, height);
         for (Bounds b : occupantBounds) {
             if (candidate.intersects(b)) {
@@ -1254,70 +1397,75 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         return null;
     }
 
-    /**
-     * Clamps the position and size of the specified window pane so that it remains fully visible
-     * within the bounds of the desktop pane.
-     * <p>
-     * This method adjusts the pane's horizontal (layoutX) and vertical (layoutY) positions
-     * to ensure that the entire window fits inside the desktop pane. If any part of the window
-     * extends beyond the desktop boundaries, its position is modified to bring it back into view.
-     * Additionally, if the window's size exceeds the dimensions of the desktop pane, the preferred
-     * width and height are reduced accordingly.
-     * <p>
-     * Typically, this method is registered as a change listener on the pane's position and size
-     * properties (i.e., {@code layoutXProperty()}, {@code layoutYProperty()},
-     * {@code widthProperty()}, and {@code heightProperty()}) to dynamically enforce that the window
-     * remains within the visible workspace area.
-     *
-     * @param pane the window pane to be clamped within the desktop pane's boundaries.
-     */
-    private void clampWindowPosition(Pane pane) {
-        final double desktopPaneWidth = desktopPane.getWidth();
-        final double desktopPaneHeight = desktopPane.getHeight();
-        final double windowWidth = pane.getWidth();
-        final double windowHeight = pane.getHeight();
-
-        if (desktopPaneWidth <= 0 || desktopPaneHeight <= 0 || windowWidth <= 0 || windowHeight <= 0) {
-            return;
-        }
-
-        final double newX = pane.getLayoutX();
-        final double newY = pane.getLayoutY();
-
-        if (newX < 0) {
-            pane.setLayoutX(0);
-        } else if (newX + windowWidth > desktopPaneWidth) {
-            pane.setLayoutX(desktopPaneWidth - windowWidth);
-        }
-        if (newY < 0) {
-            pane.setLayoutY(0);
-        } else if (newY + windowHeight > desktopPaneHeight) {
-            pane.setLayoutY(desktopPaneHeight - windowHeight);
-        }
-
-        if (pane.getWidth() > desktopPaneWidth) {
-            pane.setPrefWidth(desktopPaneWidth);
-        }
-        if (pane.getHeight() > desktopPaneHeight) {
-            pane.setPrefHeight(desktopPaneHeight);
-        }
-    }
-
     // =========================================================================
     //                            DISPOSAL / CLEANUP
     // =========================================================================
 
     /**
      * Cleans up listeners and references to avoid potential memory leaks.
+     * This method is called when the skin is detached from its control.
+     * <p>
+     * The cleanup process includes:
+     * <ul>
+     *   <li>Removing the window list change listener</li>
+     *   <li>Unsubscribing from desktop resize notifications</li>
+     *   <li>Unsubscribing from panning event handlers</li>
+     *   <li>Removing window support from all windows</li>
+     *   <li>Clearing all children from the skin</li>
+     * </ul>
      */
     @Override
     public void dispose() {
-        if (getSkinnable() != null && workspaceWindows != null) {
+        // Stop any running animations
+        if (autoScrollTimeline != null) {
+            autoScrollTimeline.stop();
+            autoScrollTimeline = null;
+        }
+
+        if (shiftTimeline != null) {
+            shiftTimeline.stop();
+            shiftTimeline = null;
+        }
+
+        // Clean up window list listener
+        if (workspaceWindows != null) {
             workspaceWindows.removeListener(weakWindowsListChangeListener);
             workspaceWindows = null;
         }
+
+        if (getSkinnable() != null) {
+            // Clean up size change subscription
+            cleanupSubscription(DESKTOP_RESIZE_SUBSCRIPTION_KEY);
+            cleanupSubscription(PANNING_SUBSCRIPTION_KEY);
+
+            getSkinnable().setOnDragOver(null);
+            getSkinnable().setOnDragExited(null);
+
+            // Clean up all windows support
+            Lists.immutable.ofAll(getSkinnable().getWindows()).forEach(this::removeWindow);
+        }
+
+        // Clear children and call super dispose
         getChildren().clear();
         super.dispose();
+    }
+
+    /**
+     * Cleans up a subscription stored in the skinnable's properties map.
+     * <p>
+     * This utility method retrieves a {@link Subscription} from the control's properties
+     * using the specified key, unsubscribes from it to release resources, and then
+     * removes the entry from the properties map. If no subscription exists for the
+     * given key, this method does nothing.
+     *
+     * @param key the property key under which the subscription is stored
+     */
+    private void cleanupSubscription(String key) {
+        if (getSkinnable().getProperties().containsKey(key)) {
+            Subscription subscription = (Subscription) getSkinnable().getProperties().get(key);
+            subscription.unsubscribe();
+            getSkinnable().getProperties().remove(key);
+        }
     }
 
     // =========================================================================
@@ -1328,9 +1476,14 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * A custom pane that acts as the "desktop" for the workspace.
      * It hosts multiple {@link ChapterKlWindow} nodes and displays
      * a {@link KLDropRegion} when an external drag enters the workspace.
+     * <p>
+     * The desktop pane provides methods to show and hide drop regions
+     * during drag-and-drop operations, indicating where new windows
+     * can be placed.
      */
     private static class DesktopPane extends Pane {
 
+        /** The drop region indicator shown during drag operations */
         private final KLDropRegion dropRegion;
 
         /**
@@ -1353,6 +1506,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
         /**
          * Makes the drop region visible and adds it to the pane if not already present.
+         * The drop region is positioned and sized according to the provided bounds.
          *
          * @param bounds the bounding box (x, y, width, height) to show the drop region
          * @param type   the {@link KLDropRegion.Type} of drop indicator (LINE or BOX)

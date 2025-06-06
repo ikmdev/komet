@@ -17,6 +17,7 @@ import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.G
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_STATUS;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_URL;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_USERNAME;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.REMOTE_NAME;
 
 /**
  * The InfoTask class is a task that retrieves information about a Git repository.
@@ -58,24 +59,19 @@ public class InfoTask extends Task<Map<GitPropertyName, String>> {
         repoInfo.put(GIT_STATUS, "Error: could not retrieve status.");
 
         try (Git git = Git.open(changeSetFolder.toFile())) {
+            final StoredConfig storedConfig = git.getRepository().getConfig();
             // Get repository URI
-            git.remoteList().call().stream()
-                    .filter(remoteConfig -> remoteConfig.getName().equals("origin"))
-                    .findFirst()
-                    .ifPresent(remoteConfig -> {
-                        if (!remoteConfig.getURIs().isEmpty()) {
-                            String pushUri = remoteConfig.getURIs().getFirst().toString();
-                            repoInfo.put(GIT_URL, pushUri);
-                        }
-                    });
-
-            // Get user config
-            StoredConfig storedConfig = git.getRepository().getConfig();
-            String userName = storedConfig.getString("user", null, "name");
-            String userEmail = storedConfig.getString("user", null, "email");
+            final String remoteUrl = storedConfig.getString("remote", REMOTE_NAME, "url");
+            if (remoteUrl != null) {
+                repoInfo.put(GIT_URL, remoteUrl);
+            }
+            // Get username
+            final String userName = storedConfig.getString("user", null, "name");
             if (userName != null) {
                 repoInfo.put(GIT_USERNAME, userName);
             }
+            // Get user email
+            final String userEmail = storedConfig.getString("user", null, "email");
             if (userEmail != null) {
                 repoInfo.put(GIT_EMAIL, userEmail);
             }

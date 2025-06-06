@@ -44,10 +44,10 @@ public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
                 if (newImage == null) {
                     //set the field value to empty byte array since we cannot save null value to database.
                     field().valueProperty().set(new ByteArrayOutputStream().toByteArray());
-                    return;
+                } else {
+                    byte[] newByteArray = newByteArrayFromImage(newImage);
+                    field().valueProperty().set(newByteArray);
                 }
-                byte[] newByteArray = newByteArrayFromImage(newImage);
-                field().valueProperty().set(newByteArray);
                 isUpdatingObservableField = false;
             });
 

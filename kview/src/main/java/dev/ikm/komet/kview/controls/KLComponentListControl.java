@@ -7,9 +7,11 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.scene.Node;
 import javafx.scene.control.Control;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.Skin;
+import javafx.util.Callback;
 import javafx.util.StringConverter;
 
 import java.util.List;
@@ -33,7 +35,6 @@ import java.util.function.Function;
  * </code></pre>
  *
  * @see KLComponentControl
- * @see KLComponentSetControl
  */
 public class KLComponentListControl<T extends IntIdCollection> extends Control {
 
@@ -90,13 +91,25 @@ public class KLComponentListControl<T extends IntIdCollection> extends Control {
 
     // -- suggestions node factory
     /**
-     * This will return a Node to be shown in the auto-complete popup for each result returned
+     * This will return a Cell to be shown in the auto-complete popup for each result returned
      * by the 'completer'.
      */
-    private final ObjectProperty<Function<EntityProxy, Node>> suggestionsNodeFactory = new SimpleObjectProperty<>();
-    public final void setSuggestionsNodeFactory(Function<EntityProxy, Node> factory) { suggestionsNodeFactory.set(factory); }
-    public final Function<EntityProxy, Node> getSuggestionsNodeFactory() { return suggestionsNodeFactory.get(); }
-    public final ObjectProperty<Function<EntityProxy, Node>> suggestionsNodeFactoryProperty() { return suggestionsNodeFactory; }
+    private final ObjectProperty<Callback<ListView<EntityProxy>, ListCell<EntityProxy>>> suggestionsCellFactory = new SimpleObjectProperty<>();
+    public final void setSuggestionsCellFactory(Callback<ListView<EntityProxy>, ListCell<EntityProxy>> factory) { suggestionsCellFactory.set(factory); }
+    public final Callback<ListView<EntityProxy>, ListCell<EntityProxy>> getSuggestionsCellFactory() { return suggestionsCellFactory.get(); }
+    public final ObjectProperty<Callback<ListView<EntityProxy>, ListCell<EntityProxy>>> suggestionsCellFactoryProperty() { return suggestionsCellFactory; }
+
+    // -- function to render the component's name and avoid entity.description()
+    private final ObjectProperty<Function<EntityProxy, String>> componentNameRenderer = new SimpleObjectProperty<>();
+    public final void setComponentNameRenderer(Function<EntityProxy, String> nameHandler) { componentNameRenderer.set(nameHandler); }
+    public final Function<EntityProxy, String> getComponentNameRenderer() { return componentNameRenderer.get(); }
+    public final ObjectProperty<Function<EntityProxy, String>> componentNameRendererProperty() { return componentNameRenderer; }
+
+    // -- typeahead header pane
+    private final ObjectProperty<AutoCompleteTextField.HeaderPane> typeAheadHeaderPane = new SimpleObjectProperty<>();
+    public AutoCompleteTextField.HeaderPane getTypeAheadHeaderPane() { return typeAheadHeaderPane.get(); }
+    public ObjectProperty<AutoCompleteTextField.HeaderPane> typeAheadHeaderPaneProperty() { return typeAheadHeaderPane; }
+    public void setTypeAheadHeaderPane(AutoCompleteTextField.HeaderPane typeAheadHeaderPane) { this.typeAheadHeaderPane.set(typeAheadHeaderPane); }
 
     /** {@inheritDoc} */
     @Override
