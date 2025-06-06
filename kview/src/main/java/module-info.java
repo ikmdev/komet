@@ -113,8 +113,11 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.changeset;
     exports dev.ikm.komet.kview.mvvm.view.changeset;
 
+    // Git changeset exchange
     opens dev.ikm.komet.kview.mvvm.view.changeset.exchange;
     exports dev.ikm.komet.kview.mvvm.view.changeset.exchange;
+    opens dev.ikm.komet.kview.mvvm.view.changeset.exchange.credentials;
+    exports dev.ikm.komet.kview.mvvm.view.changeset.exchange.credentials;
 
     opens dev.ikm.komet.kview.mvvm.view.login;
     exports dev.ikm.komet.kview.mvvm.view.login;
