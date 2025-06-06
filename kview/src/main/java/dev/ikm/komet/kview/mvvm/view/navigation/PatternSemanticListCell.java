@@ -45,6 +45,7 @@ public class PatternSemanticListCell extends ListCell<Object> {
     private Function<EntityFacade, String> fetchDescriptionByFacade;
     private ViewProperties viewProperties;
 
+    private HBox hbox;
     private Label label;
     private Tooltip tooltip;
 
@@ -68,6 +69,14 @@ public class PatternSemanticListCell extends ListCell<Object> {
 
         tooltip = new Tooltip();
         Tooltip.install(label, tooltip);
+
+        hbox = new HBox();
+        hbox.getStyleClass().add("pattern-instance-hbox");
+        hbox.getChildren().add(label);
+        StackPane stackPane = new StackPane();
+        hbox.getChildren().add(stackPane);
+        stackPane.getStyleClass().add("pattern-instance-hover-icon");
+        label.getStyleClass().add("pattern-instance");
     }
 
     @Override
@@ -136,13 +145,7 @@ public class PatternSemanticListCell extends ListCell<Object> {
                     imageView.setFitHeight(16);
                     label.setGraphic(imageView);
                 }
-                HBox hbox = new HBox();
-                hbox.getStyleClass().add("pattern-instance-hbox");
-                hbox.getChildren().add(label);
-                StackPane stackPane = new StackPane();
-                hbox.getChildren().add(stackPane);
-                stackPane.getStyleClass().add("pattern-instance-hover-icon");
-                label.getStyleClass().add("pattern-instance");
+
                 setGraphic(hbox);
                 // make ListCell (row) draggable to the desktop
                 setUpDraggable(hbox, entity, DragAndDropType.SEMANTIC);
