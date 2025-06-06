@@ -18,7 +18,7 @@ package dev.ikm.komet.kview.mvvm.view.changeset.exchange;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferences;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
 import dev.ikm.komet.kview.mvvm.view.changeset.exchange.credentials.GitHubCredentialsProvider;
-import dev.ikm.komet.kview.mvvm.view.changeset.exchange.credentials.GitSkipSslValidationCredentialsProvider;
+import dev.ikm.komet.kview.mvvm.view.changeset.exchange.credentials.GitSslValidationCredentialsProvider;
 import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.SaveState;
 import dev.ikm.tinkar.common.service.TrackingCallable;
@@ -231,7 +231,7 @@ public class GitTask extends TrackingCallable<Boolean> {
 
         this.chainingCredentialsProvider = new ChainingCredentialsProvider(
                 new GitHubCredentialsProvider(),
-                new GitSkipSslValidationCredentialsProvider()
+                new GitSslValidationCredentialsProvider()
         );
 
         updateProgress(0, TOTAL_WORK);
