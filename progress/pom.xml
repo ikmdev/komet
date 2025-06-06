@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.52.0-jpro-150-improve-git-credentials-providers-coding-style-and-documentation-SNAPSHOT</version>
+        <version>1.52.0-SNAPSHOT</version>
     </parent>
     <artifactId>progress</artifactId>
     <dependencies>
