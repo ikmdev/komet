@@ -490,7 +490,6 @@
  ScrollPane > Accordion > DateFilterTitledPane
 */
 
-
 .filter-options-popup > .scroll-pane .accordion > .titled-pane:selected > .title {
     -fx-padding: 4 -16 8 8;
     -fx-pref-height: 68;
@@ -604,7 +603,7 @@
     -fx-border-width: 0;
     -fx-translate-y: 5;
     -fx-padding: 8 0 8 0;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 4, 0.0, 0, 4);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0.0, 0, 4);
 }
 
 .filter-options-popup .date-combo-box .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
