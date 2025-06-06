@@ -168,12 +168,11 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 	}
 
 	private void runReasoner() {
-		//FIXME we only support the full reasoner at this time
-//		if (reasonerService.isIncrementalReady()) {
-//			runIncrementalReasoner();
-//		} else {
+		if (reasonerService.isIncrementalReady()) {
+			runIncrementalReasoner();
+		} else {
 			runFullReasoner();
-//		}
+		}
 	}
 
 	private void runFullReasoner() {
