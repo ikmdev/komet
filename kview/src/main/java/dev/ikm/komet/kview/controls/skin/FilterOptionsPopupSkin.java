@@ -140,7 +140,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                 .filter(FilterTitledPane.class::isInstance)
                 .map(FilterTitledPane.class::cast)
                 .forEach(pane -> {
-                    filterSubscription = filterSubscription.and(pane.optionProperty().subscribe((o, s) -> {
+                    filterSubscription = filterSubscription.and(pane.optionProperty().subscribe((_, s) -> {
                         if (s != null && pane.getUserData() instanceof FilterOptions.Option option) {
                             option.selectedOptions().setAll(pane.getSelectedOptions());
                             if (pane.isExcluding()) {
@@ -256,8 +256,9 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         FilterTitledPane membershipFilterTitledPane = setupTitledPane(option);
         defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().setAll(option.availableOptions());
 
-        DateFilterTitledPane dateFilterTitledPane = new DateFilterTitledPane();
-        dateFilterTitledPane.setTitle(resources.getString("date.title"));
+        option = filterOptions.getDate();
+        FilterTitledPane dateFilterTitledPane = setupTitledPane(option);
+        defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().clear(); // latest has no selected options
 
         accordion.getPanes().setAll(
                 sortByFilterTitledPane,
@@ -275,7 +276,8 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
     }
 
     private FilterTitledPane setupTitledPane(FilterOptions.Option option) {
-        FilterTitledPane titledPane = new FilterTitledPane();
+        FilterTitledPane titledPane = option.item() == FilterOptions.OPTION_ITEM.DATE ?
+                new DateFilterTitledPane() : new FilterTitledPane();
         titledPane.setUserData(option);
         titledPane.setTitle(option.title());
         titledPane.setDefaultOption(option.defaultOption());

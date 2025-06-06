@@ -21,7 +21,8 @@ public class FilterOptions {
         LANGUAGE("Model concept, Tinkar Model concept, Language"),
         DESCRIPTION_TYPE(""),
         KIND_OF(""),
-        MEMBERSHIP("");
+        MEMBERSHIP(""),
+        DATE("");
 
         private final String path;
 
@@ -65,11 +66,19 @@ public class FilterOptions {
             if (!Objects.equals(item, option.item)) return false;
             if (!Objects.equals(title, option.title)) return false;
             if (selectedOptions == null && option.selectedOptions != null) return false;
-            if (selectedOptions != null && (option.selectedOptions == null ||
-                    (selectedOptions.size() != option.selectedOptions.size()))) return false;
+            if (selectedOptions != null && option.selectedOptions == null) return false;
+            if (selectedOptions != null &&
+                    selectedOptions.size() != option.selectedOptions.size()) return false;
+            if (selectedOptions != null &&
+                    !selectedOptions.stream().sorted().toList().equals(
+                            option.selectedOptions.stream().sorted().toList())) return false;
             if (excludedOptions == null && option.excludedOptions != null) return false;
-            return excludedOptions == null || (option.excludedOptions != null &&
-                    (excludedOptions.size() == option.excludedOptions.size()));
+            if (excludedOptions != null && option.excludedOptions == null) return false;
+            if (excludedOptions != null &&
+                    excludedOptions.size() != option.excludedOptions.size()) return false;
+            return excludedOptions == null ||
+                    excludedOptions.stream().sorted().toList().equals(
+                            option.excludedOptions.stream().sorted().toList());
         }
 
         @Override
@@ -136,10 +145,22 @@ public class FilterOptions {
                 FXCollections.observableArrayList(), null);
     }
 
+    private final Option date;
+    {
+        List<String> dateOptions = Stream.of("date.item1", "date.item2", "date.item3")
+                .map(resources::getString)
+                .toList();
+        date = new Option(OPTION_ITEM.DATE, "date.title", "date.option.all",
+                FXCollections.observableArrayList(dateOptions),
+                FXCollections.observableArrayList(),
+                FXCollections.observableArrayList());
+    }
+
     private final List<Option> options;
 
     public FilterOptions() {
-        options = List.of(sortBy, status, module, path, language, descriptionType, kindOf, membership);
+        options = List.of(sortBy, status, module, path, language,
+                descriptionType, kindOf, membership, date);
     }
 
     public Option getSortBy() {
@@ -174,6 +195,10 @@ public class FilterOptions {
         return membership;
     }
 
+    public Option getDate() {
+        return date;
+    }
+
     public List<Option> getOptions() {
         return options;
     }
@@ -197,12 +222,13 @@ public class FilterOptions {
                 Objects.equals(descriptionType, that.descriptionType) &&
                 Objects.equals(kindOf, that.kindOf) &&
                 Objects.equals(membership, that.membership) &&
+                Objects.equals(date, that.date) &&
                 Objects.equals(options, that.options);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(sortBy, status, path, language, descriptionType, kindOf, membership, options);
+        return Objects.hash(sortBy, status, path, language, descriptionType, kindOf, membership, date, options);
     }
 
     @Override

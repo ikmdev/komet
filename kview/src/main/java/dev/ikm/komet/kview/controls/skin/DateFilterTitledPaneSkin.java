@@ -56,8 +56,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                 pseudoClassStateChanged(TALLER_TITLE_AREA, b.getHeight() > 30));
 
         comboBox = new ComboBox<>();
-        comboBox.getItems().addAll(resources.getString("date.item1"), resources.getString("date.item2"),
-                resources.getString("date.item3"));
+        comboBox.getItems().addAll(control.getAvailableOptions());
         comboBox.getSelectionModel().select(0);
         comboBox.getStyleClass().add("date-combo-box");
 
@@ -105,35 +104,51 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
         subscription = subscription.and(control.expandedProperty().subscribe(expanded -> {
             if (!expanded) {
-                control.setOption(resources.getString("date.option.all"));
+                control.getSelectedOptions().clear();
+                control.getExcludedOptions().clear();
                 if (calendarControl != null && calendarControl.getDate() != null) {
+                    control.getSelectedOptions().add(DATE_FORMATTER.format(calendarControl.getDate()));
                     control.setOption(MessageFormat.format(resources.getString("date.option.specific"),
                             DATE_FORMATTER.format(calendarControl.getDate())));
                 } else if (calendarControl != null && !calendarControl.dateRangeList().isEmpty()) {
                     String including = calendarControl.dateRangeList().stream()
                             .filter(r -> !r.exclude())
-                            .map(dr -> MessageFormat.format(resources.getString("date.range.text"), dr.startDate(), dr.endDate()))
+                            .map(dr -> {
+                                control.getSelectedOptions().add(DATE_FORMATTER.format(dr.startDate()) + ":" + DATE_FORMATTER.format(dr.endDate()));
+                                return MessageFormat.format(resources.getString("date.range.text"), dr.startDate(), dr.endDate());
+                            })
                             .collect(Collectors.joining(", "));
                     String excluding = calendarControl.dateRangeList().stream()
                             .filter(DateRange::exclude)
-                            .map(dr -> MessageFormat.format(resources.getString("date.range.text"), dr.startDate(), dr.endDate()))
+                            .map(dr -> {
+                                control.getExcludedOptions().add(DATE_FORMATTER.format(dr.startDate()) + ":" + DATE_FORMATTER.format(dr.endDate()));
+                                return MessageFormat.format(resources.getString("date.range.text"), dr.startDate(), dr.endDate());
+                            })
                             .collect(Collectors.joining(", "));
                     if (excluding.isEmpty()) {
                         control.setOption(MessageFormat.format(resources.getString("date.option.range"), including));
                     } else {
                         control.setOption(MessageFormat.format(resources.getString("date.option.range.excluding"), including, excluding));
                     }
+                } else {
+                    control.setOption(control.getDefaultOption());
                 }
             }
         }));
-        subscription = subscription.and(comboBox.valueProperty().subscribe(value -> {
-            if (resources.getString("date.item1").equals(value)) {
+        subscription = subscription.and(comboBox.showingProperty().subscribe((_, showing) -> {
+            if (showing && !contentBox.getChildren().isEmpty() && !control.isExpanded()) {
+                comboBox.hide();
+                control.setExpanded(true);
+            }
+        }));
+        subscription = subscription.and(comboBox.getSelectionModel().selectedIndexProperty().subscribe(value -> {
+            if (value.intValue() == 0) {
                 contentBox.getChildren().clear();
                 calendarControl = null;
                 control.setExpanded(false);
                 control.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, false);
             } else {
-                if (resources.getString("date.item2").equals(value)) {
+                if (value.intValue() == 1) {
                     createSpecificDatePane();
                 } else {
                     createDateRangePane();
@@ -145,7 +160,6 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
         subscription = subscription.and(selectedOption.textProperty().subscribe((_, t) ->
                 pseudoClassStateChanged(MODIFIED_TITLED_PANE, !control.getDefaultOption().equals(t))));
-        control.setDefaultOption(resources.getString("date.option.all"));
     }
 
     @Override
