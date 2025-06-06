@@ -431,12 +431,6 @@
                 <groupId>one.jpro.platform</groupId>
                 <artifactId>jpro-file</artifactId>
                 <version>${jpro-platform.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>ch.qos.logback</groupId>
-                        <artifactId>logback-classic</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>one.jpro.platform</groupId>
