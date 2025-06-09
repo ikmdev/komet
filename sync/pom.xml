@@ -6,7 +6,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.52.0-SNAPSHOT</version>
+        <version>1.52.0-IIA-2094-concept-header-fqn-title-SNAPSHOT</version>
     </parent>
 
     <artifactId>sync</artifactId>
