@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(ApplicationExtension.class)
-public class ConfirmationPaneViewModelTestFX {
+public class ConfirmationPaneTestFX {
 
     private static final String TITLE_LABEL_ID = "#confirmationTitle";
     private static final String MESSAGE_LABEL_ID = "#confirmationMessage";
