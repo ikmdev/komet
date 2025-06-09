@@ -20,9 +20,9 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
-import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneCommonController;
+import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController;
+import dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.confirmation.ConfirmationPaneCommonViewModel;
 import javafx.beans.property.BooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -35,9 +35,9 @@ import org.carlfx.cognitive.loader.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.confirmation.ConfirmationPaneCommonViewModel.ConfirmationPropertyName.*;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 
 public class PropertiesController {
@@ -107,12 +107,12 @@ public class PropertiesController {
 
         editFieldsJfxNode = FXMLMvvmLoader.make(config);
 
-        Config closePropertiesConfig = new Config(this.getClass().getResource(ConfirmationPaneCommonController.FXML_FILE));
-        JFXNode<Pane, ConfirmationPaneCommonController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
+        Config closePropertiesConfig = new Config(this.getClass().getResource(ConfirmationPaneController.FXML_FILE));
+        JFXNode<Pane, ConfirmationPaneController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
         closePropsPane = closePropsJfxNode.node();
 
-        ConfirmationPaneCommonViewModel confirmationViewModel = (ConfirmationPaneCommonViewModel) closePropsJfxNode
-                .getViewModel(ConfirmationPaneCommonController.VIEW_MODEL_NAME).get();
+        ConfirmationPaneViewModel confirmationViewModel = (ConfirmationPaneViewModel) closePropsJfxNode
+                .getViewModel(ConfirmationPaneController.VIEW_MODEL_NAME).get();
 
         BooleanProperty closeConfPaneProp = confirmationViewModel.getBooleanProperty(CLOSE_CONFIRMATION_PANEL);
         closeConfPaneProp.subscribe(closeIt -> {

@@ -26,13 +26,9 @@ import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
-import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneCommonController;
+import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController;
 import dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController;
-import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.confirmation.ConfirmationPaneCommonViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.*;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
@@ -57,13 +53,13 @@ import java.util.UUID;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.DEFINITION_CONFIRMATION;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.CLOSE_CONFIRMATION_PANEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.confirmation.ConfirmationPaneCommonViewModel.ConfirmationPropertyName.CLOSE_CONFIRMATION_PANEL;
 import static dev.ikm.komet.kview.state.PatternDetailsState.NEW_PATTERN_INITIAL;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
@@ -74,7 +70,7 @@ public class PropertiesController {
 
     private static final URL PATTERN_HISTORY_FXML_URL = HistoryController.class.getResource("history.fxml");
 
-    private static final URL CONFIRMATION_FXML_URL = ConfirmationPaneCommonController.class.getResource(ConfirmationPaneCommonController.FXML_FILE);
+    private static final URL CONFIRMATION_FXML_URL = ConfirmationPaneController.class.getResource(ConfirmationPaneController.FXML_FILE);
 
     private static final URL CONTINUE_ADDING_FIELDS_URL = ContinueAddFieldsController.class.getResource("continue-adding-fields.fxml");
 
@@ -171,11 +167,11 @@ public class PropertiesController {
         // ! confirmation panel reused by several forms
         // +-----------------------------------------------------------------------
         Config confirmationPanelConfig = new Config(CONFIRMATION_FXML_URL);
-        JFXNode<Pane, ConfirmationPaneCommonController> confirmationPanelJFXNode = FXMLMvvmLoader.make(confirmationPanelConfig);
+        JFXNode<Pane, ConfirmationPaneController> confirmationPanelJFXNode = FXMLMvvmLoader.make(confirmationPanelConfig);
         confirmationPane = confirmationPanelJFXNode.node();
 
-        ConfirmationPaneCommonViewModel confirmationViewModel = (ConfirmationPaneCommonViewModel) confirmationPanelJFXNode
-                .getViewModel(ConfirmationPaneCommonController.VIEW_MODEL_NAME).get();
+        ConfirmationPaneViewModel confirmationViewModel = (ConfirmationPaneViewModel) confirmationPanelJFXNode
+                .getViewModel(ConfirmationPaneController.VIEW_MODEL_NAME).get();
 
         SimpleBooleanProperty closeConfPaneProp = confirmationViewModel.getProperty(CLOSE_CONFIRMATION_PANEL);
 
@@ -297,8 +293,8 @@ public class PropertiesController {
                 );
                 currentEditPane = continueAddFieldsPane;
             } else if (evt.getEventType() == SHOW_CONTINUE_EDIT_FIELDS) {
-                confirmationViewModel.setPropertyValue(ConfirmationPaneCommonViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE, "Continue Editing Fields?");
-                confirmationViewModel.setPropertyValue(ConfirmationPaneCommonViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
+                confirmationViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE, "Continue Editing Fields?");
+                confirmationViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
 
                 currentEditPane = confirmationPane;
             }
@@ -320,8 +316,8 @@ public class PropertiesController {
                 StateMachine patternSM = getStateMachine();
                 patternSM.t("addDefinitions");
 
-                confirmationViewModel.setPropertyValue(ConfirmationPaneCommonViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE, "Definition Added");
-                confirmationViewModel.setPropertyValue(ConfirmationPaneCommonViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
+                confirmationViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE, "Definition Added");
+                confirmationViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
             }
             patternViewModel.save();
         };
@@ -329,11 +325,11 @@ public class PropertiesController {
 
         patternDescriptionEventSubscriber = evt -> {
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_FQN) {
-                confirmationViewModel.setPropertyValue(ConfirmationPaneCommonViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE, "Fully Qualified Name Added");
-                confirmationViewModel.setPropertyValue(ConfirmationPaneCommonViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
+                confirmationViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE, "Fully Qualified Name Added");
+                confirmationViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
             } else if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
-                confirmationViewModel.setPropertyValue(ConfirmationPaneCommonViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE, "Other Name Added");
-                confirmationViewModel.setPropertyValue(ConfirmationPaneCommonViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
+                confirmationViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE, "Other Name Added");
+                confirmationViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
             }
             currentEditPane = confirmationPane;
             contentBorderPane.setCenter(currentEditPane);

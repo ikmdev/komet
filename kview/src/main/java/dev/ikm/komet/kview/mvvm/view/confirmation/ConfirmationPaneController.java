@@ -1,13 +1,13 @@
 package dev.ikm.komet.kview.mvvm.view.confirmation;
 
-import dev.ikm.komet.kview.mvvm.viewmodel.confirmation.ConfirmationPaneCommonViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import org.carlfx.cognitive.loader.InjectViewModel;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.confirmation.ConfirmationPaneCommonViewModel.ConfirmationPropertyName.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.*;
 
 /**
  * Controller of the Confirmation pane that has a Title label, Message label, and Close Properties Pane button.
@@ -16,7 +16,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.confirmation.ConfirmationPaneCo
  * provided topic using the provided event.  This is done because the confirmation pane is used in different
  * windows within Komet, and each window has it's own event topic on the event bus.
  */
-public class ConfirmationPaneCommonController {
+public class ConfirmationPaneController {
 
     /**
      * The resource file location of the FMXL file for this controller
@@ -50,7 +50,7 @@ public class ConfirmationPaneCommonController {
      * View model for confirmation display text and notification topic and event
      */
     @InjectViewModel
-    private ConfirmationPaneCommonViewModel viewModel;
+    private ConfirmationPaneViewModel viewModel;
 
     /**
      * Action fired by closing the properties bump out
