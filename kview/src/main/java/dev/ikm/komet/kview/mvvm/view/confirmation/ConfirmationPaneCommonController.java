@@ -7,6 +7,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import org.carlfx.cognitive.loader.InjectViewModel;
 
+import static dev.ikm.komet.kview.mvvm.viewmodel.confirmation.ConfirmationPaneCommonViewModel.ConfirmationPropertyName.*;
+
 /**
  * Controller of the Confirmation pane that has a Title label, Message label, and Close Properties Pane button.
  * The labels are bound to the view model properties, where the text comes from the view model.
@@ -56,7 +58,7 @@ public class ConfirmationPaneCommonController {
      */
     @FXML
     private void closeProperties(ActionEvent event) {
-        viewModel.sendNotification();
+        viewModel.setPropertyValue(CLOSE_CONFIRMATION_PANEL, true);
     }
 
     /**
@@ -64,21 +66,8 @@ public class ConfirmationPaneCommonController {
      */
     @FXML
     public void initialize() {
-
-        // ********************************************************************************************************
-        // ***********  Usage comparisons
-        // ********************************************************************************************************
-
-        confirmationTitle.textProperty().bind(viewModel.getTitleProperty());
-        confirmationMessage.textProperty().bind(viewModel.getMessageProperty());
-
-        // or
-
-        confirmationTitle.textProperty().bind(viewModel.getProperty(ConfirmationPaneCommonViewModel.Properties.CONFIRMATION_TITLE));
-        confirmationMessage.textProperty().bind(viewModel.getProperty(ConfirmationPaneCommonViewModel.Properties.CONFIRMATION_MESSAGE));
-
-        // ********************************************************************************************************
-
+        confirmationTitle.textProperty().bind(viewModel.getProperty(CONFIRMATION_TITLE));
+        confirmationMessage.textProperty().bind(viewModel.getProperty(CONFIRMATION_MESSAGE));
     }
 
 }
