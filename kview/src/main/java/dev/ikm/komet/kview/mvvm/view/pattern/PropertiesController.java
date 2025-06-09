@@ -166,20 +166,20 @@ public class PropertiesController {
         // ! confirmation panel reused by several forms
         // +-----------------------------------------------------------------------
         Config confirmationPanelConfig = new Config(CONFIRMATION_FXML_URL);
-        JFXNode<Pane, ConfirmationPaneController> confirmationPanelJFXNode = FXMLMvvmLoader.make(confirmationPanelConfig);
-        confirmationPane = confirmationPanelJFXNode.node();
+        JFXNode<Pane, ConfirmationPaneController> confirmationPaneJFXNode = FXMLMvvmLoader.make(confirmationPanelConfig);
+        confirmationPane = confirmationPaneJFXNode.node();
 
-        ConfirmationPaneViewModel confirmationViewModel = (ConfirmationPaneViewModel) confirmationPanelJFXNode
-                .getViewModel(ConfirmationPaneController.VIEW_MODEL_NAME).get();
+        Optional<ConfirmationPaneViewModel> confirmationPaneViewModelOpt = confirmationPaneJFXNode.getViewModel(ConfirmationPaneController.VIEW_MODEL_NAME);
+        ConfirmationPaneViewModel confirmationPaneViewModel = confirmationPaneViewModelOpt.get();
 
-        SimpleBooleanProperty closeConfPanelProp = confirmationViewModel.getProperty(CLOSE_CONFIRMATION_PANEL);
+        SimpleBooleanProperty closeConfPanelProp = confirmationPaneViewModel.getProperty(CLOSE_CONFIRMATION_PANEL);
 
         closeConfPanelProp.subscribe(closeIt -> {
             if (closeIt) {
                 EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(),
                         new PropertyPanelEvent(confirmationPane, CLOSE_PANEL));
 
-                confirmationViewModel.reset();
+                confirmationPaneViewModel.reset();
             }
         });
 
@@ -293,8 +293,8 @@ public class PropertiesController {
                 );
                 currentEditPane = continueAddFieldsPane;
             } else if (evt.getEventType() == SHOW_CONTINUE_EDIT_FIELDS) {
-                confirmationViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE, "Continue Editing Fields?");
-                confirmationViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
+                confirmationPaneViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE, "Continue Editing Fields?");
+                confirmationPaneViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
 
                 currentEditPane = confirmationPane;
             }
@@ -316,8 +316,8 @@ public class PropertiesController {
                 StateMachine patternSM = getStateMachine();
                 patternSM.t("addDefinitions");
 
-                confirmationViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE, "Definition Added");
-                confirmationViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
+                confirmationPaneViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE, "Definition Added");
+                confirmationPaneViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
             }
             patternViewModel.save();
         };
@@ -325,11 +325,11 @@ public class PropertiesController {
 
         patternDescriptionEventSubscriber = evt -> {
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_FQN) {
-                confirmationViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE, "Fully Qualified Name Added");
-                confirmationViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
+                confirmationPaneViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE, "Fully Qualified Name Added");
+                confirmationPaneViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
             } else if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
-                confirmationViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE, "Other Name Added");
-                confirmationViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
+                confirmationPaneViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE, "Other Name Added");
+                confirmationPaneViewModel.setPropertyValue(ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
             }
             currentEditPane = confirmationPane;
             contentBorderPane.setCenter(currentEditPane);

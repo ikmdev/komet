@@ -21,6 +21,7 @@ import org.testfx.api.FxToolkit;
 import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.util.WaitForAsyncUtils;
 
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -36,7 +37,7 @@ public class ConfirmationPaneTestFX {
     private static final String CLOSE_BUTTON_ID = "#closePropertiesPanel";
 
     private final FxRobot robot = new FxRobot();
-    private ConfirmationPaneViewModel confirmationViewModel;
+    private ConfirmationPaneViewModel confirmationPaneViewModel;
 
     /**
      * Sets up the test environment before each test.
@@ -63,8 +64,8 @@ public class ConfirmationPaneTestFX {
             JFXNode<BorderPane, ConfirmationPaneController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
             BorderPane confirmationPane = closePropsJfxNode.node();
 
-            confirmationViewModel = (ConfirmationPaneViewModel) closePropsJfxNode
-                    .getViewModel(ConfirmationPaneController.VIEW_MODEL_NAME).get();
+            Optional<ConfirmationPaneViewModel> confirmationPaneViewModelOpt = closePropsJfxNode.getViewModel(ConfirmationPaneController.VIEW_MODEL_NAME);
+            confirmationPaneViewModel = confirmationPaneViewModelOpt.get();
 
             Scene scene = new Scene(confirmationPane, 650, 400);
             stage.setScene(scene);
@@ -110,8 +111,8 @@ public class ConfirmationPaneTestFX {
         CountDownLatch latch = new CountDownLatch(1);
 
         Platform.runLater(() -> {
-            confirmationViewModel.setPropertyValue(CONFIRMATION_TITLE, TITLE);
-            confirmationViewModel.setPropertyValue(CONFIRMATION_MESSAGE, MESSAGE);
+            confirmationPaneViewModel.setPropertyValue(CONFIRMATION_TITLE, TITLE);
+            confirmationPaneViewModel.setPropertyValue(CONFIRMATION_MESSAGE, MESSAGE);
 
             latch.countDown();
         });
@@ -137,7 +138,7 @@ public class ConfirmationPaneTestFX {
         WaitForAsyncUtils.waitForFxEvents();
         assertFalse(closeButton.isDisabled());
 
-        BooleanProperty closeConfPaneProp = confirmationViewModel.getBooleanProperty(CLOSE_CONFIRMATION_PANEL);
+        BooleanProperty closeConfPaneProp = confirmationPaneViewModel.getBooleanProperty(CLOSE_CONFIRMATION_PANEL);
         closeConfPaneProp.subscribe(closeIt -> {
             if (closeIt) {
                 subscribeCalled.set(true);
