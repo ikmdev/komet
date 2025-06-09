@@ -332,7 +332,6 @@ public class NextGenSearchController extends AbstractBasicController {
 
             resultsVBox.getChildren().add(node);
         });
-
     }
 
     /**
