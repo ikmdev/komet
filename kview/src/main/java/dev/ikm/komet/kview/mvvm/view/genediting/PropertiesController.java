@@ -115,8 +115,8 @@ public class PropertiesController {
         ConfirmationPaneViewModel confirmationViewModel = (ConfirmationPaneViewModel) closePropsJfxNode
                 .getViewModel(ConfirmationPaneController.VIEW_MODEL_NAME).get();
 
-        BooleanProperty closeConfPaneProp = confirmationViewModel.getBooleanProperty(CLOSE_CONFIRMATION_PANEL);
-        closeConfPaneProp.subscribe(closeIt -> {
+        BooleanProperty closeConfPanelProp = confirmationViewModel.getBooleanProperty(CLOSE_CONFIRMATION_PANEL);
+        closeConfPanelProp.subscribe(closeIt -> {
             if (closeIt) {
                 EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
                         new PropertyPanelEvent(closePropsPane, CLOSE_PANEL));

@@ -21,7 +21,7 @@ public class ConfirmationPaneController {
     /**
      * The resource file location of the FMXL file for this controller
      */
-    public static final String FXML_FILE = "/dev/ikm/komet/kview/mvvm/view/confirmation/confirmation-pane-common.fxml";
+    public static final String FXML_FILE = "/dev/ikm/komet/kview/mvvm/view/confirmation/confirmation-pane.fxml";
 
     /**
      * The view model instance variable name of this class.
