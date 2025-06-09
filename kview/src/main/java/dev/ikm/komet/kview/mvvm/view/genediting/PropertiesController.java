@@ -35,6 +35,7 @@ import org.carlfx.cognitive.loader.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
@@ -117,7 +118,8 @@ public class PropertiesController {
         BooleanProperty closeConfPaneProp = confirmationViewModel.getBooleanProperty(CLOSE_CONFIRMATION_PANEL);
         closeConfPaneProp.subscribe(closeIt -> {
             if (closeIt) {
-                // TODO send notification here
+                EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                        new PropertyPanelEvent(closePropsPane, CLOSE_PANEL));
 
                 confirmationViewModel.reset();
             }

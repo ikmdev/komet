@@ -50,8 +50,7 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.UUID;
 
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.DEFINITION_CONFIRMATION;
-import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.*;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.CLOSE_CONFIRMATION_PANEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
@@ -177,7 +176,8 @@ public class PropertiesController {
 
         closeConfPaneProp.subscribe(closeIt -> {
             if (closeIt) {
-                // TODO send notification here
+                EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(),
+                        new PropertyPanelEvent(confirmationPane, CLOSE_PANEL));
 
                 confirmationViewModel.reset();
             }
