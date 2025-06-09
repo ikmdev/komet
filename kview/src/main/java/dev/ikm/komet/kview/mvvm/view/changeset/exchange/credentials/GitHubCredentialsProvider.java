@@ -18,7 +18,7 @@ package dev.ikm.komet.kview.mvvm.view.changeset.exchange.credentials;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferences;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.transport.CredentialItem;
 import org.eclipse.jgit.transport.CredentialsProvider;
@@ -30,12 +30,11 @@ import java.util.Optional;
  * A non-interactive credentials provider for GitHub that retrieves authentication
  * information from stored preferences.
  * <p>
- * This implementation extends JGit's {@link CredentialsProvider} and provides GitHub
- * credentials by loading them from the application's preference store via
- * {@link GitHubPreferencesDao}. It supports username and password authentication for
- * GitHub repositories.
+ * Retrieves GitHub credentials from the application's preference store and provides them
+ * to JGit for repository operations. Supports username/password authentication only.
  *
  * @see CredentialsProvider
+ * @see CredentialItem
  * @see GitHubPreferences
  * @see GitHubPreferencesDao
  */
@@ -50,51 +49,112 @@ public class GitHubCredentialsProvider extends CredentialsProvider {
 
     @Override
     public boolean supports(CredentialItem... items) {
-        final MutableList<CredentialItem> unprocessedItems = Lists.mutable.empty();
+        return Lists.immutable.of(items).allSatisfy(this::isItemSupported);
+    }
 
-        for (CredentialItem item : items) {
-            if (item instanceof CredentialItem.InformationalMessage) {
-                continue;
-            }
-            if (item instanceof CredentialItem.Username) {
-                continue;
-            }
-            if (item instanceof CredentialItem.Password) {
-                continue;
-            }
-            if (item instanceof CredentialItem.StringType) {
-                if (item.getPromptText().equals("Password: ")) {
-                    continue;
-                }
-            }
+    /**
+     * Checks if this provider supports a single credential item.
+     *
+     * @param item the credential item to verify
+     * @return {@code true} if the item is supported
+     */
+    private boolean isItemSupported(CredentialItem item) {
+        return item instanceof CredentialItem.InformationalMessage ||
+                item instanceof CredentialItem.Username ||
+                item instanceof CredentialItem.Password ||
+                isPasswordStringType(item);
+    }
 
-            unprocessedItems.add(item);
-        }
-
-        return unprocessedItems.isEmpty();
+    /**
+     * Determines if the item is a password StringType credential.
+     *
+     * @param item the credential item to check
+     * @return {@code true} if the item is a password StringType
+     */
+    private boolean isPasswordStringType(CredentialItem item) {
+        return item instanceof CredentialItem.StringType &&
+                "Password: ".equals(item.getPromptText());
     }
 
     @Override
     public boolean get(URIish uri, CredentialItem... items) throws UnsupportedCredentialItem {
-        final MutableList<CredentialItem> unprocessedItems = Lists.mutable.empty();
         final Optional<GitHubPreferences> gitHubPrefsOpt = gitHubPreferencesDao.load();
 
-        for (CredentialItem item : items) {
-            if (item instanceof CredentialItem.Username username) {
-                gitHubPrefsOpt.ifPresent(gitHubPreferences ->
-                        username.setValue(gitHubPreferences.gitUsername()));
-            } else if (item instanceof CredentialItem.Password password) {
-                gitHubPrefsOpt.ifPresent(gitHubPreferences ->
-                        password.setValue(gitHubPreferences.gitPassword()));
-            } else {
-                unprocessedItems.add(item);
-            }
+        // Handle missing preferences
+        if (gitHubPrefsOpt.isEmpty()) {
+            return handleMissingPreferences(uri, items);
         }
 
-        if (unprocessedItems.isEmpty()) {
-            return true;
+        // Populate credential values from preferences
+        final GitHubPreferences preferences = gitHubPrefsOpt.get();
+        Lists.immutable.of(items)
+                .select(this::isUsernamePasswordItem)
+                .forEach(item -> setCredentialValue(item, preferences));
+
+        return checkForUnsupportedItems(uri, items);
+    }
+
+    /**
+     * Checks if the item requires username or password values from preferences.
+     *
+     * @param item the credential item to check
+     * @return {@code true} if the item is a username or password credential
+     */
+    private boolean isUsernamePasswordItem(CredentialItem item) {
+        return item instanceof CredentialItem.Username ||
+                item instanceof CredentialItem.Password;
+    }
+
+    /**
+     * Handles the case when GitHub preferences are not configured.
+     *
+     * @param uri the repository URI
+     * @param items the credential items to process
+     * @return {@code true} if processing can continue
+     * @throws UnsupportedCredentialItem if credential items require preferences
+     */
+    private boolean handleMissingPreferences(URIish uri, CredentialItem... items) throws UnsupportedCredentialItem {
+        final boolean hasCredentialItems = Lists.immutable.of(items).anySatisfy(this::isUsernamePasswordItem);
+
+        if (hasCredentialItems) {
+            throw new UnsupportedCredentialItem(uri, "No GitHub preferences configured");
         }
 
-        throw new UnsupportedCredentialItem(uri, unprocessedItems.size() + " credential items not supported");
+        return checkForUnsupportedItems(uri, items);
+    }
+
+    /**
+     * Validates that all credential items are supported.
+     *
+     * @param uri the repository URI
+     * @param items the credential items to validate
+     * @return {@code true} if all items are supported
+     * @throws UnsupportedCredentialItem if any unsupported items are found
+     */
+    private boolean checkForUnsupportedItems(URIish uri, CredentialItem... items) throws UnsupportedCredentialItem {
+        final ImmutableList<CredentialItem> unsupportedItems = Lists.immutable.of(items).reject(this::isItemSupported);
+
+        if (unsupportedItems.notEmpty()) {
+            throw new UnsupportedCredentialItem(uri,
+                    unsupportedItems.size() + " credential items not supported");
+        }
+
+        return true;
+    }
+
+    /**
+     * Sets the credential value for a supported item using stored preferences.
+     *
+     * @param item the credential item to populate
+     * @param preferences the GitHub preferences containing credential data
+     * @throws IllegalArgumentException if the item type is unexpected
+     */
+    private void setCredentialValue(CredentialItem item, GitHubPreferences preferences) {
+        switch (item) {
+            case CredentialItem.Username username -> username.setValue(preferences.gitUsername());
+            case CredentialItem.Password password -> password.setValue(preferences.gitPassword());
+            default -> throw new IllegalArgumentException("Unexpected credential item type: " +
+                    item.getClass().getSimpleName());
+        }
     }
 }
