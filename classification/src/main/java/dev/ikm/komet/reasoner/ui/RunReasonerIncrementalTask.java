@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.reasoner.ui;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -22,8 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import dev.ikm.komet.framework.EditedConceptTracker;
 import dev.ikm.tinkar.common.service.PrimitiveData;
-import dev.ikm.tinkar.entity.SemanticVersionRecord;
-import dev.ikm.tinkar.entity.graph.DiTreeEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.reasoner.service.ClassifierResults;
 import dev.ikm.tinkar.reasoner.service.ReasonerService;
 
@@ -51,18 +51,18 @@ public class RunReasonerIncrementalTask extends RunReasonerTaskBase {
 		updateMessage("Step " + workDone + ": Build changes");
 		if (logParents)
 			logParents();
-		for (SemanticVersionRecord edit : EditedConceptTracker.getEdits()) {
-			DiTreeEntity def = (DiTreeEntity) edit.fieldValues().get(0);
-			LOG.info("Edit: " + edit.referencedComponentNid() + " " + def);
-			reasonerService.processIncremental(def, edit.referencedComponentNid());
+		for (SemanticEntityVersion edit : EditedConceptTracker.getEdits()) {
+			LOG.info("\nEdit: " + edit.referencedComponentNid() + " "
+					+ PrimitiveData.text(edit.referencedComponentNid()) + "\n" + edit);
 		}
+		reasonerService.processIncremental(List.of(), EditedConceptTracker.getEdits());
 		EditedConceptTracker.removeEdits();
 		updateProgress(workDone);
 	}
 
 	private void logParents() {
 		LOG.info(">>>>>");
-		for (SemanticVersionRecord edit : EditedConceptTracker.getEdits()) {
+		for (SemanticEntityVersion edit : EditedConceptTracker.getEdits()) {
 			int editNid = edit.referencedComponentNid();
 			LOG.info("Con: " + editNid + " " + PrimitiveData.text(editNid));
 			reasonerService.getParents(editNid).forEach(parent -> {
