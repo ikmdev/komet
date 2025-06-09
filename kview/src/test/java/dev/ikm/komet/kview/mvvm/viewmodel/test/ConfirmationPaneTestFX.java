@@ -22,7 +22,6 @@ import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.util.WaitForAsyncUtils;
 
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.*;
@@ -108,16 +107,12 @@ public class ConfirmationPaneTestFX {
 
         WaitForAsyncUtils.waitForFxEvents();
 
-        CountDownLatch latch = new CountDownLatch(1);
-
         Platform.runLater(() -> {
             confirmationPaneViewModel.setPropertyValue(CONFIRMATION_TITLE, TITLE);
             confirmationPaneViewModel.setPropertyValue(CONFIRMATION_MESSAGE, MESSAGE);
-
-            latch.countDown();
         });
 
-        latch.await();
+        WaitForAsyncUtils.waitForFxEvents();
 
         assertEquals(TITLE, titleLabel.getText());
         assertEquals(MESSAGE, messageLabel.getText());
