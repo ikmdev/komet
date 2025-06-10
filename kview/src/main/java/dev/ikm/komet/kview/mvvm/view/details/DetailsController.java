@@ -890,18 +890,7 @@ public class DetailsController  {
     public void onReasonerSlideoutTray(Consumer<ToggleButton> reasonerResultsControllerConsumer) {
         this.reasonerResultsControllerConsumer = reasonerResultsControllerConsumer;
     }
-    public void updateConceptBanner(DescrName fqnDescrName) {
-        if (fqnDescrName == null) return;
 
-        // Title (FQN of concept)
-        String conceptNameStr = fqnDescrName.getNameText();
-        fqnTitleText.setText(conceptNameStr);
-        conceptNameTooltip.setText(conceptNameStr);
-
-        // Definition description text
-        definitionTextField.setText("");
-
-    }
     /**
      * Responsible for populating the top banner area of the concept view panel.
      */
