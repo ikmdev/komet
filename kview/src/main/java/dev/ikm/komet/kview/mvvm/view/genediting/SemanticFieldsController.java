@@ -116,6 +116,8 @@ public class SemanticFieldsController {
 
     Subscriber<EntityVersionChangeEvent> entityVersionChangeEventSubscriber;
 
+    private String submitMessage;
+
     private boolean reloadPatternNavigator;
 
     private void enableDisableButtons() {
@@ -187,7 +189,10 @@ public class SemanticFieldsController {
         if (semantic != null && genEditingViewModel.getPropertyValue(MODE) == EDIT) {
                 //Change the button name to RESET FORM in EDIT MODE
                 clearOrResetFormButton.setText("RESET FORM");
+                submitMessage = "Semantic Details Edited Successfully!";
             setupEditSemanticDetails();
+        }else {
+            submitMessage = "Semantic Details Added Successfully!";
         }
         genEditingViewModel.getProperty(MODE).subscribe((mode) -> {
             if(mode == EDIT){
@@ -366,7 +371,7 @@ public class SemanticFieldsController {
                                )
                                .show(
                                        Toast.Status.SUCCESS,
-                                       "Semantic Details Added Successfully!"
+                                       submitMessage
                                );
                    });
                });
