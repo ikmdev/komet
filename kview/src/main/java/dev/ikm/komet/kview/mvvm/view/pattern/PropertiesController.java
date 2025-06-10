@@ -359,12 +359,6 @@ public class PropertiesController {
                 .setPropertyValue(NAME_TYPE, FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
                 .setPropertyValue(TITLE_TEXT, ADD_FQN_TITLE_TEXT)
                 .setPropertyValue(DESCRIPTION_NAME_TYPE, "Fully Qualified Name")
-                .setPropertyValue(NAME_TEXT, descrName.getNameText())
-                .setPropertyValue(NAME_TYPE, descrName.getNameType())
-                .setPropertyValue(CASE_SIGNIFICANCE, descrName.getCaseSignificance())
-                .setPropertyValue(STATUS, descrName.getStatus())
-                .setPropertyValue(MODULE, descrName.getModule())
-                .setPropertyValue(LANGUAGE, descrName.getLanguage())
             ;
         } else if (eventType == SHOW_EDIT_FQN) {
             descrNameViewModel.setPropertyValue(MODE, CREATE) // still creating, pattern not created yet
