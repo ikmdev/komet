@@ -893,10 +893,8 @@ public class DetailsController  {
     public void updateConceptBanner(DescrName fqnDescrName) {
         if (fqnDescrName == null) return;
 
-        EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
         // Title (FQN of concept)
-        final ViewCalculator viewCalculator = viewProperties.calculator();
-        String conceptNameStr = viewCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade.nid());
+        String conceptNameStr = fqnDescrName.getNameText();
         fqnTitleText.setText(conceptNameStr);
         conceptNameTooltip.setText(conceptNameStr);
 
