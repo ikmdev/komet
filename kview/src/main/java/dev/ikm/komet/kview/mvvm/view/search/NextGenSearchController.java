@@ -21,6 +21,10 @@ import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.observable.ObservableConcept;
+import dev.ikm.komet.framework.observable.ObservablePattern;
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
@@ -37,10 +41,14 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.PatternEntity;
+import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -84,6 +92,9 @@ import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC;
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC_ALPHA;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.STAMP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 
@@ -322,13 +333,26 @@ public class NextGenSearchController extends AbstractBasicController {
             controller.setSemanticText(topText);
             controller.setWindowView(windowView);
             Entity entity = Entity.get(entityVersion.nid()).get();
-            controller.setData((ConceptEntity) entity);
+//            ConceptEntity conceptEntity = null;
+//            if (entity instanceof SemanticEntity<?>) {
+//                conceptEntity = Entity.getConceptForSemantic(entity.nid()).get();
+//            } else {
+//                conceptEntity = (ConceptEntity) entity;
+//            }
+            controller.setData(entity);
             if (entityVersion.active()) {
                 controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
             }
             VBox.setMargin(node, new Insets(2, 0, 2, 0));
+            DragAndDropType dropType = switch (entity){
+                case ConceptEntity conceptEntity -> CONCEPT;
+                case SemanticEntity semanticEntity -> SEMANTIC;
+                case PatternEntity patternEntity -> PATTERN;
+                case StampEntity stampEntity -> STAMP;
+                default -> throw new IllegalStateException("Unexpected value: " + entity);
+            };
 
-            setUpDraggable(node, entity, CONCEPT);
+            setUpDraggable(node, entity, dropType);
 
             resultsVBox.getChildren().add(node);
         });

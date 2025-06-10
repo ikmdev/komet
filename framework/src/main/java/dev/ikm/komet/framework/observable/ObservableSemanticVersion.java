@@ -106,7 +106,7 @@ public final class ObservableSemanticVersion
         }
 
        //TODO POC this is a temp workaround remove call to handleUncommittedVersionTransactionStatus()?
-       // handleUncommittedVersionTransactionStatus();
+        handleUncommittedVersionTransactionStatus();
         return Lists.immutable.of(fieldArray);
     }
 
@@ -117,10 +117,12 @@ public final class ObservableSemanticVersion
     private void handleUncommittedVersionTransactionStatus() {
         if(version().uncommitted() && Transaction.forVersion(version()).isEmpty()){
             SemanticVersionRecord version = version();
+            MutableList<Object> fieldsForNewVersion = org.eclipse.collections.impl.factory.Lists.mutable.of(version.fieldValues().toArray());
             StampRecord stamp = Entity.getStamp(version.stampNid());
             Transaction t = Transaction.make();
             StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
-            versionProperty.set(version.with().stampNid(newStamp.nid()).build());
+            SemanticVersionRecord newVersion = version.with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
+            versionProperty.set(newVersion);
         }
     }
 
