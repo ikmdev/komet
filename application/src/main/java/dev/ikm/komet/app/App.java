@@ -1224,8 +1224,8 @@ public class App extends Application {
         if (node instanceof BorderPane kometRoot) {
             kometRoot.setTop(menuBar);
         } else if (node instanceof GridPane topGridPane) {
-            // when we add to the classic komet view, we are adding to the topGridPane, which
-            // is not the outer boraderPand of the window but a grid pane across the top of the window
+            // when we add to the classic Komet view, we are adding to the topGridPane, which
+            // is not the outer BorderPane of the window but a GridPane across the top of the window
             topGridPane.add(menuBar, 0, 0, 2, 1);
         }
     }
