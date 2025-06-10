@@ -165,8 +165,7 @@ public class PropertiesController {
         // +-----------------------------------------------------------------------
         // ! confirmation panel reused by several forms
         // +-----------------------------------------------------------------------
-        Config confirmationPanelConfig = new Config(CONFIRMATION_FXML_URL);
-        JFXNode<Pane, ConfirmationPaneController> confirmationPaneJFXNode = FXMLMvvmLoader.make(confirmationPanelConfig);
+        JFXNode<Pane, ConfirmationPaneController> confirmationPaneJFXNode = FXMLMvvmLoader.make(CONFIRMATION_FXML_URL);
         confirmationPane = confirmationPaneJFXNode.node();
 
         Optional<ConfirmationPaneViewModel> confirmationPaneViewModelOpt = confirmationPaneJFXNode.getViewModel(ConfirmationPaneController.VIEW_MODEL_NAME);

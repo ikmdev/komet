@@ -110,8 +110,8 @@ public class PropertiesController {
 
         editFieldsJfxNode = FXMLMvvmLoader.make(config);
 
-        Config closePropertiesConfig = new Config(this.getClass().getResource(ConfirmationPaneController.FXML_FILE));
-        JFXNode<Pane, ConfirmationPaneController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
+        JFXNode<Pane, ConfirmationPaneController> closePropsJfxNode = FXMLMvvmLoader.make(ConfirmationPaneController.class
+                .getResource(ConfirmationPaneController.FXML_FILE));
         closePropsPane = closePropsJfxNode.node();
 
         Optional<ConfirmationPaneViewModel> confirmationPaneViewModelOpt = closePropsJfxNode.getViewModel(ConfirmationPaneController.VIEW_MODEL_NAME);
