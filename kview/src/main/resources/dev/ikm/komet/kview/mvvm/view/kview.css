@@ -5483,10 +5483,16 @@ Styling a context menu for kview ui/ux controls
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 8, 0, 0, 4);
 }
 
+.dialog-pane .title-label {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 18px;
+    -fx-font-weight: 500;
+    -fx-text-fill: -Grey-12;
+}
+
 /*****************************
 * GitHub Dialogs
 *****************************/
-
 .github-pane .title-label {
     -fx-font-family: "Noto Sans Medium";
     -fx-font-size: 18px;
