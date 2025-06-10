@@ -85,8 +85,8 @@
         <jsr305.version>3.0.2-r7</jsr305.version>
 
         <!-- JPRO Variables -->
-        <jpro.version>2025.1.0</jpro.version>
-        <jpro-platform.version>0.5.6</jpro-platform.version>
+        <jpro.version>2025.2.0</jpro.version>
+        <jpro-platform.version>0.5.7</jpro-platform.version>
 
         <!-- TestFX Variables -->
         <tinkar-starter-data-reasoned.version>1.0.0</tinkar-starter-data-reasoned.version>
