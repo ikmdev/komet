@@ -213,6 +213,10 @@ public class KometStageController implements SaveState {
         });
     }
 
+    public GridPane getTopGridPane() {
+        return topGridPane;
+    }
+
     private List<MenuItem> getTaskMenuItems() {
         ArrayList<MenuItem> items = new ArrayList<>();
         return items;

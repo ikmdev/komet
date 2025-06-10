@@ -87,6 +87,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -507,7 +508,7 @@ public class App extends Application {
         journalStageWindow.setScene(sourceScene);
         // if NOT on Mac OS
         if (System.getProperty("os.name") != null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
-            generateMsWindowsMenu(journalBorderPane, journalStageWindow);
+            generateMsWindowsMenu(journalBorderPane);
         }
 
         // load journal specific window settings
@@ -719,7 +720,7 @@ public class App extends Application {
 
         // if NOT on Mac OS
         if (System.getProperty("os.name") != null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
-            generateMsWindowsMenu(kometRoot, classicKometStage);
+            generateMsWindowsMenu(controller.getTopGridPane());
         }
 
         classicKometStage.setScene(kometScene);
@@ -1175,7 +1176,7 @@ public class App extends Application {
         return future;
     }
 
-    private void generateMsWindowsMenu(BorderPane kometRoot, Stage stage) {
+    private void generateMsWindowsMenu(Node node) {
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("File");
 
@@ -1209,7 +1210,7 @@ public class App extends Application {
         MenuItem minimizeWindow = new MenuItem("Minimize");
         KeyCombination minimizeKeyCombo = new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN);
         minimizeWindow.setOnAction(event -> {
-            Stage obj = (Stage) kometRoot.getScene().getWindow();
+            Stage obj = (Stage) node.getScene().getWindow();
             obj.setIconified(true);
         });
         minimizeWindow.setAccelerator(minimizeKeyCombo);
@@ -1218,8 +1219,15 @@ public class App extends Application {
         menuBar.getMenus().add(fileMenu);
         menuBar.getMenus().add(editMenu);
         menuBar.getMenus().add(windowMenu);
-        //hBox.getChildren().add(menuBar);
-        kometRoot.setTop(menuBar);
+
+        // when we add to the journal view we are adding the menu to the top of a border pane
+        if (node instanceof BorderPane kometRoot) {
+            kometRoot.setTop(menuBar);
+        } else if (node instanceof GridPane topGridPane) {
+            // when we add to the classic komet view, we are adding to the topGridPane, which
+            // is not the outer boraderPand of the window but a grid pane across the top of the window
+            topGridPane.add(menuBar, 0, 0, 2, 1);
+        }
     }
 
     private void showAboutDialog() {
