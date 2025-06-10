@@ -5470,9 +5470,9 @@ Styling a context menu for kview ui/ux controls
 }
 
 /*****************************
-* GitHub Dialogs
+* Dialogs
 *****************************/
-.github-pane {
+.dialog-pane, .github-pane {
     -fx-background-color: -Grey-White;
     -fx-background-radius: 8;
     -fx-border-radius: 6;
@@ -5482,6 +5482,10 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 24px;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 8, 0, 0, 4);
 }
+
+/*****************************
+* GitHub Dialogs
+*****************************/
 
 .github-pane .title-label {
     -fx-font-family: "Noto Sans Medium";
