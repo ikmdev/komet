@@ -64,6 +64,7 @@ public class ConfirmationPaneTestFX {
             BorderPane confirmationPane = closePropsJfxNode.node();
 
             Optional<ConfirmationPaneViewModel> confirmationPaneViewModelOpt = closePropsJfxNode.getViewModel(ConfirmationPaneController.VIEW_MODEL_NAME);
+            assertTrue(confirmationPaneViewModelOpt.isPresent());
             confirmationPaneViewModel = confirmationPaneViewModelOpt.get();
 
             Scene scene = new Scene(confirmationPane, 650, 400);
