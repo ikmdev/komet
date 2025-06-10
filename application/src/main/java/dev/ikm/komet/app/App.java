@@ -720,10 +720,7 @@ public class App extends Application {
 
         // if NOT on Mac OS
         if (System.getProperty("os.name") != null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
-            generateMsWindowsMenu(controller.getTopGridPane());
-        } else {
-            GridPane gridPane = controller.getTopGridPane();
-            gridPane.getChildren().removeIf(node -> GridPane.getRowIndex(node) == null || GridPane.getRowIndex(node) == 0);
+            generateMsWindowsMenu(controller.getTopBarVBox());
         }
 
         classicKometStage.setScene(kometScene);
@@ -1226,10 +1223,10 @@ public class App extends Application {
         // when we add to the journal view we are adding the menu to the top of a border pane
         if (node instanceof BorderPane kometRoot) {
             kometRoot.setTop(menuBar);
-        } else if (node instanceof GridPane topGridPane) {
+        } else if (node instanceof VBox topBarVBox) {
             // when we add to the classic Komet view, we are adding to the topGridPane, which
-            // is not the outer BorderPane of the window but a GridPane across the top of the window
-            topGridPane.add(menuBar, 0, 0, 2, 1);
+            // is not the outer BorderPane of the window but a VBox across the top of the window
+            topBarVBox.getChildren().add(0, menuBar);
         }
     }
 

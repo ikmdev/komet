@@ -41,40 +41,43 @@
             <HBox id="hboxMenuContainer">
                 <!-- programmatically add menu -->
             </HBox>
-            <GridPane fx:id="topGridPane" styleClass="top-grid-pane" BorderPane.alignment="CENTER">
-                <columnConstraints>
-                    <ColumnConstraints hgrow="NEVER" minWidth="150.0" prefWidth="150.0" />
-                    <ColumnConstraints hgrow="NEVER" minWidth="100.0" prefWidth="100.0" />
-                    <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
-                    <ColumnConstraints hgrow="NEVER" minWidth="100.0" prefWidth="100.0" />
-                    <ColumnConstraints hgrow="NEVER" minWidth="150.0" prefWidth="150.0" />
-                </columnConstraints>
-                <rowConstraints>
-               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
-                    <RowConstraints vgrow="SOMETIMES" />
-                </rowConstraints>
-                <children>
-                    <MenuButton fx:id="classifierMenuButton" mnemonicParsing="false" styleClass="classify-menu-button" text="Tasks" GridPane.columnIndex="4" GridPane.halignment="LEFT" GridPane.hgrow="SOMETIMES" GridPane.rowIndex="1" GridPane.valignment="CENTER">
-                        <items>
-                            <MenuItem mnemonicParsing="false" text="Action 1" />
-                        </items>
-                        <GridPane.margin>
-                            <Insets right="30.0" />
-                        </GridPane.margin>
-                    </MenuButton>
-                    <Button fx:id="vanityBox" alignment="TOP_LEFT" focusTraversable="false" onAction="#handleRefreshUserCss" prefHeight="26.0" prefWidth="150.0" styleClass="vanityBox" GridPane.rowIndex="1" />
-                    <Label fx:id="pathLabel" contentDisplay="CENTER" text="Label" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                        <font>
-                            <Font name="System Bold" size="14.0" />
-                        </font>
-                    </Label>
-                    <MenuButton fx:id="viewPropertiesButton" maxHeight="28.0" maxWidth="50.0" minHeight="28.0" minWidth="50.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="61.0" style="-fx-background-color: transparent;" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                        <items>
-                            <Menu fx:id="windowCoordinates" mnemonicParsing="false" text="Coordinates" />
-                        </items>
-                    </MenuButton>
-                </children>
-            </GridPane>
+         <VBox fx:id="topBarVBox" BorderPane.alignment="CENTER">
+            <children>
+                  <GridPane fx:id="topGridPane" styleClass="top-grid-pane">
+                      <columnConstraints>
+                          <ColumnConstraints hgrow="NEVER" minWidth="150.0" prefWidth="150.0" />
+                          <ColumnConstraints hgrow="NEVER" minWidth="100.0" prefWidth="100.0" />
+                          <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+                          <ColumnConstraints hgrow="NEVER" minWidth="100.0" prefWidth="100.0" />
+                          <ColumnConstraints hgrow="NEVER" minWidth="150.0" prefWidth="150.0" />
+                      </columnConstraints>
+                      <rowConstraints>
+                          <RowConstraints vgrow="SOMETIMES" />
+                      </rowConstraints>
+                      <children>
+                          <MenuButton fx:id="classifierMenuButton" mnemonicParsing="false" styleClass="classify-menu-button" text="Tasks" GridPane.columnIndex="4" GridPane.halignment="LEFT" GridPane.hgrow="SOMETIMES" GridPane.valignment="CENTER">
+                              <items>
+                                  <MenuItem mnemonicParsing="false" text="Action 1" />
+                              </items>
+                              <GridPane.margin>
+                                  <Insets right="30.0" />
+                              </GridPane.margin>
+                          </MenuButton>
+                          <Button fx:id="vanityBox" alignment="TOP_LEFT" focusTraversable="false" onAction="#handleRefreshUserCss" prefHeight="26.0" prefWidth="150.0" styleClass="vanityBox" />
+                          <Label fx:id="pathLabel" contentDisplay="CENTER" text="Label" GridPane.columnIndex="2">
+                              <font>
+                                  <Font name="System Bold" size="14.0" />
+                              </font>
+                          </Label>
+                          <MenuButton fx:id="viewPropertiesButton" maxHeight="28.0" maxWidth="50.0" minHeight="28.0" minWidth="50.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="61.0" style="-fx-background-color: transparent;" GridPane.columnIndex="1">
+                              <items>
+                                  <Menu fx:id="windowCoordinates" mnemonicParsing="false" text="Coordinates" />
+                              </items>
+                          </MenuButton>
+                      </children>
+                  </GridPane>
+            </children>
+         </VBox>
         </VBox>
     </top>
 </BorderPane>

@@ -28,6 +28,7 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -90,6 +91,10 @@ public class KometStageController implements SaveState {
     private Button vanityBox;                        // Value injected by FXMLLoader
     @FXML                                                                          // fx:id="topGridPane"
     private GridPane topGridPane;                      // Value injected by FXMLLoader
+
+    @FXML
+    private VBox topBarVBox;
+
     @FXML                                                                          // fx:id="classifierMenuButton"
     private MenuButton classifierMenuButton;             // Value injected by FXMLLoader
 
@@ -213,8 +218,8 @@ public class KometStageController implements SaveState {
         });
     }
 
-    public GridPane getTopGridPane() {
-        return topGridPane;
+    public VBox getTopBarVBox() {
+        return topBarVBox;
     }
 
     private List<MenuItem> getTaskMenuItems() {
