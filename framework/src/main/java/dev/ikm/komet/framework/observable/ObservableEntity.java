@@ -130,9 +130,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
 
         if (!Platform.isFxApplicationThread()) {
             //Throw exception since we need to get the version using JavaFx thread.
-            throw new RuntimeException( "Invalid thread.");
-//            ObservableEntity finalObservableEntity = observableEntity;
-//            Platform.runLater(() -> updateVersions(entity, finalObservableEntity));
+            throw new RuntimeException( "Invalid called thread.");
         } else {
             updateVersions(entity, observableEntity);
         }
