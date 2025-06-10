@@ -95,12 +95,12 @@ public class SortResultSemanticEntryController  {
             // double left click creates the concept window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)){
                 if (mouseEvent.getClickCount() == 2) {
-                    ConceptEntity conceptEntity = null;
-                    if(entity instanceof SemanticEntity semanticEntity){
-                        conceptEntity = Entity.getConceptForSemantic(semanticEntity.nid()).get();
-                    }
+//                    ConceptEntity conceptEntity = null;
+//                    if(entity instanceof SemanticEntity semanticEntity){
+//                        conceptEntity = Entity.getConceptForSemantic(semanticEntity.nid()).get();
+//                    }
                     eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
-                            MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC, conceptEntity));
+                            MakeConceptWindowEvent.OPEN_ENTITY_COMPONENT, entity));
                 }
             }
             // right click shows the context menu
