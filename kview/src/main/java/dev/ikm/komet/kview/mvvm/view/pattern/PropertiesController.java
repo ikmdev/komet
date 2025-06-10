@@ -52,6 +52,8 @@ import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.*;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*;
+import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.FXML_FILE;
+import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.VIEW_MODEL_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.CLOSE_CONFIRMATION_PANEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CREATE;
@@ -69,7 +71,7 @@ public class PropertiesController {
 
     private static final URL PATTERN_HISTORY_FXML_URL = HistoryController.class.getResource("history.fxml");
 
-    private static final URL CONFIRMATION_FXML_URL = ConfirmationPaneController.class.getResource(ConfirmationPaneController.FXML_FILE);
+    private static final URL CONFIRMATION_FXML_URL = ConfirmationPaneController.class.getResource(FXML_FILE);
 
     private static final URL CONTINUE_ADDING_FIELDS_URL = ContinueAddFieldsController.class.getResource("continue-adding-fields.fxml");
 
@@ -168,7 +170,7 @@ public class PropertiesController {
         JFXNode<Pane, ConfirmationPaneController> confirmationPaneJFXNode = FXMLMvvmLoader.make(CONFIRMATION_FXML_URL);
         confirmationPane = confirmationPaneJFXNode.node();
 
-        Optional<ConfirmationPaneViewModel> confirmationPaneViewModelOpt = confirmationPaneJFXNode.getViewModel(ConfirmationPaneController.VIEW_MODEL_NAME);
+        Optional<ConfirmationPaneViewModel> confirmationPaneViewModelOpt = confirmationPaneJFXNode.getViewModel(VIEW_MODEL_NAME);
         ConfirmationPaneViewModel confirmationPaneViewModel = confirmationPaneViewModelOpt.get();
 
         SimpleBooleanProperty closeConfPanelProp = confirmationPaneViewModel.getProperty(CLOSE_CONFIRMATION_PANEL);

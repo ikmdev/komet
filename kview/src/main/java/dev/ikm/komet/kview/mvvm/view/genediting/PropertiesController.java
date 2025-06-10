@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
-
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
@@ -38,6 +37,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.FXML_FILE;
+import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.VIEW_MODEL_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
@@ -111,10 +112,10 @@ public class PropertiesController {
         editFieldsJfxNode = FXMLMvvmLoader.make(config);
 
         JFXNode<Pane, ConfirmationPaneController> closePropsJfxNode = FXMLMvvmLoader.make(ConfirmationPaneController.class
-                .getResource(ConfirmationPaneController.FXML_FILE));
+                .getResource(FXML_FILE));
         closePropsPane = closePropsJfxNode.node();
 
-        Optional<ConfirmationPaneViewModel> confirmationPaneViewModelOpt = closePropsJfxNode.getViewModel(ConfirmationPaneController.VIEW_MODEL_NAME);
+        Optional<ConfirmationPaneViewModel> confirmationPaneViewModelOpt = closePropsJfxNode.getViewModel(VIEW_MODEL_NAME);
         ConfirmationPaneViewModel confirmationPaneViewModel = confirmationPaneViewModelOpt.get();
 
         BooleanProperty closeConfPanelProp = confirmationPaneViewModel.getBooleanProperty(CLOSE_CONFIRMATION_PANEL);
