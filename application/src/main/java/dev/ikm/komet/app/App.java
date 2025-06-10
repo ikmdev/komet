@@ -721,6 +721,9 @@ public class App extends Application {
         // if NOT on Mac OS
         if (System.getProperty("os.name") != null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
             generateMsWindowsMenu(controller.getTopGridPane());
+        } else {
+            GridPane gridPane = controller.getTopGridPane();
+            gridPane.getChildren().removeIf(node -> GridPane.getRowIndex(node) == null || GridPane.getRowIndex(node) == 0);
         }
 
         classicKometStage.setScene(kometScene);
