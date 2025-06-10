@@ -465,7 +465,7 @@ public class DetailsController  {
         fqnProp.addListener(observable -> {
             // not null, populate banner area.
             DescrName fqnDescrName = fqnProp.get();
-            updateConceptBanner(fqnDescrName);
+            updateConceptBanner();
             updateFQNConceptDescription(fqnDescrName);
         });
         ObservableList<DescrName> otherNames = getConceptViewModel().getObservableList(OTHER_NAMES);
