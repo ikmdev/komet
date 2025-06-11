@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.52.0-SNAPSHOT</version>
+        <version>1.52.0-jpro-152-remove-trust-always-option-from-the-ssl-verification-bypass-dialog-SNAPSHOT</version>
     </parent>
     <artifactId>classification</artifactId>
     <dependencies>
