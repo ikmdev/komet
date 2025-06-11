@@ -465,7 +465,7 @@ public class DetailsController  {
         fqnProp.addListener(observable -> {
             // not null, populate banner area.
             DescrName fqnDescrName = fqnProp.get();
-            updateConceptBanner(fqnDescrName);
+            updateConceptBanner();
             updateFQNConceptDescription(fqnDescrName);
         });
         ObservableList<DescrName> otherNames = getConceptViewModel().getObservableList(OTHER_NAMES);
@@ -890,18 +890,7 @@ public class DetailsController  {
     public void onReasonerSlideoutTray(Consumer<ToggleButton> reasonerResultsControllerConsumer) {
         this.reasonerResultsControllerConsumer = reasonerResultsControllerConsumer;
     }
-    public void updateConceptBanner(DescrName fqnDescrName) {
-        if (fqnDescrName == null) return;
 
-        // Title (FQN of concept)
-        String conceptNameStr = fqnDescrName.getNameText();
-        fqnTitleText.setText(conceptNameStr);
-        conceptNameTooltip.setText(conceptNameStr);
-
-        // Definition description text
-        definitionTextField.setText("");
-
-    }
     /**
      * Responsible for populating the top banner area of the concept view panel.
      */
