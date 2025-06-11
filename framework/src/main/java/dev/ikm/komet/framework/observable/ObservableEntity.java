@@ -65,7 +65,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         Entity.provider().addSubscriberWithWeakReference(ENTITY_CHANGE_SUBSCRIBER);
     }
 
-    MutableIntObjectMap<O> versionPropertyMap = new IntObjectHashMap<>();
+    private MutableIntObjectMap<O> versionPropertyMap = new IntObjectHashMap<>();
 
     final private AtomicReference<Entity<V>> entityReference;
 
@@ -142,11 +142,11 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
      * @param entity
      * @param observableEntity
      */
-    private synchronized static void updateVersions(Entity<? extends EntityVersion> entity, ObservableEntity observableEntity) {
+    private static void updateVersions(Entity<? extends EntityVersion> entity, ObservableEntity observableEntity) {
         boolean updateEntityReference = false;
         for (EntityVersion version : entity.versions().stream().sorted((v1, v2) ->
                 Long.compare(v1.stamp().time(), v2.stamp().time())).toList()) {
-            boolean versionPresent = observableEntity.versionPropertyMap.values().stream().anyMatch(obj -> {
+            boolean versionPresent = observableEntity.versionPropertyMap().values().stream().anyMatch(obj -> {
               if (obj instanceof ObservableVersion<?> observableVersion){
                   return observableVersion.stamp().nid() == version.stamp().nid();
               }
@@ -154,7 +154,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
             });
 
             if(!versionPresent){
-                observableEntity.versionPropertyMap.put(version.stamp().nid(), observableEntity.wrap(version));
+                observableEntity.versionPropertyMap().put(version.stamp().nid(), observableEntity.wrap(version));
                 updateEntityReference = true;
             }
         }
