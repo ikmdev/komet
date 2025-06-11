@@ -8,7 +8,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
-import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.junit.jupiter.api.AfterEach;
@@ -24,6 +23,8 @@ import org.testfx.util.WaitForAsyncUtils;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_PANE_FXML_URL;
+import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -59,11 +60,10 @@ public class ConfirmationPaneTestFX {
         FxToolkit.setupStage(stage -> {
             // Load the LoginPage from FXML and display it in the stage
 
-            Config closePropertiesConfig = new Config(ConfirmationPaneController.class.getResource(ConfirmationPaneController.FXML_FILE));
-            JFXNode<BorderPane, ConfirmationPaneController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
+            JFXNode<BorderPane, ConfirmationPaneController> closePropsJfxNode = FXMLMvvmLoader.make(CONFIRMATION_PANE_FXML_URL);
             BorderPane confirmationPane = closePropsJfxNode.node();
 
-            Optional<ConfirmationPaneViewModel> confirmationPaneViewModelOpt = closePropsJfxNode.getViewModel(ConfirmationPaneController.CONFIRMATION_VIEW_MODEL);
+            Optional<ConfirmationPaneViewModel> confirmationPaneViewModelOpt = closePropsJfxNode.getViewModel(CONFIRMATION_VIEW_MODEL);
             assertTrue(confirmationPaneViewModelOpt.isPresent());
             confirmationPaneViewModel = confirmationPaneViewModelOpt.get();
 
