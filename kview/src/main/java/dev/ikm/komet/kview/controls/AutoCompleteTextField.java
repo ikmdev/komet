@@ -9,12 +9,12 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.StackPane;
+import javafx.util.Callback;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
@@ -72,15 +72,15 @@ public class AutoCompleteTextField<T> extends TextField {
 
     // -- suggestions node factory
     /**
-     * This will return a node to be shown in the auto-complete popup for each result returned
+     * This will return a Cell to be shown in the auto-complete popup for each result returned
      * by the 'completer'. AutoCompleteTextField already supplies a default implementation
-     * for this property: it returns a Label inside a simple container, it's text is the result of
-     * calling toString on the object returned by the completer.
+     * for this property: it returns a simple Cell, the text shown in it is the result of
+     * calling String Converter (if supplied) or toString on the object returned by the completer.
      */
-    private final ObjectProperty<Function<T, Node>> suggestionsNodeFactory = new SimpleObjectProperty<>(this::createDefaultNodeForPopup);
-    public final void setSuggestionsNodeFactory(Function<T, Node> factory) { suggestionsNodeFactory.set(factory); }
-    public final Function<T, Node> getSuggestionsNodeFactory() { return suggestionsNodeFactory.get(); }
-    public final ObjectProperty<Function<T, Node>> suggestionsNodeFactoryProperty() { return suggestionsNodeFactory; }
+    private final ObjectProperty<Callback<ListView<T>, ListCell<T>>> suggestionsCellFactory = new SimpleObjectProperty<>(this::createDefaultCellForPopup);
+    public final void setSuggestionsCellFactory(Callback<ListView<T>, ListCell<T>> factory) { suggestionsCellFactory.set(factory); }
+    public final Callback<ListView<T>, ListCell<T>> getSuggestionsCellFactory() { return suggestionsCellFactory.get(); }
+    public final ObjectProperty<Callback<ListView<T>, ListCell<T>>> suggestionsCellFactoryProperty() { return suggestionsCellFactory; }
 
     // -- suggestions node size
     /**
@@ -111,6 +111,12 @@ public class AutoCompleteTextField<T> extends TextField {
     private final ObservableList<String> popupStyleClasses = FXCollections.observableArrayList();
     public ObservableList<String> getPopupStyleClasses() { return popupStyleClasses; }
 
+    // -- popup header pane
+    private final ObjectProperty<HeaderPane> popupHeaderPane = new SimpleObjectProperty<>();
+    public HeaderPane getPopupHeaderPane() { return popupHeaderPane.get(); }
+    public ObjectProperty<HeaderPane> popupHeaderPaneProperty() { return popupHeaderPane; }
+    public void setPopupHeaderPane(HeaderPane popupHeaderPane) { this.popupHeaderPane.set(popupHeaderPane); }
+
     /***************************************************************************
      *                                                                         *
      * Public API                                                              *
@@ -131,13 +137,21 @@ public class AutoCompleteTextField<T> extends TextField {
      *                                                                         *
      **************************************************************************/
 
-    private Node createDefaultNodeForPopup(T value) {
-        StackPane stackPane = new StackPane();
-        String text = getConverter() != null ? getConverter().toString(value) : value.toString();
-        Label label = new Label(text);
-        stackPane.setAlignment(Pos.CENTER_LEFT);
-        stackPane.getChildren().add(label);
-        return stackPane;
+    private ListCell<T> createDefaultCellForPopup(ListView<T> listView) {
+        return new ListCell<>() {
+            @Override
+            protected void updateItem(T item, boolean empty) {
+                super.updateItem(item, empty);
+
+                setGraphic(null);
+                if (item == null) {
+                    setText(null);
+                } else {
+                    String text = getConverter() != null ? getConverter().toString(item) : item.toString();
+                    setText(text);
+                }
+            }
+        };
     }
 
     private static <T> StringConverter<T> defaultStringConverter() {
@@ -149,5 +163,31 @@ public class AutoCompleteTextField<T> extends TextField {
                 return (T) string;
             }
         };
+    }
+
+    /***************************************************************************
+     *                                                                         *
+     * Support Classes                                                         *
+     *                                                                         *
+     **************************************************************************/
+
+    /**
+     * A header that can be shown at the top of the suggestions popup
+     * @param <T> the type of each suggestion
+     */
+    public interface HeaderPane<T> {
+        /**
+         * This method should create and return the Node that will go into the header.
+         *
+         * @return the Node that goes into the header
+         */
+        Node createContent();
+
+        /**
+         * Whenever the suggestion's list is changed this method gets called so that the header can update itself.
+         *
+         * @param items the current list of suggestions.
+         */
+        void updateContent(List<T> items);
     }
 }

@@ -15,9 +15,11 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.Node;
 import javafx.scene.control.Control;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.Skin;
+import javafx.util.Callback;
 import javafx.util.StringConverter;
 
 import java.util.List;
@@ -43,7 +45,6 @@ import java.util.function.Predicate;
  * componentControl.entityProperty().subscribe(entity -> System.out.println("Entity = " + entity));
  * </code></pre>
  *
- * @see KLComponentSetControl
  * @see KLComponentListControl
  */
 public class KLComponentControl extends Control {
@@ -109,8 +110,12 @@ public class KLComponentControl extends Control {
      */
     private final ObjectProperty<EntityProxy> entityProperty = new SimpleObjectProperty<>(this, "entity", null);
     public final ObjectProperty<EntityProxy> entityProperty() { return entityProperty; }
-    public final EntityProxy getEntity() { return entityProperty.get(); }
-    public final void setEntity(EntityProxy value) { entityProperty.set(value); }
+    public final EntityProxy getEntity() {
+        return entityProperty.get() == null ? null : EntityProxy.make(entityProperty.get().nid());
+    }
+    public final void setEntity(EntityProxy value) {
+        entityProperty.set(value == null ? null : EntityProxy.make(value.nid()));
+    }
 
     // -- type ahead completer
     /**
@@ -121,6 +126,16 @@ public class KLComponentControl extends Control {
     public final void setTypeAheadCompleter(Function<String, List<EntityProxy>> handler) { completer.set(handler); }
     public final Function<String, List<EntityProxy>> getCompleter() { return completer.get(); }
     public final ObjectProperty<Function<String, List<EntityProxy>>> completerProperty() { return completer; }
+
+    // -- function to render the component's name and avoid entity.description()
+    private final ObjectProperty<Function<EntityProxy, String>> componentNameRenderer = new SimpleObjectProperty<>();
+    public final Function<EntityProxy, String> getComponentNameRenderer() { return componentNameRenderer.get(); }
+    public final void setComponentNameRenderer(Function<EntityProxy, String> nameHandler) {
+        componentNameRenderer.set(nameHandler);
+    }
+    public final ObjectProperty<Function<EntityProxy, String>> componentNameRendererProperty() {
+        return componentNameRenderer;
+    }
 
     // -- type ahead string converter
     /**
@@ -134,13 +149,13 @@ public class KLComponentControl extends Control {
 
     // -- suggestions node factory
     /**
-     * This will return a node to be shown in the auto-complete popup for each result returned
+     * This will return a Cell to be shown in the auto-complete popup for each result returned
      * by the 'completer'.
      */
-    private final ObjectProperty<Function<EntityProxy, Node>> suggestionsNodeFactory = new SimpleObjectProperty<>();
-    public final void setSuggestionsNodeFactory(Function<EntityProxy, Node> factory) { suggestionsNodeFactory.set(factory); }
-    public final Function<EntityProxy, Node> getSuggestionsNodeFactory() { return suggestionsNodeFactory.get(); }
-    public final ObjectProperty<Function<EntityProxy, Node>> suggestionsNodeFactoryProperty() { return suggestionsNodeFactory; }
+    private final ObjectProperty<Callback<ListView<EntityProxy>, ListCell<EntityProxy>>> suggestionsCellFactory = new SimpleObjectProperty<>();
+    public final void setSuggestionsCellFactory(Callback<ListView<EntityProxy>, ListCell<EntityProxy>> factory) { suggestionsCellFactory.set(factory); }
+    public final Callback<ListView<EntityProxy>, ListCell<EntityProxy>> getSuggestionsCellFactory() { return suggestionsCellFactory.get(); }
+    public final ObjectProperty<Callback<ListView<EntityProxy>, ListCell<EntityProxy>>> suggestionsCellFactoryProperty() { return suggestionsCellFactory; }
 
     // -- search text
     /**
@@ -204,6 +219,12 @@ public class KLComponentControl extends Control {
     public final void setOnRemoveAction(EventHandler<ActionEvent> value) {
         onRemoveActionProperty.set(value);
     }
+
+    // -- typeahead header pane
+    private final ObjectProperty<AutoCompleteTextField.HeaderPane> typeAheadHeaderPane = new SimpleObjectProperty<>();
+    public AutoCompleteTextField.HeaderPane getTypeAheadHeaderPane() { return typeAheadHeaderPane.get(); }
+    public ObjectProperty<AutoCompleteTextField.HeaderPane> typeAheadHeaderPaneProperty() { return typeAheadHeaderPane; }
+    public void setTypeAheadHeaderPane(AutoCompleteTextField.HeaderPane typeAheadHeaderPane) { this.typeAheadHeaderPane.set(typeAheadHeaderPane); }
 
     /***************************************************************************
      *                                                                         *

@@ -20,7 +20,6 @@ import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOP
 import dev.ikm.komet.framework.events.EntityVersionChangeEvent;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.tinkar.collection.ConcurrentReferenceHashMap;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.broadcast.Subscriber;
 import dev.ikm.tinkar.component.FieldDataType;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -35,12 +34,11 @@ import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampRecord;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleListProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
+import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
+import org.eclipse.collections.impl.map.mutable.primitive.IntObjectHashMap;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -67,7 +65,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         Entity.provider().addSubscriberWithWeakReference(ENTITY_CHANGE_SUBSCRIBER);
     }
 
-    final SimpleListProperty<O> versionProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private MutableIntObjectMap<O> versionPropertyMap = new IntObjectHashMap<>();
 
     final private AtomicReference<Entity<V>> entityReference;
 
@@ -77,9 +75,9 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
      * @param analogue the entity record
      * @param newVersionRecord entity version record
      */
-    public void saveToDB(Entity<?> analogue, EntityVersion newVersionRecord ) {
+    public void saveToDB(Entity<?> analogue, EntityVersion newVersionRecord , EntityVersion oldVersionRecord) {
         Entity.provider().putEntity(analogue);
-        versionProperty.add(wrap((V)newVersionRecord));
+        versionPropertyMap.put(newVersionRecord.stamp().nid(), wrap((V)newVersionRecord));
         EvtBusFactory.getDefaultEvtBus()
                 .publish(VERSION_CHANGED_TOPIC, new EntityVersionChangeEvent(this, VERSION_UPDATED, newVersionRecord));
     }
@@ -99,7 +97,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
 
         this.entityReference = new AtomicReference<>(entityClone);
         for (V version : entity.versions()) {
-            versionProperty.add(wrap(version));
+            versionPropertyMap.put(version.stamp().nid(), wrap(version));
         }
     }
 
@@ -115,24 +113,26 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
     public abstract ObservableEntitySnapshot<?,?,?> getSnapshot(ViewCalculator calculator);
 
     public static <OE extends ObservableEntity> OE get(Entity<? extends EntityVersion> entity) {
-        if (entity instanceof ObservableEntity) {
-            ObservableEntity observableEntity = (ObservableEntity) entity;
-            updateVersions(observableEntity.entity(), observableEntity);
-            return (OE) entity;
+
+        ObservableEntity observableEntity = null;
+        if (!(entity instanceof ObservableEntity)) {
+            observableEntity = SINGLETONS.computeIfAbsent(entity.nid(), publicId ->
+                    switch (entity) {
+                        case ConceptEntity conceptEntity -> new ObservableConcept(conceptEntity);
+                        case PatternEntity patternEntity -> new ObservablePattern(patternEntity);
+                        case SemanticEntity semanticEntity -> new ObservableSemantic(semanticEntity);
+                        case StampEntity stampEntity -> new ObservableStamp(stampEntity);
+                        default -> throw new UnsupportedOperationException("Can't handle: " + entity);
+                    });
+        } else {
+            observableEntity = (ObservableEntity) entity;
         }
 
-        ObservableEntity observableEntity = SINGLETONS.computeIfAbsent(entity.nid(), publicId ->
-                switch (entity) {
-                    case ConceptEntity conceptEntity -> new ObservableConcept(conceptEntity);
-                    case PatternEntity patternEntity -> new ObservablePattern(patternEntity);
-                    case SemanticEntity semanticEntity -> new ObservableSemantic(semanticEntity);
-                    case StampEntity stampEntity -> new ObservableStamp(stampEntity);
-                    default -> throw new UnsupportedOperationException("Can't handle: " + entity);
-                });
         if (!Platform.isFxApplicationThread()) {
-            Platform.runLater(() -> updateVersions(entity, observableEntity));
+            //Throw exception since we need to get the version using JavaFx thread.
+            throw new RuntimeException( "Invalid called thread.");
         } else {
-            updateVersions(entity, observableEntity);
+            observableEntity.updateVersions(entity);
         }
         return (OE) observableEntity;
     }
@@ -140,16 +140,25 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
     /**
      * updates the versions in the versionProperty list.
      * @param entity
-     * @param observableEntity
      */
-    public static void updateVersions(Entity<? extends EntityVersion> entity, ObservableEntity observableEntity) {
-        if (!((Entity) observableEntity.entityReference.get()).versions().equals(entity.versions())) {
-            observableEntity.entityReference.set(entity);
-            observableEntity.versionProperty.clear();
-            for (EntityVersion version : entity.versions().stream().sorted((v1, v2) ->
-                    Long.compare(v1.stamp().time(), v2.stamp().time())).toList()) {
-                observableEntity.versionProperty.add(observableEntity.wrap(version));
+    private void updateVersions(Entity<? extends EntityVersion> entity) {
+        boolean updateEntityReference = false;
+        for (EntityVersion version : entity.versions().stream().sorted((v1, v2) ->
+                Long.compare(v1.stamp().time(), v2.stamp().time())).toList()) {
+            boolean versionPresent = versionPropertyMap().values().stream().anyMatch(obj -> {
+              if (obj instanceof ObservableVersion<?> observableVersion){
+                  return observableVersion.stamp().nid() == version.stamp().nid();
+              }
+              return false;
+            });
+
+            if(!versionPresent){
+                versionPropertyMap().put(version.stamp().nid(), wrap((V) version));
+                updateEntityReference = true;
             }
+        }
+        if (updateEntityReference) {
+            entityReference.set((Entity<V>) entity);
         }
     }
 
@@ -161,13 +170,13 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         return entityReference.get();
     }
 
-    public ObservableList<O> versionProperty() {
-        return versionProperty;
+    public MutableIntObjectMap<O> versionPropertyMap() {
+        return versionPropertyMap;
     }
 
     @Override
     public ImmutableList<O> versions() {
-        return Lists.immutable.ofAll(versionProperty);
+        return Lists.immutable.ofAll(versionPropertyMap.values());
     }
 
     @Override
@@ -209,16 +218,13 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         throw new UnsupportedOperationException();
     }
 
-    private class EntityChangeSubscriber implements Subscriber<Integer> {
+    private static class EntityChangeSubscriber implements Subscriber<Integer> {
 
         @Override
         public void onNext(Integer nid) {
             // Do nothing with item, but request another...
-            if (SINGLETONS.containsKey(PrimitiveData.publicId(nid))) {
-                Platform.runLater(() -> {
-                    get(Entity.getFast(nid));
-                });
-
+            if (SINGLETONS.containsKey(nid)) {
+                get(nid);
             }
         }
     }

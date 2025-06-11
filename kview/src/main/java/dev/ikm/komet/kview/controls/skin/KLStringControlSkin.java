@@ -3,16 +3,13 @@ package dev.ikm.komet.kview.controls.skin;
 import dev.ikm.komet.kview.controls.KLStringControl;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
-import javafx.scene.control.SkinBase;
-import javafx.scene.control.TextField;
 
 /**
  * Default skin implementation for the {@link KLStringControl} control
  */
-public class KLStringControlSkin extends SkinBase<KLStringControl> {
+public class KLStringControlSkin extends KLDebounceControlSkin<KLStringControl> {
 
     private final Label titleLabel;
-    private final TextField textField;
 
     /**
      * Creates a new KLStringControlSkin instance, installing the necessary child
@@ -28,13 +25,17 @@ public class KLStringControlSkin extends SkinBase<KLStringControl> {
         titleLabel.textProperty().bind(control.titleProperty());
         titleLabel.getStyleClass().add("editable-title-label");
 
-        textField = new TextField();
         textField.promptTextProperty().bind(control.promptTextProperty());
         textField.getStyleClass().add("text-field");
 
         getChildren().addAll(titleLabel, textField);
+        control.textProperty().subscribe(textField::setText);
 
-        textField.textProperty().bindBidirectional(control.textProperty());
+    }
+
+    @Override
+    protected void updateValueProperty() {
+        getSkinnable().setText(textField.getText());
     }
 
     /** {@inheritDoc} */

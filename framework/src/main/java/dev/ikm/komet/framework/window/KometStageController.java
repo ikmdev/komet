@@ -265,9 +265,9 @@ public class KometStageController implements SaveState {
         return windowSettings;
     }
 
-    public void setup(KometPreferences nodePreferences) {
+    public void setup(KometPreferences nodePreferences, Window window) {
         this.nodePreferences = nodePreferences;
-        this.window = topGridPane.getScene().getWindow();
+        this.window = window;
         this.windowSettings = new WindowSettings(nodePreferences);
         boolean windowInitialized = nodePreferences.getBoolean(WindowKeys.WINDOW_INITIALIZED, false);
 
@@ -312,6 +312,8 @@ public class KometStageController implements SaveState {
                     (List<MenuItem> result) -> windowCoordinates.getItems().addAll(result)));
         });
 
+        // allow the Classic Komet window to save its preferences on close.
+        window.setOnCloseRequest(_ -> save());
         PrimitiveData.getStatesToSave().add(this);
     }
 

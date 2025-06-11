@@ -4,6 +4,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SplitPane?>
@@ -22,10 +23,12 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.SVGPath?>
-<?import javafx.scene.text.Text?>
-<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.shape.Arc?>
 
-<BorderPane fx:id="landingPageBorderPane" minHeight="0.0" minWidth="0.0" prefHeight="682.0" prefWidth="1035.0" styleClass="landing-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController">
+<BorderPane fx:id="landingPageBorderPane" minHeight="0.0" minWidth="0.0" prefHeight="682.0" prefWidth="1035.0"
+            styleClass="landing-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController">
    <left>
       <VBox fillWidth="false" maxWidth="201.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0" prefWidth="144.0" BorderPane.alignment="CENTER">
          <children>
@@ -100,6 +103,19 @@
             </ToggleButton>
             <VBox prefHeight="200.0" prefWidth="100.0" />
             <Region styleClass="flex-space" VBox.vgrow="ALWAYS" />
+            <ToggleButton fx:id="progressToggleButton" mnemonicParsing="false" text="Progress"
+                          visible="false" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <StackPane>
+                     <Group>
+                        <Circle fill="#ff215c0a" radius="13.0" stroke="#ffffff1a" strokeType="INSIDE"
+                                strokeWidth="7.0"/>
+                        <Arc fill="#c4ff2100" length="270.0" radiusX="13.0" radiusY="13.0" startAngle="180.0"
+                             stroke="#00bc62" strokeLineCap="BUTT" strokeType="INSIDE" strokeWidth="7.0"/>
+                     </Group>
+                  </StackPane>
+               </graphic>
+            </ToggleButton>
             <ToggleButton fx:id="settingsToggleButton" mnemonicParsing="false" toggleGroup="$sidebarToggleGroup">
                <graphic>
                   <HBox styleClass="icon-container">
@@ -142,19 +158,45 @@
    </left>
    <center>
       <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" styleClass="flat-split-divider" BorderPane.alignment="CENTER">
-        <items>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="356.0" prefWidth="887.0" styleClass="notification-container">
+         <items>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="356.0" prefWidth="887.0" styleClass="notification-container">
                <children>
-                  <HBox layoutX="69.0" layoutY="14.0" minHeight="5.0" minWidth="5.0" styleClass="welcome-container" AnchorPane.leftAnchor="36.0" AnchorPane.rightAnchor="36.0" AnchorPane.topAnchor="36.0">
-                     <children>
-                        <Label fx:id="welcomeTitleLabel" minHeight="-Infinity" minWidth="-Infinity" styleClass="welcome-title" text="Welcome David!" HBox.hgrow="ALWAYS" />
-                        <StackPane styleClass="help-tips" HBox.hgrow="NEVER">
-                           <children>
-                              <Circle centerX="16.0" fill="DODGERBLUE" radius="16.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" styleClass="circle-background" />
-                              <SVGPath content="M15.2059 19.0307V18.6742C15.2103 17.9788 15.2873 17.4132 15.437 16.9775C15.5866 16.5417 15.8067 16.1742 16.0972 15.8749C16.3921 15.5712 16.7574 15.2807 17.1932 15.0035C17.5189 14.7922 17.7918 14.5699 18.0118 14.3366C18.2363 14.099 18.4057 13.8393 18.5202 13.5576C18.639 13.2715 18.6984 12.9612 18.6984 12.6267C18.6984 12.1513 18.5862 11.7354 18.3617 11.3789C18.1417 11.0224 17.8424 10.7473 17.4638 10.5536C17.0853 10.3556 16.665 10.2565 16.2028 10.2565C15.7627 10.2565 15.3512 10.3534 14.9682 10.547C14.5897 10.7363 14.2794 11.018 14.0373 11.3921C13.7997 11.7618 13.6698 12.2196 13.6478 12.7653H12.4C12.422 12.0391 12.6025 11.4097 12.9414 10.8771C13.2803 10.3446 13.7337 9.93303 14.3014 9.64254C14.8692 9.34764 15.503 9.2002 16.2028 9.2002C16.9335 9.2002 17.5761 9.35204 18.1307 9.65574C18.6852 9.95504 19.1188 10.3666 19.4313 10.8903C19.7438 11.4097 19.9 12.0061 19.9 12.6795C19.9 13.1241 19.8296 13.529 19.6888 13.8943C19.5479 14.2596 19.3366 14.5963 19.055 14.9044C18.7777 15.2125 18.43 15.503 18.0118 15.7759C17.6157 16.04 17.301 16.3019 17.0677 16.5616C16.8344 16.8212 16.6672 17.1183 16.566 17.4528C16.4647 17.7829 16.4097 18.1901 16.4009 18.6742V19.0307H15.2059ZM15.8397 23.0052C15.58 23.0052 15.3556 22.9128 15.1663 22.7279C14.9815 22.5387 14.889 22.3142 14.889 22.0545C14.889 21.7904 14.9815 21.566 15.1663 21.3811C15.3556 21.1962 15.58 21.1038 15.8397 21.1038C16.0994 21.1038 16.3217 21.1962 16.5065 21.3811C16.6958 21.566 16.7904 21.7904 16.7904 22.0545C16.7904 22.2262 16.7464 22.3846 16.6584 22.5299C16.5748 22.6751 16.4603 22.7917 16.3151 22.8798C16.1742 22.9634 16.0158 23.0052 15.8397 23.0052Z" styleClass="help-shape" />
-                           </children>
-                        </StackPane>
-                     </children>
+                  <HBox layoutX="69.0" layoutY="14.0" minHeight="5.0" minWidth="5.0" spacing="8.0"
+                        styleClass="welcome-container" AnchorPane.leftAnchor="36.0" AnchorPane.rightAnchor="36.0"
+                        AnchorPane.topAnchor="36.0">
+                     <Label fx:id="welcomeTitleLabel" minHeight="-Infinity" minWidth="-Infinity"
+                            styleClass="welcome-title" text="Welcome David!" HBox.hgrow="ALWAYS"/>
+                     <VBox alignment="CENTER_LEFT" styleClass="status-pane">
+                        <HBox spacing="4.0">
+                           <VBox.margin>
+                              <Insets/>
+                           </VBox.margin>
+                           <Label maxHeight="Infinity" text="GitHub Status:">
+                              <styleClass>
+                                 <String fx:value="status-label"/>
+                                 <String fx:value="github"/>
+                              </styleClass>
+                           </Label>
+                           <Hyperlink fx:id="githubStatusHyperlink" styleClass="github-status-link" text="Disconnected, Select to connect"/>
+                        </HBox>
+                        <HBox spacing="8.0">
+                           <Label maxHeight="Infinity" text="Dataset:">
+                              <styleClass>
+                                 <String fx:value="status-label"/>
+                                 <String fx:value="dataset"/>
+                              </styleClass>
+                           </Label>
+                           <Label fx:id="selectedDatasetTitleLabel" styleClass="selected-dataset-title-label"
+                                  text="Selected dataset here"/>
+                        </HBox>
+                     </VBox>
+                     <StackPane styleClass="help-tips" HBox.hgrow="NEVER">
+                        <Circle centerX="16.0" fill="DODGERBLUE" radius="16.0" stroke="BLACK" strokeType="INSIDE"
+                                strokeWidth="0.0" styleClass="circle-background"/>
+                        <SVGPath
+                                content="M15.2059 19.0307V18.6742C15.2103 17.9788 15.2873 17.4132 15.437 16.9775C15.5866 16.5417 15.8067 16.1742 16.0972 15.8749C16.3921 15.5712 16.7574 15.2807 17.1932 15.0035C17.5189 14.7922 17.7918 14.5699 18.0118 14.3366C18.2363 14.099 18.4057 13.8393 18.5202 13.5576C18.639 13.2715 18.6984 12.9612 18.6984 12.6267C18.6984 12.1513 18.5862 11.7354 18.3617 11.3789C18.1417 11.0224 17.8424 10.7473 17.4638 10.5536C17.0853 10.3556 16.665 10.2565 16.2028 10.2565C15.7627 10.2565 15.3512 10.3534 14.9682 10.547C14.5897 10.7363 14.2794 11.018 14.0373 11.3921C13.7997 11.7618 13.6698 12.2196 13.6478 12.7653H12.4C12.422 12.0391 12.6025 11.4097 12.9414 10.8771C13.2803 10.3446 13.7337 9.93303 14.3014 9.64254C14.8692 9.34764 15.503 9.2002 16.2028 9.2002C16.9335 9.2002 17.5761 9.35204 18.1307 9.65574C18.6852 9.95504 19.1188 10.3666 19.4313 10.8903C19.7438 11.4097 19.9 12.0061 19.9 12.6795C19.9 13.1241 19.8296 13.529 19.6888 13.8943C19.5479 14.2596 19.3366 14.5963 19.055 14.9044C18.7777 15.2125 18.43 15.503 18.0118 15.7759C17.6157 16.04 17.301 16.3019 17.0677 16.5616C16.8344 16.8212 16.6672 17.1183 16.566 17.4528C16.4647 17.7829 16.4097 18.1901 16.4009 18.6742V19.0307H15.2059ZM15.8397 23.0052C15.58 23.0052 15.3556 22.9128 15.1663 22.7279C14.9815 22.5387 14.889 22.3142 14.889 22.0545C14.889 21.7904 14.9815 21.566 15.1663 21.3811C15.3556 21.1962 15.58 21.1038 15.8397 21.1038C16.0994 21.1038 16.3217 21.1962 16.5065 21.3811C16.6958 21.566 16.7904 21.7904 16.7904 22.0545C16.7904 22.2262 16.7464 22.3846 16.6584 22.5299C16.5748 22.6751 16.4603 22.7917 16.3151 22.8798C16.1742 22.9634 16.0158 23.0052 15.8397 23.0052Z"
+                                styleClass="help-shape"/>
+                     </StackPane>
                   </HBox>
                   <HBox alignment="CENTER_LEFT" layoutX="36.0" layoutY="98.0" prefWidth="200.0" styleClass="notification-container" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="36.0" AnchorPane.topAnchor="104.0">
                      <children>
@@ -164,209 +206,179 @@
                         <Button alignment="CENTER" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" styleClass="all-notification-button" text="SEE ALL NOTIFICATIONS" />
                      </children>
                   </HBox>
-                  <ScrollPane fitToHeight="true" layoutX="40.0" layoutY="169.0" prefHeight="205.0" prefViewportHeight="196.0" prefWidth="853.0" styleClass="notification-card-container" vbarPolicy="NEVER" AnchorPane.leftAnchor="34.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="144.0">
-                     <content>
-                        <HBox fillHeight="false" spacing="23.0">
+                  <ScrollPane fitToHeight="true" layoutX="40.0" layoutY="169.0" prefHeight="205.0"
+                              prefViewportHeight="196.0" prefWidth="853.0" styleClass="notification-card-container"
+                              vbarPolicy="NEVER" AnchorPane.leftAnchor="34.0" AnchorPane.rightAnchor="0.0"
+                              AnchorPane.topAnchor="144.0">
+                     <HBox fillHeight="false" spacing="23.0">
+                        <AnchorPane prefHeight="178.0" prefWidth="280.0">
+                           <styleClass>
+                              <String fx:value="notification-card"/>
+                              <String fx:value="card"/>
+                           </styleClass>
+                           <Region layoutX="224.0" prefHeight="200.0" prefWidth="200.0" styleClass="close-button"
+                                   AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="11.0"/>
+                           <VBox layoutX="31.0" layoutY="14.0" prefHeight="109.0" prefWidth="100.0"
+                                 styleClass="card-info-container" AnchorPane.bottomAnchor="8.0"
+                                 AnchorPane.leftAnchor="16.0" AnchorPane.rightAnchor="16.0"
+                                 AnchorPane.topAnchor="12.0">
+                              <HBox>
+                                 <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true"
+                                            preserveRatio="true">
+                                    <Image url="@identicon-card.png"/>
+                                 </ImageView>
+                                 <Label styleClass="title"
+                                        text="Tetralogy of Fallot with extra text max ..." wrapText="true"/>
+                              </HBox>
+                              <Label styleClass="validation-counts" text="25 errors"/>
+                              <Label alignment="TOP_LEFT" prefHeight="46.0" prefWidth="219.0"
+                                     styleClass="validation-message"
+                                     text="Your Myocardial infarction edit has been retired" wrapText="true"/>
+                              <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="214.0" spacing="6.0"
+                                    styleClass="edit-info-container">
+                                 <Region prefHeight="200.0" prefWidth="200.0">
+                                    <styleClass>
+                                       <String fx:value="icon"/>
+                                       <String fx:value="avatar"/>
+                                    </styleClass>
+                                 </Region>
+                                 <VBox prefHeight="200.0">
+                                    <Label styleClass="last-user-edit" text="Last edited by John"/>
+                                    <Label styleClass="edit-time" text="6 hours ago"/>
+                                 </VBox>
+                              </HBox>
+                           </VBox>
+                        </AnchorPane>
+                        <AnchorPane prefHeight="178.0" prefWidth="280.0">
+                           <styleClass>
+                              <String fx:value="notification-card"/>
+                              <String fx:value="card"/>
+                           </styleClass>
+                           <Region layoutX="224.0" prefHeight="200.0" prefWidth="200.0" styleClass="close-button"
+                                   AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="11.0"/>
+                           <VBox layoutX="31.0" layoutY="14.0" prefHeight="109.0" prefWidth="100.0"
+                                 styleClass="card-info-container" AnchorPane.bottomAnchor="8.0"
+                                 AnchorPane.leftAnchor="16.0" AnchorPane.rightAnchor="16.0"
+                                 AnchorPane.topAnchor="12.0">
+                              <HBox>
+                                 <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true"
+                                            preserveRatio="true">
+                                    <Image url="@identicon-card.png"/>
+                                 </ImageView>
+                                 <Label styleClass="title"
+                                       text="Tetralogy of Fallot with extra text max ..." wrapText="true"/>
+                              </HBox>
+                              <Label styleClass="validation-counts" text="25 errors"/>
+                              <Label alignment="TOP_LEFT" prefHeight="46.0" prefWidth="219.0"
+                                     styleClass="validation-message"
+                                     text="Your Myocardial infarction edit has been retired"
+                                     wrapText="true"/>
+                              <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="214.0" spacing="6.0"
+                                    styleClass="edit-info-container">
+                                 <Region prefHeight="200.0" prefWidth="200.0">
+                                    <styleClass>
+                                       <String fx:value="icon"/>
+                                       <String fx:value="avatar"/>
+                                    </styleClass>
+                                 </Region>
+                                 <VBox prefHeight="200.0">
+                                    <Label styleClass="last-user-edit" text="Last edited by John"/>
+                                    <Label styleClass="edit-time" text="6 hours ago"/>
+                                 </VBox>
+                              </HBox>
+                           </VBox>
+                        </AnchorPane>
+                        <AnchorPane prefHeight="178.0" prefWidth="280.0">
+                           <styleClass>
+                              <String fx:value="notification-card"/>
+                              <String fx:value="card"/>
+                           </styleClass>
+                           <Region layoutX="224.0" prefHeight="200.0" prefWidth="200.0" styleClass="close-button"
+                                   AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="11.0"/>
+                           <VBox layoutX="31.0" layoutY="14.0" prefHeight="109.0" prefWidth="100.0"
+                                 styleClass="card-info-container" AnchorPane.bottomAnchor="8.0"
+                                 AnchorPane.leftAnchor="16.0" AnchorPane.rightAnchor="16.0"
+                                 AnchorPane.topAnchor="12.0">
+                              <HBox>
+                                 <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true"
+                                            preserveRatio="true">
+                                    <Image url="@identicon-card.png"/>
+                                 </ImageView>
+                                 <Label styleClass="title" text="Tetralogy of Fallot with extra text max ..."
+                                       wrapText="true"/>
+                              </HBox>
+                              <Label styleClass="validation-counts" text="25 errors"/>
+                              <Label alignment="TOP_LEFT" prefHeight="46.0" prefWidth="219.0"
+                                     styleClass="validation-message"
+                                     text="Your Myocardial infarction edit has been retired"
+                                     wrapText="true"/>
+                              <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="214.0" spacing="6.0"
+                                    styleClass="edit-info-container">
+                                 <Region prefHeight="200.0" prefWidth="200.0">
+                                    <styleClass>
+                                       <String fx:value="icon"/>
+                                       <String fx:value="avatar"/>
+                                    </styleClass>
+                                 </Region>
+                                 <VBox prefHeight="200.0">
+                                    <Label styleClass="last-user-edit" text="Last edited by John"/>
+                                    <Label styleClass="edit-time" text="6 hours ago"/>
+                                 </VBox>
+                              </HBox>
+                           </VBox>
+                        </AnchorPane>
+                        <AnchorPane prefHeight="178.0" prefWidth="280.0">
                            <children>
-                              <AnchorPane prefHeight="178.0" prefWidth="280.0">
+                              <Region layoutX="224.0" prefHeight="200.0" prefWidth="200.0" styleClass="close-button"
+                                      AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="11.0"/>
+                              <VBox layoutX="31.0" layoutY="14.0" prefHeight="109.0" prefWidth="100.0"
+                                    styleClass="card-info-container" AnchorPane.bottomAnchor="8.0"
+                                    AnchorPane.leftAnchor="16.0" AnchorPane.rightAnchor="16.0"
+                                    AnchorPane.topAnchor="12.0">
                                  <children>
-                                    <Region layoutX="224.0" prefHeight="200.0" prefWidth="200.0" styleClass="close-button" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="11.0" />
-                                    <VBox layoutX="31.0" layoutY="14.0" prefHeight="109.0" prefWidth="100.0" styleClass="card-info-container" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="16.0" AnchorPane.rightAnchor="16.0" AnchorPane.topAnchor="12.0">
+                                    <HBox>
                                        <children>
-                                          <HBox>
-                                             <children>
-                                                <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
-                                                   <image>
-                                                      <Image url="@identicon-card.png" />
-                                                   </image>
-                                                </ImageView>
-                                                <TextFlow>
-                                                   <children>
-                                                      <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="title" text="Tetralogy of Fallot with extra text max ..." wrappingWidth="184.412109375" />
-                                                   </children>
-                                                </TextFlow>
-                                             </children>
-                                          </HBox>
-                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="validation-counts" text="25 errors" />
-                                          <TextFlow>
-                                             <children>
-                                                <Label alignment="TOP_LEFT" prefHeight="46.0" prefWidth="219.0" styleClass="validation-message" text="Your Myocardial infarction edit has been retired" wrapText="true" />
-                                             </children>
-                                          </TextFlow>
-                                          <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="214.0" spacing="6.0" styleClass="edit-info-container">
-                                             <children>
-                                                <Region prefHeight="200.0" prefWidth="200.0">
-                                                   <styleClass>
-                                                      <String fx:value="icon" />
-                                                      <String fx:value="avatar" />
-                                                   </styleClass>
-                                                </Region>
-                                                <VBox prefHeight="200.0">
-                                                   <children>
-                                                      <Label styleClass="last-user-edit" text="Last edited by John" />
-                                                      <Label styleClass="edit-time" text="6 hours ago" />
-                                                   </children>
-                                                </VBox>
-                                             </children>
-                                          </HBox>
+                                          <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true"
+                                                     preserveRatio="true">
+                                             <image>
+                                                <Image url="@identicon-card.png"/>
+                                             </image>
+                                          </ImageView>
+                                          <Label styleClass="title" text="Tetralogy of Fallot with extra text max ..."
+                                                wrapText="true"/>
                                        </children>
-                                    </VBox>
-                                 </children>
-                                 <styleClass>
-                                    <String fx:value="notification-card" />
-                                    <String fx:value="card" />
-                                 </styleClass>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="178.0" prefWidth="280.0">
-                                 <children>
-                                    <Region layoutX="224.0" prefHeight="200.0" prefWidth="200.0" styleClass="close-button" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="11.0" />
-                                    <VBox layoutX="31.0" layoutY="14.0" prefHeight="109.0" prefWidth="100.0" styleClass="card-info-container" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="16.0" AnchorPane.rightAnchor="16.0" AnchorPane.topAnchor="12.0">
+                                    </HBox>
+                                    <Label styleClass="validation-counts" text="25 errors"/>
+                                    <Label alignment="TOP_LEFT" prefHeight="46.0" prefWidth="219.0"
+                                           styleClass="validation-message"
+                                           text="Your Myocardial infarction edit has been retired"
+                                           wrapText="true"/>
+                                    <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="214.0" spacing="6.0"
+                                          styleClass="edit-info-container">
                                        <children>
-                                          <HBox>
+                                          <Region prefHeight="200.0" prefWidth="200.0">
+                                             <styleClass>
+                                                <String fx:value="icon"/>
+                                                <String fx:value="avatar"/>
+                                             </styleClass>
+                                          </Region>
+                                          <VBox prefHeight="200.0">
                                              <children>
-                                                <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
-                                                   <image>
-                                                      <Image url="@identicon-card.png" />
-                                                   </image>
-                                                </ImageView>
-                                                <TextFlow>
-                                                   <children>
-                                                      <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="title" text="Tetralogy of Fallot with extra text max ..." wrappingWidth="184.412109375" />
-                                                   </children>
-                                                </TextFlow>
+                                                <Label styleClass="last-user-edit" text="Last edited by John"/>
+                                                <Label styleClass="edit-time" text="6 hours ago"/>
                                              </children>
-                                          </HBox>
-                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="validation-counts" text="25 errors" />
-                                          <TextFlow>
-                                             <children>
-                                                <Label alignment="TOP_LEFT" prefHeight="46.0" prefWidth="219.0" styleClass="validation-message" text="Your Myocardial infarction edit has been retired" wrapText="true" />
-                                             </children>
-                                          </TextFlow>
-                                          <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="214.0" spacing="6.0" styleClass="edit-info-container">
-                                             <children>
-                                                <Region prefHeight="200.0" prefWidth="200.0">
-                                                   <styleClass>
-                                                      <String fx:value="icon" />
-                                                      <String fx:value="avatar" />
-                                                   </styleClass>
-                                                </Region>
-                                                <VBox prefHeight="200.0">
-                                                   <children>
-                                                      <Label styleClass="last-user-edit" text="Last edited by John" />
-                                                      <Label styleClass="edit-time" text="6 hours ago" />
-                                                   </children>
-                                                </VBox>
-                                             </children>
-                                          </HBox>
+                                          </VBox>
                                        </children>
-                                    </VBox>
+                                    </HBox>
                                  </children>
-                                 <styleClass>
-                                    <String fx:value="notification-card" />
-                                    <String fx:value="card" />
-                                 </styleClass>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="178.0" prefWidth="280.0">
-                                 <children>
-                                    <Region layoutX="224.0" prefHeight="200.0" prefWidth="200.0" styleClass="close-button" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="11.0" />
-                                    <VBox layoutX="31.0" layoutY="14.0" prefHeight="109.0" prefWidth="100.0" styleClass="card-info-container" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="16.0" AnchorPane.rightAnchor="16.0" AnchorPane.topAnchor="12.0">
-                                       <children>
-                                          <HBox>
-                                             <children>
-                                                <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
-                                                   <image>
-                                                      <Image url="@identicon-card.png" />
-                                                   </image>
-                                                </ImageView>
-                                                <TextFlow>
-                                                   <children>
-                                                      <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="title" text="Tetralogy of Fallot with extra text max ..." wrappingWidth="184.412109375" />
-                                                   </children>
-                                                </TextFlow>
-                                             </children>
-                                          </HBox>
-                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="validation-counts" text="25 errors" />
-                                          <TextFlow>
-                                             <children>
-                                                <Label alignment="TOP_LEFT" prefHeight="46.0" prefWidth="219.0" styleClass="validation-message" text="Your Myocardial infarction edit has been retired" wrapText="true" />
-                                             </children>
-                                          </TextFlow>
-                                          <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="214.0" spacing="6.0" styleClass="edit-info-container">
-                                             <children>
-                                                <Region prefHeight="200.0" prefWidth="200.0">
-                                                   <styleClass>
-                                                      <String fx:value="icon" />
-                                                      <String fx:value="avatar" />
-                                                   </styleClass>
-                                                </Region>
-                                                <VBox prefHeight="200.0">
-                                                   <children>
-                                                      <Label styleClass="last-user-edit" text="Last edited by John" />
-                                                      <Label styleClass="edit-time" text="6 hours ago" />
-                                                   </children>
-                                                </VBox>
-                                             </children>
-                                          </HBox>
-                                       </children>
-                                    </VBox>
-                                 </children>
-                                 <styleClass>
-                                    <String fx:value="notification-card" />
-                                    <String fx:value="card" />
-                                 </styleClass>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="178.0" prefWidth="280.0">
-                                 <children>
-                                    <Region layoutX="224.0" prefHeight="200.0" prefWidth="200.0" styleClass="close-button" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="11.0" />
-                                    <VBox layoutX="31.0" layoutY="14.0" prefHeight="109.0" prefWidth="100.0" styleClass="card-info-container" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="16.0" AnchorPane.rightAnchor="16.0" AnchorPane.topAnchor="12.0">
-                                       <children>
-                                          <HBox>
-                                             <children>
-                                                <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
-                                                   <image>
-                                                      <Image url="@identicon-card.png" />
-                                                   </image>
-                                                </ImageView>
-                                                <TextFlow>
-                                                   <children>
-                                                      <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="title" text="Tetralogy of Fallot with extra text max ..." wrappingWidth="184.412109375" />
-                                                   </children>
-                                                </TextFlow>
-                                             </children>
-                                          </HBox>
-                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="validation-counts" text="25 errors" />
-                                          <TextFlow>
-                                             <children>
-                                                <Label alignment="TOP_LEFT" prefHeight="46.0" prefWidth="219.0" styleClass="validation-message" text="Your Myocardial infarction edit has been retired" wrapText="true" />
-                                             </children>
-                                          </TextFlow>
-                                          <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="214.0" spacing="6.0" styleClass="edit-info-container">
-                                             <children>
-                                                <Region prefHeight="200.0" prefWidth="200.0">
-                                                   <styleClass>
-                                                      <String fx:value="icon" />
-                                                      <String fx:value="avatar" />
-                                                   </styleClass>
-                                                </Region>
-                                                <VBox prefHeight="200.0">
-                                                   <children>
-                                                      <Label styleClass="last-user-edit" text="Last edited by John" />
-                                                      <Label styleClass="edit-time" text="6 hours ago" />
-                                                   </children>
-                                                </VBox>
-                                             </children>
-                                          </HBox>
-                                       </children>
-                                    </VBox>
-                                 </children>
-                                 <styleClass>
-                                    <String fx:value="notification-card" />
-                                    <String fx:value="card" />
-                                 </styleClass>
-                              </AnchorPane>
+                              </VBox>
                            </children>
-                        </HBox>
-                     </content>
+                           <styleClass>
+                              <String fx:value="notification-card"/>
+                              <String fx:value="card"/>
+                           </styleClass>
+                        </AnchorPane>
+                     </HBox>
                   </ScrollPane>
                </children>
             </AnchorPane>
@@ -383,7 +395,7 @@
                                  </styleClass></Region>
                            </graphic>
                         </Button>
-                        <Button minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" styleClass="import-button" text="IMPORT">
+                        <Button fx:id="importButton" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" styleClass="import-button" onAction="#openImport" text="IMPORT">
                            <graphic>
                               <Region prefHeight="200.0" prefWidth="200.0" styleClass="import-symbol" />
                            </graphic>
@@ -416,7 +428,7 @@
                                                             <Region prefHeight="99.0" prefWidth="200.0" styleClass="card-chapter-window" />
                                                          </children>
                                                       </FlowPane>
-                                                      <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="title" text="Tetralogy of Fallot Research in Columns" />
+                                                      <Label styleClass="title" text="Tetralogy of Fallot Research in Columns" />
                                                       <HBox alignment="BOTTOM_LEFT" prefHeight="26.0" prefWidth="214.0" spacing="6.0" styleClass="status-info-container">
                                                          <children>
                                                             <Label alignment="CENTER" text="Accepted">
@@ -462,7 +474,7 @@
                                                             <Region prefHeight="99.0" prefWidth="200.0" styleClass="card-chapter-window" />
                                                          </children>
                                                       </FlowPane>
-                                                      <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="title" text="Tetralogy of Fallot Research in Columns" />
+                                                      <Label styleClass="title" text="Tetralogy of Fallot Research in Columns" />
                                                       <HBox alignment="BOTTOM_LEFT" prefHeight="26.0" prefWidth="214.0" spacing="6.0" styleClass="status-info-container">
                                                          <children>
                                                             <Label alignment="CENTER" text="Error">
@@ -508,7 +520,7 @@
                                                             <Region prefHeight="99.0" prefWidth="200.0" styleClass="card-chapter-window" />
                                                          </children>
                                                       </FlowPane>
-                                                      <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="title" text="Tetralogy of Fallot Research in Columns" />
+                                                      <Label styleClass="title" text="Tetralogy of Fallot Research in Columns" />
                                                       <HBox alignment="BOTTOM_LEFT" prefHeight="26.0" prefWidth="214.0" spacing="6.0" styleClass="status-info-container">
                                                          <children>
                                                             <Label alignment="CENTER" text="New">

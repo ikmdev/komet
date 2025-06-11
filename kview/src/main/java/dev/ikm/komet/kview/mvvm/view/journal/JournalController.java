@@ -25,29 +25,30 @@ import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
 import static dev.ikm.komet.kview.fxutils.FXUtils.FX_THREAD_EXECUTOR;
+import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createWindow;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.restoreWindow;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.ENTITY_NID_TYPE;
-import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.*;
+import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
+import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.shortenUUID;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.DEMO_AUTHOR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_COUNT;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
 import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
@@ -74,9 +75,10 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
+import dev.ikm.komet.kview.controls.KLSearchControl;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.NotificationPopup;
-import dev.ikm.komet.kview.controls.KLSearchControl;
+import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
@@ -106,7 +108,6 @@ import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.NidTextEnum;
 import dev.ikm.komet.progress.CompletionNodeFactory;
 import dev.ikm.komet.progress.ProgressNodeFactory;
@@ -132,6 +133,7 @@ import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
+import dev.ikm.tinkar.terms.SemanticFacade;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -180,7 +182,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -268,6 +273,8 @@ public class JournalController {
     @FXML
     private ContextMenu addContextMenu;
 
+    private static Toast toast;
+
 
     /////////////////////////////////////////////////////////////////
     // Private Data
@@ -290,7 +297,6 @@ public class JournalController {
     private final EvtBus journalEventBus = EvtBusFactory.getDefaultEvtBus();
     private volatile boolean isSlideOutOpen = false;
 
-    private final Executor IO_TASK_EXECUTOR = TinkExecutor.threadPool();
     private final Executor VIRTUAL_TASK_EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
     private final List<PublicIdStringKey<ActivityStream>> activityStreams = new ArrayList<>();
 
@@ -426,13 +432,13 @@ public class JournalController {
 
         // Refresh Concept navigator
         refreshCalculatorEventSubscriber = _ -> {
-            // TODO FIXME Must refresh the cache or invalidate cache after a gitsync or import. Below works but will change the UI.
-            // ViewCoordinateHelper.changeViewCalculatorToLatestByTime(getNavigatorNode().getViewProperties(), System.currentTimeMillis() + );
+            // TODO Must refresh the cache or invalidate after a gitsync or import.
             getNavigatorNode().getController().refresh();
         };
 
         journalEventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
 
+        toast = new Toast(workspace);
     }
 
     private void onMouseClickedOnDesktopSurfacePane(MouseEvent mouseEvent) {
@@ -494,9 +500,19 @@ public class JournalController {
             Dragboard dragboard = event.getDragboard();
             boolean success = false;
             if (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)) {
-                List<List<UUID[]>> uuids = (List<List<UUID[]>>) dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
-                uuids.forEach(this::populateWorkspaceWithSelection);
-                success = true;
+                Object uuidsContent = dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
+                if (uuidsContent instanceof List list) {
+                    if (!list.isEmpty() && list.get(0) instanceof UUID[]) {
+                        populateWorkspaceWithSelection(list);
+                        success = true;
+                    } else if (uuidsContent instanceof List<?>) {
+                        List<List<UUID[]>> uuids = (List<List<UUID[]>>) dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
+                        uuids.forEach(this::populateWorkspaceWithSelection);
+                        success = true;
+                    } else {
+                        success = false;
+                    }
+                }
             } else if (dragboard.hasString()) {
                 try {
                     LOG.info("publicId: {}", dragboard.getString());
@@ -593,7 +609,7 @@ public class JournalController {
         Subscriber<ProgressEvent> progressPopupSubscriber = evt -> {
             // if SUMMON event type, load stuff and reference task to progress popup
             if (evt.getEventType() == SUMMON) {
-                Platform.runLater(() -> {
+                runOnFxThread(() -> {
                     // Make the toggle button visible so users can open the popover
                     progressToggleButton.setVisible(true);
 
@@ -652,6 +668,14 @@ public class JournalController {
                         }
                     });
 
+                    // Before adding the progress UI to the popup's vertical container
+                    // Check if we already have 4 progress panes and remove the oldest one if needed
+                    if (progressPopupPane.getChildren().size() >= 4) {
+                        // Remove the oldest progress pane (first child)
+                        Node oldestPane = progressPopupPane.getChildren().getFirst();
+                        progressPopupPane.getChildren().remove(oldestPane);
+                    }
+
                     // Add the progress UI to the popup's vertical container
                     progressPopupPane.getChildren().add(progressPane);
 
@@ -691,6 +715,7 @@ public class JournalController {
         return new Point2D(popupAnchorX, popupAnchorY);
     }
 
+    @SuppressWarnings("unchecked")
     private JFXNode<Pane, ProgressController> createProgressBox(Task<Void> task, String cancelButtonText) {
         // Create one inside the list for bump out
         // Inject Stamp view model into form.
@@ -700,8 +725,7 @@ public class JournalController {
                         .setPropertyValue(CANCEL_BUTTON_TEXT_PROP, cancelButtonText))
                 );
 
-        JFXNode<Pane, ProgressController> progressJFXNode = FXMLMvvmLoader.make(config);
-        return progressJFXNode;
+        return (JFXNode<Pane, ProgressController>) FXMLMvvmLoader.make(config);
     }
 
     public ToggleButton getSettingsToggleButton() {
@@ -842,12 +866,12 @@ public class JournalController {
                     createConceptWindow(conceptFacade, nidTextEnum, null);
                 } else if (entity instanceof PatternFacade patternFacade) {
                     createPatternWindow(patternFacade, getNavigatorNode().getViewProperties());
+                } else if (entity instanceof SemanticFacade semanticFacade) {
+                    createGenEditWindow(semanticFacade, getNavigatorNode().getViewProperties(), false);
                 }
-
             } else if (treeItemValue instanceof SemanticEntityVersion semanticEntityVersion) {
-                nidTextEnum = SEMANTIC_ENTITY;
-                ConceptFacade conceptFacade = Entity.getConceptForSemantic(semanticEntityVersion.nid()).get();
-                createConceptWindow(conceptFacade, nidTextEnum, null);
+                SemanticFacade semanticFacade = semanticEntityVersion.entity();
+                createGenEditWindow(semanticFacade, getNavigatorNode().getViewProperties(), false);
             }
         };
         controller.getDoubleCLickConsumers().add(displayInDetailsView);
@@ -1041,7 +1065,7 @@ public class JournalController {
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
 
         // copying the observable view
-        viewProperties.nodeView().setValue(navigatorNode.getController().getObservableView().getValue());
+        viewProperties.nodeView().setValue(navigatorNode.getViewProperties().nodeView().getValue());
 
         AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
                 journalTopic, conceptFacade, viewProperties, preferences);
@@ -1194,7 +1218,6 @@ public class JournalController {
 
         if (chapterKlWindow instanceof ConceptKlWindow conceptKlWindow) {
             activityStreams.add(conceptKlWindow.getDetailsActivityStreamKey());
-
             // Getting the details node from the concept window
             DetailsNode detailsNode = conceptKlWindow.getDetailsNode();
             detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
@@ -1495,7 +1518,7 @@ public class JournalController {
                 LOG.error("Error in asynchronous window save operation for journal '{}'", getTitle(), e);
                 throw new CompletionException(e);
             }
-        }, IO_TASK_EXECUTOR);
+        }, TinkExecutor.ioThreadPool());
     }
 
     /**
@@ -1518,7 +1541,7 @@ public class JournalController {
                         journalWindowSettings.getValue(JOURNAL_TITLE), e);
                 throw new CompletionException(e);
             }
-        }, IO_TASK_EXECUTOR);
+        }, TinkExecutor.ioThreadPool());
     }
 
     /**
@@ -1587,4 +1610,7 @@ public class JournalController {
     public void newCreatePatternWindow(ActionEvent actionEvent) {
         createPatternWindow(null, windowView.makeOverridableViewProperties());
     }
+
+    public static Toast toast() { return toast; }
+
 }

@@ -78,8 +78,10 @@ public abstract class ObservableCoordinateAbstract<T extends ImmutableCoordinate
         if (!Objects.equals(oldValue, value)) {
             changeBaseCoordinate(this.immutableCoordinate, oldValue, value);
 
-            // iterate through the listener ArrayList without concurrency issues using the iterator
-            var iterator = changeListenerList.iterator();
+            // copy the listener list to avoid the ConcurrentModificationException
+            var copiedListenerList = new ArrayList<ChangeListener<? super T>>(changeListenerList);
+
+            var iterator = copiedListenerList.iterator();
             while (iterator.hasNext()) {
                 iterator.next().changed(immutableCoordinate, oldValue, value);
             }

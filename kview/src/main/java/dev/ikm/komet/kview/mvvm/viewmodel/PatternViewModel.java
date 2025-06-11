@@ -349,14 +349,15 @@ public class PatternViewModel extends FormViewModel {
         ConceptEntity module = stampViewModel.getPropertyValue(MODULE);
         ConceptEntity path = stampViewModel.getPropertyValue(PATH);
         Session session = composer.open(state, authorConcept, module.toProxy(), path.toProxy());
-
+        EntityProxy.Concept conceptEntityMeaning = EntityProxy.Concept.make(((EntityFacade)getPropertyValue(MEANING_ENTITY)).nid());
+        EntityProxy.Concept conceptEntityPurpose = EntityProxy.Concept.make(((EntityFacade)getPropertyValue(PURPOSE_ENTITY)).nid());
         // set up pattern with the fully qualified name
         ObservableList<PatternField> fieldsProperty = getObservableList(FIELDS_COLLECTION);
         session.compose((PatternAssembler patternAssembler) -> {
             patternAssembler
                         .pattern(pattern)
-                        .meaning(((EntityFacade)getPropertyValue(MEANING_ENTITY)).toProxy())
-                        .purpose(((EntityFacade)getPropertyValue(PURPOSE_ENTITY)).toProxy());
+                        .meaning(conceptEntityMeaning)
+                        .purpose(conceptEntityPurpose);
             patternAssembler.attach((FullyQualifiedName fqn) -> fqn
                                     .language(((EntityFacade)getPropertyValue(FQN_LANGUAGE)).toProxy())
                                     .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
@@ -364,8 +365,10 @@ public class PatternViewModel extends FormViewModel {
             // add the field definitions
             for (int i = 0; i< fieldsProperty.size(); i++) {
                 PatternField patternField = fieldsProperty.get(i);
-                patternAssembler.fieldDefinition(patternField.meaning().toProxy(), patternField.purpose().toProxy(),
-                        patternField.dataType().toProxy(), i);
+                EntityProxy.Concept conceptEntityFieldMeaning = EntityProxy.Concept.make(patternField.meaning().nid());
+                EntityProxy.Concept conceptEntityFieldPurpose = EntityProxy.Concept.make(patternField.purpose().nid());
+                EntityProxy.Concept conceptEntityFieldDatatype = EntityProxy.Concept.make(patternField.dataType().nid());
+                patternAssembler.fieldDefinition(conceptEntityFieldMeaning, conceptEntityFieldPurpose, conceptEntityFieldDatatype, i);
             }
         });
 

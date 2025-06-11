@@ -154,7 +154,7 @@ public class PasswordHasher {
         // store the salt with the password
         final String result = salt.key() + "---" + encrypt(password, salt.value(), data);
 
-        LOG.info(String.format("Encrypt Time {} ms", System.currentTimeMillis() - startTime));
+        LOG.info("Encrypt Time {} ms", System.currentTimeMillis() - startTime);
         return result;
     }
 
@@ -350,7 +350,7 @@ public class PasswordHasher {
         final byte[] result = decrypt(password, Base64.getUrlDecoder().decode(encryptedData.substring(0, splitPoint)),
                 encryptedData.substring((splitPoint + 3), encryptedData.length()));
 
-        LOG.info(String.format("Decrypt Time {} ms", System.currentTimeMillis() - startTime));
+        LOG.info("Decrypt Time {} ms", System.currentTimeMillis() - startTime);
         return result;
     }
 
