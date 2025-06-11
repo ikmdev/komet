@@ -7,6 +7,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import org.carlfx.cognitive.loader.InjectViewModel;
 
+import java.net.URL;
+
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.*;
 
 /**
@@ -19,14 +21,14 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.Confi
 public class ConfirmationPaneController {
 
     /**
-     * The resource file location of the FMXL file for this controller
+     * The resource URL location of the FMXL file for this controller
      */
-    public static final String FXML_FILE = "/dev/ikm/komet/kview/mvvm/view/confirmation/confirmation-pane.fxml";
+    public static final URL CONFIRMATION_PANE_FXML_URL = ConfirmationPaneController.class.getResource("confirmation-pane.fxml");
 
     /**
      * The view model instance variable name of this class.
      */
-    public static final String VIEW_MODEL_NAME = "viewModel";
+    public static final String CONFIRMATION_VIEW_MODEL = "viewModel";
 
     /**
      * Button to close the properties bump out

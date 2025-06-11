@@ -63,7 +63,7 @@ public class ConfirmationPaneTestFX {
             JFXNode<BorderPane, ConfirmationPaneController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
             BorderPane confirmationPane = closePropsJfxNode.node();
 
-            Optional<ConfirmationPaneViewModel> confirmationPaneViewModelOpt = closePropsJfxNode.getViewModel(ConfirmationPaneController.VIEW_MODEL_NAME);
+            Optional<ConfirmationPaneViewModel> confirmationPaneViewModelOpt = closePropsJfxNode.getViewModel(ConfirmationPaneController.CONFIRMATION_VIEW_MODEL);
             assertTrue(confirmationPaneViewModelOpt.isPresent());
             confirmationPaneViewModel = confirmationPaneViewModelOpt.get();
 
