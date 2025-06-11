@@ -146,6 +146,9 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.klwindows to javafx.fxml, org.carlfx.cognitive;
     opens dev.ikm.komet.kview.mvvm.viewmodel to dev.ikm.komet.application, javafx.fxml, org.carlfx.cognitive;
 
+    exports dev.ikm.komet.kview.mvvm.view.confirmation;
+    opens dev.ikm.komet.kview.mvvm.view.confirmation;
+
     provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory, dev.ikm.komet.kview.mvvm.view.properties.PropertiesNodeFactory;
 
     provides EntityKlWindowFactory with
