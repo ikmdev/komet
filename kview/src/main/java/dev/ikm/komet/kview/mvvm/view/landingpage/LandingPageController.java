@@ -73,6 +73,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static dev.ikm.komet.framework.controls.TimeAgoCalculatorUtil.calculateTimeAgoWithPeriodAndDuration;
+import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
 import static dev.ikm.komet.kview.events.CreateJournalEvent.CREATE_JOURNAL;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
@@ -304,6 +305,103 @@ public class LandingPageController implements BasicController {
      * <p>
      * This method subscribes to {@link ProgressEvent} instances on the landing page event bus
      * and configures the UI components needed to display task progress information to users.
+     */
+    private void setupProgressListener_old() {
+        // Subscribe to progress events on the event bus
+        Subscriber<ProgressEvent> progressPopupSubscriber = evt -> {
+            // if SUMMON event type, load stuff and reference task to progress popup
+            if (evt.getEventType() == SUMMON) {
+                runOnFxThread(() -> {
+                    // Make the toggle button visible so users can open the popover
+                    progressToggleButton.setVisible(true);
+
+                    Task<Void> task = evt.getTask();
+
+                    // Build the UI (Pane + Controller) for the progress popup
+                    JFXNode<Pane, ProgressController> progressJFXNode = createProgressBox(task, evt.getCancelButtonText());
+                    ProgressController progressController = progressJFXNode.controller();
+                    Pane progressPane = progressJFXNode.node();
+
+                    // Create a new NotificationPopup to show the progress pane
+                    progressNotificationPopup = new NotificationPopup(progressPopupPane);
+                    progressNotificationPopup.setAnchorLocation(WINDOW_BOTTOM_LEFT);
+
+                    // Hide popup when clicking on the progressPopupPane background (if autoHide is enabled)
+                    progressPopupPane.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
+                        if (e.getPickResult().getIntersectedNode() == progressPopupPane
+                                && progressNotificationPopup.isAutoHide()) {
+                            progressNotificationPopup.hide();
+                        }
+                    });
+
+                    // Close button handler in the progress pane
+                    progressController.getCloseProgressButton().setOnAction(actionEvent -> {
+                        // Cancel the task
+                        ProgressHelper.cancel(task);
+
+                        // Remove the progress pane from the popup
+                        progressPopupPane.getChildren().remove(progressPane);
+                        if (progressPopupPane.getChildren().isEmpty()) {
+                            progressToggleButton.setSelected(false);
+                            progressToggleButton.setVisible(false);
+                        }
+                    });
+
+                    progressNotificationPopup.setOnShown(windowEvent -> {
+                        // Select the toggle button when the popup is shown
+                        progressToggleButton.setSelected(true);
+                    });
+
+                    progressNotificationPopup.setOnHidden(windowEvent -> {
+                        // Deselect the toggle button when the popup is hidden
+                        progressToggleButton.setSelected(false);
+                    });
+
+                    progressToggleButton.setOnAction(actionEvent -> {
+                        // Toggle button logic to show/hide the popup
+                        if (progressToggleButton.isSelected()) {
+                            if (progressNotificationPopup.isShowing()) {
+                                progressNotificationPopup.hide();
+                            } else {
+                                progressNotificationPopup.show(progressToggleButton, this::supplyProgressPopupAnchorPoint);
+                            }
+                        } else {
+                            progressNotificationPopup.hide();
+                        }
+                    });
+
+                    // Before adding the progress UI to the popup's vertical container
+                    // Check if we already have 4 progress panes and remove the oldest one if needed
+                    if (progressPopupPane.getChildren().size() >= 4) {
+                        // Remove the oldest progress pane (first child)
+                        Node oldestPane = progressPopupPane.getChildren().getFirst();
+                        progressPopupPane.getChildren().remove(oldestPane);
+                    }
+
+                    // Add the progress UI to the popup's vertical container
+                    progressPopupPane.getChildren().add(progressPane);
+
+                    // Show the progress popup immediately for this new task
+                    progressNotificationPopup.show(progressToggleButton, this::supplyProgressPopupAnchorPoint);
+                });
+            }
+        };
+        landingPageEventBus.subscribe(LANDING_PAGE_TOPIC, ProgressEvent.class, progressPopupSubscriber);
+    }
+
+    /**
+     * Subscribes to progress events (on {@code PROGRESS_TOPIC}) and displays a
+     * {@link NotificationPopup} to show progress information.
+     * <p>
+     * When a new {@link ProgressEvent} with the event type {@code SUMMON} is received,
+     * this method:
+     * <ul>
+     *   <li>Creates and configures the {@link NotificationPopup} that displays the
+     *       current progress tasks.</li>
+     *   <li>Makes the {@code progressToggleButton} visible (so the user can manually
+     *       show or hide the popup).</li>
+     *   <li>Builds the progress user interface and attaches it to the popup.</li>
+     * </ul>
      */
     private void setupProgressListener() {
         // Subscribe to progress events on the event bus
@@ -612,8 +710,6 @@ public class LandingPageController implements BasicController {
      */
     @FXML
     private void openImport(ActionEvent event) {
-        EvtBusFactory.getDefaultEvtBus().publish(IMPORT_TOPIC, new Evt(event.getSource(), Evt.ANY));
-        // Setup the progress listener for task progress events
-        setupProgressListener();
+        EvtBusFactory.getDefaultEvtBus().publish(IMPORT_TOPIC, new Evt("LANDING_PAGE", Evt.ANY));
     }
 }
