@@ -132,7 +132,7 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
             //Throw exception since we need to get the version using JavaFx thread.
             throw new RuntimeException( "Invalid called thread.");
         } else {
-            updateVersions(entity, observableEntity);
+            observableEntity.updateVersions(entity);
         }
         return (OE) observableEntity;
     }
@@ -140,13 +140,12 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
     /**
      * updates the versions in the versionProperty list.
      * @param entity
-     * @param observableEntity
      */
-    private static void updateVersions(Entity<? extends EntityVersion> entity, ObservableEntity observableEntity) {
+    private void updateVersions(Entity<? extends EntityVersion> entity) {
         boolean updateEntityReference = false;
         for (EntityVersion version : entity.versions().stream().sorted((v1, v2) ->
                 Long.compare(v1.stamp().time(), v2.stamp().time())).toList()) {
-            boolean versionPresent = observableEntity.versionPropertyMap().values().stream().anyMatch(obj -> {
+            boolean versionPresent = versionPropertyMap().values().stream().anyMatch(obj -> {
               if (obj instanceof ObservableVersion<?> observableVersion){
                   return observableVersion.stamp().nid() == version.stamp().nid();
               }
@@ -154,12 +153,12 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
             });
 
             if(!versionPresent){
-                observableEntity.versionPropertyMap().put(version.stamp().nid(), observableEntity.wrap(version));
+                versionPropertyMap().put(version.stamp().nid(), wrap((V) version));
                 updateEntityReference = true;
             }
         }
         if (updateEntityReference) {
-            observableEntity.entityReference.set(entity);
+            entityReference.set((Entity<V>) entity);
         }
     }
 

@@ -116,8 +116,6 @@ public class SemanticFieldsController {
 
     Subscriber<EntityVersionChangeEvent> entityVersionChangeEventSubscriber;
 
-    private String submitMessage;
-
     private boolean reloadPatternNavigator;
 
     private void enableDisableButtons() {
@@ -187,12 +185,9 @@ public class SemanticFieldsController {
         semanticProperty.addListener( _ -> setupEditSemanticDetails());
 
         if (semantic != null && genEditingViewModel.getPropertyValue(MODE) == EDIT) {
-                //Change the button name to RESET FORM in EDIT MODE
-                clearOrResetFormButton.setText("RESET FORM");
-                submitMessage = "Semantic Details Edited Successfully!";
+            //Change the button name to RESET FORM in EDIT MODE
+            clearOrResetFormButton.setText("RESET FORM");
             setupEditSemanticDetails();
-        }else {
-            submitMessage = "Semantic Details Added Successfully!";
         }
         genEditingViewModel.getProperty(MODE).subscribe((mode) -> {
             if(mode == EDIT){
@@ -365,6 +360,7 @@ public class SemanticFieldsController {
                        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                                new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
 //                       EntityService.get().beginLoadPhase();
+                       String submitMessage = "Semantic Details %s Successfully!".formatted(genEditingViewModel.getStringProperty(MODE).equals(EDIT) ? "Editing" : "Added");
                        toast()
                                .withUndoAction(undoActionEvent ->
                                        LOG.info("undo called")
