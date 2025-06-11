@@ -234,11 +234,8 @@ public class NextGenSearchController extends AbstractBasicController {
     @FXML
     private void doSearch(ActionEvent actionEvent) {
         actionEvent.consume();
-
         clearView();
-
         String queryText = searchField.getText().strip();
-
         try {
             if (queryText.startsWith("-") && parseInt(queryText).isPresent()) {
                 addComponentFromNid(queryText);
@@ -344,18 +341,22 @@ public class NextGenSearchController extends AbstractBasicController {
                 controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
             }
             VBox.setMargin(node, new Insets(2, 0, 2, 0));
-            DragAndDropType dropType = switch (entity){
-                case ConceptEntity conceptEntity -> CONCEPT;
-                case SemanticEntity semanticEntity -> SEMANTIC;
-                case PatternEntity patternEntity -> PATTERN;
-                case StampEntity stampEntity -> STAMP;
-                default -> throw new IllegalStateException("Unexpected value: " + entity);
-            };
+            DragAndDropType dropType = getDropType(entity);
 
             setUpDraggable(node, entity, dropType);
 
             resultsVBox.getChildren().add(node);
         });
+    }
+
+    private DragAndDropType getDropType(Entity entity) {
+        return switch (entity){
+            case ConceptEntity conceptEntity -> CONCEPT;
+            case SemanticEntity semanticEntity -> SEMANTIC;
+            case PatternEntity patternEntity -> PATTERN;
+            case StampEntity stampEntity -> STAMP;
+            default -> throw new IllegalStateException("Unexpected value: " + entity);
+        };
     }
 
     /**
@@ -458,7 +459,7 @@ public class NextGenSearchController extends AbstractBasicController {
         }
         controller.setWindowView(windowView);
         VBox.setMargin(node, new Insets(2, 0, 2, 0));
-        setUpDraggable(node, entity, CONCEPT);
+        setUpDraggable(node, entity, getDropType(entity));
         return node;
     }
 
@@ -499,7 +500,7 @@ public class NextGenSearchController extends AbstractBasicController {
             }
             controller.setRetired(!entityVersion.active());
             VBox.setMargin(entry.get(), new Insets(8, 0, 8, 0));
-            setUpDraggable(entry.get(), entity, CONCEPT);
+            setUpDraggable(entry.get(), entity, getDropType(entity));
         });
 
         return entry.get();

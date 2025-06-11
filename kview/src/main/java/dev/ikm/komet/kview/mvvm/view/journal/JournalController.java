@@ -396,7 +396,7 @@ public class JournalController {
 
         makePatternWindowEventSubscriber = evt ->
                 createPatternWindow(evt.getPatternFacade(), evt.getViewProperties());
-        journalEventBus.subscribe(journalTopic, MakePatternWindowEvent.class, makePatternWindowEventSubscriber);
+        journalEventBus.subscribe(JOURNAL_TOPIC, MakePatternWindowEvent.class, makePatternWindowEventSubscriber);
 
         // Listening for when a General authoring Window needs to be summoned.
         makeGenEditWindowEventSubscriber = evt ->

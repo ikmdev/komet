@@ -22,7 +22,7 @@ import dev.ikm.tinkar.terms.EntityFacade;
 
 public class MakeConceptWindowEvent extends Evt {
 
-    public static final EvtType<MakeConceptWindowEvent> OPEN_ENTITY_COMPONENT = new EvtType<>(Evt.ANY, "OPEN_CONCEPT_FROM_SEMANTIC");
+    public static final EvtType<MakeConceptWindowEvent> OPEN_ENTITY_COMPONENT = new EvtType<>(Evt.ANY, "OPEN_ENTITY_COMPONENT");
 
     public static final EvtType<MakeConceptWindowEvent> OPEN_CONCEPT_FROM_CONCEPT = new EvtType<>(Evt.ANY, "OPEN_CONCEPT_FROM_CONCEPT");
 

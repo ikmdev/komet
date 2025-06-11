@@ -20,6 +20,7 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
+import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
@@ -95,10 +96,6 @@ public class SortResultSemanticEntryController  {
             // double left click creates the concept window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)){
                 if (mouseEvent.getClickCount() == 2) {
-//                    ConceptEntity conceptEntity = null;
-//                    if(entity instanceof SemanticEntity semanticEntity){
-//                        conceptEntity = Entity.getConceptForSemantic(semanticEntity.nid()).get();
-//                    }
                     eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
                             MakeConceptWindowEvent.OPEN_ENTITY_COMPONENT, entity));
                 }
