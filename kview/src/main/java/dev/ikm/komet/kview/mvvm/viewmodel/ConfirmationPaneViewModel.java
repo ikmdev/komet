@@ -2,6 +2,8 @@ package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.*;
+
 /**
  * The view model for the confirmation pane.  This view model manages the text that is displayed
  * on the confirmation pane, and the notification topic and event that is sent when the close
@@ -22,9 +24,9 @@ public class ConfirmationPaneViewModel extends SimpleViewModel {
      * Initialize the SimpleViewModel with the properties.
      */
     public ConfirmationPaneViewModel() {
-        addProperty(ConfirmationPropertyName.CONFIRMATION_TITLE, "");
-        addProperty(ConfirmationPropertyName.CONFIRMATION_MESSAGE, "");
-        addProperty(ConfirmationPropertyName.CLOSE_CONFIRMATION_PANEL, false);
+        addProperty(CONFIRMATION_TITLE, "");
+        addProperty(CONFIRMATION_MESSAGE, "");
+        addProperty(CLOSE_CONFIRMATION_PANEL, false);
     }
 
 }
