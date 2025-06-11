@@ -613,5 +613,7 @@ public class LandingPageController implements BasicController {
     @FXML
     private void openImport(ActionEvent event) {
         EvtBusFactory.getDefaultEvtBus().publish(IMPORT_TOPIC, new Evt(event.getSource(), Evt.ANY));
+        // Setup the progress listener for task progress events
+        setupProgressListener();
     }
 }
