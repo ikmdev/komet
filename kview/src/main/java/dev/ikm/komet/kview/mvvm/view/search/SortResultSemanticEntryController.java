@@ -110,7 +110,7 @@ public class SortResultSemanticEntryController  {
     @FXML
     private void populateConcept(ActionEvent actionEvent) {
         actionEvent.consume();
-        ConceptEntity conceptEntity = null;
+        ConceptEntity conceptEntity = (ConceptEntity) entity;
         if(entity instanceof SemanticEntity semanticEntity){
             conceptEntity = Entity.getConceptForSemantic(semanticEntity.nid()).get();
         }
@@ -121,7 +121,7 @@ public class SortResultSemanticEntryController  {
     @FXML
     private  void openInConceptNavigator(ActionEvent actionEvent) {
         actionEvent.consume();
-        ConceptEntity conceptEntity = null;
+        ConceptEntity conceptEntity = (ConceptEntity) entity;
         if(entity instanceof SemanticEntity semanticEntity){
             conceptEntity = Entity.getConceptForSemantic(semanticEntity.nid()).get();
         }

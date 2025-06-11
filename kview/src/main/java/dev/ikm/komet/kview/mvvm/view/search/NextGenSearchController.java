@@ -21,10 +21,6 @@ import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
-import dev.ikm.komet.framework.observable.ObservableConcept;
-import dev.ikm.komet.framework.observable.ObservablePattern;
-import dev.ikm.komet.framework.observable.ObservableSemantic;
-import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
@@ -48,12 +44,10 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
-import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -330,26 +324,19 @@ public class NextGenSearchController extends AbstractBasicController {
             controller.setSemanticText(topText);
             controller.setWindowView(windowView);
             Entity entity = Entity.get(entityVersion.nid()).get();
-//            ConceptEntity conceptEntity = null;
-//            if (entity instanceof SemanticEntity<?>) {
-//                conceptEntity = Entity.getConceptForSemantic(entity.nid()).get();
-//            } else {
-//                conceptEntity = (ConceptEntity) entity;
-//            }
             controller.setData(entity);
             if (entityVersion.active()) {
                 controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
             }
             VBox.setMargin(node, new Insets(2, 0, 2, 0));
-            DragAndDropType dropType = getDropType(entity);
 
-            setUpDraggable(node, entity, dropType);
+            setUpDraggable(node, entity, getDragAndDropType(entity));
 
             resultsVBox.getChildren().add(node);
         });
     }
 
-    private DragAndDropType getDropType(Entity entity) {
+    private DragAndDropType getDragAndDropType(Entity entity) {
         return switch (entity){
             case ConceptEntity conceptEntity -> CONCEPT;
             case SemanticEntity semanticEntity -> SEMANTIC;
@@ -459,7 +446,7 @@ public class NextGenSearchController extends AbstractBasicController {
         }
         controller.setWindowView(windowView);
         VBox.setMargin(node, new Insets(2, 0, 2, 0));
-        setUpDraggable(node, entity, getDropType(entity));
+        setUpDraggable(node, entity, getDragAndDropType(entity));
         return node;
     }
 
@@ -500,7 +487,7 @@ public class NextGenSearchController extends AbstractBasicController {
             }
             controller.setRetired(!entityVersion.active());
             VBox.setMargin(entry.get(), new Insets(8, 0, 8, 0));
-            setUpDraggable(entry.get(), entity, getDropType(entity));
+            setUpDraggable(entry.get(), entity, getDragAndDropType(entity));
         });
 
         return entry.get();
