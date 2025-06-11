@@ -185,8 +185,8 @@ public class SemanticFieldsController {
         semanticProperty.addListener( _ -> setupEditSemanticDetails());
 
         if (semantic != null && genEditingViewModel.getPropertyValue(MODE) == EDIT) {
-                //Change the button name to RESET FORM in EDIT MODE
-                clearOrResetFormButton.setText("RESET FORM");
+            //Change the button name to RESET FORM in EDIT MODE
+            clearOrResetFormButton.setText("RESET FORM");
             setupEditSemanticDetails();
         }
         genEditingViewModel.getProperty(MODE).subscribe((mode) -> {
@@ -360,13 +360,14 @@ public class SemanticFieldsController {
                        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                                new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
 //                       EntityService.get().beginLoadPhase();
+                       String submitMessage = "Semantic Details %s Successfully!".formatted(genEditingViewModel.getStringProperty(MODE).equals(EDIT) ? "Editing" : "Added");
                        toast()
                                .withUndoAction(undoActionEvent ->
                                        LOG.info("undo called")
                                )
                                .show(
                                        Toast.Status.SUCCESS,
-                                       "Semantic Details Added Successfully!"
+                                       submitMessage
                                );
                    });
                });
