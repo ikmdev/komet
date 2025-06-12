@@ -95,6 +95,9 @@ public class ImportViewModel extends FormViewModel {
                         }
                     }
                 });
+        // Default value for DESTINATION_TOPIC would be PROGRESS_TOPIC.
+        // Progress popUp (PROGRESS_TOPIC) will be shown in the Journal windows by default.
+        // but When we import the changeSet from the landing page, Progress popup (LANDING_PAGE_TOPIC) will be only shown in the landing page.
         addProperty(DESTINATION_TOPIC, PROGRESS_TOPIC);
     }
 }
