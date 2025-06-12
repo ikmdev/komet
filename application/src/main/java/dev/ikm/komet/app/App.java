@@ -413,7 +413,7 @@ public class App extends Application {
 
             //Pops up the import dialog window on any events received on the IMPORT_TOPIC
             Subscriber<Evt> importSubscriber = event -> {
-                openImport("LANDING_PAGE".equalsIgnoreCase(event.getSource().toString()) ? LANDING_PAGE_TOPIC : PROGRESS_TOPIC);
+                openImport(DESTINATION_TOPIC.equals(event.getSource().toString()) ? PROGRESS_TOPIC : LANDING_PAGE_TOPIC);
             };
             kViewEventBus.subscribe(IMPORT_TOPIC, Evt.class, importSubscriber);
 

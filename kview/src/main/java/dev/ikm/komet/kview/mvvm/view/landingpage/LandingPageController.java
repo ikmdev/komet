@@ -82,6 +82,7 @@ import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalDirName;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
 import static dev.ikm.komet.kview.mvvm.model.Constants.JOURNAL_NAME_PREFIX;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.DESTINATION_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_HEIGHT;
@@ -619,6 +620,6 @@ public class LandingPageController implements BasicController {
      */
     @FXML
     private void openImport(ActionEvent event) {
-        EvtBusFactory.getDefaultEvtBus().publish(IMPORT_TOPIC, new Evt("LANDING_PAGE", Evt.ANY));
+        EvtBusFactory.getDefaultEvtBus().publish(IMPORT_TOPIC, new Evt(DESTINATION_TOPIC, Evt.ANY));
     }
 }

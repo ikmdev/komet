@@ -18,6 +18,7 @@ package dev.ikm.komet.kview.mvvm.view.changeset;
 import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent.GLOBAL_REFRESH;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.DESTINATION_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.SELECTED_FILE;
 import com.jpro.webapi.WebAPI;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -217,7 +218,7 @@ public class ImportController {
         if (importViewModel.validProperty().get()) {
             File selectedFile = importViewModel.getPropertyValue(SELECTED_FILE);
             LoadEntitiesFromProtobufFile importTask = new LoadEntitiesFromProtobufFile(selectedFile);
-            FrameworkTopics destTopic = importViewModel.getPropertyValue("DESTINATION_TOPIC");
+            FrameworkTopics destTopic = importViewModel.getPropertyValue(DESTINATION_TOPIC);
             CompletableFuture<EntityCountSummary> future = ProgressHelper.progress(destTopic, importTask, "Cancel Import");
             future.whenComplete((entityCountSummary, throwable) -> {
                 if (throwable != null) {
