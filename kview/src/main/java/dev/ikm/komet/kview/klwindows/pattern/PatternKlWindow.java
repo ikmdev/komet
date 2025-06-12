@@ -15,6 +15,7 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 import org.carlfx.axonic.StateMachine;
 import org.carlfx.cognitive.loader.Config;
@@ -105,7 +106,8 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
      */
     @Override
     public void onShown() {
-        jfxNode.controller().putTitlePanesArrowOnRight();
+        Platform.runLater( () -> jfxNode.controller().putTitlePanesArrowOnRight());
+
     }
 
     @Override
