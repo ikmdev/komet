@@ -25,10 +25,7 @@ import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.ScreenInfo;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
-import dev.ikm.komet.framework.events.Evt;
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.events.*;
 import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.KometPreferencesStage;
@@ -120,7 +117,7 @@ import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.framework.KometNode.PreferenceKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
-import static dev.ikm.komet.framework.events.FrameworkTopics.IMPORT_TOPIC;
+import static dev.ikm.komet.framework.events.FrameworkTopics.*;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
@@ -134,8 +131,9 @@ import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.Operation
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.PULL;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.SYNC;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.README_FILENAME;
-import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.LANDING_PAGE_TOPIC;
+import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.LANDING_PAGE_SOURCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.DESTINATION_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
@@ -163,6 +161,7 @@ public class App extends Application {
     private LandingPageController landingPageController;
     private EvtBus kViewEventBus;
     private static Stage landingPageWindow;
+
 
     /**
      * An entry point to launch the newer UI panels.
@@ -416,8 +415,8 @@ public class App extends Application {
             state.addListener(this::appStateChangeListener);
 
             //Pops up the import dialog window on any events received on the IMPORT_TOPIC
-            Subscriber<Evt> importSubscriber = _ -> {
-                openImport();
+            Subscriber<Evt> importSubscriber = event -> {
+                openImport(LANDING_PAGE_SOURCE.equals(event.getSource()) ? LANDING_PAGE_TOPIC :  PROGRESS_TOPIC);
             };
             kViewEventBus.subscribe(IMPORT_TOPIC, Evt.class, importSubscriber);
 
@@ -770,7 +769,7 @@ public class App extends Application {
         }
     }
 
-    private void openImport() {
+    private void openImport(FrameworkTopics destinationTopic) {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
@@ -779,14 +778,19 @@ public class App extends Application {
         //set up ImportViewModel
         Config importConfig = new Config(ImportController.class.getResource("import.fxml"))
                 .updateViewModel("importViewModel", importViewModel ->
-                        importViewModel.setPropertyValue(VIEW_PROPERTIES,
-                                windowSettings.getView().makeOverridableViewProperties()));
+                        importViewModel
+                                .setPropertyValue(VIEW_PROPERTIES, windowSettings.getView().makeOverridableViewProperties())
+                                .setPropertyValue(DESTINATION_TOPIC, destinationTopic));
         JFXNode<Pane, ImportController> importJFXNode = FXMLMvvmLoader.make(importConfig);
 
         Pane importPane = importJFXNode.node();
         Scene importScene = new Scene(importPane, Color.TRANSPARENT);
         importStage.setScene(importScene);
         importStage.show();
+    }
+
+    private void openImport() {
+        openImport(PROGRESS_TOPIC);
     }
 
     private void openExport() {
