@@ -107,7 +107,6 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
     @Override
     public void onShown() {
         Platform.runLater( () -> jfxNode.controller().putTitlePanesArrowOnRight());
-
     }
 
     @Override
