@@ -110,22 +110,25 @@ public class SortResultSemanticEntryController  {
     @FXML
     private void populateConcept(ActionEvent actionEvent) {
         actionEvent.consume();
-        ConceptEntity conceptEntity = (ConceptEntity) entity;
-        if(entity instanceof SemanticEntity semanticEntity){
-            conceptEntity = Entity.getConceptForSemantic(semanticEntity.nid()).get();
+        if (entity instanceof ConceptEntity conceptEntity) {
+            eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
+                    MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
+        } else if (entity instanceof SemanticEntity semanticEntity) {
+           ConceptEntity conceptEntity = Entity.getConceptForSemantic(semanticEntity.nid()).get();
+            eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
+                    MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
         }
-        eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
-                MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
     }
 
     @FXML
     private  void openInConceptNavigator(ActionEvent actionEvent) {
         actionEvent.consume();
-        ConceptEntity conceptEntity = (ConceptEntity) entity;
-        if(entity instanceof SemanticEntity semanticEntity){
-            conceptEntity = Entity.getConceptForSemantic(semanticEntity.nid()).get();
+        if(entity instanceof ConceptEntity conceptEntity) {
+            eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));
+        } else if (entity instanceof SemanticEntity semanticEntity) {
+            ConceptEntity conceptEntity = Entity.getConceptForSemantic(semanticEntity.nid()).get();
+            eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));
         }
-        eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));
     }
 
     public boolean isRetired() {
