@@ -130,6 +130,7 @@ import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.Operation
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.PULL;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.SYNC;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.README_FILENAME;
+import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.LANDING_PAGE_SOURCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.DESTINATION_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
@@ -159,6 +160,7 @@ public class App extends Application {
     private LandingPageController landingPageController;
     private EvtBus kViewEventBus;
     private static Stage landingPageWindow;
+
 
     /**
      * An entry point to launch the newer UI panels.
@@ -413,7 +415,7 @@ public class App extends Application {
 
             //Pops up the import dialog window on any events received on the IMPORT_TOPIC
             Subscriber<Evt> importSubscriber = event -> {
-                openImport(LANDING_PAGE_TOPIC.equals(event.getSource()) ? LANDING_PAGE_TOPIC :  PROGRESS_TOPIC);
+                openImport(LANDING_PAGE_SOURCE.equals(event.getSource()) ? LANDING_PAGE_TOPIC :  PROGRESS_TOPIC);
             };
             kViewEventBus.subscribe(IMPORT_TOPIC, Evt.class, importSubscriber);
 

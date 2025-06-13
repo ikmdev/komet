@@ -155,6 +155,8 @@ public class LandingPageController implements BasicController {
     ComboBox<String> notificationTypeFilterComboBox;
 
     public static final String DEMO_AUTHOR = "David";
+    public static final String LANDING_PAGE_SOURCE = "LANDING_PAGE_SOURCE";
+
     private final EvtBus landingPageEventBus = EvtBusFactory.getDefaultEvtBus();
     private final Map<UUID, JournalCardController> journalCardControllerMap = new HashMap<>();
 
@@ -163,6 +165,7 @@ public class LandingPageController implements BasicController {
 
     private final VBox progressPopupPane = new VBox();
     private NotificationPopup progressNotificationPopup;
+
 
     @FXML
     @Override
@@ -620,6 +623,6 @@ public class LandingPageController implements BasicController {
      */
     @FXML
     private void openImport(ActionEvent event) {
-        EvtBusFactory.getDefaultEvtBus().publish(IMPORT_TOPIC, new Evt(LANDING_PAGE_TOPIC, Evt.ANY));
+        EvtBusFactory.getDefaultEvtBus().publish(IMPORT_TOPIC, new Evt(LANDING_PAGE_SOURCE, Evt.ANY));
     }
 }
