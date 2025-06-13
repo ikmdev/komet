@@ -620,6 +620,6 @@ public class LandingPageController implements BasicController {
      */
     @FXML
     private void openImport(ActionEvent event) {
-        EvtBusFactory.getDefaultEvtBus().publish(IMPORT_TOPIC, new Evt(DESTINATION_TOPIC, Evt.ANY));
+        EvtBusFactory.getDefaultEvtBus().publish(IMPORT_TOPIC, new Evt(LANDING_PAGE_TOPIC, Evt.ANY));
     }
 }
