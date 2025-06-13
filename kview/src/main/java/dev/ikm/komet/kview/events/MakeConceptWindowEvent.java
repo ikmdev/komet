@@ -18,14 +18,15 @@ package dev.ikm.komet.kview.events;
 import dev.ikm.komet.framework.events.Evt;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
 
 public class MakeConceptWindowEvent extends Evt {
 
-    public static final EvtType<MakeConceptWindowEvent> OPEN_CONCEPT_FROM_SEMANTIC = new EvtType<>(Evt.ANY, "OPEN_CONCEPT_FROM_SEMANTIC");
+    public static final EvtType<MakeConceptWindowEvent> OPEN_ENTITY_COMPONENT = new EvtType<>(Evt.ANY, "OPEN_ENTITY_COMPONENT");
 
     public static final EvtType<MakeConceptWindowEvent> OPEN_CONCEPT_FROM_CONCEPT = new EvtType<>(Evt.ANY, "OPEN_CONCEPT_FROM_CONCEPT");
 
-    private ConceptFacade conceptFacade;
+    private EntityFacade entityFacade;
 
 
     /**
@@ -33,16 +34,16 @@ public class MakeConceptWindowEvent extends Evt {
      *
      * @param source        the object on which the Event initially occurred
      * @param eventType
-     * @param conceptFacade
+     * @param entityFacade
      * @throws IllegalArgumentException if source is null
      */
-    public MakeConceptWindowEvent(Object source, EvtType eventType, ConceptFacade conceptFacade) {
+    public MakeConceptWindowEvent(Object source, EvtType eventType, EntityFacade entityFacade) {
         super(source, eventType);
-        this.conceptFacade = conceptFacade;
+        this.entityFacade = entityFacade;
     }
 
-    public ConceptFacade getConceptFacade() {
-        return conceptFacade;
+    public EntityFacade getEntityFacade() {
+        return entityFacade;
     }
 
 }

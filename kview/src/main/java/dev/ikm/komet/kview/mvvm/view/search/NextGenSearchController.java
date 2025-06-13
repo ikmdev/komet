@@ -37,7 +37,10 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.PatternEntity;
+import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -45,7 +48,6 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
-import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -84,6 +86,9 @@ import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC;
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC_ALPHA;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.STAMP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 
@@ -223,11 +228,8 @@ public class NextGenSearchController extends AbstractBasicController {
     @FXML
     private void doSearch(ActionEvent actionEvent) {
         actionEvent.consume();
-
         clearView();
-
         String queryText = searchField.getText().strip();
-
         try {
             if (queryText.startsWith("-") && parseInt(queryText).isPresent()) {
                 addComponentFromNid(queryText);
@@ -322,16 +324,26 @@ public class NextGenSearchController extends AbstractBasicController {
             controller.setSemanticText(topText);
             controller.setWindowView(windowView);
             Entity entity = Entity.get(entityVersion.nid()).get();
-            controller.setData((ConceptEntity) entity);
+            controller.setData(entity);
             if (entityVersion.active()) {
                 controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
             }
             VBox.setMargin(node, new Insets(2, 0, 2, 0));
 
-            setUpDraggable(node, entity, CONCEPT);
+            setUpDraggable(node, entity, getDragAndDropType(entity));
 
             resultsVBox.getChildren().add(node);
         });
+    }
+
+    private DragAndDropType getDragAndDropType(Entity entity) {
+        return switch (entity){
+            case ConceptEntity conceptEntity -> CONCEPT;
+            case SemanticEntity semanticEntity -> SEMANTIC;
+            case PatternEntity patternEntity -> PATTERN;
+            case StampEntity stampEntity -> STAMP;
+            default -> throw new IllegalStateException("Unexpected value: " + entity);
+        };
     }
 
     /**
@@ -434,7 +446,7 @@ public class NextGenSearchController extends AbstractBasicController {
         }
         controller.setWindowView(windowView);
         VBox.setMargin(node, new Insets(2, 0, 2, 0));
-        setUpDraggable(node, entity, CONCEPT);
+        setUpDraggable(node, entity, getDragAndDropType(entity));
         return node;
     }
 
@@ -475,7 +487,7 @@ public class NextGenSearchController extends AbstractBasicController {
             }
             controller.setRetired(!entityVersion.active());
             VBox.setMargin(entry.get(), new Insets(8, 0, 8, 0));
-            setUpDraggable(entry.get(), entity, CONCEPT);
+            setUpDraggable(entry.get(), entity, getDragAndDropType(entity));
         });
 
         return entry.get();
