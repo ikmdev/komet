@@ -26,5 +26,7 @@ public enum FrameworkTopics {
 
     CALCULATOR_CACHE_TOPIC,
 
-    IMPORT_TOPIC
+    IMPORT_TOPIC,
+
+    LANDING_PAGE_TOPIC
 }
