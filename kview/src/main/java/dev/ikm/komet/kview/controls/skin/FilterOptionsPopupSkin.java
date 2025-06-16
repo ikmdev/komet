@@ -103,6 +103,8 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
         Button saveButton = new Button(resources.getString("button.save"), region);
         saveButton.setOnAction(_ -> {
+            // close all titled panes to update the current filter options
+            accordion.setExpandedPane(null);
             List<String> savedFilters = kometPreferences.getList(SAVED_FILTERS_KEY, new ArrayList<>());
             try {
                 String key = "" + (savedFilters.isEmpty() ? 1 : Integer.parseInt(savedFilters.getLast()) + 1);
