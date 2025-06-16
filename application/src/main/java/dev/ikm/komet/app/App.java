@@ -25,10 +25,7 @@ import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.ScreenInfo;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
-import dev.ikm.komet.framework.events.Evt;
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.events.*;
 import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.KometPreferencesStage;
@@ -87,6 +84,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -119,7 +117,7 @@ import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.framework.KometNode.PreferenceKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
-import static dev.ikm.komet.framework.events.FrameworkTopics.IMPORT_TOPIC;
+import static dev.ikm.komet.framework.events.FrameworkTopics.*;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
@@ -133,8 +131,9 @@ import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.Operation
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.PULL;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.SYNC;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.README_FILENAME;
-import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.LANDING_PAGE_TOPIC;
+import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.LANDING_PAGE_SOURCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.DESTINATION_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
@@ -162,6 +161,7 @@ public class App extends Application {
     private LandingPageController landingPageController;
     private EvtBus kViewEventBus;
     private static Stage landingPageWindow;
+
 
     /**
      * An entry point to launch the newer UI panels.
@@ -415,8 +415,8 @@ public class App extends Application {
             state.addListener(this::appStateChangeListener);
 
             //Pops up the import dialog window on any events received on the IMPORT_TOPIC
-            Subscriber<Evt> importSubscriber = _ -> {
-                openImport();
+            Subscriber<Evt> importSubscriber = event -> {
+                openImport(LANDING_PAGE_SOURCE.equals(event.getSource()) ? LANDING_PAGE_TOPIC :  PROGRESS_TOPIC);
             };
             kViewEventBus.subscribe(IMPORT_TOPIC, Evt.class, importSubscriber);
 
@@ -507,7 +507,7 @@ public class App extends Application {
         journalStageWindow.setScene(sourceScene);
         // if NOT on Mac OS
         if (System.getProperty("os.name") != null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
-            generateMsWindowsMenu(journalBorderPane, journalStageWindow);
+            generateMsWindowsMenu(journalBorderPane);
         }
 
         // load journal specific window settings
@@ -719,7 +719,7 @@ public class App extends Application {
 
         // if NOT on Mac OS
         if (System.getProperty("os.name") != null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
-            generateMsWindowsMenu(kometRoot, classicKometStage);
+            generateMsWindowsMenu(controller.getTopBarVBox());
         }
 
         classicKometStage.setScene(kometScene);
@@ -769,7 +769,7 @@ public class App extends Application {
         }
     }
 
-    private void openImport() {
+    private void openImport(FrameworkTopics destinationTopic) {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
@@ -778,14 +778,19 @@ public class App extends Application {
         //set up ImportViewModel
         Config importConfig = new Config(ImportController.class.getResource("import.fxml"))
                 .updateViewModel("importViewModel", importViewModel ->
-                        importViewModel.setPropertyValue(VIEW_PROPERTIES,
-                                windowSettings.getView().makeOverridableViewProperties()));
+                        importViewModel
+                                .setPropertyValue(VIEW_PROPERTIES, windowSettings.getView().makeOverridableViewProperties())
+                                .setPropertyValue(DESTINATION_TOPIC, destinationTopic));
         JFXNode<Pane, ImportController> importJFXNode = FXMLMvvmLoader.make(importConfig);
 
         Pane importPane = importJFXNode.node();
         Scene importScene = new Scene(importPane, Color.TRANSPARENT);
         importStage.setScene(importScene);
         importStage.show();
+    }
+
+    private void openImport() {
+        openImport(PROGRESS_TOPIC);
     }
 
     private void openExport() {
@@ -1175,7 +1180,7 @@ public class App extends Application {
         return future;
     }
 
-    private void generateMsWindowsMenu(BorderPane kometRoot, Stage stage) {
+    private void generateMsWindowsMenu(Node node) {
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("File");
 
@@ -1209,7 +1214,7 @@ public class App extends Application {
         MenuItem minimizeWindow = new MenuItem("Minimize");
         KeyCombination minimizeKeyCombo = new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN);
         minimizeWindow.setOnAction(event -> {
-            Stage obj = (Stage) kometRoot.getScene().getWindow();
+            Stage obj = (Stage) node.getScene().getWindow();
             obj.setIconified(true);
         });
         minimizeWindow.setAccelerator(minimizeKeyCombo);
@@ -1218,8 +1223,15 @@ public class App extends Application {
         menuBar.getMenus().add(fileMenu);
         menuBar.getMenus().add(editMenu);
         menuBar.getMenus().add(windowMenu);
-        //hBox.getChildren().add(menuBar);
-        kometRoot.setTop(menuBar);
+
+        // when we add to the journal view we are adding the menu to the top of a border pane
+        if (node instanceof BorderPane kometRoot) {
+            kometRoot.setTop(menuBar);
+        } else if (node instanceof VBox topBarVBox) {
+            // when we add to the classic Komet view, we are adding to the topGridPane, which
+            // is not the outer BorderPane of the window but a VBox across the top of the window
+            topBarVBox.getChildren().add(0, menuBar);
+        }
     }
 
     private void showAboutDialog() {
