@@ -1,12 +1,10 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.FilterTitledPaneSkin;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TitledPane;
 
@@ -29,69 +27,15 @@ public class FilterTitledPane extends TitledPane {
     }
 
     // optionProperty
-    private final StringProperty optionProperty = new SimpleStringProperty(this, "option");
-    public final StringProperty optionProperty() {
-        return optionProperty;
+    private final ObjectProperty<FilterOptions.Option> optionProperty = new SimpleObjectProperty<>(this, "option");
+    public final ObjectProperty<FilterOptions.Option> optionProperty() {
+       return optionProperty;
     }
-    public final String getOption() {
-        return optionProperty.get();
+    public final FilterOptions.Option getOption() {
+       return optionProperty.get();
     }
-    public final void setOption(String value) {
+    public final void setOption(FilterOptions.Option value) {
         optionProperty.set(value);
-    }
-
-    // defaultOptionProperty
-    private final StringProperty defaultOptionProperty = new SimpleStringProperty(this, "defaultOption");
-    public final StringProperty defaultOptionProperty() {
-        return defaultOptionProperty;
-    }
-    public final String getDefaultOption() {
-        return defaultOptionProperty.get();
-    }
-    public final void setDefaultOption(String value) {
-        defaultOptionProperty.set(value);
-    }
-
-    // multiSelectProperty
-    private final BooleanProperty multiSelectProperty = new SimpleBooleanProperty(this, "multiSelect");
-    public final BooleanProperty multiSelectProperty() {
-        return multiSelectProperty;
-    }
-    public final boolean isMultiSelect() {
-        return multiSelectProperty.get();
-    }
-    public final void setMultiSelect(boolean value) {
-        multiSelectProperty.set(value);
-    }
-
-    // excludingProperty
-    private final BooleanProperty excludingProperty = new SimpleBooleanProperty(this, "excluding");
-    public final BooleanProperty excludingProperty() {
-        return excludingProperty;
-    }
-    public final boolean isExcluding() {
-        return excludingProperty.get();
-    }
-    public final void setExcluding(boolean value) {
-        excludingProperty.set(value);
-    }
-
-    // availableOptionsProperty
-    private final ObservableList<String> availableOptionsProperty = FXCollections.observableArrayList();
-    public final ObservableList<String> getAvailableOptions() {
-        return availableOptionsProperty;
-    }
-
-    // selectedOptionsProperty
-    private final ObservableList<String> selectedOptionsProperty = FXCollections.observableArrayList();
-    public final ObservableList<String> getSelectedOptions() {
-        return selectedOptionsProperty;
-    }
-
-    // excludedOptionsProperty
-    private final ObservableList<String> excludedOptionsProperty = FXCollections.observableArrayList();
-    public final ObservableList<String> getExcludedOptions() {
-        return excludedOptionsProperty;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.komet.kview.controls.FilterTitledPane;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.TruncatedTextFlow;
@@ -8,9 +9,11 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
+import javafx.scene.Parent;
+import javafx.scene.control.Accordion;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.skin.TitledPaneSkin;
@@ -22,6 +25,8 @@ import javafx.scene.layout.VBox;
 import javafx.util.Subscription;
 
 import java.text.MessageFormat;
+import java.util.Comparator;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Stream;
 
@@ -33,6 +38,7 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
     private static final PseudoClass EXCLUDED_OPTION = PseudoClass.getPseudoClass("excluded");
     private static final PseudoClass TALLER_TITLE_AREA = PseudoClass.getPseudoClass("taller");
 
+    private final Region titleRegion;
     private final Region arrow;
     private final VBox titleBox;
     private final TruncatedTextFlow selectedOption;
@@ -43,11 +49,12 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
     private final VBox contentBox;
     private final FilterTitledPane control;
     private boolean allSelection = false, singleSelection = false;
+    private ScrollPane scrollPane;
     private Subscription subscription;
 
     public FilterTitledPaneSkin(FilterTitledPane control) {
         super(control);
-        this.control = (FilterTitledPane) getSkinnable();
+        this.control = control;
 
         Label titleLabel = new Label(control.getText(), new IconRegion("circle"));
         titleLabel.textProperty().bind(control.titleProperty());
@@ -57,7 +64,6 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         selectedOption.setMaxContentHeight(44); // 2 lines
         selectedOption.setMaxWidth(240);
         selectedOption.getStyleClass().add("option");
-        selectedOption.textProperty().bind(control.optionProperty());
 
         allToggle = new ToggleButton(resources.getString("titled.pane.option.all"), new IconRegion("check"));
         allToggle.getStyleClass().add("all-toggle");
@@ -67,9 +73,6 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
 
         excludingToggle = new ToggleButton(resources.getString("titled.pane.option.excluding"), new IconRegion("check"));
         excludingToggle.getStyleClass().add("exclude-toggle");
-        excludingToggle.disableProperty().bind(Bindings.createBooleanBinding(() ->
-                control.getSelectedOptions().size() != control.getAvailableOptions().size(),
-                control.getSelectedOptions(), control.getAvailableOptions()));
 
         togglesBox = new HBox(allToggle, spacer, excludingToggle);
         togglesBox.getStyleClass().add("toggles-box");
@@ -78,7 +81,7 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         titleBox.getStyleClass().add("title-box");
         control.setGraphic(titleBox);
 
-        Region titleRegion = (Region) control.lookup(".title");
+        titleRegion = (Region) control.lookup(".title");
         arrow = (Region) titleRegion.lookup(".arrow-button");
 
         arrow.translateXProperty().bind(titleRegion.widthProperty().subtract(arrow.widthProperty().add(arrow.layoutXProperty())));
@@ -90,47 +93,62 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
 
         contentBox = new VBox(separatorRegion);
         contentBox.getStyleClass().add("content-box");
-        control.getAvailableOptions().forEach(text ->
-                contentBox.getChildren().add(new OptionToggle(text)));
-
-        control.getAvailableOptions().addListener((ListChangeListener<String>) c -> {
-            while (c.next()) {
-                if (c.wasAdded()) {
-                    c.getAddedSubList().forEach(text ->
-                            contentBox.getChildren().add(new OptionToggle(text)));
-                } else if (c.wasRemoved()) {
-                    c.getRemoved().forEach(o ->
-                            contentBox.getChildren().removeIf(t -> t instanceof OptionToggle toggle &&
-                                    toggle.getText().equals(o)));
-                }
-            }
-        });
-        control.optionProperty().bind(Bindings.createStringBinding(() -> {
-            if (control.isExcluding() && !control.getExcludedOptions().isEmpty()) {
-                return MessageFormat.format(resources.getString("titled.pane.option.exclude"),
-                            String.join(", ", control.getExcludedOptions()));
-            } else {
-                if (control.getSelectedOptions().size() == control.getAvailableOptions().size()) {
-                    return resources.getString("titled.pane.option.all");
-                } else if (control.getSelectedOptions().isEmpty()) {
-                    return resources.getString("titled.pane.option.none");
-                } else {
-                    return String.join(", ", control.getSelectedOptions());
-                }
-            }
-        }, control.getSelectedOptions(), control.getExcludedOptions()));
 
         control.setContent(contentBox);
         allToggle.disableProperty().bind(Bindings.size(contentBox.getChildren()).lessThanOrEqualTo(1));
-        allToggle.setSelected(control.getSelectedOptions().size() == control.getAvailableOptions().size());
+
+        if (control.getParent() instanceof Accordion accordion) {
+            Parent parent = accordion.getParent();
+            while (!(parent instanceof ScrollPane)) {
+                parent = parent.getParent();
+            }
+
+            scrollPane = (ScrollPane) parent;
+        }
 
         setupTitledPane();
     }
 
     private void setupTitledPane() {
+        if (subscription != null) {
+            subscription.unsubscribe();
+        }
+
+        FilterOptions.Option currentOption = control.getOption().copy();
+        selectedOption.setText(getOptionText(currentOption));
+
+        // add toggles only once
+        if (contentBox.getChildren().size() == 1) {
+            control.getOption().availableOptions().forEach(text ->
+                    contentBox.getChildren().add(new OptionToggle(text)));
+        }
 
         subscription = selectedOption.boundsInParentProperty().subscribe(b ->
                 pseudoClassStateChanged(TALLER_TITLE_AREA, b.getHeight() > 30));
+
+        subscription = subscription.and(selectedOption.textProperty().subscribe(text ->
+                pseudoClassStateChanged(MODIFIED_TITLED_PANE, !currentOption.defaultOption().equals(text))));
+
+        if (control.getParent() instanceof Accordion accordion) {
+            subscription = subscription.and(accordion.expandedPaneProperty().subscribe(pane -> {
+                if (pane == null) {
+                    scrollPane.setVvalue(scrollPane.getVmin());
+                }
+            }));
+        }
+
+        subscription = subscription.and(control.heightProperty().subscribe((_, _) -> {
+            if (control.isExpanded()) {
+                double accordionHeight = scrollPane.getContent().getBoundsInLocal().getHeight();
+                double viewportHeight = scrollPane.getViewportBounds().getHeight();
+                double minY = control.getBoundsInParent().getMinY();
+                double maxY = control.getBoundsInParent().getMaxY() + titleRegion.getBoundsInParent().getHeight();
+                double delta = Math.min(maxY - viewportHeight, minY);
+                if (maxY > viewportHeight) {
+                    scrollPane.setVvalue(scrollPane.getVmax() * delta / (accordionHeight - viewportHeight));
+                }
+            }
+        }));
 
         // if user clicks on All, toggles on/off all:
         subscription = subscription.and(allToggle.selectedProperty().subscribe((_, selected) -> {
@@ -143,13 +161,16 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                 }
                 allSelection = false;
             }
+            excludingToggle.setDisable(currentOption.selectedOptions().size() != currentOption.availableOptions().size());
         }));
         subscription = subscription.and(excludingToggle.selectedProperty().subscribe((_, selected) -> {
-            if (control.isExcluding()) {
+            if (currentOption.isExcluding()) {
                 singleSelection = true;
                 if (selected) {
+                    // when excluding toggle is selected, deselect all toggle
                     allToggle.setSelected(false);
                 } else {
+                    // when excluding toggle is deselected, select and include all toggles
                     getOptionToggles().forEach(tb -> {
                         tb.setExcluded(false);
                         tb.setSelected(true);
@@ -160,12 +181,18 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
             }
         }));
 
-        subscription = subscription.and(excludingToggle.disableProperty().subscribe(d -> {
-            if (d) {
-                // remove check from toggle
+        subscription = subscription.and(excludingToggle.disableProperty().subscribe((_, disabled) -> {
+            if (disabled) {
+                // when disabled, remove check from toggle
                 excludingToggle.setSelected(false);
             }
         }));
+
+        allToggle.setSelected(currentOption.selectedOptions().size() == currentOption.availableOptions().size() &&
+                (!currentOption.isExcluding() || currentOption.excludedOptions().isEmpty()));
+        excludingToggle.setSelected(currentOption.isExcluding() && !currentOption.excludedOptions().isEmpty());
+        excludingToggle.setDisable(currentOption.selectedOptions().size() != currentOption.availableOptions().size());
+        togglesBox.pseudoClassStateChanged(EXCLUDING_TITLED_PANE, currentOption.isExcluding());
 
         getOptionToggles().forEach(tb -> {
             subscription = subscription.and(tb.selectedProperty().subscribe((_, selected) -> {
@@ -176,37 +203,39 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                             !excludingToggle.isSelected());
                     singleSelection = false;
                 }
-                if (selected && !control.getSelectedOptions().contains(tb.getText())) {
-                    control.getSelectedOptions().add(tb.getText());
-                } else if (!selected && !(control.isExcluding() && excludingToggle.isSelected())) {
-                    control.getSelectedOptions().remove(tb.getText());
+                if (selected && !currentOption.selectedOptions().contains(tb.getText())) {
+                    addAndSort(currentOption.selectedOptions(), tb.getText());
+                } else if (!selected && !(currentOption.isExcluding() && excludingToggle.isSelected())) {
+                    currentOption.selectedOptions().remove(tb.getText());
                 }
+                excludingToggle.setDisable(currentOption.selectedOptions().size() != currentOption.availableOptions().size());
             }));
             subscription = subscription.and(tb.excludedProperty().subscribe((_, excluded) -> {
-                if (control.isExcluding()) {
-                    if (excluded && !control.getExcludedOptions().contains(tb.getText())) {
-                        control.getExcludedOptions().add(tb.getText());
+                if (currentOption.isExcluding()) {
+                    if (excluded && !currentOption.excludedOptions().contains(tb.getText())) {
+                        addAndSort(currentOption.excludedOptions(), tb.getText());
                     } else if (!excluded) {
-                        control.getExcludedOptions().remove(tb.getText());
+                        currentOption.excludedOptions().remove(tb.getText());
                     }
                 }
             }));
-            tb.setExcluded(control.getExcludedOptions().contains(tb.getText()));
-            tb.setSelected(control.getSelectedOptions().contains(tb.getText()));
+            tb.setExcluded(currentOption.isExcluding() && currentOption.excludedOptions().contains(tb.getText()));
+            tb.setSelected(currentOption.selectedOptions().contains(tb.getText()) && !tb.isExcluded());
         });
 
-        subscription = subscription.and(selectedOption.textProperty().subscribe((_, t) ->
-            pseudoClassStateChanged(MODIFIED_TITLED_PANE, !control.getDefaultOption().equals(t))));
+        // confirm changes, and set again titledPane
+        subscription = subscription.and(control.optionProperty().subscribe((_, _) -> setupTitledPane()));
+        subscription = subscription.and(control.expandedProperty().subscribe((_, expanded) -> {
+            if (!expanded) {
+                control.setOption(currentOption);
+                selectedOption.setText(getOptionText(currentOption));
+            }
+        }));
 
-        subscription = subscription.and(control.excludingProperty().subscribe(excluding ->
-                togglesBox.pseudoClassStateChanged(EXCLUDING_TITLED_PANE, excluding)));
     }
 
     @Override
     public void dispose() {
-        selectedOption.textProperty().unbind();
-        control.optionProperty().unbind();
-        excludingToggle.disableProperty().unbind();
         allToggle.disableProperty().unbind();
         arrow.translateXProperty().unbind();
         arrow.translateYProperty().unbind();
@@ -223,6 +252,29 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                 .map(OptionToggle.class::cast);
     }
 
+    private String getOptionText(FilterOptions.Option option) {
+        if (option == null) {
+            return null;
+        }
+        if (option.excludedOptions() != null && !option.excludedOptions().isEmpty()) {
+            return MessageFormat.format(resources.getString("titled.pane.option.exclude"),
+                    String.join(", ", option.excludedOptions()));
+        } else {
+            if (option.selectedOptions().size() == option.availableOptions().size()) {
+                return resources.getString("titled.pane.option.all");
+            } else if (option.selectedOptions().isEmpty()) {
+                return resources.getString("titled.pane.option.none");
+            } else {
+                return String.join(", ", option.selectedOptions());
+            }
+        }
+    }
+
+    private void addAndSort(List<String> list, String value) {
+        list.add(value);
+        list.sort(Comparator.naturalOrder());
+    }
+
     private class OptionToggle extends HBox {
 
         private final ToggleButton toggleButton;
@@ -234,7 +286,7 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
             toggleButton = new ToggleButton(text, new IconRegion("check"));
             toggleButton.getStyleClass().add("option-toggle");
             toggleButton.setMouseTransparent(true);
-            if (!control.isMultiSelect()) {
+            if (!control.getOption().isMultiSelectionAllowed()) {
                 toggleButton.setToggleGroup(toggleGroup);
             }
             textProperty.bind(toggleButton.textProperty());
@@ -243,7 +295,7 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
             getStyleClass().add("option-toggle-box");
 
             setOnMouseClicked(_ -> {
-                if (control.isExcluding() && excludingToggle.isSelected()) {
+                if (control.getOption().isExcluding() && excludingToggle.isSelected()) {
                     setExcluded(!isExcluded());
                 }
                 setSelected(!isSelected());

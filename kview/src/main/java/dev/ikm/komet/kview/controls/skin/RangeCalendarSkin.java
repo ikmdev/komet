@@ -54,12 +54,12 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
 
     private final DatePicker datePicker;
     private final RangeCalendarControl control;
-    private final VBox root;
+    private final VBox root = new VBox();
     private final Node popupContent;
     private final Label monthYearLabel;
 
     private Subscription subscription;
-    private Subscription calendarSubscription;
+    private Subscription calendarSubscription = Subscription.EMPTY;
 
     private int currentIndex;
     private boolean currentExcluding;
@@ -159,7 +159,7 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
         VBox calendarBox = new VBox(popupContent);
         calendarBox.getStyleClass().add("calendar-box");
 
-        root = new VBox(calendarBox);
+        root.getChildren().add(calendarBox);
         root.getStyleClass().add("range-calendar");
         root.getStylesheets().add(RangeCalendarControl.class.getResource("range-calendar.css").toExternalForm());
 
@@ -168,12 +168,14 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
                 calendarSubscription.unsubscribe();
             }
             root.getChildren().removeIf(HBox.class::isInstance);
-            calendarSubscription = Subscription.EMPTY;
             if (m == RangeCalendarControl.MODE.DATE) {
                 createDateFields();
             } else {
-                calendarSubscription = calendarSubscription.and(control.dateRangeList().subscribe(this::updateSelection));
-                createDateRangeFields(0, false);
+                if (control.dateRangeList().isEmpty()) {
+                    createDateRangeFields(0, false);
+                } else {
+                    control.dateRangeList().forEach(this::createDateRangeFields);
+                }
             }
         }));
 
@@ -237,6 +239,10 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
         HBox.setHgrow(dateField, Priority.ALWAYS);
         HBox dateBox = new HBox(dateLabel, dateField);
         dateBox.getStyleClass().add("date-box");
+        if (control.getDate() != null) {
+            dateField.setDate(control.getDate());
+            datePicker.setValue(control.getDate());
+        }
         control.dateProperty().bindBidirectional(dateField.dateProperty());
         root.getChildren().addFirst(dateBox);
     }
@@ -247,18 +253,24 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
     }
 
     private void createDateRangeFields(int index, boolean excluding) {
-        currentIndex = index;
-        currentExcluding = excluding;
+        createDateRangeFields(new DateRange(index, null, null, excluding));
+    }
+
+    private void createDateRangeFields(DateRange dateRange) {
+        currentIndex = dateRange.index();
+        currentExcluding = dateRange.exclude();
 
         Label dateFromLabel = new Label(resources.getString("range.from.label"));
         dateFromLabel.getStyleClass().addAll("date-label", "range");
         DateTextField dateFromField = new DateTextField(true);
+        dateFromField.setDate(dateRange.startDate());
         Label dateToLabel = new Label(resources.getString("range.to.label"));
         dateToLabel.getStyleClass().addAll("date-label", "range");
         DateTextField dateToField = new DateTextField(true);
+        dateToField.setDate(dateRange.endDate());
         HBox dateBox = new HBox(dateFromLabel, dateFromField, dateToLabel, dateToField);
         dateBox.getStyleClass().add("date-box");
-        if (excluding) {
+        if (dateRange.exclude()) {
             dateBox.getStyleClass().add("excluding");
         }
         final ObjectProperty<DateRange> currentDateRange = new SimpleObjectProperty<>();
@@ -277,7 +289,7 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
                     dateToField.setDate(fromDate);
                 }
             }
-            return new DateRange(index, fromDate, toDate, excluding);
+            return new DateRange(dateRange.index(), fromDate, toDate, dateRange.exclude());
         }, dateFromField.dateProperty(), dateToField.dateProperty()));
 
         calendarSubscription = calendarSubscription.and(currentDateRange.subscribe((_, dr) -> {
@@ -288,10 +300,11 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
                 } else {
                     ranges.set(dr.index(), dr);
                 }
+                updateSelection();
             }
         }));
         calendarSubscription = calendarSubscription.and(datePicker.valueProperty().subscribe((o, v) -> {
-            if (index == currentIndex && !swapping && v != null) {
+            if (dateRange.index() == currentIndex && !swapping && v != null) {
                 if (control.dateRangeList().stream().anyMatch(dr -> dr.contains(v))) {
                     swapping = true;
                     datePicker.setValue(o);
@@ -307,9 +320,10 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
                 }
             }
         }));
-        root.getChildren().add(index, dateBox);
-        // unlock
-        popupContent.lookup(".calendar-grid").setMouseTransparent(false);
+        root.getChildren().add(dateRange.index(), dateBox);
+        // unlock or lock when range is set
+        popupContent.lookup(".calendar-grid").setMouseTransparent(
+                dateRange.startDate() != null && dateRange.endDate() != null);
         updateSelection();
     }
 

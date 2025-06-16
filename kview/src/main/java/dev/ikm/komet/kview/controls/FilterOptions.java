@@ -1,15 +1,18 @@
 package dev.ikm.komet.kview.controls;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class FilterOptions {
+public class FilterOptions implements Serializable {
+
+    @Serial
+    private final static long serialVersionUID = 1L;
 
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.filter-options");
 
@@ -35,8 +38,8 @@ public class FilterOptions {
         }
     }
 
-    public record Option(OPTION_ITEM item, String title, String defaultOption, ObservableList<String> availableOptions,
-                         ObservableList<String> selectedOptions, ObservableList<String> excludedOptions) {
+    public record Option(OPTION_ITEM item, String title, String defaultOption, List<String> availableOptions,
+                         List<String> selectedOptions, List<String> excludedOptions) implements Serializable {
 
         @Override
         public String title() {
@@ -56,6 +59,10 @@ public class FilterOptions {
 
         public boolean isMultiSelectionAllowed() {
             return true;
+        }
+
+        public boolean isExcluding() {
+            return excludedOptions != null;
         }
 
         @Override
@@ -85,29 +92,31 @@ public class FilterOptions {
         public int hashCode() {
             return Objects.hash(item, title, selectedOptions, excludedOptions);
         }
+
+        public Option copy() {
+            return new Option(item, title, defaultOption,
+                    new ArrayList<>(availableOptions.stream().toList()),
+                    new ArrayList<>(selectedOptions.stream().toList()),
+                    excludedOptions != null ? new ArrayList<>(excludedOptions.stream().toList()) : null);
+        }
     }
 
-    private final Option sortBy = new Option(OPTION_ITEM.SORT_BY, "sortby.title", "sortby.option.all",
-            FXCollections.observableArrayList(),
-            FXCollections.observableArrayList(), null);
+    private Option sortBy = new Option(OPTION_ITEM.SORT_BY, "sortby.title", "sortby.option.all",
+            new ArrayList<>(), new ArrayList<>(), null);
 
-    private final Option status = new Option(OPTION_ITEM.STATUS, "status.title", "status.option.all",
-                FXCollections.observableArrayList(),
-                FXCollections.observableArrayList(), null);
+    private Option status = new Option(OPTION_ITEM.STATUS, "status.title", "status.option.all",
+            new ArrayList<>(), new ArrayList<>(), null);
 
-    private final Option module = new Option(OPTION_ITEM.MODULE, "module.title", "module.option.all",
-                FXCollections.observableArrayList(),
-                FXCollections.observableArrayList(), null);
+    private Option module = new Option(OPTION_ITEM.MODULE, "module.title", "module.option.all",
+            new ArrayList<>(), new ArrayList<>(), null);
 
-    private final Option path = new Option(OPTION_ITEM.PATH, "path.title", "path.option.all",
-            FXCollections.observableArrayList(),
-            FXCollections.observableArrayList(), null);
+    private Option path = new Option(OPTION_ITEM.PATH, "path.title", "path.option.all",
+            new ArrayList<>(), new ArrayList<>(), null);
 
-    private final Option language = new Option(OPTION_ITEM.LANGUAGE, "language.title", "language.option.all",
-                FXCollections.observableArrayList(),
-                FXCollections.observableArrayList(), null);
+    private Option language = new Option(OPTION_ITEM.LANGUAGE, "language.title", "language.option.all",
+            new ArrayList<>(), new ArrayList<>(), null);
 
-    private final Option descriptionType;
+    private Option descriptionType;
     {
         List<String> descriptionTypeOptions = Stream.of(
                 "description.option.fqn", "description.option.preferred", "description.option.regular",
@@ -115,11 +124,10 @@ public class FilterOptions {
                 .map(resources::getString)
                 .toList();
         descriptionType = new Option(OPTION_ITEM.DESCRIPTION_TYPE, "description.title", "description.option.all",
-                FXCollections.observableArrayList(descriptionTypeOptions),
-                FXCollections.observableArrayList(), null);
+                descriptionTypeOptions, new ArrayList<>(), null);
     }
 
-    private final Option kindOf;
+    private Option kindOf;
     {
         List<String> kindOfOptions = Stream.of(
                 "kindof.option.item1", "kindof.option.item2", "kindof.option.item3", "kindof.option.item4",
@@ -128,12 +136,10 @@ public class FilterOptions {
                 .map(resources::getString)
                 .toList();
         kindOf = new Option(OPTION_ITEM.KIND_OF, "kindof.title", "kindof.option.all",
-                FXCollections.observableArrayList(kindOfOptions),
-                FXCollections.observableArrayList(),
-                FXCollections.observableArrayList());
+                kindOfOptions, new ArrayList<>(), new ArrayList<>());
     }
 
-    private final Option membership;
+    private Option membership;
     {
         List<String> membershipOptions = Stream.of(
                 "membership.option.member1", "membership.option.member2", "membership.option.member3",
@@ -141,26 +147,22 @@ public class FilterOptions {
                 .map(resources::getString)
                 .toList();
         membership = new Option(OPTION_ITEM.MEMBERSHIP, "membership.title", "membership.option.all",
-                FXCollections.observableArrayList(membershipOptions),
-                FXCollections.observableArrayList(), null);
+                membershipOptions, new ArrayList<>(), null);
     }
 
-    private final Option date;
+    private Option date;
     {
         List<String> dateOptions = Stream.of("date.item1", "date.item2", "date.item3")
                 .map(resources::getString)
                 .toList();
         date = new Option(OPTION_ITEM.DATE, "date.title", "date.option.all",
-                FXCollections.observableArrayList(dateOptions),
-                FXCollections.observableArrayList(),
-                FXCollections.observableArrayList());
+                dateOptions, new ArrayList<>(), new ArrayList<>());
     }
 
     private final List<Option> options;
 
     public FilterOptions() {
-        options = List.of(sortBy, status, module, path, language,
-                descriptionType, kindOf, membership, date);
+        options = new ArrayList<>(List.of(sortBy, status, module, path, language, descriptionType, kindOf, membership, date));
     }
 
     public Option getSortBy() {
@@ -208,6 +210,22 @@ public class FilterOptions {
                 .filter(o -> o.item() == item)
                 .findFirst()
                 .orElseThrow();
+    }
+
+    public void setOptionForItem(OPTION_ITEM item, Option option) {
+        switch (item) {
+            case SORT_BY -> sortBy = option;
+            case STATUS -> status = option;
+            case MODULE -> module = option;
+            case PATH -> path = option;
+            case LANGUAGE -> language = option;
+            case DESCRIPTION_TYPE -> descriptionType = option;
+            case KIND_OF -> kindOf = option;
+            case MEMBERSHIP -> membership = option;
+            case DATE -> date = option;
+        }
+        options.clear();
+        options.addAll(List.of(sortBy, status, module, path, language, descriptionType, kindOf, membership, date));
     }
 
     @Override

@@ -18,6 +18,7 @@
 .filter-options-popup > .header-box {
     -fx-alignment: center;
     -fx-spacing: 8;
+    -fx-padding: 0 10 0 0;
 }
 
 .filter-options-popup > .header-box > .label.title {
@@ -29,18 +30,25 @@
     -fx-pref-width: 198;
 }
 
-.filter-options-popup > .header-box > .region {
-    -fx-min-width: 20;
-    -fx-pref-width: 20;
-    -fx-max-width: 20;
-    -fx-min-height: 20;
-    -fx-pref-height: 20;
-    -fx-max-height: 20;
+.filter-options-popup > .header-box > .region,
+.filter-options-popup > .header-box > .filter-button {
+    -fx-min-width: 28;
+    -fx-pref-width: 28;
+    -fx-max-width: 28;
+    -fx-min-height: 28;
+    -fx-pref-height: 28;
+    -fx-max-height: 28;
     -fx-background-color: transparent;
+    -fx-background-radius: 4;
     -fx-cursor: hand;
 }
 
-.filter-options-popup > .header-box > .region > .icon {
+.filter-options-popup > .header-box > .filter-button:selected {
+    -fx-background-color: #5DCF16;
+}
+
+.filter-options-popup > .header-box > .region > .icon,
+.filter-options-popup > .header-box > .filter-button > .icon {
     -fx-scale-shape: false;
 }
 
@@ -50,10 +58,14 @@
     -fx-shape: "M11.8333 1.34175L10.6583 0.166748L5.99999 4.82508L1.34166 0.166748L0.166656 1.34175L4.82499 6.00008L0.166656 10.6584L1.34166 11.8334L5.99999 7.17508L10.6583 11.8334L11.8333 10.6584L7.17499 6.00008L11.8333 1.34175Z";
 }
 
-.filter-options-popup > .header-box > .region > .icon.filter {
+.filter-options-popup > .header-box > .filter-button > .icon.filter {
     -fx-background-color: #5896F6;
     /* 0.77, 0.63 17.70x17.07 */
     -fx-shape: "M13.8184 17.7021H0.770508V15.6523H13.8184V17.7021ZM13.8184 13.6016H0.770508V11.5508H13.8184V13.6016ZM8.89551 9.50098H0.770508V7.4502H8.89551V9.50098ZM15.7998 0.629883C17.2969 0.630014 18.4795 1.80737 18.4795 3.30957C18.4794 4.22249 18.064 5.02366 17.4121 5.82129C16.7658 6.61205 15.8484 7.44458 14.7793 8.41406L14.7715 8.4209L13.9121 9.20312L13.0537 8.4209L13.0459 8.41406C11.9767 7.44453 11.0585 6.61208 10.4121 5.82129C9.76026 5.02371 9.3458 4.22244 9.3457 3.30957C9.3457 1.80729 10.5282 0.629883 12.0254 0.629883C12.728 0.629994 13.4028 0.901379 13.9121 1.34668C14.4216 0.901202 15.097 0.629883 15.7998 0.629883ZM15.7998 2.21387C15.2989 2.21387 14.8128 2.54753 14.6494 2.9668L14.5566 3.2041H13.2676L13.1748 2.9668C13.0115 2.54765 12.5262 2.21406 12.0254 2.21387C11.3925 2.21387 10.9297 2.67666 10.9297 3.30957C10.9298 3.77796 11.1851 4.29284 11.748 4.95117C12.2685 5.55985 13.003 6.2366 13.9102 7.06055C14.8193 6.23647 15.5552 5.55989 16.0762 4.95117C16.6395 4.2929 16.8944 3.77791 16.8945 3.30957C16.8945 2.67675 16.4326 2.21399 15.7998 2.21387Z";
+}
+
+.filter-options-popup > .header-box > .filter-button:selected > .icon.filter {
+    -fx-background-color: black;
 }
 
 /*
@@ -629,4 +641,142 @@
     -fx-text-fill: #9DC4FF;
     -fx-background: #44495E;
     -fx-background-color: #44495E;
+}
+
+/*
+ Saved Filters Popup
+*/
+
+.saved-filters-popup {
+    -fx-background-color: #2E3240;
+    -fx-background-radius: 8;
+    -fx-min-width: 180;
+    -fx-pref-width: 180;
+    -fx-pref-height: 253;
+    -fx-padding: 12 8 12 8;
+    -fx-spacing: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0.0, 0, 2);
+}
+
+.saved-filters-popup > .filter-title {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+    -fx-text-fill: #B3BDCD;
+}
+
+.saved-filters-popup > .separator-region {
+    -fx-pref-height: 1;
+}
+
+.saved-filters-popup > .separator-region > .line {
+    -fx-background-color: #545D72;
+}
+
+.saved-filters-popup > .saved-filters-list-view {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-effect: null;
+    -fx-pref-height: 168;
+}
+
+.saved-filters-popup > .saved-filters-list-view .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:vertical .increment-button,
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:vertical .decrement-button,
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:vertical .increment-arrow,
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color:transparent;
+    -fx-background-radius: 0;
+    -fx-padding: 0 2 0 0;
+}
+
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: transparent, #545D72;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 2, 2;
+}
+
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:horizontal .increment-arrow,
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:horizontal .decrement-arrow,
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:horizontal .increment-button,
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:horizontal .decrement-button {
+    -fx-padding:0;
+}
+
+.saved-filters-popup > .saved-filters-list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-padding: 4;
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-pref-height: 28;
+    -fx-font-size: 13;
+    -fx-text-fill: white;
+    -fx-font-family: "Noto Sans";
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+}
+
+.saved-filters-popup > .saved-filters-list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover {
+    -fx-background: #545D72;
+    -fx-background-color: #545D72;
+}
+
+.saved-filters-popup  > .saved-filters-list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
+.saved-filters-popup  > .saved-filters-list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected:hover {
+    -fx-background: #545D72;
+    -fx-background-color: #545D72;
+    -fx-background-insets: 0;
+}
+
+.saved-filters-popup > .saved-filters-list-view:focused > .virtual-flow > .clipped-container > .sheet > .list-cell:filled,
+.saved-filters-popup > .saved-filters-list-view:focused > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected {
+    -fx-background: #545D72;
+}
+
+.saved-filters-popup > .saved-filters-list-view > .placeholder > .label {
+    -fx-font-size: 13;
+    -fx-text-fill: white;
+    -fx-font-family: "Noto Sans";
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+}
+
+.context-menu {
+    -fx-background-color: #2E3240;
+    -fx-background-radius: 4;
+    -fx-min-width: 197; /* don't set pref-width, so ContextMenuContent::computeVisualMetrics gets called */
+    -fx-max-width: 197;
+}
+
+.context-menu .menu-item {
+    -fx-padding: 2 4 2 8;
+    -fx-pref-height: 32;
+    -fx-text-fill: white;
+}
+
+.context-menu .menu-item:focused {
+    -fx-background-color: #545D72;
+    -fx-text-fill: white;
+}
+
+.context-menu .menu-item:focused > .label,
+.context-menu .menu-item > .label {
+    -fx-text-fill: white;
+    -fx-font-size: 13;
+    -fx-font-weight: 400;
+    -fx-font-family: "Noto Sans";
+}
+
+.context-menu .menu-item > .graphic-container > .icon.delete {
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+    -fx-padding: 0;
+    -fx-scale-shape: false;
+    -fx-background-color: white;
+    /* 13.33x15 */
+    -fx-shape: "M12.5002 2.5V3.33333H16.6668V5H15.8335V15.8333C15.8335 16.75 15.0835 17.5 14.1668 17.5H5.8335C4.91683 17.5 4.16683 16.75 4.16683 15.8333V5H3.3335V3.33333H7.50016V2.5H12.5002ZM5.8335 15.8333H14.1668V5H5.8335V15.8333ZM7.50016 6.66667H9.16683V14.1667H7.50016V6.66667ZM12.5002 6.66667H10.8335V14.1667H12.5002V6.66667Z";
 }
