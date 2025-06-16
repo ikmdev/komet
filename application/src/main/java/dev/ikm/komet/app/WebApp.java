@@ -100,6 +100,7 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.jgit.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,6 +119,7 @@ import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
 import static dev.ikm.komet.framework.events.FrameworkTopics.IMPORT_TOPIC;
+import static dev.ikm.komet.framework.events.FrameworkTopics.LANDING_PAGE_TOPIC;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
@@ -125,7 +127,7 @@ import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.*;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.*;
-import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.LANDING_PAGE_TOPIC;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.README_FILENAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
@@ -1257,6 +1259,8 @@ public class WebApp extends Application {
      * <ol>
      *   <li>Logs the disconnection attempt</li>
      *   <li>Removes all GitHub-related preferences from user preferences</li>
+     *   <li>Deletes the local .git repository folder if it exists</li>
+     *   <li>Deletes the README.md file if it exists</li>
      *   <li>Updates the UI to reflect the disconnected state</li>
      * </ol>
      * If any errors occur during this process, they are logged but do not prevent
@@ -1268,12 +1272,45 @@ public class WebApp extends Application {
         // Delete stored user preferences related to GitHub
         try {
             gitHubPreferencesDao.delete();
-            LOG.info("Successfully removed GitHub data from user preferences");
+            LOG.info("Successfully deleted GitHub preferences");
         } catch (BackingStoreException e) {
-            LOG.error("Failed to remove GitHub data from user preferences");
+            LOG.error("Failed to delete GitHub preferences", e);
         }
 
-        // For now, just update the UI state
+        // Delete the .git folder and README.md if they exist
+        Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
+        if (optionalDataStoreRoot.isPresent()) {
+            final File changeSetFolder = new File(optionalDataStoreRoot.get(), CHANGESETS_DIR);
+
+            // Delete .git folder
+            final File gitDir = new File(changeSetFolder, ".git");
+            if (gitDir.exists() && gitDir.isDirectory()) {
+                try {
+                    FileUtils.delete(gitDir, FileUtils.RECURSIVE);
+                    LOG.info("Successfully deleted .git folder at: {}", gitDir.getAbsolutePath());
+                } catch (IOException e) {
+                    LOG.error("Failed to delete .git folder at: {}", gitDir.getAbsolutePath(), e);
+                }
+            }
+
+            // Delete README.md file
+            final File readmeFile = new File(changeSetFolder, README_FILENAME);
+            if (readmeFile.exists() && readmeFile.isFile()) {
+                try {
+                    if (readmeFile.delete()) {
+                        LOG.info("Successfully deleted {} file at: {}", README_FILENAME, readmeFile.getAbsolutePath());
+                    } else {
+                        LOG.error("Failed to delete {} file at: {}", README_FILENAME, readmeFile.getAbsolutePath());
+                    }
+                } catch (SecurityException e) {
+                    LOG.error("Security exception while deleting {} file at: {}", readmeFile.getAbsolutePath(), e);
+                }
+            }
+        } else {
+            LOG.warn("Could not access data store root to delete .git folder and README.md");
+        }
+
+        // Update the UI state
         gotoGitHubDisconnectedState();
     }
 

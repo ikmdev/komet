@@ -25,10 +25,7 @@ import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.ScreenInfo;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
-import dev.ikm.komet.framework.events.Evt;
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.events.*;
 import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.KometPreferencesStage;
@@ -87,6 +84,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -100,6 +98,7 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.jgit.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,16 +117,23 @@ import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.framework.KometNode.PreferenceKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
-import static dev.ikm.komet.framework.events.FrameworkTopics.IMPORT_TOPIC;
+import static dev.ikm.komet.framework.events.FrameworkTopics.*;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.*;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.*;
-import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.LANDING_PAGE_TOPIC;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_EMAIL;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_STATUS;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_URL;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_USERNAME;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.CONNECT;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.PULL;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.SYNC;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.README_FILENAME;
+import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.LANDING_PAGE_SOURCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.DESTINATION_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
@@ -155,6 +161,7 @@ public class App extends Application {
     private LandingPageController landingPageController;
     private EvtBus kViewEventBus;
     private static Stage landingPageWindow;
+
 
     /**
      * An entry point to launch the newer UI panels.
@@ -408,8 +415,8 @@ public class App extends Application {
             state.addListener(this::appStateChangeListener);
 
             //Pops up the import dialog window on any events received on the IMPORT_TOPIC
-            Subscriber<Evt> importSubscriber = _ -> {
-                openImport();
+            Subscriber<Evt> importSubscriber = event -> {
+                openImport(LANDING_PAGE_SOURCE.equals(event.getSource()) ? LANDING_PAGE_TOPIC :  PROGRESS_TOPIC);
             };
             kViewEventBus.subscribe(IMPORT_TOPIC, Evt.class, importSubscriber);
 
@@ -500,7 +507,7 @@ public class App extends Application {
         journalStageWindow.setScene(sourceScene);
         // if NOT on Mac OS
         if (System.getProperty("os.name") != null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
-            generateMsWindowsMenu(journalBorderPane, journalStageWindow);
+            generateMsWindowsMenu(journalBorderPane);
         }
 
         // load journal specific window settings
@@ -712,7 +719,7 @@ public class App extends Application {
 
         // if NOT on Mac OS
         if (System.getProperty("os.name") != null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
-            generateMsWindowsMenu(kometRoot, classicKometStage);
+            generateMsWindowsMenu(controller.getTopBarVBox());
         }
 
         classicKometStage.setScene(kometScene);
@@ -762,7 +769,7 @@ public class App extends Application {
         }
     }
 
-    private void openImport() {
+    private void openImport(FrameworkTopics destinationTopic) {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
@@ -771,14 +778,19 @@ public class App extends Application {
         //set up ImportViewModel
         Config importConfig = new Config(ImportController.class.getResource("import.fxml"))
                 .updateViewModel("importViewModel", importViewModel ->
-                        importViewModel.setPropertyValue(VIEW_PROPERTIES,
-                                windowSettings.getView().makeOverridableViewProperties()));
+                        importViewModel
+                                .setPropertyValue(VIEW_PROPERTIES, windowSettings.getView().makeOverridableViewProperties())
+                                .setPropertyValue(DESTINATION_TOPIC, destinationTopic));
         JFXNode<Pane, ImportController> importJFXNode = FXMLMvvmLoader.make(importConfig);
 
         Pane importPane = importJFXNode.node();
         Scene importScene = new Scene(importPane, Color.TRANSPARENT);
         importStage.setScene(importScene);
         importStage.show();
+    }
+
+    private void openImport() {
+        openImport(PROGRESS_TOPIC);
     }
 
     private void openExport() {
@@ -997,6 +1009,8 @@ public class App extends Application {
      * <ol>
      *   <li>Logs the disconnection attempt</li>
      *   <li>Removes all GitHub-related preferences from user preferences</li>
+     *   <li>Deletes the local .git repository folder if it exists</li>
+     *   <li>Deletes the README.md file if it exists</li>
      *   <li>Updates the UI to reflect the disconnected state</li>
      * </ol>
      * If any errors occur during this process, they are logged but do not prevent
@@ -1010,10 +1024,43 @@ public class App extends Application {
             gitHubPreferencesDao.delete();
             LOG.info("Successfully deleted GitHub preferences");
         } catch (BackingStoreException e) {
-            LOG.error("Failed to delete GitHub preferences");
+            LOG.error("Failed to delete GitHub preferences", e);
         }
 
-        // For now, just update the UI state
+        // Delete the .git folder and README.md if they exist
+        Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
+        if (optionalDataStoreRoot.isPresent()) {
+            final File changeSetFolder = new File(optionalDataStoreRoot.get(), CHANGESETS_DIR);
+
+            // Delete .git folder
+            final File gitDir = new File(changeSetFolder, ".git");
+            if (gitDir.exists() && gitDir.isDirectory()) {
+                try {
+                    FileUtils.delete(gitDir, FileUtils.RECURSIVE);
+                    LOG.info("Successfully deleted .git folder at: {}", gitDir.getAbsolutePath());
+                } catch (IOException e) {
+                    LOG.error("Failed to delete .git folder at: {}", gitDir.getAbsolutePath(), e);
+                }
+            }
+
+            // Delete README.md file
+            final File readmeFile = new File(changeSetFolder, README_FILENAME);
+            if (readmeFile.exists() && readmeFile.isFile()) {
+                try {
+                    if (readmeFile.delete()) {
+                        LOG.info("Successfully deleted {} file at: {}", README_FILENAME, readmeFile.getAbsolutePath());
+                    } else {
+                        LOG.error("Failed to delete {} file at: {}", README_FILENAME, readmeFile.getAbsolutePath());
+                    }
+                } catch (SecurityException e) {
+                    LOG.error("Security exception while deleting {} file at: {}", readmeFile.getAbsolutePath(), e);
+                }
+            }
+        } else {
+            LOG.warn("Could not access data store root to delete .git folder and README.md");
+        }
+
+        // Update the UI state
         gotoGitHubDisconnectedState();
     }
 
@@ -1133,7 +1180,7 @@ public class App extends Application {
         return future;
     }
 
-    private void generateMsWindowsMenu(BorderPane kometRoot, Stage stage) {
+    private void generateMsWindowsMenu(Node node) {
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("File");
 
@@ -1167,7 +1214,7 @@ public class App extends Application {
         MenuItem minimizeWindow = new MenuItem("Minimize");
         KeyCombination minimizeKeyCombo = new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN);
         minimizeWindow.setOnAction(event -> {
-            Stage obj = (Stage) kometRoot.getScene().getWindow();
+            Stage obj = (Stage) node.getScene().getWindow();
             obj.setIconified(true);
         });
         minimizeWindow.setAccelerator(minimizeKeyCombo);
@@ -1176,8 +1223,15 @@ public class App extends Application {
         menuBar.getMenus().add(fileMenu);
         menuBar.getMenus().add(editMenu);
         menuBar.getMenus().add(windowMenu);
-        //hBox.getChildren().add(menuBar);
-        kometRoot.setTop(menuBar);
+
+        // when we add to the journal view we are adding the menu to the top of a border pane
+        if (node instanceof BorderPane kometRoot) {
+            kometRoot.setTop(menuBar);
+        } else if (node instanceof VBox topBarVBox) {
+            // when we add to the classic Komet view, we are adding to the topGridPane, which
+            // is not the outer BorderPane of the window but a VBox across the top of the window
+            topBarVBox.getChildren().add(0, menuBar);
+        }
     }
 
     private void showAboutDialog() {

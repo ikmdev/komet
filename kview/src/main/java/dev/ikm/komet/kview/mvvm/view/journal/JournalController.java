@@ -133,6 +133,7 @@ import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
+import dev.ikm.tinkar.terms.SemanticFacade;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -865,12 +866,12 @@ public class JournalController {
                     createConceptWindow(conceptFacade, nidTextEnum, null);
                 } else if (entity instanceof PatternFacade patternFacade) {
                     createPatternWindow(patternFacade, getNavigatorNode().getViewProperties());
+                } else if (entity instanceof SemanticFacade semanticFacade) {
+                    createGenEditWindow(semanticFacade, getNavigatorNode().getViewProperties(), false);
                 }
-
             } else if (treeItemValue instanceof SemanticEntityVersion semanticEntityVersion) {
-                nidTextEnum = SEMANTIC_ENTITY;
-                ConceptFacade conceptFacade = Entity.getConceptForSemantic(semanticEntityVersion.nid()).get();
-                createConceptWindow(conceptFacade, nidTextEnum, null);
+                SemanticFacade semanticFacade = semanticEntityVersion.entity();
+                createGenEditWindow(semanticFacade, getNavigatorNode().getViewProperties(), false);
             }
         };
         controller.getDoubleCLickConsumers().add(displayInDetailsView);
@@ -1218,7 +1219,6 @@ public class JournalController {
 
         if (chapterKlWindow instanceof ConceptKlWindow conceptKlWindow) {
             activityStreams.add(conceptKlWindow.getDetailsActivityStreamKey());
-
             // Getting the details node from the concept window
             DetailsNode detailsNode = conceptKlWindow.getDetailsNode();
             detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);

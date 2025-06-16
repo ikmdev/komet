@@ -113,8 +113,11 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.changeset;
     exports dev.ikm.komet.kview.mvvm.view.changeset;
 
+    // Git changeset exchange
     opens dev.ikm.komet.kview.mvvm.view.changeset.exchange;
     exports dev.ikm.komet.kview.mvvm.view.changeset.exchange;
+    opens dev.ikm.komet.kview.mvvm.view.changeset.exchange.credentials;
+    exports dev.ikm.komet.kview.mvvm.view.changeset.exchange.credentials;
 
     opens dev.ikm.komet.kview.mvvm.view.login;
     exports dev.ikm.komet.kview.mvvm.view.login;
@@ -142,6 +145,9 @@ module dev.ikm.komet.kview {
     exports dev.ikm.komet.kview.klwindows;
     opens dev.ikm.komet.kview.klwindows to javafx.fxml, org.carlfx.cognitive;
     opens dev.ikm.komet.kview.mvvm.viewmodel to dev.ikm.komet.application, javafx.fxml, org.carlfx.cognitive;
+
+    exports dev.ikm.komet.kview.mvvm.view.confirmation;
+    opens dev.ikm.komet.kview.mvvm.view.confirmation;
 
     provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory, dev.ikm.komet.kview.mvvm.view.properties.PropertiesNodeFactory;
 

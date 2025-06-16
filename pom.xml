@@ -11,7 +11,7 @@
     <groupId>dev.ikm.komet</groupId>
     <artifactId>komet-parent</artifactId>
     <name>KOMET</name>
-    <version>1.51.0-SNAPSHOT</version>
+    <version>1.52.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <inceptionYear>2015</inceptionYear>
     <licenses>
@@ -71,7 +71,7 @@
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.6.0</tinkar-composer.version>
-        <tinkar-core.version>1.103.0</tinkar-core.version>
+        <tinkar-core.version>1.105.0</tinkar-core.version>
 
         <!-- IKM Evrete Variables -->
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
@@ -85,8 +85,8 @@
         <jsr305.version>3.0.2-r7</jsr305.version>
 
         <!-- JPRO Variables -->
-        <jpro.version>2025.1.0</jpro.version>
-        <jpro-platform.version>0.5.6</jpro-platform.version>
+        <jpro.version>2025.2.0</jpro.version>
+        <jpro-platform.version>0.5.7</jpro-platform.version>
 
         <!-- TestFX Variables -->
         <tinkar-starter-data-reasoned.version>1.0.0</tinkar-starter-data-reasoned.version>

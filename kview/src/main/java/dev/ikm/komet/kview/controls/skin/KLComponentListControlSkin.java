@@ -305,7 +305,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         KLComponentListControl<T> control = getSkinnable();
 
         IntIdCollection intIdList = control.getValue();
-        MutableIntList mutableList = IntLists.mutable.of(intIdList.toArray());
+        MutableIntList mutableList = createMutableIntListCopy(intIdList);
         mutableList.remove(nidToRemove);
         setValueFromIntList(mutableList);
     }
