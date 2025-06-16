@@ -431,7 +431,7 @@ public class App extends Application {
             App.primaryStage = landingPageWindow;
             landingPageWindow.show();
             landingPageWindow.toFront();
-//            landingPageWindow.setMaximized(true);
+            landingPageWindow.setMaximized(true);
             return;
         }
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
@@ -455,7 +455,7 @@ public class App extends Application {
             kViewStage.setScene(sourceScene);
             kViewStage.setTitle("Landing Page");
 
-//            kViewStage.setMaximized(true);
+            kViewStage.setMaximized(true);
             kViewStage.setOnCloseRequest(windowEvent -> {
                 // call shutdown method on the view
                 state.set(SHUTDOWN);
@@ -474,7 +474,7 @@ public class App extends Application {
 
         landingPageWindow = kViewStage;
         kViewStage.show();
-//        kViewStage.setMaximized(true);
+        kViewStage.setMaximized(true);
     }
 
     /**
@@ -530,7 +530,7 @@ public class App extends Application {
             journalStageWindow.setY(journalWindowSettings.getValue(JOURNAL_YPOS));
             journalController.restoreWindowsAsync(journalWindowSettings);
         } else {
-//            journalStageWindow.setMaximized(true);
+            journalStageWindow.setMaximized(true);
         }
 
         journalStageWindow.setOnHidden(windowEvent -> {
