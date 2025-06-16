@@ -16,33 +16,10 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
-import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
-import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculateHashValue;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateNode;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
-import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
-import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
-import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
-import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
 import dev.ikm.komet.framework.events.EntityVersionChangeEvent;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
-import dev.ikm.komet.framework.observable.ObservableEntity;
-import dev.ikm.komet.framework.observable.ObservableField;
-import dev.ikm.komet.framework.observable.ObservableSemantic;
-import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
-import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
+import dev.ikm.komet.framework.observable.*;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
@@ -51,14 +28,7 @@ import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.FieldRecord;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.SemanticVersionRecord;
-import dev.ikm.tinkar.entity.StampRecord;
-import dev.ikm.tinkar.entity.VersionData;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -85,6 +55,19 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
+import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.*;
+import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
+import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
+import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
+import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
 
 public class SemanticFieldsController {
 
@@ -292,7 +275,7 @@ public class SemanticFieldsController {
 
     @FXML
     private void cancel(ActionEvent actionEvent) {
-        clearOrResetForm(actionEvent);
+        doTheClearOrResetForm();
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         // if previous state was closed cancel will close properties bump out.
         // else show
@@ -300,6 +283,20 @@ public class SemanticFieldsController {
 
     @FXML
     private void clearOrResetForm(ActionEvent actionEvent) {
+        // if create mode display the confirm clear dialog
+        if (genEditingViewModel.getPropertyValue(MODE) == CREATE) {
+            ConfirmClearDialogController.showConfirmClearDialog(this.cancelButton)
+                    .thenAccept(confirmed -> {
+                        if (confirmed) {
+                            doTheClearOrResetForm();
+                        }
+                    });
+        } else {
+            doTheClearOrResetForm();
+        }
+    }
+
+    private void doTheClearOrResetForm() {
         Latest<SemanticEntityVersion>  latestCommitted =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
         latestCommitted.ifPresentOrElse(this::resetFieldValues, this::clearField);
         clearOrResetFormButton.setDisable(true);

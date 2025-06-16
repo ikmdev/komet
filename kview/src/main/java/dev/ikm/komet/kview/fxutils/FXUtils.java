@@ -32,6 +32,8 @@ import javafx.scene.text.Text;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -277,4 +279,36 @@ public abstract class FXUtils {
         // Add the listener to the window panel
         targetPane.sceneProperty().addListener(windowSceneSyncListener);
     }
+
+    /**
+     * Gets the topmost Pane from the provided parentNode.
+     * @param parentNode The node to start from
+     * @return The topmost pane, or null if
+     */
+    public static Pane getTopmostPane(Node parentNode) {
+        List<Pane> paneHierarchy = new ArrayList<>();
+
+        getTopmostPaneHierarchy(paneHierarchy, parentNode);
+
+        return paneHierarchy.isEmpty() ? null : paneHierarchy.getLast();
+    }
+
+    /**
+     * Recursively goes through each parent and accumulates in order the Panes that are
+     * are in the hierarchy.
+     * @param paneHierarchy List to put the Pane objects into
+     * @param node The current node in the parent hierarchy
+     */
+    private static void getTopmostPaneHierarchy(List<Pane> paneHierarchy, Node node) {
+        var parent = node.getParent();
+
+        if (parent instanceof Pane pane) {
+            paneHierarchy.add(pane);
+        }
+
+        if (parent != null) {
+            getTopmostPaneHierarchy(paneHierarchy, parent);
+        }
+    }
+
 }

@@ -15,12 +15,14 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
-
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
+import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController;
+import dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
+import javafx.beans.property.BooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ToggleButton;
@@ -29,10 +31,15 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import org.carlfx.cognitive.loader.*;
-import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
+
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_PANE_FXML_URL;
+import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_VIEW_MODEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
@@ -71,7 +78,6 @@ public class PropertiesController {
     private Pane currentEditPane;
 
     private Pane closePropsPane;
-    private ClosePropertiesController closePropertiesController;
 
     @InjectViewModel
     private GenEditingViewModel genEditingViewModel;
@@ -105,11 +111,21 @@ public class PropertiesController {
 
         editFieldsJfxNode = FXMLMvvmLoader.make(config);
 
-        Config closePropertiesConfig = new Config(this.getClass().getResource("close-properties.fxml"))
-                .addNamedViewModel(new NamedVm("genEditingViewModel", genEditingViewModel));
-        JFXNode<Pane, ClosePropertiesController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
+        JFXNode<Pane, ConfirmationPaneController> closePropsJfxNode = FXMLMvvmLoader.make(CONFIRMATION_PANE_FXML_URL);
         closePropsPane = closePropsJfxNode.node();
-        closePropertiesController = closePropsJfxNode.controller();
+
+        Optional<ConfirmationPaneViewModel> confirmationPaneViewModelOpt = closePropsJfxNode.getViewModel(CONFIRMATION_VIEW_MODEL);
+        ConfirmationPaneViewModel confirmationPaneViewModel = confirmationPaneViewModelOpt.get();
+
+        BooleanProperty closeConfPanelProp = confirmationPaneViewModel.getBooleanProperty(CLOSE_CONFIRMATION_PANEL);
+        closeConfPanelProp.subscribe(closeIt -> {
+            if (closeIt) {
+                EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                        new PropertyPanelEvent(closePropsPane, CLOSE_PANEL));
+
+                confirmationPaneViewModel.reset();
+            }
+        });
 
         genEditingEventSubscriber = evt -> {
             LOG.info("Publish event type: " + evt.getEventType());
@@ -117,13 +133,8 @@ public class PropertiesController {
             // "Semantic Details Added" is displayed when form values are Submitted when in CREATE mode
             // "Semantic Details Changed" is displayed when form values are Submitted when in EDIT mode
 
-            // TODO Changed is future, waiting for Figma wireframe
-
-//            if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
-                closePropertiesController.showSemanticDetailsAdded();
-//            } else {
-//                closePropertiesController.showSemanticDetailsChanged();
-//            }
+            confirmationPaneViewModel.setPropertyValue(CONFIRMATION_TITLE, "Semantic Details Added");
+            confirmationPaneViewModel.setPropertyValue(CONFIRMATION_MESSAGE, "Make a selection in the view to edit the Semantic.");
 
             contentBorderPane.setCenter(closePropsPane);
         };
@@ -134,8 +145,6 @@ public class PropertiesController {
             LOG.info("Show Panel by event type: " + evt.getEventType());
             propertyToggleButtonGroup.selectToggle(addEditButton);
 
-            ValidationViewModel semanticFieldsViewModel = (ValidationViewModel) editFieldsJfxNode
-                    .getViewModel("genEditingViewModel").get();
             if (evt.getEventType() == PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
                 genEditingViewModel.setPropertyValue(FIELD_INDEX, -1);
                 contentBorderPane.setCenter(editFieldsJfxNode.node());
@@ -149,8 +158,9 @@ public class PropertiesController {
                 // change the heading on the top of the panel
                 genEditingViewModel.setPropertyValue(FIELD_INDEX, -1);
 
-                // "No Selection Made" is displayed on initial creation of Semantic
-                closePropertiesController.showNoSelectionMadeToEditSemanticElement();
+                confirmationPaneViewModel.setPropertyValue(CONFIRMATION_TITLE, "No Selection Made");
+                confirmationPaneViewModel.setPropertyValue(CONFIRMATION_MESSAGE, "Make a selection in the view to edit the Semantic.");
+
                 contentBorderPane.setCenter(closePropsPane);
             }
         };
