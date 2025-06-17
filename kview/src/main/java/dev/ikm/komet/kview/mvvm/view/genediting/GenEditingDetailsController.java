@@ -48,6 +48,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import org.carlfx.cognitive.loader.*;
@@ -163,6 +165,9 @@ public class GenEditingDetailsController {
     @FXML
     private HBox conceptHeaderControlToolBarHbox;
 
+    @FXML
+    private ImageView identiconImageView;
+
     @InjectViewModel
     private StampViewModel stampViewModel;
 
@@ -220,6 +225,14 @@ public class GenEditingDetailsController {
         // Check if the properties panel is initially open and add draggable nodes if needed
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
             updateDraggableNodesForPropertiesPanel(true);
+        }
+
+        // Identicon
+        if (refComponent.isNotNull().get()) {
+            EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+
+            Image identicon = Identicon.generateIdenticonImage(semantic.publicId());
+            identiconImageView.setImage(identicon);
         }
     }
 
