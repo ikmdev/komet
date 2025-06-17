@@ -43,6 +43,12 @@ public class KLComponentListControl<T extends IntIdCollection> extends Control {
      */
     public KLComponentListControl() {
         getStyleClass().add("component-list-control");
+
+        sceneProperty().subscribe(newScene -> {
+            if (newScene != null) {
+                newScene.getStylesheets().add(getUserAgentStylesheet());
+            }
+        });
     }
 
     // -- title
