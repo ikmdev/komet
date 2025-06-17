@@ -1487,9 +1487,7 @@ public class JournalController {
                 final KometPreferences windowPreferences = journalPreferences.node(windowId);
                 windowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
                 try {
-                    CompletableFuture.supplyAsync(() -> restoreWindow(windowPreferences),
-                                    Platform.isFxApplicationThread() ? FX_THREAD_EXECUTOR : VIRTUAL_TASK_EXECUTOR)
-                            .thenAcceptAsync(this::setupWorkspaceWindow, FX_THREAD_EXECUTOR);
+                    setupWorkspaceWindow(restoreWindow(windowPreferences));
                 } catch (Exception e) {
                     LOG.error("Error restoring window: {}", windowId, e);
                 }
@@ -1533,15 +1531,8 @@ public class JournalController {
      * @see #restoreWindows(PrefX)
      */
     public void restoreWindowsAsync(PrefX journalWindowSettings) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                restoreWindows(journalWindowSettings);
-            } catch (Exception e) {
-                LOG.error("Error in asynchronous window restore operation for journal '{}'",
-                        journalWindowSettings.getValue(JOURNAL_TITLE), e);
-                throw new CompletionException(e);
-            }
-        }, TinkExecutor.ioThreadPool());
+        restoreWindows(journalWindowSettings);
+        TinkExecutor.ioThreadPool();
     }
 
     /**
