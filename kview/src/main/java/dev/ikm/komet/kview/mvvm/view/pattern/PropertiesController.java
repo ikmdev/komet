@@ -326,7 +326,8 @@ public class PropertiesController {
             if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_FQN) {
                 confirmationPaneViewModel.setPropertyValue(CONFIRMATION_TITLE, "Fully Qualified Name Added");
                 confirmationPaneViewModel.setPropertyValue(CONFIRMATION_MESSAGE, "");
-            } else if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME) {
+            } else if (evt.getEventType() == PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME ||
+                                    evt.getEventType() == PatternDescriptionEvent.PATTERN_EDIT_OTHER_NAME) {
                 confirmationPaneViewModel.setPropertyValue(CONFIRMATION_TITLE, "Other Name Added");
                 confirmationPaneViewModel.setPropertyValue(CONFIRMATION_MESSAGE, "");
             }
