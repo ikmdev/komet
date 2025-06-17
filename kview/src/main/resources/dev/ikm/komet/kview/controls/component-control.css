@@ -63,7 +63,10 @@
 .component-control > .concept-drop-area,
 .component-control > .concept-container > .concept-drop-area {
     -fx-background-color: -Grey-2;
+    -fx-background-radius: 4;
+
     -fx-text-fill: -Grey-8;
+
     -fx-border-width: 2;
     -fx-border-radius: 4;
     -fx-border-style: dashed;
