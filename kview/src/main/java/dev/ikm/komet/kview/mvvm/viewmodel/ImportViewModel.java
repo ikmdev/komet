@@ -22,6 +22,7 @@ import org.carlfx.cognitive.viewmodel.ViewModel;
 
 import java.io.File;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.*;
 
 /**
@@ -42,7 +43,12 @@ public class ImportViewModel extends FormViewModel {
         /**
          * Represents the file selected by the user for import.
          */
-        SELECTED_FILE("Selected File");
+        SELECTED_FILE("Selected File"),
+
+        /**
+         * Represents the PROGRESS_TOPIC or LANDING_PAGE_TOPIC
+         */
+        DESTINATION_TOPIC("Destination Topic");
 
         /**
          * The display name of the import field.
@@ -89,5 +95,9 @@ public class ImportViewModel extends FormViewModel {
                         }
                     }
                 });
+        // Default value for DESTINATION_TOPIC would be PROGRESS_TOPIC.
+        // Progress popUp (PROGRESS_TOPIC) will be shown in the Journal windows by default.
+        // but When we import the changeSet from the landing page, Progress popup (LANDING_PAGE_TOPIC) will be only shown in the landing page.
+        addProperty(DESTINATION_TOPIC, PROGRESS_TOPIC);
     }
 }
