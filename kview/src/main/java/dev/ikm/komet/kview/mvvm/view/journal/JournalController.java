@@ -23,7 +23,7 @@ import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
-import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
+import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_ENTITY_COMPONENT;
 import static dev.ikm.komet.kview.fxutils.FXUtils.FX_THREAD_EXECUTOR;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
@@ -383,18 +383,20 @@ public class JournalController {
         reasonerToggleConsumer = createReasonerToggleConsumer();
 
         makeConceptWindowEventSubscriber = evt -> {
-            ConceptFacade conceptFacade = evt.getConceptFacade();
-            if (evt.getEventType().equals(OPEN_CONCEPT_FROM_SEMANTIC)) {
-                createConceptWindow(conceptFacade, SEMANTIC_ENTITY, null);
-            } else if (evt.getEventType().equals(OPEN_CONCEPT_FROM_CONCEPT)) {
+            EntityFacade entityFacade = evt.getEntityFacade();
+            if (entityFacade instanceof ConceptFacade conceptFacade) {
                 createConceptWindow(conceptFacade, NID_TEXT, null);
+            } else if (entityFacade instanceof PatternFacade patternFacade) {
+                createPatternWindow(patternFacade, getNavigatorNode().getViewProperties());
+            } else if (entityFacade instanceof SemanticFacade semanticFacade) {
+                createGenEditWindow(semanticFacade, getNavigatorNode().getViewProperties(), false);
             }
         };
         journalEventBus.subscribe(JOURNAL_TOPIC, MakeConceptWindowEvent.class, makeConceptWindowEventSubscriber);
 
         makePatternWindowEventSubscriber = evt ->
                 createPatternWindow(evt.getPatternFacade(), evt.getViewProperties());
-        journalEventBus.subscribe(journalTopic, MakePatternWindowEvent.class, makePatternWindowEventSubscriber);
+        journalEventBus.subscribe(JOURNAL_TOPIC, MakePatternWindowEvent.class, makePatternWindowEventSubscriber);
 
         // Listening for when a General authoring Window needs to be summoned.
         makeGenEditWindowEventSubscriber = evt ->
