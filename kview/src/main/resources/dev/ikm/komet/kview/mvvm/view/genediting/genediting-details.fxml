@@ -6,6 +6,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.Group?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
@@ -239,19 +241,22 @@
                <top>
                   <BorderPane prefHeight="103.0" prefWidth="894.0" styleClass="concept-detail-banner-background" BorderPane.alignment="CENTER">
                      <center>
-                        <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="66.0" prefWidth="507.0" styleClass="concept-detail-banner-background">
+                        <GridPane hgap="8.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="66.0" prefWidth="507.0" styleClass="concept-detail-banner-background">
                            <columnConstraints>
                               <ColumnConstraints halignment="LEFT" maxWidth="586.0" minWidth="-Infinity" prefWidth="42.0" />
                               <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="234.0" prefWidth="416.0" />
                            </columnConstraints>
                            <rowConstraints>
-                              <RowConstraints minHeight="10.0" />
+                              <RowConstraints minHeight="48.0" prefHeight="56.0" />
                               <RowConstraints maxHeight="77.0" minHeight="0.0" prefHeight="24.0" vgrow="SOMETIMES" />
                               <RowConstraints maxHeight="65.0" minHeight="-Infinity" prefHeight="22.0" vgrow="SOMETIMES" />
                               <RowConstraints minHeight="9.0" prefHeight="22.0" vgrow="NEVER" />
                            </rowConstraints>
                            <children>
-                              <Label fx:id="semanticTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="40.0" prefWidth="495.0" text="SEMANTIC TITLE" textFill="#212430" wrapText="true" GridPane.columnSpan="2">
+                              <ImageView fx:id="identiconImageView" fitWidth="44.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                 <Image url="@../images/identicon-placeholder.png" />
+                              </ImageView>
+                              <Label fx:id="semanticTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="40.0" prefWidth="495.0" text="SEMANTIC TITLE" textFill="#212430" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0">
                                  <font>
                                     <Font name="Open Sans Regular" size="17.0" />
                                  </font>
@@ -259,8 +264,8 @@
                                     <Tooltip fx:id="conceptNameTooltip" text="Empty Tooltip" />
                                  </tooltip>
                               </Label>
-                              <Label fx:id="semanticDescriptionLabel" text="Semantic for Test Performed Pattern" GridPane.columnSpan="2" GridPane.rowIndex="1" />
-                              <TextFlow GridPane.columnSpan="2" GridPane.rowIndex="2" GridPane.rowSpan="2">
+                              <Label fx:id="semanticDescriptionLabel" text="Semantic for Test Performed Pattern" GridPane.columnSpan="2" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                              <TextFlow GridPane.columnSpan="2" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.rowSpan="1">
                                  <children>
                                     <Text fx:id="semanticMeaningLabelText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-label" text="Meaning:  " />
                                     <Text fx:id="semanticMeaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-value" text="[]" />

@@ -8,6 +8,7 @@ import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
+import javafx.css.PseudoClass;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
@@ -34,6 +35,8 @@ import java.util.ResourceBundle;
 public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinBase<KLComponentListControl<T>> {
 
     private static final Logger LOG = LoggerFactory.getLogger(KLComponentListControlSkin.class);
+
+    private static final PseudoClass DRAGGING_TO_SAME = PseudoClass.getPseudoClass("dragging-to-same");
 
     private final static double SPACE_BETWEEN_COMPONENTS = 10;
     private final static double SPACE_BETWEEN_NUMBER_AND_CONTROL = 5;
@@ -127,6 +130,18 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         }
 
         updateDropTargetLocation(dragEvent);
+
+        // Check if dragging back to the same position
+        KLComponentControl componentControl = (KLComponentControl) dragEvent.getGestureSource();
+        int indexOfSourceComponent = componentControls.indexOf(componentControl);
+
+        if (currentDropIndex == indexOfSourceComponent) {
+            componentControl.setVisible(true);
+            componentControl.pseudoClassStateChanged(DRAGGING_TO_SAME, true);
+        } else {
+            componentControl.setVisible(false);
+            componentControl.pseudoClassStateChanged(DRAGGING_TO_SAME, false);
+        }
     }
 
     private void updateDropTargetLocation(DragEvent dragEvent) {
