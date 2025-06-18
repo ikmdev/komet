@@ -131,16 +131,17 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
         updateDropTargetLocation(dragEvent);
 
-        // Check if dragging back to the same position
-        KLComponentControl componentControl = (KLComponentControl) dragEvent.getGestureSource();
-        int indexOfSourceComponent = componentControls.indexOf(componentControl);
+        // Check if dragging within CList/CSet and it's dragging back to the same position
+        if (dragEvent.getGestureSource() instanceof KLComponentControl componentControl) {
+            int indexOfSourceComponent = componentControls.indexOf(componentControl);
 
-        if (currentDropIndex == indexOfSourceComponent) {
-            componentControl.setVisible(true);
-            componentControl.pseudoClassStateChanged(DRAGGING_TO_SAME, true);
-        } else {
-            componentControl.setVisible(false);
-            componentControl.pseudoClassStateChanged(DRAGGING_TO_SAME, false);
+            if (currentDropIndex == indexOfSourceComponent) {
+                componentControl.setVisible(true);
+                componentControl.pseudoClassStateChanged(DRAGGING_TO_SAME, true);
+            } else {
+                componentControl.setVisible(false);
+                componentControl.pseudoClassStateChanged(DRAGGING_TO_SAME, false);
+            }
         }
     }
 
