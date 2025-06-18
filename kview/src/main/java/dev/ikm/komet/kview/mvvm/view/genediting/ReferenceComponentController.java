@@ -29,6 +29,8 @@ import java.util.UUID;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.CONFIRM_REFERENCE_COMPONENT;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
+import static dev.ikm.komet.kview.mvvm.view.genediting.SemanticFieldsController.CONFIRM_CLEAR_MESSAGE;
+import static dev.ikm.komet.kview.mvvm.view.genediting.SemanticFieldsController.CONFIRM_CLEAR_TITLE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.*;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
@@ -89,7 +91,7 @@ public class ReferenceComponentController {
     @FXML
     private void clearForm(ActionEvent actionEvent) {
         if (klComponentControl.entityProperty().get() != null) {
-            ConfirmClearDialogController.showConfirmClearDialog(this.cancelButton)
+            ConfirmationDialogController.showConfirmationDialog(this.cancelButton, CONFIRM_CLEAR_TITLE, CONFIRM_CLEAR_MESSAGE)
                     .thenAccept(confirmed -> {
                         if (confirmed) {
                             klComponentControl.entityProperty().set(null);
