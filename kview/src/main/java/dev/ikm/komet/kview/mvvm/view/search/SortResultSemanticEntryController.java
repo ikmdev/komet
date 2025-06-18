@@ -20,7 +20,13 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
+import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.PatternEntity;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
@@ -64,7 +70,7 @@ public class SortResultSemanticEntryController  {
 
     // data fields to populate the concept details window
 
-    private ConceptEntity conceptEntity;
+    private Entity<? extends EntityVersion> entity;
 
     private EvtBus eventBus;
 
@@ -91,7 +97,7 @@ public class SortResultSemanticEntryController  {
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)){
                 if (mouseEvent.getClickCount() == 2) {
                     eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
-                            MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC, conceptEntity));
+                            MakeConceptWindowEvent.OPEN_ENTITY_COMPONENT, entity));
                 }
             }
             // right click shows the context menu
@@ -104,14 +110,25 @@ public class SortResultSemanticEntryController  {
     @FXML
     private void populateConcept(ActionEvent actionEvent) {
         actionEvent.consume();
-        eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
-                MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
+        if (entity instanceof ConceptEntity conceptEntity) {
+            eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
+                    MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
+        } else if (entity instanceof SemanticEntity semanticEntity) {
+           ConceptEntity conceptEntity = Entity.getConceptForSemantic(semanticEntity.nid()).get();
+            eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
+                    MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
+        }
     }
 
     @FXML
     private  void openInConceptNavigator(ActionEvent actionEvent) {
         actionEvent.consume();
-        eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));
+        if(entity instanceof ConceptEntity conceptEntity) {
+            eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));
+        } else if (entity instanceof SemanticEntity semanticEntity) {
+            ConceptEntity conceptEntity = Entity.getConceptForSemantic(semanticEntity.nid()).get();
+            eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));
+        }
     }
 
     public boolean isRetired() {
@@ -144,8 +161,8 @@ public class SortResultSemanticEntryController  {
         textFlow.getStyleClass().add("search-semantic-active");
     }
 
-    public void setData(ConceptEntity conceptEntity) {
-        this.conceptEntity = conceptEntity;
+    public void setData(Entity entity) {
+        this.entity = entity;
     }
 
     public void setWindowView(ObservableViewNoOverride windowView) {

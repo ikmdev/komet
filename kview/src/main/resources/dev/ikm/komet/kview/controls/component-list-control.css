@@ -39,3 +39,20 @@
 .component-list-control > .add-entry-button > .concept-search-button:disabled {
     -fx-background-color: -Grey-7;
 }
+
+/*** Reordering and dragging to same position ***/
+
+.component-list-control > .component-control:dragging-to-same > .selected-concept-container {
+    -fx-background-color: white;
+
+    -fx-padding: 6;
+
+    -fx-border-width: 2;
+    -fx-border-radius: 4;
+    -fx-border-style: dashed;
+    -fx-border-color: -Primary-04;
+}
+
+.component-list-control > .component-control:dragging-to-same > .selected-concept-container > .concept-selected-entity-box {
+    visibility: hidden;
+}
