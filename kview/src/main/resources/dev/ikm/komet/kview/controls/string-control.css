@@ -17,3 +17,9 @@
     -fx-font-weight: 500;
     -fx-text-fill: -Grey-10;
 }
+
+.string-control > .text-field:focused {
+    -fx-background-color: #fffbe6;      /* Light yellow background */
+    -fx-border-color: #4285f4;          /* Blue border */
+    -fx-border-width: 2;
+}

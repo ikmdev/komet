@@ -18,6 +18,12 @@
     -fx-text-fill: -Grey-10;
 }
 
+.integer-control > .value-text-field:focused {
+    -fx-background-color: #fffbe6;      /* Light yellow background */
+    -fx-border-color: #4285f4;          /* Blue border */
+    -fx-border-width: 2;
+}
+
 .integer-control > .value-text-field:error {
     -fx-border-color: -Accent-color-red;
 }

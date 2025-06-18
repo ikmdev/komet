@@ -29,6 +29,12 @@
     -fx-background-color: #4277d8;
 }
 
+.boolean-control .combo-box.highlight-on-focus:focused, .combo-box-base.highlight-on-focus:focused  {
+    -fx-background-color: #fffbe6;      /* Light yellow background */
+    -fx-border-color: #4285f4;          /* Blue border */
+    -fx-border-width: 2;
+}
+
 .boolean-control:disabled {
     -fx-opacity: 0.4;
 }

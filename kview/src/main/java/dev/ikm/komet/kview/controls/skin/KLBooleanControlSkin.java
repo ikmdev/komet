@@ -33,6 +33,8 @@ public class KLBooleanControlSkin extends SkinBase<KLBooleanControl> {
 
         addMenuItemsToComboBox();
         comboBox.valueProperty().bindBidirectional(control.valueProperty());
+        comboBox.getStyleClass().add("focused");
+        comboBox.getStyleClass().add("highlight-on-focus");
 
         mainContainer.setFillWidth(true);
         comboBox.setPrefWidth(Double.MAX_VALUE);
