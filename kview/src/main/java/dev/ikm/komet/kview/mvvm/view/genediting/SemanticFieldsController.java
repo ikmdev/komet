@@ -303,7 +303,7 @@ public class SemanticFieldsController {
         } else {
             ConfirmationDialogController.showConfirmationDialog(this.cancelButton,
                             "Confirm Reset Form",
-                            "You're changes will be lost if you reset the form. Are you sure you want to continue?")
+                            "Your changes will be lost if you reset the form. Are you sure you want to continue?")
                     .thenAccept(confirmed -> {
                         if (confirmed) {
                             doTheClearOrResetForm();
