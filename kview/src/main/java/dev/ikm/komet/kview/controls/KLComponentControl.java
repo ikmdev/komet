@@ -23,6 +23,8 @@ import javafx.util.Callback;
 import javafx.util.StringConverter;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -45,7 +47,7 @@ import java.util.function.Predicate;
  * componentControl.entityProperty().subscribe(entity -> System.out.println("Entity = " + entity));
  * </code></pre>
  *
- * @see KLComponentListControl
+ * @see KLComponentCollectionControl
  */
 public class KLComponentControl extends Control {
 
@@ -225,6 +227,12 @@ public class KLComponentControl extends Control {
     public AutoCompleteTextField.HeaderPane getTypeAheadHeaderPane() { return typeAheadHeaderPane.get(); }
     public ObjectProperty<AutoCompleteTextField.HeaderPane> typeAheadHeaderPaneProperty() { return typeAheadHeaderPane; }
     public void setTypeAheadHeaderPane(AutoCompleteTextField.HeaderPane typeAheadHeaderPane) { this.typeAheadHeaderPane.set(typeAheadHeaderPane); }
+
+    // -- on dropping multiple concepts
+    private final ObjectProperty<Consumer<List<List<UUID[]>>>> onDroppingMultipleConcepts = new SimpleObjectProperty<>();
+    public final void setOnDroppingMultipleConcepts(Consumer<List<List<UUID[]>>> consumer) { this.onDroppingMultipleConcepts.set(consumer); }
+    public final Consumer<List<List<UUID[]>>> getOnDroppingMultipleConcepts() { return onDroppingMultipleConcepts.get(); }
+    public final ObjectProperty<Consumer<List<List<UUID[]>>>> onDroppingMultipleConceptsProperty() { return onDroppingMultipleConcepts; }
 
     /***************************************************************************
      *                                                                         *
