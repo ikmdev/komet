@@ -59,7 +59,9 @@ import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
 import org.eclipse.collections.api.factory.Lists;
@@ -78,6 +80,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static dev.ikm.komet.framework.events.FrameworkTopics.SEARCH_SORT_TOPIC;
@@ -89,6 +92,7 @@ import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.STAMP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 
@@ -128,6 +132,8 @@ public class NextGenSearchController extends AbstractBasicController {
     private ObservableViewNoOverride windowView;
 
     private EvtBus eventBus;
+
+    private UUID journalTopic;
 
     @FXML
     public void initialize() {
@@ -459,11 +465,14 @@ public class NextGenSearchController extends AbstractBasicController {
         latestTopVersion.ifPresent(entityVersion -> {
 
             Config config = new Config(SortResultConceptEntryController.class.getResource(SORT_CONCEPT_RESULT_CONCEPT_FXML));
-            config.updateViewModel("searchEntryViewModel", (searchEntryViewModel) -> searchEntryViewModel.addProperty(VIEW_PROPERTIES, getViewProperties()));
+            config.updateViewModel("searchEntryViewModel", (searchEntryViewModel) ->
+                    searchEntryViewModel
+                            .addProperty(VIEW_PROPERTIES, getViewProperties())
+                            .addProperty(CURRENT_JOURNAL_WINDOW_TOPIC, getJournalTopic())
+            );
             JFXNode<Pane, SortResultConceptEntryController> searchConceptEntryJFXNode = FXMLMvvmLoader.make(config);
             entry.set(searchConceptEntryJFXNode.node());
             SortResultConceptEntryController controller = searchConceptEntryJFXNode.controller();
-
 
             controller.setIdenticon(Identicon.generateIdenticonImage(entityVersion.publicId()));
             controller.setWindowView(windowView);
@@ -491,6 +500,10 @@ public class NextGenSearchController extends AbstractBasicController {
         });
 
         return entry.get();
+    }
+
+    private UUID getJournalTopic() {
+        return journalTopic;
     }
 
     private String formatHighlightedString(String highlightedString) {
@@ -523,6 +536,10 @@ public class NextGenSearchController extends AbstractBasicController {
 
     public void setWindowView(ObservableViewNoOverride windowView) {
         this.windowView = windowView;
+    }
+
+    public void setJournalTopic(UUID journalTopic) {
+        this.journalTopic = journalTopic;
     }
 }
 
