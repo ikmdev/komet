@@ -7,7 +7,7 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLComponentControlFactory;
-import dev.ikm.komet.kview.controls.KLComponentListControl;
+import dev.ikm.komet.kview.controls.KLComponentCollectionControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
@@ -29,12 +29,12 @@ public class DefaultKlComponentSetField extends BaseDefaultKlField<IntIdSet> imp
         super(observableComponentSetField, observableView, isEditable);
         Parent node;
         if (isEditable) {
-            KLComponentListControl<IntIdSet> klComponentListControl = KLComponentControlFactory
+            KLComponentCollectionControl<IntIdSet> klComponentCollectionControl = KLComponentControlFactory
                     .createTypeAheadComponentListControl(observableView.calculator());
 
-            klComponentListControl.setTitle(getTitle());
-            klComponentListControl.valueProperty().bindBidirectional(observableComponentSetField.valueProperty());
-            node = klComponentListControl;
+            klComponentCollectionControl.setTitle(getTitle());
+            klComponentCollectionControl.valueProperty().bindBidirectional(observableComponentSetField.valueProperty());
+            node = klComponentCollectionControl;
         } else {
             KLReadOnlyComponentSetControl klReadOnlyComponentSetControl = new KLReadOnlyComponentSetControl();
 
