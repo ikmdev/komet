@@ -79,8 +79,11 @@ public class ConfirmationDialogController {
     }
 
     /**
-     * Creates the dialog, providing the CompletableFuture that provides the modal behavior of the dialog.
+     * Creates the confirmation dialog with a title and message, providing the CompletableFuture that provides
+     * the modal behavior of the dialog.
      * @param parentNode The node to start at to determine the topmost Pane, which is required for the GlassPane
+     * @param title The title of the confirmation dialog
+     * @param message The message to display in the confirmation dialog
      * @return CompletableFuture with a Boolean type, Boolean value of true is returned when the confirm button is pressed
      */
     public static CompletableFuture<Boolean> showConfirmationDialog(Node parentNode, String title, String message) {
