@@ -45,14 +45,14 @@ public class KLBooleanControlSkin extends SkinBase<KLBooleanControl> {
         comboBox.setButtonCell(new ListCell<>() {
             @Override
             protected void updateItem(Boolean item, boolean empty) {
-                super.updateItem(item, empty);
-                if (item == null || empty) {
-                    setText(control.getPromptText());
-                } else {
-                    String booleanString = item.toString();
-                    String capitalized = booleanString.substring(0, 1).toUpperCase() + booleanString.substring(1);
-                    setText(capitalized);
-                }
+            super.updateItem(item, empty);
+            if (item == null || empty) {
+                setText(control.getPromptText());
+            } else {
+                String booleanString = item.toString();
+                String capitalized = booleanString.substring(0, 1).toUpperCase() + booleanString.substring(1);
+                setText(capitalized);
+            }
             }
         });
 

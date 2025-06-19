@@ -29,10 +29,13 @@
     -fx-background-color: #4277d8;
 }
 
-.boolean-control .combo-box.highlight-on-focus:focused, .combo-box-base.highlight-on-focus:focused  {
-    -fx-background-color: #fffbe6;      /* Light yellow background */
-    -fx-border-color: #4285f4;          /* Blue border */
+.boolean-control .combo-box:focused  {
+    -fx-border-color: #8ab4f8;          /* Blue border */
     -fx-border-width: 2;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 3, 2;        /* Match background radius */
+    -fx-border-radius: 3, 2;            /* Rounded corners */
+    -fx-padding: 0.333333em 0.583em 0.333333em 0.417em;
 }
 
 .boolean-control:disabled {

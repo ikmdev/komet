@@ -19,8 +19,7 @@
 }
 
 .integer-control > .value-text-field:focused {
-    -fx-background-color: #fffbe6;      /* Light yellow background */
-    -fx-border-color: #4285f4;          /* Blue border */
+    -fx-border-color: #8ab4f8;          /* Blue border */
     -fx-border-width: 2;
 }
 
