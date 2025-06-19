@@ -23,7 +23,7 @@ import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
-import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_SEMANTIC;
+import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_ENTITY_COMPONENT;
 import static dev.ikm.komet.kview.fxutils.FXUtils.FX_THREAD_EXECUTOR;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
@@ -383,14 +383,16 @@ public class JournalController {
         reasonerToggleConsumer = createReasonerToggleConsumer();
 
         makeConceptWindowEventSubscriber = evt -> {
-            ConceptFacade conceptFacade = evt.getConceptFacade();
-            if (evt.getEventType().equals(OPEN_CONCEPT_FROM_SEMANTIC)) {
-                createConceptWindow(conceptFacade, SEMANTIC_ENTITY, null);
-            } else if (evt.getEventType().equals(OPEN_CONCEPT_FROM_CONCEPT)) {
+            EntityFacade entityFacade = evt.getEntityFacade();
+            if (entityFacade instanceof ConceptFacade conceptFacade) {
                 createConceptWindow(conceptFacade, NID_TEXT, null);
+            } else if (entityFacade instanceof PatternFacade patternFacade) {
+                createPatternWindow(patternFacade, getNavigatorNode().getViewProperties());
+            } else if (entityFacade instanceof SemanticFacade semanticFacade) {
+                createGenEditWindow(semanticFacade, getNavigatorNode().getViewProperties(), false);
             }
         };
-        journalEventBus.subscribe(JOURNAL_TOPIC, MakeConceptWindowEvent.class, makeConceptWindowEventSubscriber);
+        journalEventBus.subscribe(journalTopic, MakeConceptWindowEvent.class, makeConceptWindowEventSubscriber);
 
         makePatternWindowEventSubscriber = evt ->
                 createPatternWindow(evt.getPatternFacade(), evt.getViewProperties());
@@ -830,6 +832,7 @@ public class JournalController {
         nextGenSearchController = nextGenSearchJFXNode.controller();
         nextGenSearchController.updateModel(this.windowView.makeOverridableViewProperties());
         nextGenSearchController.setWindowView(this.windowView);
+        nextGenSearchController.setJournalTopic(journalTopic);
         nextGenSearchPanel = nextGenSearchJFXNode.node();
 
         setupSlideOutTrayPane(nextGenSearchPanel, nexGenSearchSlideoutTrayPane);
@@ -1487,9 +1490,7 @@ public class JournalController {
                 final KometPreferences windowPreferences = journalPreferences.node(windowId);
                 windowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
                 try {
-                    CompletableFuture.supplyAsync(() -> restoreWindow(windowPreferences),
-                                    Platform.isFxApplicationThread() ? FX_THREAD_EXECUTOR : VIRTUAL_TASK_EXECUTOR)
-                            .thenAcceptAsync(this::setupWorkspaceWindow, FX_THREAD_EXECUTOR);
+                    setupWorkspaceWindow(restoreWindow(windowPreferences));
                 } catch (Exception e) {
                     LOG.error("Error restoring window: {}", windowId, e);
                 }
@@ -1533,15 +1534,8 @@ public class JournalController {
      * @see #restoreWindows(PrefX)
      */
     public void restoreWindowsAsync(PrefX journalWindowSettings) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                restoreWindows(journalWindowSettings);
-            } catch (Exception e) {
-                LOG.error("Error in asynchronous window restore operation for journal '{}'",
-                        journalWindowSettings.getValue(JOURNAL_TITLE), e);
-                throw new CompletionException(e);
-            }
-        }, TinkExecutor.ioThreadPool());
+        restoreWindows(journalWindowSettings);
+        TinkExecutor.ioThreadPool();
     }
 
     /**

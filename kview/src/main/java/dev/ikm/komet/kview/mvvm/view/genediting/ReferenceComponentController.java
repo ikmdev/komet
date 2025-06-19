@@ -1,18 +1,5 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
-import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.CONFIRM_REFERENCE_COMPONENT;
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.STAMP_VIEW_MODEL;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLComponentControl;
@@ -21,17 +8,7 @@ import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.RecordListBuilder;
-import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.SemanticRecord;
-import dev.ikm.tinkar.entity.SemanticRecordBuilder;
-import dev.ikm.tinkar.entity.SemanticVersionRecord;
-import dev.ikm.tinkar.entity.SemanticVersionRecordBuilder;
-import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -48,6 +25,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
+
+import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.CONFIRM_REFERENCE_COMPONENT;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.*;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 
 public class ReferenceComponentController {
 
@@ -104,7 +88,15 @@ public class ReferenceComponentController {
 
     @FXML
     private void clearForm(ActionEvent actionEvent) {
-        klComponentControl.entityProperty().set(null);
+        if (klComponentControl.entityProperty().get() != null) {
+            ConfirmClearDialogController.showConfirmClearDialog(this.cancelButton)
+                    .thenAccept(confirmed -> {
+                        if (confirmed) {
+                            klComponentControl.entityProperty().set(null);
+                        }
+                    });
+        }
+
         actionEvent.consume();
     }
 
