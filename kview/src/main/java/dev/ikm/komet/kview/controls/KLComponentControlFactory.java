@@ -4,6 +4,8 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.tinkar.common.id.IntIdCollection;
 import dev.ikm.tinkar.coordinate.navigation.calculator.NavigationCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -22,6 +24,7 @@ import javafx.util.StringConverter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class KLComponentControlFactory {
@@ -53,9 +56,10 @@ public class KLComponentControlFactory {
         return componentControl;
     }
 
-    public static <T extends IntIdCollection> KLComponentListControl createTypeAheadComponentListControl(ViewCalculator viewCalculator) {
-        KLComponentListControl<T> componentListControl = new KLComponentListControl<>();
+    public static <T extends IntIdCollection> KLComponentCollectionControl createTypeAheadComponentListControl(ViewCalculator viewCalculator) {
+        KLComponentCollectionControl<T> componentListControl = new KLComponentCollectionControl<>();
         NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
+
         componentListControl.setTypeAheadCompleter(createGenericTypeAheadFunction(navigationCalculator));
 
         // add the function to render the component name
@@ -68,6 +72,21 @@ public class KLComponentControlFactory {
 
         // header node
         componentListControl.setTypeAheadHeaderPane(createTypeAheadHeaderPane());
+
+        // dropping multiple concepts
+        componentListControl.setOnDroppingMultipleConcepts(publicIds -> {
+            ArrayList<Integer> newNids = new ArrayList<>();
+
+            publicIds.forEach(uuids -> {
+                for (UUID[] uuid : uuids) {
+                    Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForUuids(uuid));
+                    newNids.add(entity.nid());
+                }
+            });
+
+            int[] newNidsIntArray = newNids.stream().mapToInt(i -> i).toArray();
+            componentListControl.setValue((T)componentListControl.getValue().with(newNidsIntArray));
+        });
 
         return componentListControl;
     }
