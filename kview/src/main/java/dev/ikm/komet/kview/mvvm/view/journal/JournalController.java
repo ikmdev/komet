@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.journal;
 
+import static dev.ikm.komet.framework.dnd.KometClipboard.MULTI_PARENT_GRAPH_DRAG_FORMAT;
 import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
@@ -27,12 +28,16 @@ import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_ENTITY_COMP
 import static dev.ikm.komet.kview.fxutils.FXUtils.FX_THREAD_EXECUTOR;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createFromEntity;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createFromUuids;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createWindow;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.extractEntityFromDragInfo;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.restoreWindow;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.ENTITY_NID_TYPE;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.GEN_EDITING;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.PATTERN;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.shortenUUID;
-import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.DEMO_AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
@@ -95,7 +100,6 @@ import dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils;
 import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
-import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
 import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
@@ -104,7 +108,6 @@ import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
 import dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
-import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -118,17 +121,13 @@ import dev.ikm.komet.reasoner.StringWithOptionalConceptFacade;
 import dev.ikm.komet.search.SearchNode;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.IntIds;
-import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -154,6 +153,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -171,6 +171,8 @@ import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -427,8 +429,13 @@ public class JournalController {
         journalEventBus.subscribe(JOURNAL_TOPIC, CloseReasonerPanelEvent.class, closeReasonerPanelEventSubscriber);
 
         // initialize drag and drop for search results of next gen search
-        setupDragNDrop(workspace, (publicId) -> {
-        });
+        setupDragNDrop(workspace);
+
+        // Hide the progress toggle button by default
+        progressToggleButton.setVisible(false);
+
+        // Listen for progress tasks
+        setupProgressListener();
 
         workspace.addEventHandler(MouseEvent.MOUSE_CLICKED, this::onMouseClickedOnDesktopSurfacePane);
 
@@ -495,101 +502,177 @@ public class JournalController {
         return pane;
     }
 
-    private void setupDragNDrop(Node node, Consumer<PublicId> consumer) {
+    /**
+     * Configures drag and drop event handling for the specified workspace node.
+     * Sets up a chain of handlers to process different drag data formats (UUID arrays and entity-based drags)
+     * with comprehensive error handling and logging.
+     *
+     * @param node the JavaFX node to enable drag and drop functionality on
+     */
+    private void setupDragNDrop(Node node) {
         node.setOnDragDropped(event -> {
-            /* data dropped */
-            /* if there is a string data on dragboard, read it and use it */
-            Dragboard dragboard = event.getDragboard();
             boolean success = false;
-            if (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)) {
-                Object uuidsContent = dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
-                if (uuidsContent instanceof List list) {
-                    if (!list.isEmpty() && list.get(0) instanceof UUID[]) {
-                        populateWorkspaceWithSelection(list);
-                        success = true;
-                    } else if (uuidsContent instanceof List<?>) {
-                        List<List<UUID[]>> uuids = (List<List<UUID[]>>) dragboard.getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
-                        uuids.forEach(this::populateWorkspaceWithSelection);
-                        success = true;
-                    } else {
-                        success = false;
-                    }
-                }
-            } else if (dragboard.hasString()) {
-                try {
-                    LOG.info("publicId: {}", dragboard.getString());
-
-                    ConceptFacade conceptFacade = null;
-                    PatternFacade patternFacade = null;
-                    EntityFacade semanticFacade = null;
-                    DragAndDropType dragAndDropType = null;
-                    if (event.getGestureSource() instanceof SearchResultCell searchResultCell) {
-                        dragAndDropType = CONCEPT;
-                        if (searchResultCell.getItem() instanceof SearchPanelController.NidTextRecord nidTextRecord) {
-                            conceptFacade = Entity.getFast(nidTextRecord.nid());
-                        } else if (searchResultCell.getItem() instanceof
-                                LatestVersionSearchResult latestVersionSearchResult) {
-                            if (latestVersionSearchResult.latestVersion().isPresent()) {
-                                Optional<ConceptEntity> conceptEntity = Entity.getConceptForSemantic(
-                                        latestVersionSearchResult.latestVersion().get().nid());
-                                if (conceptEntity.isPresent()) {
-                                    conceptFacade = conceptEntity.get();
-                                }
-                            }
-                        }
-                    } else if (event.getGestureSource() instanceof MultiParentGraphCell multiParentGraphCell) {
-                        conceptFacade = multiParentGraphCell.getItem();
-                        dragAndDropType = CONCEPT;
-                    } else if (event.getGestureSource() instanceof Node sourceNode && sourceNode.getUserData() instanceof DragAndDropInfo) {
-                        // could be a concept or a pattern
-                        DragAndDropInfo dragAndDropInfo = (DragAndDropInfo) sourceNode.getUserData();
-                        if (dragAndDropInfo.type().equals(DragAndDropType.CONCEPT)) {
-                            dragAndDropType = DragAndDropType.CONCEPT;
-                            conceptFacade = ConceptFacade.make(PrimitiveData.nid(dragAndDropInfo.publicId()));
-                        } else if (dragAndDropInfo.type().equals(DragAndDropType.PATTERN)) {
-                            dragAndDropType = DragAndDropType.PATTERN;
-                            patternFacade = PatternFacade.make(PrimitiveData.nid(dragAndDropInfo.publicId()));
-                        } else if (dragAndDropInfo.type().equals(DragAndDropType.SEMANTIC)) {
-                            dragAndDropType = DragAndDropType.SEMANTIC;
-                            semanticFacade = EntityService.get().getEntityFast(PrimitiveData.nid(dragAndDropInfo.publicId()));
-                        }
-                        LOG.info("wait a sec");
-                    }
-
-                    // TODO: This code isn't scalable. JournalController now supports a third window (semantic editing). If you have a new window each if/then/else needs to be changed.
-                    if (conceptFacade == null && patternFacade == null && semanticFacade == null) {
-                        return;
-                    }
-                    PublicId publicId = null;
-                    if (dragAndDropType.equals(DragAndDropType.CONCEPT)) {
-                        publicId = conceptFacade.publicId();
-                        Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
-                        createConceptWindow(ConceptFacade.make(entity.nid()));
-                    } else if (dragAndDropType.equals(DragAndDropType.PATTERN)) {
-                        publicId = patternFacade.publicId();
-                        createPatternWindow(patternFacade, windowView.makeOverridableViewProperties());
-                    } else if (dragAndDropType.equals(DragAndDropType.SEMANTIC)) {
-                        publicId = semanticFacade.publicId();
-                        // TODO save preferences of window's (position and size) such as the general editing chapter window.
-                        createGenEditWindow(semanticFacade, windowView.makeOverridableViewProperties(), false);
-                    }
-                    consumer.accept(publicId);
-                    success = true;
-                } catch (Exception ex) {
-                    LOG.error("Error while dropping concept: ", ex);
-                }
+            try {
+                Optional<Dragboard> dragboardOpt = Optional.of(event.getDragboard());
+                success = dragboardOpt
+                        .filter(db -> db.hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT))
+                        .map(db -> handleUuidArrayDrag(db, CONCEPT_NAVIGATOR_DRAG_FORMAT))
+                        .or(() -> dragboardOpt
+                                .filter(db -> db.hasContent(MULTI_PARENT_GRAPH_DRAG_FORMAT))
+                                .map(db -> handleUuidArrayDrag(db, MULTI_PARENT_GRAPH_DRAG_FORMAT)))
+                        .or(() -> dragboardOpt
+                                .filter(Dragboard::hasString)
+                                .map(db -> handleEntityDrag(event.getGestureSource())))
+                        .orElse(false);
+            } catch (Exception ex) {
+                LOG.error("Error while processing drag and drop: ", ex);
             }
-
-            /* let the source know whether the string was successfully
-             * transferred and used */
             event.setDropCompleted(success);
             event.consume();
         });
+    }
 
-        // by default hide progress toggle button
-        progressToggleButton.setVisible(false);
-        // Listen for progress tasks
-        setupProgressListener();
+    /**
+     * Processes drag operations containing UUID arrays from concept navigator or proxy list formats.
+     * Extracts nested UUID arrays from the drag board content and creates corresponding windows
+     * for each valid UUID array found.
+     *
+     * @param dragboard the JavaFX drag board containing the drag data
+     * @param dataFormat the specific data format to extract
+     * @return true if at least one window was successfully created, false otherwise
+     */
+    private boolean handleUuidArrayDrag(Dragboard dragboard, DataFormat dataFormat) {
+        Object content = dragboard.getContent(dataFormat);
+        if (!(content instanceof List<?> list) || list.isEmpty()) {
+            return false;
+        }
+
+        ImmutableList<UUID[]> uuidArrays = extractUuidArrays(list).toImmutable();
+        uuidArrays.forEach(this::createWindowFromUuids);
+        return uuidArrays.notEmpty();
+    }
+
+    /**
+     * Recursively extracts UUID arrays from a potentially nested list structure.
+     * Handles arbitrary nesting levels commonly found in drag-and-drop data formats,
+     * ignoring null values and unexpected item types with debug logging.
+     *
+     * @param list the list to process, may contain UUID arrays, nested lists, or other objects
+     * @return mutable list containing all UUID arrays found at any nesting level
+     */
+    private MutableList<UUID[]> extractUuidArrays(List<?> list) {
+        MutableList<UUID[]> result = Lists.mutable.empty();
+
+        for (Object item : list) {
+            switch (item) {
+                case UUID[] uuids -> result.add(uuids);
+                case List<?> nested -> result.addAll(extractUuidArrays(nested));
+                case null -> LOG.debug("Ignoring null item in drag data");
+                default -> LOG.debug("Ignoring unrecognized drag item: {}",
+                        item.getClass().getSimpleName());
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Processes entity-based drag operations from UI components like search results or tree cells.
+     * Extracts the EntityFacade from the gesture source and creates an appropriate window
+     * if a valid entity is found.
+     *
+     * @param gestureSource the UI component that initiated the drag operation
+     * @return true if a window was successfully created, false if no valid entity was found
+     */
+    private boolean handleEntityDrag(Object gestureSource) {
+        EntityFacade entity = extractEntityFromSource(gestureSource);
+        if (entity != null) {
+            createWindowFromEntity(entity);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Extracts EntityFacade instances from various UI drag sources using type-specific logic.
+     * Handles SearchResultCell components and Node objects with DragAndDropInfo user data,
+     * delegating to specialized extraction methods for each source type.
+     *
+     * @param source the drag gesture source object, typically a UI component
+     * @return the extracted EntityFacade, or null if the source type is unsupported or contains no valid entity
+     */
+    private EntityFacade extractEntityFromSource(Object source) {
+        return switch (source) {
+            case SearchResultCell cell -> extractFromSearchCell(cell);
+            case Node node when node.getUserData() instanceof DragAndDropInfo info -> extractEntityFromDragInfo(info);
+            default -> null;
+        };
+    }
+
+    /**
+     * Extracts EntityFacade from SearchResultCell items, handling both direct concept records
+     * and semantic search results. For semantic results, attempts to find the associated
+     * concept using the semantic's referenced component.
+     *
+     * @param cell the SearchResultCell containing the dragged search result
+     * @return the extracted EntityFacade (typically ConceptFacade), or null if extraction fails
+     */
+    private EntityFacade extractFromSearchCell(SearchResultCell cell) {
+        return switch (cell.getItem()) {
+            case SearchPanelController.NidTextRecord record ->
+                    ConceptFacade.make(record.nid());
+            case LatestVersionSearchResult result when result.latestVersion().isPresent() ->
+                    Entity.getConceptForSemantic(result.latestVersion().get().nid()).orElse(null);
+            default -> null;
+        };
+    }
+
+    /**
+     * Creates and displays a new window from a UUID array using the entity factory.
+     * Delegates to the generic window creation helper with appropriate error context for logging.
+     * The UUID array is used to resolve the entity and determine the appropriate window type.
+     *
+     * @param uuids the UUID array identifying the entity to display in the new window
+     */
+    public void createWindowFromUuids(UUID[] uuids) {
+        createAndSetupWindow(() -> createFromUuids(uuids, journalTopic,
+                        windowView.makeOverridableViewProperties(), null),
+                "UUID array: " + ArrayIterate.makeString(uuids));
+    }
+
+    /**
+     * Creates and displays a new window for the specified EntityFacade. Performs null checking and delegates
+     * to the generic window creation helper with appropriate error context. The entity type determines the specific
+     * window implementation.
+     *
+     * @param entityFacade the entity to display in the new window, or null to skip creation
+     */
+    private void createWindowFromEntity(EntityFacade entityFacade) {
+        if (entityFacade == null) return;
+
+        createAndSetupWindow(() -> createFromEntity(entityFacade, journalTopic,
+                        windowView.makeOverridableViewProperties(), null),
+                "entity " + entityFacade.nid());
+    }
+
+    /**
+     * Generic window creation helper that handles factory delegation, error handling, and workspace setup.
+     * Successfully created windows are automatically added to the workspace.
+     *
+     * @param windowFactory supplier that creates the window instance using factory methods
+     * @param errorContext descriptive context used in error logging
+     */
+    private void createAndSetupWindow(Supplier<AbstractEntityChapterKlWindow> windowFactory, String errorContext) {
+        try {
+            AbstractEntityChapterKlWindow window = windowFactory.get();
+            if (window != null) {
+                setupWorkspaceWindow(window);
+            } else {
+                LOG.warn("Failed to create window for {}", errorContext);
+            }
+        } catch (Exception e) {
+            LOG.error("Error creating window for {}: {}", errorContext, e.getMessage(), e);
+        }
     }
 
     /**
@@ -989,10 +1072,7 @@ public class JournalController {
         conceptNavigatorControl.setShowTags(false);
         conceptNavigatorControl.setOnAction(action -> switch (action) {
             // single selection
-            case OPEN_IN_WORKSPACE -> item -> {
-                List<UUID[]> uuids = List.<UUID[]>of(item.publicId().asUuidArray());
-                populateWorkspaceWithSelection(uuids);
-            };
+            case OPEN_IN_WORKSPACE -> this::createConceptWindow;
             case SHOW_RELATED_CONCEPTS -> {
                 // Dummy, for now just add the parents of the selected item as related content:
                 TreeItem<ConceptFacade> selectedItem = conceptNavigatorControl.getSelectionModel().getSelectedItem();
@@ -1005,10 +1085,7 @@ public class JournalController {
                 yield i -> LOG.info("Click on {}", i.description());
             }
             // multiple selection
-            case POPULATE_SELECTION -> item -> {
-                List<UUID[]> uuids = List.<UUID[]>of(item.publicId().asUuidArray());
-                populateWorkspaceWithSelection(uuids);
-            };
+            case POPULATE_SELECTION -> this::createConceptWindow;
             case SEND_TO_JOURNAL, SEND_TO_CHAPTER, COPY, SAVE_TO_FAVORITES -> _ -> {}; // TODO: Add implementation
         });
         searchControl.setOnLongHover(conceptNavigatorControl::expandAndHighlightConcept);
@@ -1019,13 +1096,6 @@ public class JournalController {
         nodePanel.getStyleClass().add("concept-navigator-container");
         VBox.setVgrow(conceptNavigatorControl, Priority.ALWAYS);
         setupSlideOutTrayPane(nodePanel, conceptNavigatorSlideoutTrayPane);
-    }
-
-    private void populateWorkspaceWithSelection(List<UUID[]> uuids) {
-        for (UUID[] uuid : uuids) {
-            Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForUuids(uuid));
-            createConceptWindow(ConceptFacade.make(entity.nid()));
-        }
     }
 
     /**
@@ -1102,7 +1172,7 @@ public class JournalController {
      * @param preferences preferences for persisting window settings, or null to use default settings
      */
     private void createPatternWindow(EntityFacade patternFacade, ViewProperties viewProperties, KometPreferences preferences) {
-        AbstractEntityChapterKlWindow patternKlWindow = createWindow(EntityKlWindowTypes.PATTERN,
+        AbstractEntityChapterKlWindow patternKlWindow = createWindow(PATTERN,
                 journalTopic, patternFacade, viewProperties, preferences);
         setupWorkspaceWindow(patternKlWindow);
     }
@@ -1141,7 +1211,7 @@ public class JournalController {
      */
     private void createGenEditWindow(EntityFacade entityFacade, ViewProperties viewProperties,
                                      KometPreferences preferences, boolean openProperties) {
-        AbstractEntityChapterKlWindow genEditingKlWindow = createWindow(EntityKlWindowTypes.GEN_EDITING,
+        AbstractEntityChapterKlWindow genEditingKlWindow = createWindow(GEN_EDITING,
                 journalTopic, entityFacade, viewProperties, preferences);
         setupWorkspaceWindow(genEditingKlWindow);
 
@@ -1210,7 +1280,10 @@ public class JournalController {
             workspace.getWindows().remove(chapterKlWindow);
 
             if (chapterKlWindow instanceof ConceptKlWindow conceptKlWindow) {
-                activityStreams.remove(conceptKlWindow.getDetailsActivityStreamKey());
+                final PublicIdStringKey<ActivityStream> streamKey = conceptKlWindow.getDetailsActivityStreamKey();
+                if (streamKey != null) {
+                    activityStreams.remove(streamKey);
+                }
             }
         });
 
@@ -1219,7 +1292,11 @@ public class JournalController {
         chapterKlWindow.onShown();
 
         if (chapterKlWindow instanceof ConceptKlWindow conceptKlWindow) {
-            activityStreams.add(conceptKlWindow.getDetailsActivityStreamKey());
+            final PublicIdStringKey<ActivityStream> streamKey = conceptKlWindow.getDetailsActivityStreamKey();
+            if (streamKey != null) {
+                activityStreams.add(streamKey);
+            }
+
             // Getting the details node from the concept window
             DetailsNode detailsNode = conceptKlWindow.getDetailsNode();
             detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
