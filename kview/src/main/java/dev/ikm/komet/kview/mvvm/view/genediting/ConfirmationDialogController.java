@@ -94,11 +94,11 @@ public class ConfirmationDialogController {
         runOnFxThread(() -> {
             GlassPane glassPane = new GlassPane(FXUtils.getTopmostPane(parentNode));
 
-            final JFXNode<Pane, ConfirmationDialogController> githubInfoNode = FXMLMvvmLoader
+            final JFXNode<Pane, ConfirmationDialogController> confDialogNode = FXMLMvvmLoader
                     .make(CONFIRMATION_DIALOG_FXML_URL);
-            final Pane dialogPane = githubInfoNode.node();
-            final ConfirmationDialogController controller = githubInfoNode.controller();
-            var viewModel = githubInfoNode.getViewModel(CONFIRMATION_DIALOG_VIEW_MODEL).get();
+            final Pane dialogPane = confDialogNode.node();
+            final ConfirmationDialogController controller = confDialogNode.controller();
+            var viewModel = confDialogNode.getViewModel(CONFIRMATION_DIALOG_VIEW_MODEL).get();
 
             // set the view model property values
             viewModel.setPropertyValue(CONFIRMATION_DIALOG_TITLE, title);
