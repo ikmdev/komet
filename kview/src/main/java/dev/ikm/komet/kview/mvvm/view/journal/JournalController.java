@@ -392,11 +392,11 @@ public class JournalController {
                 createGenEditWindow(semanticFacade, getNavigatorNode().getViewProperties(), false);
             }
         };
-        journalEventBus.subscribe(JOURNAL_TOPIC, MakeConceptWindowEvent.class, makeConceptWindowEventSubscriber);
+        journalEventBus.subscribe(journalTopic, MakeConceptWindowEvent.class, makeConceptWindowEventSubscriber);
 
         makePatternWindowEventSubscriber = evt ->
                 createPatternWindow(evt.getPatternFacade(), evt.getViewProperties());
-        journalEventBus.subscribe(JOURNAL_TOPIC, MakePatternWindowEvent.class, makePatternWindowEventSubscriber);
+        journalEventBus.subscribe(journalTopic, MakePatternWindowEvent.class, makePatternWindowEventSubscriber);
 
         // Listening for when a General authoring Window needs to be summoned.
         makeGenEditWindowEventSubscriber = evt ->
@@ -832,6 +832,7 @@ public class JournalController {
         nextGenSearchController = nextGenSearchJFXNode.controller();
         nextGenSearchController.updateModel(this.windowView.makeOverridableViewProperties());
         nextGenSearchController.setWindowView(this.windowView);
+        nextGenSearchController.setJournalTopic(journalTopic);
         nextGenSearchPanel = nextGenSearchJFXNode.node();
 
         setupSlideOutTrayPane(nextGenSearchPanel, nexGenSearchSlideoutTrayPane);
