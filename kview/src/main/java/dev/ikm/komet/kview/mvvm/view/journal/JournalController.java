@@ -417,6 +417,11 @@ public class JournalController {
         toast = new Toast(workspace);
     }
 
+    /**
+     * Setup the controller to have a filter coordinates menu.  KometPreferences is required to create the
+     * WindowSettings object, which is used to get access to the view that the filter coordinates are applied to.
+     * @param nodePreferences The preferences for the Journal window
+     */
     public void setup(KometPreferences nodePreferences) {
         this.nodePreferences = nodePreferences;
         this.windowSettings = new WindowSettings(nodePreferences);
